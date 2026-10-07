@@ -12,6 +12,7 @@ import { PhoneFrame } from "@/components/PhoneFrame/PhoneFrame";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { Tag } from "@/components/Tag/Tag";
 import { loadGuide } from "@/lib/guide";
+import { SetupSample } from "./samples";
 
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -118,7 +119,11 @@ export default function Screens() {
           <PhoneFrame label="Upload: processing" plannedStep={2} />
         </Group>
         <Group title="Scenario session">
-          <PhoneFrame label="Session setup" plannedStep={3} />
+          <PhoneFrame label="Session setup">
+          <Screen>
+            <SetupSample />
+          </Screen>
+        </PhoneFrame>
           <PhoneFrame label="Situation and decision" plannedStep={4} />
           <PhoneFrame label="Confidence check" plannedStep={4} />
           <PhoneFrame label="Explanation and follow-up" plannedStep={4} />

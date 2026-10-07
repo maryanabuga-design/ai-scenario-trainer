@@ -1,4 +1,5 @@
 import { ActionBar } from "@/components/ActionBar/ActionBar";
+import { BackLink } from "@/components/BackLink/BackLink";
 import { ButtonLink } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
 import { MaterialCover } from "@/components/MaterialCover/MaterialCover";
@@ -12,11 +13,7 @@ export default function MaterialPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="-ml-3">
-        <ButtonLink href="/materials" variant="text">
-          Back to materials
-        </ButtonLink>
-      </div>
+      <BackLink href="/materials" label="Back to materials" />
       <div className="flex flex-col gap-4">
         <MaterialCover size="lg" />
         <h1 className="font-serif text-2xl leading-tight">{guide.title}</h1>
