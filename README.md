@@ -22,8 +22,11 @@ Other scripts:
 ```bash
 npm run lint
 npm run typecheck
+npm test
 npm run build
 ```
+
+In development, `/screens` shows every planned screen side by side at phone width for design review. It returns 404 in production.
 
 ## Environment variables
 
@@ -31,24 +34,22 @@ None. No secrets are needed, and the app deploys to Vercel without configuration
 
 ## Scope
 
-In the MVP:
-1. Library (start) screen with the sample guide as the loaded material. The upload dropzone is a design state only.
-2. A prepared scenario with six decision steps.
-3. At each step: choose an option, rate confidence, write a one-sentence explanation.
-4. Feedback: your answer vs the correct one, why, error type (knowledge gap, misconception, guess), and a link to the source section (S1 to S10).
-5. Session summary with weak topics and a "practise again" action.
-
-Out of scope: live AI calls, real PDF parsing, instructor panel, accounts, audio, YouTube import, gamification, dark theme.
+Scope comes from `docs/mvp-matrix-and-ia.md`; see `CLAUDE.md` for the full list. Must and Should features are in, Could and Won't are out (live AI, real PDF parsing, chat, audio, instructor panel, gamification, accounts, dark theme).
 
 ## Status
 
-Built so far: project setup, design tokens, mobile app shell (bottom navigation, source sheet, action bar) and the Library screen. The practice flow and the session summary are not built yet, so "Start scenario" leads to a page that does not exist.
+The learning cycle can be clicked from start to finish:
+Materials → material page → Session setup (Short 3 or Full 6 decisions) → decision step (option, confidence, one-sentence explanation) → feedback (verdict, error type, sources, consequence, key points, "Ask about this step" on the smoke step) → results (score, error types, how the situation ended, error analysis, weak topics) → repeat the weak steps.
+
+The session is saved in the browser on this device, so a page reload keeps your place.
+
+Not built yet: Home, Progress, Profile and Onboarding (they show a "Coming next" screen), and the upload flow. Build order: `docs/build-plan.md`.
 
 ## Known limits
 
 - AI behavior is simulated. The follow-up question and the key points are shown, but a trainee's explanation is never graded automatically.
-- Upload is not functional. Only the sample guide is available.
-- The session is not saved between visits.
+- Upload is not available yet. Only the sample guide is used.
+- Only one session is kept at a time; history arrives with the Progress screen.
 
 ## Project files
 

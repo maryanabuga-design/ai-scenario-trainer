@@ -1,6 +1,6 @@
 # Build plan
 
-One commit per screen group, in this order. Each commit runs `npm run lint`, `npm run typecheck` and `npm run build`, and saves a screenshot in `docs/screens/`. Until a navigation section exists, its link opens the "Coming next" screen.
+One commit per screen group, in this order. Steps 2 to 6 were first built as a thin clickable path through the whole cycle; the upload sequence in Materials is still to come. Each commit runs `npm run lint`, `npm run typecheck` and `npm run build`, and saves a screenshot in `docs/screens/`. Until a navigation section exists, its link opens the "Coming next" screen.
 
 1. Foundation refresh: tokens, pill buttons, cards, tags, gradient helper, four-item bottom navigation, "Coming next" screen, storage helper.
 2. Materials: list, material page, upload sequence.
