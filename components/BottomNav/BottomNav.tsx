@@ -16,7 +16,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Main"
-      className="sticky bottom-0 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)]"
+      className="border-t border-border bg-surface"
     >
       <ul className="flex">
         {items.map((item) => {
