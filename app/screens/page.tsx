@@ -12,7 +12,14 @@ import { PhoneFrame } from "@/components/PhoneFrame/PhoneFrame";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { Tag } from "@/components/Tag/Tag";
 import { loadGuide } from "@/lib/guide";
-import { AskSample, DecisionSample, FeedbackSample, SetupSample } from "./samples";
+import {
+  AskSample,
+  DecisionSample,
+  FeedbackSample,
+  RepeatSample,
+  ResultsSample,
+  SetupSample,
+} from "./samples";
 
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -156,9 +163,21 @@ export default function Screens() {
               <AskSample />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Results: summary" plannedStep={6} />
-          <PhoneFrame label="Results: error analysis" plannedStep={6} />
-          <PhoneFrame label="Repeat weak topics" plannedStep={6} />
+          <PhoneFrame label="Results: summary">
+            <Screen>
+              <ResultsSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Results: error analysis">
+            <Screen>
+              <ResultsSample scrolled />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Repeat weak topics">
+            <Screen>
+              <RepeatSample />
+            </Screen>
+          </PhoneFrame>
         </Group>
         <Group title="Sections and onboarding">
           <PhoneFrame label="Home" plannedStep={7} />

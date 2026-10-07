@@ -4,10 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import { DecisionStep, emptyDraft } from "@/components/DecisionStep/DecisionStep";
 import type { Draft } from "@/components/DecisionStep/DecisionStep";
 import { FeedbackView } from "@/components/FeedbackView/FeedbackView";
+import { ResultsView } from "@/components/ResultsView/ResultsView";
 import { SessionSetup } from "@/components/SessionSetup/SessionSetup";
 import type { Length } from "@/components/SessionSetup/SessionSetup";
 import { simulatedFeedback } from "@/lib/feedback";
 import { getStep, scenario } from "@/lib/scenario";
+import { scoreAnswer } from "@/lib/scoring";
 
 /** Interactive sample screens for the /screens review page. They never touch the saved session. */
 export function SetupSample() {
@@ -90,5 +92,40 @@ export function AskSample() {
       />
       <div ref={endRef} />
     </>
+  );
+}
+
+/** A full session with one answer of each kind of result. */
+const sampleAnswers = [
+  scoreAnswer(getStep("s1"), "b", 3),
+  scoreAnswer(getStep("s2"), "c", 2),
+  scoreAnswer(getStep("s3"), "b", 3),
+  scoreAnswer(getStep("s4"), "d", 3),
+  scoreAnswer(getStep("s5"), "a", 1),
+  scoreAnswer(getStep("s6"), "c", 3),
+];
+
+export function ResultsSample({ scrolled = false }: { scrolled?: boolean }) {
+  const endRef = useScrollFrameToEnd(scrolled);
+  return (
+    <>
+      <ResultsView mode="full" answers={sampleAnswers} onRepeat={() => undefined} />
+      <div ref={endRef} />
+    </>
+  );
+}
+
+/** A repeat session replays only the weak steps: here the second of three. */
+export function RepeatSample() {
+  const [draft, setDraft] = useState<Draft>(emptyDraft);
+  return (
+    <DecisionStep
+      step={getStep("s3")}
+      index={1}
+      total={3}
+      draft={draft}
+      onDraftChange={setDraft}
+      onSubmit={() => undefined}
+    />
   );
 }
