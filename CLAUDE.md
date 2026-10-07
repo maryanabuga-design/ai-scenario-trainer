@@ -1,7 +1,7 @@
 # CLAUDE.md — AI Scenario Trainer (MVP)
 
 ## What this is
-A clickable web prototype of an AI-powered scenario-based trainer for the Trainee persona. The Trainee practises decisions in a scenario built from a study guide, explains each decision, and receives error analysis with links to the source passage. AI behavior is simulated from prepared data; there are no live AI calls.
+A mobile-first clickable web prototype (designed for a 390 by 844 phone screen) of an AI-powered scenario-based trainer for the Trainee persona. The Trainee practises decisions in a scenario built from a study guide, explains each decision, and receives error analysis with links to the source passage. AI behavior is simulated from prepared data; there are no live AI calls.
 
 This is a learning prototype. Keep scope small and the repo tidy.
 
@@ -17,7 +17,7 @@ This is a learning prototype. Keep scope small and the repo tidy.
 - Deploy: Vercel. No environment variables are required.
 
 ## Design
-Follow `DESIGN.md` exactly: tokens, typography, components, tone. If a needed token or component is missing, add it to `DESIGN.md` first, then use it. Use CSS variables from the tokens; no hard-coded colors in components.
+Mobile-first: single column, bottom navigation, a fixed bottom action bar and a bottom sheet for sources. No desktop layout; on wide screens the app is a centred column about 430px wide. Follow `DESIGN.md` exactly: tokens, typography, components, tone. If a needed token or component is missing, add it to `DESIGN.md` first, then use it. Use CSS variables from the tokens; no hard-coded colors in components.
 
 ## MVP scope
 In:

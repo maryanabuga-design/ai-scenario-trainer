@@ -5,7 +5,7 @@ Status: draft v0. Values marked (proposal) are open for change. Update this file
 ## Product and audience
 - Product: AI-powered scenario-based training. The Trainee uploads their own material and practises decisions in scenarios, then gets feedback and error analysis.
 - Context: educational only. Emergency-response and civil-protection training. No weapons, harm or combat content.
-- Platform (assumption): desktop-first web app, responsive down to 360px. On narrow screens the side panels collapse.
+- Platform: mobile-first web app, designed for a 390 by 844 phone screen and usable from 360px wide. On wide screens the app is shown as a centred column about 430px wide on a neutral background (`--surface-muted`). There is no separate desktop layout.
 
 ## Principles
 1. Calm, serious, utilitarian minimalism. Trust matters more than delight.
@@ -52,9 +52,12 @@ Rules:
 - No shadows except a subtle one on overlays (popovers, dialogs).
 
 ## Layout
-- Desktop: left navigation (narrow), central work area (scenario or document), right panel (tutor and sources). Right panel collapses to a drawer below 1024px.
-- The MVP navigation has two items: Library and Practice. Mistakes and Progress are out of scope.
-- Content width for reading: 680px maximum.
+- Single column with 16px side padding. Content width is the screen width, 430px maximum.
+- Safe areas: respect the top and bottom safe areas (`env(safe-area-inset-top)` and `env(safe-area-inset-bottom)`) on every fixed element.
+- Progress: step progress dots at the top of the screen during a scenario.
+- Bottom navigation: two items, Library and Practice (Mistakes and Progress are out of scope). It is hidden during a scenario.
+- Primary action: a fixed bar at the bottom of the screen, above the safe area, with one primary button. During a scenario it takes the place of the bottom navigation. Scrolling content gets bottom padding so nothing hides behind the bar.
+- Sources: the source panel is a bottom sheet opened from a source chip.
 
 ## Components and states
 Every component needs: default, hover, focus-visible, active, disabled. Inputs also need error.
@@ -73,9 +76,12 @@ Every component needs: default, hover, focus-visible, active, disabled. Inputs a
   - Knowledge gap: minus icon, `--caution` on `--caution-bg` (the only badge that uses amber).
   - Misconception: cross icon, `--wrong` on `--wrong-bg`.
   - Shape: 8px radius, 12 label size, 4px 8px padding. Each type has a one-line description beside it, for example "Wrong answer, high confidence".
-- Source chip: shows "Guide · S2" (document name + section id; the guide has no page numbers). Opens that section in the side panel.
-- Footer note: one line on every screen in 14 `--text-secondary`: "AI behavior is simulated for this prototype. All feedback comes from the source guide."
-- Session summary: single column, 680px maximum. Order: score ("4 of 6 correct", tabular numerals) → error-type breakdown (four rows, badge + count) → situation outcome (time lost, smoke level, casualty stability as plain label/value rows, no charts) → weak topics (each a source chip with the section title, listed for wrong or guessed steps) → primary action "Practise again". Situation outcome is shown here only, not during play.
+- Source chip: shows "Guide · S2" (document name + section id; the guide has no page numbers). Opens that section in the bottom sheet.
+- Bottom navigation: two items (Library, Practice), each at least 44px high, label always visible, icon optional. Current item uses `--accent` text and `aria-current="page"`. Surface `--surface`, 1px `--border` on top, safe-area padding at the bottom.
+- Action bar: fixed at the bottom, `--surface` with a 1px `--border` on top, 16px padding, safe-area padding at the bottom. Holds one primary button, full width, minimum height 44px. A disabled button explains why in one line above it (for example "Choose an answer to continue").
+- Bottom sheet: opens from the bottom, up to 80% of the screen height, content scrolls inside. 12px radius on the top corners, `--surface` background, a scrim behind it. This is an overlay, so it may use the subtle shadow. Has a title (section id and name), a close button of at least 44px, closes with the scrim, the Escape key and the close button. Traps focus while open and returns focus to the source chip on close. Opening and closing animates briefly and not at all with reduced motion.
+- Footer note: one line at the end of the content on every screen, above the bottom navigation or action bar, in 14 `--text-secondary`: "AI behavior is simulated for this prototype. All feedback comes from the source guide."
+- Session summary: single column. Order: score ("4 of 6 correct", tabular numerals) → error-type breakdown (four rows, badge + count) → situation outcome (time lost, smoke level, casualty stability as plain label/value rows, no charts) → weak topics (each a source chip with the section title, listed for wrong or guessed steps) → primary action "Practise again". Situation outcome is shown here only, not during play.
 - Tutor message: plain text, source chips inline, no avatar character.
 - Progress: simple bar or segmented dots with numeric label. No hatched or decorative bars.
 - Dropzone: dashed border on `--surface-muted`, one line of instruction, alternative actions below.
