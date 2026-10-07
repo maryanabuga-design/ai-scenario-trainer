@@ -3,22 +3,30 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
-export type SourceSection = {
-  id: string;
-  title: string;
-  lines: string[];
+import type { GuideSection } from "@/lib/guide";
+
+type SourceSheetContextValue = {
+  sections: GuideSection[];
+  open: (sectionId: string) => void;
 };
 
-const SourceSheetContext = createContext<((section: SourceSection) => void) | null>(null);
+const SourceSheetContext = createContext<SourceSheetContextValue | null>(null);
 
 export function useSourceSheet() {
-  const open = useContext(SourceSheetContext);
-  if (!open) throw new Error("useSourceSheet must be used inside SourceSheetProvider");
-  return open;
+  const context = useContext(SourceSheetContext);
+  if (!context) throw new Error("useSourceSheet must be used inside SourceSheetProvider");
+  return context;
 }
 
-export function SourceSheetProvider({ children }: { children: ReactNode }) {
-  const [section, setSection] = useState<SourceSection | null>(null);
+export function SourceSheetProvider({
+  sections,
+  children,
+}: {
+  sections: GuideSection[];
+  children: ReactNode;
+}) {
+  const [sectionId, setSectionId] = useState<string | null>(null);
+  const section = sections.find((candidate) => candidate.id === sectionId) ?? null;
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -27,13 +35,13 @@ export function SourceSheetProvider({ children }: { children: ReactNode }) {
   }, [section]);
 
   return (
-    <SourceSheetContext.Provider value={setSection}>
+    <SourceSheetContext.Provider value={{ sections, open: setSectionId }}>
       {children}
       <dialog
         ref={dialogRef}
         data-sheet
         aria-labelledby="source-sheet-title"
-        onClose={() => setSection(null)}
+        onClose={() => setSectionId(null)}
         onClick={(event) => {
           if (event.target === dialogRef.current) dialogRef.current?.close();
         }}
@@ -53,6 +61,7 @@ export function SourceSheetProvider({ children }: { children: ReactNode }) {
                 Close
               </button>
             </div>
+            <p className="text-sm text-text-secondary">Guide · {section.id}</p>
             <ul className="flex list-disc flex-col gap-2 pl-5 text-base">
               {section.lines.map((line) => (
                 <li key={line}>{line}</li>

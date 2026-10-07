@@ -1,12 +1,17 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import MaterialPage from "@/app/(app)/materials/evacuation-guide/page";
+import Materials from "@/app/(app)/materials/page";
+import { ActionBarProvider, ActionBarSlot } from "@/components/ActionBar/ActionBar";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
 import { Button } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
 import { ComingNext } from "@/components/ComingNext/ComingNext";
 import { Gradient } from "@/components/Gradient/Gradient";
 import { PhoneFrame } from "@/components/PhoneFrame/PhoneFrame";
+import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { Tag } from "@/components/Tag/Tag";
+import { loadGuide } from "@/lib/guide";
 
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -14,6 +19,19 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
       <h2 className="font-serif text-xl">{title}</h2>
       <div className="flex gap-6 overflow-x-auto pb-2">{children}</div>
     </section>
+  );
+}
+
+/** One app screen inside a frame: scrolling content, then the action bar slot and optional navigation. */
+function Screen({ nav, children }: { nav?: string; children: ReactNode }) {
+  return (
+    <ActionBarProvider>
+      <div className="flex-1 overflow-y-auto px-4 pt-6 pb-6">{children}</div>
+      <div className="bg-bg">
+        <ActionBarSlot />
+        {nav && <BottomNav activePath={nav} />}
+      </div>
+    </ActionBarProvider>
   );
 }
 
@@ -69,51 +87,61 @@ export default function Screens() {
   if (process.env.NODE_ENV === "production") notFound();
 
   return (
-    <main className="flex flex-col gap-10 bg-surface-muted p-8">
-      <header className="flex flex-col gap-1">
-        <h1 className="font-serif text-2xl">Screen review</h1>
-        <p className="text-sm text-text-secondary">
-          Development only. Every planned screen at 390 by 844. Dashed frames are not built yet.
-        </p>
-      </header>
-      <Group title="Built so far">
-        <PhoneFrame label="Foundation kit">
-          <FoundationKit />
-        </PhoneFrame>
-        <PhoneFrame label="Coming next">
-          <ComingNextScreen />
-        </PhoneFrame>
-      </Group>
-      <Group title="Materials">
-        <PhoneFrame label="Materials list" plannedStep={2} />
-        <PhoneFrame label="Upload: choose a file" plannedStep={2} />
-        <PhoneFrame label="Upload: processing" plannedStep={2} />
-        <PhoneFrame label="Material page" plannedStep={2} />
-      </Group>
-      <Group title="Scenario session">
-        <PhoneFrame label="Session setup" plannedStep={3} />
-        <PhoneFrame label="Situation and decision" plannedStep={4} />
-        <PhoneFrame label="Confidence check" plannedStep={4} />
-        <PhoneFrame label="Explanation and follow-up" plannedStep={4} />
-        <PhoneFrame label="Feedback" plannedStep={5} />
-      </Group>
-      <Group title="Feedback and results">
-        <PhoneFrame label="Ask about this step" plannedStep={5} />
-        <PhoneFrame label="Results: summary" plannedStep={6} />
-        <PhoneFrame label="Results: error analysis" plannedStep={6} />
-        <PhoneFrame label="Repeat weak topics" plannedStep={6} />
-      </Group>
-      <Group title="Sections and onboarding">
-        <PhoneFrame label="Home" plannedStep={7} />
-        <PhoneFrame label="Progress" plannedStep={8} />
-        <PhoneFrame label="Onboarding: choose direction" plannedStep={9} />
-        <PhoneFrame label="Onboarding: how it works" plannedStep={9} />
-        <PhoneFrame label="Onboarding: example scenario" plannedStep={9} />
-      </Group>
-      <Group title="Profile">
-        <PhoneFrame label="Profile" plannedStep={10} />
-        <PhoneFrame label="Reset progress dialog" plannedStep={10} />
-      </Group>
-    </main>
+    <SourceSheetProvider sections={loadGuide().sections}>
+      <main className="flex flex-col gap-10 bg-surface-muted p-8">
+        <header className="flex flex-col gap-1">
+          <h1 className="font-serif text-2xl">Screen review</h1>
+          <p className="text-sm text-text-secondary">
+            Development only. Every planned screen at 390 by 844. Dashed frames are not built yet.
+          </p>
+        </header>
+        <Group title="Built so far">
+          <PhoneFrame label="Foundation kit">
+            <FoundationKit />
+          </PhoneFrame>
+          <PhoneFrame label="Coming next">
+            <ComingNextScreen />
+          </PhoneFrame>
+        </Group>
+        <Group title="Materials">
+          <PhoneFrame label="Materials list">
+            <Screen nav="/materials">
+              <Materials />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Material page">
+            <Screen nav="/materials">
+              <MaterialPage />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Upload: choose a file" plannedStep={2} />
+          <PhoneFrame label="Upload: processing" plannedStep={2} />
+        </Group>
+        <Group title="Scenario session">
+          <PhoneFrame label="Session setup" plannedStep={3} />
+          <PhoneFrame label="Situation and decision" plannedStep={4} />
+          <PhoneFrame label="Confidence check" plannedStep={4} />
+          <PhoneFrame label="Explanation and follow-up" plannedStep={4} />
+          <PhoneFrame label="Feedback" plannedStep={5} />
+        </Group>
+        <Group title="Feedback and results">
+          <PhoneFrame label="Ask about this step" plannedStep={5} />
+          <PhoneFrame label="Results: summary" plannedStep={6} />
+          <PhoneFrame label="Results: error analysis" plannedStep={6} />
+          <PhoneFrame label="Repeat weak topics" plannedStep={6} />
+        </Group>
+        <Group title="Sections and onboarding">
+          <PhoneFrame label="Home" plannedStep={7} />
+          <PhoneFrame label="Progress" plannedStep={8} />
+          <PhoneFrame label="Onboarding: choose direction" plannedStep={9} />
+          <PhoneFrame label="Onboarding: how it works" plannedStep={9} />
+          <PhoneFrame label="Onboarding: example scenario" plannedStep={9} />
+        </Group>
+        <Group title="Profile">
+          <PhoneFrame label="Profile" plannedStep={10} />
+          <PhoneFrame label="Reset progress dialog" plannedStep={10} />
+        </Group>
+      </main>
+    </SourceSheetProvider>
   );
 }
