@@ -12,11 +12,14 @@ import { PhoneFrame } from "@/components/PhoneFrame/PhoneFrame";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { Tag } from "@/components/Tag/Tag";
 import { loadGuide } from "@/lib/guide";
-import { SetupSample } from "./samples";
+import { DecisionSample, SetupSample } from "./samples";
 
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="flex flex-col gap-3">
+    <section
+      id={title.toLowerCase().replace(/ /g, "-")}
+      className="flex scroll-mt-4 flex-col gap-3"
+    >
       <h2 className="font-serif text-xl">{title}</h2>
       <div className="flex gap-6 overflow-x-auto pb-2">{children}</div>
     </section>
@@ -27,7 +30,7 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
 function Screen({ nav, children }: { nav?: string; children: ReactNode }) {
   return (
     <ActionBarProvider>
-      <div className="flex-1 overflow-y-auto px-4 pt-6 pb-6">{children}</div>
+      <div data-frame-scroll className="min-h-0 flex-1 overflow-y-auto px-4 pt-6 pb-6">{children}</div>
       <div className="bg-bg">
         <ActionBarSlot />
         {nav && <BottomNav activePath={nav} />}
@@ -120,13 +123,25 @@ export default function Screens() {
         </Group>
         <Group title="Scenario session">
           <PhoneFrame label="Session setup">
-          <Screen>
-            <SetupSample />
-          </Screen>
-        </PhoneFrame>
-          <PhoneFrame label="Situation and decision" plannedStep={4} />
-          <PhoneFrame label="Confidence check" plannedStep={4} />
-          <PhoneFrame label="Explanation and follow-up" plannedStep={4} />
+            <Screen>
+              <SetupSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Situation and decision">
+            <Screen>
+              <DecisionSample start="empty" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Confidence check">
+            <Screen>
+              <DecisionSample start="option" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Explanation">
+            <Screen>
+              <DecisionSample start="complete" />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Feedback" plannedStep={5} />
         </Group>
         <Group title="Feedback and results">
