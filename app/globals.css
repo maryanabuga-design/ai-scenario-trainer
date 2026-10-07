@@ -2,7 +2,7 @@
 
 /* Tokens from DESIGN.md. Change DESIGN.md first, then this file. */
 :root {
-  --bg: #f7f5f0;
+  --bg: #f4f1ec;
   --surface: #ffffff;
   --surface-muted: #efece5;
   --border: #e2ded5;
@@ -17,6 +17,16 @@
   --correct-bg: #e8f3ec;
   --wrong-bg: #fbeae8;
   --caution-bg: #f8efd9;
+
+  --tag-yellow: #f6efa6;
+  --tag-peach: #fad6c2;
+  --tag-blue: #d4e8f0;
+  --tag-lilac: #e6ddf5;
+
+  --glow-yellow: #f2de6e;
+  --glow-peach: #f4b497;
+  --glow-lilac: #d6c6f0;
+  --glow-blue: #bcd9ea;
 }
 
 @theme inline {
@@ -35,22 +45,27 @@
   --color-correct-bg: var(--correct-bg);
   --color-wrong-bg: var(--wrong-bg);
   --color-caution-bg: var(--caution-bg);
+  --color-tag-yellow: var(--tag-yellow);
+  --color-tag-peach: var(--tag-peach);
+  --color-tag-blue: var(--tag-blue);
+  --color-tag-lilac: var(--tag-lilac);
 
   --font-sans: var(--font-inter), system-ui, sans-serif;
   --font-serif: var(--font-source-serif), Georgia, serif;
 }
 
 @theme {
-  /* Type scale: 12 labels / 14 secondary / 16 body / 18 lead / 22 / 28 */
+  /* Type scale: 12 labels / 14 secondary / 16 body / 18 lead / 22 / 28 / 34 */
   --text-xs: 12px;
   --text-sm: 14px;
   --text-base: 16px;
   --text-lg: 18px;
   --text-xl: 22px;
   --text-2xl: 28px;
+  --text-3xl: 34px;
 
-  --radius-control: 8px;
-  --radius-card: 12px;
+  --radius-panel: 16px;
+  --radius-card: 24px;
 
   --container-app: 430px;
 }
@@ -88,6 +103,23 @@ body {
 dialog[data-sheet] {
   animation: sheet-in 200ms ease-out;
   box-shadow: 0 -4px 16px color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+/* Soft gradient zones. Allowed only where DESIGN.md says. */
+.gradient-warm {
+  background:
+    radial-gradient(60% 55% at 20% 80%, var(--glow-yellow), transparent 70%),
+    radial-gradient(55% 50% at 85% 70%, var(--glow-peach), transparent 70%),
+    radial-gradient(60% 60% at 70% 15%, var(--glow-lilac), transparent 70%),
+    var(--bg);
+}
+
+.gradient-cool {
+  background:
+    radial-gradient(60% 55% at 25% 25%, var(--glow-blue), transparent 70%),
+    radial-gradient(55% 55% at 80% 80%, var(--glow-lilac), transparent 70%),
+    radial-gradient(45% 45% at 75% 20%, var(--glow-peach), transparent 70%),
+    var(--bg);
 }
 
 dialog[data-sheet]::backdrop {

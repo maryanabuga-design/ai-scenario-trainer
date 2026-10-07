@@ -48,7 +48,7 @@ export function SourceSheetProvider({ children }: { children: ReactNode }) {
               <button
                 type="button"
                 onClick={() => dialogRef.current?.close()}
-                className="-mt-2 -mr-2 min-h-11 min-w-11 rounded-control px-3 text-base text-accent"
+                className="-mt-2 -mr-2 min-h-11 min-w-11 rounded-full px-3 text-base text-text hover:underline"
               >
                 Close
               </button>

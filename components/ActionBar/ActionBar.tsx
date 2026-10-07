@@ -29,7 +29,7 @@ export function ActionBar({ children }: { children: ReactNode }) {
   const { slot } = useActionBarContext();
   if (!slot) return null;
   return createPortal(
-    <div className="flex flex-col gap-2 border-t border-border bg-surface p-4">{children}</div>,
+    <div className="flex flex-col gap-2 border-t border-border bg-bg p-4">{children}</div>,
     slot,
   );
 }
