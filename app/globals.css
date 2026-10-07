@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+/* Tokens from DESIGN.md. Change DESIGN.md first, then this file. */
+:root {
+  --bg: #f7f5f0;
+  --surface: #ffffff;
+  --surface-muted: #efece5;
+  --border: #e2ded5;
+  --text: #1a1a1a;
+  --text-secondary: #5c5a55;
+  --primary: #1a1a1a;
+  --primary-text: #ffffff;
+  --accent: #3d3a8c;
+  --correct: #1f7a4d;
+  --wrong: #b3261e;
+  --caution: #8a5a00;
+  --correct-bg: #e8f3ec;
+  --wrong-bg: #fbeae8;
+  --caution-bg: #f8efd9;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-text-secondary: var(--text-secondary);
+  --color-primary: var(--primary);
+  --color-primary-text: var(--primary-text);
+  --color-accent: var(--accent);
+  --color-correct: var(--correct);
+  --color-wrong: var(--wrong);
+  --color-caution: var(--caution);
+  --color-correct-bg: var(--correct-bg);
+  --color-wrong-bg: var(--wrong-bg);
+  --color-caution-bg: var(--caution-bg);
+
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-serif: var(--font-source-serif), Georgia, serif;
+}
+
+@theme {
+  /* Type scale: 12 labels / 14 secondary / 16 body / 18 lead / 22 / 28 */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+
+  --radius-control: 8px;
+  --radius-card: 12px;
+
+  --container-reading: 680px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
