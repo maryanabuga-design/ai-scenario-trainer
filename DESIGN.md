@@ -86,14 +86,14 @@ Rules:
 ## Screen map
 From `docs/mvp-matrix-and-ia.md`.
 - Onboarding (first visit only, can be skipped): Choose direction → How it works → Example scenario.
-  - Choose direction: "Evacuation and first aid" is the only selectable direction. Others are listed as disabled with "Not available in this prototype". Names of the other directions (proposal, to confirm): "Fire safety in public buildings", "Flood preparedness", "Crisis communication".
+  - Choose direction: "Building evacuation and first aid" is the only selectable direction. "Road incident first aid", "Flood preparedness" and "Crisis communication" are listed as disabled with "Not available in this prototype".
   - Example scenario: a preview of the sample scenario with "Try it", which opens Session setup.
 - Home: Continue session (if one is unfinished) · Weak topics · New scenario.
 - Materials: Materials list · Upload PDF · Material page.
   - Upload PDF is a screen sequence: choose a file (the file is not read or sent anywhere) → processing → the material page of the sample guide, with a plain note that this prototype uses a prepared scenario.
 - Progress: Weak topics · Session history.
 - Profile: Direction (change it) · Settings: "Reset progress" with a confirmation.
-- Session setup: length selector, "Short, 3 decisions, about 5 min" (steps 1 to 3) or "Full, 6 decisions, about 10 min" (proposal for the times).
+- Session setup: length selector, "Short, 3 decisions, about 5 min" (steps 1 to 3) or "Full, 6 decisions, about 10 min". Times are always labelled as estimates ("about").
 - Scenario session: Situation and decision → Confidence check → Explanation and AI follow-up → Feedback with consequence → next step. Source sheet available throughout.
 - Session results: Summary → Error analysis with sources → Repeat weak topics (replays the wrong or guessed steps).
 
@@ -109,7 +109,7 @@ Every component needs: default, hover, focus-visible, active, disabled. Inputs a
   - Primary block (white card): verdict, your answer vs correct, why and error type.
   - Secondary blocks below, separated by 32px: consequence, then "Points a strong answer covers" next to the user's own sentence, then the AI follow-up. Secondary blocks use the 14 secondary scale in `--text-secondary`. Hierarchy comes from type and spacing, not colour.
   - The user's explanation is never graded. Show it unchanged next to the key beats and label the key beats as a reference list, not a score.
-  - Not covered by the material: one step has a scripted follow-up question that the guide does not answer. It shows the question, the line "This is not covered by the material." and no source chip. Neutral style, no warning colour.
+  - Not covered by the material: under the smoke step's feedback, an "Ask about this step" block with one tappable suggested question that the guide does not answer. The trainee taps it; the AI never asks it on its own. The answer says "This is not covered by the material." and then "Closest sections in the guide:" with source chips. Neutral style, no warning colour.
 - Explanation field: multi-line text input, 3 rows, 16px radius, label is the step's follow-up question, optional counter in 14 `--text-secondary`. States: default, hover, focus-visible, disabled (locked after submit), error. Error: 1px `--wrong` border, an icon and a text message below (for example "Write one sentence before you submit."). Never colour alone.
 - Status badge: icon + label + colour, used for the error type and the verdict. Labels in sentence case.
   - Secure: check icon, `--correct` on `--correct-bg`.
@@ -124,6 +124,8 @@ Every component needs: default, hover, focus-visible, active, disabled. Inputs a
 - Action bar: fixed at the bottom, `--bg` with a 1px `--border` on top, 16px padding, safe-area padding when it is the lowest element. Holds one primary pill button, full width. A disabled button explains why in one line above it (for example "Choose an answer to continue").
 - Bottom sheet: opens from the bottom, up to 80% of the screen height, content scrolls inside. 24px radius on the top corners, `--surface` background, a scrim behind it. Has a title (section id and name), a close button of at least 44px, closes with the scrim, the Escape key and the close button. Traps focus while open and returns focus to the source chip on close. Opening animates briefly and not at all with reduced motion.
 - Segmented length selector (Session setup): two large option cards, Short and Full, with decision count and estimated time. Selected uses the option selected style.
+- Suggested question: a white pill with 1px `--border`, the question text in 14 `--text`, at least 44px high. Once tapped it shows the answer below it as a tutor message and cannot be tapped again.
+- Coming next: placeholder for a navigation section that is not built yet. Page title (serif), one line "This section is coming in a later version of the prototype." and a secondary button "Go to Materials". Bottom navigation stays visible. Removed section by section as the real screens land.
 - Footer note: one line at the end of the content on every screen, above the bottom navigation or action bar, in 14 `--text-secondary`: "AI behavior is simulated for this prototype. All feedback comes from the source guide."
 - Session results: two-tone headline on a gradient header → result rows (correct, wrong) → error-type breakdown (four rows, badge + count) → situation outcome (time lost, smoke level, casualty stability as plain label/value rows, no charts) → error analysis per step with source chips → weak topics → primary action "Repeat weak topics", secondary "Back to Home".
 - Tutor message: plain text, source chips inline, no avatar character.
