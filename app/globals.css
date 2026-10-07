@@ -105,21 +105,47 @@ dialog[data-sheet] {
   box-shadow: 0 -4px 16px color-mix(in srgb, var(--text) 8%, transparent);
 }
 
-/* Soft gradient zones. Allowed only where DESIGN.md says. */
-.gradient-warm {
-  background:
-    radial-gradient(60% 55% at 20% 80%, var(--glow-yellow), transparent 70%),
-    radial-gradient(55% 50% at 85% 70%, var(--glow-peach), transparent 70%),
-    radial-gradient(60% 60% at 70% 15%, var(--glow-lilac), transparent 70%),
-    var(--bg);
+/* Soft gradient zones. Allowed only where DESIGN.md says.
+   One smooth mesh: large overlapping colour fields, heavily blurred, mixed with --bg. */
+.gradient-warm,
+.gradient-cool {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--bg);
 }
 
-.gradient-cool {
+.gradient-warm::before,
+.gradient-cool::before {
+  content: "";
+  position: absolute;
+  inset: -30%;
+  z-index: -1;
+  filter: blur(70px);
+}
+
+.gradient-warm::before {
   background:
-    radial-gradient(60% 55% at 25% 25%, var(--glow-blue), transparent 70%),
-    radial-gradient(55% 55% at 80% 80%, var(--glow-lilac), transparent 70%),
-    radial-gradient(45% 45% at 75% 20%, var(--glow-peach), transparent 70%),
-    var(--bg);
+    radial-gradient(circle 200px at 25% 70%, color-mix(in srgb, var(--glow-yellow) 75%, var(--bg)), transparent),
+    radial-gradient(circle 200px at 80% 60%, color-mix(in srgb, var(--glow-peach) 70%, var(--bg)), transparent),
+    linear-gradient(
+      110deg,
+      color-mix(in srgb, var(--glow-yellow) 75%, var(--bg)),
+      color-mix(in srgb, var(--glow-lilac) 80%, var(--bg)) 50%,
+      color-mix(in srgb, var(--glow-peach) 70%, var(--bg))
+    );
+}
+
+.gradient-cool::before {
+  background:
+    radial-gradient(circle 200px at 25% 35%, color-mix(in srgb, var(--glow-blue) 70%, var(--bg)), transparent),
+    radial-gradient(circle 200px at 80% 70%, color-mix(in srgb, var(--glow-lilac) 70%, var(--bg)), transparent),
+    linear-gradient(
+      110deg,
+      color-mix(in srgb, var(--glow-blue) 70%, var(--bg)),
+      color-mix(in srgb, var(--glow-lilac) 80%, var(--bg)) 50%,
+      color-mix(in srgb, var(--glow-peach) 65%, var(--bg))
+    );
 }
 
 dialog[data-sheet]::backdrop {

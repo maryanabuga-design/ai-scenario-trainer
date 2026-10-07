@@ -11,7 +11,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <ActionBarProvider>
           <main className="flex-1 px-4 pt-6">{children}</main>
           <Footer />
-          <div className="sticky bottom-0 z-10 bg-surface pb-[env(safe-area-inset-bottom)]">
+          <div className="sticky bottom-0 z-10 bg-bg pb-[env(safe-area-inset-bottom)]">
             <ActionBarSlot />
             <BottomNav />
           </div>

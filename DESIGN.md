@@ -69,7 +69,7 @@ Rules:
 
 ## Gradients
 - Allowed only in: onboarding screens, the top area of Home, material covers, and the header of Session results.
-- Built from two to four soft radial blobs of the `--glow-*` colours, heavily blurred, fading into `--bg` or `--surface`.
+- One smooth mesh: a gradual blend of warm yellow, lavender and peach (cool variant: blue, lavender, peach). Built from a three-colour linear blend plus two round colour fields, blurred by about 70px and mixed with `--bg` so the contrast stays low. No separate visible blobs, edges or stripes. The blur layer is clipped by the card's rounded corners.
 - Never on Session setup, the decision step or feedback. Never behind body text, form controls or status badges. Titles and tags may sit on a gradient zone only if they keep 4.5:1 against its lightest and darkest point (3:1 for text 24px and larger). `--text-secondary` on a gradient is allowed only at 24px and larger.
 - Material cover: a 56px or larger rounded square (16px radius) filled with a gradient. Each material gets a fixed combination, not random.
 - Static. No animation.
@@ -120,7 +120,7 @@ Every component needs: default, hover, focus-visible, active, disabled. Inputs a
 - Result row (results summary): an inner panel with an icon box (check or cross in a 40px rounded square with the status colour), a label such as "4 correct" and a count. Icon + label + colour.
 - Source chip: shows "Guide · S2" (document name + section id; the guide has no page numbers). Pill, white with 1px `--border`. Opens that section in the bottom sheet.
 - Material cover: gradient square, see "Gradients".
-- Bottom navigation: four items (Home, Materials, Progress, Profile), each with a simple line icon and a visible label, at least 44px high. Current item: icon on a `--surface-muted` pill, label in `--text` medium, `aria-current="page"`. Others in `--text-secondary`. Surface `--surface`, 1px `--border` on top, safe-area padding at the bottom.
+- Bottom navigation: a floating rounded bar, not attached to the screen edge. White pill-shaped bar, 1px `--border`, a very subtle shadow (it floats over content), 16px space at the sides and at least 12px below it (plus the safe area), on a flat `--bg` strip. Four items (Home, Materials, Progress, Profile), each with a simple line icon and a visible label, at least 44px high. Current item: a soft yellow pill (`--tag-yellow`) behind icon and label, text in `--text` medium, `aria-current="page"`. Others in `--text-secondary`.
 - Action bar: fixed at the bottom, `--bg` with a 1px `--border` on top, 16px padding, safe-area padding when it is the lowest element. Holds one primary pill button, full width. A disabled button explains why in one line above it (for example "Choose an answer to continue").
 - Bottom sheet: opens from the bottom, up to 80% of the screen height, content scrolls inside. 24px radius on the top corners, `--surface` background, a scrim behind it. Has a title (section id and name), a close button of at least 44px, closes with the scrim, the Escape key and the close button. Traps focus while open and returns focus to the source chip on close. Opening animates briefly and not at all with reduced motion.
 - Segmented length selector (Session setup): two large option cards, Short and Full, with decision count and estimated time. Selected uses the option selected style.

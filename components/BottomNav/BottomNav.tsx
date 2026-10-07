@@ -51,8 +51,11 @@ export function BottomNav({ activePath }: { activePath?: string }) {
   if (!items.some((item) => isCurrent(item.href, pathname))) return null;
 
   return (
-    <nav aria-label="Main" className="border-t border-border bg-surface">
-      <ul className="flex">
+    <nav
+      aria-label="Main"
+      className="mx-4 mt-2 mb-3 rounded-full border border-border bg-surface p-1.5 shadow-[0_2px_12px_color-mix(in_srgb,var(--text)_8%,transparent)]"
+    >
+      <ul className="flex gap-1">
         {items.map((item) => {
           const current = isCurrent(item.href, pathname);
           return (
@@ -60,17 +63,13 @@ export function BottomNav({ activePath }: { activePath?: string }) {
               <Link
                 href={item.href}
                 aria-current={current ? "page" : undefined}
-                className={`flex min-h-14 flex-col items-center justify-center gap-1 pt-2 pb-1 text-xs ${
-                  current ? "font-medium text-text" : "text-text-secondary hover:text-text"
+                className={`flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-full text-xs ${
+                  current
+                    ? "bg-tag-yellow font-medium text-text"
+                    : "text-text-secondary hover:text-text"
                 }`}
               >
-                <span
-                  className={`flex h-8 w-14 items-center justify-center rounded-full ${
-                    current ? "bg-surface-muted" : ""
-                  }`}
-                >
-                  {item.icon}
-                </span>
+                {item.icon}
                 {item.label}
               </Link>
             </li>

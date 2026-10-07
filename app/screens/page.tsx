@@ -38,12 +38,14 @@ function FoundationKit() {
             <Tag tone="lilac">S2</Tag>
           </div>
         </Card>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-6">
           <Button>Primary action</Button>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap items-center gap-4">
             <Button variant="secondary">Secondary</Button>
             <Button variant="text">Text</Button>
-            <Button disabled>Disabled</Button>
+            <Button variant="secondary" disabled>
+              Disabled
+            </Button>
           </div>
         </div>
       </div>
