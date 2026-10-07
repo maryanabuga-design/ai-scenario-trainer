@@ -17,17 +17,27 @@ This is a learning prototype. Keep scope small and the repo tidy.
 - Deploy: Vercel. No environment variables are required.
 
 ## Design
-Mobile-first: single column, bottom navigation, a fixed bottom action bar and a bottom sheet for sources. No desktop layout; on wide screens the app is a centred column about 430px wide. Follow `DESIGN.md` exactly: tokens, typography, components, tone. If a needed token or component is missing, add it to `DESIGN.md` first, then use it. Use CSS variables from the tokens; no hard-coded colors in components.
+Mobile-first: single column, a four-section bottom navigation (Home, Materials, Progress, Profile), a fixed bottom action bar and a bottom sheet for sources. Style: warm off-white page, white cards with 24px radius, black pill primary button, serif titles with sans UI, small uppercase pastel tags; soft gradients only where `DESIGN.md` allows them. No desktop layout; on wide screens the app is a centred column about 430px wide. Follow `DESIGN.md` exactly: tokens, typography, components, tone. If a needed token or component is missing, add it to `DESIGN.md` first, then use it. Use CSS variables from the tokens; no hard-coded colors in components.
 
 ## MVP scope
-In:
-1. Start screen shows the sample guide as the loaded material. The upload dropzone is a design state only and is not functional.
-2. Play the prepared scenario (six decision steps) from the JSON file.
-3. At each step: choose an option, rate confidence, write a one-sentence explanation.
-4. Feedback: your answer vs correct, why, error type (knowledge gap / misconception / guess, derived from correctness + confidence), source link.
-5. Session summary with weak topics and a "practise again" action.
+Source of truth: `docs/mvp-matrix-and-ia.md` (from the FigJam board). Must and Should features are in scope; Could and Won't are out. Ask before changing scope.
 
-Out (do not build): live AI calls, real PDF parsing, instructor panel, accounts and auth, audio, YouTube import, gamification, dark theme.
+The learning cycle: Home → Material → Session setup → Situation → Decision → Confidence check → Explanation → AI follow-up → Consequence → next step or Results → Error analysis with sources → Repeat weak topics.
+
+Navigation: four sections in the bottom navigation (Home, Materials, Progress, Profile). Onboarding, Session setup, the scenario session and Session results are opened from other screens and have no navigation item.
+
+In:
+1. Onboarding: choose direction (only "Evacuation and first aid" is available; others are shown as not available), how it works, example scenario.
+2. Home: continue session, weak topics, new scenario.
+3. Materials: list, material page, and an upload flow as a screen sequence (choose a file, processing, then the prepared sample guide). The file is never read or sent; the UI says the prototype uses a prepared scenario.
+4. Session setup: Short (3 decisions, steps 1 to 3) or Full (6 decisions).
+5. Scenario session from the JSON: choose an option, rate confidence, write a one-sentence explanation, see the scripted AI follow-up and the consequence. The source sheet is available throughout.
+6. Feedback: your answer vs correct, why, error type (knowledge gap / misconception / guess / secure, derived from correctness + confidence), source link. One scripted follow-up shows the honest "This is not covered by the material." state.
+7. Session results: summary, error analysis with sources, repeat weak topics (replays the wrong or guessed steps).
+8. Progress: weak topics and session history, saved in the browser on this device (`localStorage`).
+9. Profile: change direction, reset progress.
+
+Out (do not build): live AI calls, real PDF parsing, question about a highlighted fragment, free chat with the tutor, process visualisation, several study formats, audio, other sources (YouTube, topic), instructor panel, real-time voice, gamification, accounts and auth, dark theme.
 
 ## Repo structure
 ```
