@@ -53,7 +53,7 @@ Rules:
 
 ## Layout
 - Desktop: left navigation (narrow), central work area (scenario or document), right panel (tutor and sources). Right panel collapses to a drawer below 1024px.
-- Maximum 4 navigation items in the MVP: Library, Practice, Mistakes, Progress.
+- The MVP navigation has two items: Library and Practice. Mistakes and Progress are out of scope.
 - Content width for reading: 680px maximum.
 
 ## Components and states
@@ -61,8 +61,21 @@ Every component needs: default, hover, focus-visible, active, disabled. Inputs a
 - Button: primary (dark), secondary (outline), text. Minimum height 44px.
 - Option (answer choice): default, selected, locked after submit, correct, wrong.
 - Confidence selector: three labelled levels (not very / somewhat / very confident), one accent, no traffic-light colors.
-- Feedback block: verdict (icon + label) → your answer vs the correct answer → why → error type (knowledge gap / misconception / guess) → source link.
-- Source chip: document name + page, opens the source in the side panel.
+- Practice step (progressive reveal): options first. After an option is chosen, show the confidence selector. After a confidence level is chosen, show the explanation field. Submit is enabled only when all three are filled. Once submitted, everything locks.
+- Feedback block: verdict (icon + label) → your answer vs the correct answer → why → error type (knowledge gap / misconception / guess / secure) → source link.
+  - Primary block: verdict, your answer vs correct, why and error type. Body size, with the verdict as a 22 heading.
+  - Secondary blocks below, separated by 32px spacing and a 1px `--border` rule: consequence, then "Points a strong answer covers" next to the user's own sentence. Secondary blocks use the 14 secondary scale in `--text-secondary`. Hierarchy comes from type and spacing, not colour.
+  - The user's explanation is never graded. Show it unchanged next to the key beats and label the key beats as a reference list, not a score.
+- Explanation field: multi-line text input, 3 rows, label is the step's follow-up question, optional counter in 14 `--text-secondary`. States: default, hover, focus-visible, disabled (locked after submit), error. Error: 1px `--wrong` border, an icon and a text message below (for example "Write one sentence before you submit."). Never colour alone.
+- Status badge: icon + label + colour, used for the error type. Labels in sentence case.
+  - Secure: check icon, `--correct` on `--correct-bg`.
+  - Guess: question-mark icon, `--caution` on `--caution-bg`.
+  - Knowledge gap: minus icon, `--caution` on `--caution-bg`.
+  - Misconception: cross icon, `--wrong` on `--wrong-bg`.
+  - Shape: 8px radius, 12 label size, 4px 8px padding. Each type has a one-line description beside it, for example "Wrong answer, high confidence".
+- Source chip: shows "Guide · S2" (document name + section id; the guide has no page numbers). Opens that section in the side panel.
+- Footer note: one line on every screen in 14 `--text-secondary`: "AI behavior is simulated for this prototype. All feedback comes from the source guide."
+- Session summary: single column, 680px maximum. Order: score ("4 of 6 correct", tabular numerals) → error-type breakdown (four rows, badge + count) → situation outcome (time lost, smoke level, casualty stability as plain label/value rows, no charts) → weak topics (each a source chip with the section title, listed for wrong or guessed steps) → primary action "Practise again". Situation outcome is shown here only, not during play.
 - Tutor message: plain text, source chips inline, no avatar character.
 - Progress: simple bar or segmented dots with numeric label. No hatched or decorative bars.
 - Dropzone: dashed border on `--surface-muted`, one line of instruction, alternative actions below.
