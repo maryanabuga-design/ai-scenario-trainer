@@ -44,8 +44,9 @@ function isCurrent(href: string, pathname: string) {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
 }
 
-export function BottomNav() {
-  const pathname = usePathname();
+export function BottomNav({ activePath }: { activePath?: string }) {
+  const currentPath = usePathname();
+  const pathname = activePath ?? currentPath;
 
   if (!items.some((item) => isCurrent(item.href, pathname))) return null;
 

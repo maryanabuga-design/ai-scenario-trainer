@@ -13,3 +13,6 @@ One commit per screen group, in this order. Each commit runs `npm run lint`, `np
 9. Onboarding.
 10. Profile.
 11. README and final pass.
+
+## Screen review page
+`/screens` is a development-only page (404 in production, not linked from the navigation) that shows every planned screen at 390 by 844. Screens that are not built are dashed frames. Each screen commit replaces its frame with the real screen using sample data.

@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
-import { AppShell } from "@/components/AppShell/AppShell";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -32,9 +31,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${sourceSerif.variable}`}>
-      <body>
-        <AppShell>{children}</AppShell>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
