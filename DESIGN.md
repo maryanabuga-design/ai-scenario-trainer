@@ -69,8 +69,8 @@ Every component needs: default, hover, focus-visible, active, disabled. Inputs a
 - Explanation field: multi-line text input, 3 rows, label is the step's follow-up question, optional counter in 14 `--text-secondary`. States: default, hover, focus-visible, disabled (locked after submit), error. Error: 1px `--wrong` border, an icon and a text message below (for example "Write one sentence before you submit."). Never colour alone.
 - Status badge: icon + label + colour, used for the error type. Labels in sentence case.
   - Secure: check icon, `--correct` on `--correct-bg`.
-  - Guess: question-mark icon, `--caution` on `--caution-bg`.
-  - Knowledge gap: minus icon, `--caution` on `--caution-bg`.
+  - Guess: question-mark icon, neutral outlined badge: `--text-secondary` on `--surface-muted`, 1px `--border`.
+  - Knowledge gap: minus icon, `--caution` on `--caution-bg` (the only badge that uses amber).
   - Misconception: cross icon, `--wrong` on `--wrong-bg`.
   - Shape: 8px radius, 12 label size, 4px 8px padding. Each type has a one-line description beside it, for example "Wrong answer, high confidence".
 - Source chip: shows "Guide · S2" (document name + section id; the guide has no page numbers). Opens that section in the side panel.
