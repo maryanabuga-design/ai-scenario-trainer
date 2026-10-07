@@ -1,0 +1,387 @@
+{
+  "id": "building-evacuation-001",
+  "title": "Fire alarm in a training centre",
+  "audience": "Trainee: rescuer or junior officer on duty",
+  "context": "Educational, non-combat civil-protection scenario. No weapons, harm or combat content.",
+  "source": "content/sample-evacuation-guide.md",
+  "initialState": {
+    "smokeLevel": 1,
+    "timeLostSeconds": 0,
+    "casualtyStability": 0
+  },
+  "confidenceScale": {
+    "1": "Not very confident",
+    "2": "Somewhat confident",
+    "3": "Very confident"
+  },
+  "errorTypeRule": {
+    "description": "Derived from correctness and confidence. High confidence means level 3.",
+    "wrong_and_high_confidence": "misconception",
+    "wrong_and_not_high_confidence": "knowledge_gap",
+    "correct_and_not_high_confidence": "guess",
+    "correct_and_high_confidence": "secure"
+  },
+  "feedbackStructure": [
+    "verdict",
+    "your_answer_vs_correct",
+    "why",
+    "error_type",
+    "source_link"
+  ],
+  "aiRules": [
+    "Use only the source guide. If it does not cover a question, say so.",
+    "Quote the section id (for example S2) with every explanation.",
+    "After each decision ask the follow-up question and compare the answer with explanationKeyBeats.",
+    "Stay inside the educational, non-combat context."
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "title": "The alarm sounds",
+      "sources": [
+        "S1"
+      ],
+      "narrative": "14:20. The fire alarm sounds in a four-storey training centre. You are the duty officer on the second floor with twelve people. There is a faint smell of smoke from the north stairwell, and everyone looks at you for direction.",
+      "question": "What is your first instruction?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Stay where you are until the alarm is confirmed as real.",
+          "correct": false,
+          "why": "An alarm is treated as real until it is officially confirmed otherwise. Waiting costs time.",
+          "consequence": "Time passes, and the smell of smoke in the corridor gets stronger.",
+          "misconception": "assumes_drill",
+          "effects": {
+            "timeLostSeconds": 60,
+            "smokeLevel": 1
+          }
+        },
+        {
+          "id": "b",
+          "text": "Everyone leaves now by the stairs, taking only what they can carry in a few seconds.",
+          "correct": true,
+          "why": "Treating the alarm as real, using the stairs and not delaying for belongings keeps the group safe.",
+          "consequence": "The group starts moving at once."
+        },
+        {
+          "id": "c",
+          "text": "Take the elevator to get everyone out faster.",
+          "correct": false,
+          "why": "Elevators can stop or fill with smoke during a fire. Stairs are the safe choice.",
+          "consequence": "You have to turn back and lose time.",
+          "misconception": "elevator_use",
+          "effects": {
+            "timeLostSeconds": 45,
+            "smokeLevel": 1
+          }
+        },
+        {
+          "id": "d",
+          "text": "First collect documents and equipment from the offices.",
+          "correct": false,
+          "why": "Collecting belongings delays your exit. Take only what you can carry in seconds.",
+          "consequence": "Several minutes are lost and smoke spreads along the corridor.",
+          "misconception": "delays_exit",
+          "effects": {
+            "timeLostSeconds": 90,
+            "smokeLevel": 1
+          }
+        }
+      ],
+      "followUp": "In one sentence, why is this the right first instruction?",
+      "explanationKeyBeats": [
+        "treat the alarm as real",
+        "stairs, not the elevator",
+        "do not delay for belongings"
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "A hot door",
+      "sources": [
+        "S2"
+      ],
+      "narrative": "The nearest exit is the north stairwell. You touch its door with the back of your hand and it feels hot.",
+      "question": "What do you do?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Wait next to the door for responders.",
+          "correct": false,
+          "why": "Staying near a hot door is dangerous. Use another route.",
+          "consequence": "Heat and smoke build up around the group.",
+          "misconception": "waits_in_danger",
+          "effects": {
+            "timeLostSeconds": 60,
+            "smokeLevel": 1
+          }
+        },
+        {
+          "id": "b",
+          "text": "Open it slowly to see what is behind it.",
+          "correct": false,
+          "why": "A hot door suggests fire or heat behind it. Opening it can let fire and smoke in.",
+          "consequence": "Smoke pours into the corridor and you shut the door again.",
+          "misconception": "opens_hot_door",
+          "effects": {
+            "timeLostSeconds": 30,
+            "smokeLevel": 1
+          }
+        },
+        {
+          "id": "c",
+          "text": "Keep it closed and lead the group to the south stairwell.",
+          "correct": true,
+          "why": "A hot door means you should not open it. Another route keeps the group away from the fire.",
+          "consequence": "You turn the group towards the south stairwell."
+        },
+        {
+          "id": "d",
+          "text": "Open it fully to let the smoke out.",
+          "correct": false,
+          "why": "Opening the door lets in air that feeds the fire and releases smoke into your route.",
+          "consequence": "The corridor fills with smoke.",
+          "misconception": "ventilates_fire",
+          "effects": {
+            "timeLostSeconds": 30,
+            "smokeLevel": 2
+          }
+        }
+      ],
+      "followUp": "What told you not to open that door?",
+      "explanationKeyBeats": [
+        "hot door suggests fire behind it",
+        "use another route"
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "Smoke in the corridor",
+      "sources": [
+        "S2",
+        "S3"
+      ],
+      "narrative": "The corridor to the south stairwell has a thin layer of smoke along the ceiling. The group is nervous.",
+      "question": "How do you move the group?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Move low, cover nose and mouth, keep a hand on the wall and close doors behind you.",
+          "correct": true,
+          "why": "Staying low keeps you in cleaner air, the wall keeps your direction and closed doors slow the spread of smoke.",
+          "consequence": "The group moves steadily towards the south stairwell."
+        },
+        {
+          "id": "b",
+          "text": "Run upright to get there before the smoke thickens.",
+          "correct": false,
+          "why": "Smoke and hot gases rise, so upright movement exposes you to the worst air.",
+          "consequence": "People start coughing and the group slows down.",
+          "misconception": "stays_upright",
+          "effects": {
+            "timeLostSeconds": 30,
+            "smokeLevel": 1
+          }
+        },
+        {
+          "id": "c",
+          "text": "Go back and shelter in an office with the door open.",
+          "correct": false,
+          "why": "Sheltering with an open door lets smoke in, and it moves you away from the exit.",
+          "consequence": "Smoke follows you into the office.",
+          "misconception": "shelters_instead_of_exit",
+          "effects": {
+            "timeLostSeconds": 60,
+            "smokeLevel": 1
+          }
+        },
+        {
+          "id": "d",
+          "text": "Break a window to clear the smoke.",
+          "correct": false,
+          "why": "Extra air can make a fire grow, and it will not clear your route.",
+          "consequence": "The smoke gets worse.",
+          "misconception": "breaks_window",
+          "effects": {
+            "smokeLevel": 2
+          }
+        }
+      ],
+      "followUp": "Why does staying low help?",
+      "explanationKeyBeats": [
+        "smoke and hot gases rise",
+        "cleaner air near the floor"
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "A colleague is hurt",
+      "sources": [
+        "S6",
+        "S7"
+      ],
+      "narrative": "At the south landing a colleague sits against the wall, conscious and talking. A deep cut on the forearm is bleeding heavily, and there is also a small burn on the hand. The landing is clear of smoke.",
+      "question": "What do you do first?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cool the burn under running water.",
+          "correct": false,
+          "why": "Severe bleeding is life-threatening and comes first. The burn can wait.",
+          "consequence": "The bleeding continues and the colleague grows pale.",
+          "misconception": "wrong_priority",
+          "effects": {
+            "casualtyStability": -1
+          }
+        },
+        {
+          "id": "b",
+          "text": "Lift the cloth every minute to check whether the bleeding has stopped.",
+          "correct": false,
+          "why": "Lifting the cloth releases pressure and restarts bleeding. Keep pressing and add layers if it soaks through.",
+          "consequence": "The wound starts bleeding again.",
+          "misconception": "releases_pressure",
+          "effects": {
+            "casualtyStability": -1
+          }
+        },
+        {
+          "id": "c",
+          "text": "Tell the colleague to wait while you take the rest of the group down.",
+          "correct": false,
+          "why": "Leaving a bleeding person alone lets the bleeding continue. Control it and arrange help.",
+          "consequence": "The colleague is left alone and loses more blood.",
+          "misconception": "abandons_casualty",
+          "effects": {
+            "casualtyStability": -1
+          }
+        },
+        {
+          "id": "d",
+          "text": "Press firmly on the wound with a clean cloth and keep the pressure on.",
+          "correct": true,
+          "why": "Firm direct pressure is the first step to control severe bleeding.",
+          "consequence": "The bleeding slows and the colleague stays stable."
+        }
+      ],
+      "followUp": "Why do you treat the bleeding before the burn?",
+      "explanationKeyBeats": [
+        "severe bleeding is life-threatening",
+        "direct pressure"
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "Calling for help",
+      "sources": [
+        "S5"
+      ],
+      "narrative": "You are holding pressure on the wound. Three people from the group stand nearby, and nobody has called for help yet.",
+      "question": "How do you get help on the way?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Say loudly: \"Someone call 112.\"",
+          "correct": false,
+          "why": "A general request leads people to assume someone else has called. Assign one person.",
+          "consequence": "Everyone waits, and no call is made for another minute.",
+          "misconception": "diffuse_responsibility",
+          "effects": {
+            "timeLostSeconds": 60
+          }
+        },
+        {
+          "id": "b",
+          "text": "Point at one person: \"You, call 112, report one casualty with severe bleeding and our location, then tell me what they said.\"",
+          "correct": true,
+          "why": "A named person with clear details and a report-back makes sure the call happens.",
+          "consequence": "The call is made and responders are on their way."
+        },
+        {
+          "id": "c",
+          "text": "Release the pressure and call yourself.",
+          "correct": false,
+          "why": "Do not stop pressure on a severe bleed. Delegate the call.",
+          "consequence": "The wound bleeds again while you dial.",
+          "misconception": "stops_treatment_to_call",
+          "effects": {
+            "casualtyStability": -1
+          }
+        },
+        {
+          "id": "d",
+          "text": "Wait until you reach the assembly point, then call.",
+          "correct": false,
+          "why": "Waiting delays help for a casualty with severe bleeding.",
+          "consequence": "Help arrives later than it should.",
+          "misconception": "delays_call",
+          "effects": {
+            "timeLostSeconds": 120
+          }
+        }
+      ],
+      "followUp": "Why do you name one specific person?",
+      "explanationKeyBeats": [
+        "avoid assuming someone else called",
+        "clear details: location, injury"
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "Assembly point",
+      "sources": [
+        "S4",
+        "S10"
+      ],
+      "narrative": "You and your colleague, with pressure still applied, reach the assembly point. The headcount shows that one person from your group is missing. Paramedics arrive.",
+      "question": "What do you do?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Go back inside to look for the missing person.",
+          "correct": false,
+          "why": "Do not re-enter the building. Give the information to responders.",
+          "consequence": "You are stopped at the entrance and valuable time is lost.",
+          "misconception": "re_enters_building",
+          "effects": {
+            "timeLostSeconds": 60
+          }
+        },
+        {
+          "id": "b",
+          "text": "Wait quietly until someone asks you.",
+          "correct": false,
+          "why": "Responders need the missing person's details and the casualty handover immediately.",
+          "consequence": "Responders start without key information.",
+          "misconception": "waits_to_be_asked",
+          "effects": {
+            "timeLostSeconds": 60
+          }
+        },
+        {
+          "id": "c",
+          "text": "Tell responders the missing person's name and last known location, then hand over the casualty: what happened, what you did and when.",
+          "correct": true,
+          "why": "Clear information to responders is the fastest way to help the missing person and the casualty.",
+          "consequence": "Responders send a team to the last known location and take over care."
+        },
+        {
+          "id": "d",
+          "text": "Send a colleague back inside to search quickly.",
+          "correct": false,
+          "why": "Sending someone back in puts another person at risk. Leave the search to responders.",
+          "consequence": "Responders have to deal with a second person in danger.",
+          "misconception": "sends_others_in",
+          "effects": {
+            "timeLostSeconds": 60
+          }
+        }
+      ],
+      "followUp": "What information do responders need from you first?",
+      "explanationKeyBeats": [
+        "name and last known location",
+        "what happened, what you did, when"
+      ]
+    }
+  ]
+}
