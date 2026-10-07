@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 import { AppShell } from "@/components/AppShell/AppShell";
@@ -17,6 +17,12 @@ export const metadata: Metadata = {
   title: "AI Scenario Trainer",
   description:
     "Practise decisions in a scenario built from a study guide, then review your errors with links to the source.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

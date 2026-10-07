@@ -52,11 +52,11 @@
   --radius-control: 8px;
   --radius-card: 12px;
 
-  --container-reading: 680px;
+  --container-app: 430px;
 }
 
 body {
-  background: var(--bg);
+  background: var(--surface-muted);
   color: var(--text);
   font-family: var(--font-sans);
   font-size: 16px;
@@ -77,4 +77,19 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+dialog[data-sheet] {
+  animation: sheet-in 200ms ease-out;
+  box-shadow: 0 -4px 16px color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+dialog[data-sheet]::backdrop {
+  background: color-mix(in srgb, var(--text) 40%, transparent);
 }

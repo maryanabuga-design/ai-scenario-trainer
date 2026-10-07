@@ -8,27 +8,26 @@ const items = [
   { href: "/practice", label: "Practice" },
 ];
 
-export function SideNav() {
+export function BottomNav() {
   const pathname = usePathname();
+
+  if (pathname.startsWith("/practice")) return null;
 
   return (
     <nav
       aria-label="Main"
-      className="flex flex-col gap-2 border-b border-border bg-surface px-4 py-3 md:w-56 md:shrink-0 md:gap-8 md:border-r md:border-b-0 md:px-4 md:py-8"
+      className="sticky bottom-0 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)]"
     >
-      <p className="font-serif text-lg">Scenario trainer</p>
-      <ul className="flex gap-2 md:flex-col">
+      <ul className="flex">
         {items.map((item) => {
           const current = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
           return (
-            <li key={item.href}>
+            <li key={item.href} className="flex-1">
               <Link
                 href={item.href}
                 aria-current={current ? "page" : undefined}
-                className={`flex min-h-11 items-center rounded-control px-3 text-base transition-colors ${
-                  current
-                    ? "bg-surface-muted font-medium text-accent"
-                    : "text-text-secondary hover:bg-surface-muted hover:text-text"
+                className={`flex min-h-14 items-center justify-center text-base ${
+                  current ? "font-medium text-accent" : "text-text-secondary"
                 }`}
               >
                 {item.label}

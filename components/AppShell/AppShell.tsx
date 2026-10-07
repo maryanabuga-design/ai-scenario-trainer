@@ -1,17 +1,16 @@
 import type { ReactNode } from "react";
+import { BottomNav } from "@/components/BottomNav/BottomNav";
 import { Footer } from "@/components/Footer/Footer";
-import { SideNav } from "@/components/SideNav/SideNav";
+import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col md:flex-row">
-      <SideNav />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <main className="flex-1 px-4 py-8 md:px-8 md:py-12">
-          <div className="mx-auto w-full max-w-reading">{children}</div>
-        </main>
+    <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col border-x border-border bg-bg pt-[env(safe-area-inset-top)]">
+      <SourceSheetProvider>
+        <main className="flex-1 px-4 pt-6">{children}</main>
         <Footer />
-      </div>
+        <BottomNav />
+      </SourceSheetProvider>
     </div>
   );
 }
