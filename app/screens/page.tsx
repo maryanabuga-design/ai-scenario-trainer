@@ -12,7 +12,7 @@ import { PhoneFrame } from "@/components/PhoneFrame/PhoneFrame";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { Tag } from "@/components/Tag/Tag";
 import { loadGuide } from "@/lib/guide";
-import { DecisionSample, SetupSample } from "./samples";
+import { AskSample, DecisionSample, FeedbackSample, SetupSample } from "./samples";
 
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -30,7 +30,9 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
 function Screen({ nav, children }: { nav?: string; children: ReactNode }) {
   return (
     <ActionBarProvider>
-      <div data-frame-scroll className="min-h-0 flex-1 overflow-y-auto px-4 pt-6 pb-6">{children}</div>
+      <div data-frame-scroll className="min-h-0 flex-1 overflow-y-auto px-4 pt-6 pb-6">
+        {children}
+      </div>
       <div className="bg-bg">
         <ActionBarSlot />
         {nav && <BottomNav activePath={nav} />}
@@ -142,10 +144,18 @@ export default function Screens() {
               <DecisionSample start="complete" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Feedback" plannedStep={5} />
+          <PhoneFrame label="Feedback">
+            <Screen>
+              <FeedbackSample />
+            </Screen>
+          </PhoneFrame>
         </Group>
         <Group title="Feedback and results">
-          <PhoneFrame label="Ask about this step" plannedStep={5} />
+          <PhoneFrame label="Ask about this step">
+            <Screen>
+              <AskSample />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Results: summary" plannedStep={6} />
           <PhoneFrame label="Results: error analysis" plannedStep={6} />
           <PhoneFrame label="Repeat weak topics" plannedStep={6} />

@@ -5,6 +5,8 @@ import { useState } from "react";
 import { ButtonLink } from "@/components/Button/Button";
 import { DecisionStep, emptyDraft } from "@/components/DecisionStep/DecisionStep";
 import type { Draft } from "@/components/DecisionStep/DecisionStep";
+import { FeedbackView } from "@/components/FeedbackView/FeedbackView";
+import { simulatedFeedback } from "@/lib/feedback";
 import { getStep } from "@/lib/scenario";
 import type { Session } from "@/lib/session";
 import { saveSession, useSession } from "@/lib/session";
@@ -21,31 +23,20 @@ function NoSession() {
   );
 }
 
-function ActiveStep({ session }: { session: Session }) {
-  const router = useRouter();
+function Decide({ session }: { session: Session }) {
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const step = getStep(session.stepIds[session.index]);
 
   function submit() {
     if (!draft.optionId || !draft.confidence) return;
-    const answers = [
-      ...session.answers,
-      {
-        stepId: step.id,
-        optionId: draft.optionId,
-        confidence: draft.confidence,
-        explanation: draft.explanation.trim(),
-      },
-    ];
-    const last = session.index === session.stepIds.length - 1;
-    saveSession({
-      ...session,
-      answers,
-      index: last ? session.index : session.index + 1,
-      finished: last,
-    });
+    const answer = {
+      stepId: step.id,
+      optionId: draft.optionId,
+      confidence: draft.confidence,
+      explanation: draft.explanation.trim(),
+    };
+    saveSession({ ...session, answers: [...session.answers, answer], phase: "feedback" });
     window.scrollTo(0, 0);
-    if (last) router.push("/session/results");
   }
 
   return (
@@ -60,10 +51,41 @@ function ActiveStep({ session }: { session: Session }) {
   );
 }
 
+function Review({ session }: { session: Session }) {
+  const router = useRouter();
+  const step = getStep(session.stepIds[session.index]);
+  const answer = session.answers.find((candidate) => candidate.stepId === step.id);
+  if (!answer) return <NoSession />;
+
+  const last = session.index === session.stepIds.length - 1;
+
+  function next() {
+    if (last) {
+      saveSession({ ...session, finished: true });
+      router.push("/session/results");
+    } else {
+      saveSession({ ...session, index: session.index + 1, phase: "decide" });
+      window.scrollTo(0, 0);
+    }
+  }
+
+  return (
+    <FeedbackView
+      feedback={simulatedFeedback.evaluate(step, answer)}
+      explanation={answer.explanation}
+      index={session.index}
+      total={session.stepIds.length}
+      nextLabel={last ? "See results" : "Next step"}
+      onNext={next}
+    />
+  );
+}
+
 export default function SessionPage() {
   const session = useSession();
 
   if (session === "loading") return null;
   if (!session || session.finished) return <NoSession />;
-  return <ActiveStep key={session.index} session={session} />;
+  if (session.phase === "feedback") return <Review session={session} />;
+  return <Decide key={session.index} session={session} />;
 }

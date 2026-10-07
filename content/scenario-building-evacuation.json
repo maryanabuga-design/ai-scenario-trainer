@@ -211,7 +211,13 @@
       "explanationKeyBeats": [
         "smoke and hot gases rise",
         "cleaner air near the floor"
-      ]
+      ],
+      "suggestedQuestion": {
+        "question": "Which type of cloth filters smoke best?",
+        "closestSources": [
+          "S3"
+        ]
+      }
     },
     {
       "id": "s4",
