@@ -5,14 +5,14 @@ type Variant = "primary" | "secondary" | "text";
 
 const variants: Record<Variant, string> = {
   primary:
-    "min-h-12 w-full bg-primary px-6 font-medium text-primary-text hover:opacity-90 active:opacity-80 disabled:bg-surface-muted disabled:text-text-secondary disabled:opacity-100",
+    "min-h-12 w-full bg-primary px-6 font-medium text-primary-text hover:opacity-90 active:opacity-80",
   secondary:
-    "min-h-11 border border-text bg-surface px-5 font-medium text-text hover:bg-surface-muted active:bg-border disabled:border-border disabled:text-text-secondary",
-  text: "min-h-11 px-3 text-text hover:underline active:opacity-70 disabled:text-text-secondary disabled:no-underline",
+    "min-h-11 border border-text bg-surface px-5 font-medium text-text hover:bg-surface-muted active:bg-border",
+  text: "min-h-11 px-3 text-text underline decoration-1 underline-offset-4 hover:decoration-2 active:opacity-70",
 };
 
 function classes(variant: Variant) {
-  return `inline-flex items-center justify-center rounded-full text-base disabled:cursor-not-allowed ${variants[variant]}`;
+  return `inline-flex items-center justify-center rounded-full text-base disabled:cursor-not-allowed disabled:border-transparent disabled:bg-surface-muted disabled:text-text-secondary disabled:opacity-100 ${variants[variant]}`;
 }
 
 export function Button({

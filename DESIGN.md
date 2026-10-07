@@ -99,7 +99,8 @@ From `docs/mvp-matrix-and-ia.md`.
 
 ## Components and states
 Every component needs: default, hover, focus-visible, active, disabled. Inputs also need error.
-- Button: primary (black pill, white text), secondary (white pill, 1px `--text` border), text (no fill, `--text`, underline on hover). Minimum height 48px for primary, 44px for the others.
+- Button: primary (black pill, white text), secondary (white pill, 1px `--text` border), text (no fill, `--text`, always underlined with a 4px offset so it reads as an action; the underline thickens on hover). Minimum height 48px for primary, 44px for the others.
+  - Disabled (all variants): a filled light-grey pill, `--text-secondary` on `--surface-muted`, no border, `cursor: not-allowed`. Text buttons have no disabled state; hide them instead.
 - Card: white, 24px radius, 16 or 24px padding, no border on the page background.
 - Tag: small uppercase label, 12, letter-spacing 0.04em, medium weight, `--text` on a `--tag-*` pastel, pill shape, 4px 10px padding. For categories such as "SCENARIO", "MATERIAL", "SHORT", "S2". Never for status.
 - Option (answer choice): white, 16px radius, 1px `--border`, a radio circle on the right. Selected: 2px `--primary` border and a filled black radio. Locked after submit: unselected options fade to `--text-secondary`. Correct and wrong: status badge with icon and label, plus the matching status border. Never colour alone.
