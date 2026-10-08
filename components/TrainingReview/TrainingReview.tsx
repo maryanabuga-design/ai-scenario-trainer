@@ -1,0 +1,161 @@
+"use client";
+
+import { useId, useState } from "react";
+import type { ReactNode } from "react";
+import { ActionBar } from "@/components/ActionBar/ActionBar";
+import { Button, ButtonLink } from "@/components/Button/Button";
+import { Card } from "@/components/Card/Card";
+import { SourceChip } from "@/components/SourceChip/SourceChip";
+import { Tag } from "@/components/Tag/Tag";
+import type { Material } from "@/lib/materials";
+import { questionsFor } from "@/lib/quiz";
+import type { Question } from "@/lib/quiz";
+import { getStep, sessionLengths } from "@/lib/scenario";
+import type { Training } from "@/lib/training";
+
+const typeLabels: Record<Question["type"], string> = {
+  single: "Single choice",
+  multiple: "Multiple choice",
+  ordering: "Ordering",
+  text: "Short text",
+  truefalse: "True or false",
+};
+
+function Expandable({
+  title,
+  showLabel,
+  hideLabel,
+  children,
+  defaultOpen = false,
+}: {
+  title: ReactNode;
+  showLabel: string;
+  hideLabel: string;
+  children: ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  const id = useId();
+  return (
+    <Card className="flex flex-col gap-3">
+      {title}
+      <div>
+        <Button
+          variant="text"
+          aria-expanded={open}
+          aria-controls={id}
+          onClick={() => setOpen(!open)}
+        >
+          {open ? hideLabel : showLabel}
+        </Button>
+      </div>
+      <div id={id} hidden={!open}>
+        {children}
+      </div>
+    </Card>
+  );
+}
+
+/** Review training: every situation and question with its sources, before starting. */
+export function TrainingReview({
+  material,
+  training,
+  onStart,
+  expanded = false,
+}: {
+  material: Material;
+  training: Training;
+  onStart: () => void;
+  /** Only for the screen review page: show both lists open. */
+  expanded?: boolean;
+}) {
+  const steps = sessionLengths.full.stepIds.map(getStep);
+  const questions = questionsFor(training.sections);
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-1">
+        <h1 className="font-serif text-2xl">Your training is ready</h1>
+        <p className="break-words text-text-secondary">{material.name}</p>
+      </div>
+
+      {training.scenario && (
+        <Expandable
+          defaultOpen={expanded}
+          showLabel="Show all decisions"
+          hideLabel="Hide decisions"
+          title={
+            <div className="flex flex-col items-start gap-2">
+              <Tag tone="yellow">Scenario</Tag>
+              <h2 className="text-lg font-medium">
+                Scenario: <span className="tabular-nums">{steps.length}</span> decisions
+              </h2>
+              <p className="text-sm text-text-secondary">
+                Also as a short session of {sessionLengths.short.stepIds.length} or an extended one
+                of {sessionLengths.extended.stepIds.length}.
+              </p>
+            </div>
+          }
+        >
+          <ol className="flex flex-col divide-y divide-border">
+            {steps.map((step, index) => (
+              <li key={step.id} className="flex flex-col gap-2 py-3">
+                <p className="font-serif">
+                  <span className="text-text-secondary tabular-nums">{index + 1}. </span>
+                  {step.title}
+                </p>
+                <p className="text-sm text-text-secondary">{step.question}</p>
+                <div className="flex flex-wrap gap-2">
+                  {step.sources.map((sectionId) => (
+                    <SourceChip key={sectionId} sectionId={sectionId} />
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </Expandable>
+      )}
+
+      {training.quiz && (
+        <Expandable
+          defaultOpen={expanded}
+          showLabel="Show all questions"
+          hideLabel="Hide questions"
+          title={
+            <div className="flex flex-col items-start gap-2">
+              <Tag tone="blue">Quiz</Tag>
+              <h2 className="text-lg font-medium">
+                Quiz: <span className="tabular-nums">{questions.length}</span>{" "}
+                {questions.length === 1 ? "question" : "questions"}
+              </h2>
+              <p className="text-sm text-text-secondary">
+                From {training.sections.join(", ")}. You choose how many to answer in setup.
+              </p>
+            </div>
+          }
+        >
+          <ol className="flex flex-col divide-y divide-border">
+            {questions.map((question, index) => (
+              <li key={question.id} className="flex flex-col gap-2 py-3">
+                <span className="text-xs text-text-secondary uppercase tracking-[0.04em]">
+                  {index + 1}. {typeLabels[question.type]}
+                </span>
+                <p>{question.question}</p>
+                <div>
+                  <SourceChip sectionId={question.section} />
+                </div>
+              </li>
+            ))}
+          </ol>
+        </Expandable>
+      )}
+
+      <ActionBar>
+        <Button onClick={onStart}>Start training</Button>
+        <ButtonLink href={`/materials/${material.id}`} variant="secondary">
+          Back to material
+        </ButtonLink>
+      </ActionBar>
+    </div>
+  );
+}

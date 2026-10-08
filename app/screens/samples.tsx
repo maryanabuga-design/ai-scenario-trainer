@@ -7,6 +7,12 @@ import { AskAiProvider } from "@/components/AskAi/AskAi";
 import type { ChatMessage } from "@/components/AskAi/AskAi";
 import { FeedbackView } from "@/components/FeedbackView/FeedbackView";
 import { HomeView } from "@/components/HomeView/HomeView";
+import { initialChoice, TrainingCreate } from "@/components/TrainingCreate/TrainingCreate";
+import {
+  generationSteps,
+  TrainingGenerating,
+} from "@/components/TrainingGenerating/TrainingGenerating";
+import { TrainingReview } from "@/components/TrainingReview/TrainingReview";
 import { QuizFeedback } from "@/components/QuizFeedback/QuizFeedback";
 import { emptyQuizDraft, QuizQuestion } from "@/components/QuizQuestion/QuizQuestion";
 import type { QuizDraft } from "@/components/QuizQuestion/QuizQuestion";
@@ -383,6 +389,53 @@ export function QuizResultsSample() {
       results={{ kind: "quiz", mode: "quiz" }}
       items={items}
       onRepeat={() => undefined}
+    />
+  );
+}
+
+const guideMaterial = sampleMaterials[0];
+const quickCard = {
+  ...materialFromSample(sampleFiles[1], new Date("2026-10-08")),
+  id: "sample-quick-card",
+};
+
+export function CreateTrainingSample({ short = false }: { short?: boolean }) {
+  const material = short ? quickCard : guideMaterial;
+  const [choice, setChoice] = useState(initialChoice(material));
+  return (
+    <TrainingCreate
+      material={material}
+      choice={choice}
+      onChange={setChoice}
+      onGenerate={() => undefined}
+    />
+  );
+}
+
+export function GeneratingSample() {
+  return (
+    <TrainingGenerating
+      steps={generationSteps(true)}
+      active={2}
+      percent={60}
+      onCancel={() => undefined}
+    />
+  );
+}
+
+export function ReviewSample() {
+  return (
+    <TrainingReview
+      material={guideMaterial}
+      training={{
+        materialId: guideMaterial.id,
+        scenario: true,
+        quiz: true,
+        sections: ["S1", "S2", "S3"],
+        createdAt: 0,
+      }}
+      onStart={() => undefined}
+      expanded
     />
   );
 }

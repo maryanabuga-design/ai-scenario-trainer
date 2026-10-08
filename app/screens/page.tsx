@@ -19,7 +19,10 @@ import {
   ChatFeedbackSample,
   DecisionSample,
   FeedbackSample,
+  CreateTrainingSample,
+  GeneratingSample,
   HomeSample,
+  ReviewSample,
   QuizFeedbackSample,
   QuizResultsSample,
   QuizSample,
@@ -145,6 +148,28 @@ export default function Screens() {
           <PhoneFrame label="Upload: failed">
             <Screen nav="/materials">
               <UploadSample state="failed" />
+            </Screen>
+          </PhoneFrame>
+        </Group>
+        <Group title="Create training">
+          <PhoneFrame label="Create training">
+            <Screen>
+              <CreateTrainingSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Create training: too short">
+            <Screen>
+              <CreateTrainingSample short />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Generating">
+            <Screen>
+              <GeneratingSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Review training">
+            <Screen>
+              <ReviewSample />
             </Screen>
           </PhoneFrame>
         </Group>

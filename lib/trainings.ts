@@ -1,5 +1,5 @@
 import { createStore } from "@/lib/store";
-import type { Training, Trainings } from "@/lib/training";
+import type { Training, TrainingChoice, Trainings } from "@/lib/training";
 import { withTraining } from "@/lib/training";
 
 /** Created trainings per material, and the one Session setup should use. Kept in this browser. */
@@ -20,4 +20,19 @@ export function startTraining(materialId: string) {
 export function clearTrainings() {
   trainingsStore.write(null);
   activeStore.write(null);
+}
+
+/** The choice made on Create training, waiting for the simulated generation to finish. */
+const pendingStore = createStore<TrainingChoice & { materialId: string }>(
+  "ast.pending-training.v1",
+);
+
+export const usePendingTraining = pendingStore.useValue;
+
+export function setPendingTraining(materialId: string, choice: TrainingChoice) {
+  pendingStore.write({ materialId, ...choice });
+}
+
+export function clearPendingTraining() {
+  pendingStore.write(null);
 }

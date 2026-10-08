@@ -17,3 +17,10 @@ export function updateUpload(id: string, patch: Partial<Material>) {
     ),
   );
 }
+
+/** A sample material or an upload by id. "loading" until the browser has been read. */
+export function useMaterial(id: string, samples: Material[]): Material | null | "loading" {
+  const uploads = useUploads();
+  if (uploads === "loading") return "loading";
+  return [...(uploads ?? []), ...samples].find((material) => material.id === id) ?? null;
+}
