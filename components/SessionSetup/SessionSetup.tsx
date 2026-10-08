@@ -5,6 +5,7 @@ import { BackLink } from "@/components/BackLink/BackLink";
 import { Button } from "@/components/Button/Button";
 import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
 import { PillGroup } from "@/components/PillGroup/PillGroup";
+import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { Stepper } from "@/components/Stepper/Stepper";
 import { Tag } from "@/components/Tag/Tag";
@@ -88,7 +89,7 @@ export function SessionSetup({
         <p className="text-text-secondary">{scenario.title}</p>
       </div>
 
-      <PillGroup
+      <SegmentedControl
         name="mode"
         legend="What do you want to do?"
         options={[
