@@ -11,7 +11,7 @@ import {
   replyToChip,
   suggestedChips,
 } from "@/lib/chat";
-import type { ChatPhase, ChatReply } from "@/lib/chat";
+import type { ChatChip, ChatPhase, ChatReply } from "@/lib/chat";
 import type { Step } from "@/lib/scenario";
 
 export type ChatMessage =
@@ -70,6 +70,32 @@ function Typing() {
         />
       ))}
     </div>
+  );
+}
+
+/** A suggested question. Wrapped in full in the empty chat, on one line in the scrolling row. */
+function ChipButton({
+  chip,
+  disabled,
+  onAsk,
+  wrap = false,
+}: {
+  chip: ChatChip;
+  disabled: boolean;
+  onAsk: (question: { text: string; chipId?: string }) => void;
+  wrap?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={() => onAsk({ text: chip.question, chipId: chip.id })}
+      className={`min-h-11 rounded-full border border-border bg-surface px-4 py-2 text-left text-sm text-text hover:bg-surface-muted disabled:cursor-not-allowed disabled:text-text-secondary ${
+        wrap ? "max-w-full" : "shrink-0 whitespace-nowrap"
+      }`}
+    >
+      {chip.question}
+    </button>
   );
 }
 
@@ -135,11 +161,19 @@ function ChatPanel({
         className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 py-4"
       >
         {messages.length === 0 && (
-          <p className="text-sm text-text-secondary">
-            {chat.phase === "decide"
-              ? "Ask about the situation or the guide. Until you check your answer, I explain the material but do not say which action is right."
-              : "Ask about this step, including why the other actions are worse."}
-          </p>
+          <div className="flex flex-col gap-3">
+            <p className="text-sm text-text-secondary">
+              {chat.phase === "decide"
+                ? "Ask about the situation or the guide. Until you check your answer, I explain the material but do not say which action is right."
+                : "Ask about this step, including why the other actions are worse."}
+            </p>
+            <p className="text-sm font-medium">Suggested questions</p>
+            <div className="flex flex-col items-start gap-2">
+              {chips.map((chip) => (
+                <ChipButton key={chip.id} chip={chip} disabled={typing} onAsk={onAsk} wrap />
+              ))}
+            </div>
+          </div>
         )}
         {messages.map((message, index) =>
           message.role === "trainee" ? (
@@ -160,18 +194,14 @@ function ChatPanel({
       </div>
 
       <div className="flex flex-col gap-3 border-t border-border px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
-        {chips.length > 0 && (
-          <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+        {messages.length > 0 && chips.length > 0 && (
+          <div
+            role="group"
+            aria-label="More suggested questions"
+            className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1"
+          >
             {chips.map((chip) => (
-              <button
-                key={chip.id}
-                type="button"
-                disabled={typing}
-                onClick={() => onAsk({ text: chip.question, chipId: chip.id })}
-                className="min-h-11 shrink-0 rounded-full border border-border bg-surface px-4 py-2 text-sm whitespace-nowrap text-text hover:bg-surface-muted disabled:cursor-not-allowed disabled:text-text-secondary"
-              >
-                {chip.question}
-              </button>
+              <ChipButton key={chip.id} chip={chip} disabled={typing} onAsk={onAsk} />
             ))}
           </div>
         )}
