@@ -2,7 +2,8 @@ import sampleFileData from "@/content/sample-files.json";
 import type { Material } from "@/lib/materials";
 import { materialFromUpload, simulateUpload } from "@/lib/materials";
 import { questionsFor } from "@/lib/quiz";
-import { getStep, sessionLengths } from "@/lib/scenario";
+import { defaultStory, getScenario } from "@/lib/scenario";
+import type { ScenarioDef } from "@/lib/scenario";
 
 export type SampleFile = {
   id: string;
@@ -10,29 +11,38 @@ export type SampleFile = {
   size: number;
   summary: string;
   sectionIds?: string[];
+  scenarioId?: string;
 };
 
 export const sampleFiles = sampleFileData as SampleFile[];
 
-/** The guide sections the prepared scenario's full story relies on. */
-export const scenarioSections = [
-  ...new Set(sessionLengths.full.stepIds.flatMap((stepId) => getStep(stepId).sources)),
-].sort((a, b) => Number(a.slice(1)) - Number(b.slice(1)));
+/** The guide sections a scenario's default story relies on, in guide order. */
+export function scenarioSections(def: ScenarioDef): string[] {
+  const sources = defaultStory(def).flatMap((step) => step.sources);
+  return [...new Set(sources)].sort(
+    (a, b) => a[0].localeCompare(b[0]) || Number(a.slice(1)) - Number(b.slice(1)),
+  );
+}
 
 export type TrainingPlan = {
   /** Guide sections found in the material, in guide order. */
   sections: string[];
   /** A scenario needs every section its story relies on; shorter material gets a quiz only. */
   canScenario: boolean;
+  scenarioId: string;
   scenarioDecisions: number;
 };
 
-export function planTraining(material: Pick<Material, "sectionIds">): TrainingPlan {
+export function planTraining(material: Pick<Material, "sectionIds" | "scenarioId">): TrainingPlan {
   const sections = material.sectionIds ?? [];
+  const def = getScenario(material.scenarioId);
   return {
     sections,
-    canScenario: scenarioSections.every((section) => sections.includes(section)),
-    scenarioDecisions: sessionLengths.full.stepIds.length,
+    canScenario:
+      material.scenarioId !== undefined &&
+      scenarioSections(def).every((section) => sections.includes(section)),
+    scenarioId: def.id,
+    scenarioDecisions: defaultStory(def).length,
   };
 }
 
@@ -87,5 +97,7 @@ export function withTraining(trainings: Trainings | null, training: Training): T
 export function materialFromSample(sample: SampleFile, now: Date): Material {
   const file = { name: sample.name, size: sample.size };
   const material = materialFromUpload(file, simulateUpload(file), now);
-  return material.status === "ready" ? { ...material, sectionIds: sample.sectionIds } : material;
+  return material.status === "ready"
+    ? { ...material, sectionIds: sample.sectionIds, scenarioId: sample.scenarioId }
+    : material;
 }

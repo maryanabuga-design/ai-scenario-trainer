@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { matchExplanation } from "@/lib/explanation-match";
-import { getStep, scenario } from "@/lib/scenario";
+import { getStep, scenarios } from "@/lib/scenario";
+
+const allSteps = scenarios.flatMap((def) => def.steps);
 
 describe("explanation match", () => {
   it("covers every key point with a full answer", () => {
@@ -39,6 +41,14 @@ describe("explanation match", () => {
     ).toBe(true);
   });
 
+  it("uses the flood scenario's explanation keywords", () => {
+    const match = matchExplanation(
+      getStep("flood-s2"),
+      "You cannot tell how deep it is, so the longer dry path is safer.",
+    );
+    expect(match.percent).toBe(100);
+  });
+
   it("gives 0% for gibberish", () => {
     const match = matchExplanation(getStep("s6"), "asdf qwer zxcv");
     expect(match.percent).toBe(0);
@@ -51,14 +61,14 @@ describe("explanation match", () => {
   });
 
   it("has keywords for every key point of every step", () => {
-    scenario.steps.forEach((step) => {
+    allSteps.forEach((step) => {
       expect(step.keyBeatKeywords).toHaveLength(step.explanationKeyBeats.length);
       step.keyBeatKeywords.forEach((keywords) => expect(keywords.length).toBeGreaterThan(0));
     });
   });
 
   it("every key point can be covered by its own wording", () => {
-    scenario.steps.forEach((step) => {
+    allSteps.forEach((step) => {
       step.explanationKeyBeats.forEach((beat, index) => {
         expect(matchExplanation(step, beat).beats[index].covered, `${step.id}: ${beat}`).toBe(true);
       });

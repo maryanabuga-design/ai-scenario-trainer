@@ -17,6 +17,8 @@ export type Material = {
   sectionsFrom?: "guide";
   /** Guide sections this material contains. Only these materials can become training. */
   sectionIds?: string[];
+  /** The prepared scenario that belongs to this material's guide. */
+  scenarioId?: string;
   sections?: MaterialSection[];
   progress?: number;
   reason?: string;

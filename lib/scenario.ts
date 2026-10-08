@@ -1,12 +1,10 @@
 import scenarioData from "@/content/scenario-building-evacuation.json";
+import floodData from "@/content/scenario-flood-preparedness.json";
 
 export type Confidence = 1 | 2 | 3;
 
-export type Effects = {
-  timeLostSeconds?: number;
-  smokeLevel?: number;
-  casualtyStability?: number;
-};
+/** Changes to the situation, for example timeLostSeconds, smokeLevel, waterLevel. */
+export type Effects = Record<string, number>;
 
 export type Option = {
   id: string;
@@ -54,14 +52,15 @@ export type Scenario = {
   id: string;
   title: string;
   audience: string;
-  initialState: Required<Effects>;
+  initialState: Effects;
   confidenceScale: Record<`${Confidence}`, string>;
   steps: Step[];
 };
 
 export const scenario = scenarioData as Scenario;
 
-export type SessionMode = "short" | "full" | "extended" | "repeat";
+export type Length = "short" | "full" | "extended";
+export type SessionMode = Length | "repeat";
 
 /**
  * Short plays the evacuation part of the story (steps 1 to 3), Full the original six steps,
@@ -73,10 +72,98 @@ export const sessionLengths = {
   extended: { stepIds: ["s1", "s7", "s2", "s3", "s4", "s5", "s9", "s8", "s6", "s10"], minutes: 16 },
 } as const;
 
+/** One row of the situation outcome on results. `lengths` limits it to some session lengths. */
+export type OutcomeMetric = {
+  key: string;
+  label: string;
+  format: "time" | "level" | "stability";
+  lengths?: Length[];
+};
+
+export type ScenarioDef = Scenario & {
+  lengths: Partial<Record<Length, { stepIds: readonly string[]; minutes: number }>>;
+  /** The length shown on Review and used when a material can make a scenario. */
+  defaultLength: Length;
+  outcome: OutcomeMetric[];
+  /** Shown on results after a Short session when the story goes on in longer ones. */
+  shortEnding?: { headline: string; continues: string };
+};
+
+type FloodStep = Omit<Step, "keyBeatKeywords" | "chat"> & {
+  explanationKeywords: { beat: string; keywords: string[] }[];
+};
+
+/**
+ * The flood scenario uses its own step ids (s1 to s3) and keyword format. Its ids get a
+ * "flood-" prefix so saved answers never mix with the evacuation steps, and its keywords are
+ * put in the same order as its key points. It has no prepared Ask AI answers.
+ */
+const floodScenario: Scenario = {
+  ...(floodData as unknown as Omit<Scenario, "steps">),
+  steps: (floodData.steps as unknown as FloodStep[]).map(({ explanationKeywords, ...step }) => ({
+    ...step,
+    id: `flood-${step.id}`,
+    keyBeatKeywords: step.explanationKeyBeats.map(
+      (beat) => explanationKeywords.find((entry) => entry.beat === beat)?.keywords ?? [],
+    ),
+    chat: [],
+  })),
+};
+
+export const scenarios: ScenarioDef[] = [
+  {
+    ...scenario,
+    lengths: {
+      short: sessionLengths.short,
+      full: sessionLengths.full,
+      extended: sessionLengths.extended,
+    },
+    defaultLength: "full",
+    outcome: [
+      { key: "timeLostSeconds", label: "Time lost", format: "time" },
+      { key: "smokeLevel", label: "Smoke level", format: "level" },
+      {
+        key: "casualtyStability",
+        label: "Injured colleague",
+        format: "stability",
+        lengths: ["full", "extended"],
+      },
+    ],
+    shortEnding: {
+      headline: "Short session: you reached the south stairwell.",
+      continues:
+        "The full session continues to an injured colleague, the call for help and the assembly point.",
+    },
+  },
+  {
+    ...floodScenario,
+    lengths: { short: { stepIds: floodScenario.steps.map((step) => step.id), minutes: 5 } },
+    defaultLength: "short",
+    outcome: [
+      { key: "timeLostSeconds", label: "Time lost", format: "time" },
+      { key: "waterLevel", label: "Water level", format: "level" },
+    ],
+  },
+];
+
+export const defaultScenarioId = scenario.id;
+
+/** A scenario by id; sessions saved before there were two scenarios belong to the evacuation one. */
+export function getScenario(id: string | undefined): ScenarioDef {
+  return scenarios.find((candidate) => candidate.id === id) ?? scenarios[0];
+}
+
 export function getStep(stepId: string): Step {
-  const step = scenario.steps.find((candidate) => candidate.id === stepId);
-  if (!step) throw new Error(`Unknown step ${stepId}`);
-  return step;
+  for (const candidate of scenarios) {
+    const step = candidate.steps.find((item) => item.id === stepId);
+    if (step) return step;
+  }
+  throw new Error(`Unknown step ${stepId}`);
+}
+
+/** The steps of a scenario's default length, as shown on Review. */
+export function defaultStory(def: ScenarioDef): Step[] {
+  return (def.lengths[def.defaultLength]?.stepIds ?? []).map(getStep);
 }
 
 export const audienceLabel = scenario.audience.replace(/^Trainee: /, "");

@@ -19,7 +19,8 @@
       "S8",
       "S9",
       "S10"
-    ]
+    ],
+    "scenarioId": "building-evacuation-001"
   },
   {
     "id": "shift-notes",

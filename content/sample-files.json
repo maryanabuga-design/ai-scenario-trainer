@@ -15,7 +15,24 @@
       "S8",
       "S9",
       "S10"
-    ]
+    ],
+    "scenarioId": "building-evacuation-001"
+  },
+  {
+    "id": "flood-guide",
+    "name": "Flood preparedness guide.pdf",
+    "size": 1048576,
+    "summary": "A second guide: seven sections on flood warnings, moving to higher ground and recovery.",
+    "sectionIds": [
+      "F1",
+      "F2",
+      "F3",
+      "F4",
+      "F5",
+      "F6",
+      "F7"
+    ],
+    "scenarioId": "flood-preparedness-001"
   },
   {
     "id": "quick-card",
@@ -25,7 +42,8 @@
     "sectionIds": [
       "S1",
       "S2"
-    ]
+    ],
+    "scenarioId": "building-evacuation-001"
   },
   {
     "id": "notice-photo",

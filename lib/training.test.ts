@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { questionsFor } from "@/lib/quiz";
+import { getScenario } from "@/lib/scenario";
 import {
   choiceProblem,
   createTraining,
@@ -11,8 +12,12 @@ import {
 } from "@/lib/training";
 
 const all = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10"];
-const guide = planTraining({ sectionIds: all });
-const quickCard = planTraining({ sectionIds: ["S1", "S2"] });
+const EVACUATION = "building-evacuation-001";
+const FLOOD = "flood-preparedness-001";
+const flood = ["F1", "F2", "F3", "F4", "F5", "F6", "F7"];
+const guide = planTraining({ sectionIds: all, scenarioId: EVACUATION });
+const quickCard = planTraining({ sectionIds: ["S1", "S2"], scenarioId: EVACUATION });
+const floodGuide = planTraining({ sectionIds: flood, scenarioId: FLOOD });
 
 describe("planning training from a material", () => {
   it("lets the full guide make a scenario and a quiz", () => {
@@ -41,8 +46,27 @@ describe("planning training from a material", () => {
     expect(notes.sections).toEqual([]);
   });
 
-  it("knows which sections the scenario needs", () => {
-    expect(scenarioSections).toEqual(["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S10"]);
+  it("knows which sections each scenario needs", () => {
+    expect(scenarioSections(getScenario(EVACUATION))).toEqual([
+      "S1",
+      "S2",
+      "S3",
+      "S4",
+      "S5",
+      "S6",
+      "S7",
+      "S10",
+    ]);
+    expect(scenarioSections(getScenario(FLOOD))).toEqual(["F1", "F3", "F4", "F5", "F7"]);
+  });
+
+  it("lets the flood guide make its own 3-decision scenario", () => {
+    expect(floodGuide).toEqual({
+      sections: flood,
+      canScenario: true,
+      scenarioId: FLOOD,
+      scenarioDecisions: 3,
+    });
   });
 });
 
@@ -101,8 +125,13 @@ describe("generated state", () => {
 describe("sample files", () => {
   it("turns the guide and the quick card into ready materials with their sections", () => {
     const now = new Date("2026-10-08T10:00:00Z");
-    const [guideFile, card, photo] = sampleFiles;
+    const [guideFile, floodFile, card, photo] = sampleFiles;
     expect(materialFromSample(guideFile, now)).toMatchObject({ status: "ready", sectionIds: all });
+    expect(materialFromSample(floodFile, now)).toMatchObject({
+      status: "ready",
+      sectionIds: flood,
+      scenarioId: FLOOD,
+    });
     expect(materialFromSample(card, now)).toMatchObject({
       status: "ready",
       sectionIds: ["S1", "S2"],

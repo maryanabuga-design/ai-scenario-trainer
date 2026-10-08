@@ -49,14 +49,13 @@ export function scoreStep(step: Step, optionId: string, confidence: Confidence):
   };
 }
 
-/** Adds every chosen option's effects to the scenario's starting state. */
-export function sumEffects(initial: Required<Effects>, items: ScoredItem[]): Required<Effects> {
+/** Adds every chosen option's effects to the scenario's starting state, key by key. */
+export function sumEffects(initial: Effects, items: ScoredItem[]): Effects {
   return items.reduce(
-    (total, item) => ({
-      timeLostSeconds: total.timeLostSeconds + (item.effects.timeLostSeconds ?? 0),
-      smokeLevel: total.smokeLevel + (item.effects.smokeLevel ?? 0),
-      casualtyStability: total.casualtyStability + (item.effects.casualtyStability ?? 0),
-    }),
+    (total, item) =>
+      Object.fromEntries(
+        Object.entries(total).map(([key, value]) => [key, value + (item.effects[key] ?? 0)]),
+      ),
     initial,
   );
 }

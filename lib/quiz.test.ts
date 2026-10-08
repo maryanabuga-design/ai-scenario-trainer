@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   getQuestion,
+  matchesKeywords,
   matchesText,
   pickQuestions,
   questions,
@@ -10,17 +11,18 @@ import {
 } from "@/lib/quiz";
 
 describe("question bank", () => {
-  it("has at least 30 questions, every section and every question type", () => {
+  it("has at least 30 questions, every section of both guides and every question type", () => {
     expect(questions.length).toBeGreaterThanOrEqual(30);
     const sections = new Set(questions.map((question) => question.section));
-    expect(sections.size).toBe(10);
+    expect([...sections].filter((id) => id.startsWith("S"))).toHaveLength(10);
+    expect([...sections].filter((id) => id.startsWith("F")).length).toBeGreaterThan(0);
     const types = new Set(questions.map((question) => question.type));
     expect([...types].sort()).toEqual(["multiple", "ordering", "single", "text", "truefalse"]);
   });
 
   it("gives every question a section reference, a misconception type and a why", () => {
     questions.forEach((question) => {
-      expect(question.section).toMatch(/^S([1-9]|10)$/);
+      expect(question.section).toMatch(/^(S([1-9]|10)|F[1-7])$/);
       expect(question.misconception.length).toBeGreaterThan(0);
       expect(question.why.length).toBeGreaterThan(0);
     });
@@ -137,5 +139,45 @@ describe("picking questions", () => {
     expect(new Set(picked).size).toBe(5);
     const sections = new Set(picked.map((id) => getQuestion(id).section));
     expect(sections).toEqual(new Set(["S1", "S5", "S8"]));
+  });
+});
+
+describe("flood question bank", () => {
+  const flood = questions.filter((question) => question.id.startsWith("flood-"));
+
+  it("has its 10 questions, with ids that never clash with the guide's", () => {
+    expect(flood).toHaveLength(10);
+    expect(new Set(questions.map((question) => question.id)).size).toBe(questions.length);
+  });
+
+  it("maps every question type to the app's types", () => {
+    expect(getQuestion("flood-q1")).toMatchObject({ type: "single", answer: "a", section: "F1" });
+    expect(getQuestion("flood-q4")).toMatchObject({ type: "multiple", answer: ["a", "b", "c"] });
+    expect(getQuestion("flood-q5")).toMatchObject({ type: "truefalse", answer: false });
+    expect(getQuestion("flood-q6")).toMatchObject({
+      type: "ordering",
+      answer: ["a", "b", "c", "d"],
+    });
+  });
+
+  it("never starts an ordering question already solved", () => {
+    const question = getQuestion("flood-q6");
+    expect(question.type === "ordering" && question.items.map((item) => item.id)).not.toEqual([
+      "a",
+      "b",
+      "c",
+      "d",
+    ]);
+  });
+
+  it("checks short text by counting accepted keywords", () => {
+    const question = getQuestion("flood-q8");
+    expect(
+      scoreResponse(question, { type: "text", text: "Because people assume someone else called." }),
+    ).toBe(1);
+    expect(scoreResponse(question, { type: "text", text: "It is quicker that way." })).toBe(0);
+    expect(matchesKeywords(["named", "specific"], 2, "a specific, named person")).toBe(true);
+    expect(matchesKeywords(["named", "specific"], 2, "a named person")).toBe(false);
+    expect(matchesKeywords(["named"], 1, "")).toBe(false);
   });
 });
