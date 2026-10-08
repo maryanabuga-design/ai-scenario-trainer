@@ -93,6 +93,123 @@
         "treat the alarm as real",
         "stairs, not the elevator",
         "do not delay for belongings"
+      ],
+      "chat": [
+        {
+          "id": "s1-situation",
+          "question": "What is happening here?",
+          "answer": "The fire alarm sounded at 14:20 in a four-storey training centre. You are the duty officer on the second floor with twelve people, there is a faint smell of smoke from the north stairwell, and the group is waiting for your instruction.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "happening",
+            "situation",
+            "going on",
+            "who",
+            "where",
+            "describe",
+            "explain the"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s1-guide",
+          "question": "Which part of the guide covers this?",
+          "answer": "Section S1, Responding to an alarm, covers what to do when an alarm sounds and how to leave the building. You can read it in full from the source chip below before you decide.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "guide",
+            "section",
+            "material",
+            "read",
+            "covers",
+            "cover",
+            "source",
+            "chapter"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s1-assistance",
+          "question": "What if someone needs help to move?",
+          "answer": "The guide says to help people who need assistance only if it is safe. Otherwise, report where they are to responders so trained people can reach them.",
+          "sources": [
+            "S1",
+            "S4"
+          ],
+          "keywords": [
+            "help",
+            "assist",
+            "assistance",
+            "wheelchair",
+            "injured",
+            "slow",
+            "carry someone",
+            "move"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s1-elevator",
+          "question": "Why not take the elevator?",
+          "answer": "Elevators can stop or fill with smoke during a fire, which can trap the group. The guide is clear: during a fire, use the stairs.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "elevator",
+            "elevators",
+            "lift",
+            "lifts"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        },
+        {
+          "id": "s1-wait",
+          "question": "Why not wait until the alarm is confirmed?",
+          "answer": "The guide asks you to treat every alarm as real until it is officially confirmed otherwise. Waiting costs time, and in this situation smoke is already spreading.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "wait",
+            "waiting",
+            "confirmed",
+            "confirm",
+            "drill",
+            "false",
+            "real"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        },
+        {
+          "id": "s1-belongings",
+          "question": "Can people take their things?",
+          "answer": "Only what they can carry in a few seconds. The guide says never to delay your exit to collect belongings, documents or equipment.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "belongings",
+            "things",
+            "bag",
+            "bags",
+            "documents",
+            "equipment",
+            "laptop",
+            "collect"
+          ],
+          "availability": "afterFeedback",
+          "suggested": false
+        }
       ]
     },
     {
@@ -152,6 +269,119 @@
       "explanationKeyBeats": [
         "hot door suggests fire behind it",
         "use another route"
+      ],
+      "chat": [
+        {
+          "id": "s2-situation",
+          "question": "What is happening here?",
+          "answer": "The nearest exit is on the north side of the building. You checked its door with the back of your hand and it felt hot. The twelve people are with you in the corridor.",
+          "sources": [
+            "S2"
+          ],
+          "keywords": [
+            "happening",
+            "situation",
+            "going on",
+            "who",
+            "where",
+            "describe",
+            "explain the"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s2-guide",
+          "question": "Which part of the guide covers this?",
+          "answer": "Section S2, Checking the route, covers how to check a door before going through it and how to use doors as you move. S3 covers moving through smoke.",
+          "sources": [
+            "S2",
+            "S3"
+          ],
+          "keywords": [
+            "guide",
+            "section",
+            "material",
+            "read",
+            "covers",
+            "cover",
+            "source",
+            "chapter"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s2-check-door",
+          "question": "How do I check a door?",
+          "answer": "Before going through a door, feel it with the back of your hand. The guide uses that check to decide whether the route behind it is safe to use.",
+          "sources": [
+            "S2"
+          ],
+          "keywords": [
+            "check",
+            "feel",
+            "touch",
+            "test",
+            "hand",
+            "how do i know"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s2-open-slowly",
+          "question": "Why not open the door slowly to look?",
+          "answer": "A hot door suggests fire or heat on the other side. Opening it, even slowly, can let fire and smoke into your corridor. Opening slowly and being ready to shut it again is the guide's advice only for a door that feels cool.",
+          "sources": [
+            "S2"
+          ],
+          "keywords": [
+            "slowly",
+            "look",
+            "peek",
+            "check behind",
+            "what is behind",
+            "open"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        },
+        {
+          "id": "s2-wait",
+          "question": "Why not wait by the door for responders?",
+          "answer": "Staying next to a hot door keeps the group close to the heat and to smoke that can come through. The guide says to use another route.",
+          "sources": [
+            "S2"
+          ],
+          "keywords": [
+            "wait",
+            "waiting",
+            "responders",
+            "stay",
+            "firefighters"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        },
+        {
+          "id": "s2-ventilate",
+          "question": "Would opening it let the smoke out?",
+          "answer": "No. Opening the door lets in air that can feed the fire and pushes smoke into your route.",
+          "sources": [
+            "S2",
+            "S3"
+          ],
+          "keywords": [
+            "ventilate",
+            "let out",
+            "air",
+            "fully",
+            "smoke out"
+          ],
+          "availability": "afterFeedback",
+          "suggested": false
+        }
       ]
     },
     {
@@ -216,8 +446,112 @@
         "question": "Which type of cloth filters smoke best?",
         "closestSources": [
           "S3"
+        ],
+        "keywords": [
+          "cloth",
+          "fabric",
+          "filter",
+          "filters",
+          "mask",
+          "towel",
+          "scarf"
         ]
-      }
+      },
+      "chat": [
+        {
+          "id": "s3-situation",
+          "question": "What is happening here?",
+          "answer": "The corridor to the south stairwell has a thin layer of smoke along the ceiling. The group is nervous and looking to you.",
+          "sources": [
+            "S3"
+          ],
+          "keywords": [
+            "happening",
+            "situation",
+            "going on",
+            "who",
+            "where",
+            "describe",
+            "explain the"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s3-guide",
+          "question": "Which part of the guide covers this?",
+          "answer": "Section S3, Moving through smoke, covers how smoke behaves and how to move through it. S2, Checking the route, is also linked to this step.",
+          "sources": [
+            "S3",
+            "S2"
+          ],
+          "keywords": [
+            "guide",
+            "section",
+            "material",
+            "read",
+            "covers",
+            "cover",
+            "source",
+            "chapter"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s3-upright",
+          "question": "Why not run upright?",
+          "answer": "Smoke and hot gases rise, so moving upright puts people in the worst air. Staying low keeps them in cleaner air near the floor.",
+          "sources": [
+            "S3"
+          ],
+          "keywords": [
+            "upright",
+            "run",
+            "running",
+            "stand",
+            "standing",
+            "fast",
+            "quick",
+            "quickly"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        },
+        {
+          "id": "s3-window",
+          "question": "Why not break a window?",
+          "answer": "Extra air can make a fire grow, and breaking a window will not clear the corridor. The guide says not to break windows to clear smoke from a corridor.",
+          "sources": [
+            "S3"
+          ],
+          "keywords": [
+            "window",
+            "windows",
+            "break",
+            "glass"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        },
+        {
+          "id": "s3-shelter",
+          "question": "Why not shelter in an office?",
+          "answer": "Sheltering with the door open lets smoke follow you in and takes the group away from the exit. If a route is truly blocked, the guide's advice is a room with a window, with the door closed and gaps sealed, and then signalling and calling for help.",
+          "sources": [
+            "S3"
+          ],
+          "keywords": [
+            "shelter",
+            "office",
+            "room",
+            "hide",
+            "blocked"
+          ],
+          "availability": "afterFeedback",
+          "suggested": false
+        }
+      ]
     },
     {
       "id": "s4",
@@ -274,6 +608,121 @@
       "explanationKeyBeats": [
         "severe bleeding is life-threatening",
         "direct pressure"
+      ],
+      "chat": [
+        {
+          "id": "s4-situation",
+          "question": "What is happening here?",
+          "answer": "At the south landing a colleague is sitting against the wall, conscious and talking. A deep cut on the forearm is bleeding heavily, and there is a small burn on the hand. The landing is clear of smoke.",
+          "sources": [
+            "S6"
+          ],
+          "keywords": [
+            "happening",
+            "situation",
+            "going on",
+            "who",
+            "where",
+            "describe",
+            "explain the"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s4-guide",
+          "question": "Which part of the guide covers this?",
+          "answer": "S6, Assessing an injured person, covers checking the scene and the person and deciding what to deal with first. S7 covers severe bleeding and S8 covers burns.",
+          "sources": [
+            "S6",
+            "S7",
+            "S8"
+          ],
+          "keywords": [
+            "guide",
+            "section",
+            "material",
+            "read",
+            "covers",
+            "cover",
+            "source",
+            "chapter"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s4-scene",
+          "question": "Is it safe to stop on the landing?",
+          "answer": "The guide says to check that the scene is safe first, so you do not become a second casualty. Here the landing is described as clear of smoke.",
+          "sources": [
+            "S6"
+          ],
+          "keywords": [
+            "safe",
+            "safety",
+            "stop",
+            "landing",
+            "scene"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s4-priority",
+          "question": "Why treat the bleeding before the burn?",
+          "answer": "Severe bleeding is life-threatening, and the guide says to deal with life-threatening problems first. The burn can be cooled once the bleeding is under control.",
+          "sources": [
+            "S6",
+            "S8"
+          ],
+          "keywords": [
+            "priority",
+            "first",
+            "before",
+            "order",
+            "burn first"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        },
+        {
+          "id": "s4-lift-cloth",
+          "question": "Why not lift the cloth to check?",
+          "answer": "Lifting the cloth releases the pressure and can restart the bleeding. If the cloth soaks through, the guide says to add more layers on top instead of removing it.",
+          "sources": [
+            "S7"
+          ],
+          "keywords": [
+            "lift",
+            "lifting",
+            "check",
+            "cloth",
+            "soak",
+            "soaks",
+            "remove"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        },
+        {
+          "id": "s4-burn",
+          "question": "How should the burn be treated later?",
+          "answer": "Cool it under cool running water for 10 to 20 minutes. Do not use ice, butter, oils or toothpaste, do not burst blisters, and cover it loosely with a clean, non-fluffy dressing. A burn on the hand is a reason to seek medical help.",
+          "sources": [
+            "S8"
+          ],
+          "keywords": [
+            "burn",
+            "burns",
+            "cool",
+            "water",
+            "blister",
+            "dressing"
+          ],
+          "availability": "afterFeedback",
+          "suggested": false
+        }
       ]
     },
     {
@@ -330,6 +779,120 @@
       "explanationKeyBeats": [
         "avoid assuming someone else called",
         "clear details: location, injury"
+      ],
+      "chat": [
+        {
+          "id": "s5-situation",
+          "question": "What is happening here?",
+          "answer": "You are holding pressure on your colleague's wound. Three people from the group are standing nearby, and nobody has called for help yet.",
+          "sources": [
+            "S5"
+          ],
+          "keywords": [
+            "happening",
+            "situation",
+            "going on",
+            "who",
+            "where",
+            "describe",
+            "explain the"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s5-guide",
+          "question": "Which part of the guide covers this?",
+          "answer": "Section S5, Calling for help, covers the emergency number, what to say on the call and how to make sure a call is made.",
+          "sources": [
+            "S5"
+          ],
+          "keywords": [
+            "guide",
+            "section",
+            "material",
+            "read",
+            "covers",
+            "cover",
+            "source",
+            "chapter"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s5-number",
+          "question": "Which number should be called?",
+          "answer": "The guide uses 112 or the local emergency number.",
+          "sources": [
+            "S5"
+          ],
+          "keywords": [
+            "number",
+            "112",
+            "911",
+            "emergency number",
+            "phone",
+            "dial"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s5-one-person",
+          "question": "Why point at one specific person?",
+          "answer": "A general request makes everyone assume someone else has already called. Naming one person, and asking them to report back, makes sure the call actually happens.",
+          "sources": [
+            "S5"
+          ],
+          "keywords": [
+            "one person",
+            "specific",
+            "point",
+            "name",
+            "someone",
+            "everyone",
+            "assign"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        },
+        {
+          "id": "s5-call-myself",
+          "question": "Why not stop and call myself?",
+          "answer": "Stopping pressure on a severe bleed lets it start again. Keep pressing and delegate the call.",
+          "sources": [
+            "S5",
+            "S7"
+          ],
+          "keywords": [
+            "myself",
+            "call myself",
+            "release",
+            "stop pressing",
+            "let go"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        },
+        {
+          "id": "s5-what-to-say",
+          "question": "What should the caller say?",
+          "answer": "Give the location, what happened, the number of injured people and any hazards, then stay on the line until told to hang up.",
+          "sources": [
+            "S5"
+          ],
+          "keywords": [
+            "say",
+            "tell",
+            "report",
+            "details",
+            "information",
+            "hang up"
+          ],
+          "availability": "afterFeedback",
+          "suggested": false
+        }
       ]
     },
     {
@@ -387,6 +950,117 @@
       "explanationKeyBeats": [
         "name and last known location",
         "what happened, what you did, when"
+      ],
+      "chat": [
+        {
+          "id": "s6-situation",
+          "question": "What is happening here?",
+          "answer": "You and your colleague have reached the assembly point with pressure still applied. The headcount shows that one person from your group is missing, and paramedics are arriving.",
+          "sources": [
+            "S4"
+          ],
+          "keywords": [
+            "happening",
+            "situation",
+            "going on",
+            "who",
+            "where",
+            "describe",
+            "explain the"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s6-guide",
+          "question": "Which part of the guide covers this?",
+          "answer": "S4, Assembly point and headcount, covers what to do once you are out of the building. S10 covers the handover to the people who take over.",
+          "sources": [
+            "S4",
+            "S10"
+          ],
+          "keywords": [
+            "guide",
+            "section",
+            "material",
+            "read",
+            "covers",
+            "cover",
+            "source",
+            "chapter"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s6-assembly",
+          "question": "Why is the assembly point away from the entrances?",
+          "answer": "The guide places it away from the building and its entrances so emergency teams can get in and work without people in their way.",
+          "sources": [
+            "S4"
+          ],
+          "keywords": [
+            "assembly",
+            "entrance",
+            "entrances",
+            "away",
+            "far"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s6-reenter",
+          "question": "Why not go back in to look?",
+          "answer": "The guide says not to re-enter the building until responders declare it safe. The fastest help for the missing person is giving responders their name and last known location.",
+          "sources": [
+            "S4"
+          ],
+          "keywords": [
+            "back in",
+            "go back",
+            "re-enter",
+            "reenter",
+            "inside",
+            "look",
+            "search"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        },
+        {
+          "id": "s6-handover",
+          "question": "What goes into a good handover?",
+          "answer": "A short, ordered handover: what happened, what you found, what you did and when, and any changes since. Name any missing person and the last place they were seen.",
+          "sources": [
+            "S10"
+          ],
+          "keywords": [
+            "handover",
+            "hand over",
+            "responders",
+            "paramedics",
+            "tell"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        },
+        {
+          "id": "s6-send-someone",
+          "question": "Why not send someone else in?",
+          "answer": "Sending someone back in puts another person at risk and gives responders a second person to look for. Leave the search to them.",
+          "sources": [
+            "S4"
+          ],
+          "keywords": [
+            "send",
+            "colleague",
+            "someone else",
+            "another"
+          ],
+          "availability": "afterFeedback",
+          "suggested": false
+        }
       ]
     }
   ]

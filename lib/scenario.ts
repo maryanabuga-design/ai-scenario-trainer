@@ -21,6 +21,18 @@ export type Option = {
 export type SuggestedQuestion = {
   question: string;
   closestSources: string[];
+  keywords: string[];
+};
+
+export type ChatEntry = {
+  id: string;
+  question: string;
+  answer: string;
+  sources: string[];
+  keywords: string[];
+  /** "afterFeedback" answers explain the options, so they stay hidden until the trainee has answered. */
+  availability: "always" | "afterFeedback";
+  suggested: boolean;
 };
 
 export type Step = {
@@ -33,6 +45,7 @@ export type Step = {
   followUp: string;
   explanationKeyBeats: string[];
   suggestedQuestion?: SuggestedQuestion;
+  chat: ChatEntry[];
 };
 
 export type Scenario = {
