@@ -18,6 +18,7 @@ import {
   FeedbackSample,
   HomeSample,
   OnboardingSample,
+  ProfileSample,
   ProgressSample,
   RepeatSample,
   ResultsSample,
@@ -220,8 +221,16 @@ export default function Screens() {
           </PhoneFrame>
         </Group>
         <Group title="Profile">
-          <PhoneFrame label="Profile" plannedStep={10} />
-          <PhoneFrame label="Reset progress dialog" plannedStep={10} />
+          <PhoneFrame label="Profile">
+            <Screen nav="/profile">
+              <ProfileSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Reset progress dialog">
+            <Screen nav="/profile">
+              <ProfileSample confirming />
+            </Screen>
+          </PhoneFrame>
         </Group>
       </main>
     </SourceSheetProvider>

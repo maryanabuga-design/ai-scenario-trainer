@@ -6,6 +6,7 @@ import type { Draft } from "@/components/DecisionStep/DecisionStep";
 import { FeedbackView } from "@/components/FeedbackView/FeedbackView";
 import { HomeView } from "@/components/HomeView/HomeView";
 import { OnboardingView } from "@/components/OnboardingView/OnboardingView";
+import { ProfileView } from "@/components/ProfileView/ProfileView";
 import type { OnboardingStep } from "@/components/OnboardingView/OnboardingView";
 import { ProgressView } from "@/components/ProgressView/ProgressView";
 import { ResultsView } from "@/components/ResultsView/ResultsView";
@@ -195,6 +196,22 @@ export function OnboardingSample({ start }: { start: OnboardingStep }) {
       onNext={() => setStep((step + 1) as OnboardingStep)}
       onSkip={() => undefined}
       onTry={() => undefined}
+    />
+  );
+}
+
+/** Profile, or the reset confirmation drawn in place of the overlay. */
+export function ProfileSample({ confirming = false }: { confirming?: boolean }) {
+  return (
+    <ProfileView
+      direction={defaultDirection.id}
+      onDirectionChange={() => undefined}
+      confirming={confirming}
+      onAskReset={() => undefined}
+      onCancelReset={() => undefined}
+      onReset={() => undefined}
+      resetDone={false}
+      dialogInline
     />
   );
 }
