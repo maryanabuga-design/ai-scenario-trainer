@@ -11,6 +11,7 @@ import { Stepper } from "@/components/Stepper/Stepper";
 import { Tag } from "@/components/Tag/Tag";
 import { questionsFor, quizCounts } from "@/lib/quiz";
 import { scenario, sessionLengths } from "@/lib/scenario";
+import type { Training } from "@/lib/training";
 
 export type Length = "short" | "full" | "extended";
 
@@ -63,13 +64,26 @@ export function SessionSetup({
   onChange,
   onStart,
   replacesUnfinished = false,
+  training,
+  materialName,
 }: {
+  /** Shown under the title; the scenario's title when there is no training. */
+  materialName?: string;
+  /** The created training this setup belongs to; limits the modes and the quiz sections. */
+  training?: Pick<Training, "materialId" | "scenario" | "quiz" | "sections">;
   value: SetupValue;
   onChange: (value: SetupValue) => void;
   onStart: () => void;
   replacesUnfinished?: boolean;
 }) {
-  const { sections } = useSourceSheet();
+  const { sections: guideSections } = useSourceSheet();
+  const sections = training
+    ? guideSections.filter((section) => training.sections.includes(section.id))
+    : guideSections;
+  const modes = [
+    { value: "scenario" as const, label: "Scenario", allowed: !training || training.scenario },
+    { value: "quiz" as const, label: "Quiz", allowed: !training || training.quiz },
+  ].filter((mode) => mode.allowed);
   const { available, size } = quizSize(value);
   const quiz = value.mode === "quiz";
   const blocked = quiz && value.sections.length === 0;
@@ -83,22 +97,25 @@ export function SessionSetup({
 
   return (
     <div className="flex flex-col gap-6">
-      <BackLink href="/materials/evacuation-guide" />
+      <BackLink href={`/materials/${training?.materialId ?? "evacuation-guide"}`} />
       <div className="flex flex-col gap-1">
         <h1 className="font-serif text-2xl">Session setup</h1>
-        <p className="text-text-secondary">{scenario.title}</p>
+        <p className="break-words text-text-secondary">{materialName ?? scenario.title}</p>
       </div>
 
-      <SegmentedControl
-        name="mode"
-        legend="What do you want to do?"
-        options={[
-          { value: "scenario", label: "Scenario" },
-          { value: "quiz", label: "Quiz" },
-        ]}
-        value={value.mode}
-        onChange={(mode) => onChange({ ...value, mode })}
-      />
+      {modes.length > 1 ? (
+        <SegmentedControl
+          name="mode"
+          legend="What do you want to do?"
+          options={modes}
+          value={value.mode}
+          onChange={(mode) => onChange({ ...value, mode })}
+        />
+      ) : (
+        <p className="text-text-secondary">
+          This training has a {modes[0]?.value === "quiz" ? "quiz" : "scenario"} only.
+        </p>
+      )}
 
       {!quiz && (
         <fieldset className="flex flex-col gap-3">

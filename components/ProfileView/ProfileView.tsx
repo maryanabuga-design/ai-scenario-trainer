@@ -37,7 +37,8 @@ export function ProfileView({
           <div className="flex flex-col gap-1">
             <h3 className="font-medium">Reset progress</h3>
             <p className="text-sm text-text-secondary">
-              Deletes your saved sessions and weak topics on this device. Your direction stays.
+              Deletes your saved sessions, weak topics and created trainings on this device. Your
+              direction and uploaded files stay.
             </p>
           </div>
           <div>
@@ -47,7 +48,7 @@ export function ProfileView({
           </div>
           {resetDone && (
             <p role="status" className="text-sm">
-              Progress reset. Your sessions and weak topics are deleted.
+              Progress reset. Your sessions, weak topics and created trainings are deleted.
             </p>
           )}
         </div>
@@ -58,7 +59,7 @@ export function ProfileView({
           open={confirming}
           inline={dialogInline}
           title="Reset progress?"
-          description="This deletes your saved sessions and weak topics on this device. It cannot be undone."
+          description="This deletes your saved sessions, weak topics and created trainings on this device. It cannot be undone."
           confirmLabel="Reset progress"
           onConfirm={onReset}
           onCancel={onCancelReset}

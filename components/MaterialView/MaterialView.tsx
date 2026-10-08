@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { BackLink } from "@/components/BackLink/BackLink";
@@ -10,6 +11,8 @@ import { MaterialCover } from "@/components/MaterialCover/MaterialCover";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
 import { Tag } from "@/components/Tag/Tag";
+import { TrainingTags } from "@/components/TrainingTags/TrainingTags";
+import { startTraining, useTrainings } from "@/lib/trainings";
 import { UploadButton } from "@/components/UploadSheet/UploadSheet";
 import { formatAdded } from "@/lib/materials";
 import type { Material, MaterialSection } from "@/lib/materials";
@@ -64,6 +67,11 @@ export function MaterialView({
   sectionsOpenable: boolean;
   scenarioCard?: ReactNode;
 }) {
+  const router = useRouter();
+  const trainings = useTrainings();
+  const training = trainings === "loading" ? undefined : trainings?.[material.id];
+  const canCreate = material.status === "ready" && (material.sectionIds?.length ?? 0) > 0;
+
   return (
     <div className="flex flex-col gap-6">
       <BackLink href="/materials" label="Back to materials" />
@@ -75,6 +83,7 @@ export function MaterialView({
         )}
         <Tag tone="blue">{material.type}</Tag>
         <h1 className="font-serif text-2xl leading-tight break-words">{material.name}</h1>
+        <TrainingTags training={training} />
       </div>
 
       <Card>
@@ -122,14 +131,29 @@ export function MaterialView({
       </section>
 
       <ActionBar>
-        {material.hasScenario ? (
-          <ButtonLink href="/session/setup">Start scenario</ButtonLink>
+        {training ? (
+          <>
+            <Button
+              onClick={() => {
+                startTraining(material.id);
+                router.push("/session/setup");
+              }}
+            >
+              Start training
+            </Button>
+            <ButtonLink href={`/training/${material.id}`} variant="text">
+              Create again
+            </ButtonLink>
+          </>
+        ) : canCreate ? (
+          <ButtonLink href={`/training/${material.id}`}>Create training</ButtonLink>
         ) : (
           <>
             <p className="text-center text-sm text-text-secondary">
-              In this prototype a scenario is prepared for one material only.
+              In this prototype, training can be created from the sample guide and its quick card
+              only.
             </p>
-            <Button disabled>Start scenario</Button>
+            <Button disabled>Create training</Button>
             <ButtonLink href="/materials/evacuation-guide" variant="text">
               Open the sample guide
             </ButtonLink>

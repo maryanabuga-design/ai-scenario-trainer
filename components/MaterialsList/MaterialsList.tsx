@@ -6,17 +6,22 @@ import { FileCover } from "@/components/FileCover/FileCover";
 import { MaterialCover } from "@/components/MaterialCover/MaterialCover";
 import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
 import { Tabs, tabPanelProps } from "@/components/Tabs/Tabs";
+import { TrainingTags } from "@/components/TrainingTags/TrainingTags";
 import { UploadButton } from "@/components/UploadSheet/UploadSheet";
 import { formatAdded } from "@/lib/materials";
+import type { Training } from "@/lib/training";
+import { useTrainings } from "@/lib/trainings";
 import { useUploads } from "@/lib/uploads";
 import type { Material } from "@/lib/materials";
 
 function MaterialRow({
   material,
+  training,
   onUploadStart,
   onUploadEnd,
 }: {
   material: Material;
+  training: Training | undefined;
   onUploadStart: () => void;
   onUploadEnd: (status: "ready" | "failed") => void;
 }) {
@@ -33,9 +38,7 @@ function MaterialRow({
       </Link>
       <div className="flex flex-wrap items-center gap-2">
         <StatusBadge status={material.status} />
-        {material.hasScenario && (
-          <span className="text-sm text-text-secondary">Has a prepared scenario</span>
-        )}
+        <TrainingTags training={training} />
       </div>
       {material.status === "processing" && (
         <div
@@ -78,6 +81,7 @@ const emptyStates: Record<TabId, string> = {
 
 export function MaterialsList({ samples }: { samples: Material[] }) {
   const uploads = useUploads();
+  const trainings = useTrainings();
   const [tab, setTab] = useState<TabId>("ready");
   const all = [...(uploads === "loading" ? [] : (uploads ?? [])), ...samples];
   const count = (status: TabId) => all.filter((material) => material.status === status).length;
@@ -110,6 +114,7 @@ export function MaterialsList({ samples }: { samples: Material[] }) {
                 <li key={material.id}>
                   <MaterialRow
                     material={material}
+                    training={trainings === "loading" ? undefined : trainings?.[material.id]}
                     onUploadStart={() => setTab("processing")}
                     onUploadEnd={setTab}
                   />

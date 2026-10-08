@@ -29,7 +29,9 @@ export function UploadPanel({
   onChooseFile,
   onClose,
   onOpenMaterial,
+  onCreateTraining,
 }: {
+  onCreateTraining: (id: string) => void;
   stage: Stage;
   onStage: (stage: Stage) => void;
   onChooseFile: (file: SampleFile) => void;
@@ -115,7 +117,10 @@ export function UploadPanel({
           ) : (
             <>
               <p className="text-text-secondary">The file is in your materials, under Ready.</p>
-              <Button onClick={() => onOpenMaterial(stage.material.id)}>Open material</Button>
+              <Button onClick={() => onCreateTraining(stage.material.id)}>Create training</Button>
+              <Button variant="text" onClick={() => onOpenMaterial(stage.material.id)}>
+                Open material
+              </Button>
             </>
           )}
         </div>
@@ -205,6 +210,10 @@ export function UploadButton({
           onOpenMaterial={(id) => {
             dialogRef.current?.close();
             router.push(`/materials/${id}`);
+          }}
+          onCreateTraining={(id) => {
+            dialogRef.current?.close();
+            router.push(`/training/${id}`);
           }}
         />
       </dialog>

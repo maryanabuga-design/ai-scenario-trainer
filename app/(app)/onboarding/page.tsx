@@ -28,7 +28,7 @@ export default function Onboarding() {
         window.scrollTo(0, 0);
       }}
       onSkip={() => finish("/")}
-      onTry={() => finish("/session/setup")}
+      onTry={() => finish("/training/evacuation-guide")}
     />
   );
 }

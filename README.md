@@ -45,6 +45,7 @@ All four sections and the whole learning cycle can be clicked through:
 - Onboarding on the first visit: choose a direction (one available, three marked "Not available in this prototype"), how it works, an example scenario. It can be skipped.
 - Home: continue an unfinished session, weak topics from your saved sessions, start a new scenario.
 - Materials: tabs Ready, Processing and Failed over the sample guide plus sample "uploaded" items in every state (ready, processing, failed with a reason and "Try another file"), a simulated upload (choose a file, progress, Ready or Failed; only the file's name and size are used, nothing is read), and a material page with details, sections and excerpts. Only the sample guide has a prepared scenario.
+- Create training: upload a sample file (the guide, a one-page quick card, or a photo that fails), then "Create training" on a ready material or "New scenario" on Home. Choose Scenario and Quiz and the sections to keep, watch a simulated four-step generation (with Cancel), review every situation and question with its sources, and "Start training". The quick card is too short for a scenario and makes a quiz only. Created trainings show as Scenario and Quiz tags and are saved in this browser.
 - Session setup: Scenario (Short 3, Full 6 or Extended 10 decisions) or Quiz (one or more guide sections, 5, 10, 15 or a custom number of questions, capped at what the bank holds).
 - Decision step: an action, how sure you are, and one sentence on why you chose it.
 - Feedback: verdict, your answer vs the better one, why, error type, sources, what happened, the AI follow-up question with points a strong answer covers, and "Ask about this step" on the smoke step. Under your sentence, a simulated keyword match shows how many key points it covers ("Match with key points: 67%", covered or missing per point); it is for reference only and never changes the score.
@@ -61,7 +62,7 @@ Build order and decisions: `docs/build-plan.md`.
 ## Known limits
 
 - AI behavior is simulated. Every answer, follow-up question, chat reply and key point comes from the prepared scenario, and a trainee's explanation is never graded automatically. Free questions in Ask AI are matched by keywords, so rephrasing can change which prepared answer comes back.
-- Upload is simulated. A chosen file is never read: images, unsupported types and files over 20 MB fail with a reason, anything else becomes Ready. Uploaded items have no sections and no scenario.
+- Upload and generation are simulated. Upload offers sample files; generation shows prepared content. Only the guide has a prepared scenario and question bank, so the quick card's quiz uses the guide's S1 and S2 questions.
 - Short text answers are checked by matching accepted words and phrases, so an unusual but correct wording can be marked wrong.
 - Progress lives in one browser on one device. There are no accounts.
 

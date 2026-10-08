@@ -314,6 +314,7 @@ export function UploadSample({ state }: { state: "choose" | "progress" | "failed
             onChooseFile={() => undefined}
             onClose={() => undefined}
             onOpenMaterial={() => undefined}
+            onCreateTraining={() => undefined}
           />
         </div>
       </div>

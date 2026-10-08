@@ -89,7 +89,7 @@ export function HomeView({
           </p>
           {unfinished && (
             <div className="mt-2">
-              <ButtonLink href="/session/setup" variant="secondary">
+              <ButtonLink href="/training/evacuation-guide" variant="secondary">
                 Start a new scenario
               </ButtonLink>
             </div>
@@ -101,7 +101,7 @@ export function HomeView({
         {unfinished ? (
           <ButtonLink href="/session">Continue session</ButtonLink>
         ) : (
-          <ButtonLink href="/session/setup">New scenario</ButtonLink>
+          <ButtonLink href="/training/evacuation-guide">New scenario</ButtonLink>
         )}
       </ActionBar>
     </div>
