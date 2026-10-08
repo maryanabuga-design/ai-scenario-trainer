@@ -1062,6 +1062,670 @@
           "suggested": false
         }
       ]
+    },
+    {
+      "id": "s7",
+      "title": "Someone needs help",
+      "sources": [
+        "S1",
+        "S4"
+      ],
+      "narrative": "As the group heads for the stairs, a visitor who walks with crutches tells you they cannot manage the stairs quickly. The corridor is still clear.",
+      "question": "What do you do?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Send the visitor down in the elevator on their own.",
+          "correct": false,
+          "why": "Elevators can stop or fill with smoke during a fire. The guide says not to use them.",
+          "consequence": "The elevator is not an option and the visitor is left waiting.",
+          "misconception": "elevator_use",
+          "effects": {
+            "timeLostSeconds": 30
+          }
+        },
+        {
+          "id": "b",
+          "text": "Have a colleague help the visitor down the stairs if it is safe, and if not, make sure their exact location is reported to responders.",
+          "correct": true,
+          "why": "The guide says to help people who need assistance only if it is safe, and otherwise to report where they are so responders can reach them.",
+          "consequence": "A colleague walks down with the visitor while the rest of the group keeps moving."
+        },
+        {
+          "id": "c",
+          "text": "Tell the visitor to wait in an office until the alarm stops.",
+          "correct": false,
+          "why": "Leaving someone to wait without telling anyone keeps them in danger and nobody knows where they are.",
+          "consequence": "The visitor is alone and nobody knows where they are.",
+          "misconception": "waits_in_danger",
+          "effects": {
+            "timeLostSeconds": 60
+          }
+        },
+        {
+          "id": "d",
+          "text": "Stop the whole group until the visitor is ready to go.",
+          "correct": false,
+          "why": "Holding everyone back delays the exit for the whole group. Help the visitor only if it is safe and keep the others moving.",
+          "consequence": "The whole group stands still in the corridor.",
+          "misconception": "delays_exit",
+          "effects": {
+            "timeLostSeconds": 90,
+            "smokeLevel": 1
+          }
+        }
+      ],
+      "followUp": "What does the guide say about helping people who need assistance?",
+      "explanationKeyBeats": [
+        "help only if it is safe",
+        "report their location to responders"
+      ],
+      "chat": [
+        {
+          "id": "s7-situation",
+          "question": "What is happening here?",
+          "answer": "A visitor who walks with crutches has told you they cannot move quickly. The corridor is still clear, and the rest of your group is waiting for direction.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "happening",
+            "situation",
+            "going on",
+            "who",
+            "where",
+            "describe",
+            "explain the"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s7-guide",
+          "question": "Which part of the guide covers this?",
+          "answer": "Section S1, Responding to an alarm, covers how to react to an alarm and how to leave. S4 covers the assembly point and what to tell the people in charge there.",
+          "sources": [
+            "S1",
+            "S4"
+          ],
+          "keywords": [
+            "guide",
+            "section",
+            "material",
+            "read",
+            "covers",
+            "cover",
+            "source",
+            "chapter"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s7-belongings",
+          "question": "What can people take with them?",
+          "answer": "Only what they can carry in a few seconds. The guide says never to delay your exit to collect belongings.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "belongings",
+            "things",
+            "bag",
+            "bags",
+            "take with",
+            "carry"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s7-elevator",
+          "question": "Why not use the elevator for the visitor?",
+          "answer": "Elevators can stop or fill with smoke during a fire, which could trap the visitor alone. The guide says to use the stairs.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "elevator",
+            "lift"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        },
+        {
+          "id": "s7-stop-group",
+          "question": "Why not stop the group until the visitor is ready?",
+          "answer": "Holding everyone back delays the exit for the whole group. The guide's approach is to help the person only if it is safe, keep the others moving, and report the person's location if they cannot get out.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "stop",
+            "hold",
+            "group",
+            "wait for"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        },
+        {
+          "id": "s7-wait-office",
+          "question": "Why not let the visitor wait in an office?",
+          "answer": "Waiting alone in an office keeps the visitor in danger, and nobody would know where they are. If they cannot leave, responders need their exact location.",
+          "sources": [
+            "S1",
+            "S4"
+          ],
+          "keywords": [
+            "office",
+            "wait",
+            "waiting",
+            "alone",
+            "room"
+          ],
+          "availability": "afterFeedback",
+          "suggested": false
+        }
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "A cool door",
+      "sources": [
+        "S2"
+      ],
+      "narrative": "With pressure still applied, you and your colleague reach the bottom of the south stairwell. A shut door leads to the ground-floor lobby and the exit. You check it with the back of your hand: it is cool.",
+      "question": "What do you do?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Open it slowly, ready to close it at once if you see smoke or feel heat.",
+          "correct": true,
+          "why": "A cool door can be opened, but slowly and with care, so you can shut it again if there is smoke or heat behind it.",
+          "consequence": "The lobby is clear and the group moves towards the exit."
+        },
+        {
+          "id": "b",
+          "text": "Open it wide and send everyone through at a run.",
+          "correct": false,
+          "why": "Even a cool door can hide smoke. Opening it wide with no way to react can let smoke in, and running in a crowd causes falls.",
+          "consequence": "The group surges through and someone stumbles on the step.",
+          "misconception": "rushes_through",
+          "effects": {
+            "timeLostSeconds": 30
+          }
+        },
+        {
+          "id": "c",
+          "text": "Leave it shut and take the group back upstairs to look for another route.",
+          "correct": false,
+          "why": "A cool door is the guide's signal that the route may be usable. Going back up takes the group away from the exit.",
+          "consequence": "The group climbs back up and loses time.",
+          "misconception": "avoids_safe_route",
+          "effects": {
+            "timeLostSeconds": 90,
+            "smokeLevel": 1
+          }
+        },
+        {
+          "id": "d",
+          "text": "Wait at the door until someone outside opens it.",
+          "correct": false,
+          "why": "Waiting wastes time when you can check the door yourself and continue.",
+          "consequence": "Nobody comes, and time passes.",
+          "misconception": "waits_in_danger",
+          "effects": {
+            "timeLostSeconds": 60
+          }
+        }
+      ],
+      "followUp": "Why do you open a cool door slowly?",
+      "explanationKeyBeats": [
+        "be ready to close it",
+        "smoke or heat can still be behind it"
+      ],
+      "chat": [
+        {
+          "id": "s8-situation",
+          "question": "What is happening here?",
+          "answer": "You and your colleague, with pressure still applied, have reached the bottom of the south stairwell. A shut door leads to the lobby and the exit. You checked it with the back of your hand and it is cool.",
+          "sources": [
+            "S2"
+          ],
+          "keywords": [
+            "happening",
+            "situation",
+            "going on",
+            "who",
+            "where",
+            "describe",
+            "explain the"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s8-guide",
+          "question": "Which part of the guide covers this?",
+          "answer": "Section S2, Checking the route, covers how to check a door before going through it and how to use doors as you move.",
+          "sources": [
+            "S2"
+          ],
+          "keywords": [
+            "guide",
+            "section",
+            "material",
+            "read",
+            "covers",
+            "cover",
+            "source",
+            "chapter"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s8-check",
+          "question": "How did you check the door?",
+          "answer": "With the back of your hand, before touching the handle. That is the check the guide describes for any door on your route.",
+          "sources": [
+            "S2"
+          ],
+          "keywords": [
+            "check",
+            "checked",
+            "hand",
+            "touch",
+            "test"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s8-wide",
+          "question": "Why not open it wide and run through?",
+          "answer": "Even a cool door can hide smoke. Opening it wide leaves no chance to shut it again, and running in a group causes falls. The guide says to open a cool door slowly, ready to close it at once.",
+          "sources": [
+            "S2"
+          ],
+          "keywords": [
+            "wide",
+            "run",
+            "running",
+            "rush",
+            "fast",
+            "quick"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        },
+        {
+          "id": "s8-upstairs",
+          "question": "Why not go back up and find another route?",
+          "answer": "A cool door means the route may be usable. Going back up takes everyone away from the exit and back towards the smoke.",
+          "sources": [
+            "S2",
+            "S3"
+          ],
+          "keywords": [
+            "upstairs",
+            "back up",
+            "another route",
+            "other route",
+            "return"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        },
+        {
+          "id": "s8-wait",
+          "question": "Why not wait for someone to open it?",
+          "answer": "Nobody may come. You can check the door yourself and keep moving.",
+          "sources": [
+            "S2"
+          ],
+          "keywords": [
+            "wait",
+            "waiting",
+            "someone",
+            "outside"
+          ],
+          "availability": "afterFeedback",
+          "suggested": false
+        }
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "The call taker's questions",
+      "sources": [
+        "S5"
+      ],
+      "narrative": "The colleague you asked to call 112 comes back to you. The call is still connected and the call taker is asking for more information. Your colleague asks whether they can hang up so they can help you.",
+      "question": "What do you tell them?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Hang up. Help is already on the way.",
+          "correct": false,
+          "why": "The guide says to stay on the line until told to hang up. The call taker may need details or give instructions.",
+          "consequence": "The call ends and the call taker cannot reach you again.",
+          "misconception": "ends_call_early",
+          "effects": {
+            "timeLostSeconds": 60
+          }
+        },
+        {
+          "id": "b",
+          "text": "Stay on the line, answer the questions and pass on any instructions until told to hang up.",
+          "correct": true,
+          "why": "Staying on the line lets the call taker get the details they need and give instructions until they say the call can end.",
+          "consequence": "The call taker confirms your location and tells you help is close."
+        },
+        {
+          "id": "c",
+          "text": "Hand the phone to the injured colleague so they can explain.",
+          "correct": false,
+          "why": "The injured person needs to stay still and keep the wound under pressure. A helper should handle the call.",
+          "consequence": "Your colleague moves and the bleeding starts again.",
+          "misconception": "burdens_casualty",
+          "effects": {
+            "casualtyStability": -1
+          }
+        },
+        {
+          "id": "d",
+          "text": "Put the phone down and help carry the colleague instead.",
+          "correct": false,
+          "why": "Leaving the call means losing contact with the call taker. Stay on the line until told to hang up.",
+          "consequence": "The call taker hears nothing and has to call back.",
+          "misconception": "ends_call_early",
+          "effects": {
+            "timeLostSeconds": 60
+          }
+        }
+      ],
+      "followUp": "Why does the caller stay on the line?",
+      "explanationKeyBeats": [
+        "stay on the line",
+        "until told to hang up"
+      ],
+      "chat": [
+        {
+          "id": "s9-situation",
+          "question": "What is happening here?",
+          "answer": "The colleague you asked to call 112 is back with you. The call is still connected, the call taker wants more information, and your colleague would like to hang up and help you.",
+          "sources": [
+            "S5"
+          ],
+          "keywords": [
+            "happening",
+            "situation",
+            "going on",
+            "who",
+            "where",
+            "describe",
+            "explain the"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s9-guide",
+          "question": "Which part of the guide covers this?",
+          "answer": "Section S5, Calling for help, covers the emergency number, what to say on the call and how to make sure a call is made.",
+          "sources": [
+            "S5"
+          ],
+          "keywords": [
+            "guide",
+            "section",
+            "material",
+            "read",
+            "covers",
+            "cover",
+            "source",
+            "chapter"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s9-details",
+          "question": "What details does the call taker need?",
+          "answer": "The location, what happened, the number of injured people and any hazards.",
+          "sources": [
+            "S5"
+          ],
+          "keywords": [
+            "details",
+            "information",
+            "need",
+            "location",
+            "what to say",
+            "tell"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s9-hang-up",
+          "question": "Why not hang up once help is on the way?",
+          "answer": "The guide says to stay on the line until told to hang up. The call taker may still need details or have instructions for you.",
+          "sources": [
+            "S5"
+          ],
+          "keywords": [
+            "hang",
+            "hang up",
+            "end",
+            "finish",
+            "already"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        },
+        {
+          "id": "s9-casualty-phone",
+          "question": "Why not give the phone to the injured colleague?",
+          "answer": "The injured person needs to stay still with the wound under pressure. A helper should handle the call.",
+          "sources": [
+            "S5",
+            "S7"
+          ],
+          "keywords": [
+            "injured",
+            "give",
+            "hand",
+            "casualty",
+            "phone to"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        },
+        {
+          "id": "s9-carry",
+          "question": "Why not put the phone down and help carry?",
+          "answer": "Putting the phone down loses contact with the call taker. Stay on the line until told to hang up.",
+          "sources": [
+            "S5"
+          ],
+          "keywords": [
+            "carry",
+            "put down",
+            "down",
+            "help carry"
+          ],
+          "availability": "afterFeedback",
+          "suggested": false
+        }
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "The missing person",
+      "sources": [
+        "S4",
+        "S10"
+      ],
+      "narrative": "A few minutes after your handover, the person who was missing walks up to the assembly point. They left the building by another exit.",
+      "question": "What do you do?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Tell the responders and the person doing the headcount at once, so the search can stop.",
+          "correct": true,
+          "why": "The guide's handover includes any changes since. Responders may be searching for this person, so the news must reach them straight away.",
+          "consequence": "The responders call off the search and the headcount is complete."
+        },
+        {
+          "id": "b",
+          "text": "Wait until someone asks whether the person has turned up.",
+          "correct": false,
+          "why": "Responders may be searching right now. A change like this must be passed on straight away.",
+          "consequence": "A team keeps searching for someone who is already safe.",
+          "misconception": "waits_to_be_asked",
+          "effects": {
+            "timeLostSeconds": 60
+          }
+        },
+        {
+          "id": "c",
+          "text": "Let the person rejoin the group quietly, since they are safe now.",
+          "correct": false,
+          "why": "Nobody in charge would know, so a search could continue and put responders at risk.",
+          "consequence": "Responders keep looking inside the building.",
+          "misconception": "keeps_change_to_self",
+          "effects": {
+            "timeLostSeconds": 60
+          }
+        },
+        {
+          "id": "d",
+          "text": "Ask the person to go back and find the responders inside.",
+          "correct": false,
+          "why": "The guide says not to re-enter the building until it is declared safe.",
+          "consequence": "The person is stopped at the entrance.",
+          "misconception": "re_enters_building",
+          "effects": {
+            "timeLostSeconds": 30
+          }
+        }
+      ],
+      "followUp": "Why must this news reach the responders straight away?",
+      "explanationKeyBeats": [
+        "changes since the handover",
+        "the search can stop"
+      ],
+      "chat": [
+        {
+          "id": "s10-situation",
+          "question": "What is happening here?",
+          "answer": "You have handed over to the responders. Now the person who was missing has walked up to the assembly point; they left by another exit.",
+          "sources": [
+            "S4"
+          ],
+          "keywords": [
+            "happening",
+            "situation",
+            "going on",
+            "who",
+            "where",
+            "describe",
+            "explain the"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s10-guide",
+          "question": "Which part of the guide covers this?",
+          "answer": "S4 covers what to do at the assembly point. S10 covers the handover to the people who take over.",
+          "sources": [
+            "S4",
+            "S10"
+          ],
+          "keywords": [
+            "guide",
+            "section",
+            "material",
+            "read",
+            "covers",
+            "cover",
+            "source",
+            "chapter"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s10-where-wait",
+          "question": "Where should the group wait?",
+          "answer": "At the assembly point, away from the building and its entrances, so emergency teams can get in and work.",
+          "sources": [
+            "S4"
+          ],
+          "keywords": [
+            "where",
+            "wait",
+            "stand",
+            "stay",
+            "group"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "s10-wait-asked",
+          "question": "Why not wait until someone asks?",
+          "answer": "Responders may be searching for this person right now. The guide's handover includes any changes since, so tell them straight away.",
+          "sources": [
+            "S10"
+          ],
+          "keywords": [
+            "asked",
+            "asks",
+            "wait until"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        },
+        {
+          "id": "s10-quietly",
+          "question": "Why not let them rejoin the group quietly?",
+          "answer": "Then nobody in charge knows, and a search could continue inside the building and put responders at risk.",
+          "sources": [
+            "S4",
+            "S10"
+          ],
+          "keywords": [
+            "quietly",
+            "rejoin",
+            "safe now",
+            "nothing"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        },
+        {
+          "id": "s10-go-back",
+          "question": "Why not send them back to find the responders?",
+          "answer": "The guide says not to re-enter the building until it is declared safe.",
+          "sources": [
+            "S4"
+          ],
+          "keywords": [
+            "back",
+            "go back",
+            "inside",
+            "re-enter",
+            "find"
+          ],
+          "availability": "afterFeedback",
+          "suggested": false
+        }
+      ]
     }
   ]
 }

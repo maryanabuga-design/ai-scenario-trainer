@@ -1,0 +1,709 @@
+{
+  "questions": [
+    {
+      "id": "q-s1-1",
+      "section": "S1",
+      "type": "single",
+      "question": "An alarm sounds and nobody knows whether it is a drill. How should you treat it?",
+      "options": [
+        {
+          "id": "a",
+          "text": "As a drill until someone confirms a real fire"
+        },
+        {
+          "id": "b",
+          "text": "As real until it is officially confirmed otherwise"
+        },
+        {
+          "id": "c",
+          "text": "As real only if you can smell smoke"
+        }
+      ],
+      "answer": "b",
+      "why": "The guide says to treat every alarm as real until it is officially confirmed otherwise.",
+      "misconception": "assumes_drill"
+    },
+    {
+      "id": "q-s1-2",
+      "section": "S1",
+      "type": "truefalse",
+      "question": "During a fire, the elevator is a safe way to move people who walk slowly.",
+      "answer": false,
+      "why": "Elevators can stop or fill with smoke. The guide says not to use them during a fire; use the stairs.",
+      "misconception": "elevator_use"
+    },
+    {
+      "id": "q-s1-3",
+      "section": "S1",
+      "type": "multiple",
+      "question": "Which of these belong to the guide's advice when an alarm sounds? Select all that apply.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Stop non-essential tasks"
+        },
+        {
+          "id": "b",
+          "text": "Collect documents from your desk first"
+        },
+        {
+          "id": "c",
+          "text": "Use the stairs, not the elevator"
+        },
+        {
+          "id": "d",
+          "text": "Take only what you can carry in a few seconds"
+        }
+      ],
+      "answer": [
+        "a",
+        "c",
+        "d"
+      ],
+      "why": "The guide asks you to stop non-essential tasks, use the stairs and take only what you can carry in seconds. Collecting documents delays the exit.",
+      "misconception": "delays_exit"
+    },
+    {
+      "id": "q-s1-4",
+      "section": "S1",
+      "type": "text",
+      "question": "Someone needs help to leave, but helping them is not safe. What should you report to responders?",
+      "accepted": [
+        "their location",
+        "where they are",
+        "location",
+        "last known location",
+        "where the person is"
+      ],
+      "answerText": "Where the person is (their location)",
+      "placeholder": "A few words",
+      "why": "The guide says to help only if it is safe; otherwise report the person's location so responders can reach them.",
+      "misconception": "abandons_without_report"
+    },
+    {
+      "id": "q-s2-1",
+      "section": "S2",
+      "type": "text",
+      "question": "What part of your hand do you use to check whether a closed door is hot?",
+      "accepted": [
+        "back of your hand",
+        "back of the hand",
+        "back of hand",
+        "the back"
+      ],
+      "answerText": "The back of your hand",
+      "placeholder": "A few words",
+      "why": "The guide says to feel a closed door with the back of your hand before opening it.",
+      "misconception": "checks_with_palm"
+    },
+    {
+      "id": "q-s2-2",
+      "section": "S2",
+      "type": "single",
+      "question": "A door on your route feels hot. What does the guide tell you to do?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Open it slowly to look"
+        },
+        {
+          "id": "b",
+          "text": "Do not open it and use another route"
+        },
+        {
+          "id": "c",
+          "text": "Open it fully to let the heat out"
+        }
+      ],
+      "answer": "b",
+      "why": "A hot door suggests fire behind it. Do not open it; use another route.",
+      "misconception": "opens_hot_door"
+    },
+    {
+      "id": "q-s2-3",
+      "section": "S2",
+      "type": "ordering",
+      "question": "Put the steps for going through a closed door in the guide's order.",
+      "items": [
+        {
+          "id": "c",
+          "text": "Open it slowly, ready to close it at once"
+        },
+        {
+          "id": "a",
+          "text": "Feel the door with the back of your hand"
+        },
+        {
+          "id": "d",
+          "text": "Close it behind you once you are through"
+        },
+        {
+          "id": "b",
+          "text": "If it is cool, go on to open it"
+        }
+      ],
+      "answer": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "why": "Check the door first, open a cool door slowly so you can shut it again, and close doors behind you to slow fire and smoke.",
+      "misconception": "skips_door_check"
+    },
+    {
+      "id": "q-s3-1",
+      "section": "S3",
+      "type": "single",
+      "question": "Why does the guide tell you to stay low in smoke?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Smoke and hot gases rise, so the air is cleaner near the floor"
+        },
+        {
+          "id": "b",
+          "text": "It is easier to find the exit signs"
+        },
+        {
+          "id": "c",
+          "text": "Smoke is heavier than air"
+        }
+      ],
+      "answer": "a",
+      "why": "Smoke and hot gases rise, so the cleaner air is near the floor.",
+      "misconception": "stays_upright"
+    },
+    {
+      "id": "q-s3-2",
+      "section": "S3",
+      "type": "truefalse",
+      "question": "Breaking a window helps clear smoke from a corridor.",
+      "answer": false,
+      "why": "Extra air can make a fire grow, and it will not clear your route. The guide says not to break windows to clear smoke.",
+      "misconception": "breaks_window"
+    },
+    {
+      "id": "q-s3-3",
+      "section": "S3",
+      "type": "multiple",
+      "question": "Your route is blocked by smoke. Which actions does the guide list? Select all that apply.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Go to a room with a window"
+        },
+        {
+          "id": "b",
+          "text": "Close the door and seal gaps if you can"
+        },
+        {
+          "id": "c",
+          "text": "Run through the smoke quickly"
+        },
+        {
+          "id": "d",
+          "text": "Signal your position and call the emergency number"
+        }
+      ],
+      "answer": [
+        "a",
+        "b",
+        "d"
+      ],
+      "why": "If your route is blocked, go to a room with a window, close the door, seal gaps, signal and call. Running through smoke exposes you to the worst air.",
+      "misconception": "runs_through_smoke"
+    },
+    {
+      "id": "q-s3-4",
+      "section": "S3",
+      "type": "text",
+      "question": "While moving through smoke, what does the guide suggest you keep on the wall?",
+      "accepted": [
+        "one hand",
+        "a hand",
+        "hand",
+        "your hand"
+      ],
+      "answerText": "One hand",
+      "placeholder": "A few words",
+      "why": "Keeping one hand on the wall helps you hold your direction when you cannot see well.",
+      "misconception": "loses_direction"
+    },
+    {
+      "id": "q-s4-1",
+      "section": "S4",
+      "type": "single",
+      "question": "Where should the assembly point be?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Right outside the main entrance"
+        },
+        {
+          "id": "b",
+          "text": "Away from the building and its entrances"
+        },
+        {
+          "id": "c",
+          "text": "In the car park next to the doors"
+        }
+      ],
+      "answer": "b",
+      "why": "Away from the building and its entrances, so responders have access.",
+      "misconception": "blocks_access"
+    },
+    {
+      "id": "q-s4-2",
+      "section": "S4",
+      "type": "truefalse",
+      "question": "Once you are out, you may go back in to fetch a colleague if the smoke looks light.",
+      "answer": false,
+      "why": "The guide says not to re-enter the building until responders declare it safe.",
+      "misconception": "re_enters_building"
+    },
+    {
+      "id": "q-s4-3",
+      "section": "S4",
+      "type": "text",
+      "question": "At the assembly point, what two things do you report about someone who is missing?",
+      "accepted": [
+        "name and last known location",
+        "name and location",
+        "their name and where they were last seen",
+        "name and where last seen",
+        "name and last location"
+      ],
+      "answerText": "Their name and last known location",
+      "placeholder": "Two things",
+      "why": "Report anyone missing and their last known location to the person responsible for the headcount.",
+      "misconception": "incomplete_report"
+    },
+    {
+      "id": "q-s5-1",
+      "section": "S5",
+      "type": "single",
+      "question": "Several people stand around you. What is the guide's way to make sure the emergency call happens?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Shout: \"Someone call for help\""
+        },
+        {
+          "id": "b",
+          "text": "Point at one person and tell them to call and report back"
+        },
+        {
+          "id": "c",
+          "text": "Wait to see whether anyone has called"
+        }
+      ],
+      "answer": "b",
+      "why": "A general request makes people assume someone else has called. Assign one specific person.",
+      "misconception": "diffuse_responsibility"
+    },
+    {
+      "id": "q-s5-2",
+      "section": "S5",
+      "type": "multiple",
+      "question": "What should the caller give on an emergency call? Select all that apply.",
+      "options": [
+        {
+          "id": "a",
+          "text": "The location"
+        },
+        {
+          "id": "b",
+          "text": "What happened"
+        },
+        {
+          "id": "c",
+          "text": "The number of injured people"
+        },
+        {
+          "id": "d",
+          "text": "Their date of birth"
+        },
+        {
+          "id": "e",
+          "text": "Any hazards"
+        }
+      ],
+      "answer": [
+        "a",
+        "b",
+        "c",
+        "e"
+      ],
+      "why": "Give the location, what happened, the number of injured people and any hazards.",
+      "misconception": "incomplete_report"
+    },
+    {
+      "id": "q-s5-3",
+      "section": "S5",
+      "type": "truefalse",
+      "question": "The caller should hang up as soon as they have given the address.",
+      "answer": false,
+      "why": "Stay on the line until you are told to hang up.",
+      "misconception": "ends_call_early"
+    },
+    {
+      "id": "q-s6-1",
+      "section": "S6",
+      "type": "ordering",
+      "question": "Put the guide's first checks of an injured person in order.",
+      "items": [
+        {
+          "id": "b",
+          "text": "Check responsiveness"
+        },
+        {
+          "id": "c",
+          "text": "Check breathing"
+        },
+        {
+          "id": "a",
+          "text": "Check that the scene is safe"
+        }
+      ],
+      "answer": [
+        "a",
+        "b",
+        "c"
+      ],
+      "why": "First make sure the scene is safe so you do not become a second casualty, then check responsiveness, then breathing.",
+      "misconception": "skips_scene_check"
+    },
+    {
+      "id": "q-s6-2",
+      "section": "S6",
+      "type": "single",
+      "question": "For how long do you look, listen and feel for breathing?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Up to 10 seconds"
+        },
+        {
+          "id": "b",
+          "text": "At least one minute"
+        },
+        {
+          "id": "c",
+          "text": "Until help arrives"
+        }
+      ],
+      "answer": "a",
+      "why": "The guide says to check breathing for up to 10 seconds.",
+      "misconception": "delays_assessment"
+    },
+    {
+      "id": "q-s6-3",
+      "section": "S6",
+      "type": "multiple",
+      "question": "Which problems are life-threatening and come first? Select all that apply.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Not breathing"
+        },
+        {
+          "id": "b",
+          "text": "A small burn"
+        },
+        {
+          "id": "c",
+          "text": "Severe bleeding"
+        },
+        {
+          "id": "d",
+          "text": "A sprained ankle"
+        }
+      ],
+      "answer": [
+        "a",
+        "c"
+      ],
+      "why": "Deal with life-threatening problems first: not breathing and severe bleeding.",
+      "misconception": "wrong_priority"
+    },
+    {
+      "id": "q-s7-1",
+      "section": "S7",
+      "type": "single",
+      "question": "What is the first step to control severe bleeding?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Raise the limb and wait"
+        },
+        {
+          "id": "b",
+          "text": "Press firmly and directly on the wound with a clean cloth"
+        },
+        {
+          "id": "c",
+          "text": "Wash the wound under running water"
+        }
+      ],
+      "answer": "b",
+      "why": "Firm, direct pressure with a clean cloth or dressing is the first step.",
+      "misconception": "wrong_first_aid"
+    },
+    {
+      "id": "q-s7-2",
+      "section": "S7",
+      "type": "truefalse",
+      "question": "If the cloth soaks through, you should lift it off and replace it with a fresh one.",
+      "answer": false,
+      "why": "Lifting the cloth releases pressure and can restart bleeding. Add more layers on top instead.",
+      "misconception": "releases_pressure"
+    },
+    {
+      "id": "q-s7-3",
+      "section": "S7",
+      "type": "text",
+      "question": "The cloth on a bleeding wound has soaked through. What do you do?",
+      "accepted": [
+        "add more layers",
+        "add layers",
+        "more layers on top",
+        "put more cloth on top",
+        "add another layer",
+        "layers on top"
+      ],
+      "answerText": "Add more layers on top",
+      "placeholder": "A few words",
+      "why": "Do not remove the soaked cloth; add more layers on top and keep the pressure on.",
+      "misconception": "releases_pressure"
+    },
+    {
+      "id": "q-s7-4",
+      "section": "S7",
+      "type": "ordering",
+      "question": "Put these bleeding care steps in a sensible order.",
+      "items": [
+        {
+          "id": "c",
+          "text": "Keep the person lying down and warm"
+        },
+        {
+          "id": "a",
+          "text": "Press firmly on the wound with a clean cloth"
+        },
+        {
+          "id": "d",
+          "text": "Monitor them until help arrives"
+        },
+        {
+          "id": "b",
+          "text": "Add layers if the cloth soaks through"
+        }
+      ],
+      "answer": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "why": "Pressure first, add layers rather than lifting, then keep the person lying down and warm and monitor them until help arrives.",
+      "misconception": "wrong_priority"
+    },
+    {
+      "id": "q-s8-1",
+      "section": "S8",
+      "type": "single",
+      "question": "How long should a burn be cooled under cool running water?",
+      "options": [
+        {
+          "id": "a",
+          "text": "About 1 minute"
+        },
+        {
+          "id": "b",
+          "text": "10 to 20 minutes"
+        },
+        {
+          "id": "c",
+          "text": "Until the skin feels numb"
+        }
+      ],
+      "answer": "b",
+      "why": "Cool the burn under cool running water for 10 to 20 minutes.",
+      "misconception": "short_cooling"
+    },
+    {
+      "id": "q-s8-2",
+      "section": "S8",
+      "type": "multiple",
+      "question": "Which of these should you not put on a burn? Select all that apply.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ice"
+        },
+        {
+          "id": "b",
+          "text": "Butter"
+        },
+        {
+          "id": "c",
+          "text": "Cool running water"
+        },
+        {
+          "id": "d",
+          "text": "Toothpaste"
+        }
+      ],
+      "answer": [
+        "a",
+        "b",
+        "d"
+      ],
+      "why": "Do not use ice, butter, oils or toothpaste. Cool running water is the right treatment.",
+      "misconception": "home_remedy"
+    },
+    {
+      "id": "q-s8-3",
+      "section": "S8",
+      "type": "truefalse",
+      "question": "A burn on the hand is a reason to seek medical help.",
+      "answer": true,
+      "why": "The guide lists burns on the face, hands or genitals, large or deep burns, or any doubt, as reasons to seek medical help.",
+      "misconception": "underestimates_burn"
+    },
+    {
+      "id": "q-s9-1",
+      "section": "S9",
+      "type": "single",
+      "question": "A person does not respond but is breathing normally. What does the guide say?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Start chest compressions"
+        },
+        {
+          "id": "b",
+          "text": "Place them in the recovery position and monitor breathing"
+        },
+        {
+          "id": "c",
+          "text": "Sit them up and give them water"
+        }
+      ],
+      "answer": "b",
+      "why": "If the person is breathing normally, place them in the recovery position, keep the airway open and monitor breathing.",
+      "misconception": "wrong_first_aid"
+    },
+    {
+      "id": "q-s9-2",
+      "section": "S9",
+      "type": "text",
+      "question": "What device can you use, if one is available, when a person is not breathing normally?",
+      "accepted": [
+        "aed",
+        "defibrillator",
+        "automated external defibrillator"
+      ],
+      "answerText": "An AED (defibrillator)",
+      "placeholder": "A few words",
+      "why": "Use an AED if one is available and follow its prompts.",
+      "misconception": "misses_aed"
+    },
+    {
+      "id": "q-s9-3",
+      "section": "S9",
+      "type": "single",
+      "question": "About how fast are chest compressions given?",
+      "options": [
+        {
+          "id": "a",
+          "text": "About 30 per minute"
+        },
+        {
+          "id": "b",
+          "text": "About 60 per minute"
+        },
+        {
+          "id": "c",
+          "text": "About 100 to 120 per minute"
+        }
+      ],
+      "answer": "c",
+      "why": "The guide says hard and fast, about 100 to 120 per minute, in the centre of the chest.",
+      "misconception": "slow_compressions"
+    },
+    {
+      "id": "q-s10-1",
+      "section": "S10",
+      "type": "ordering",
+      "question": "Put the parts of a handover to responders in the guide's order.",
+      "items": [
+        {
+          "id": "b",
+          "text": "What you found"
+        },
+        {
+          "id": "d",
+          "text": "Any changes since"
+        },
+        {
+          "id": "a",
+          "text": "What happened"
+        },
+        {
+          "id": "c",
+          "text": "What you did and when"
+        }
+      ],
+      "answer": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "why": "A short, ordered handover: what happened, what you found, what you did and when, and any changes since.",
+      "misconception": "disordered_handover"
+    },
+    {
+      "id": "q-s10-2",
+      "section": "S10",
+      "type": "truefalse",
+      "question": "A good handover includes the name of any missing person and where they were last seen.",
+      "answer": true,
+      "why": "The guide says to name any missing person and the last place they were seen.",
+      "misconception": "incomplete_report"
+    },
+    {
+      "id": "q-s10-3",
+      "section": "S10",
+      "type": "multiple",
+      "question": "Which details belong in a handover? Select all that apply.",
+      "options": [
+        {
+          "id": "a",
+          "text": "What you did and when"
+        },
+        {
+          "id": "b",
+          "text": "Your opinion of how the alarm system was installed"
+        },
+        {
+          "id": "c",
+          "text": "Any changes since you started helping"
+        },
+        {
+          "id": "d",
+          "text": "What you found"
+        }
+      ],
+      "answer": [
+        "a",
+        "c",
+        "d"
+      ],
+      "why": "A handover covers what happened, what you found, what you did and when, and any changes since.",
+      "misconception": "incomplete_report"
+    }
+  ]
+}

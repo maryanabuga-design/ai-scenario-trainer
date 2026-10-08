@@ -61,10 +61,14 @@ export const scenario = scenarioData as Scenario;
 
 export type SessionMode = "short" | "full" | "repeat";
 
-/** Short plays the evacuation part of the story (steps 1 to 3). Times are estimates. */
+/**
+ * Short plays the evacuation part of the story (steps 1 to 3), Full the original six steps,
+ * Extended the full story with four extra steps in between. Times are estimates.
+ */
 export const sessionLengths = {
   short: { stepIds: ["s1", "s2", "s3"], minutes: 5 },
-  full: { stepIds: scenario.steps.map((step) => step.id), minutes: 10 },
+  full: { stepIds: ["s1", "s2", "s3", "s4", "s5", "s6"], minutes: 10 },
+  extended: { stepIds: ["s1", "s7", "s2", "s3", "s4", "s5", "s9", "s8", "s6", "s10"], minutes: 16 },
 } as const;
 
 export function getStep(stepId: string): Step {

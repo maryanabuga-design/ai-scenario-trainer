@@ -1,0 +1,58 @@
+[
+  {
+    "id": "evacuation-guide",
+    "name": "Building Evacuation and Basic First Aid: Training Guide",
+    "type": "PDF",
+    "size": "1.2 MB",
+    "added": "2026-10-01",
+    "status": "ready",
+    "hasScenario": true,
+    "sectionsFrom": "guide"
+  },
+  {
+    "id": "shift-notes",
+    "name": "Duty officer shift notes.docx",
+    "type": "Word document",
+    "size": "84 KB",
+    "added": "2026-10-05",
+    "status": "ready",
+    "hasScenario": false,
+    "sections": [
+      {
+        "id": "N1",
+        "title": "Before the shift",
+        "excerpt": "Walk the floor and check that every fire exit and stairwell door is clear and closes on its own."
+      },
+      {
+        "id": "N2",
+        "title": "Know your floor",
+        "excerpt": "Keep an up-to-date list of who is on the floor, including visitors, for the headcount."
+      },
+      {
+        "id": "N3",
+        "title": "After a drill",
+        "excerpt": "Write down how long the evacuation took and anything that slowed the group down."
+      }
+    ]
+  },
+  {
+    "id": "drill-article",
+    "name": "Article: Planning a workplace evacuation drill",
+    "type": "Link",
+    "size": "example.org/evacuation-drill",
+    "added": "2026-10-07",
+    "status": "processing",
+    "progress": 60,
+    "hasScenario": false
+  },
+  {
+    "id": "first-aid-poster",
+    "name": "Scanned first aid poster.pdf",
+    "type": "PDF (scanned)",
+    "size": "6.8 MB",
+    "added": "2026-10-07",
+    "status": "failed",
+    "hasScenario": false,
+    "reason": "This PDF is a scanned image with no readable text. Try a PDF with selectable text, or a Word document."
+  }
+]

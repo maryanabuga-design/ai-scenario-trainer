@@ -16,7 +16,7 @@ import { SessionSetup } from "@/components/SessionSetup/SessionSetup";
 import type { Length } from "@/components/SessionSetup/SessionSetup";
 import { matchQuestion, notCoveredId, replyToChip } from "@/lib/chat";
 import { simulatedFeedback } from "@/lib/feedback";
-import { getStep, scenario } from "@/lib/scenario";
+import { getStep, scenario, sessionLengths } from "@/lib/scenario";
 import { defaultDirection } from "@/lib/directions";
 import { currentWeakAnswers, scoreAnswer } from "@/lib/scoring";
 
@@ -47,7 +47,7 @@ export function DecisionSample({ start }: { start: "empty" | "option" | "complet
       <DecisionStep
         step={sampleStep}
         index={0}
-        total={scenario.steps.length}
+        total={sessionLengths.full.stepIds.length}
         draft={draft}
         onDraftChange={setDraft}
         onSubmit={() => undefined}
@@ -78,7 +78,7 @@ export function FeedbackSample() {
       feedback={simulatedFeedback.evaluate(getStep("s1"), { optionId: "c", confidence: 3 })}
       explanation="The elevator is the quickest way to get twelve people down."
       index={0}
-      total={scenario.steps.length}
+      total={sessionLengths.full.stepIds.length}
       nextLabel="Next step"
       onNext={() => undefined}
       step={getStep("s1")}
@@ -95,7 +95,7 @@ export function AskSample() {
         feedback={simulatedFeedback.evaluate(getStep("s3"), { optionId: "a", confidence: 2 })}
         explanation="Staying low keeps us under the smoke."
         index={2}
-        total={scenario.steps.length}
+        total={sessionLengths.full.stepIds.length}
         nextLabel="Next step"
         onNext={() => undefined}
         step={getStep("s3")}
@@ -149,7 +149,7 @@ export function HomeSample({ withProgress = false }: { withProgress?: boolean })
         withProgress
           ? {
               mode: "full",
-              stepIds: scenario.steps.map((step) => step.id),
+              stepIds: [...sessionLengths.full.stepIds],
               index: 2,
               phase: "decide",
               answers: [],
