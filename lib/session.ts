@@ -1,6 +1,7 @@
 import type { Response } from "@/lib/quiz";
 import type { Confidence, SessionMode } from "@/lib/scenario";
 import { createStore } from "@/lib/store";
+import { clearTrainings } from "@/lib/trainings";
 
 export type Answer = {
   stepId: string;
@@ -99,8 +100,9 @@ export function saveProfile(profile: Profile) {
   profileStore.write(profile);
 }
 
-/** Deletes sessions, history and weak topics. Direction and onboarding stay. */
+/** Deletes sessions, history, weak topics and created trainings. Direction, onboarding and uploads stay. */
 export function resetProgress() {
   sessionStore.write(null);
   historyStore.write(null);
+  clearTrainings();
 }
