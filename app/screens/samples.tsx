@@ -7,6 +7,9 @@ import { AskAiProvider } from "@/components/AskAi/AskAi";
 import type { ChatMessage } from "@/components/AskAi/AskAi";
 import { FeedbackView } from "@/components/FeedbackView/FeedbackView";
 import { HomeView } from "@/components/HomeView/HomeView";
+import { QuizFeedback } from "@/components/QuizFeedback/QuizFeedback";
+import { emptyQuizDraft, QuizQuestion } from "@/components/QuizQuestion/QuizQuestion";
+import type { QuizDraft } from "@/components/QuizQuestion/QuizQuestion";
 import { MaterialView } from "@/components/MaterialView/MaterialView";
 import { MaterialsList } from "@/components/MaterialsList/MaterialsList";
 import { UploadPanel } from "@/components/UploadSheet/UploadSheet";
@@ -20,6 +23,8 @@ import { SessionSetup } from "@/components/SessionSetup/SessionSetup";
 import { defaultSetup } from "@/components/SessionSetup/SessionSetup";
 import type { SetupValue } from "@/components/SessionSetup/SessionSetup";
 import { matchQuestion, notCoveredId, replyToChip } from "@/lib/chat";
+import { getQuestion, scoreQuestion } from "@/lib/quiz";
+import type { Response } from "@/lib/quiz";
 import { simulatedFeedback } from "@/lib/feedback";
 import { getStep, scenario, sessionLengths } from "@/lib/scenario";
 import { defaultDirection } from "@/lib/directions";
@@ -318,5 +323,68 @@ export function NotesMaterialSample() {
   if (!material) return null;
   return (
     <MaterialView material={material} sections={material.sections ?? []} sectionsOpenable={false} />
+  );
+}
+
+/** One quiz question of each type, optionally already answered. */
+export function QuizSample({
+  questionId,
+  index,
+  response,
+}: {
+  questionId: string;
+  index: number;
+  response?: Response;
+}) {
+  const question = getQuestion(questionId);
+  const [draft, setDraft] = useState<QuizDraft>(
+    response ? { response, confidence: null } : emptyQuizDraft(question),
+  );
+  return (
+    <QuizQuestion
+      question={question}
+      index={index}
+      total={5}
+      draft={draft}
+      onDraftChange={setDraft}
+      onSubmit={() => undefined}
+    />
+  );
+}
+
+export function QuizFeedbackSample({
+  questionId,
+  response,
+}: {
+  questionId: string;
+  response: Response;
+}) {
+  return (
+    <QuizFeedback
+      question={getQuestion(questionId)}
+      response={response}
+      confidence={2}
+      index={1}
+      total={5}
+      nextLabel="Next question"
+      onNext={() => undefined}
+    />
+  );
+}
+
+export function QuizResultsSample() {
+  const items = [
+    scoreQuestion(getQuestion("q-s1-1"), { type: "single", optionId: "b" }, 3),
+    scoreQuestion(getQuestion("q-s1-3"), { type: "multiple", optionIds: ["a", "b", "c"] }, 2),
+    scoreQuestion(getQuestion("q-s2-3"), { type: "ordering", order: ["a", "b", "d", "c"] }, null),
+    scoreQuestion(getQuestion("q-s2-1"), { type: "text", text: "back of my hand" }, 3),
+    scoreQuestion(getQuestion("q-s1-2"), { type: "truefalse", value: true }, 3),
+  ];
+  return (
+    <ResultsView
+      results={{ kind: "quiz", mode: "quiz" }}
+      items={items}
+      onRepeat={() => undefined}
+    />
   );
 }

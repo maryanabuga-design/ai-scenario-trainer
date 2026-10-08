@@ -8,14 +8,16 @@ export function ConfidenceSelector({
   name,
   value,
   onChange,
+  legend = "How sure are you?",
 }: {
+  legend?: string;
   name: string;
   value: Confidence | null;
   onChange: (value: Confidence) => void;
 }) {
   return (
     <fieldset className="flex flex-col gap-3">
-      <legend className="mb-3 font-medium">How sure are you?</legend>
+      <legend className="mb-3 font-medium">{legend}</legend>
       <div className="flex flex-wrap gap-2">
         {levels.map((level) => {
           const checked = value === level;

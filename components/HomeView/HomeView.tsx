@@ -84,6 +84,9 @@ export function HomeView({
             decisions, about <span className="tabular-nums">{sessionLengths.full.minutes}</span>{" "}
             min.
           </p>
+          <p className="text-sm text-text-secondary">
+            Or take a quiz on any guide sections, with five kinds of questions.
+          </p>
           {unfinished && (
             <div className="mt-2">
               <ButtonLink href="/session/setup" variant="secondary">

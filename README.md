@@ -44,23 +44,25 @@ All four sections and the whole learning cycle can be clicked through:
 
 - Onboarding on the first visit: choose a direction (one available, three marked "Not available in this prototype"), how it works, an example scenario. It can be skipped.
 - Home: continue an unfinished session, weak topics from your saved sessions, start a new scenario.
-- Materials: the sample guide, its sections in a bottom sheet, and "Start scenario".
-- Session setup: Short (3 decisions, about 5 min) or Full (6 decisions, about 10 min).
+- Materials: the sample guide plus sample "uploaded" items in every state (ready, processing, failed with a reason and "Try another file"), a simulated upload (choose a file, progress, Ready or Failed; only the file's name and size are used, nothing is read), and a material page with details, sections and excerpts. Only the sample guide has a prepared scenario.
+- Session setup: Scenario (Short 3, Full 6 or Extended 10 decisions) or Quiz (one or more guide sections, 5, 10, 15 or a custom number of questions, capped at what the bank holds).
 - Decision step: an action, how sure you are, and one sentence on why you chose it.
 - Feedback: verdict, your answer vs the better one, why, error type, sources, what happened, the AI follow-up question with points a strong answer covers, and "Ask about this step" on the smoke step.
 - Ask AI: a button on the decision step and on feedback opens a chat sheet about the current step, with suggested questions and a text field. Answers are prepared in the scenario JSON and matched by keywords; unmatched questions get "This is not covered by the material" with the closest guide sections. Before you answer, it never says which action is right.
+- Quiz: 33 original questions in `content/quiz-bank.json`, in five types (single choice, multiple choice, ordering with buttons or drag, short text checked against accepted phrases, true or false). Feedback shows the correct answer, why and the guide section; multiple choice and ordering get partial credit; confidence is optional.
 - Results: score, error types, how the situation ended, error analysis with sources, weak topics, and "Repeat weak topics".
-- Progress: weak topics and session history, with an empty state.
+- Progress: weak topics and session history from scenarios and quizzes, with "Repeat weak steps" and "Repeat weak questions", and an empty state.
 - Profile: direction, and "Reset progress" behind a confirmation.
 
 Sessions, history and the profile are saved in this browser on this device (`localStorage`). A page reload keeps your place.
 
-Not built yet: the upload flow in Materials (choose a file, processing). Build order: `docs/build-plan.md`.
+Build order and decisions: `docs/build-plan.md`.
 
 ## Known limits
 
 - AI behavior is simulated. Every answer, follow-up question, chat reply and key point comes from the prepared scenario, and a trainee's explanation is never graded automatically. Free questions in Ask AI are matched by keywords, so rephrasing can change which prepared answer comes back.
-- Upload is not available yet. Only the sample guide is used.
+- Upload is simulated. A chosen file is never read: images, unsupported types and files over 20 MB fail with a reason, anything else becomes Ready. Uploaded items have no sections and no scenario.
+- Short text answers are checked by matching accepted words and phrases, so an unusual but correct wording can be marked wrong.
 - Progress lives in one browser on one device. There are no accounts.
 
 ## Project files

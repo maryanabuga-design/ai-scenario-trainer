@@ -20,6 +20,9 @@ import {
   DecisionSample,
   FeedbackSample,
   HomeSample,
+  QuizFeedbackSample,
+  QuizResultsSample,
+  QuizSample,
   NotesMaterialSample,
   UploadSample,
   OnboardingSample,
@@ -182,6 +185,68 @@ export default function Screens() {
           <PhoneFrame label="Feedback">
             <Screen>
               <FeedbackSample />
+            </Screen>
+          </PhoneFrame>
+        </Group>
+        <Group title="Quiz questions">
+          <PhoneFrame label="Quiz: single choice">
+            <Screen>
+              <QuizSample questionId="q-s1-1" index={0} />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Quiz: multiple choice">
+            <Screen>
+              <QuizSample
+                questionId="q-s1-3"
+                index={1}
+                response={{ type: "multiple", optionIds: ["a", "c"] }}
+              />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Quiz: ordering">
+            <Screen>
+              <QuizSample questionId="q-s2-3" index={2} />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Quiz: short text">
+            <Screen>
+              <QuizSample
+                questionId="q-s2-1"
+                index={3}
+                response={{ type: "text", text: "back of my hand" }}
+              />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Quiz: true or false">
+            <Screen>
+              <QuizSample
+                questionId="q-s1-2"
+                index={4}
+                response={{ type: "truefalse", value: false }}
+              />
+            </Screen>
+          </PhoneFrame>
+        </Group>
+        <Group title="Quiz feedback and results">
+          <PhoneFrame label="Quiz feedback: partly correct">
+            <Screen>
+              <QuizFeedbackSample
+                questionId="q-s1-3"
+                response={{ type: "multiple", optionIds: ["a", "b", "c"] }}
+              />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Quiz feedback: ordering">
+            <Screen>
+              <QuizFeedbackSample
+                questionId="q-s2-3"
+                response={{ type: "ordering", order: ["a", "b", "d", "c"] }}
+              />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Quiz results">
+            <Screen>
+              <QuizResultsSample />
             </Screen>
           </PhoneFrame>
         </Group>
