@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { DecisionStep, emptyDraft } from "@/components/DecisionStep/DecisionStep";
 import type { Draft } from "@/components/DecisionStep/DecisionStep";
+import { AskAiProvider } from "@/components/AskAi/AskAi";
+import type { ChatMessage } from "@/components/AskAi/AskAi";
 import { FeedbackView } from "@/components/FeedbackView/FeedbackView";
 import { HomeView } from "@/components/HomeView/HomeView";
 import { OnboardingView } from "@/components/OnboardingView/OnboardingView";
@@ -12,6 +14,7 @@ import { ProgressView } from "@/components/ProgressView/ProgressView";
 import { ResultsView } from "@/components/ResultsView/ResultsView";
 import { SessionSetup } from "@/components/SessionSetup/SessionSetup";
 import type { Length } from "@/components/SessionSetup/SessionSetup";
+import { matchQuestion, notCoveredId, replyToChip } from "@/lib/chat";
 import { simulatedFeedback } from "@/lib/feedback";
 import { getStep, scenario } from "@/lib/scenario";
 import { defaultDirection } from "@/lib/directions";
@@ -78,11 +81,12 @@ export function FeedbackSample() {
       total={scenario.steps.length}
       nextLabel="Next step"
       onNext={() => undefined}
+      step={getStep("s1")}
     />
   );
 }
 
-/** The smoke step after the trainee tapped the suggested question. */
+/** The smoke step's feedback, with "Ask about this step" at the end. */
 export function AskSample() {
   const endRef = useScrollFrameToEnd(true);
   return (
@@ -94,7 +98,7 @@ export function AskSample() {
         total={scenario.steps.length}
         nextLabel="Next step"
         onNext={() => undefined}
-        questionAsked
+        step={getStep("s3")}
       />
       <div ref={endRef} />
     </>
@@ -213,5 +217,42 @@ export function ProfileSample({ confirming = false }: { confirming?: boolean }) 
       resetDone={false}
       dialogInline
     />
+  );
+}
+
+/** The Ask AI sheet open on the decision step: a neutral answer, then a question it holds back. */
+export function ChatDecideSample() {
+  const step = getStep("s1");
+  const messages: ChatMessage[] = [
+    { role: "trainee", text: "What if someone needs help to move?", chipId: "s1-assistance" },
+    { role: "ai", reply: replyToChip(step, "s1-assistance", "decide") },
+    { role: "trainee", text: "Should we take the elevator?" },
+    { role: "ai", reply: matchQuestion(step, "Should we take the elevator?", "decide") },
+  ];
+  return (
+    <AskAiProvider inline initial={{ chat: { step, phase: "decide" }, messages }}>
+      <DecisionSample start="empty" />
+    </AskAiProvider>
+  );
+}
+
+/** The Ask AI sheet after feedback on the smoke step: a "why not" answer, the not-covered answer, typing. */
+export function ChatFeedbackSample() {
+  const step = getStep("s3");
+  const messages: ChatMessage[] = [
+    { role: "trainee", text: "Why not run upright?", chipId: "s3-upright" },
+    { role: "ai", reply: replyToChip(step, "s3-upright", "feedback") },
+    {
+      role: "trainee",
+      text: "Which type of cloth filters smoke best?",
+      chipId: notCoveredId(step),
+    },
+    { role: "ai", reply: replyToChip(step, notCoveredId(step), "feedback") },
+    { role: "trainee", text: "Why not break a window?", chipId: "s3-window" },
+  ];
+  return (
+    <AskAiProvider inline initial={{ chat: { step, phase: "feedback" }, messages, typing: true }}>
+      <AskSample />
+    </AskAiProvider>
   );
 }

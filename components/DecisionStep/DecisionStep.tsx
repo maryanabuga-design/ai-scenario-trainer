@@ -1,6 +1,7 @@
 "use client";
 
 import { ActionBar } from "@/components/ActionBar/ActionBar";
+import { AskAiButton } from "@/components/AskAi/AskAi";
 import { Button } from "@/components/Button/Button";
 import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
 import { ConfidenceSelector } from "@/components/ConfidenceSelector/ConfidenceSelector";
@@ -56,6 +57,7 @@ export function DecisionStep({
             <SourceChip key={sectionId} sectionId={sectionId} />
           ))}
         </div>
+        <AskAiButton step={step} phase="decide" />
       </section>
 
       <fieldset className="flex flex-col gap-3">

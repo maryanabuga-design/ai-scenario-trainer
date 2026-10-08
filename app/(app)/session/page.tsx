@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { AskAiProvider } from "@/components/AskAi/AskAi";
 import { ButtonLink } from "@/components/Button/Button";
 import { DecisionStep, emptyDraft } from "@/components/DecisionStep/DecisionStep";
 import type { Draft } from "@/components/DecisionStep/DecisionStep";
@@ -71,6 +72,7 @@ function Review({ session }: { session: Session }) {
 
   return (
     <FeedbackView
+      step={step}
       feedback={simulatedFeedback.evaluate(step, answer)}
       explanation={answer.explanation}
       index={session.index}
@@ -86,6 +88,13 @@ export default function SessionPage() {
 
   if (session === "loading") return null;
   if (!session || session.finished) return <NoSession />;
-  if (session.phase === "feedback") return <Review session={session} />;
-  return <Decide key={session.index} session={session} />;
+  return (
+    <AskAiProvider>
+      {session.phase === "feedback" ? (
+        <Review session={session} />
+      ) : (
+        <Decide key={session.index} session={session} />
+      )}
+    </AskAiProvider>
+  );
 }

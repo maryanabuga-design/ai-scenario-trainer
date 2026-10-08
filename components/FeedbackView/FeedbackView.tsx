@@ -7,6 +7,8 @@ import { SessionTopBar } from "@/components/SessionTopBar/SessionTopBar";
 import { SourceChip } from "@/components/SourceChip/SourceChip";
 import { StatusBadge, statuses } from "@/components/StatusBadge/StatusBadge";
 import { SuggestedQuestion } from "@/components/SuggestedQuestion/SuggestedQuestion";
+import { AskAiButton } from "@/components/AskAi/AskAi";
+import type { Step } from "@/lib/scenario";
 import type { Feedback } from "@/lib/feedback";
 
 function headline(feedback: Feedback): [string, string] {
@@ -31,7 +33,7 @@ export function FeedbackView({
   total,
   nextLabel,
   onNext,
-  questionAsked = false,
+  step,
 }: {
   feedback: Feedback;
   explanation: string;
@@ -39,8 +41,7 @@ export function FeedbackView({
   total: number;
   nextLabel: string;
   onNext: () => void;
-  /** Only for the screen review page: show the suggested question already answered. */
-  questionAsked?: boolean;
+  step: Step;
 }) {
   const [first, second] = headline(feedback);
 
@@ -84,6 +85,8 @@ export function FeedbackView({
         </div>
       </Card>
 
+      <AskAiButton step={step} phase="feedback" />
+
       <div className="flex flex-col gap-8 border-t border-border pt-8 text-sm text-text-secondary">
         <section className="flex flex-col gap-1">
           <h2 className="font-medium text-text">What happened</h2>
@@ -108,9 +111,7 @@ export function FeedbackView({
             <p>A reference list to compare with, not a score.</p>
           </div>
         </section>
-        {feedback.suggestedQuestion && (
-          <SuggestedQuestion question={feedback.suggestedQuestion} defaultAsked={questionAsked} />
-        )}
+        <SuggestedQuestion step={step} />
       </div>
 
       <ActionBar>

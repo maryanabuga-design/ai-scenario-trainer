@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import MaterialPage from "@/app/(app)/materials/evacuation-guide/page";
 import Materials from "@/app/(app)/materials/page";
 import { ActionBarProvider, ActionBarSlot } from "@/components/ActionBar/ActionBar";
+import { AskAiProvider } from "@/components/AskAi/AskAi";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
 import { Button } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
@@ -13,6 +14,8 @@ import { Tag } from "@/components/Tag/Tag";
 import { loadGuide } from "@/lib/guide";
 import {
   AskSample,
+  ChatDecideSample,
+  ChatFeedbackSample,
   DecisionSample,
   FeedbackSample,
   HomeSample,
@@ -40,13 +43,15 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
 function Screen({ nav, children }: { nav?: string; children: ReactNode }) {
   return (
     <ActionBarProvider>
-      <div data-frame-scroll className="min-h-0 flex-1 overflow-y-auto px-4 pt-6 pb-6">
-        {children}
-      </div>
-      <div className="bg-bg">
-        <ActionBarSlot />
-        {nav && <BottomNav activePath={nav} />}
-      </div>
+      <AskAiProvider inline>
+        <div data-frame-scroll className="min-h-0 flex-1 overflow-y-auto px-4 pt-6 pb-6">
+          {children}
+        </div>
+        <div className="bg-bg">
+          <ActionBarSlot />
+          {nav && <BottomNav activePath={nav} />}
+        </div>
+      </AskAiProvider>
     </ActionBarProvider>
   );
 }
@@ -165,6 +170,18 @@ export default function Screens() {
           <PhoneFrame label="Repeat weak topics">
             <Screen>
               <RepeatSample />
+            </Screen>
+          </PhoneFrame>
+        </Group>
+        <Group title="Ask AI">
+          <PhoneFrame label="Ask AI: decision step">
+            <Screen>
+              <ChatDecideSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Ask AI: after feedback">
+            <Screen>
+              <ChatFeedbackSample />
             </Screen>
           </PhoneFrame>
         </Group>

@@ -1,6 +1,6 @@
 import { errorType } from "@/lib/scoring";
 import type { ErrorType } from "@/lib/scoring";
-import type { Confidence, Option, Step, SuggestedQuestion } from "@/lib/scenario";
+import type { Confidence, Option, Step } from "@/lib/scenario";
 
 export type Feedback = {
   correct: boolean;
@@ -10,7 +10,6 @@ export type Feedback = {
   sources: string[];
   followUp: string;
   keyBeats: string[];
-  suggestedQuestion?: SuggestedQuestion;
 };
 
 /** The seam for a real AI provider later. This prototype only has the simulated one. */
@@ -32,7 +31,6 @@ export const simulatedFeedback: FeedbackProvider = {
       sources: step.sources,
       followUp: step.followUp,
       keyBeats: step.explanationKeyBeats,
-      suggestedQuestion: step.suggestedQuestion,
     };
   },
 };
