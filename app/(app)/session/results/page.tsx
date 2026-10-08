@@ -3,9 +3,9 @@
 import { useRouter } from "next/navigation";
 import { ButtonLink } from "@/components/Button/Button";
 import { ResultsView } from "@/components/ResultsView/ResultsView";
-import { getStep } from "@/lib/scenario";
-import { scoreAnswer } from "@/lib/scoring";
-import { startSession, useSession } from "@/lib/session";
+import { scoreSession } from "@/lib/progress";
+import { getQuestion } from "@/lib/quiz";
+import { isQuiz, startQuiz, startSession, useSession } from "@/lib/session";
 
 export default function ResultsPage() {
   const router = useRouter();
@@ -26,12 +26,18 @@ export default function ResultsPage() {
 
   return (
     <ResultsView
-      mode={session.mode}
-      answers={session.answers.map((answer) =>
-        scoreAnswer(getStep(answer.stepId), answer.optionId, answer.confidence),
-      )}
-      onRepeat={(stepIds) => {
-        startSession("repeat", stepIds);
+      results={
+        isQuiz(session)
+          ? { kind: "quiz", mode: session.mode }
+          : { kind: "scenario", mode: session.mode }
+      }
+      items={scoreSession(session)}
+      onRepeat={(ids) => {
+        if (isQuiz(session)) {
+          startQuiz(ids, [...new Set(ids.map((id) => getQuestion(id).section))], true);
+        } else {
+          startSession("repeat", ids);
+        }
         window.scrollTo(0, 0);
         router.push("/session");
       }}

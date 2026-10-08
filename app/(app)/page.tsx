@@ -4,8 +4,8 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { HomeView } from "@/components/HomeView/HomeView";
 import { directionTitle } from "@/lib/directions";
-import { weakAnswersFromHistory } from "@/lib/progress";
-import { startSession, useHistory, useProfile, useSession } from "@/lib/session";
+import { weakItemsFromHistory } from "@/lib/progress";
+import { startQuiz, startSession, useHistory, useProfile, useSession } from "@/lib/session";
 
 export default function Home() {
   const router = useRouter();
@@ -26,9 +26,13 @@ export default function Home() {
     <HomeView
       directionTitle={directionTitle(profile?.direction)}
       unfinished={session && !session.finished ? session : null}
-      weakAnswers={weakAnswersFromHistory(history)}
-      onPractise={(stepIds) => {
+      weakItems={weakItemsFromHistory(history)}
+      onRepeatSteps={(stepIds) => {
         startSession("repeat", stepIds);
+        router.push("/session");
+      }}
+      onRepeatQuestions={(questionIds, sections) => {
+        startQuiz(questionIds, sections, true);
         router.push("/session");
       }}
     />

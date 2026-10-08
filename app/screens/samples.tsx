@@ -18,7 +18,7 @@ import { matchQuestion, notCoveredId, replyToChip } from "@/lib/chat";
 import { simulatedFeedback } from "@/lib/feedback";
 import { getStep, scenario, sessionLengths } from "@/lib/scenario";
 import { defaultDirection } from "@/lib/directions";
-import { currentWeakAnswers, scoreAnswer } from "@/lib/scoring";
+import { currentWeakItems, scoreStep } from "@/lib/scoring";
 
 /** Interactive sample screens for the /screens review page. They never touch the saved session. */
 export function SetupSample() {
@@ -107,19 +107,23 @@ export function AskSample() {
 
 /** A full session with one answer of each kind of result. */
 const sampleAnswers = [
-  scoreAnswer(getStep("s1"), "b", 3),
-  scoreAnswer(getStep("s2"), "c", 2),
-  scoreAnswer(getStep("s3"), "b", 3),
-  scoreAnswer(getStep("s4"), "d", 3),
-  scoreAnswer(getStep("s5"), "a", 1),
-  scoreAnswer(getStep("s6"), "c", 3),
+  scoreStep(getStep("s1"), "b", 3),
+  scoreStep(getStep("s2"), "c", 2),
+  scoreStep(getStep("s3"), "b", 3),
+  scoreStep(getStep("s4"), "d", 3),
+  scoreStep(getStep("s5"), "a", 1),
+  scoreStep(getStep("s6"), "c", 3),
 ];
 
 export function ResultsSample({ scrolled = false }: { scrolled?: boolean }) {
   const endRef = useScrollFrameToEnd(scrolled);
   return (
     <>
-      <ResultsView mode="full" answers={sampleAnswers} onRepeat={() => undefined} />
+      <ResultsView
+        results={{ kind: "scenario", mode: "full" }}
+        items={sampleAnswers}
+        onRepeat={() => undefined}
+      />
       <div ref={endRef} />
     </>
   );
@@ -157,8 +161,9 @@ export function HomeSample({ withProgress = false }: { withProgress?: boolean })
             }
           : null
       }
-      weakAnswers={withProgress ? currentWeakAnswers(sampleAnswers) : []}
-      onPractise={() => undefined}
+      weakItems={withProgress ? currentWeakItems(sampleAnswers) : []}
+      onRepeatSteps={() => undefined}
+      onRepeatQuestions={() => undefined}
     />
   );
 }
@@ -181,11 +186,19 @@ export function ProgressSample({ withHistory = false }: { withHistory?: boolean 
         {
           mode: "full" as const,
           finishedAt: Date.UTC(2026, 9, 8, 12, 5),
-          answers: sampleAnswers.map((scored) => answer(scored.step.id, scored.optionId, 2)),
+          answers: sampleAnswers.map((scored, index) =>
+            answer(scored.id, ["b", "c", "b", "d", "a", "c"][index], 2),
+          ),
         },
       ]
     : [];
-  return <ProgressView history={history} onPractise={() => undefined} />;
+  return (
+    <ProgressView
+      history={history}
+      onRepeatSteps={() => undefined}
+      onRepeatQuestions={() => undefined}
+    />
+  );
 }
 
 export function OnboardingSample({ start }: { start: OnboardingStep }) {

@@ -6,21 +6,24 @@ import { Card } from "@/components/Card/Card";
 import { Gradient } from "@/components/Gradient/Gradient";
 import { Tag } from "@/components/Tag/Tag";
 import { WeakTopics } from "@/components/WeakTopics/WeakTopics";
-import { modeLabels } from "@/lib/progress";
+import { sessionLabel } from "@/lib/progress";
 import { scenario, sessionLengths } from "@/lib/scenario";
-import type { ScoredAnswer } from "@/lib/scoring";
+import type { ScoredItem } from "@/lib/scoring";
 import type { Session } from "@/lib/session";
+import { isQuiz, itemCount } from "@/lib/session";
 
 export function HomeView({
   directionTitle,
   unfinished,
-  weakAnswers,
-  onPractise,
+  weakItems,
+  onRepeatSteps,
+  onRepeatQuestions,
 }: {
   directionTitle: string;
   unfinished: Session | null;
-  weakAnswers: ScoredAnswer[];
-  onPractise: (stepIds: string[]) => void;
+  weakItems: ScoredItem[];
+  onRepeatSteps: (stepIds: string[]) => void;
+  onRepeatQuestions: (questionIds: string[], sections: string[]) => void;
 }) {
   return (
     <div className="flex flex-col gap-8">
@@ -42,19 +45,28 @@ export function HomeView({
           </h2>
           <Card className="flex flex-col gap-2">
             <div>
-              <Tag tone={unfinished.mode === "short" ? "peach" : "lilac"}>
-                {modeLabels[unfinished.mode]}
+              <Tag
+                tone={isQuiz(unfinished) ? "blue" : unfinished.mode === "short" ? "peach" : "lilac"}
+              >
+                {sessionLabel(unfinished)}
               </Tag>
             </div>
-            <p className="font-serif text-xl">{scenario.title}</p>
+            <p className="font-serif text-xl">
+              {isQuiz(unfinished) ? `Quiz on ${unfinished.sections.join(", ")}` : scenario.title}
+            </p>
             <p className="text-sm text-text-secondary tabular-nums">
-              Step {unfinished.index + 1} of {unfinished.stepIds.length}
+              {isQuiz(unfinished) ? "Question" : "Step"} {unfinished.index + 1} of{" "}
+              {itemCount(unfinished)}
             </p>
           </Card>
         </section>
       )}
 
-      <WeakTopics weakAnswers={weakAnswers} onPractise={onPractise} />
+      <WeakTopics
+        weakItems={weakItems}
+        onRepeatSteps={onRepeatSteps}
+        onRepeatQuestions={onRepeatQuestions}
+      />
 
       <section aria-labelledby="new-title" className="flex flex-col gap-3">
         <h2 id="new-title" className="text-lg font-medium">

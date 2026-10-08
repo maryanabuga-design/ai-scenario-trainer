@@ -7,10 +7,22 @@ import { Card } from "@/components/Card/Card";
 import { Gradient } from "@/components/Gradient/Gradient";
 import { SourceChip } from "@/components/SourceChip/SourceChip";
 import { StatusBadge, StatusIcon, statuses } from "@/components/StatusBadge/StatusBadge";
+import { formatPoints } from "@/lib/progress";
 import { scenario } from "@/lib/scenario";
 import type { SessionMode } from "@/lib/scenario";
-import type { ScoredAnswer } from "@/lib/scoring";
-import { countErrorTypes, errorTypes, sumEffects, weakSections, weakStepIds } from "@/lib/scoring";
+import type { ScoredItem } from "@/lib/scoring";
+import {
+  countErrorTypes,
+  errorTypes,
+  sumEffects,
+  totalScore,
+  weakItems,
+  weakSections,
+} from "@/lib/scoring";
+
+/** Which session the results belong to. */
+export type ResultsKind =
+  { kind: "scenario"; mode: SessionMode } | { kind: "quiz"; mode: "quiz" | "repeat" };
 
 function formatTime(seconds: number) {
   const minutes = Math.floor(seconds / 60);
@@ -19,12 +31,18 @@ function formatTime(seconds: number) {
   return rest === 0 ? `${minutes} min` : `${minutes} min ${rest} s`;
 }
 
-function headline(mode: SessionMode, weakTopicCount: number): [string, string] {
-  const first = {
-    full: "Session complete.",
-    short: "Short session: you reached the south stairwell.",
-    repeat: "Repeat complete.",
-  }[mode];
+function headline(results: ResultsKind, weakTopicCount: number): [string, string] {
+  const first =
+    results.kind === "quiz"
+      ? results.mode === "repeat"
+        ? "Repeat complete."
+        : "Quiz complete."
+      : {
+          full: "Session complete.",
+          extended: "Extended session complete.",
+          short: "Short session: you reached the south stairwell.",
+          repeat: "Repeat complete.",
+        }[results.mode];
   if (weakTopicCount === 0) return [first, "Nothing to repeat this time."];
   return [first, `Review ${weakTopicCount} ${weakTopicCount === 1 ? "topic" : "topics"} below.`];
 }
@@ -48,20 +66,24 @@ function Row({ label, value }: { label: ReactNode; value: ReactNode }) {
 }
 
 export function ResultsView({
-  mode,
-  answers,
+  results,
+  items,
   onRepeat,
 }: {
-  mode: SessionMode;
-  answers: ScoredAnswer[];
-  onRepeat: (stepIds: string[]) => void;
+  results: ResultsKind;
+  items: ScoredItem[];
+  onRepeat: (ids: string[]) => void;
 }) {
-  const correct = answers.filter((answer) => answer.correct).length;
-  const counts = countErrorTypes(answers);
-  const outcome = sumEffects(scenario.initialState, answers);
-  const repeatIds = weakStepIds(answers);
-  const topics = weakSections(answers);
-  const [first, second] = headline(mode, topics.length);
+  const quiz = results.kind === "quiz";
+  const correct = items.filter((item) => item.correct).length;
+  const counts = countErrorTypes(items);
+  const outcome = sumEffects(scenario.initialState, items);
+  const repeatIds = weakItems(items).map((item) => item.id);
+  const topics = weakSections(items);
+  const [first, second] = headline(results, topics.length);
+  const showOutcome = results.kind === "scenario" && results.mode !== "repeat";
+  const showCasualty =
+    results.kind === "scenario" && (results.mode === "full" || results.mode === "extended");
 
   return (
     <div className="flex flex-col gap-8">
@@ -71,7 +93,7 @@ export function ResultsView({
         </h1>
       </Gradient>
 
-      {mode === "short" && (
+      {results.kind === "scenario" && results.mode === "short" && (
         <p className="text-text-secondary">
           The full session continues to an injured colleague, the call for help and the assembly
           point.
@@ -79,9 +101,18 @@ export function ResultsView({
       )}
 
       <Card className="flex flex-col gap-2">
+        {quiz && (
+          <p className="px-1 pb-1 text-lg font-medium tabular-nums">
+            {formatPoints(totalScore(items))} of {items.length} points
+          </p>
+        )}
         {[
           { status: "correct" as const, label: "correct", count: correct },
-          { status: "wrong" as const, label: "incorrect", count: answers.length - correct },
+          {
+            status: "wrong" as const,
+            label: quiz ? "not fully correct" : "incorrect",
+            count: items.length - correct,
+          },
         ].map((row) => (
           <div
             key={row.status}
@@ -116,7 +147,7 @@ export function ResultsView({
         </div>
       </Section>
 
-      {mode !== "repeat" && (
+      {showOutcome && (
         <Section title="How the situation ended">
           <div className="flex flex-col divide-y divide-border">
             <Row label="Time lost" value={formatTime(outcome.timeLostSeconds)} />
@@ -124,7 +155,7 @@ export function ResultsView({
               label="Smoke level"
               value={`${outcome.smokeLevel} (started at ${scenario.initialState.smokeLevel})`}
             />
-            {mode === "full" && (
+            {showCasualty && (
               <Row
                 label="Injured colleague"
                 value={
@@ -138,35 +169,42 @@ export function ResultsView({
 
       <Section title="Error analysis">
         <ol className="flex flex-col gap-3">
-          {answers.map((answer) => {
-            const chosen = answer.step.options.find((option) => option.id === answer.optionId);
-            const best = answer.step.options.find((option) => option.correct);
-            return (
-              <li key={answer.step.id}>
-                <Card className="flex flex-col gap-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <h3 className="font-serif text-lg">{answer.step.title}</h3>
-                    <StatusBadge status={answer.errorType} />
-                  </div>
+          {items.map((item) => (
+            <li key={item.id}>
+              <Card className="flex flex-col gap-3">
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className={item.kind === "step" ? "font-serif text-lg" : "font-medium"}>
+                    {item.title}
+                  </h3>
+                  <StatusBadge status={item.errorType} />
+                </div>
+                <p className="text-sm">
+                  <span className="text-text-secondary">
+                    {item.kind === "step" ? "You chose: " : "Your answer: "}
+                  </span>
+                  {item.yourAnswer || "No answer"}
+                </p>
+                {!item.correct && (
                   <p className="text-sm">
-                    <span className="text-text-secondary">You chose: </span>
-                    {chosen?.text}
+                    <span className="text-text-secondary">
+                      {item.kind === "step" ? "Better: " : "Correct answer: "}
+                    </span>
+                    {item.correctAnswer}
                   </p>
-                  {!answer.correct && (
-                    <p className="text-sm">
-                      <span className="text-text-secondary">Better: </span>
-                      {best?.text}
-                    </p>
-                  )}
-                  <div className="flex flex-wrap gap-2">
-                    {answer.step.sources.map((sectionId) => (
-                      <SourceChip key={sectionId} sectionId={sectionId} />
-                    ))}
-                  </div>
-                </Card>
-              </li>
-            );
-          })}
+                )}
+                {item.kind === "question" && item.score > 0 && item.score < 1 && (
+                  <p className="text-sm text-text-secondary tabular-nums">
+                    Partly correct: {formatPoints(item.score)} of 1 point
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  {item.sources.map((sectionId) => (
+                    <SourceChip key={sectionId} sectionId={sectionId} />
+                  ))}
+                </div>
+              </Card>
+            </li>
+          ))}
         </ol>
       </Section>
 
@@ -187,15 +225,24 @@ export function ResultsView({
           <>
             <p className="text-center text-sm text-text-secondary">
               Replays <span className="tabular-nums">{repeatIds.length}</span>{" "}
-              {repeatIds.length === 1 ? "step" : "steps"} you got wrong or guessed.
+              {quiz
+                ? repeatIds.length === 1
+                  ? "question"
+                  : "questions"
+                : repeatIds.length === 1
+                  ? "step"
+                  : "steps"}{" "}
+              you got wrong, partly right or guessed.
             </p>
-            <Button onClick={() => onRepeat(repeatIds)}>Repeat weak topics</Button>
-            <ButtonLink href="/materials/evacuation-guide" variant="text">
-              Back to the material
+            <Button onClick={() => onRepeat(repeatIds)}>
+              {quiz ? "Repeat weak questions" : "Repeat weak topics"}
+            </Button>
+            <ButtonLink href="/" variant="text">
+              Back to Home
             </ButtonLink>
           </>
         ) : (
-          <ButtonLink href="/materials/evacuation-guide">Back to the material</ButtonLink>
+          <ButtonLink href="/">Back to Home</ButtonLink>
         )}
       </ActionBar>
     </div>

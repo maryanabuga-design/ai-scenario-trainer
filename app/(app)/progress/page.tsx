@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { ProgressView } from "@/components/ProgressView/ProgressView";
-import { startSession, useHistory } from "@/lib/session";
+import { startQuiz, startSession, useHistory } from "@/lib/session";
 
 export default function Progress() {
   const router = useRouter();
@@ -13,8 +13,12 @@ export default function Progress() {
   return (
     <ProgressView
       history={history ?? []}
-      onPractise={(stepIds) => {
+      onRepeatSteps={(stepIds) => {
         startSession("repeat", stepIds);
+        router.push("/session");
+      }}
+      onRepeatQuestions={(questionIds, sections) => {
+        startQuiz(questionIds, sections, true);
         router.push("/session");
       }}
     />

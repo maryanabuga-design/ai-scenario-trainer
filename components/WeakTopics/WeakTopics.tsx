@@ -2,18 +2,22 @@
 
 import { Button } from "@/components/Button/Button";
 import { SourceChip } from "@/components/SourceChip/SourceChip";
-import type { ScoredAnswer } from "@/lib/scoring";
+import type { ScoredItem } from "@/lib/scoring";
 import { weakSections } from "@/lib/scoring";
 
-/** Weak topics from the saved history, with a way to practise them. */
+/** Weak topics from the saved history, with a way to repeat the weak steps and questions. */
 export function WeakTopics({
-  weakAnswers,
-  onPractise,
+  weakItems,
+  onRepeatSteps,
+  onRepeatQuestions,
 }: {
-  weakAnswers: ScoredAnswer[];
-  onPractise: (stepIds: string[]) => void;
+  weakItems: ScoredItem[];
+  onRepeatSteps: (stepIds: string[]) => void;
+  onRepeatQuestions: (questionIds: string[], sections: string[]) => void;
 }) {
-  const sections = weakSections(weakAnswers);
+  const sections = weakSections(weakItems);
+  const steps = weakItems.filter((item) => item.kind === "step");
+  const questions = weakItems.filter((item) => item.kind === "question");
 
   return (
     <section aria-labelledby="weak-topics-title" className="flex flex-col gap-3">
@@ -22,8 +26,8 @@ export function WeakTopics({
       </h2>
       {sections.length === 0 ? (
         <p className="text-text-secondary">
-          No weak topics yet. They appear here after a session, for every step you got wrong or
-          guessed.
+          No weak topics yet. They appear here after a session or a quiz, for everything you got
+          wrong, partly right or guessed.
         </p>
       ) : (
         <>
@@ -32,14 +36,28 @@ export function WeakTopics({
               <SourceChip key={sectionId} sectionId={sectionId} showTitle />
             ))}
           </div>
-          <div>
-            <Button
-              variant="secondary"
-              onClick={() => onPractise(weakAnswers.map((answer) => answer.step.id))}
-            >
-              Practise weak topics ({weakAnswers.length}{" "}
-              {weakAnswers.length === 1 ? "step" : "steps"})
-            </Button>
+          <div className="flex flex-wrap gap-3">
+            {steps.length > 0 && (
+              <Button
+                variant="secondary"
+                onClick={() => onRepeatSteps(steps.map((item) => item.id))}
+              >
+                Repeat weak steps ({steps.length})
+              </Button>
+            )}
+            {questions.length > 0 && (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  onRepeatQuestions(
+                    questions.map((item) => item.id),
+                    weakSections(questions),
+                  )
+                }
+              >
+                Repeat weak questions ({questions.length})
+              </Button>
+            )}
           </div>
         </>
       )}

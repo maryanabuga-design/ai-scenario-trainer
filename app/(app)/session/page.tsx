@@ -9,8 +9,8 @@ import type { Draft } from "@/components/DecisionStep/DecisionStep";
 import { FeedbackView } from "@/components/FeedbackView/FeedbackView";
 import { simulatedFeedback } from "@/lib/feedback";
 import { getStep } from "@/lib/scenario";
-import type { Session } from "@/lib/session";
-import { finishSession, saveSession, useSession } from "@/lib/session";
+import type { ScenarioSession } from "@/lib/session";
+import { finishSession, isQuiz, saveSession, useSession } from "@/lib/session";
 
 function NoSession() {
   return (
@@ -24,7 +24,7 @@ function NoSession() {
   );
 }
 
-function Decide({ session }: { session: Session }) {
+function Decide({ session }: { session: ScenarioSession }) {
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const step = getStep(session.stepIds[session.index]);
 
@@ -52,7 +52,7 @@ function Decide({ session }: { session: Session }) {
   );
 }
 
-function Review({ session }: { session: Session }) {
+function Review({ session }: { session: ScenarioSession }) {
   const router = useRouter();
   const step = getStep(session.stepIds[session.index]);
   const answer = session.answers.find((candidate) => candidate.stepId === step.id);
@@ -87,7 +87,7 @@ export default function SessionPage() {
   const session = useSession();
 
   if (session === "loading") return null;
-  if (!session || session.finished) return <NoSession />;
+  if (!session || session.finished || isQuiz(session)) return <NoSession />;
   return (
     <AskAiProvider>
       {session.phase === "feedback" ? (

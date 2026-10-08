@@ -59,7 +59,7 @@ export type Scenario = {
 
 export const scenario = scenarioData as Scenario;
 
-export type SessionMode = "short" | "full" | "repeat";
+export type SessionMode = "short" | "full" | "extended" | "repeat";
 
 /**
  * Short plays the evacuation part of the story (steps 1 to 3), Full the original six steps,
