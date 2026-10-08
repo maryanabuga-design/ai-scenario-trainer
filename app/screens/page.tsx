@@ -6,7 +6,6 @@ import { ActionBarProvider, ActionBarSlot } from "@/components/ActionBar/ActionB
 import { BottomNav } from "@/components/BottomNav/BottomNav";
 import { Button } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
-import { ComingNext } from "@/components/ComingNext/ComingNext";
 import { Gradient } from "@/components/Gradient/Gradient";
 import { PhoneFrame } from "@/components/PhoneFrame/PhoneFrame";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
@@ -89,17 +88,6 @@ function FoundationKit() {
   );
 }
 
-function ComingNextScreen() {
-  return (
-    <>
-      <div className="flex-1 p-4 pt-6">
-        <ComingNext title="Progress" />
-      </div>
-      <BottomNav activePath="/progress" />
-    </>
-  );
-}
-
 export default function Screens() {
   if (process.env.NODE_ENV === "production") notFound();
 
@@ -112,12 +100,9 @@ export default function Screens() {
             Development only. Every planned screen at 390 by 844. Dashed frames are not built yet.
           </p>
         </header>
-        <Group title="Built so far">
+        <Group title="Foundation">
           <PhoneFrame label="Foundation kit">
             <FoundationKit />
-          </PhoneFrame>
-          <PhoneFrame label="Coming next">
-            <ComingNextScreen />
           </PhoneFrame>
         </Group>
         <Group title="Materials">
