@@ -1,0 +1,147 @@
+{
+  "id": "flood-question-bank-001",
+  "source": "content/sample-flood-guide.md",
+  "context": "Educational, non-combat civil-protection quiz. No weapons, harm or combat content.",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "single",
+      "section": "F1",
+      "prompt": "An official flood warning is issued for your area. What is the right way to treat it?",
+      "options": [
+        { "id": "a", "text": "As real, and act on it without waiting to see the water" },
+        { "id": "b", "text": "As a possible false alarm until the water reaches your street" },
+        { "id": "c", "text": "As information for people who live next to the river only" },
+        { "id": "d", "text": "As something to confirm by phoning neighbours first" }
+      ],
+      "correct": ["a"],
+      "why": "A warning means flooding is expected, and water can rise faster than people expect.",
+      "misconception": "waits_for_proof"
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "section": "F2",
+      "prompt": "Which item belongs in a grab bag you can pick up in seconds?",
+      "options": [
+        { "id": "a", "text": "Copies of important documents in a waterproof bag" },
+        { "id": "b", "text": "A full set of kitchen tools" },
+        { "id": "c", "text": "Perishable food for a week" },
+        { "id": "d", "text": "A large electrical appliance" }
+      ],
+      "correct": ["a"],
+      "why": "Documents and medicines matter more than heavy belongings, and the bag must be quick to carry.",
+      "misconception": "puts_property_first"
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "section": "F5",
+      "prompt": "About how deep can moving water be before it can knock an adult off their feet?",
+      "options": [
+        { "id": "a", "text": "About 15 cm" },
+        { "id": "b", "text": "About 60 cm" },
+        { "id": "c", "text": "About 1 metre" },
+        { "id": "d", "text": "Only above chest height" }
+      ],
+      "correct": ["a"],
+      "why": "Even shallow moving water is dangerous, and its depth and force cannot be judged by looking.",
+      "misconception": "trusts_appearance"
+    },
+    {
+      "id": "q4",
+      "type": "multiple",
+      "section": "F5",
+      "prompt": "Select all the dangers of floodwater.",
+      "options": [
+        { "id": "a", "text": "Hidden holes and debris under the surface" },
+        { "id": "b", "text": "Contamination with sewage or chemicals" },
+        { "id": "c", "text": "A strong current even when the water looks calm" },
+        { "id": "d", "text": "It is always safe to touch if it looks clear" }
+      ],
+      "correct": ["a", "b", "c"],
+      "why": "Floodwater hides hazards, can be contaminated even when clear, and can move with force.",
+      "misconception": "trusts_appearance"
+    },
+    {
+      "id": "q5",
+      "type": "trueFalse",
+      "section": "F5",
+      "prompt": "True or false: it is safe to drive through floodwater if the water looks shallow.",
+      "correct": [false],
+      "why": "Moving water about 30 cm deep can float a car, and the real depth cannot be judged by looking.",
+      "misconception": "drives_through_water"
+    },
+    {
+      "id": "q6",
+      "type": "ordering",
+      "section": "F3",
+      "prompt": "Put the steps in the right order when a flood warning is issued.",
+      "items": [
+        { "id": "a", "text": "Listen to the official instructions" },
+        { "id": "b", "text": "Gather the group and the grab bag" },
+        { "id": "c", "text": "Check first on people who need help to move" },
+        { "id": "d", "text": "Move to higher ground by the safe route" }
+      ],
+      "correctOrder": ["a", "b", "c", "d"],
+      "why": "Start from the official instructions, then gather and support people, and move before the water arrives.",
+      "misconception": "disperses_group"
+    },
+    {
+      "id": "q7",
+      "type": "single",
+      "section": "F4",
+      "prompt": "You have two routes to higher ground. Which one do you choose?",
+      "options": [
+        { "id": "a", "text": "A longer route that stays above the water" },
+        { "id": "b", "text": "The shortest route, even through shallow water" },
+        { "id": "c", "text": "Whichever route has the fewest people on it" },
+        { "id": "d", "text": "A route along the river bank" }
+      ],
+      "correct": ["a"],
+      "why": "A longer dry route is safer than a shorter one through floodwater.",
+      "misconception": "trusts_appearance"
+    },
+    {
+      "id": "q8",
+      "type": "text",
+      "section": "F6",
+      "prompt": "In one sentence: why do you point at one named person when asking them to call 112?",
+      "acceptedKeywords": ["someone else", "assume", "assumes", "responsibility", "specific", "named", "one person", "nobody calls", "no one calls"],
+      "minimumMatches": 1,
+      "referenceAnswer": "A general request leads people to assume someone else has called, so one named person makes sure the call happens.",
+      "why": "Naming one person avoids everyone assuming that someone else has already called.",
+      "misconception": "diffuse_responsibility"
+    },
+    {
+      "id": "q9",
+      "type": "single",
+      "section": "F7",
+      "prompt": "When should you return to a building after a flood?",
+      "options": [
+        { "id": "a", "text": "When the authorities say the area is safe" },
+        { "id": "b", "text": "As soon as the water drops below the door" },
+        { "id": "c", "text": "When you see other people going back in" },
+        { "id": "d", "text": "After you have switched on the lights to check" }
+      ],
+      "correct": ["a"],
+      "why": "Water may still be high in places and structures and electrics may be unsafe.",
+      "misconception": "returns_too_early"
+    },
+    {
+      "id": "q10",
+      "type": "multiple",
+      "section": "F7",
+      "prompt": "Select all the right actions after a flood.",
+      "options": [
+        { "id": "a", "text": "Treat tap water as unsafe until it is announced as safe" },
+        { "id": "b", "text": "Photograph the damage before cleaning" },
+        { "id": "c", "text": "Have the electrics checked before switching anything on" },
+        { "id": "d", "text": "Pump out a flooded basement as quickly as possible" }
+      ],
+      "correct": ["a", "b", "c"],
+      "why": "Water and electrics need checking, damage records help later, and fast pumping can damage walls and floors.",
+      "misconception": "pumps_too_fast"
+    }
+  ]
+}
