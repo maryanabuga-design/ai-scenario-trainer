@@ -68,6 +68,13 @@ export function MaterialView({
   scenarioCard?: ReactNode;
 }) {
   const router = useRouter();
+  const { sections: guideSections } = useSourceSheet();
+  // An uploaded copy of a sample guide shows that guide's sections and first lines.
+  const fromGuide = guideSections
+    .filter((section) => material.sectionIds?.includes(section.id))
+    .map((section) => ({ id: section.id, title: section.title, excerpt: section.lines[0] ?? "" }));
+  const shownSections = sections.length > 0 ? sections : fromGuide;
+  const openable = sectionsOpenable || (sections.length === 0 && fromGuide.length > 0);
   const trainings = useTrainings();
   const training = trainings === "loading" ? undefined : trainings?.[material.id];
   const canCreate = material.status === "ready" && (material.sectionIds?.length ?? 0) > 0;
@@ -113,11 +120,11 @@ export function MaterialView({
 
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-medium">Sections</h2>
-        {sections.length > 0 ? (
+        {shownSections.length > 0 ? (
           <ul className="flex flex-col divide-y divide-border rounded-card bg-surface px-4">
-            {sections.map((section) => (
+            {shownSections.map((section) => (
               <li key={section.id}>
-                <SectionRow section={section} openable={sectionsOpenable} />
+                <SectionRow section={section} openable={openable} />
               </li>
             ))}
           </ul>

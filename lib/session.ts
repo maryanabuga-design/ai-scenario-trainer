@@ -25,6 +25,8 @@ type Progress = {
 /** Sessions saved before quizzes existed have no kind; they are scenario sessions. */
 export type ScenarioSession = Progress & {
   kind?: "scenario";
+  /** Missing in sessions saved before there were two scenarios: the evacuation one. */
+  scenarioId?: string;
   mode: SessionMode;
   stepIds: string[];
   answers: Answer[];
@@ -41,7 +43,13 @@ export type QuizSession = Progress & {
 export type Session = ScenarioSession | QuizSession;
 
 export type FinishedSession =
-  | { kind?: "scenario"; mode: SessionMode; answers: Answer[]; finishedAt: number }
+  | {
+      kind?: "scenario";
+      scenarioId?: string;
+      mode: SessionMode;
+      answers: Answer[];
+      finishedAt: number;
+    }
   | { kind: "quiz"; mode: "quiz" | "repeat"; answers: QuizAnswer[]; finishedAt: number };
 
 export type Profile = {
@@ -69,8 +77,16 @@ export function saveSession(session: Session) {
   sessionStore.write(session);
 }
 
-export function startSession(mode: SessionMode, stepIds: string[]) {
-  saveSession({ mode, stepIds, index: 0, phase: "decide", answers: [], finished: false });
+export function startSession(mode: SessionMode, stepIds: string[], scenarioId?: string) {
+  saveSession({
+    scenarioId,
+    mode,
+    stepIds,
+    index: 0,
+    phase: "decide",
+    answers: [],
+    finished: false,
+  });
 }
 
 export function startQuiz(questionIds: string[], sections: string[], repeat = false) {
@@ -92,7 +108,7 @@ export function finishSession(session: Session) {
   const finishedAt = Date.now();
   const entry: FinishedSession = isQuiz(session)
     ? { kind: "quiz", mode: session.mode, answers: session.answers, finishedAt }
-    : { mode: session.mode, answers: session.answers, finishedAt };
+    : { scenarioId: session.scenarioId, mode: session.mode, answers: session.answers, finishedAt };
   historyStore.write([...(historyStore.read() ?? []), entry]);
 }
 

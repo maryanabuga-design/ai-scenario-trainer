@@ -358,9 +358,11 @@ export function AskAiProvider({
   );
 }
 
-/** Secondary pill that opens the Ask AI sheet for the current step. */
+/** Secondary pill that opens the Ask AI sheet for the current step, if it has prepared answers. */
 export function AskAiButton({ step, phase }: { step: Step; phase: ChatPhase }) {
   const { open } = useAskAi();
+  // Only steps with prepared answers offer the chat (the flood scenario has none).
+  if (step.chat.length === 0 && !step.suggestedQuestion) return null;
   return (
     <button
       type="button"

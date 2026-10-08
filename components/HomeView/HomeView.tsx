@@ -7,7 +7,7 @@ import { Gradient } from "@/components/Gradient/Gradient";
 import { Tag } from "@/components/Tag/Tag";
 import { WeakTopics } from "@/components/WeakTopics/WeakTopics";
 import { sessionLabel } from "@/lib/progress";
-import { scenario, sessionLengths } from "@/lib/scenario";
+import { getScenario, scenario, sessionLengths } from "@/lib/scenario";
 import type { ScoredItem } from "@/lib/scoring";
 import type { Session } from "@/lib/session";
 import { isQuiz, itemCount } from "@/lib/session";
@@ -52,7 +52,9 @@ export function HomeView({
               </Tag>
             </div>
             <p className="font-serif text-xl">
-              {isQuiz(unfinished) ? `Quiz on ${unfinished.sections.join(", ")}` : scenario.title}
+              {isQuiz(unfinished)
+                ? `Quiz on ${unfinished.sections.join(", ")}`
+                : getScenario(unfinished.scenarioId).title}
             </p>
             <p className="text-sm text-text-secondary tabular-nums">
               {isQuiz(unfinished) ? "Question" : "Step"} {unfinished.index + 1} of{" "}

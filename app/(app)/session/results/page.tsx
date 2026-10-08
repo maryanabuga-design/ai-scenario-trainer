@@ -29,14 +29,14 @@ export default function ResultsPage() {
       results={
         isQuiz(session)
           ? { kind: "quiz", mode: session.mode }
-          : { kind: "scenario", mode: session.mode }
+          : { kind: "scenario", mode: session.mode, scenarioId: session.scenarioId }
       }
       items={scoreSession(session)}
       onRepeat={(ids) => {
         if (isQuiz(session)) {
           startQuiz(ids, [...new Set(ids.map((id) => getQuestion(id).section))], true);
         } else {
-          startSession("repeat", ids);
+          startSession("repeat", ids, session.scenarioId);
         }
         window.scrollTo(0, 0);
         router.push("/session");

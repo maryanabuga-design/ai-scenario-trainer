@@ -32,16 +32,31 @@ import { matchQuestion, notCoveredId, replyToChip } from "@/lib/chat";
 import { getQuestion, scoreQuestion } from "@/lib/quiz";
 import type { Response } from "@/lib/quiz";
 import { simulatedFeedback } from "@/lib/feedback";
-import { getStep, scenario, sessionLengths } from "@/lib/scenario";
+import { getScenario, getStep, scenario, sessionLengths } from "@/lib/scenario";
 import { defaultDirection } from "@/lib/directions";
 import { sampleMaterials } from "@/lib/materials";
 import { materialFromSample, sampleFiles } from "@/lib/training";
 import { currentWeakItems, scoreStep } from "@/lib/scoring";
 
 /** Interactive sample screens for the /screens review page. They never touch the saved session. */
-export function SetupSample({ start = defaultSetup }: { start?: SetupValue }) {
+export function SetupSample({
+  start = defaultSetup,
+  scenarioId,
+}: {
+  start?: SetupValue;
+  scenarioId?: string;
+}) {
   const [value, setValue] = useState<SetupValue>(start);
-  return <SessionSetup value={value} onChange={setValue} onStart={() => undefined} />;
+  const def = getScenario(scenarioId);
+  return (
+    <SessionSetup
+      value={value}
+      onChange={setValue}
+      onStart={() => undefined}
+      scenarioDef={def}
+      materialName={scenarioId ? "Flood preparedness guide.pdf" : undefined}
+    />
+  );
 }
 
 const sampleStep = scenario.steps[0];
@@ -439,4 +454,40 @@ export function ReviewSample() {
       expanded
     />
   );
+}
+
+const FLOOD = "flood-preparedness-001";
+
+/** The flood scenario's first step: no Ask AI, F-section chips. */
+export function FloodStepSample() {
+  const [draft, setDraft] = useState<Draft>(emptyDraft);
+  return (
+    <DecisionStep
+      step={getStep("flood-s1")}
+      index={0}
+      total={3}
+      draft={draft}
+      onDraftChange={setDraft}
+      onSubmit={() => undefined}
+    />
+  );
+}
+
+/** Flood results: time lost and water level only. */
+export function FloodResultsSample() {
+  return (
+    <ResultsView
+      results={{ kind: "scenario", mode: "short", scenarioId: FLOOD }}
+      items={[
+        scoreStep(getStep("flood-s1"), "c", 3),
+        scoreStep(getStep("flood-s2"), "a", 3),
+        scoreStep(getStep("flood-s3"), "a", 2),
+      ]}
+      onRepeat={() => undefined}
+    />
+  );
+}
+
+export function FloodSetupSample() {
+  return <SetupSample start={{ ...defaultSetup, length: "short" }} scenarioId={FLOOD} />;
 }

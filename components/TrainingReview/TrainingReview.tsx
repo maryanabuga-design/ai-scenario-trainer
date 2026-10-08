@@ -10,7 +10,7 @@ import { Tag } from "@/components/Tag/Tag";
 import type { Material } from "@/lib/materials";
 import { questionsFor } from "@/lib/quiz";
 import type { Question } from "@/lib/quiz";
-import { getStep, sessionLengths } from "@/lib/scenario";
+import { defaultStory, getScenario } from "@/lib/scenario";
 import type { Training } from "@/lib/training";
 
 const typeLabels: Record<Question["type"], string> = {
@@ -69,7 +69,11 @@ export function TrainingReview({
   /** Only for the screen review page: show both lists open. */
   expanded?: boolean;
 }) {
-  const steps = sessionLengths.full.stepIds.map(getStep);
+  const scenarioDef = getScenario(material.scenarioId);
+  const steps = defaultStory(scenarioDef);
+  const others = (["short", "extended"] as const)
+    .filter((length) => length !== scenarioDef.defaultLength && scenarioDef.lengths[length])
+    .map((length) => `${length} session of ${scenarioDef.lengths[length]?.stepIds.length}`);
   const questions = questionsFor(training.sections);
 
   return (
@@ -91,8 +95,10 @@ export function TrainingReview({
                 Scenario: <span className="tabular-nums">{steps.length}</span> decisions
               </h2>
               <p className="text-sm text-text-secondary">
-                Also as a short session of {sessionLengths.short.stepIds.length} or an extended one
-                of {sessionLengths.extended.stepIds.length}.
+                {scenarioDef.title}.{" "}
+                {others.length > 0
+                  ? `Also as a ${others.join(" or an ")}.`
+                  : "This material has one length."}
               </p>
             </div>
           }

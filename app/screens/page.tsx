@@ -12,7 +12,7 @@ import { Gradient } from "@/components/Gradient/Gradient";
 import { PhoneFrame } from "@/components/PhoneFrame/PhoneFrame";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { Tag } from "@/components/Tag/Tag";
-import { loadGuide } from "@/lib/guide";
+import { loadAllSections } from "@/lib/guide";
 import {
   AskSample,
   ChatDecideSample,
@@ -21,6 +21,9 @@ import {
   FeedbackSample,
   CreateTrainingSample,
   GeneratingSample,
+  FloodResultsSample,
+  FloodSetupSample,
+  FloodStepSample,
   HomeSample,
   ReviewSample,
   QuizFeedbackSample,
@@ -106,7 +109,7 @@ export default function Screens() {
   if (process.env.NODE_ENV === "production") notFound();
 
   return (
-    <SourceSheetProvider sections={loadGuide().sections}>
+    <SourceSheetProvider sections={loadAllSections()}>
       <main className="flex flex-col gap-10 bg-surface-muted p-8">
         <header className="flex flex-col gap-1">
           <h1 className="font-serif text-2xl">Screen review</h1>
@@ -272,6 +275,23 @@ export default function Screens() {
           <PhoneFrame label="Quiz results">
             <Screen>
               <QuizResultsSample />
+            </Screen>
+          </PhoneFrame>
+        </Group>
+        <Group title="Flood material">
+          <PhoneFrame label="Flood: session setup">
+            <Screen>
+              <FloodSetupSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Flood: decision step">
+            <Screen>
+              <FloodStepSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Flood: results">
+            <Screen>
+              <FloodResultsSample />
             </Screen>
           </PhoneFrame>
         </Group>

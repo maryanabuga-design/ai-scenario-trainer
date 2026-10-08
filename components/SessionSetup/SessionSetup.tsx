@@ -10,10 +10,11 @@ import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { Stepper } from "@/components/Stepper/Stepper";
 import { Tag } from "@/components/Tag/Tag";
 import { questionsFor, quizCounts } from "@/lib/quiz";
-import { scenario, sessionLengths } from "@/lib/scenario";
+import { getScenario } from "@/lib/scenario";
+import type { Length, ScenarioDef } from "@/lib/scenario";
 import type { Training } from "@/lib/training";
 
-export type Length = "short" | "full" | "extended";
+export type { Length };
 
 export type SetupValue = {
   mode: "scenario" | "quiz";
@@ -31,25 +32,10 @@ export const defaultSetup: SetupValue = {
   customCount: 8,
 };
 
-const lengths: { id: Length; tag: string; tone: "peach" | "lilac" | "blue"; summary: string }[] = [
-  {
-    id: "short",
-    tag: "Short",
-    tone: "peach",
-    summary: "The evacuation: the alarm, a hot door and smoke.",
-  },
-  {
-    id: "full",
-    tag: "Full",
-    tone: "lilac",
-    summary: "The whole story, through first aid to the handover.",
-  },
-  {
-    id: "extended",
-    tag: "Extended",
-    tone: "blue",
-    summary: "The whole story with four more decisions along the way.",
-  },
+const lengthCards: { id: Length; tag: string; tone: "peach" | "lilac" | "blue" }[] = [
+  { id: "short", tag: "Short", tone: "peach" },
+  { id: "full", tag: "Full", tone: "lilac" },
+  { id: "extended", tag: "Extended", tone: "blue" },
 ];
 
 /** How many questions the quiz will have: the chosen count, never more than the bank holds. */
@@ -66,7 +52,10 @@ export function SessionSetup({
   replacesUnfinished = false,
   training,
   materialName,
+  scenarioDef = getScenario(undefined),
 }: {
+  /** The scenario of the material being trained; its lengths are the ones offered. */
+  scenarioDef?: ScenarioDef;
   /** Shown under the title; the scenario's title when there is no training. */
   materialName?: string;
   /** The created training this setup belongs to; limits the modes and the quiz sections. */
@@ -100,7 +89,7 @@ export function SessionSetup({
       <BackLink href={`/materials/${training?.materialId ?? "evacuation-guide"}`} />
       <div className="flex flex-col gap-1">
         <h1 className="font-serif text-2xl">Session setup</h1>
-        <p className="break-words text-text-secondary">{materialName ?? scenario.title}</p>
+        <p className="break-words text-text-secondary">{materialName ?? scenarioDef.title}</p>
       </div>
 
       {modes.length > 1 ? (
@@ -120,25 +109,32 @@ export function SessionSetup({
       {!quiz && (
         <fieldset className="flex flex-col gap-3">
           <legend className="mb-3 font-medium">How long do you want to practise?</legend>
-          {lengths.map((option) => {
-            const { stepIds, minutes } = sessionLengths[option.id];
+          {lengthCards.map((option) => {
+            const length = scenarioDef.lengths[option.id];
             return (
               <ChoiceCard
                 key={option.id}
                 name="length"
                 value={option.id}
                 checked={value.length === option.id}
-                onChange={(length) => onChange({ ...value, length: length as Length })}
+                disabled={!length}
+                onChange={(next) => onChange({ ...value, length: next as Length })}
               >
                 <span className="flex flex-col items-start gap-2">
                   <Tag tone={option.tone}>{option.tag}</Tag>
-                  <span className="text-lg font-medium">
-                    <span className="tabular-nums">{stepIds.length}</span> decisions
-                  </span>
-                  <span className="text-sm text-text-secondary">
-                    About <span className="tabular-nums">{minutes}</span> min (estimate).{" "}
-                    {option.summary}
-                  </span>
+                  {length ? (
+                    <>
+                      <span className="text-lg font-medium">
+                        <span className="tabular-nums">{length.stepIds.length}</span> decisions
+                      </span>
+                      <span className="text-sm text-text-secondary">
+                        About <span className="tabular-nums">{length.minutes}</span> min (estimate).{" "}
+                        {length.summary}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-sm">Not available for this material</span>
+                  )}
                 </span>
               </ChoiceCard>
             );

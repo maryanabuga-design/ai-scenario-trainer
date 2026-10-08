@@ -5,7 +5,7 @@ import { useState } from "react";
 import { defaultSetup, quizSize, SessionSetup } from "@/components/SessionSetup/SessionSetup";
 import type { SetupValue } from "@/components/SessionSetup/SessionSetup";
 import { pickQuestions } from "@/lib/quiz";
-import { sessionLengths } from "@/lib/scenario";
+import { getScenario } from "@/lib/scenario";
 import { startQuiz, startSession, useSession } from "@/lib/session";
 import type { Training } from "@/lib/training";
 import { sampleMaterials } from "@/lib/materials";
@@ -15,21 +15,22 @@ import { useMaterial } from "@/lib/uploads";
 function Setup({
   training,
   materialName,
+  scenarioId,
 }: {
   training: Training | undefined;
   materialName: string | undefined;
+  scenarioId: string | undefined;
 }) {
   const router = useRouter();
   const session = useSession();
-  const [value, setValue] = useState<SetupValue>(() =>
-    training
-      ? {
-          ...defaultSetup,
-          mode: training.scenario ? "scenario" : "quiz",
-          sections: training.sections,
-        }
-      : defaultSetup,
-  );
+  const scenarioDef = getScenario(scenarioId);
+  const [value, setValue] = useState<SetupValue>(() => ({
+    ...defaultSetup,
+    length: scenarioDef.defaultLength,
+    ...(training
+      ? { mode: training.scenario ? "scenario" : "quiz", sections: training.sections }
+      : {}),
+  }));
 
   return (
     <SessionSetup
@@ -37,12 +38,17 @@ function Setup({
       onChange={setValue}
       training={training}
       materialName={materialName}
+      scenarioDef={scenarioDef}
       replacesUnfinished={session !== "loading" && session !== null && !session.finished}
       onStart={() => {
         if (value.mode === "quiz") {
           startQuiz(pickQuestions(value.sections, quizSize(value).size), value.sections);
         } else {
-          startSession(value.length, [...sessionLengths[value.length].stepIds]);
+          startSession(
+            value.length,
+            [...(scenarioDef.lengths[value.length]?.stepIds ?? [])],
+            scenarioDef.id,
+          );
         }
         router.push("/session");
       }}
@@ -61,6 +67,7 @@ export default function SetupPage() {
       key={training?.materialId ?? "none"}
       training={training}
       materialName={training && material ? material.name : undefined}
+      scenarioId={training && material ? material.scenarioId : undefined}
     />
   );
 }

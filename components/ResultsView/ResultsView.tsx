@@ -8,7 +8,8 @@ import { Gradient } from "@/components/Gradient/Gradient";
 import { SourceChip } from "@/components/SourceChip/SourceChip";
 import { StatusBadge, StatusIcon, statuses } from "@/components/StatusBadge/StatusBadge";
 import { formatPoints } from "@/lib/progress";
-import { scenario } from "@/lib/scenario";
+import { getScenario } from "@/lib/scenario";
+import type { OutcomeMetric } from "@/lib/scenario";
 import type { SessionMode } from "@/lib/scenario";
 import type { ScoredItem } from "@/lib/scoring";
 import {
@@ -22,7 +23,8 @@ import {
 
 /** Which session the results belong to. */
 export type ResultsKind =
-  { kind: "scenario"; mode: SessionMode } | { kind: "quiz"; mode: "quiz" | "repeat" };
+  | { kind: "scenario"; mode: SessionMode; scenarioId?: string }
+  | { kind: "quiz"; mode: "quiz" | "repeat" };
 
 function formatTime(seconds: number) {
   const minutes = Math.floor(seconds / 60);
@@ -31,18 +33,25 @@ function formatTime(seconds: number) {
   return rest === 0 ? `${minutes} min` : `${minutes} min ${rest} s`;
 }
 
+function formatMetric(metric: OutcomeMetric, value: number, start: number) {
+  if (metric.format === "time") return formatTime(value);
+  if (metric.format === "stability") return value < 0 ? `Worse (${value})` : "Stable";
+  return `${value} (started at ${start})`;
+}
+
 function headline(results: ResultsKind, weakTopicCount: number): [string, string] {
   const first =
     results.kind === "quiz"
       ? results.mode === "repeat"
         ? "Repeat complete."
         : "Quiz complete."
-      : {
-          full: "Session complete.",
-          extended: "Extended session complete.",
-          short: "Short session: you reached the south stairwell.",
-          repeat: "Repeat complete.",
-        }[results.mode];
+      : results.mode === "short"
+        ? (getScenario(results.scenarioId).shortEnding?.headline ?? "Session complete.")
+        : {
+            full: "Session complete.",
+            extended: "Extended session complete.",
+            repeat: "Repeat complete.",
+          }[results.mode];
   if (weakTopicCount === 0) return [first, "Nothing to repeat this time."];
   return [first, `Review ${weakTopicCount} ${weakTopicCount === 1 ? "topic" : "topics"} below.`];
 }
@@ -77,13 +86,20 @@ export function ResultsView({
   const quiz = results.kind === "quiz";
   const correct = items.filter((item) => item.correct).length;
   const counts = countErrorTypes(items);
-  const outcome = sumEffects(scenario.initialState, items);
+  const scenarioDef = getScenario(results.kind === "scenario" ? results.scenarioId : undefined);
+  const outcome = sumEffects(scenarioDef.initialState, items);
   const repeatIds = weakItems(items).map((item) => item.id);
   const topics = weakSections(items);
   const [first, second] = headline(results, topics.length);
   const showOutcome = results.kind === "scenario" && results.mode !== "repeat";
-  const showCasualty =
-    results.kind === "scenario" && (results.mode === "full" || results.mode === "extended");
+  const outcomeRows = scenarioDef.outcome.filter(
+    (metric) =>
+      results.kind === "scenario" &&
+      results.mode !== "repeat" &&
+      (!metric.lengths || metric.lengths.includes(results.mode)),
+  );
+  const shortEnding =
+    results.kind === "scenario" && results.mode === "short" ? scenarioDef.shortEnding : undefined;
 
   return (
     <div className="flex flex-col gap-8">
@@ -93,12 +109,7 @@ export function ResultsView({
         </h1>
       </Gradient>
 
-      {results.kind === "scenario" && results.mode === "short" && (
-        <p className="text-text-secondary">
-          The full session continues to an injured colleague, the call for help and the assembly
-          point.
-        </p>
-      )}
+      {shortEnding && <p className="text-text-secondary">{shortEnding.continues}</p>}
 
       <Card className="flex flex-col gap-2">
         {quiz && (
@@ -147,22 +158,20 @@ export function ResultsView({
         </div>
       </Section>
 
-      {showOutcome && (
+      {showOutcome && outcomeRows.length > 0 && (
         <Section title="How the situation ended">
           <div className="flex flex-col divide-y divide-border">
-            <Row label="Time lost" value={formatTime(outcome.timeLostSeconds)} />
-            <Row
-              label="Smoke level"
-              value={`${outcome.smokeLevel} (started at ${scenario.initialState.smokeLevel})`}
-            />
-            {showCasualty && (
+            {outcomeRows.map((metric) => (
               <Row
-                label="Injured colleague"
-                value={
-                  outcome.casualtyStability < 0 ? `Worse (${outcome.casualtyStability})` : "Stable"
-                }
+                key={metric.key}
+                label={metric.label}
+                value={formatMetric(
+                  metric,
+                  outcome[metric.key],
+                  scenarioDef.initialState[metric.key],
+                )}
               />
-            )}
+            ))}
           </div>
         </Section>
       )}

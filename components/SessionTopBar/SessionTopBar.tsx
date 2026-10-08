@@ -1,6 +1,6 @@
 import { BackLink } from "@/components/BackLink/BackLink";
 
-/** Exit on the left, step count and progress dots on the right. Exit keeps the saved session. */
+/** Exit on the left, step count and progress dots on the right. Exit keeps the saved session and goes Home. */
 export function SessionTopBar({
   index,
   total,
@@ -12,7 +12,7 @@ export function SessionTopBar({
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <BackLink href="/materials/evacuation-guide" label="Exit" />
+      <BackLink href="/" label="Exit" />
       <div className="flex items-center gap-3">
         <span className="text-sm text-text-secondary tabular-nums">
           {unit} {index + 1} of {total}

@@ -81,7 +81,9 @@ export type OutcomeMetric = {
 };
 
 export type ScenarioDef = Scenario & {
-  lengths: Partial<Record<Length, { stepIds: readonly string[]; minutes: number }>>;
+  lengths: Partial<
+    Record<Length, { stepIds: readonly string[]; minutes: number; summary: string }>
+  >;
   /** The length shown on Review and used when a material can make a scenario. */
   defaultLength: Length;
   outcome: OutcomeMetric[];
@@ -114,9 +116,18 @@ export const scenarios: ScenarioDef[] = [
   {
     ...scenario,
     lengths: {
-      short: sessionLengths.short,
-      full: sessionLengths.full,
-      extended: sessionLengths.extended,
+      short: {
+        ...sessionLengths.short,
+        summary: "The evacuation: the alarm, a hot door and smoke.",
+      },
+      full: {
+        ...sessionLengths.full,
+        summary: "The whole story, through first aid to the handover.",
+      },
+      extended: {
+        ...sessionLengths.extended,
+        summary: "The whole story with four more decisions along the way.",
+      },
     },
     defaultLength: "full",
     outcome: [
@@ -137,7 +148,13 @@ export const scenarios: ScenarioDef[] = [
   },
   {
     ...floodScenario,
-    lengths: { short: { stepIds: floodScenario.steps.map((step) => step.id), minutes: 5 } },
+    lengths: {
+      short: {
+        stepIds: floodScenario.steps.map((step) => step.id),
+        minutes: 5,
+        summary: "The whole flood story: the warning, the flooded street and the return.",
+      },
+    },
     defaultLength: "short",
     outcome: [
       { key: "timeLostSeconds", label: "Time lost", format: "time" },
