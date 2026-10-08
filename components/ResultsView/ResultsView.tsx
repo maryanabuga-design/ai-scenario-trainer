@@ -185,9 +185,11 @@ export function ResultsView({
       <ActionBar>
         {repeatIds.length > 0 ? (
           <>
-            <Button onClick={() => onRepeat(repeatIds)}>
-              Repeat {repeatIds.length} weak {repeatIds.length === 1 ? "step" : "steps"}
-            </Button>
+            <p className="text-center text-sm text-text-secondary">
+              Replays <span className="tabular-nums">{repeatIds.length}</span>{" "}
+              {repeatIds.length === 1 ? "step" : "steps"} you got wrong or guessed.
+            </p>
+            <Button onClick={() => onRepeat(repeatIds)}>Repeat weak topics</Button>
             <ButtonLink href="/materials/evacuation-guide" variant="text">
               Back to the material
             </ButtonLink>

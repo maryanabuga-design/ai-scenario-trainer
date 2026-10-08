@@ -89,13 +89,17 @@ export function FeedbackView({
           <h2 className="font-medium text-text">What happened</h2>
           <p>{feedback.chosen.consequence}</p>
         </section>
-        <section className="flex flex-col gap-3">
+        <section aria-labelledby="follow-up-title" className="flex flex-col gap-3">
+          <h2 id="follow-up-title" className="font-medium text-text">
+            AI follow-up
+          </h2>
+          <p className="text-base text-text">{feedback.followUp}</p>
           <div className="flex flex-col gap-1">
-            <h2 className="font-medium text-text">Your explanation</h2>
+            <h3 className="font-medium text-text">Your answer</h3>
             <p className="italic">{explanation}</p>
           </div>
           <div className="flex flex-col gap-1">
-            <h2 className="font-medium text-text">Points a strong answer covers</h2>
+            <h3 className="font-medium text-text">Points a strong answer covers</h3>
             <ul className="list-disc pl-5">
               {feedback.keyBeats.map((beat) => (
                 <li key={beat}>{beat}</li>
