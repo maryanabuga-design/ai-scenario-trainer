@@ -19,6 +19,8 @@ import {
   DecisionSample,
   FeedbackSample,
   HomeSample,
+  NotesMaterialSample,
+  UploadSample,
   OnboardingSample,
   ProfileSample,
   ProgressSample,
@@ -121,8 +123,26 @@ export default function Screens() {
               <MaterialPage />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Upload: choose a file" plannedStep={2} />
-          <PhoneFrame label="Upload: processing" plannedStep={2} />
+          <PhoneFrame label="Material without a scenario">
+            <Screen nav="/materials">
+              <NotesMaterialSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Upload: choose a file">
+            <Screen nav="/materials">
+              <UploadSample state="choose" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Upload: progress">
+            <Screen nav="/materials">
+              <UploadSample state="progress" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Upload: failed">
+            <Screen nav="/materials">
+              <UploadSample state="failed" />
+            </Screen>
+          </PhoneFrame>
         </Group>
         <Group title="Scenario session">
           <PhoneFrame label="Session setup">

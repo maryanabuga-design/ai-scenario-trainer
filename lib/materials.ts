@@ -1,5 +1,4 @@
 import data from "@/content/materials.json";
-import { createStore } from "@/lib/store";
 
 export type MaterialStatus = "ready" | "processing" | "failed";
 
@@ -23,13 +22,6 @@ export type Material = {
 };
 
 export const sampleMaterials = data as Material[];
-
-const uploadsStore = createStore<Material[]>("ast.uploads.v1");
-export const useUploads = uploadsStore.useValue;
-
-export function addUpload(material: Material) {
-  uploadsStore.write([material, ...(uploadsStore.read() ?? [])]);
-}
 
 export const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
 

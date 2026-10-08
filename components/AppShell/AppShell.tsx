@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { ReactNode } from "react";
 import { ActionBarProvider, ActionBarSlot } from "@/components/ActionBar/ActionBar";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
@@ -14,7 +15,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Footer />
           <div className="sticky bottom-0 z-10 bg-bg pb-[env(safe-area-inset-bottom)]">
             <ActionBarSlot />
-            <BottomNav />
+            <Suspense fallback={null}>
+              <BottomNav />
+            </Suspense>
           </div>
         </ActionBarProvider>
       </SourceSheetProvider>

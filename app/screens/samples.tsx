@@ -7,6 +7,10 @@ import { AskAiProvider } from "@/components/AskAi/AskAi";
 import type { ChatMessage } from "@/components/AskAi/AskAi";
 import { FeedbackView } from "@/components/FeedbackView/FeedbackView";
 import { HomeView } from "@/components/HomeView/HomeView";
+import { MaterialView } from "@/components/MaterialView/MaterialView";
+import { MaterialsList } from "@/components/MaterialsList/MaterialsList";
+import { UploadPanel } from "@/components/UploadSheet/UploadSheet";
+import type { Stage } from "@/components/UploadSheet/UploadSheet";
 import { OnboardingView } from "@/components/OnboardingView/OnboardingView";
 import { ProfileView } from "@/components/ProfileView/ProfileView";
 import type { OnboardingStep } from "@/components/OnboardingView/OnboardingView";
@@ -18,6 +22,7 @@ import { matchQuestion, notCoveredId, replyToChip } from "@/lib/chat";
 import { simulatedFeedback } from "@/lib/feedback";
 import { getStep, scenario, sessionLengths } from "@/lib/scenario";
 import { defaultDirection } from "@/lib/directions";
+import { materialFromUpload, sampleMaterials, simulateUpload } from "@/lib/materials";
 import { currentWeakItems, scoreStep } from "@/lib/scoring";
 
 /** Interactive sample screens for the /screens review page. They never touch the saved session. */
@@ -267,5 +272,50 @@ export function ChatFeedbackSample() {
     <AskAiProvider inline initial={{ chat: { step, phase: "feedback" }, messages, typing: true }}>
       <AskSample />
     </AskAiProvider>
+  );
+}
+
+/** The materials list with the upload sheet drawn over it in one of its states. */
+export function UploadSample({ state }: { state: "choose" | "progress" | "failed" }) {
+  const file =
+    state === "failed"
+      ? { name: "Notice-board-photo.jpg", size: 300_000 }
+      : { name: "Fire-drill-plan.pdf", size: 2_621_440 };
+  const stage: Stage =
+    state === "choose"
+      ? { kind: "choose" }
+      : state === "progress"
+        ? { kind: "progress", file, percent: 40 }
+        : {
+            kind: "done",
+            material: materialFromUpload(file, simulateUpload(file), new Date("2026-10-08")),
+          };
+  return (
+    <>
+      <MaterialsList samples={sampleMaterials} />
+      <div className="scrim absolute inset-0 z-20 flex items-end">
+        <div
+          role="dialog"
+          aria-labelledby="upload-title"
+          className="w-full rounded-t-card bg-surface"
+        >
+          <UploadPanel
+            stage={stage}
+            onStage={() => undefined}
+            onClose={() => undefined}
+            onOpenMaterial={() => undefined}
+          />
+        </div>
+      </div>
+    </>
+  );
+}
+
+/** A ready material without a prepared scenario. */
+export function NotesMaterialSample() {
+  const material = sampleMaterials.find((candidate) => candidate.id === "shift-notes");
+  if (!material) return null;
+  return (
+    <MaterialView material={material} sections={material.sections ?? []} sectionsOpenable={false} />
   );
 }
