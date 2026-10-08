@@ -15,6 +15,8 @@ export type Material = {
   hasScenario: boolean;
   /** "guide" means the sections come from the sample guide. */
   sectionsFrom?: "guide";
+  /** Guide sections this material contains. Only these materials can become training. */
+  sectionIds?: string[];
   sections?: MaterialSection[];
   progress?: number;
   reason?: string;

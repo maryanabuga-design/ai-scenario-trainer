@@ -1,0 +1,36 @@
+[
+  {
+    "id": "guide",
+    "name": "Building evacuation and first aid guide.pdf",
+    "size": 1258291,
+    "summary": "The full sample guide: ten sections, from the alarm to the handover.",
+    "sectionIds": [
+      "S1",
+      "S2",
+      "S3",
+      "S4",
+      "S5",
+      "S6",
+      "S7",
+      "S8",
+      "S9",
+      "S10"
+    ]
+  },
+  {
+    "id": "quick-card",
+    "name": "Evacuation quick card.pdf",
+    "size": 143360,
+    "summary": "One page from the guide: responding to an alarm and checking the route (S1 and S2).",
+    "sectionIds": [
+      "S1",
+      "S2"
+    ]
+  },
+  {
+    "id": "notice-photo",
+    "name": "Fire notice photo.jpg",
+    "size": 2202009,
+    "summary": "A photo of a printed notice, with no readable text."
+  }
+]
