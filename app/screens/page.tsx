@@ -17,6 +17,7 @@ import {
   DecisionSample,
   FeedbackSample,
   HomeSample,
+  ProgressSample,
   RepeatSample,
   ResultsSample,
   SetupSample,
@@ -191,7 +192,16 @@ export default function Screens() {
               <HomeSample withProgress />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Progress" plannedStep={8} />
+          <PhoneFrame label="Progress: first visit">
+            <Screen nav="/progress">
+              <ProgressSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Progress: with history">
+            <Screen nav="/progress">
+              <ProgressSample withHistory />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Onboarding: choose direction" plannedStep={9} />
           <PhoneFrame label="Onboarding: how it works" plannedStep={9} />
           <PhoneFrame label="Onboarding: example scenario" plannedStep={9} />

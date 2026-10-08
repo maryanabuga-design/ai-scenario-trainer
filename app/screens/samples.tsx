@@ -5,6 +5,7 @@ import { DecisionStep, emptyDraft } from "@/components/DecisionStep/DecisionStep
 import type { Draft } from "@/components/DecisionStep/DecisionStep";
 import { FeedbackView } from "@/components/FeedbackView/FeedbackView";
 import { HomeView } from "@/components/HomeView/HomeView";
+import { ProgressView } from "@/components/ProgressView/ProgressView";
 import { ResultsView } from "@/components/ResultsView/ResultsView";
 import { SessionSetup } from "@/components/SessionSetup/SessionSetup";
 import type { Length } from "@/components/SessionSetup/SessionSetup";
@@ -153,4 +154,29 @@ export function HomeSample({ withProgress = false }: { withProgress?: boolean })
       onPractise={() => undefined}
     />
   );
+}
+
+/** Progress on a first visit, or after a short and a full session. */
+export function ProgressSample({ withHistory = false }: { withHistory?: boolean }) {
+  const answer = (stepId: string, optionId: string, confidence: 1 | 2 | 3) => ({
+    stepId,
+    optionId,
+    confidence,
+    explanation: "",
+  });
+  const history = withHistory
+    ? [
+        {
+          mode: "short" as const,
+          finishedAt: Date.UTC(2026, 9, 7, 9, 20),
+          answers: [answer("s1", "d", 1), answer("s2", "c", 3), answer("s3", "a", 3)],
+        },
+        {
+          mode: "full" as const,
+          finishedAt: Date.UTC(2026, 9, 8, 12, 5),
+          answers: sampleAnswers.map((scored) => answer(scored.step.id, scored.optionId, 2)),
+        },
+      ]
+    : [];
+  return <ProgressView history={history} onPractise={() => undefined} />;
 }
