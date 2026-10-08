@@ -1,6 +1,6 @@
 # Build plan
 
-One commit per screen group, in this order. Steps 1 to 16 are built. Steps 2 to 6 were first built as a thin clickable path through the whole cycle. Each commit runs `npm run lint`, `npm run typecheck` and `npm run build`, and saves a screenshot in `docs/screens/`.
+One commit per screen group, in this order. Steps 1 to 16 are built; 17 is in progress. Steps 2 to 6 were first built as a thin clickable path through the whole cycle. Each commit runs `npm run lint`, `npm run typecheck` and `npm run build`, and saves a screenshot in `docs/screens/`.
 
 1. Foundation refresh: tokens, pill buttons, cards, tags, gradient helper, four-item bottom navigation, storage helper. (A temporary "Coming next" screen stood in for unbuilt sections and is now removed.)
 2. Materials: list, material page, upload sequence.
@@ -18,6 +18,7 @@ One commit per screen group, in this order. Steps 1 to 16 are built. Steps 2 to 
 14. Session setup with mode, length and topic: Extended scenario (four new steps), Quiz mode with sections and question count.
 15. Quiz: question bank in `content/quiz-bank.json`, scoring for five question types with tests, question and feedback screens, quiz results, and quiz answers in weak topics, Progress and Home.
 16. Create training from a material: sample-file upload, Create training, simulated generation, Review, Scenario and Quiz tags, Start training into Session setup, reset in Profile. Built after the five screenshot fixes and before any extra quiz question types.
+17. Second sample material (flood preparedness): load its guide, scenario and question bank through adapters (namespaced step and question ids, ordering items shuffled in a fixed way, keyword-count text answers), offer it in the upload flow, limit lengths to what each scenario has, and show each scenario's own situation outcome.
 
 ## Screen review page
 `/screens` is a development-only page (404 in production, not linked from the navigation) that shows every planned screen at 390 by 844. Screens that are not built are dashed frames. Each screen commit replaces its frame with the real screen using sample data.
