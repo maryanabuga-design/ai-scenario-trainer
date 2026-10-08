@@ -31,6 +31,7 @@ Columns: value and complexity come from the board. "Prototype approach" is a pro
 | 18 | Instructor panel, group analytics | Won't now | | Out of scope: the MVP focuses on the Trainee |
 | 19 | Real-time voice dialogue | Won't now | | Out of scope |
 | 20 | Gamification | Won't now | | Out of scope; only minimal progress |
+| 21 | Ask AI about the current step (scripted chat in a bottom sheet) | Should (added by the user on 8 Oct 2026; not on the board) | High / Medium | Prepared question and answer pairs per step in the JSON, suggested question chips and keyword matching for free questions, an honest "not covered by the material" fallback, source chips on every answer. Before feedback it never reveals or hints at the correct option. This is not feature 13: it lives inside a scenario step, not outside the scenario |
 
 ## Information architecture
 Assumption to confirm with the user: four sections live in the bottom navigation (Home, Materials, Progress, Profile). Onboarding, Scenario session and Session results are opened from other screens and have no navigation item.
@@ -40,7 +41,7 @@ Assumption to confirm with the user: four sections live in the bottom navigation
 - Materials (Матеріали): Materials list · Upload PDF · Material page
 - Progress (Прогрес): Weak topics · Session history
 - Profile (Профіль): Direction · Settings
-- Scenario session (Сесія сценарію): Session setup · Situation and decision · Confidence check (Should) · Explanation and AI follow-up · Source sheet (Should)
+- Scenario session (Сесія сценарію): Session setup · Situation and decision · Confidence check (Should) · Explanation and AI follow-up · Source sheet (Should) · Ask AI sheet (feature 21; a bottom sheet, not a navigation item)
 - Session results (Результати сесії): Summary · Error analysis · Repeat weak topics
 
 ## Main flow (the learning cycle)
