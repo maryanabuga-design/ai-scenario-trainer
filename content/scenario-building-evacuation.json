@@ -210,6 +210,40 @@
           "availability": "afterFeedback",
           "suggested": false
         }
+      ],
+      "keyBeatKeywords": [
+        [
+          "real",
+          "genuine",
+          "not a drill",
+          "not drill",
+          "treat it as",
+          "assume",
+          "official"
+        ],
+        [
+          "stair",
+          "staircase",
+          "steps",
+          "elevator",
+          "lift"
+        ],
+        [
+          "belonging",
+          "thing",
+          "bag",
+          "document",
+          "equipment",
+          "laptop",
+          "delay",
+          "immediately",
+          "straight away",
+          "right away",
+          "nothing",
+          "now",
+          "quick",
+          "fast"
+        ]
       ]
     },
     {
@@ -382,6 +416,28 @@
           "availability": "afterFeedback",
           "suggested": false
         }
+      ],
+      "keyBeatKeywords": [
+        [
+          "hot",
+          "heat",
+          "warm",
+          "fire behind",
+          "fire on the other side",
+          "burning"
+        ],
+        [
+          "another route",
+          "other route",
+          "another way",
+          "other way",
+          "different route",
+          "different way",
+          "another exit",
+          "other exit",
+          "south",
+          "alternative"
+        ]
       ]
     },
     {
@@ -551,6 +607,28 @@
           "availability": "afterFeedback",
           "suggested": false
         }
+      ],
+      "keyBeatKeywords": [
+        [
+          "rise",
+          "rising",
+          "goes up",
+          "go up",
+          "ceiling",
+          "upward",
+          "gas",
+          "hot air"
+        ],
+        [
+          "low",
+          "floor",
+          "crawl",
+          "below",
+          "clean air",
+          "cleaner air",
+          "fresh air",
+          "breathable"
+        ]
       ]
     },
     {
@@ -723,6 +801,25 @@
           "availability": "afterFeedback",
           "suggested": false
         }
+      ],
+      "keyBeatKeywords": [
+        [
+          "life-threatening",
+          "life threatening",
+          "bleed",
+          "blood",
+          "dangerous",
+          "serious",
+          "priority",
+          "first",
+          "worse"
+        ],
+        [
+          "pressure",
+          "press",
+          "pressing",
+          "compress"
+        ]
       ]
     },
     {
@@ -893,6 +990,31 @@
           "availability": "afterFeedback",
           "suggested": false
         }
+      ],
+      "keyBeatKeywords": [
+        [
+          "someone else",
+          "somebody else",
+          "assume",
+          "everyone thinks",
+          "nobody",
+          "no one",
+          "bystander",
+          "responsib",
+          "one person",
+          "specific",
+          "name"
+        ],
+        [
+          "location",
+          "address",
+          "where",
+          "injur",
+          "bleeding",
+          "detail",
+          "what happened",
+          "wound"
+        ]
       ]
     },
     {
@@ -1061,6 +1183,26 @@
           "availability": "afterFeedback",
           "suggested": false
         }
+      ],
+      "keyBeatKeywords": [
+        [
+          "name",
+          "last known",
+          "last seen",
+          "where they were",
+          "location",
+          "missing"
+        ],
+        [
+          "what happened",
+          "what i did",
+          "what we did",
+          "what was done",
+          "when",
+          "time",
+          "handover",
+          "hand over"
+        ]
       ]
     },
     {
@@ -1227,6 +1369,22 @@
           "availability": "afterFeedback",
           "suggested": false
         }
+      ],
+      "keyBeatKeywords": [
+        [
+          "safe",
+          "safely",
+          "safety",
+          "risk"
+        ],
+        [
+          "report",
+          "location",
+          "where",
+          "responder",
+          "tell",
+          "firefighter"
+        ]
       ]
     },
     {
@@ -1394,6 +1552,22 @@
           "availability": "afterFeedback",
           "suggested": false
         }
+      ],
+      "keyBeatKeywords": [
+        [
+          "close",
+          "shut",
+          "ready",
+          "slowly",
+          "careful"
+        ],
+        [
+          "smoke",
+          "heat",
+          "hot",
+          "fire",
+          "behind"
+        ]
       ]
     },
     {
@@ -1560,6 +1734,27 @@
           "availability": "afterFeedback",
           "suggested": false
         }
+      ],
+      "keyBeatKeywords": [
+        [
+          "stay on",
+          "on the line",
+          "keep talking",
+          "don't hang up",
+          "do not hang up",
+          "stay connected",
+          "keep the line",
+          "not hang up"
+        ],
+        [
+          "until",
+          "told",
+          "instruction",
+          "they say",
+          "call taker",
+          "dispatcher",
+          "operator"
+        ]
       ]
     },
     {
@@ -1725,6 +1920,26 @@
           "availability": "afterFeedback",
           "suggested": false
         }
+      ],
+      "keyBeatKeywords": [
+        [
+          "change",
+          "update",
+          "news",
+          "turned up",
+          "found",
+          "arrived",
+          "safe now",
+          "back"
+        ],
+        [
+          "search",
+          "stop",
+          "looking",
+          "call off",
+          "risk",
+          "danger"
+        ]
       ]
     }
   ]

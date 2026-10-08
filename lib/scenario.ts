@@ -44,6 +44,8 @@ export type Step = {
   options: Option[];
   followUp: string;
   explanationKeyBeats: string[];
+  /** For each key beat, words and short phrases (with a few synonyms) that count as covering it. */
+  keyBeatKeywords: string[][];
   suggestedQuestion?: SuggestedQuestion;
   chat: ChatEntry[];
 };
