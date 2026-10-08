@@ -17,6 +17,9 @@ export type Draft = {
 
 export const emptyDraft: Draft = { optionId: null, confidence: null, explanation: "" };
 
+/** Neutral on purpose: the step's follow-up question can assume the choice was right. */
+export const explanationPrompt = "In one sentence, why did you choose this?";
+
 function blockingHint(draft: Draft) {
   if (!draft.optionId) return "Choose an action to continue.";
   if (!draft.confidence) return "Say how sure you are to continue.";
@@ -80,7 +83,7 @@ export function DecisionStep({
 
       {draft.optionId && draft.confidence && (
         <ExplanationField
-          label={step.followUp}
+          label={explanationPrompt}
           value={draft.explanation}
           onChange={(explanation) => onDraftChange({ ...draft, explanation })}
         />

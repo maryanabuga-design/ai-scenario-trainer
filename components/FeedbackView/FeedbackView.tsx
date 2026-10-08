@@ -95,7 +95,7 @@ export function FeedbackView({
           </h2>
           <p className="text-base text-text">{feedback.followUp}</p>
           <div className="flex flex-col gap-1">
-            <h3 className="font-medium text-text">Your answer</h3>
+            <h3 className="font-medium text-text">Your explanation</h3>
             <p className="italic">{explanation}</p>
           </div>
           <div className="flex flex-col gap-1">

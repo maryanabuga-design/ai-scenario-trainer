@@ -31,7 +31,7 @@ In:
 2. Home: continue session, weak topics, new scenario.
 3. Materials: list, material page, and an upload flow as a screen sequence (choose a file, processing, then the prepared sample guide). The file is never read or sent; the UI says the prototype uses a prepared scenario.
 4. Session setup: Short (3 decisions, steps 1 to 3, about 5 min) or Full (6 decisions, about 10 min). Times are estimates and labelled as such.
-5. Scenario session from the JSON: choose an option, rate confidence, write a one-sentence explanation, see the scripted AI follow-up and the consequence. The source sheet is available throughout.
+5. Scenario session from the JSON: choose an option, rate confidence, write a one-sentence explanation (neutral prompt: "In one sentence, why did you choose this?"), then see the consequence and the scripted AI follow-up question in the feedback. The source sheet is available throughout.
 6. Feedback: your answer vs correct, why, error type (knowledge gap / misconception / guess / secure, derived from correctness + confidence), source link. Under the smoke step, a tappable suggested question ("Ask about this step") shows the honest "This is not covered by the material." answer with the closest guide sections. The AI never asks it on its own.
 7. Session results: summary, error analysis with sources, repeat weak topics (replays the wrong or guessed steps).
 8. Progress: weak topics and session history, saved in the browser on this device (`localStorage`).
