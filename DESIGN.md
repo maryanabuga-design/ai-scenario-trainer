@@ -78,22 +78,23 @@ Rules:
 - Single column with 16px side padding. Content width is the screen width, 430px maximum.
 - Safe areas: respect the top and bottom safe areas (`env(safe-area-inset-top)` and `env(safe-area-inset-bottom)`) on every fixed element.
 - Bottom navigation: four sections, Home, Materials, Progress and Profile. It is shown only on these four sections.
-- Onboarding, Session setup, the scenario session and Session results are opened from other screens. They have no navigation item and no bottom navigation; they show a "Back" text button at the top left (or "Exit" during a session, with a confirmation).
+- Onboarding, Session setup, the scenario session and Session results are opened from other screens. They have no navigation item and no bottom navigation; they show a "Back" text button at the top left (or "Exit" during a session). Exit needs no confirmation: the session stays saved and Home offers to continue it.
 - Primary action: a fixed bar at the bottom of the screen with one black pill button. On the four sections it sits above the bottom navigation; elsewhere it sits at the bottom. Scrolling content gets bottom padding so nothing hides behind the bar.
 - During a session: a top bar with "Exit", the scenario title and the step count ("2 of 6") with progress dots.
 - Sources: the source panel is a bottom sheet opened from a source chip.
 
 ## Screen map
 From `docs/mvp-matrix-and-ia.md`.
-- Onboarding (first visit only, can be skipped): Choose direction → How it works → Example scenario.
+- Onboarding (first visit only, can be skipped): Choose direction → How it works → Example scenario. Opening Home before onboarding is done or skipped leads to onboarding. A "Skip" text action at the top right of every onboarding step marks it done and opens Home. Progress dots show the step (1 of 3). Gradient zone at the top of each step, with the step title on it.
   - Choose direction: "Building evacuation and first aid" is the only selectable direction. "Road incident first aid", "Flood preparedness" and "Crisis communication" are listed as disabled with "Not available in this prototype".
   - Example scenario: a preview of the sample scenario with "Try it", which opens Session setup.
-- Home: Continue session (if one is unfinished) · Weak topics · New scenario.
+- Home: a gradient top with a two-tone headline and the current direction as a tag → "Continue session" card (only when a session is unfinished: scenario, mode, "Step 3 of 6") → weak topics (source chips with titles and "Practise weak topics") → "New scenario" card. The single primary action in the action bar is "Continue session" when one is unfinished, otherwise "New scenario".
+- Weak topics (Home and Progress) come from the saved session history: for each scenario step, the most recent answer counts. A step is weak when that answer was wrong or guessed, so getting it right and sure in a later session clears it. "Practise weak topics" starts a repeat session of those steps.
 - Materials: Materials list · Upload PDF · Material page.
   - Upload PDF is a screen sequence: choose a file (the file is not read or sent anywhere) → processing → the material page of the sample guide, with a plain note that this prototype uses a prepared scenario.
-- Progress: Weak topics · Session history.
-- Profile: Direction (change it) · Settings: "Reset progress" with a confirmation.
-- Session setup: length selector, "Short, 3 decisions, about 5 min" (steps 1 to 3) or "Full, 6 decisions, about 10 min". Times are always labelled as estimates ("about").
+- Progress: Weak topics · Session history (newest first: date, mode tag, "4 of 6 correct", and how many steps were weak). Empty state for a first visit: one line and a "Start a scenario" secondary button. Sessions are saved when they finish.
+- Profile: Direction (the four directions as option cards; only "Building evacuation and first aid" can be selected, the others are disabled with "Not available in this prototype") · Settings: "Reset progress" (secondary button) opens a confirmation dialog. Reset deletes the saved sessions, history and weak topics on this device; the direction and onboarding stay. Afterwards a neutral line confirms it.
+- Session setup: when a session is unfinished, one line above the start button says that starting replaces it. Length selector, "Short, 3 decisions, about 5 min" (steps 1 to 3) or "Full, 6 decisions, about 10 min". Times are always labelled as estimates ("about").
 - Scenario session: Situation and decision → Confidence check → Explanation and AI follow-up → Feedback with consequence → next step. Source sheet available throughout.
 - Session results: Summary → Error analysis with sources → Repeat weak topics (replays the wrong or guessed steps).
 

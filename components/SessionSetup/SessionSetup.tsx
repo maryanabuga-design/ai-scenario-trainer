@@ -10,15 +10,27 @@ import { scenario, sessionLengths } from "@/lib/scenario";
 export type Length = "short" | "full";
 
 const lengths: { id: Length; tag: string; tone: "peach" | "lilac"; summary: string }[] = [
-  { id: "short", tag: "Short", tone: "peach", summary: "The evacuation: the alarm, a hot door and smoke." },
-  { id: "full", tag: "Full", tone: "lilac", summary: "The whole story, through first aid to the handover." },
+  {
+    id: "short",
+    tag: "Short",
+    tone: "peach",
+    summary: "The evacuation: the alarm, a hot door and smoke.",
+  },
+  {
+    id: "full",
+    tag: "Full",
+    tone: "lilac",
+    summary: "The whole story, through first aid to the handover.",
+  },
 ];
 
 export function SessionSetup({
   length,
   onLengthChange,
   onStart,
+  replacesUnfinished = false,
 }: {
+  replacesUnfinished?: boolean;
   length: Length;
   onLengthChange: (length: Length) => void;
   onStart: () => void;
@@ -48,7 +60,8 @@ export function SessionSetup({
                   <span className="tabular-nums">{stepIds.length}</span> decisions
                 </span>
                 <span className="text-sm text-text-secondary">
-                  About <span className="tabular-nums">{minutes}</span> min (estimate). {option.summary}
+                  About <span className="tabular-nums">{minutes}</span> min (estimate).{" "}
+                  {option.summary}
                 </span>
               </span>
             </ChoiceCard>
@@ -56,9 +69,15 @@ export function SessionSetup({
         })}
       </fieldset>
       <p className="text-sm text-text-secondary">
-        At each step you choose an action, say how sure you are and explain your choice in one sentence.
+        At each step you choose an action, say how sure you are and explain your choice in one
+        sentence.
       </p>
       <ActionBar>
+        {replacesUnfinished && (
+          <p className="text-center text-sm text-text-secondary">
+            Starting replaces your unfinished session.
+          </p>
+        )}
         <Button onClick={onStart}>Start session</Button>
       </ActionBar>
     </div>

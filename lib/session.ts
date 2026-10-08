@@ -1,5 +1,5 @@
-import { useMemo, useSyncExternalStore } from "react";
 import type { Confidence, SessionMode } from "@/lib/scenario";
+import { createStore } from "@/lib/store";
 
 export type Answer = {
   stepId: string;
@@ -17,62 +17,49 @@ export type Session = {
   finished: boolean;
 };
 
-const KEY = "ast.session.v1";
-const SERVER = "server";
-const listeners = new Set<() => void>();
+export type FinishedSession = {
+  mode: SessionMode;
+  answers: Answer[];
+  finishedAt: number;
+};
 
-/** Last value read or written. Keeps the session working when localStorage is blocked. */
-let memory: string | null | undefined;
+export type Profile = {
+  direction: string;
+  onboarded: boolean;
+};
 
-function readRaw(): string | null {
-  if (memory !== undefined) return memory;
-  try {
-    memory = window.localStorage.getItem(KEY);
-  } catch {
-    memory = null;
-  }
-  return memory;
-}
+const sessionStore = createStore<Session>("ast.session.v1");
+const historyStore = createStore<FinishedSession[]>("ast.history.v1");
+const profileStore = createStore<Profile>("ast.profile.v1");
 
-function onStorage() {
-  memory = undefined;
-  listeners.forEach((listener) => listener());
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  window.addEventListener("storage", onStorage);
-  return () => {
-    listeners.delete(listener);
-    window.removeEventListener("storage", onStorage);
-  };
-}
+export const useSession = sessionStore.useValue;
+export const useHistory = historyStore.useValue;
+export const useProfile = profileStore.useValue;
 
 export function saveSession(session: Session) {
-  memory = JSON.stringify(session);
-  try {
-    window.localStorage.setItem(KEY, memory);
-  } catch {
-    // Storage is unavailable; the in-memory copy still works for this visit.
-  }
-  listeners.forEach((listener) => listener());
+  sessionStore.write(session);
 }
 
 export function startSession(mode: SessionMode, stepIds: string[]) {
   saveSession({ mode, stepIds, index: 0, phase: "decide", answers: [], finished: false });
 }
 
-function parse(raw: string | null): Session | null {
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw) as Session;
-  } catch {
-    return null;
-  }
+/** Marks the session finished and adds it to the history used by Home and Progress. */
+export function finishSession(session: Session) {
+  saveSession({ ...session, finished: true });
+  const history = historyStore.read() ?? [];
+  historyStore.write([
+    ...history,
+    { mode: session.mode, answers: session.answers, finishedAt: Date.now() },
+  ]);
 }
 
-/** The saved session. "loading" until the browser has been read, so pages never redirect too early. */
-export function useSession(): Session | null | "loading" {
-  const raw = useSyncExternalStore(subscribe, readRaw, () => SERVER);
-  return useMemo(() => (raw === SERVER ? "loading" : parse(raw)), [raw]);
+export function saveProfile(profile: Profile) {
+  profileStore.write(profile);
+}
+
+/** Deletes sessions, history and weak topics. Direction and onboarding stay. */
+export function resetProgress() {
+  sessionStore.write(null);
+  historyStore.write(null);
 }

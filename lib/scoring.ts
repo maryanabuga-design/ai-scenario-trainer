@@ -66,3 +66,16 @@ export function weakSections(answers: ScoredAnswer[]): string[] {
     .flatMap((answer) => answer.step.sources);
   return [...new Set(sections)];
 }
+
+/**
+ * Weak steps across the whole history: for each step the most recent answer counts,
+ * so a later right-and-sure answer clears it. Answers must be in the order they were given.
+ */
+export function currentWeakAnswers(answers: ScoredAnswer[]): ScoredAnswer[] {
+  const latest = new Map<string, ScoredAnswer>();
+  answers.forEach((answer) => {
+    latest.delete(answer.step.id);
+    latest.set(answer.step.id, answer);
+  });
+  return [...latest.values()].filter((answer) => answer.errorType !== "secure");
+}

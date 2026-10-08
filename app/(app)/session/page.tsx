@@ -9,7 +9,7 @@ import { FeedbackView } from "@/components/FeedbackView/FeedbackView";
 import { simulatedFeedback } from "@/lib/feedback";
 import { getStep } from "@/lib/scenario";
 import type { Session } from "@/lib/session";
-import { saveSession, useSession } from "@/lib/session";
+import { finishSession, saveSession, useSession } from "@/lib/session";
 
 function NoSession() {
   return (
@@ -61,7 +61,7 @@ function Review({ session }: { session: Session }) {
 
   function next() {
     if (last) {
-      saveSession({ ...session, finished: true });
+      finishSession(session);
       router.push("/session/results");
     } else {
       saveSession({ ...session, index: session.index + 1, phase: "decide" });

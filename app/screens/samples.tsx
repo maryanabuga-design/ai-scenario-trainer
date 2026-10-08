@@ -4,12 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { DecisionStep, emptyDraft } from "@/components/DecisionStep/DecisionStep";
 import type { Draft } from "@/components/DecisionStep/DecisionStep";
 import { FeedbackView } from "@/components/FeedbackView/FeedbackView";
+import { HomeView } from "@/components/HomeView/HomeView";
 import { ResultsView } from "@/components/ResultsView/ResultsView";
 import { SessionSetup } from "@/components/SessionSetup/SessionSetup";
 import type { Length } from "@/components/SessionSetup/SessionSetup";
 import { simulatedFeedback } from "@/lib/feedback";
 import { getStep, scenario } from "@/lib/scenario";
-import { scoreAnswer } from "@/lib/scoring";
+import { defaultDirection } from "@/lib/directions";
+import { currentWeakAnswers, scoreAnswer } from "@/lib/scoring";
 
 /** Interactive sample screens for the /screens review page. They never touch the saved session. */
 export function SetupSample() {
@@ -126,6 +128,29 @@ export function RepeatSample() {
       draft={draft}
       onDraftChange={setDraft}
       onSubmit={() => undefined}
+    />
+  );
+}
+
+/** Home on a first visit (nothing saved) or with an unfinished session and weak topics. */
+export function HomeSample({ withProgress = false }: { withProgress?: boolean }) {
+  return (
+    <HomeView
+      directionTitle={defaultDirection.title}
+      unfinished={
+        withProgress
+          ? {
+              mode: "full",
+              stepIds: scenario.steps.map((step) => step.id),
+              index: 2,
+              phase: "decide",
+              answers: [],
+              finished: false,
+            }
+          : null
+      }
+      weakAnswers={withProgress ? currentWeakAnswers(sampleAnswers) : []}
+      onPractise={() => undefined}
     />
   );
 }

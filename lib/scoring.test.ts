@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getStep, scenario } from "@/lib/scenario";
 import {
   countErrorTypes,
+  currentWeakAnswers,
   errorType,
   scoreAnswer,
   sumEffects,
@@ -78,5 +79,25 @@ describe("weak topics", () => {
     const secure = [scoreAnswer(getStep("s1"), "b", 3)];
     expect(weakStepIds(secure)).toEqual([]);
     expect(weakSections(secure)).toEqual([]);
+  });
+});
+
+describe("currentWeakAnswers", () => {
+  it("uses the most recent answer for each step", () => {
+    const history = [
+      scoreAnswer(getStep("s2"), "b", 3), // first session: misconception
+      scoreAnswer(getStep("s3"), "a", 2), // first session: guess
+      scoreAnswer(getStep("s2"), "c", 3), // repeat: secure, clears s2
+    ];
+    expect(currentWeakAnswers(history).map((answer) => answer.step.id)).toEqual(["s3"]);
+  });
+
+  it("keeps a step weak when the later answer is still wrong or guessed", () => {
+    const history = [scoreAnswer(getStep("s5"), "b", 3), scoreAnswer(getStep("s5"), "b", 1)];
+    expect(currentWeakAnswers(history).map((answer) => answer.errorType)).toEqual(["guess"]);
+  });
+
+  it("is empty for an empty history", () => {
+    expect(currentWeakAnswers([])).toEqual([]);
   });
 });
