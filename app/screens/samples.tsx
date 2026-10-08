@@ -28,7 +28,8 @@ import type { Response } from "@/lib/quiz";
 import { simulatedFeedback } from "@/lib/feedback";
 import { getStep, scenario, sessionLengths } from "@/lib/scenario";
 import { defaultDirection } from "@/lib/directions";
-import { materialFromUpload, sampleMaterials, simulateUpload } from "@/lib/materials";
+import { sampleMaterials } from "@/lib/materials";
+import { materialFromSample, sampleFiles } from "@/lib/training";
 import { currentWeakItems, scoreStep } from "@/lib/scoring";
 
 /** Interactive sample screens for the /screens review page. They never touch the saved session. */
@@ -283,19 +284,15 @@ export function ChatFeedbackSample() {
 
 /** The materials list with the upload sheet drawn over it in one of its states. */
 export function UploadSample({ state }: { state: "choose" | "progress" | "failed" }) {
-  const file =
-    state === "failed"
-      ? { name: "Notice-board-photo.jpg", size: 300_000 }
-      : { name: "Fire-drill-plan.pdf", size: 2_621_440 };
+  const sample = state === "failed" ? sampleFiles[2] : sampleFiles[0];
+  const result = materialFromSample(sample, new Date("2026-10-08"));
+  const file = { name: sample.name, size: sample.size };
   const stage: Stage =
     state === "choose"
       ? { kind: "choose" }
       : state === "progress"
-        ? { kind: "progress", id: "sample-upload", file, percent: 40 }
-        : {
-            kind: "done",
-            material: materialFromUpload(file, simulateUpload(file), new Date("2026-10-08")),
-          };
+        ? { kind: "progress", id: result.id, file, percent: 40, result }
+        : { kind: "done", material: result };
   return (
     <>
       <MaterialsList samples={sampleMaterials} />

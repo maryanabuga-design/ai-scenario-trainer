@@ -4,13 +4,22 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/Button/Button";
 import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
-import { formatSize, materialFromUpload, simulateUpload } from "@/lib/materials";
+import { FileCover } from "@/components/FileCover/FileCover";
+import { formatSize } from "@/lib/materials";
+import { materialFromSample, sampleFiles } from "@/lib/training";
+import type { SampleFile } from "@/lib/training";
 import { addUpload, updateUpload } from "@/lib/uploads";
 import type { Material } from "@/lib/materials";
 
 export type Stage =
   | { kind: "choose" }
-  | { kind: "progress"; id: string; file: { name: string; size: number }; percent: number }
+  | {
+      kind: "progress";
+      id: string;
+      file: { name: string; size: number };
+      percent: number;
+      result: Material;
+    }
   | { kind: "done"; material: Material };
 
 /** The upload sheet's content, also drawn on its own by the screen review page. */
@@ -23,7 +32,7 @@ export function UploadPanel({
 }: {
   stage: Stage;
   onStage: (stage: Stage) => void;
-  onChooseFile: (file: { name: string; size: number }) => void;
+  onChooseFile: (file: SampleFile) => void;
   onClose: () => void;
   onOpenMaterial: (id: string) => void;
 }) {
@@ -35,7 +44,7 @@ export function UploadPanel({
             Upload a file
           </h2>
           <p className="text-sm text-text-secondary">
-            Upload is simulated for this prototype. Nothing is read or sent.
+            Upload is simulated for this prototype. Choose a sample file.
           </p>
         </div>
         <button
@@ -48,21 +57,24 @@ export function UploadPanel({
       </div>
 
       {stage.kind === "choose" && (
-        <div className="flex flex-col items-center gap-3 rounded-panel border border-dashed border-border-strong bg-surface-muted px-4 py-8 text-center">
-          <p>Choose a PDF, a Word document or a text file, up to 20 MB.</p>
-          <label className="inline-flex min-h-11 cursor-pointer items-center rounded-full border border-text bg-surface px-5 font-medium hover:bg-surface-muted has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent">
-            <input
-              type="file"
-              className="sr-only"
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                event.target.value = "";
-                if (file) onChooseFile({ name: file.name, size: file.size });
-              }}
-            />
-            Choose a file
-          </label>
-        </div>
+        <ul className="flex flex-col gap-2" aria-label="Sample files">
+          {sampleFiles.map((file) => (
+            <li key={file.id}>
+              <button
+                type="button"
+                onClick={() => onChooseFile(file)}
+                className="flex w-full items-start gap-3 rounded-panel border border-border bg-surface p-3 text-left hover:border-text-secondary"
+              >
+                <FileCover type={file.name.endsWith(".jpg") ? "Image" : "PDF"} />
+                <span className="flex min-w-0 flex-col gap-0.5">
+                  <span className="font-medium break-words">{file.name}</span>
+                  <span className="text-sm text-text-secondary">{formatSize(file.size)}</span>
+                  <span className="text-sm text-text-secondary">{file.summary}</span>
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
       )}
 
       {stage.kind === "progress" && (
@@ -102,10 +114,7 @@ export function UploadPanel({
             </>
           ) : (
             <>
-              <p className="text-text-secondary">
-                The file is in your materials. In this prototype a scenario is prepared for the
-                sample guide only.
-              </p>
+              <p className="text-text-secondary">The file is in your materials, under Ready.</p>
               <Button onClick={() => onOpenMaterial(stage.material.id)}>Open material</Button>
             </>
           )}
@@ -118,8 +127,8 @@ export function UploadPanel({
 const STEP_MS = 120;
 
 /**
- * A button that opens the simulated upload sheet. Only the chosen file's name and size are used;
- * its content is never read or sent anywhere.
+ * A button that opens the simulated upload sheet with sample files. Choosing one adds it under
+ * Processing, then shows it as Ready or Failed.
  */
 export function UploadButton({
   label = "Upload a file",
@@ -150,8 +159,7 @@ export function UploadButton({
     }
     // Finished: decide the simulated outcome once, save it, and show it.
     const timer = setTimeout(() => {
-      const result = materialFromUpload(stage.file, simulateUpload(stage.file), new Date());
-      const material = { ...result, id: stage.id };
+      const material = stage.result;
       updateUpload(stage.id, { ...material, progress: undefined });
       setStage({ kind: "done", material });
       onUploadEnd?.(material.status === "failed" ? "failed" : "ready");
@@ -181,15 +189,16 @@ export function UploadButton({
         <UploadPanel
           stage={stage}
           onStage={setStage}
-          onChooseFile={(file) => {
-            const material: Material = {
-              ...materialFromUpload(file, simulateUpload(file), new Date()),
-              status: "processing",
-              progress: 0,
-              reason: undefined,
-            };
-            addUpload(material);
-            setStage({ kind: "progress", id: material.id, file, percent: 0 });
+          onChooseFile={(sample) => {
+            const result = materialFromSample(sample, new Date());
+            addUpload({ ...result, status: "processing", progress: 0, reason: undefined });
+            setStage({
+              kind: "progress",
+              id: result.id,
+              file: { name: sample.name, size: sample.size },
+              percent: 0,
+              result,
+            });
             onUploadStart?.();
           }}
           onClose={() => dialogRef.current?.close()}
