@@ -2,23 +2,28 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { SessionSetup } from "@/components/SessionSetup/SessionSetup";
-import type { Length } from "@/components/SessionSetup/SessionSetup";
+import { defaultSetup, quizSize, SessionSetup } from "@/components/SessionSetup/SessionSetup";
+import type { SetupValue } from "@/components/SessionSetup/SessionSetup";
+import { pickQuestions } from "@/lib/quiz";
 import { sessionLengths } from "@/lib/scenario";
-import { startSession, useSession } from "@/lib/session";
+import { startQuiz, startSession, useSession } from "@/lib/session";
 
 export default function SetupPage() {
   const router = useRouter();
-  const [length, setLength] = useState<Length>("full");
+  const [value, setValue] = useState<SetupValue>(defaultSetup);
   const session = useSession();
 
   return (
     <SessionSetup
-      length={length}
-      onLengthChange={setLength}
+      value={value}
+      onChange={setValue}
       replacesUnfinished={session !== "loading" && session !== null && !session.finished}
       onStart={() => {
-        startSession(length, [...sessionLengths[length].stepIds]);
+        if (value.mode === "quiz") {
+          startQuiz(pickQuestions(value.sections, quizSize(value).size), value.sections);
+        } else {
+          startSession(value.length, [...sessionLengths[value.length].stepIds]);
+        }
         router.push("/session");
       }}
     />

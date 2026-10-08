@@ -6,15 +6,35 @@ type Props = {
   checked: boolean;
   onChange: (value: string) => void;
   disabled?: boolean;
+  /** "checkbox" draws a square box and lets the caller toggle the value. */
+  type?: "radio" | "checkbox";
+  /** Smaller padding for long lists such as quiz sections. */
+  compact?: boolean;
   children: ReactNode;
 };
 
-/** A large radio option: white card, radio circle on the right, black border when selected. */
-export function ChoiceCard({ name, value, checked, onChange, disabled = false, children }: Props) {
+/** A large option: white card, radio circle or check box on the right, black border when selected. */
+export function ChoiceCard({
+  name,
+  value,
+  checked,
+  onChange,
+  disabled = false,
+  type = "radio",
+  compact = false,
+  children,
+}: Props) {
+  const padding = compact
+    ? checked
+      ? "min-h-12 px-[15px] py-[7px]"
+      : "min-h-12 px-4 py-2"
+    : checked
+      ? "min-h-14 px-[15px] py-[11px]"
+      : "min-h-14 px-4 py-3";
   return (
     <label
-      className={`flex min-h-14 items-center gap-4 rounded-panel border px-4 py-3 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${
-        checked ? "border-2 border-primary px-[15px] py-[11px]" : "border-border"
+      className={`flex items-center gap-4 rounded-panel border has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${padding} ${
+        checked ? "border-2 border-primary" : "border-border"
       } ${
         disabled
           ? "cursor-not-allowed border-transparent bg-surface-muted text-text-secondary"
@@ -22,7 +42,7 @@ export function ChoiceCard({ name, value, checked, onChange, disabled = false, c
       }`}
     >
       <input
-        type="radio"
+        type={type}
         name={name}
         value={value}
         checked={checked}
@@ -33,11 +53,30 @@ export function ChoiceCard({ name, value, checked, onChange, disabled = false, c
       <span className="flex-1">{children}</span>
       <span
         aria-hidden="true"
-        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
-          checked ? "border-primary" : "border-text-secondary"
+        className={`flex h-5 w-5 shrink-0 items-center justify-center border ${
+          type === "checkbox" ? "rounded-[4px]" : "rounded-full"
+        } ${checked ? "border-primary" : "border-text-secondary"} ${
+          checked && type === "checkbox" ? "bg-primary" : ""
         } ${disabled ? "border-dashed" : ""}`}
       >
-        {checked && <span className="h-2.5 w-2.5 rounded-full bg-primary" />}
+        {checked &&
+          (type === "checkbox" ? (
+            <svg
+              viewBox="0 0 24 24"
+              width="14"
+              height="14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-primary-text"
+            >
+              <path d="M5 12.5 10 17l9-10" />
+            </svg>
+          ) : (
+            <span className="h-2.5 w-2.5 rounded-full bg-primary" />
+          ))}
       </span>
     </label>
   );

@@ -4,6 +4,7 @@ import MaterialPage from "@/app/(app)/materials/evacuation-guide/page";
 import Materials from "@/app/(app)/materials/page";
 import { ActionBarProvider, ActionBarSlot } from "@/components/ActionBar/ActionBar";
 import { AskAiProvider } from "@/components/AskAi/AskAi";
+import { defaultSetup } from "@/components/SessionSetup/SessionSetup";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
 import { Button } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
@@ -148,6 +149,19 @@ export default function Screens() {
           <PhoneFrame label="Session setup">
             <Screen>
               <SetupSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Session setup: quiz">
+            <Screen>
+              <SetupSample
+                start={{
+                  ...defaultSetup,
+                  mode: "quiz",
+                  sections: ["S1", "S2", "S3"],
+                  countChoice: "custom",
+                  customCount: 6,
+                }}
+              />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Situation and decision">

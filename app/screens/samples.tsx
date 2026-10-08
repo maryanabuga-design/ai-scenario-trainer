@@ -17,7 +17,8 @@ import type { OnboardingStep } from "@/components/OnboardingView/OnboardingView"
 import { ProgressView } from "@/components/ProgressView/ProgressView";
 import { ResultsView } from "@/components/ResultsView/ResultsView";
 import { SessionSetup } from "@/components/SessionSetup/SessionSetup";
-import type { Length } from "@/components/SessionSetup/SessionSetup";
+import { defaultSetup } from "@/components/SessionSetup/SessionSetup";
+import type { SetupValue } from "@/components/SessionSetup/SessionSetup";
 import { matchQuestion, notCoveredId, replyToChip } from "@/lib/chat";
 import { simulatedFeedback } from "@/lib/feedback";
 import { getStep, scenario, sessionLengths } from "@/lib/scenario";
@@ -26,9 +27,9 @@ import { materialFromUpload, sampleMaterials, simulateUpload } from "@/lib/mater
 import { currentWeakItems, scoreStep } from "@/lib/scoring";
 
 /** Interactive sample screens for the /screens review page. They never touch the saved session. */
-export function SetupSample() {
-  const [length, setLength] = useState<Length>("full");
-  return <SessionSetup length={length} onLengthChange={setLength} onStart={() => undefined} />;
+export function SetupSample({ start = defaultSetup }: { start?: SetupValue }) {
+  const [value, setValue] = useState<SetupValue>(start);
+  return <SessionSetup value={value} onChange={setValue} onStart={() => undefined} />;
 }
 
 const sampleStep = scenario.steps[0];
