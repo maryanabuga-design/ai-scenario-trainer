@@ -31,6 +31,9 @@ Columns: value and complexity come from the board. "Prototype approach" is a pro
 | 18 | Instructor panel, group analytics | Won't now | | Out of scope: the MVP focuses on the Trainee |
 | 19 | Real-time voice dialogue | Won't now | | Out of scope |
 | 20 | Gamification | Won't now | | Out of scope; only minimal progress |
+| 22 | Uploaded materials with states (simulated) | Must (extends 4; added by the user on 8 Oct 2026) | High / Medium | The Materials list shows sample "uploaded" items in different states: the evacuation guide (ready, the only one with a prepared scenario), a Word document of notes (ready), a link to an article (processing) and a scanned file that failed with a reason and "Try another file". Upload runs a simulated flow (choose a file, progress, Ready or Failed); nothing is read. The material page shows name, type, size, date added, sections and excerpts |
+| 23 | Session length and topic: Extended scenario and Quiz mode | Must (extends 6; added by the user on 8 Oct 2026) | High / Medium | Scenario lengths Short (3), Full (6), Extended (10, four extra steps). A Quiz mode picks one or more guide sections and 5, 10, 15 or a custom number of questions, limited to what the question bank holds for those sections |
+| 24 | Quiz question types | Should (added by the user on 8 Oct 2026) | High / Medium | Single choice, multiple choice (with how many to select), ordering (buttons and drag), short text (simulated keyword and phrase check), true or false. Feedback with the correct answer, why and sources; partial credit for multiple choice and ordering. Results feed the same error types, weak topics, Progress and Home. Confidence is optional in a quiz |
 | 21 | Ask AI about the current step (scripted chat in a bottom sheet) | Should (added by the user on 8 Oct 2026; not on the board) | High / Medium | Prepared question and answer pairs per step in the JSON, suggested question chips and keyword matching for free questions, an honest "not covered by the material" fallback, source chips on every answer. Before feedback it never reveals or hints at the correct option. This is not feature 13: it lives inside a scenario step, not outside the scenario |
 
 ## Information architecture
@@ -38,10 +41,10 @@ Assumption to confirm with the user: four sections live in the bottom navigation
 
 - Onboarding (Онбординг): Choose direction · How it works · Example scenario
 - Home (Головна): Continue session · Weak topics · New scenario
-- Materials (Матеріали): Materials list · Upload PDF · Material page
+- Materials (Матеріали): Materials list (items with Ready, Processing and Failed states) · Upload sheet (simulated) · Material page (details, sections and excerpts)
 - Progress (Прогрес): Weak topics · Session history
 - Profile (Профіль): Direction · Settings
-- Scenario session (Сесія сценарію): Session setup · Situation and decision · Confidence check (Should) · Explanation and AI follow-up · Source sheet (Should) · Ask AI sheet (feature 21; a bottom sheet, not a navigation item)
+- Scenario session (Сесія сценарію): Session setup (mode Scenario or Quiz; scenario length; quiz sections and question count) · Quiz question (five types) and quiz feedback · Situation and decision · Confidence check (Should) · Explanation and AI follow-up · Source sheet (Should) · Ask AI sheet (feature 21; a bottom sheet, not a navigation item)
 - Session results (Результати сесії): Summary · Error analysis · Repeat weak topics
 
 ## Main flow (the learning cycle)
