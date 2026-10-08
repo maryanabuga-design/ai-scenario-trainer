@@ -9,3 +9,11 @@ export const useUploads = uploadsStore.useValue;
 export function addUpload(material: Material) {
   uploadsStore.write([material, ...(uploadsStore.read() ?? [])]);
 }
+
+export function updateUpload(id: string, patch: Partial<Material>) {
+  uploadsStore.write(
+    (uploadsStore.read() ?? []).map((material) =>
+      material.id === id ? { ...material, ...patch } : material,
+    ),
+  );
+}

@@ -5,23 +5,25 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/Button/Button";
 import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
 import { formatSize, materialFromUpload, simulateUpload } from "@/lib/materials";
-import { addUpload } from "@/lib/uploads";
+import { addUpload, updateUpload } from "@/lib/uploads";
 import type { Material } from "@/lib/materials";
 
 export type Stage =
   | { kind: "choose" }
-  | { kind: "progress"; file: { name: string; size: number }; percent: number }
+  | { kind: "progress"; id: string; file: { name: string; size: number }; percent: number }
   | { kind: "done"; material: Material };
 
 /** The upload sheet's content, also drawn on its own by the screen review page. */
 export function UploadPanel({
   stage,
   onStage,
+  onChooseFile,
   onClose,
   onOpenMaterial,
 }: {
   stage: Stage;
   onStage: (stage: Stage) => void;
+  onChooseFile: (file: { name: string; size: number }) => void;
   onClose: () => void;
   onOpenMaterial: (id: string) => void;
 }) {
@@ -55,13 +57,7 @@ export function UploadPanel({
               onChange={(event) => {
                 const file = event.target.files?.[0];
                 event.target.value = "";
-                if (file) {
-                  onStage({
-                    kind: "progress",
-                    file: { name: file.name, size: file.size },
-                    percent: 0,
-                  });
-                }
+                if (file) onChooseFile({ name: file.name, size: file.size });
               }}
             />
             Choose a file
@@ -128,9 +124,15 @@ const STEP_MS = 120;
 export function UploadButton({
   label = "Upload a file",
   variant = "secondary",
+  onUploadStart,
+  onUploadEnd,
 }: {
   label?: string;
   variant?: "primary" | "secondary";
+  /** Called when a file is chosen and appears in the list as Processing. */
+  onUploadStart?: () => void;
+  /** Called when the simulated processing ends, with the final status. */
+  onUploadEnd?: (status: "ready" | "failed") => void;
 }) {
   const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -139,20 +141,23 @@ export function UploadButton({
   useEffect(() => {
     if (stage.kind !== "progress") return;
     if (stage.percent < 100) {
-      const timer = setTimeout(
-        () => setStage({ ...stage, percent: Math.min(100, stage.percent + 5) }),
-        STEP_MS,
-      );
+      const timer = setTimeout(() => {
+        const percent = Math.min(100, stage.percent + 5);
+        updateUpload(stage.id, { progress: percent });
+        setStage({ ...stage, percent });
+      }, STEP_MS);
       return () => clearTimeout(timer);
     }
     // Finished: decide the simulated outcome once, save it, and show it.
     const timer = setTimeout(() => {
-      const material = materialFromUpload(stage.file, simulateUpload(stage.file), new Date());
-      addUpload(material);
+      const result = materialFromUpload(stage.file, simulateUpload(stage.file), new Date());
+      const material = { ...result, id: stage.id };
+      updateUpload(stage.id, { ...material, progress: undefined });
       setStage({ kind: "done", material });
+      onUploadEnd?.(material.status === "failed" ? "failed" : "ready");
     }, STEP_MS);
     return () => clearTimeout(timer);
-  }, [stage]);
+  }, [stage, onUploadEnd]);
 
   function open() {
     setStage({ kind: "choose" });
@@ -176,6 +181,17 @@ export function UploadButton({
         <UploadPanel
           stage={stage}
           onStage={setStage}
+          onChooseFile={(file) => {
+            const material: Material = {
+              ...materialFromUpload(file, simulateUpload(file), new Date()),
+              status: "processing",
+              progress: 0,
+              reason: undefined,
+            };
+            addUpload(material);
+            setStage({ kind: "progress", id: material.id, file, percent: 0 });
+            onUploadStart?.();
+          }}
           onClose={() => dialogRef.current?.close()}
           onOpenMaterial={(id) => {
             dialogRef.current?.close();

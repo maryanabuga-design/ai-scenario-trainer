@@ -291,7 +291,7 @@ export function UploadSample({ state }: { state: "choose" | "progress" | "failed
     state === "choose"
       ? { kind: "choose" }
       : state === "progress"
-        ? { kind: "progress", file, percent: 40 }
+        ? { kind: "progress", id: "sample-upload", file, percent: 40 }
         : {
             kind: "done",
             material: materialFromUpload(file, simulateUpload(file), new Date("2026-10-08")),
@@ -308,6 +308,7 @@ export function UploadSample({ state }: { state: "choose" | "progress" | "failed
           <UploadPanel
             stage={stage}
             onStage={() => undefined}
+            onChooseFile={() => undefined}
             onClose={() => undefined}
             onOpenMaterial={() => undefined}
           />
