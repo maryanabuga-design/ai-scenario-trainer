@@ -5,6 +5,8 @@ import { DecisionStep, emptyDraft } from "@/components/DecisionStep/DecisionStep
 import type { Draft } from "@/components/DecisionStep/DecisionStep";
 import { FeedbackView } from "@/components/FeedbackView/FeedbackView";
 import { HomeView } from "@/components/HomeView/HomeView";
+import { OnboardingView } from "@/components/OnboardingView/OnboardingView";
+import type { OnboardingStep } from "@/components/OnboardingView/OnboardingView";
 import { ProgressView } from "@/components/ProgressView/ProgressView";
 import { ResultsView } from "@/components/ResultsView/ResultsView";
 import { SessionSetup } from "@/components/SessionSetup/SessionSetup";
@@ -179,4 +181,20 @@ export function ProgressSample({ withHistory = false }: { withHistory?: boolean 
       ]
     : [];
   return <ProgressView history={history} onPractise={() => undefined} />;
+}
+
+export function OnboardingSample({ start }: { start: OnboardingStep }) {
+  const [step, setStep] = useState<OnboardingStep>(start);
+  const [direction, setDirection] = useState(defaultDirection.id);
+  return (
+    <OnboardingView
+      step={step}
+      direction={direction}
+      onDirectionChange={setDirection}
+      onBack={() => setStep((step - 1) as OnboardingStep)}
+      onNext={() => setStep((step + 1) as OnboardingStep)}
+      onSkip={() => undefined}
+      onTry={() => undefined}
+    />
+  );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { HomeView } from "@/components/HomeView/HomeView";
 import { directionTitle } from "@/lib/directions";
 import { weakAnswersFromHistory } from "@/lib/progress";
@@ -11,8 +12,15 @@ export default function Home() {
   const profile = useProfile();
   const session = useSession();
   const history = useHistory();
+  const needsOnboarding = profile !== "loading" && !profile?.onboarded;
 
-  if (profile === "loading" || session === "loading" || history === "loading") return null;
+  useEffect(() => {
+    if (needsOnboarding) router.replace("/onboarding");
+  }, [needsOnboarding, router]);
+
+  if (profile === "loading" || session === "loading" || history === "loading" || needsOnboarding) {
+    return null;
+  }
 
   return (
     <HomeView

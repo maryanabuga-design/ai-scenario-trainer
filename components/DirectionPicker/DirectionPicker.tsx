@@ -1,0 +1,38 @@
+"use client";
+
+import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
+import { directions } from "@/lib/directions";
+
+/** The four directions. Only the available one can be chosen. */
+export function DirectionPicker({
+  value,
+  onChange,
+  legend,
+}: {
+  value: string;
+  onChange: (id: string) => void;
+  legend: string;
+}) {
+  return (
+    <fieldset className="flex flex-col gap-3">
+      <legend className="mb-3 font-medium">{legend}</legend>
+      {directions.map((direction) => (
+        <ChoiceCard
+          key={direction.id}
+          name="direction"
+          value={direction.id}
+          checked={value === direction.id}
+          disabled={!direction.available}
+          onChange={onChange}
+        >
+          <span className="flex flex-col gap-0.5">
+            <span>{direction.title}</span>
+            {!direction.available && (
+              <span className="text-sm">Not available in this prototype</span>
+            )}
+          </span>
+        </ChoiceCard>
+      ))}
+    </fieldset>
+  );
+}
