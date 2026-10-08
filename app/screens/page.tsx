@@ -168,7 +168,7 @@ export default function Screens() {
             </Screen>
           </PhoneFrame>
         </Group>
-        <Group title="Sections and onboarding">
+        <Group title="Home and progress">
           <PhoneFrame label="Home: first visit">
             <Screen nav="/">
               <HomeSample />
@@ -189,6 +189,8 @@ export default function Screens() {
               <ProgressSample withHistory />
             </Screen>
           </PhoneFrame>
+        </Group>
+        <Group title="Onboarding">
           <PhoneFrame label="Onboarding: choose direction">
             <Screen>
               <OnboardingSample start={0} />

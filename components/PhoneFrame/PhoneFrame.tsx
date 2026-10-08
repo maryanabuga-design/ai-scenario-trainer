@@ -17,7 +17,7 @@ export function PhoneFrame({ label, plannedStep, children }: Props) {
         <span className="text-text-secondary">{built ? "Built" : `Not built yet · step ${plannedStep}`}</span>
       </figcaption>
       <div
-        className={`flex h-[844px] flex-col overflow-hidden rounded-card bg-bg ${
+        className={`relative flex h-[844px] flex-col overflow-hidden rounded-card bg-bg ${
           built ? "border border-border" : "items-center justify-center border border-dashed border-text-secondary"
         }`}
       >

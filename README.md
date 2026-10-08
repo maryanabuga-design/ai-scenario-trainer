@@ -8,7 +8,7 @@ The content is educational only: civil-protection and first-aid situations (evac
 
 ## Run it
 
-Requires Node.js 20 or newer.
+Requires Node.js 20.19 or newer (developed on Node 24).
 
 ```bash
 npm install
@@ -26,6 +26,8 @@ npm test
 npm run build
 ```
 
+To try it on a phone, connect the phone to the same Wi-Fi and open the "Network" address that `npm run dev` prints (for example `http://192.168.0.101:3000`). The app works there; only live reload is blocked for other devices, which Next.js does by default.
+
 In development, `/screens` shows every planned screen side by side at phone width for design review. It returns 404 in production.
 
 ## Environment variables
@@ -38,18 +40,27 @@ Scope comes from `docs/mvp-matrix-and-ia.md`; see `CLAUDE.md` for the full list.
 
 ## Status
 
-The learning cycle can be clicked from start to finish:
-Materials → material page → Session setup (Short 3 or Full 6 decisions) → decision step (option, confidence, one-sentence explanation) → feedback (verdict, error type, sources, consequence, key points, "Ask about this step" on the smoke step) → results (score, error types, how the situation ended, error analysis, weak topics) → repeat the weak steps.
+All four sections and the whole learning cycle can be clicked through:
 
-The session is saved in the browser on this device, so a page reload keeps your place.
+- Onboarding on the first visit: choose a direction (one available, three marked "Not available in this prototype"), how it works, an example scenario. It can be skipped.
+- Home: continue an unfinished session, weak topics from your saved sessions, start a new scenario.
+- Materials: the sample guide, its sections in a bottom sheet, and "Start scenario".
+- Session setup: Short (3 decisions, about 5 min) or Full (6 decisions, about 10 min).
+- Decision step: an action, how sure you are, and one sentence on why you chose it.
+- Feedback: verdict, your answer vs the better one, why, error type, sources, what happened, the AI follow-up question with points a strong answer covers, and "Ask about this step" on the smoke step.
+- Results: score, error types, how the situation ended, error analysis with sources, weak topics, and "Repeat weak topics".
+- Progress: weak topics and session history, with an empty state.
+- Profile: direction, and "Reset progress" behind a confirmation.
 
-Not built yet: Home, Progress, Profile and Onboarding (they show a "Coming next" screen), and the upload flow. Build order: `docs/build-plan.md`.
+Sessions, history and the profile are saved in this browser on this device (`localStorage`). A page reload keeps your place.
+
+Not built yet: the upload flow in Materials (choose a file, processing). Build order: `docs/build-plan.md`.
 
 ## Known limits
 
-- AI behavior is simulated. The follow-up question and the key points are shown, but a trainee's explanation is never graded automatically.
+- AI behavior is simulated. Every answer, follow-up question and key point comes from the prepared scenario, and a trainee's explanation is never graded automatically.
 - Upload is not available yet. Only the sample guide is used.
-- Only one session is kept at a time; history arrives with the Progress screen.
+- Progress lives in one browser on one device. There are no accounts.
 
 ## Project files
 

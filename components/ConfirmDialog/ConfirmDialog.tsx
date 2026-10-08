@@ -10,7 +10,7 @@ type Props = {
   confirmLabel: string;
   onConfirm: () => void;
   onCancel: () => void;
-  /** Only for the screen review page: draw the dialog card in place, without the overlay. */
+  /** Only for the screen review page: draw the dialog over its nearest positioned frame instead of the page. */
   inline?: boolean;
 };
 
@@ -48,7 +48,15 @@ export function ConfirmDialog({ open, inline = false, ...card }: Props) {
     if (!open && dialog.open) dialog.close();
   }, [open, inline]);
 
-  if (inline) return <DialogCard {...card} />;
+  if (inline) {
+    return (
+      <div className="scrim absolute inset-0 z-20 flex items-center p-4">
+        <div className="w-full">
+          <DialogCard {...card} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <dialog

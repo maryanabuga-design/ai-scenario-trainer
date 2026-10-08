@@ -148,6 +148,7 @@ dialog[data-sheet] {
     );
 }
 
-dialog[data-sheet]::backdrop {
+dialog[data-sheet]::backdrop,
+.scrim {
   background: color-mix(in srgb, var(--text) 40%, transparent);
 }
