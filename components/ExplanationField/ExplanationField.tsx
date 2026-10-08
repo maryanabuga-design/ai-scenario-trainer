@@ -26,8 +26,8 @@ export function ExplanationField({
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${id}-error` : undefined}
         placeholder="In one sentence"
-        className={`w-full resize-none rounded-panel border bg-surface px-4 py-3 text-base hover:border-text-secondary focus-visible:border-primary ${
-          error ? "border-wrong" : "border-border"
+        className={`w-full resize-none rounded-panel border bg-surface px-4 py-3 text-base hover:border-text focus-visible:border-primary ${
+          error ? "border-wrong" : "border-border-strong"
         }`}
       />
       {error && (

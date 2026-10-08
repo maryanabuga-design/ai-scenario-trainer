@@ -23,6 +23,7 @@ Status: draft v1. Values marked (proposal) are open for change. Update this file
   --surface: #FFFFFF;       /* cards, inputs, sheets */
   --surface-muted: #EFECE5; /* inner panels, dropzone, current nav item */
   --border: #E2DED5;
+  --border-strong: #8A867E; /* edge of text inputs, 3.6:1 on white, 3.2:1 on --bg */
   --text: #1A1A1A;
   --text-secondary: #5C5A55; /* 6.1:1 on --bg, 6.9:1 on white */
   --primary: #1A1A1A;        /* pill buttons, selected option */
@@ -113,7 +114,7 @@ Every component needs: default, hover, focus-visible, active, disabled. Inputs a
   - Secondary blocks below, separated by 32px: consequence ("What happened"), then the AI follow-up as a tutor message: the step's follow-up question (shown only here, never before the answer), the user's own sentence under "Your explanation", then "Points a strong answer covers". Secondary blocks use the 14 secondary scale in `--text-secondary`. Hierarchy comes from type and spacing, not colour.
   - The user's explanation is never graded. Show it unchanged next to the key beats and label the key beats as a reference list, not a score.
   - Not covered by the material: under the smoke step's feedback, an "Ask about this step" block with one tappable suggested question that the guide does not answer. The trainee taps it; the AI never asks it on its own. The answer says "This is not covered by the material." and then "Closest sections in the guide:" with source chips. Neutral style, no warning colour.
-- Explanation field: multi-line text input, 3 rows, 16px radius, label is always the neutral prompt "In one sentence, why did you choose this?" (never the step's follow-up question, which can assume the choice was right), optional counter in 14 `--text-secondary`. States: default, hover, focus-visible, disabled (locked after submit), error. Error: 1px `--wrong` border, an icon and a text message below (for example "Write one sentence before you submit."). Never colour alone.
+- Explanation field: multi-line text input, 3 rows, 16px radius, 1px `--border-strong` edge (an input's edge must reach 3:1), label is always the neutral prompt "In one sentence, why did you choose this?" (never the step's follow-up question, which can assume the choice was right), optional counter in 14 `--text-secondary`. States: default, hover, focus-visible, disabled (locked after submit), error. Error: 1px `--wrong` border, an icon and a text message below (for example "Write one sentence before you submit."). Never colour alone.
 - Status badge: icon + label + colour, used for the error type and the verdict. Labels in sentence case.
   - Secure: check icon, `--correct` on `--correct-bg`.
   - Guess: question-mark icon, neutral outlined badge: `--text-secondary` on `--surface-muted`, 1px `--border`.
