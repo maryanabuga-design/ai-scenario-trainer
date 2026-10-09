@@ -25,6 +25,7 @@ import {
   FloodSetupSample,
   FloodStepSample,
   HomeSample,
+  WeakTopicsSample,
   ReviewSample,
   QuizFeedbackSample,
   QuizResultsSample,
@@ -338,6 +339,16 @@ export default function Screens() {
           <PhoneFrame label="Home: with progress">
             <Screen nav="/">
               <HomeSample withProgress />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Weak topics">
+            <Screen>
+              <WeakTopicsSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Weak topics: empty">
+            <Screen>
+              <WeakTopicsSample empty />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Progress: first visit">

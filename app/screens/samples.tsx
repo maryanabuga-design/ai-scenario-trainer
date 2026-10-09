@@ -7,6 +7,7 @@ import { AskAiProvider } from "@/components/AskAi/AskAi";
 import type { ChatMessage } from "@/components/AskAi/AskAi";
 import { FeedbackView } from "@/components/FeedbackView/FeedbackView";
 import { HomeView } from "@/components/HomeView/HomeView";
+import { WeakTopicsView } from "@/components/WeakTopicsView/WeakTopicsView";
 import { initialChoice, TrainingCreate } from "@/components/TrainingCreate/TrainingCreate";
 import {
   generationSteps,
@@ -37,6 +38,7 @@ import { defaultDirection } from "@/lib/directions";
 import { sampleMaterials } from "@/lib/materials";
 import { materialFromSample, sampleFiles } from "@/lib/training";
 import { currentWeakItems, scoreStep } from "@/lib/scoring";
+import { weakTopics } from "@/lib/weak-topics";
 
 /** Interactive sample screens for the /screens review page. They never touch the saved session. */
 export function SetupSample({
@@ -483,4 +485,22 @@ export function FloodResultsSample() {
 
 export function FloodSetupSample() {
   return <SetupSample start={{ ...defaultSetup, length: "short" }} scenarioId={FLOOD} />;
+}
+
+/** The Weak topics page with the sample answers, or empty. */
+export function WeakTopicsSample({ empty = false }: { empty?: boolean }) {
+  const topics = empty ? [] : weakTopics(currentWeakItems(sampleAnswers));
+  const [selected, setSelected] = useState(() => topics.map((topic) => topic.sectionId));
+  return (
+    <WeakTopicsView
+      topics={topics}
+      selected={selected}
+      onToggle={(id) =>
+        setSelected((current) =>
+          current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
+        )
+      }
+      onRepeat={() => undefined}
+    />
+  );
 }

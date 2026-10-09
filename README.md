@@ -43,7 +43,8 @@ Scope comes from `docs/mvp-matrix-and-ia.md`; see `CLAUDE.md` for the full list.
 All four sections and the whole learning cycle can be clicked through:
 
 - Onboarding on the first visit: choose a direction (one available, three marked "Not available in this prototype"), how it works, an example scenario. It can be skipped.
-- Home: continue an unfinished session, weak topics from your saved sessions, start a new scenario.
+- Home: continue an unfinished session (the card is the link), a repeat summary card ("N topics to repeat", error-type counts, "Repeat weak topics") with a sideways row of up to five topic cards by priority (each repeats one topic) and "See all" to the Weak topics page, and a New scenario card that opens Create training.
+- Weak topics page: topics grouped by misconception, knowledge gap and guess, each with a checkbox, and "Repeat selected". A repeat round mixes the weak steps and questions of the chosen topics.
 - Materials: tabs Ready, Processing and Failed over the sample guide plus sample "uploaded" items in every state (ready, processing, failed with a reason and "Try another file"), a simulated upload (choose a file, progress, Ready or Failed; only the file's name and size are used, nothing is read), and a material page with details, sections and excerpts. Only the sample guide has a prepared scenario.
 - Create training: upload a sample file (the evacuation guide, the flood preparedness guide, a one-page quick card, or a photo that fails), then "Create training" on a ready material or "New scenario" on Home. Choose Scenario and Quiz and the sections to keep, watch a simulated four-step generation (with Cancel), review every situation and question with its sources, and "Start training". The quick card is too short for a scenario and makes a quiz only. Created trainings show as Scenario and Quiz tags and are saved in this browser.
 - Session setup: Scenario (Short 3, Full 6 or Extended 10 decisions) or Quiz (one or more guide sections, 5, 10, 15 or a custom number of questions, capped at what the bank holds).
@@ -52,7 +53,7 @@ All four sections and the whole learning cycle can be clicked through:
 - Ask AI: a button on the decision step and on feedback opens a chat sheet about the current step, with suggested questions and a text field. Answers are prepared in the scenario JSON and matched by keywords; unmatched questions get "This is not covered by the material" with the closest guide sections. Before you answer, it never says which action is right.
 - Quiz: 33 original questions in `content/quiz-bank.json`, in five types (single choice, multiple choice, ordering with buttons or drag, short text checked against accepted phrases, true or false). Feedback shows the correct answer, why and the guide section; multiple choice and ordering get partial credit; confidence is optional.
 - Results: score, error types, how the situation ended, error analysis with sources, weak topics, and "Repeat weak topics".
-- Progress: weak topics and session history from scenarios and quizzes, with "Repeat weak steps" and "Repeat weak questions", and an empty state.
+- Progress: the same repeat summary and topic row, and session history from scenarios, quizzes and repeat rounds, with an empty state.
 - Profile: direction, and "Reset progress" behind a confirmation.
 
 Sessions, history and the profile are saved in this browser on this device (`localStorage`). A page reload keeps your place.
