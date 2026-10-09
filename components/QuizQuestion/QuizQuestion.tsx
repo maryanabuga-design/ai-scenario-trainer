@@ -7,6 +7,7 @@ import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
 import { ConfidenceSelector } from "@/components/ConfidenceSelector/ConfidenceSelector";
 import { OrderingList } from "@/components/OrderingList/OrderingList";
 import { SessionTopBar } from "@/components/SessionTopBar/SessionTopBar";
+import type { Unit } from "@/components/SessionTopBar/SessionTopBar";
 import { Tag } from "@/components/Tag/Tag";
 import type { Question, Response } from "@/lib/quiz";
 import type { Confidence } from "@/lib/scenario";
@@ -142,6 +143,7 @@ export function QuizQuestion({
   question,
   index,
   total,
+  unit = "Question",
   draft,
   onDraftChange,
   onSubmit,
@@ -149,6 +151,7 @@ export function QuizQuestion({
   question: Question;
   index: number;
   total: number;
+  unit?: Unit;
   draft: QuizDraft;
   onDraftChange: (draft: QuizDraft) => void;
   onSubmit: () => void;
@@ -161,7 +164,7 @@ export function QuizQuestion({
 
   return (
     <div className="flex flex-col gap-6">
-      <SessionTopBar index={index} total={total} unit="Question" />
+      <SessionTopBar index={index} total={total} unit={unit} />
       <div className="flex flex-col items-start gap-3">
         <Tag tone="blue">{`Guide ${question.section}`}</Tag>
         <h1 className="text-lg font-medium">{question.question}</h1>

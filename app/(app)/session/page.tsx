@@ -10,11 +10,20 @@ import { FeedbackView } from "@/components/FeedbackView/FeedbackView";
 import { QuizFeedback } from "@/components/QuizFeedback/QuizFeedback";
 import { emptyQuizDraft, QuizQuestion } from "@/components/QuizQuestion/QuizQuestion";
 import type { QuizDraft } from "@/components/QuizQuestion/QuizQuestion";
-import { getQuestion } from "@/lib/quiz";
+import type { Unit } from "@/components/SessionTopBar/SessionTopBar";
 import { simulatedFeedback } from "@/lib/feedback";
+import { getQuestion } from "@/lib/quiz";
 import { getStep } from "@/lib/scenario";
-import type { QuizSession, ScenarioSession } from "@/lib/session";
-import { finishSession, isQuiz, saveSession, useSession } from "@/lib/session";
+import type { Answer, QuizAnswer, Session } from "@/lib/session";
+import {
+  finishSession,
+  isQuiz,
+  isRepeatRound,
+  itemCount,
+  saveSession,
+  useSession,
+} from "@/lib/session";
+import type { RepeatItem } from "@/lib/weak-topics";
 
 function NoSession() {
   return (
@@ -28,43 +37,131 @@ function NoSession() {
   );
 }
 
-function Decide({ session }: { session: ScenarioSession }) {
-  const [draft, setDraft] = useState<Draft>(emptyDraft);
-  const step = getStep(session.stepIds[session.index]);
+/** The step or question the session is on, whatever kind of session it is. */
+function currentItem(session: Session): RepeatItem {
+  if (isRepeatRound(session)) return session.items[session.index];
+  if (isQuiz(session)) return { type: "question", id: session.questionIds[session.index] };
+  return { type: "step", id: session.stepIds[session.index] };
+}
 
-  function submit() {
-    if (!draft.optionId || !draft.confidence) return;
-    const answer = {
-      stepId: step.id,
-      optionId: draft.optionId,
-      confidence: draft.confidence,
-      explanation: draft.explanation.trim(),
-    };
-    saveSession({ ...session, answers: [...session.answers, answer], phase: "feedback" });
-    window.scrollTo(0, 0);
+function savedAnswer(session: Session, item: RepeatItem): Answer | QuizAnswer | undefined {
+  if (isRepeatRound(session)) {
+    return session.answers.find((answer) =>
+      answer.type === "step" ? answer.stepId === item.id : answer.questionId === item.id,
+    );
   }
+  if (isQuiz(session)) return session.answers.find((answer) => answer.questionId === item.id);
+  return session.answers.find((answer) => answer.stepId === item.id);
+}
 
+function withAnswer(session: Session, answer: Answer | QuizAnswer): Session {
+  if (isRepeatRound(session)) {
+    const tagged =
+      "stepId" in answer
+        ? { type: "step" as const, ...answer }
+        : { type: "question" as const, ...answer };
+    return { ...session, answers: [...session.answers, tagged], phase: "feedback" };
+  }
+  if (isQuiz(session) && "questionId" in answer) {
+    return { ...session, answers: [...session.answers, answer], phase: "feedback" };
+  }
+  if (!isQuiz(session) && "stepId" in answer) {
+    return { ...session, answers: [...session.answers, answer], phase: "feedback" };
+  }
+  return session;
+}
+
+function StepDecide({
+  stepId,
+  index,
+  total,
+  unit,
+  onAnswer,
+}: {
+  stepId: string;
+  index: number;
+  total: number;
+  unit: Unit;
+  onAnswer: (answer: Answer) => void;
+}) {
+  const [draft, setDraft] = useState<Draft>(emptyDraft);
+  const step = getStep(stepId);
   return (
     <DecisionStep
       step={step}
-      index={session.index}
-      total={session.stepIds.length}
+      index={index}
+      total={total}
+      unit={unit}
       draft={draft}
       onDraftChange={setDraft}
-      onSubmit={submit}
+      onSubmit={() => {
+        if (!draft.optionId || !draft.confidence) return;
+        onAnswer({
+          stepId: step.id,
+          optionId: draft.optionId,
+          confidence: draft.confidence,
+          explanation: draft.explanation.trim(),
+        });
+      }}
     />
   );
 }
 
-function Review({ session }: { session: ScenarioSession }) {
+function QuestionDecide({
+  questionId,
+  index,
+  total,
+  unit,
+  onAnswer,
+}: {
+  questionId: string;
+  index: number;
+  total: number;
+  unit: Unit;
+  onAnswer: (answer: QuizAnswer) => void;
+}) {
+  const question = getQuestion(questionId);
+  const [draft, setDraft] = useState<QuizDraft>(() => emptyQuizDraft(question));
+  return (
+    <QuizQuestion
+      question={question}
+      index={index}
+      total={total}
+      unit={unit}
+      draft={draft}
+      onDraftChange={setDraft}
+      onSubmit={() => {
+        if (!draft.response) return;
+        onAnswer({
+          questionId: question.id,
+          response: draft.response,
+          confidence: draft.confidence,
+        });
+      }}
+    />
+  );
+}
+
+export default function SessionPage() {
   const router = useRouter();
-  const step = getStep(session.stepIds[session.index]);
-  const answer = session.answers.find((candidate) => candidate.stepId === step.id);
-  if (!answer) return <NoSession />;
+  const session = useSession();
 
-  const last = session.index === session.stepIds.length - 1;
+  if (session === "loading") return null;
+  if (!session || session.finished) return <NoSession />;
 
-  function next() {
+  const item = currentItem(session);
+  const total = itemCount(session);
+  const last = session.index === total - 1;
+  const unit: Unit = isRepeatRound(session) ? "Item" : item.type === "step" ? "Step" : "Question";
+
+  function answer(next: Answer | QuizAnswer) {
+    if (session === "loading" || !session) return;
+    saveSession(withAnswer(session, next));
+    window.scrollTo(0, 0);
+  }
+
+  function goOn() {
+    if (session === "loading" || !session) return;
     if (last) {
       finishSession(session);
       router.push("/session/results");
@@ -74,93 +171,60 @@ function Review({ session }: { session: ScenarioSession }) {
     }
   }
 
-  return (
-    <FeedbackView
-      step={step}
-      feedback={simulatedFeedback.evaluate(step, answer)}
-      explanation={answer.explanation}
-      index={session.index}
-      total={session.stepIds.length}
-      nextLabel={last ? "See results" : "Next step"}
-      onNext={next}
-    />
-  );
-}
-
-function QuizDecide({ session }: { session: QuizSession }) {
-  const question = getQuestion(session.questionIds[session.index]);
-  const [draft, setDraft] = useState<QuizDraft>(() => emptyQuizDraft(question));
-
-  function submit() {
-    if (!draft.response) return;
-    const answer = {
-      questionId: question.id,
-      response: draft.response,
-      confidence: draft.confidence,
-    };
-    saveSession({ ...session, answers: [...session.answers, answer], phase: "feedback" });
-    window.scrollTo(0, 0);
+  if (session.phase === "decide") {
+    return item.type === "step" ? (
+      <AskAiProvider>
+        <StepDecide
+          key={session.index}
+          stepId={item.id}
+          index={session.index}
+          total={total}
+          unit={unit}
+          onAnswer={answer}
+        />
+      </AskAiProvider>
+    ) : (
+      <QuestionDecide
+        key={session.index}
+        questionId={item.id}
+        index={session.index}
+        total={total}
+        unit={unit}
+        onAnswer={answer}
+      />
+    );
   }
 
-  return (
-    <QuizQuestion
-      question={question}
-      index={session.index}
-      total={session.questionIds.length}
-      draft={draft}
-      onDraftChange={setDraft}
-      onSubmit={submit}
-    />
-  );
-}
+  const saved = savedAnswer(session, item);
+  if (!saved) return <NoSession />;
 
-function QuizReview({ session }: { session: QuizSession }) {
-  const router = useRouter();
-  const question = getQuestion(session.questionIds[session.index]);
-  const answer = session.answers.find((candidate) => candidate.questionId === question.id);
-  if (!answer) return <NoSession />;
-  const last = session.index === session.questionIds.length - 1;
-
-  return (
-    <QuizFeedback
-      question={question}
-      response={answer.response}
-      confidence={answer.confidence}
-      index={session.index}
-      total={session.questionIds.length}
-      nextLabel={last ? "See results" : "Next question"}
-      onNext={() => {
-        if (last) {
-          finishSession(session);
-          router.push("/session/results");
-        } else {
-          saveSession({ ...session, index: session.index + 1, phase: "decide" });
-          window.scrollTo(0, 0);
-        }
-      }}
-    />
-  );
-}
-
-export default function SessionPage() {
-  const session = useSession();
-
-  if (session === "loading") return null;
-  if (!session || session.finished) return <NoSession />;
-  if (isQuiz(session)) {
-    return session.phase === "feedback" ? (
-      <QuizReview session={session} />
-    ) : (
-      <QuizDecide key={session.index} session={session} />
+  if ("stepId" in saved) {
+    const step = getStep(saved.stepId);
+    return (
+      <AskAiProvider>
+        <FeedbackView
+          step={step}
+          feedback={simulatedFeedback.evaluate(step, saved)}
+          explanation={saved.explanation}
+          index={session.index}
+          total={total}
+          unit={unit}
+          nextLabel={last ? "See results" : unit === "Item" ? "Next item" : "Next step"}
+          onNext={goOn}
+        />
+      </AskAiProvider>
     );
   }
   return (
-    <AskAiProvider>
-      {session.phase === "feedback" ? (
-        <Review session={session} />
-      ) : (
-        <Decide key={session.index} session={session} />
-      )}
-    </AskAiProvider>
+    <QuizFeedback
+      question={getQuestion(saved.questionId)}
+      response={saved.response}
+      confidence={saved.confidence}
+      index={session.index}
+      total={total}
+      unit={unit}
+      nextLabel={last ? "See results" : unit === "Item" ? "Next item" : "Next question"}
+      onNext={goOn}
+    />
   );
 }

@@ -6,8 +6,12 @@ import type { ScoredItem } from "@/lib/scoring";
 import type { FinishedSession, Session } from "@/lib/session";
 
 export function sessionLabel(
-  session: { kind?: "scenario"; mode: SessionMode } | { kind: "quiz"; mode: "quiz" | "repeat" },
+  session:
+    | { kind?: "scenario"; mode: SessionMode }
+    | { kind: "quiz"; mode: "quiz" | "repeat" }
+    | { kind: "repeat" },
 ) {
+  if (session.kind === "repeat") return "Repeat round";
   if (session.kind === "quiz") return session.mode === "repeat" ? "Quiz repeat" : "Quiz";
   return {
     short: "Short session",
@@ -18,6 +22,13 @@ export function sessionLabel(
 }
 
 export function scoreSession(session: Session | FinishedSession): ScoredItem[] {
+  if (session.kind === "repeat") {
+    return session.answers.map((answer) =>
+      answer.type === "question"
+        ? scoreQuestion(getQuestion(answer.questionId), answer.response, answer.confidence)
+        : scoreStep(getStep(answer.stepId), answer.optionId, answer.confidence),
+    );
+  }
   if (session.kind === "quiz") {
     return session.answers.map((answer) =>
       scoreQuestion(getQuestion(answer.questionId), answer.response, answer.confidence),

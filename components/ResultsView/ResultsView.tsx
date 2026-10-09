@@ -24,7 +24,8 @@ import {
 /** Which session the results belong to. */
 export type ResultsKind =
   | { kind: "scenario"; mode: SessionMode; scenarioId?: string }
-  | { kind: "quiz"; mode: "quiz" | "repeat" };
+  | { kind: "quiz"; mode: "quiz" | "repeat" }
+  | { kind: "repeat" };
 
 function formatTime(seconds: number) {
   const minutes = Math.floor(seconds / 60);
@@ -41,17 +42,19 @@ function formatMetric(metric: OutcomeMetric, value: number, start: number) {
 
 function headline(results: ResultsKind, weakTopicCount: number): [string, string] {
   const first =
-    results.kind === "quiz"
-      ? results.mode === "repeat"
-        ? "Repeat complete."
-        : "Quiz complete."
-      : results.mode === "short"
-        ? (getScenario(results.scenarioId).shortEnding?.headline ?? "Session complete.")
-        : {
-            full: "Session complete.",
-            extended: "Extended session complete.",
-            repeat: "Repeat complete.",
-          }[results.mode];
+    results.kind === "repeat"
+      ? "Repeat complete."
+      : results.kind === "quiz"
+        ? results.mode === "repeat"
+          ? "Repeat complete."
+          : "Quiz complete."
+        : results.mode === "short"
+          ? (getScenario(results.scenarioId).shortEnding?.headline ?? "Session complete.")
+          : {
+              full: "Session complete.",
+              extended: "Extended session complete.",
+              repeat: "Repeat complete.",
+            }[results.mode];
   if (weakTopicCount === 0) return [first, "Nothing to repeat this time."];
   return [first, `Review ${weakTopicCount} ${weakTopicCount === 1 ? "topic" : "topics"} below.`];
 }

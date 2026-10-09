@@ -7,6 +7,7 @@ import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
 import { ConfidenceSelector } from "@/components/ConfidenceSelector/ConfidenceSelector";
 import { ExplanationField } from "@/components/ExplanationField/ExplanationField";
 import { SessionTopBar } from "@/components/SessionTopBar/SessionTopBar";
+import type { Unit } from "@/components/SessionTopBar/SessionTopBar";
 import { SourceChip } from "@/components/SourceChip/SourceChip";
 import type { Confidence, Step } from "@/lib/scenario";
 
@@ -33,6 +34,7 @@ export function DecisionStep({
   step,
   index,
   total,
+  unit = "Step",
   draft,
   onDraftChange,
   onSubmit,
@@ -40,6 +42,7 @@ export function DecisionStep({
   step: Step;
   index: number;
   total: number;
+  unit?: Unit;
   draft: Draft;
   onDraftChange: (draft: Draft) => void;
   onSubmit: () => void;
@@ -48,7 +51,7 @@ export function DecisionStep({
 
   return (
     <div className="flex flex-col gap-6">
-      <SessionTopBar index={index} total={total} />
+      <SessionTopBar index={index} total={total} unit={unit} />
       <section className="flex flex-col gap-3">
         <h1 className="font-serif text-2xl">{step.title}</h1>
         <p className="font-serif text-lg">{step.narrative}</p>

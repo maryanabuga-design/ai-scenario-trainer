@@ -5,7 +5,14 @@ import { ButtonLink } from "@/components/Button/Button";
 import { ResultsView } from "@/components/ResultsView/ResultsView";
 import { scoreSession } from "@/lib/progress";
 import { getQuestion } from "@/lib/quiz";
-import { isQuiz, startQuiz, startSession, useSession } from "@/lib/session";
+import {
+  isQuiz,
+  isRepeatRound,
+  startQuiz,
+  startRepeatRound,
+  startSession,
+  useSession,
+} from "@/lib/session";
 
 export default function ResultsPage() {
   const router = useRouter();
@@ -24,16 +31,26 @@ export default function ResultsPage() {
     );
   }
 
+  const items = scoreSession(session);
+
   return (
     <ResultsView
       results={
-        isQuiz(session)
-          ? { kind: "quiz", mode: session.mode }
-          : { kind: "scenario", mode: session.mode, scenarioId: session.scenarioId }
+        isRepeatRound(session)
+          ? { kind: "repeat" }
+          : isQuiz(session)
+            ? { kind: "quiz", mode: session.mode }
+            : { kind: "scenario", mode: session.mode, scenarioId: session.scenarioId }
       }
-      items={scoreSession(session)}
+      items={items}
       onRepeat={(ids) => {
-        if (isQuiz(session)) {
+        if (isRepeatRound(session)) {
+          const again = items.filter((item) => ids.includes(item.id));
+          startRepeatRound(
+            again.map((item) => ({ type: item.kind, id: item.id })),
+            [...new Set(again.flatMap((item) => item.sources))],
+          );
+        } else if (isQuiz(session)) {
           startQuiz(ids, [...new Set(ids.map((id) => getQuestion(id).section))], true);
         } else {
           startSession("repeat", ids, session.scenarioId);

@@ -1,6 +1,8 @@
 import { BackLink } from "@/components/BackLink/BackLink";
 
 /** Exit on the left, step count and progress dots on the right. Exit keeps the saved session and goes Home. */
+export type Unit = "Step" | "Question" | "Item";
+
 export function SessionTopBar({
   index,
   total,
@@ -8,7 +10,7 @@ export function SessionTopBar({
 }: {
   index: number;
   total: number;
-  unit?: "Step" | "Question";
+  unit?: Unit;
 }) {
   return (
     <div className="flex items-center justify-between gap-4">

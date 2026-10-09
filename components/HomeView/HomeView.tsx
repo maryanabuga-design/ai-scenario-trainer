@@ -10,7 +10,7 @@ import { sessionLabel } from "@/lib/progress";
 import { getScenario, scenario, sessionLengths } from "@/lib/scenario";
 import type { ScoredItem } from "@/lib/scoring";
 import type { Session } from "@/lib/session";
-import { isQuiz, itemCount } from "@/lib/session";
+import { isQuiz, isRepeatRound, itemCount } from "@/lib/session";
 
 export function HomeView({
   directionTitle,
@@ -46,19 +46,29 @@ export function HomeView({
           <Card className="flex flex-col gap-2">
             <div>
               <Tag
-                tone={isQuiz(unfinished) ? "blue" : unfinished.mode === "short" ? "peach" : "lilac"}
+                tone={
+                  isRepeatRound(unfinished)
+                    ? "yellow"
+                    : isQuiz(unfinished)
+                      ? "blue"
+                      : unfinished.mode === "short"
+                        ? "peach"
+                        : "lilac"
+                }
               >
                 {sessionLabel(unfinished)}
               </Tag>
             </div>
             <p className="font-serif text-xl">
-              {isQuiz(unfinished)
-                ? `Quiz on ${unfinished.sections.join(", ")}`
-                : getScenario(unfinished.scenarioId).title}
+              {isRepeatRound(unfinished)
+                ? `Weak topics: ${unfinished.topics.join(", ")}`
+                : isQuiz(unfinished)
+                  ? `Quiz on ${unfinished.sections.join(", ")}`
+                  : getScenario(unfinished.scenarioId).title}
             </p>
             <p className="text-sm text-text-secondary tabular-nums">
-              {isQuiz(unfinished) ? "Question" : "Step"} {unfinished.index + 1} of{" "}
-              {itemCount(unfinished)}
+              {isRepeatRound(unfinished) ? "Item" : isQuiz(unfinished) ? "Question" : "Step"}{" "}
+              {unfinished.index + 1} of {itemCount(unfinished)}
             </p>
           </Card>
         </section>

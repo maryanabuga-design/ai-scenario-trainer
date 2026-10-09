@@ -24,7 +24,17 @@ function HistoryRow({ session }: { session: FinishedSession }) {
   return (
     <Card className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-3">
-        <Tag tone={quiz ? "blue" : session.mode === "short" ? "peach" : "lilac"}>
+        <Tag
+          tone={
+            session.kind === "repeat"
+              ? "yellow"
+              : quiz
+                ? "blue"
+                : session.mode === "short"
+                  ? "peach"
+                  : "lilac"
+          }
+        >
           {sessionLabel(session)}
         </Tag>
         <span className="text-sm text-text-secondary tabular-nums">

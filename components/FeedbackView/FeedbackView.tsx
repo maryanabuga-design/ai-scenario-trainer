@@ -4,6 +4,7 @@ import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
 import { SessionTopBar } from "@/components/SessionTopBar/SessionTopBar";
+import type { Unit } from "@/components/SessionTopBar/SessionTopBar";
 import { SourceChip } from "@/components/SourceChip/SourceChip";
 import { StatusBadge, StatusIcon, statuses } from "@/components/StatusBadge/StatusBadge";
 import { SuggestedQuestion } from "@/components/SuggestedQuestion/SuggestedQuestion";
@@ -32,6 +33,7 @@ export function FeedbackView({
   explanation,
   index,
   total,
+  unit = "Step",
   nextLabel,
   onNext,
   step,
@@ -40,6 +42,7 @@ export function FeedbackView({
   explanation: string;
   index: number;
   total: number;
+  unit?: Unit;
   nextLabel: string;
   onNext: () => void;
   step: Step;
@@ -49,7 +52,7 @@ export function FeedbackView({
 
   return (
     <div className="flex flex-col gap-6">
-      <SessionTopBar index={index} total={total} />
+      <SessionTopBar index={index} total={total} unit={unit} />
       <h1 className="text-2xl leading-tight font-medium">
         {first} <span className="text-text-secondary">{second}</span>
       </h1>
