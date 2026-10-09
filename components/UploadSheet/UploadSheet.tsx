@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/Button/Button";
@@ -65,14 +66,26 @@ export function UploadPanel({
               <button
                 type="button"
                 onClick={() => onChooseFile(file)}
-                className="flex w-full items-start gap-3 rounded-panel border border-border bg-surface p-3 text-left hover:border-text-secondary"
+                className="flex w-full items-start gap-3 rounded-panel border border-border bg-surface p-3 text-left active:bg-surface-muted"
               >
-                <FileCover type={file.name.endsWith(".jpg") ? "Image" : "PDF"} />
-                <span className="flex min-w-0 flex-col gap-0.5">
+                <FileCover
+                  type={file.name.endsWith(".jpg") ? "Image" : "PDF"}
+                />
+                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <span className="font-medium break-words">{file.name}</span>
-                  <span className="text-sm text-text-secondary">{formatSize(file.size)}</span>
-                  <span className="text-sm text-text-secondary">{file.summary}</span>
+                  <span className="text-sm text-text-secondary">
+                    {formatSize(file.size)}
+                  </span>
+                  <span className="text-sm text-text-secondary">
+                    {file.summary}
+                  </span>
                 </span>
+                <ChevronRight
+                  size={20}
+                  strokeWidth={2}
+                  aria-hidden="true"
+                  className="shrink-0 self-center text-text-secondary"
+                />
               </button>
             </li>
           ))}
@@ -93,7 +106,10 @@ export function UploadPanel({
             aria-valuenow={stage.percent}
             aria-label="Upload progress"
           >
-            <div className="h-full bg-primary" style={{ width: `${stage.percent}%` }} />
+            <div
+              className="h-full bg-primary"
+              style={{ width: `${stage.percent}%` }}
+            />
           </div>
           <p className="text-sm tabular-nums">{stage.percent}%</p>
         </div>
@@ -109,16 +125,26 @@ export function UploadPanel({
             <>
               <p className="text-text-secondary">{stage.material.reason}</p>
               <div>
-                <Button variant="secondary" onClick={() => onStage({ kind: "choose" })}>
+                <Button
+                  variant="secondary"
+                  onClick={() => onStage({ kind: "choose" })}
+                >
                   Try another file
                 </Button>
               </div>
             </>
           ) : (
             <>
-              <p className="text-text-secondary">The file is in your materials, under Ready.</p>
-              <Button onClick={() => onCreateTraining(stage.material.id)}>Create training</Button>
-              <Button variant="text" onClick={() => onOpenMaterial(stage.material.id)}>
+              <p className="text-text-secondary">
+                The file is in your materials, under Ready.
+              </p>
+              <Button onClick={() => onCreateTraining(stage.material.id)}>
+                Create training
+              </Button>
+              <Button
+                variant="text"
+                onClick={() => onOpenMaterial(stage.material.id)}
+              >
                 Open material
               </Button>
             </>
@@ -196,7 +222,12 @@ export function UploadButton({
           onStage={setStage}
           onChooseFile={(sample) => {
             const result = materialFromSample(sample, new Date());
-            addUpload({ ...result, status: "processing", progress: 0, reason: undefined });
+            addUpload({
+              ...result,
+              status: "processing",
+              progress: 0,
+              reason: undefined,
+            });
             setStage({
               kind: "progress",
               id: result.id,

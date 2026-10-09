@@ -27,11 +27,19 @@ function Detail({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-function SectionRow({ section, openable }: { section: MaterialSection; openable: boolean }) {
+function SectionRow({
+  section,
+  openable,
+}: {
+  section: MaterialSection;
+  openable: boolean;
+}) {
   const { open } = useSourceSheet();
   const content = (
     <>
-      <span className="w-8 shrink-0 text-text-secondary tabular-nums">{section.id}</span>
+      <span className="w-8 shrink-0 text-text-secondary tabular-nums">
+        {section.id}
+      </span>
       <span className="flex flex-1 flex-col gap-0.5">
         <span>{section.title}</span>
         <span className="text-text-secondary">{section.excerpt}</span>
@@ -50,12 +58,14 @@ function SectionRow({ section, openable }: { section: MaterialSection; openable:
     <button
       type="button"
       onClick={() => open(section.id)}
-      className="flex min-h-12 w-full items-start gap-3 py-3 text-left text-sm hover:underline"
+      className="flex min-h-12 w-full items-start gap-3 py-3 text-left text-sm active:bg-surface-muted"
     >
       {content}
     </button>
   ) : (
-    <div className="flex min-h-12 w-full items-start gap-3 py-3 text-sm">{content}</div>
+    <div className="flex min-h-12 w-full items-start gap-3 py-3 text-sm">
+      {content}
+    </div>
   );
 }
 
@@ -76,12 +86,19 @@ export function MaterialView({
   // An uploaded copy of a sample guide shows that guide's sections and first lines.
   const fromGuide = guideSections
     .filter((section) => material.sectionIds?.includes(section.id))
-    .map((section) => ({ id: section.id, title: section.title, excerpt: section.lines[0] ?? "" }));
+    .map((section) => ({
+      id: section.id,
+      title: section.title,
+      excerpt: section.lines[0] ?? "",
+    }));
   const shownSections = sections.length > 0 ? sections : fromGuide;
-  const openable = sectionsOpenable || (sections.length === 0 && fromGuide.length > 0);
+  const openable =
+    sectionsOpenable || (sections.length === 0 && fromGuide.length > 0);
   const trainings = useTrainings();
-  const training = trainings === "loading" ? undefined : trainings?.[material.id];
-  const canCreate = material.status === "ready" && (material.sectionIds?.length ?? 0) > 0;
+  const training =
+    trainings === "loading" ? undefined : trainings?.[material.id];
+  const canCreate =
+    material.status === "ready" && (material.sectionIds?.length ?? 0) > 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -93,14 +110,18 @@ export function MaterialView({
           <FileCover type={material.type} size="lg" />
         )}
         <Tag tone="blue">{material.type}</Tag>
-        <h1 className="font-serif text-2xl leading-tight break-words">{material.name}</h1>
+        <h1 className="font-serif text-2xl leading-tight break-words">
+          {material.name}
+        </h1>
         <TrainingTags training={training} />
       </div>
 
       <Card>
         <dl className="flex flex-col divide-y divide-border">
           <Detail label="Type">{material.type}</Detail>
-          <Detail label={material.type === "Link" ? "Address" : "Size"}>{material.size}</Detail>
+          <Detail label={material.type === "Link" ? "Address" : "Size"}>
+            {material.size}
+          </Detail>
           <Detail label="Added">{formatAdded(material.added)}</Detail>
           <Detail label="Status">
             <StatusBadge status={material.status} />
@@ -110,7 +131,8 @@ export function MaterialView({
 
       {material.status === "processing" && (
         <p className="text-text-secondary">
-          This material is still being processed. In this prototype it stays in this state.
+          This material is still being processed. In this prototype it stays in
+          this state.
         </p>
       )}
       {material.status === "failed" && (
@@ -157,12 +179,14 @@ export function MaterialView({
             </ButtonLink>
           </>
         ) : canCreate ? (
-          <ButtonLink href={`/training/${material.id}`}>Create training</ButtonLink>
+          <ButtonLink href={`/training/${material.id}`}>
+            Create training
+          </ButtonLink>
         ) : (
           <>
             <p className="text-center text-sm text-text-secondary">
-              In this prototype, training can be created from the sample guide and its quick card
-              only.
+              In this prototype, training can be created from the sample guide
+              and its quick card only.
             </p>
             <Button disabled>Create training</Button>
             <ButtonLink href="/materials/evacuation-guide" variant="text">

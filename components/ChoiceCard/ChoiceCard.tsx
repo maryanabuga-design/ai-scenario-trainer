@@ -39,7 +39,7 @@ export function ChoiceCard({
       } ${
         disabled
           ? "cursor-not-allowed border-transparent bg-surface-muted text-text-secondary"
-          : "cursor-pointer bg-surface hover:border-text-secondary"
+          : "cursor-pointer bg-surface active:bg-surface-muted"
       }`}
     >
       <input
@@ -62,7 +62,12 @@ export function ChoiceCard({
       >
         {checked &&
           (type === "checkbox" ? (
-            <Check size={14} strokeWidth={2.5} aria-hidden="true" className="text-primary-text" />
+            <Check
+              size={14}
+              strokeWidth={2.5}
+              aria-hidden="true"
+              className="text-primary-text"
+            />
           ) : (
             <span className="h-2.5 w-2.5 rounded-full bg-primary" />
           ))}
