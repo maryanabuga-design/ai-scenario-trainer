@@ -2,42 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
-
-const icon = (path: ReactNode) => (
-  <svg
-    viewBox="0 0 24 24"
-    width="22"
-    height="22"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.75"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    {path}
-  </svg>
-);
+import { ChartNoAxesColumn, FileText, House, User } from "lucide-react";
 
 const items = [
-  { href: "/", label: "Home", icon: icon(<path d="M4 10.5 12 4l8 6.5V20h-5v-6h-6v6H4z" />) },
-  {
-    href: "/materials",
-    label: "Materials",
-    icon: icon(<path d="M6 4h9l3 3v13H6zM9 10h6M9 14h6" />),
-  },
-  { href: "/progress", label: "Progress", icon: icon(<path d="M5 20V12M12 20V5M19 20v-9" />) },
-  {
-    href: "/profile",
-    label: "Profile",
-    icon: icon(
-      <>
-        <circle cx="12" cy="8.5" r="3.5" />
-        <path d="M5 20c1.2-3.5 3.8-5 7-5s5.8 1.5 7 5" />
-      </>,
-    ),
-  },
+  { href: "/", label: "Home", Icon: House },
+  { href: "/materials", label: "Materials", Icon: FileText },
+  { href: "/progress", label: "Progress", Icon: ChartNoAxesColumn },
+  { href: "/profile", label: "Profile", Icon: User },
 ];
 
 function isCurrent(href: string, pathname: string) {
@@ -69,7 +40,7 @@ export function BottomNav({ activePath }: { activePath?: string }) {
                     : "text-text-secondary hover:text-text"
                 }`}
               >
-                {item.icon}
+                <item.Icon size={22} strokeWidth={2} aria-hidden="true" />
                 {item.label}
               </Link>
             </li>

@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import { useId } from "react";
 
 /** One-sentence explanation. The label is the step's follow-up question. */
@@ -32,7 +33,7 @@ export function ExplanationField({
       />
       {error && (
         <p id={`${id}-error`} className="flex items-center gap-2 text-sm text-wrong">
-          <span aria-hidden="true">✕</span>
+          <X size={16} strokeWidth={2} aria-hidden="true" />
           {error}
         </p>
       )}

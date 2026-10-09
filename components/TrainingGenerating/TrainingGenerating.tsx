@@ -1,5 +1,6 @@
 "use client";
 
+import { Circle } from "lucide-react";
 import { StatusIcon } from "@/components/StatusBadge/StatusBadge";
 
 export type GenerationStep = { label: string; skipped?: boolean };
@@ -83,12 +84,7 @@ export function TrainingGenerating({
               >
                 {state === "done" && <StatusIcon status="correct" size={14} />}
                 {state === "working" && <StatusIcon status="processing" size={14} />}
-                {state === "waiting" && (
-                  <span
-                    aria-hidden="true"
-                    className="h-3.5 w-3.5 rounded-full border border-text-secondary"
-                  />
-                )}
+                {state === "waiting" && <Circle size={14} strokeWidth={2} aria-hidden="true" />}
                 {state === "skipped" && <StatusIcon status="knowledge_gap" size={14} />}
                 {
                   { done: "Done", working: "Working", waiting: "Waiting", skipped: "Not needed" }[

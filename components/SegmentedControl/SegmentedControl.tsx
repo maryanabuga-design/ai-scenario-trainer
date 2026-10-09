@@ -1,3 +1,5 @@
+import { Check } from "lucide-react";
+
 /**
  * A full-width choice between a few options. Native radio buttons underneath, so arrow keys move
  * the selection and Tab enters and leaves the group. The selected option is a black pill with a
@@ -37,21 +39,7 @@ export function SegmentedControl<T extends string>({
                 onChange={() => onChange(option.value)}
                 className="sr-only"
               />
-              {checked && (
-                <svg
-                  viewBox="0 0 24 24"
-                  width="16"
-                  height="16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M5 12.5 10 17l9-10" />
-                </svg>
-              )}
+              {checked && <Check size={16} strokeWidth={2} aria-hidden="true" />}
               {option.label}
             </label>
           );

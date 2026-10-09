@@ -1,3 +1,4 @@
+import { Check } from "lucide-react";
 import type { ReactNode } from "react";
 
 type Props = {
@@ -61,19 +62,7 @@ export function ChoiceCard({
       >
         {checked &&
           (type === "checkbox" ? (
-            <svg
-              viewBox="0 0 24 24"
-              width="14"
-              height="14"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-primary-text"
-            >
-              <path d="M5 12.5 10 17l9-10" />
-            </svg>
+            <Check size={14} strokeWidth={2.5} aria-hidden="true" className="text-primary-text" />
           ) : (
             <span className="h-2.5 w-2.5 rounded-full bg-primary" />
           ))}

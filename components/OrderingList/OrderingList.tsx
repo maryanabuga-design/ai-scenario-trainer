@@ -1,26 +1,18 @@
 "use client";
 
+import { ArrowDown, ArrowUp, GripVertical } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 
 type Item = { id: string; text: string };
 type Direction = "up" | "down";
 
-const arrow = (direction: Direction) => (
-  <svg
-    viewBox="0 0 24 24"
-    width="18"
-    height="18"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    {direction === "up" ? <path d="M12 19V5M6 11l6-6 6 6" /> : <path d="M12 5v14M6 13l6 6 6-6" />}
-  </svg>
-);
+const arrow = (direction: Direction) =>
+  direction === "up" ? (
+    <ArrowUp size={18} strokeWidth={2} aria-hidden="true" />
+  ) : (
+    <ArrowDown size={18} strokeWidth={2} aria-hidden="true" />
+  );
 
 /**
  * Items to put in order. Each row has a drag handle (mouse or touch) and "Move up" and
@@ -97,11 +89,7 @@ export function OrderingList({
               onPointerCancel={() => setDragging(null)}
               className="flex h-11 w-8 shrink-0 cursor-grab touch-none items-center justify-center text-text-secondary active:cursor-grabbing"
             >
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                {[6, 12, 18].map((y) =>
-                  [9, 15].map((x) => <circle key={`${x}-${y}`} cx={x} cy={y} r="1.6" />),
-                )}
-              </svg>
+              <GripVertical size={18} strokeWidth={2} />
             </span>
             <span className="w-6 shrink-0 text-sm text-text-secondary tabular-nums">
               {index + 1}.

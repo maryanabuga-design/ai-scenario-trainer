@@ -1,35 +1,22 @@
+import { Check, CircleHelp, Clock, Contrast, Minus, X } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import type { ErrorType } from "@/lib/scoring";
 
 export type Status =
   ErrorType | "correct" | "wrong" | "partial" | "ready" | "processing" | "failed";
 
-const paths = {
-  check: <path d="M5 12.5 10 17l9-10" />,
-  cross: <path d="M7 7l10 10M17 7 7 17" />,
-  minus: <path d="M6 12h12" />,
-  clock: (
-    <>
-      <circle cx="12" cy="12" r="8" />
-      <path d="M12 8v4l3 2" />
-    </>
-  ),
-  half: (
-    <>
-      <circle cx="12" cy="12" r="8" />
-      <path d="M12 4v16" />
-    </>
-  ),
-  question: (
-    <>
-      <path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6" />
-      <path d="M12 17.5h.01" />
-    </>
-  ),
-};
+const icons = {
+  check: Check,
+  cross: X,
+  minus: Minus,
+  clock: Clock,
+  half: Contrast,
+  question: CircleHelp,
+} satisfies Record<string, LucideIcon>;
 
 export const statuses: Record<
   Status,
-  { label: string; description?: string; icon: keyof typeof paths; className: string }
+  { label: string; description?: string; icon: keyof typeof icons; className: string }
 > = {
   correct: { label: "Correct", icon: "check", className: "bg-correct-bg text-correct" },
   wrong: { label: "Incorrect", icon: "cross", className: "bg-wrong-bg text-wrong" },
@@ -72,21 +59,8 @@ export const statuses: Record<
 };
 
 export function StatusIcon({ status, size = 14 }: { status: Status; size?: number }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width={size}
-      height={size}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {paths[statuses[status].icon]}
-    </svg>
-  );
+  const Icon = icons[statuses[status].icon];
+  return <Icon size={size} strokeWidth={2} aria-hidden="true" />;
 }
 
 /** Icon + label + colour. Never colour alone. */

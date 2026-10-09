@@ -1,5 +1,6 @@
 "use client";
 
+import { Sparkles } from "lucide-react";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { SourceChip } from "@/components/SourceChip/SourceChip";
@@ -369,19 +370,7 @@ export function AskAiButton({ step, phase }: { step: Step; phase: ChatPhase }) {
       onClick={() => open(step, phase)}
       className="inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-full border border-text bg-surface px-5 text-base font-medium text-text hover:bg-surface-muted active:bg-border"
     >
-      <svg
-        viewBox="0 0 24 24"
-        width="16"
-        height="16"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M12 3c.6 4.2 2.8 6.4 7 7-4.2.6-6.4 2.8-7 7-.6-4.2-2.8-6.4-7-7 4.2-.6 6.4-2.8 7-7z" />
-        <path d="M19 15.5c.3 1.6 1 2.3 2.5 2.5-1.5.2-2.2.9-2.5 2.5-.3-1.6-1-2.3-2.5-2.5 1.5-.2 2.2-.9 2.5-2.5z" />
-      </svg>
+      <Sparkles size={16} strokeWidth={2} aria-hidden="true" />
       Ask AI about this step
     </button>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { BackLink } from "@/components/BackLink/BackLink";
@@ -36,9 +37,12 @@ function SectionRow({ section, openable }: { section: MaterialSection; openable:
         <span className="text-text-secondary">{section.excerpt}</span>
       </span>
       {openable && (
-        <span aria-hidden="true" className="text-text-secondary">
-          ›
-        </span>
+        <ChevronRight
+          size={20}
+          strokeWidth={2}
+          aria-hidden="true"
+          className="shrink-0 text-text-secondary"
+        />
       )}
     </>
   );
