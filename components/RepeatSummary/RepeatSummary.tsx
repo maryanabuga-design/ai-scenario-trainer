@@ -1,7 +1,9 @@
 "use client";
 
 import { Button, ButtonLink } from "@/components/Button/Button";
+import { ListChecks } from "lucide-react";
 import { Card } from "@/components/Card/Card";
+import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { TopicCard } from "@/components/TopicCard/TopicCard";
 import type { ScoredItem } from "@/lib/scoring";
 import type { WeakTopic } from "@/lib/weak-topics";
@@ -29,9 +31,10 @@ export function RepeatSummary({
           Weak topics
         </h2>
         <Card>
-          <p className="text-text-secondary">
-            No weak topics yet. They appear here after a session or a quiz.
-          </p>
+          <EmptyState
+            icon={ListChecks}
+            text="No weak topics yet. They appear here after a session or a quiz."
+          />
         </Card>
       </section>
     );
@@ -45,7 +48,9 @@ export function RepeatSummary({
             <span className="tabular-nums">{topics.length}</span>{" "}
             {topics.length === 1 ? "topic" : "topics"} to repeat
           </h2>
-          <p className="text-sm text-text-secondary">{describeCounts(countTopics(topics))}</p>
+          <p className="text-sm text-text-secondary">
+            {describeCounts(countTopics(topics))}
+          </p>
         </div>
         <Button onClick={() => onRepeat(topics)}>Repeat weak topics</Button>
       </Card>
@@ -66,7 +71,10 @@ export function RepeatSummary({
           className="-mx-4 flex snap-x gap-3 overflow-x-auto scroll-px-4 px-4 pb-2"
         >
           {topics.slice(0, ROW_LIMIT).map((topic) => (
-            <li key={topic.sectionId} className="w-[40%] min-w-[136px] shrink-0 snap-start">
+            <li
+              key={topic.sectionId}
+              className="w-[40%] min-w-[136px] shrink-0 snap-start"
+            >
               <TopicCard topic={topic} onRepeat={() => onRepeat([topic])} />
             </li>
           ))}

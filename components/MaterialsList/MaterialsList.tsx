@@ -1,8 +1,9 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, FileText } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { FileCover } from "@/components/FileCover/FileCover";
 import { MaterialCover } from "@/components/MaterialCover/MaterialCover";
 import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
@@ -131,7 +132,7 @@ export function MaterialsList({ samples }: { samples: Material[] }) {
         />
         <div {...tabPanelProps("materials", tab)}>
           {shown.length === 0 ? (
-            <p className="py-4 text-text-secondary">{emptyStates[tab]}</p>
+            <EmptyState icon={FileText} text={emptyStates[tab]} />
           ) : (
             <ul className="flex flex-col gap-3">
               {shown.map((material) => (

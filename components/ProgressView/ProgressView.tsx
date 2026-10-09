@@ -1,10 +1,17 @@
 "use client";
 
+import { History } from "lucide-react";
 import { ButtonLink } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
+import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { Tag } from "@/components/Tag/Tag";
 import { RepeatSummary } from "@/components/RepeatSummary/RepeatSummary";
-import { formatPoints, scoreSession, sessionLabel, weakItemsFromHistory } from "@/lib/progress";
+import {
+  formatPoints,
+  scoreSession,
+  sessionLabel,
+  weakItemsFromHistory,
+} from "@/lib/progress";
 import { totalScore, weakItems } from "@/lib/scoring";
 import type { FinishedSession } from "@/lib/session";
 import type { WeakTopic } from "@/lib/weak-topics";
@@ -84,19 +91,25 @@ export function ProgressView({
       <h1 className="font-serif text-2xl">Progress</h1>
 
       {history.length === 0 ? (
-        <div className="flex flex-col items-start gap-4">
-          <p className="text-text-secondary">
-            No sessions yet. Finish a scenario or a quiz and your results, weak topics and history
-            appear here. They are saved in this browser only.
-          </p>
-          <ButtonLink href="/materials/evacuation-guide" variant="secondary">
-            Start a scenario
-          </ButtonLink>
-        </div>
+        <EmptyState
+          icon={History}
+          text="No sessions yet. Finished sessions are saved here, in this browser only."
+          action={
+            <ButtonLink href="/materials/evacuation-guide" variant="secondary">
+              Start a scenario
+            </ButtonLink>
+          }
+        />
       ) : (
         <>
-          <RepeatSummary weakItems={weakItemsFromHistory(history)} onRepeat={onRepeat} />
-          <section aria-labelledby="history-title" className="flex flex-col gap-3">
+          <RepeatSummary
+            weakItems={weakItemsFromHistory(history)}
+            onRepeat={onRepeat}
+          />
+          <section
+            aria-labelledby="history-title"
+            className="flex flex-col gap-3"
+          >
             <h2 id="history-title" className="text-lg font-medium">
               Session history
             </h2>

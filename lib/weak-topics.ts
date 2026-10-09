@@ -1,11 +1,54 @@
 import type { ErrorType, ScoredItem } from "@/lib/scoring";
 
 /** Weak error types, most serious first. Secure answers are never weak. */
-export const weakPriority: ErrorType[] = ["misconception", "knowledge_gap", "guess"];
+export const weakPriority: ErrorType[] = [
+  "misconception",
+  "knowledge_gap",
+  "guess",
+];
+
+/** Names of the Lucide icons a topic can show. The component maps each name to its icon. */
+export type TopicIcon =
+  | "BellRing"
+  | "DoorOpen"
+  | "Wind"
+  | "MapPin"
+  | "Phone"
+  | "HeartPulse"
+  | "Bandage"
+  | "ClipboardList"
+  | "Droplet"
+  | "BookOpen";
+
+const sectionIcons: Record<string, TopicIcon> = {
+  S1: "BellRing",
+  S2: "DoorOpen",
+  S3: "Wind",
+  S4: "MapPin",
+  S5: "Phone",
+  S6: "HeartPulse",
+  S7: "Bandage",
+  S8: "Bandage",
+  S9: "HeartPulse",
+  S10: "ClipboardList",
+};
+
+/** The icon for a guide section: every flood section is a water drop; unknown ones a book. */
+export function topicIcon(sectionId: string): TopicIcon {
+  if (sectionId.startsWith("F")) return "Droplet";
+  return sectionIcons[sectionId] ?? "BookOpen";
+}
+
+/** The tile colour comes from the material, never from the error type. */
+export function topicTone(sectionId: string): "yellow" | "blue" {
+  return sectionId.startsWith("F") ? "blue" : "yellow";
+}
 
 export type WeakTopic = {
   /** The guide section, for example S2 or F5. */
   sectionId: string;
+  /** The topic's icon name, from its guide section. */
+  icon: TopicIcon;
   /** The most serious error type among the topic's weak answers. */
   errorType: ErrorType;
   /** The weak steps and questions behind this topic. */
@@ -14,7 +57,8 @@ export type WeakTopic = {
 
 export type RepeatItem = { type: "step" | "question"; id: string };
 
-const sectionOrder = (id: string) => [id[0] === "S" ? 0 : 1, Number(id.slice(1))] as const;
+const sectionOrder = (id: string) =>
+  [id[0] === "S" ? 0 : 1, Number(id.slice(1))] as const;
 
 /**
  * Groups weak answers into topics (one per guide section). Ordered by error type priority,
@@ -32,14 +76,19 @@ export function weakTopics(weakItems: ScoredItem[]): WeakTopic[] {
   return [...bySection.entries()]
     .map(([sectionId, items]) => ({
       sectionId,
+      icon: topicIcon(sectionId),
       items,
       errorType:
-        weakPriority.find((type) => items.some((item) => item.errorType === type)) ?? "guess",
+        weakPriority.find((type) =>
+          items.some((item) => item.errorType === type),
+        ) ?? "guess",
     }))
     .sort((a, b) => {
-      const byType = weakPriority.indexOf(a.errorType) - weakPriority.indexOf(b.errorType);
+      const byType =
+        weakPriority.indexOf(a.errorType) - weakPriority.indexOf(b.errorType);
       if (byType !== 0) return byType;
-      if (a.items.length !== b.items.length) return b.items.length - a.items.length;
+      if (a.items.length !== b.items.length)
+        return b.items.length - a.items.length;
       const [ag, an] = sectionOrder(a.sectionId);
       const [bg, bn] = sectionOrder(b.sectionId);
       return ag - bg || an - bn;
@@ -68,7 +117,10 @@ const countWords: Record<ErrorType, [string, string]> = {
 export function describeCounts(counts: Record<ErrorType, number>): string {
   return weakPriority
     .filter((type) => counts[type] > 0)
-    .map((type) => `${counts[type]} ${countWords[type][counts[type] === 1 ? 0 : 1]}`)
+    .map(
+      (type) =>
+        `${counts[type]} ${countWords[type][counts[type] === 1 ? 0 : 1]}`,
+    )
     .join(", ");
 }
 

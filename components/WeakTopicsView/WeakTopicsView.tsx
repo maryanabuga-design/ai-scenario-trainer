@@ -1,9 +1,11 @@
 "use client";
 
+import { ListChecks } from "lucide-react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { BackLink } from "@/components/BackLink/BackLink";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
+import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { StatusIcon } from "@/components/StatusBadge/StatusBadge";
 import { useTopicName } from "@/components/TopicCard/TopicCard";
 import type { ErrorType } from "@/lib/scoring";
@@ -70,12 +72,17 @@ export function WeakTopicsView({
       <div className="flex flex-col items-start gap-6">
         <BackLink href="/" label="Back to Home" />
         <h1 className="font-serif text-2xl">Weak topics</h1>
-        <p className="text-text-secondary">
-          No weak topics yet. Finish a scenario or a quiz and they appear here.
-        </p>
-        <ButtonLink href="/training/evacuation-guide" variant="secondary">
-          Start a scenario
-        </ButtonLink>
+        <div className="w-full">
+          <EmptyState
+            icon={ListChecks}
+            text="No weak topics yet. Finish a scenario or a quiz and they appear here."
+            action={
+              <ButtonLink href="/training/evacuation-guide" variant="secondary">
+                Start a scenario
+              </ButtonLink>
+            }
+          />
+        </div>
       </div>
     );
   }
@@ -88,7 +95,8 @@ export function WeakTopicsView({
       <div className="flex flex-col gap-1">
         <h1 className="font-serif text-2xl">Weak topics</h1>
         <p className="text-text-secondary">
-          Choose the topics to repeat. A repeat round brings back their steps and questions.
+          Choose the topics to repeat. A repeat round brings back their steps
+          and questions.
         </p>
       </div>
 
@@ -101,7 +109,8 @@ export function WeakTopicsView({
               <span className={iconColours[type]}>
                 <StatusIcon status={type} size={16} />
               </span>
-              {groupTitles[type]} <span className="tabular-nums">({group.length})</span>
+              {groupTitles[type]}{" "}
+              <span className="tabular-nums">({group.length})</span>
             </legend>
             {group.map((topic) => (
               <TopicOption
