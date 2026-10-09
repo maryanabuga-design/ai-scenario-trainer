@@ -195,8 +195,7 @@ export function HomeSample({ withProgress = false }: { withProgress?: boolean })
           : null
       }
       weakItems={withProgress ? currentWeakItems(sampleAnswers) : []}
-      onRepeatSteps={() => undefined}
-      onRepeatQuestions={() => undefined}
+      onRepeat={() => undefined}
     />
   );
 }
@@ -225,13 +224,7 @@ export function ProgressSample({ withHistory = false }: { withHistory?: boolean 
         },
       ]
     : [];
-  return (
-    <ProgressView
-      history={history}
-      onRepeatSteps={() => undefined}
-      onRepeatQuestions={() => undefined}
-    />
-  );
+  return <ProgressView history={history} onRepeat={() => undefined} />;
 }
 
 export function OnboardingSample({ start }: { start: OnboardingStep }) {

@@ -5,7 +5,8 @@ import { useEffect } from "react";
 import { HomeView } from "@/components/HomeView/HomeView";
 import { directionTitle } from "@/lib/directions";
 import { weakItemsFromHistory } from "@/lib/progress";
-import { startQuiz, startSession, useHistory, useProfile, useSession } from "@/lib/session";
+import { repeatItems } from "@/lib/weak-topics";
+import { startRepeatRound, useHistory, useProfile, useSession } from "@/lib/session";
 
 export default function Home() {
   const router = useRouter();
@@ -27,12 +28,11 @@ export default function Home() {
       directionTitle={directionTitle(profile?.direction)}
       unfinished={session && !session.finished ? session : null}
       weakItems={weakItemsFromHistory(history)}
-      onRepeatSteps={(stepIds) => {
-        startSession("repeat", stepIds);
-        router.push("/session");
-      }}
-      onRepeatQuestions={(questionIds, sections) => {
-        startQuiz(questionIds, sections, true);
+      onRepeat={(topics) => {
+        startRepeatRound(
+          repeatItems(topics),
+          topics.map((topic) => topic.sectionId),
+        );
         router.push("/session");
       }}
     />

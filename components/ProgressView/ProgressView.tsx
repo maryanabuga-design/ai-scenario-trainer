@@ -3,10 +3,11 @@
 import { ButtonLink } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
 import { Tag } from "@/components/Tag/Tag";
-import { WeakTopics } from "@/components/WeakTopics/WeakTopics";
+import { RepeatSummary } from "@/components/RepeatSummary/RepeatSummary";
 import { formatPoints, scoreSession, sessionLabel, weakItemsFromHistory } from "@/lib/progress";
 import { totalScore, weakItems } from "@/lib/scoring";
 import type { FinishedSession } from "@/lib/session";
+import type { WeakTopic } from "@/lib/weak-topics";
 
 const dateFormat = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",
@@ -52,8 +53,18 @@ function HistoryRow({ session }: { session: FinishedSession }) {
         ) : (
           <>
             <span className="tabular-nums">{weak}</span>{" "}
-            {quiz ? (weak === 1 ? "question" : "questions") : weak === 1 ? "step" : "steps"} wrong,
-            partly right or guessed.
+            {session.kind === "repeat"
+              ? weak === 1
+                ? "item"
+                : "items"
+              : quiz
+                ? weak === 1
+                  ? "question"
+                  : "questions"
+                : weak === 1
+                  ? "step"
+                  : "steps"}{" "}
+            wrong, partly right or guessed.
           </>
         )}
       </p>
@@ -63,12 +74,10 @@ function HistoryRow({ session }: { session: FinishedSession }) {
 
 export function ProgressView({
   history,
-  onRepeatSteps,
-  onRepeatQuestions,
+  onRepeat,
 }: {
   history: FinishedSession[];
-  onRepeatSteps: (stepIds: string[]) => void;
-  onRepeatQuestions: (questionIds: string[], sections: string[]) => void;
+  onRepeat: (topics: WeakTopic[]) => void;
 }) {
   return (
     <div className="flex flex-col gap-8">
@@ -86,11 +95,7 @@ export function ProgressView({
         </div>
       ) : (
         <>
-          <WeakTopics
-            weakItems={weakItemsFromHistory(history)}
-            onRepeatSteps={onRepeatSteps}
-            onRepeatQuestions={onRepeatQuestions}
-          />
+          <RepeatSummary weakItems={weakItemsFromHistory(history)} onRepeat={onRepeat} />
           <section aria-labelledby="history-title" className="flex flex-col gap-3">
             <h2 id="history-title" className="text-lg font-medium">
               Session history

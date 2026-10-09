@@ -1,29 +1,26 @@
 "use client";
 
-import { ActionBar } from "@/components/ActionBar/ActionBar";
-import { ButtonLink } from "@/components/Button/Button";
-import { Card } from "@/components/Card/Card";
+import Link from "next/link";
 import { Gradient } from "@/components/Gradient/Gradient";
+import { RepeatSummary } from "@/components/RepeatSummary/RepeatSummary";
 import { Tag } from "@/components/Tag/Tag";
-import { WeakTopics } from "@/components/WeakTopics/WeakTopics";
 import { sessionLabel } from "@/lib/progress";
 import { getScenario, scenario, sessionLengths } from "@/lib/scenario";
 import type { ScoredItem } from "@/lib/scoring";
 import type { Session } from "@/lib/session";
+import type { WeakTopic } from "@/lib/weak-topics";
 import { isQuiz, isRepeatRound, itemCount } from "@/lib/session";
 
 export function HomeView({
   directionTitle,
   unfinished,
   weakItems,
-  onRepeatSteps,
-  onRepeatQuestions,
+  onRepeat,
 }: {
   directionTitle: string;
   unfinished: Session | null;
   weakItems: ScoredItem[];
-  onRepeatSteps: (stepIds: string[]) => void;
-  onRepeatQuestions: (questionIds: string[], sections: string[]) => void;
+  onRepeat: (topics: WeakTopic[]) => void;
 }) {
   return (
     <div className="flex flex-col gap-8">
@@ -43,7 +40,10 @@ export function HomeView({
           <h2 id="continue-title" className="text-lg font-medium">
             Continue session
           </h2>
-          <Card className="flex flex-col gap-2">
+          <Link
+            href="/session"
+            className="flex flex-col gap-2 rounded-card bg-surface p-4 hover:bg-surface-muted"
+          >
             <div>
               <Tag
                 tone={
@@ -70,21 +70,21 @@ export function HomeView({
               {isRepeatRound(unfinished) ? "Item" : isQuiz(unfinished) ? "Question" : "Step"}{" "}
               {unfinished.index + 1} of {itemCount(unfinished)}
             </p>
-          </Card>
+            <span className="text-sm font-medium underline underline-offset-4">Continue</span>
+          </Link>
         </section>
       )}
 
-      <WeakTopics
-        weakItems={weakItems}
-        onRepeatSteps={onRepeatSteps}
-        onRepeatQuestions={onRepeatQuestions}
-      />
+      <RepeatSummary weakItems={weakItems} onRepeat={onRepeat} />
 
       <section aria-labelledby="new-title" className="flex flex-col gap-3">
         <h2 id="new-title" className="text-lg font-medium">
           New scenario
         </h2>
-        <Card className="flex flex-col gap-2">
+        <Link
+          href="/training/evacuation-guide"
+          className="flex flex-col gap-2 rounded-card bg-surface p-4 hover:bg-surface-muted"
+        >
           <div>
             <Tag tone="yellow">Scenario</Tag>
           </div>
@@ -99,23 +99,9 @@ export function HomeView({
           <p className="text-sm text-text-secondary">
             Or take a quiz on any guide sections, with five kinds of questions.
           </p>
-          {unfinished && (
-            <div className="mt-2">
-              <ButtonLink href="/training/evacuation-guide" variant="secondary">
-                Start a new scenario
-              </ButtonLink>
-            </div>
-          )}
-        </Card>
+          <span className="text-sm font-medium underline underline-offset-4">Create training</span>
+        </Link>
       </section>
-
-      <ActionBar>
-        {unfinished ? (
-          <ButtonLink href="/session">Continue session</ButtonLink>
-        ) : (
-          <ButtonLink href="/training/evacuation-guide">New scenario</ButtonLink>
-        )}
-      </ActionBar>
     </div>
   );
 }
