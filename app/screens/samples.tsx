@@ -1,21 +1,33 @@
 "use client";
 
+import { FileText, History, ListChecks } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { DecisionStep, emptyDraft } from "@/components/DecisionStep/DecisionStep";
+import {
+  DecisionStep,
+  emptyDraft,
+} from "@/components/DecisionStep/DecisionStep";
 import type { Draft } from "@/components/DecisionStep/DecisionStep";
 import { AskAiProvider } from "@/components/AskAi/AskAi";
 import type { ChatMessage } from "@/components/AskAi/AskAi";
 import { FeedbackView } from "@/components/FeedbackView/FeedbackView";
+import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { HomeView } from "@/components/HomeView/HomeView";
+import { TopicCard } from "@/components/TopicCard/TopicCard";
 import { WeakTopicsView } from "@/components/WeakTopicsView/WeakTopicsView";
-import { initialChoice, TrainingCreate } from "@/components/TrainingCreate/TrainingCreate";
+import {
+  initialChoice,
+  TrainingCreate,
+} from "@/components/TrainingCreate/TrainingCreate";
 import {
   generationSteps,
   TrainingGenerating,
 } from "@/components/TrainingGenerating/TrainingGenerating";
 import { TrainingReview } from "@/components/TrainingReview/TrainingReview";
 import { QuizFeedback } from "@/components/QuizFeedback/QuizFeedback";
-import { emptyQuizDraft, QuizQuestion } from "@/components/QuizQuestion/QuizQuestion";
+import {
+  emptyQuizDraft,
+  QuizQuestion,
+} from "@/components/QuizQuestion/QuizQuestion";
 import type { QuizDraft } from "@/components/QuizQuestion/QuizQuestion";
 import { MaterialView } from "@/components/MaterialView/MaterialView";
 import { MaterialsList } from "@/components/MaterialsList/MaterialsList";
@@ -38,7 +50,7 @@ import { defaultDirection } from "@/lib/directions";
 import { sampleMaterials } from "@/lib/materials";
 import { materialFromSample, sampleFiles } from "@/lib/training";
 import { currentWeakItems, scoreStep } from "@/lib/scoring";
-import { weakTopics } from "@/lib/weak-topics";
+import { topicIcon, weakTopics } from "@/lib/weak-topics";
 
 /** Interactive sample screens for the /screens review page. They never touch the saved session. */
 export function SetupSample({
@@ -64,14 +76,19 @@ export function SetupSample({
 const sampleStep = scenario.steps[0];
 
 /** The decision step with a starting draft: nothing chosen, an option chosen, or everything filled. */
-export function DecisionSample({ start }: { start: "empty" | "option" | "complete" }) {
+export function DecisionSample({
+  start,
+}: {
+  start: "empty" | "option" | "complete";
+}) {
   const drafts: Record<typeof start, Draft> = {
     empty: emptyDraft,
     option: { ...emptyDraft, optionId: "b" },
     complete: {
       optionId: "b",
       confidence: 2,
-      explanation: "An alarm counts as real, so everyone leaves by the stairs right away.",
+      explanation:
+        "An alarm counts as real, so everyone leaves by the stairs right away.",
     },
   };
   const [draft, setDraft] = useState<Draft>(drafts[start]);
@@ -110,7 +127,10 @@ function useScrollFrameToEnd(enabled: boolean) {
 export function FeedbackSample() {
   return (
     <FeedbackView
-      feedback={simulatedFeedback.evaluate(getStep("s1"), { optionId: "c", confidence: 3 })}
+      feedback={simulatedFeedback.evaluate(getStep("s1"), {
+        optionId: "c",
+        confidence: 3,
+      })}
       explanation="The elevator is the quickest way to get twelve people down."
       index={0}
       total={sessionLengths.full.stepIds.length}
@@ -127,7 +147,10 @@ export function AskSample() {
   return (
     <>
       <FeedbackView
-        feedback={simulatedFeedback.evaluate(getStep("s3"), { optionId: "a", confidence: 2 })}
+        feedback={simulatedFeedback.evaluate(getStep("s3"), {
+          optionId: "a",
+          confidence: 2,
+        })}
         explanation="Staying low keeps us under the smoke."
         index={2}
         total={sessionLengths.full.stepIds.length}
@@ -180,7 +203,11 @@ export function RepeatSample() {
 }
 
 /** Home on a first visit (nothing saved) or with an unfinished session and weak topics. */
-export function HomeSample({ withProgress = false }: { withProgress?: boolean }) {
+export function HomeSample({
+  withProgress = false,
+}: {
+  withProgress?: boolean;
+}) {
   return (
     <HomeView
       directionTitle={defaultDirection.title}
@@ -203,7 +230,11 @@ export function HomeSample({ withProgress = false }: { withProgress?: boolean })
 }
 
 /** Progress on a first visit, or after a short and a full session. */
-export function ProgressSample({ withHistory = false }: { withHistory?: boolean }) {
+export function ProgressSample({
+  withHistory = false,
+}: {
+  withHistory?: boolean;
+}) {
   const answer = (stepId: string, optionId: string, confidence: 1 | 2 | 3) => ({
     stepId,
     optionId,
@@ -215,7 +246,11 @@ export function ProgressSample({ withHistory = false }: { withHistory?: boolean 
         {
           mode: "short" as const,
           finishedAt: Date.UTC(2026, 9, 7, 9, 20),
-          answers: [answer("s1", "d", 1), answer("s2", "c", 3), answer("s3", "a", 3)],
+          answers: [
+            answer("s1", "d", 1),
+            answer("s2", "c", 3),
+            answer("s3", "a", 3),
+          ],
         },
         {
           mode: "full" as const,
@@ -246,7 +281,11 @@ export function OnboardingSample({ start }: { start: OnboardingStep }) {
 }
 
 /** Profile, or the reset confirmation drawn in place of the overlay. */
-export function ProfileSample({ confirming = false }: { confirming?: boolean }) {
+export function ProfileSample({
+  confirming = false,
+}: {
+  confirming?: boolean;
+}) {
   return (
     <ProfileView
       direction={defaultDirection.id}
@@ -265,13 +304,23 @@ export function ProfileSample({ confirming = false }: { confirming?: boolean }) 
 export function ChatDecideSample() {
   const step = getStep("s1");
   const messages: ChatMessage[] = [
-    { role: "trainee", text: "What if someone needs help to move?", chipId: "s1-assistance" },
+    {
+      role: "trainee",
+      text: "What if someone needs help to move?",
+      chipId: "s1-assistance",
+    },
     { role: "ai", reply: replyToChip(step, "s1-assistance", "decide") },
     { role: "trainee", text: "Should we take the elevator?" },
-    { role: "ai", reply: matchQuestion(step, "Should we take the elevator?", "decide") },
+    {
+      role: "ai",
+      reply: matchQuestion(step, "Should we take the elevator?", "decide"),
+    },
   ];
   return (
-    <AskAiProvider inline initial={{ chat: { step, phase: "decide" }, messages }}>
+    <AskAiProvider
+      inline
+      initial={{ chat: { step, phase: "decide" }, messages }}
+    >
       <DecisionSample start="empty" />
     </AskAiProvider>
   );
@@ -292,14 +341,21 @@ export function ChatFeedbackSample() {
     { role: "trainee", text: "Why not break a window?", chipId: "s3-window" },
   ];
   return (
-    <AskAiProvider inline initial={{ chat: { step, phase: "feedback" }, messages, typing: true }}>
+    <AskAiProvider
+      inline
+      initial={{ chat: { step, phase: "feedback" }, messages, typing: true }}
+    >
       <AskSample />
     </AskAiProvider>
   );
 }
 
 /** The materials list with the upload sheet drawn over it in one of its states. */
-export function UploadSample({ state }: { state: "choose" | "progress" | "failed" }) {
+export function UploadSample({
+  state,
+}: {
+  state: "choose" | "progress" | "failed";
+}) {
   const sample = state === "failed" ? sampleFiles[2] : sampleFiles[0];
   const result = materialFromSample(sample, new Date("2026-10-08"));
   const file = { name: sample.name, size: sample.size };
@@ -334,10 +390,16 @@ export function UploadSample({ state }: { state: "choose" | "progress" | "failed
 
 /** A ready material without a prepared scenario. */
 export function NotesMaterialSample() {
-  const material = sampleMaterials.find((candidate) => candidate.id === "shift-notes");
+  const material = sampleMaterials.find(
+    (candidate) => candidate.id === "shift-notes",
+  );
   if (!material) return null;
   return (
-    <MaterialView material={material} sections={material.sections ?? []} sectionsOpenable={false} />
+    <MaterialView
+      material={material}
+      sections={material.sections ?? []}
+      sectionsOpenable={false}
+    />
   );
 }
 
@@ -390,9 +452,21 @@ export function QuizFeedbackSample({
 export function QuizResultsSample() {
   const items = [
     scoreQuestion(getQuestion("q-s1-1"), { type: "single", optionId: "b" }, 3),
-    scoreQuestion(getQuestion("q-s1-3"), { type: "multiple", optionIds: ["a", "b", "c"] }, 2),
-    scoreQuestion(getQuestion("q-s2-3"), { type: "ordering", order: ["a", "b", "d", "c"] }, null),
-    scoreQuestion(getQuestion("q-s2-1"), { type: "text", text: "back of my hand" }, 3),
+    scoreQuestion(
+      getQuestion("q-s1-3"),
+      { type: "multiple", optionIds: ["a", "b", "c"] },
+      2,
+    ),
+    scoreQuestion(
+      getQuestion("q-s2-3"),
+      { type: "ordering", order: ["a", "b", "d", "c"] },
+      null,
+    ),
+    scoreQuestion(
+      getQuestion("q-s2-1"),
+      { type: "text", text: "back of my hand" },
+      3,
+    ),
     scoreQuestion(getQuestion("q-s1-2"), { type: "truefalse", value: true }, 3),
   ];
   return (
@@ -484,23 +558,89 @@ export function FloodResultsSample() {
 }
 
 export function FloodSetupSample() {
-  return <SetupSample start={{ ...defaultSetup, length: "short" }} scenarioId={FLOOD} />;
+  return (
+    <SetupSample
+      start={{ ...defaultSetup, length: "short" }}
+      scenarioId={FLOOD}
+    />
+  );
 }
 
 /** The Weak topics page with the sample answers, or empty. */
 export function WeakTopicsSample({ empty = false }: { empty?: boolean }) {
   const topics = empty ? [] : weakTopics(currentWeakItems(sampleAnswers));
-  const [selected, setSelected] = useState(() => topics.map((topic) => topic.sectionId));
+  const [selected, setSelected] = useState(() =>
+    topics.map((topic) => topic.sectionId),
+  );
   return (
     <WeakTopicsView
       topics={topics}
       selected={selected}
       onToggle={(id) =>
         setSelected((current) =>
-          current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
+          current.includes(id)
+            ? current.filter((item) => item !== id)
+            : [...current, id],
         )
       }
       onRepeat={() => undefined}
     />
+  );
+}
+
+/** Every topic icon on its material's tile: the evacuation guide in yellow, the flood guide in blue. */
+export function TopicIconsSample() {
+  const item = currentWeakItems(sampleAnswers)[0];
+  const sections = [
+    "F1",
+    "F4",
+    "S1",
+    "S2",
+    "S3",
+    "S4",
+    "S5",
+    "S6",
+    "S7",
+    "S8",
+    "S9",
+    "S10",
+  ];
+  return (
+    <div className="flex flex-col gap-4">
+      <h1 className="font-serif text-2xl">Topic cards</h1>
+      <ul className="grid grid-cols-2 gap-3">
+        {sections.map((sectionId) => (
+          <li key={sectionId}>
+            <TopicCard
+              topic={{
+                sectionId,
+                icon: topicIcon(sectionId),
+                errorType: "guess",
+                items: [item],
+              }}
+              onRepeat={() => undefined}
+            />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/** The three empty states: no weak topics, no materials in a tab, no history. */
+export function EmptyStatesSample() {
+  return (
+    <div className="flex flex-col gap-8">
+      <h1 className="font-serif text-2xl">Empty states</h1>
+      <EmptyState
+        icon={ListChecks}
+        text="No weak topics yet. They appear here after a session or a quiz."
+      />
+      <EmptyState icon={FileText} text="No failed uploads." />
+      <EmptyState
+        icon={History}
+        text="No sessions yet. Finished sessions are saved here, in this browser only."
+      />
+    </div>
   );
 }

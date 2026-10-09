@@ -2,7 +2,10 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import MaterialPage from "@/app/(app)/materials/evacuation-guide/page";
 import Materials from "@/app/(app)/materials/page";
-import { ActionBarProvider, ActionBarSlot } from "@/components/ActionBar/ActionBar";
+import {
+  ActionBarProvider,
+  ActionBarSlot,
+} from "@/components/ActionBar/ActionBar";
 import { AskAiProvider } from "@/components/AskAi/AskAi";
 import { defaultSetup } from "@/components/SessionSetup/SessionSetup";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
@@ -18,6 +21,7 @@ import {
   ChatDecideSample,
   ChatFeedbackSample,
   DecisionSample,
+  EmptyStatesSample,
   FeedbackSample,
   CreateTrainingSample,
   GeneratingSample,
@@ -25,6 +29,7 @@ import {
   FloodSetupSample,
   FloodStepSample,
   HomeSample,
+  TopicIconsSample,
   WeakTopicsSample,
   ReviewSample,
   QuizFeedbackSample,
@@ -57,7 +62,10 @@ function Screen({ nav, children }: { nav?: string; children: ReactNode }) {
   return (
     <ActionBarProvider>
       <AskAiProvider inline>
-        <div data-frame-scroll className="min-h-0 flex-1 overflow-y-auto px-4 pt-6 pb-6">
+        <div
+          data-frame-scroll
+          className="min-h-0 flex-1 overflow-y-auto px-4 pt-6 pb-6"
+        >
           {children}
         </div>
         <div className="bg-bg">
@@ -115,7 +123,8 @@ export default function Screens() {
         <header className="flex flex-col gap-1">
           <h1 className="font-serif text-2xl">Screen review</h1>
           <p className="text-sm text-text-secondary">
-            Development only. Every planned screen at 390 by 844. Dashed frames are not built yet.
+            Development only. Every planned screen at 390 by 844. Dashed frames
+            are not built yet.
           </p>
         </header>
         <Group title="Foundation">
@@ -359,6 +368,18 @@ export default function Screens() {
           <PhoneFrame label="Progress: with history">
             <Screen nav="/progress">
               <ProgressSample withHistory />
+            </Screen>
+          </PhoneFrame>
+        </Group>
+        <Group title="Cards and icons">
+          <PhoneFrame label="Topic icons and tile colours">
+            <Screen nav="/">
+              <TopicIconsSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Empty states">
+            <Screen nav="/">
+              <EmptyStatesSample />
             </Screen>
           </PhoneFrame>
         </Group>
