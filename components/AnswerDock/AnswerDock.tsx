@@ -86,7 +86,7 @@ export function AnswerDock({
           onKeyDown={onKeyDown}
           placeholder={placeholder}
           autoComplete="off"
-          className="min-h-11 min-w-0 flex-1 resize-none bg-transparent py-2.5 text-base outline-none placeholder:text-text-secondary focus-visible:outline-none"
+          className="dock-field min-h-11 min-w-0 flex-1 resize-none bg-transparent py-2.5 text-base placeholder:text-text-secondary"
         />
         <button
           type="button"

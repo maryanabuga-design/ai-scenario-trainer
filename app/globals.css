@@ -85,6 +85,11 @@ body {
   outline-offset: 2px;
 }
 
+/* The answer dock draws one focus ring around the whole field, so the text area has none. */
+.dock-field:focus-visible {
+  outline: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
