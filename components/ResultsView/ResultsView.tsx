@@ -1,34 +1,56 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button, ButtonLink } from "@/components/Button/Button";
-import { Card } from "@/components/Card/Card";
-import { AskAiButton } from "@/components/AskAi/AskAi";
 import { ErrorTypesCard } from "@/components/ErrorTypesCard/ErrorTypesCard";
-import { Gradient } from "@/components/Gradient/Gradient";
-import { StatusRows } from "@/components/StatusRows/StatusRows";
+import { ProgressCard } from "@/components/ProgressCard/ProgressCard";
+import { ResultsHeader } from "@/components/ResultsHeader/ResultsHeader";
+import { SoftCard } from "@/components/SoftCard/SoftCard";
 import { SourceChip } from "@/components/SourceChip/SourceChip";
-import { StatusBadge, StatusIcon } from "@/components/StatusBadge/StatusBadge";
-import { describeEffects, formatOutcome } from "@/lib/outcome";
-import { formatPoints } from "@/lib/progress";
-import { getScenario, getStep } from "@/lib/scenario";
-import type { SessionMode } from "@/lib/scenario";
+import { formatOutcome } from "@/lib/outcome";
+import { formatPoints, sessionLabel } from "@/lib/progress";
+import type { ResultsKind } from "@/lib/repeat";
+import { conclusion } from "@/lib/results";
+import { getScenario } from "@/lib/scenario";
 import type { ScoredItem } from "@/lib/scoring";
-import {
-  countErrorTypes,
-  groupByErrorType,
-  sumEffects,
-  totalScore,
-  weakItems,
-  weakSections,
-} from "@/lib/scoring";
+import { countErrorTypes, sumEffects, totalScore, weakItems, weakSections } from "@/lib/scoring";
 
-/** Which session the results belong to. */
-export type ResultsKind =
-  | { kind: "scenario"; mode: SessionMode; scenarioId?: string }
-  | { kind: "quiz"; mode: "quiz" | "repeat" }
-  | { kind: "repeat" };
+export const analysisPath = "/session/results/analysis";
+const scrollKey = "ast.results-scroll";
+
+/** Remembers where Results was scrolled to, so Back from the Error analysis returns there. */
+function rememberScroll() {
+  try {
+    sessionStorage.setItem(scrollKey, String(window.scrollY));
+  } catch {
+    // Without storage, Back simply opens Results at the top.
+  }
+}
+
+function useRestoredScroll() {
+  useEffect(() => {
+    let saved: string | null = null;
+    try {
+      saved = sessionStorage.getItem(scrollKey);
+    } catch {
+      return;
+    }
+    if (saved === null) return;
+    const top = Number(saved);
+    // After the page has painted, so the router's own scroll to the top does not undo it. The
+    // position is forgotten only once it has been used (effects can run twice in development).
+    const frame = requestAnimationFrame(() => {
+      window.scrollTo(0, top);
+      try {
+        sessionStorage.removeItem(scrollKey);
+      } catch {
+        // Nothing to clean up without storage.
+      }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
+}
 
 function headline(results: ResultsKind, weakTopicCount: number): [string, string] {
   const first =
@@ -46,54 +68,7 @@ function headline(results: ResultsKind, weakTopicCount: number): [string, string
               repeat: "Repeat complete.",
             }[results.mode];
   if (weakTopicCount === 0) return [first, "Nothing to repeat this time."];
-  return [first, `Review ${weakTopicCount} ${weakTopicCount === 1 ? "topic" : "topics"} below.`];
-}
-
-/** Share answered correctly, as a ring. The text next to it says the same in words. */
-function Ring({ correct, total }: { correct: number; total: number }) {
-  const radius = 29;
-  const length = 2 * Math.PI * radius;
-  const share = total === 0 ? 0 : correct / total;
-  return (
-    <svg
-      width="64"
-      height="64"
-      viewBox="0 0 64 64"
-      role="img"
-      aria-label={`${correct} of ${total} correct`}
-      className="shrink-0 -rotate-90"
-    >
-      <circle cx="32" cy="32" r={radius} fill="none" strokeWidth="6" className="stroke-border" />
-      <circle
-        cx="32"
-        cy="32"
-        r={radius}
-        fill="none"
-        strokeWidth="6"
-        strokeLinecap="round"
-        strokeDasharray={`${share * length} ${length}`}
-        className="stroke-correct"
-      />
-    </svg>
-  );
-}
-
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-medium">{title}</h2>
-      {children}
-    </section>
-  );
-}
-
-function Row({ label, value }: { label: ReactNode; value: ReactNode }) {
-  return (
-    <div className="flex min-h-11 items-center justify-between gap-4 py-2">
-      <span>{label}</span>
-      <span className="font-medium tabular-nums">{value}</span>
-    </div>
-  );
+  return [first, `${weakTopicCount} ${weakTopicCount === 1 ? "topic" : "topics"} to repeat.`];
 }
 
 export function ResultsView({
@@ -105,196 +80,94 @@ export function ResultsView({
   items: ScoredItem[];
   onRepeat: (ids: string[]) => void;
 }) {
+  useRestoredScroll();
   const quiz = results.kind === "quiz";
+  const scenarioResults = results.kind === "scenario" && results.mode !== "repeat";
   const correct = items.filter((item) => item.correct).length;
-  const counts = countErrorTypes(items);
   const scenarioDef = getScenario(results.kind === "scenario" ? results.scenarioId : undefined);
-  const outcome = sumEffects(scenarioDef.initialState, items);
+  const state = sumEffects(scenarioDef.initialState, items);
   const repeatIds = weakItems(items).map((item) => item.id);
   const topics = weakSections(items);
   const [first, second] = headline(results, topics.length);
-  const showOutcome = results.kind === "scenario" && results.mode !== "repeat";
   const outcomeRows = scenarioDef.outcome.filter(
     (metric) =>
       results.kind === "scenario" &&
       results.mode !== "repeat" &&
       (!metric.lengths || metric.lengths.includes(results.mode)),
   );
-  const timeline = items.filter((item) => item.kind === "step" && item.consequence);
+  const steps = items.filter((item) => item.kind === "step" && item.consequence);
   const hasQuestions = items.some((item) => item.kind === "question");
   const markedCount = items.filter((item) => item.markedByYou).length;
   const shortEnding =
     results.kind === "scenario" && results.mode === "short" ? scenarioDef.shortEnding : undefined;
 
   return (
-    <div className="flex flex-col gap-8">
-      <Gradient tone="warm" className="-mx-4 -mt-6 px-4 pt-12 pb-10">
-        <h1 className="text-3xl leading-tight font-medium">
-          {first} <span className="text-text-secondary">{second}</span>
-        </h1>
-      </Gradient>
+    <div className="flex flex-col gap-4">
+      <ResultsHeader overline={sessionLabel(results)} first={first} second={second} />
 
-      {shortEnding && <p className="text-text-secondary">{shortEnding.continues}</p>}
+      <ProgressCard
+        correct={correct}
+        total={items.length}
+        sentence={shortEnding?.continues ?? conclusion(items)}
+        points={quiz ? `${formatPoints(totalScore(items))} of ${items.length} points` : undefined}
+        analysisHref={analysisPath}
+        onNavigate={rememberScroll}
+      />
 
-      <Card className="flex flex-col gap-4">
-        <div className="flex items-center gap-4">
-          <Ring correct={correct} total={items.length} />
-          <div className="flex flex-col">
-            <p className="text-lg font-medium">
-              <span className="tabular-nums">
-                {correct}/{items.length}
-              </span>{" "}
-              correct
-            </p>
-            {quiz && (
-              <p className="text-sm text-text-secondary tabular-nums">
-                {formatPoints(totalScore(items))} of {items.length} points
-              </p>
-            )}
-          </div>
-        </div>
-        <div className="flex flex-col gap-2">
-          {(
-            [
-              { status: "correct", count: correct, tint: "bg-correct-bg", icon: "text-correct" },
-              {
-                status: "wrong",
-                count: items.length - correct,
-                tint: "bg-wrong-bg",
-                icon: "text-wrong",
-              },
-            ] as const
-          ).map((row) => (
-            <div
-              key={row.status}
-              className={`flex min-h-14 items-center gap-3 rounded-panel px-4 py-2 ${row.tint}`}
-            >
-              <span className={row.icon}>
-                <StatusIcon status={row.status} size={20} />
-              </span>
-              <span className="flex-1 text-lg font-medium tabular-nums">{row.count}</span>
-              <StatusBadge status={row.status} onTint />
-            </div>
-          ))}
-        </div>
-      </Card>
+      <ErrorTypesCard
+        counts={countErrorTypes(items)}
+        detailsHref={analysisPath}
+        onNavigate={rememberScroll}
+      />
 
-      <ErrorTypesCard counts={counts} detailsHref="#error-analysis" />
-
-      {showOutcome && outcomeRows.length > 0 && (
-        <Section title="How the situation ended">
-          <div className="flex flex-col divide-y divide-border">
+      {scenarioResults && outcomeRows.length > 0 && (
+        <SoftCard title="Outcome" titleId="outcome-title" className="gap-1">
+          <dl className="flex flex-col divide-y divide-soft-divider">
             {outcomeRows.map((metric) => (
-              <Row
+              <div
                 key={metric.key}
-                label={metric.label}
-                value={formatOutcome(
-                  scenarioDef,
-                  metric,
-                  outcome[metric.key],
-                  scenarioDef.initialState[metric.key],
-                )}
-              />
+                className="flex min-h-12 items-center justify-between gap-4 py-2"
+              >
+                <dt>{metric.label}</dt>
+                <dd className="text-right font-semibold">
+                  {formatOutcome(
+                    scenarioDef,
+                    metric,
+                    state[metric.key],
+                    scenarioDef.initialState[metric.key],
+                  )}
+                </dd>
+              </div>
             ))}
-          </div>
-        </Section>
+          </dl>
+        </SoftCard>
       )}
 
-      {timeline.length > 0 && (
-        <Section title="What happened">
+      {scenarioResults && steps.length > 0 && (
+        <SoftCard title="Step by step" titleId="steps-title" subtitle="How each choice played out">
           <ol className="flex flex-col gap-4">
-            {timeline.map((item, position) => (
-              <li key={item.id} className="flex gap-3">
-                <span className="w-5 shrink-0 text-text-secondary tabular-nums">
-                  {position + 1}.
+            {steps.map((item, position) => (
+              <li key={item.id} className="flex items-start gap-3">
+                <span
+                  aria-hidden="true"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-bg text-sm font-medium text-text-secondary tabular-nums"
+                >
+                  {position + 1}
                 </span>
-                <div className="flex flex-col gap-1">
-                  <h3 className="font-medium">{item.title}</h3>
-                  <p className="text-sm">{item.consequence}</p>
-                  {describeEffects(item.id, item.effects).length > 0 && (
-                    <p className="text-sm text-text-secondary">
-                      {describeEffects(item.id, item.effects).join(" · ")}
-                    </p>
-                  )}
+                <div className="flex min-w-0 flex-col gap-0.5 pt-1">
+                  <h3 className="font-medium">
+                    <span className="sr-only">Step {position + 1}: </span>
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-text-secondary">{item.consequence}</p>
                 </div>
               </li>
             ))}
           </ol>
-        </Section>
+        </SoftCard>
       )}
 
-      <section id="error-analysis" tabIndex={-1} className="flex scroll-mt-4 flex-col gap-6">
-        <h2 className="text-lg font-medium">Error analysis</h2>
-        {groupByErrorType(items).map((group) => (
-          <section
-            key={group.type}
-            aria-labelledby={`analysis-${group.type}`}
-            className="flex flex-col gap-3"
-          >
-            <h3 id={`analysis-${group.type}`} className="flex items-center gap-2">
-              <StatusBadge status={group.type} />
-              <span className="text-sm text-text-secondary tabular-nums">
-                {group.items.length} {group.items.length === 1 ? "answer" : "answers"}
-              </span>
-            </h3>
-            <ol className="flex flex-col gap-3">
-              {group.items.map((item) => (
-                <li key={item.id}>
-                  <Card className="flex flex-col gap-3">
-                    <h4 className={item.kind === "step" ? "font-serif text-lg" : "font-medium"}>
-                      {item.title}
-                    </h4>
-                    <StatusRows
-                      result={item.correct ? "correct" : item.score > 0 ? "partial" : "wrong"}
-                      errorType={item.hasConfidence ? item.errorType : null}
-                    />
-                    <p className="text-sm">
-                      <span className="text-text-secondary">
-                        {item.kind === "step" ? "You chose: " : "Your answer: "}
-                      </span>
-                      {item.yourAnswer || "No answer"}
-                    </p>
-                    {!item.correct && (
-                      <p className="text-sm">
-                        <span className="text-text-secondary">
-                          {item.kind === "step" ? "Better: " : "Correct answer: "}
-                        </span>
-                        {item.correctAnswer}
-                      </p>
-                    )}
-                    {item.markedByYou && (
-                      <div>
-                        <StatusBadge status="marked" />
-                      </div>
-                    )}
-                    <div className="flex flex-col gap-1 text-sm">
-                      <span className="text-text-secondary">Why</span>
-                      {item.why.map((line) => (
-                        <p key={line}>{line}</p>
-                      ))}
-                    </div>
-                    {item.kind === "question" && item.score > 0 && item.score < 1 && (
-                      <p className="text-sm text-text-secondary tabular-nums">
-                        Partly correct: {formatPoints(item.score)} of 1 point
-                      </p>
-                    )}
-                    <div className="flex flex-wrap gap-2">
-                      {item.sources.map((sectionId) => (
-                        <SourceChip key={sectionId} sectionId={sectionId} />
-                      ))}
-                    </div>
-                    {item.kind === "step" && (
-                      <AskAiButton step={getStep(item.id)} phase="feedback" variant="link" />
-                    )}
-                  </Card>
-                </li>
-              ))}
-            </ol>
-          </section>
-        ))}
-      </section>
-
-      <Section title="Weak topics">
+      <SoftCard title="Weak topics" titleId="weak-title">
         {topics.length === 0 ? (
           <p className="text-text-secondary">No weak topics. Every answer was right and sure.</p>
         ) : (
@@ -304,14 +177,13 @@ export function ResultsView({
             ))}
           </div>
         )}
-      </Section>
-
-      {hasQuestions && (
-        <div className="flex min-h-11 flex-wrap items-center gap-x-2 border-y border-border py-2 text-sm">
-          <span className="text-text-secondary">Marked correct by you:</span>
-          <span className="font-medium tabular-nums">{markedCount}</span>
-        </div>
-      )}
+        {hasQuestions && (
+          <div className="flex min-h-11 items-center justify-between gap-4 border-t border-soft-divider pt-3">
+            <span>Marked correct by you</span>
+            <span className="font-semibold tabular-nums">{markedCount}</span>
+          </div>
+        )}
+      </SoftCard>
 
       <ActionBar>
         {repeatIds.length > 0 ? (

@@ -7,6 +7,7 @@ import type { Draft } from "@/components/DecisionStep/DecisionStep";
 import { AskAiProvider } from "@/components/AskAi/AskAi";
 import type { ChatMessage } from "@/components/AskAi/AskAi";
 import { AnswerSheet } from "@/components/AnswerSheet/AnswerSheet";
+import { AnalysisView } from "@/components/AnalysisView/AnalysisView";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { ErrorTypesCard } from "@/components/ErrorTypesCard/ErrorTypesCard";
 import { ExplainStep } from "@/components/ExplainStep/ExplainStep";
@@ -37,6 +38,7 @@ import { matchQuestion, notCoveredId, replyToChip } from "@/lib/chat";
 import { getQuestion, scoreQuestion } from "@/lib/quiz";
 import type { Response } from "@/lib/quiz";
 import type { Answer } from "@/lib/session";
+import type { AnalysisFilter } from "@/lib/results";
 import { questionSheet, stepSheet } from "@/lib/answer-sheet";
 import { getScenario, getStep, scenario, sessionLengths } from "@/lib/scenario";
 import type { Confidence } from "@/lib/scenario";
@@ -589,5 +591,18 @@ export function ErrorTypesSample() {
       />
       <ErrorTypesCard counts={{ secure: 0, guess: 0, knowledge_gap: 0, misconception: 0 }} />
     </div>
+  );
+}
+
+/** The Error analysis screen for the sample session: all answers, or only the incorrect ones. */
+export function AnalysisSample({ filter = "all" }: { filter?: AnalysisFilter }) {
+  return (
+    <AnalysisView
+      items={sampleAnswers}
+      filter={filter}
+      quiz={false}
+      backHref="#results"
+      onRepeat={() => undefined}
+    />
   );
 }

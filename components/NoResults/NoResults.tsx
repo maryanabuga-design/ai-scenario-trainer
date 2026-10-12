@@ -1,0 +1,14 @@
+import { ButtonLink } from "@/components/Button/Button";
+
+/** Results and Error analysis before any session has finished. */
+export function NoResults() {
+  return (
+    <div className="flex flex-col items-start gap-4">
+      <h1 className="font-serif text-2xl">No results yet</h1>
+      <p className="text-text-secondary">Finish a session to see its results here.</p>
+      <ButtonLink href="/materials" variant="secondary">
+        Go to Materials
+      </ButtonLink>
+    </div>
+  );
+}

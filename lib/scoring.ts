@@ -17,8 +17,6 @@ export type TypeSummaryRow = {
   label: string;
   description: string;
   count: number;
-  /** A count of 0: the row stays visible but muted. */
-  muted: boolean;
   /** For example "Secure, right answer, high confidence: 2". */
   accessibleName: string;
 };
@@ -33,7 +31,6 @@ export function errorTypeSummary(counts: Record<ErrorType, number>): TypeSummary
       label,
       description,
       count,
-      muted: count === 0,
       accessibleName: `${label}, ${description.charAt(0).toLowerCase()}${description.slice(1)}: ${count}`,
     };
   });

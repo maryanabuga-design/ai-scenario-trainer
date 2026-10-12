@@ -17,6 +17,7 @@ import {
   ChatDecideSample,
   ChatFeedbackSample,
   DecisionSample,
+  AnalysisSample,
   EmptyStatesSample,
   ErrorTypesSample,
   ExplainSample,
@@ -394,6 +395,16 @@ export default function Screens() {
           </PhoneFrame>
         </Group>
         <Group title="Results">
+          <PhoneFrame label="Error analysis">
+            <Screen>
+              <AnalysisSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Error analysis: incorrect answers">
+            <Screen>
+              <AnalysisSample filter="incorrect" />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Error types card">
             <Screen>
               <ErrorTypesSample />
@@ -404,7 +415,7 @@ export default function Screens() {
               <ResultsSample />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Results: error analysis">
+          <PhoneFrame label="Results: end of the page">
             <Screen>
               <ResultsSample scrolled />
             </Screen>

@@ -145,12 +145,17 @@ describe("error types card", () => {
     expect(rows[3].description).toBe("Wrong answer, high confidence");
   });
 
-  it("keeps rows with a count of 0, muted", () => {
+  it("keeps rows with a count of 0, looking like the others", () => {
     const rows = errorTypeSummary(countErrorTypes(items));
     expect(rows).toHaveLength(4);
-    expect(rows.map((row) => row.muted)).toEqual([false, false, true, false]);
-    expect(rows[2].accessibleName).toBe("Knowledge gap, wrong answer, not sure: 0");
-    expect(errorTypeSummary(countErrorTypes([])).every((row) => row.muted)).toBe(true);
+    expect(rows[2]).toEqual({
+      type: "knowledge_gap",
+      label: "Knowledge gap",
+      description: "Wrong answer, not sure",
+      count: 0,
+      accessibleName: "Knowledge gap, wrong answer, not sure: 0",
+    });
+    expect(errorTypeSummary(countErrorTypes([])).map((row) => row.count)).toEqual([0, 0, 0, 0]);
   });
 
   it("groups the analysis by error type in the same order, without empty groups", () => {
