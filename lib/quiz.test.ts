@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { scoreSession } from "@/lib/progress";
 import {
   getQuestion,
   matchesKeywords,
@@ -179,5 +180,53 @@ describe("flood question bank", () => {
     expect(matchesKeywords(["named", "specific"], 2, "a specific, named person")).toBe(true);
     expect(matchesKeywords(["named", "specific"], 2, "a named person")).toBe(false);
     expect(matchesKeywords(["named"], 1, "")).toBe(false);
+  });
+});
+
+describe("marked correct by you", () => {
+  const text = questions.find((question) => question.type === "text")!;
+  const rejected = { type: "text" as const, text: "something else entirely" };
+
+  it("turns a rejected short answer into a correct one and sets the error type", () => {
+    expect(scoreQuestion(text, rejected, 3).correct).toBe(false);
+    const marked = scoreQuestion(text, rejected, 3, true);
+    expect(marked).toMatchObject({
+      score: 1,
+      correct: true,
+      errorType: "secure",
+      markedByYou: true,
+    });
+    expect(scoreQuestion(text, rejected, 1, true).errorType).toBe("guess");
+    expect(scoreQuestion(text, rejected, null, true).errorType).toBe("secure");
+  });
+
+  it("does nothing for an answer the check already accepted", () => {
+    const accepted = { type: "text" as const, text: text.type === "text" ? text.accepted[0] : "" };
+    const marked = scoreQuestion(text, accepted, 3, true);
+    expect(marked.correct).toBe(true);
+    expect(marked.markedByYou).toBeUndefined();
+  });
+
+  it("only applies to short text questions", () => {
+    const single = questions.find((question) => question.type === "single")!;
+    const wrong =
+      single.type === "single" ? single.options.find((o) => o.id !== single.answer)! : null;
+    const scored = scoreQuestion(single, { type: "single", optionId: wrong!.id }, 3, true);
+    expect(scored.correct).toBe(false);
+    expect(scored.markedByYou).toBeUndefined();
+  });
+
+  it("counts in a finished quiz's score and weak topics", () => {
+    const answers = [{ questionId: text.id, response: rejected, confidence: 3 as const }];
+    const before = scoreSession({ kind: "quiz", mode: "quiz", answers, finishedAt: 0 });
+    const after = scoreSession({
+      kind: "quiz",
+      mode: "quiz",
+      answers: [{ ...answers[0], markedCorrect: true }],
+      finishedAt: 0,
+    });
+    expect(before[0].errorType).toBe("misconception");
+    expect(after[0].errorType).toBe("secure");
+    expect(after[0].markedByYou).toBe(true);
   });
 });

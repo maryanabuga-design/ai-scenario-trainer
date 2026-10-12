@@ -219,6 +219,11 @@ export function ResultsView({
                     {item.correctAnswer}
                   </p>
                 )}
+                {item.markedByYou && (
+                  <div>
+                    <StatusBadge status="marked" />
+                  </div>
+                )}
                 {item.kind === "question" && item.score > 0 && item.score < 1 && (
                   <p className="text-sm text-text-secondary tabular-nums">
                     Partly correct: {formatPoints(item.score)} of 1 point

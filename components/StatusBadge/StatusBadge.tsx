@@ -1,9 +1,18 @@
-import { Check, CircleHelp, Clock, Contrast, Minus, X } from "lucide-react";
+import { Check, CircleHelp, Clock, Contrast, Minus, UserCheck, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { ErrorType } from "@/lib/scoring";
 
 export type Status =
-  ErrorType | "correct" | "wrong" | "partial" | "ready" | "processing" | "failed";
+  | ErrorType
+  | "correct"
+  | "wrong"
+  | "partial"
+  | "ready"
+  | "processing"
+  | "failed"
+  | "looks_correct"
+  | "no_match"
+  | "marked";
 
 const icons = {
   check: Check,
@@ -12,6 +21,7 @@ const icons = {
   clock: Clock,
   half: Contrast,
   question: CircleHelp,
+  user: UserCheck,
 } satisfies Record<string, LucideIcon>;
 
 export const statuses: Record<
@@ -23,6 +33,17 @@ export const statuses: Record<
   partial: {
     label: "Partly correct",
     icon: "half",
+    className: "border border-border bg-surface-muted text-text-secondary",
+  },
+  looks_correct: { label: "Looks correct", icon: "check", className: "bg-correct-bg text-correct" },
+  no_match: {
+    label: "Doesn't match our answer",
+    icon: "cross",
+    className: "bg-wrong-bg text-wrong",
+  },
+  marked: {
+    label: "Marked correct by you",
+    icon: "user",
     className: "border border-border bg-surface-muted text-text-secondary",
   },
   ready: { label: "Ready", icon: "check", className: "bg-correct-bg text-correct" },

@@ -242,8 +242,12 @@ export function scoreQuestion(
   question: Question,
   response: Response,
   confidence: Confidence | null,
+  markedCorrect = false,
 ): ScoredItem {
-  const score = scoreResponse(question, response);
+  const checked = scoreResponse(question, response);
+  /** Only a short text answer can be overruled, and only when the keyword check rejected it. */
+  const markedByYou = markedCorrect && question.type === "text" && checked < 1;
+  const score = markedByYou ? 1 : checked;
   const correct = score === 1;
   return {
     kind: "question",
@@ -256,5 +260,6 @@ export function scoreQuestion(
     effects: {},
     yourAnswer: describeResponse(question, response),
     correctAnswer: describeAnswer(question),
+    ...(markedByYou && { markedByYou }),
   };
 }

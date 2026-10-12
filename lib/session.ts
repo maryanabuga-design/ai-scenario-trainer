@@ -19,6 +19,8 @@ export type QuizAnswer = {
   questionId: string;
   response: Response;
   confidence: Confidence | null;
+  /** A short text answer the keyword check rejected but the user marked correct. */
+  markedCorrect?: boolean;
 };
 
 type Progress = {

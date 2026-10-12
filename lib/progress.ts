@@ -25,13 +25,23 @@ export function scoreSession(session: Session | FinishedSession): ScoredItem[] {
   if (session.kind === "repeat") {
     return session.answers.map((answer) =>
       answer.type === "question"
-        ? scoreQuestion(getQuestion(answer.questionId), answer.response, answer.confidence)
+        ? scoreQuestion(
+            getQuestion(answer.questionId),
+            answer.response,
+            answer.confidence,
+            answer.markedCorrect,
+          )
         : scoreStep(getStep(answer.stepId), answer.optionId, answer.confidence),
     );
   }
   if (session.kind === "quiz") {
     return session.answers.map((answer) =>
-      scoreQuestion(getQuestion(answer.questionId), answer.response, answer.confidence),
+      scoreQuestion(
+        getQuestion(answer.questionId),
+        answer.response,
+        answer.confidence,
+        answer.markedCorrect,
+      ),
     );
   }
   return session.answers.map((answer) =>

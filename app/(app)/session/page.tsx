@@ -75,6 +75,27 @@ function withAnswer(session: Session, answer: Answer | QuizAnswer): Session {
   return session;
 }
 
+/** Marks a short text answer correct after the keyword check rejected it. */
+function withMarkedCorrect(session: Session, questionId: string): Session {
+  if (isRepeatRound(session)) {
+    return {
+      ...session,
+      answers: session.answers.map((answer) =>
+        answer.type === "question" && answer.questionId === questionId
+          ? { ...answer, markedCorrect: true }
+          : answer,
+      ),
+    };
+  }
+  if (!isQuiz(session)) return session;
+  return {
+    ...session,
+    answers: session.answers.map((answer) =>
+      answer.questionId === questionId ? { ...answer, markedCorrect: true } : answer,
+    ),
+  };
+}
+
 /** Changes the saved answer of a step: its explanation, self-check or skip. */
 function withStepAnswer(session: Session, stepId: string, patch: Partial<Answer>): Session {
   if (isRepeatRound(session)) {
@@ -273,6 +294,8 @@ export default function SessionPage() {
       question={getQuestion(saved.questionId)}
       response={saved.response}
       confidence={saved.confidence}
+      markedCorrect={saved.markedCorrect}
+      onMarkCorrect={() => saveSession(withMarkedCorrect(session, saved.questionId))}
       index={session.index}
       total={total}
       unit={unit}

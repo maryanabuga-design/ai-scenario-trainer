@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import type { ReactNode } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button } from "@/components/Button/Button";
@@ -92,6 +93,21 @@ function Comparison({ question, response }: { question: Question; response: Resp
       </div>
     );
   }
+  if (question.type === "text") {
+    return (
+      <div className="flex flex-col gap-3">
+        {[
+          { label: "Your answer", text: describeResponse(question, response) || "No answer" },
+          { label: "Reference answer", text: describeAnswer(question) },
+        ].map((panel) => (
+          <div key={panel.label} className="flex flex-col gap-1 rounded-panel bg-surface-muted p-4">
+            <Label>{panel.label}</Label>
+            <p>{panel.text}</p>
+          </div>
+        ))}
+      </div>
+    );
+  }
   return (
     <>
       <div className="flex flex-col gap-1">
@@ -110,6 +126,8 @@ export function QuizFeedback({
   question,
   response,
   confidence,
+  markedCorrect = false,
+  onMarkCorrect,
   index,
   total,
   unit = "Question",
@@ -119,25 +137,42 @@ export function QuizFeedback({
   question: Question;
   response: Response;
   confidence: Confidence | null;
+  /** A short answer the user marked correct after the keyword check rejected it. */
+  markedCorrect?: boolean;
+  onMarkCorrect?: () => void;
   index: number;
   total: number;
   unit?: Unit;
   nextLabel: string;
   onNext: () => void;
 }) {
-  const scored = scoreQuestion(question, response, confidence);
-  const verdict = scored.correct ? "correct" : scored.score > 0 ? "partial" : "wrong";
-  const [first, second] =
-    verdict === "correct"
-      ? ["Right.", "Here is why."]
-      : verdict === "partial"
-        ? ["Partly right.", "See what you missed."]
-        : ["Not quite.", "See what the guide says."];
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const scored = scoreQuestion(question, response, confidence, markedCorrect);
+  const text = question.type === "text";
+  const verdict = scored.markedByYou
+    ? "marked"
+    : text
+      ? scored.correct
+        ? "looks_correct"
+        : "no_match"
+      : scored.correct
+        ? "correct"
+        : scored.score > 0
+          ? "partial"
+          : "wrong";
+  const [first, second] = {
+    correct: ["Right.", "Here is why."],
+    partial: ["Partly right.", "See what you missed."],
+    wrong: ["Not quite.", "See what the guide says."],
+    looks_correct: ["Looks right.", "Compare it with the reference answer."],
+    no_match: ["Not matched.", "Compare it with the reference answer. You decide."],
+    marked: ["Marked correct.", "Your call counts in the score."],
+  }[verdict];
 
   return (
     <div className="flex flex-col gap-6">
       <SessionTopBar index={index} total={total} unit={unit} />
-      <h1 className="text-2xl leading-tight font-medium">
+      <h1 ref={headingRef} tabIndex={-1} className="text-2xl leading-tight font-medium">
         {first} <span className="text-text-secondary">{second}</span>
       </h1>
 
@@ -150,6 +185,20 @@ export function QuizFeedback({
         </div>
         <p className="font-medium">{question.question}</p>
         <Comparison question={question} response={response} />
+        {verdict === "no_match" && onMarkCorrect && (
+          <div>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                // The button disappears, so move focus to the new headline.
+                onMarkCorrect();
+                headingRef.current?.focus();
+              }}
+            >
+              My answer is still correct
+            </Button>
+          </div>
+        )}
         <div className="flex flex-col gap-1">
           <Label>Why</Label>
           <p>{question.why}</p>

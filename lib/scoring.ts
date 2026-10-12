@@ -29,6 +29,8 @@ export type ScoredItem = {
   effects: Effects;
   yourAnswer: string;
   correctAnswer: string;
+  /** A short answer the user marked correct after the keyword check rejected it. */
+  markedByYou?: boolean;
 };
 
 export function scoreStep(step: Step, optionId: string, confidence: Confidence): ScoredItem {
