@@ -68,7 +68,7 @@ function AnswerCard({ item }: { item: ScoredItem }) {
           )}
         </Field>
       )}
-      {step && <AskAiButton step={getStep(item.id)} phase="feedback" variant="link" />}
+      {step && <AskAiButton step={getStep(item.id)} phase="feedback" />}
     </article>
   );
 }

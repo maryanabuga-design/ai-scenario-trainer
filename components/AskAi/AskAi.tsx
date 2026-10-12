@@ -347,18 +347,11 @@ export function AskAiProvider({
 }
 
 /**
- * Opens the Ask AI sheet for a step, if it has prepared answers. pill: the secondary button on the
- * decision step; link: a secondary text link, for each step in the results analysis.
+ * The AI text button: a sparkle before an underlined label, no fill and no outline, with
+ * invisible padding so the touch target is at least 44px. Opens the Ask AI sheet for a step that
+ * has prepared answers (on the decision step and in the Error analysis cards).
  */
-export function AskAiButton({
-  step,
-  phase,
-  variant = "pill",
-}: {
-  step: Step;
-  phase: ChatPhase;
-  variant?: "pill" | "link";
-}) {
+export function AskAiButton({ step, phase }: { step: Step; phase: ChatPhase }) {
   const { open } = useAskAi();
   // Only steps with prepared answers offer the chat (the flood scenario has none).
   if (step.chat.length === 0 && !step.suggestedQuestion) return null;
@@ -366,14 +359,12 @@ export function AskAiButton({
     <button
       type="button"
       onClick={() => open(step, phase)}
-      className={
-        variant === "link"
-          ? "type-small inline-flex min-h-11 items-center gap-2 self-start text-text underline decoration-1 underline-offset-4 hover:decoration-2"
-          : "type-body inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-full border border-primary bg-surface px-5 text-primary hover:bg-surface-muted active:bg-border"
-      }
+      className="type-body -mx-2 inline-flex min-h-11 items-center gap-2 self-start rounded-panel px-2 text-text active:opacity-70"
     >
       <Sparkles size={16} strokeWidth={2} aria-hidden="true" />
-      Ask AI about this step
+      <span className="underline decoration-1 underline-offset-4 hover:decoration-2">
+        Ask AI about this step
+      </span>
     </button>
   );
 }
