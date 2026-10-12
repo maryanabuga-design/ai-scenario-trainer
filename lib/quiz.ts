@@ -257,6 +257,7 @@ export function scoreQuestion(
     score,
     correct,
     errorType: errorType(correct, confidence),
+    hasConfidence: confidence !== null,
     effects: {},
     yourAnswer: describeResponse(question, response),
     correctAnswer: describeAnswer(question),

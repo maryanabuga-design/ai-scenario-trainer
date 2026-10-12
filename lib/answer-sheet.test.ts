@@ -37,7 +37,8 @@ describe("answer sheet for a scenario step", () => {
   it("right call: one box with your choice, the why, sources and what happened", () => {
     const sheet = stepSheet(getStep("s1"), step("s1", { explanation: "Use the stairs now." }));
     expect(sheet.verdict).toBe("right");
-    expect(sheet.title).toBe("Right call");
+    expect(sheet.result).toBe("correct");
+    expect(sheet.errorType).toBe("secure");
     expect(sheet.boxes).toEqual([
       { tone: "right", label: "Your choice", lines: [getStep("s1").options[1].text] },
     ]);
@@ -50,7 +51,8 @@ describe("answer sheet for a scenario step", () => {
   it("not the best action: your choice and the better choice, and the state change", () => {
     const sheet = stepSheet(getStep("s1"), step("s1", { optionId: "d" }));
     expect(sheet.verdict).toBe("wrong");
-    expect(sheet.title).toBe("Not the best action");
+    expect(sheet.result).toBe("wrong");
+    expect(sheet.errorType).toBe("misconception");
     expect(sheet.boxes.map((box) => [box.tone, box.label])).toEqual([
       ["wrong", "Your choice"],
       ["better", "Better choice"],
@@ -78,14 +80,15 @@ describe("answer sheet for a scenario step", () => {
     expect(sheet.points.some((point) => point.covered)).toBe(false);
   });
 
-  it("never carries an error type, a percentage or a score", () => {
+  it("has a result and an error type for every option, and never a percentage or a score", () => {
     for (const optionId of ["a", "b", "c", "d"]) {
       const sheet = stepSheet(getStep("s2"), step("s2", { optionId, explanation: "Hot door." }));
       const all = keys(sheet);
-      expect(all).not.toContain("errorType");
+      expect(["correct", "wrong"]).toContain(sheet.result);
+      expect(sheet.errorType).toBe(optionId === "c" ? "secure" : "misconception");
       expect(all).not.toContain("score");
       expect(all).not.toContain("percent");
-      expect(text(sheet)).not.toMatch(/misconception|knowledge gap|%/i);
+      expect(text(sheet)).not.toMatch(/%/);
     }
   });
 });
@@ -99,7 +102,9 @@ describe("answer sheet for a quiz question", () => {
       quiz(question.id, { response: { type: "single", optionId: question.answer } }),
     );
     expect(right.verdict).toBe("right");
-    expect(right.title).toBe("Correct");
+    expect(right.result).toBe("correct");
+    expect(right.errorType).toBe("secure");
+    expect(right.note).toBeNull();
     expect(right.boxes).toHaveLength(1);
     const other = question.options.find((option) => option.id !== question.answer)!;
     const wrong = questionSheet(
@@ -117,7 +122,7 @@ describe("answer sheet for a quiz question", () => {
       quiz("q-s1-3", { response: { type: "multiple", optionIds: ["a", "b", "c"] } }),
     );
     expect(sheet.verdict).toBe("partial");
-    expect(sheet.title).toBe("Partly right");
+    expect(sheet.result).toBe("partial");
     expect(sheet.detail).toBe("2 of 3 correct options chosen, 1 not correct");
     expect(sheet.boxes[1].lines).toHaveLength(3);
   });
@@ -148,14 +153,15 @@ describe("answer sheet for a quiz question", () => {
       getQuestion("q-s2-1"),
       quiz("q-s2-1", { response: { type: "text", text: "The back of my hand" } }),
     );
-    expect(right.title).toBe("Looks correct");
+    expect(right.result).toBe("correct");
     expect(right.boxes.map((box) => box.label)).toEqual(["Your answer", "Reference answer"]);
     const rejected = questionSheet(
       getQuestion("q-s2-1"),
       quiz("q-s2-1", { response: { type: "text", text: "With my knuckles" } }),
     );
     expect(rejected.verdict).toBe("noMatch");
-    expect(rejected.title).toBe("Doesn't match our answer. Yours might still be right.");
+    expect(rejected.result).toBe("wrong");
+    expect(rejected.note).toBe("Doesn't match our answer. Yours might still be right.");
     expect(rejected.canMarkCorrect).toBe(true);
   });
 
@@ -165,21 +171,25 @@ describe("answer sheet for a quiz question", () => {
       quiz("q-s2-1", { response: { type: "text", text: "With my knuckles" }, markedCorrect: true }),
     );
     expect(sheet.verdict).toBe("marked");
-    expect(sheet.title).toBe("Marked correct by you");
+    expect(sheet.result).toBe("correct");
+    expect(sheet.note).toBe("Marked correct by you");
     expect(sheet.canMarkCorrect).toBe(false);
   });
 
   it("short text skip path: I don't know shows the reference answer and no override", () => {
-    const sheet = questionSheet(
-      getQuestion("q-s2-1"),
-      quiz("q-s2-1", { response: { type: "text", text: "" }, dontKnow: true }),
-    );
+    const sheet = questionSheet(getQuestion("q-s2-1"), {
+      ...quiz("q-s2-1", { response: { type: "text", text: "" }, dontKnow: true }),
+      confidence: null,
+    });
     expect(sheet.verdict).toBe("dontKnow");
+    expect(sheet.result).toBe("wrong");
+    expect(sheet.errorType).toBeNull();
+    expect(sheet.note).toBe("You said you don't know");
     expect(sheet.boxes.map((box) => box.label)).toEqual(["Reference answer"]);
     expect(sheet.canMarkCorrect).toBe(false);
   });
 
-  it("never carries an error type, a percentage or a score for any question", () => {
+  it("shows the error type only with a confidence rating, and never a score", () => {
     questions.slice(0, 12).forEach((question) => {
       const response =
         question.type === "single"
@@ -191,8 +201,14 @@ describe("answer sheet for a quiz question", () => {
               : question.type === "text"
                 ? { type: "text" as const, text: "nothing" }
                 : { type: "truefalse" as const, value: true };
-      const all = keys(questionSheet(question, quiz(question.id, { response })));
-      expect(all).not.toContain("errorType");
+      const rated = questionSheet(question, quiz(question.id, { response }));
+      const unrated = questionSheet(question, {
+        ...quiz(question.id, { response }),
+        confidence: null,
+      });
+      expect(rated.errorType).not.toBeNull();
+      expect(unrated.errorType).toBeNull();
+      const all = keys(rated);
       expect(all).not.toContain("score");
       expect(all).not.toContain("percent");
     });

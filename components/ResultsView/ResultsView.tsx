@@ -5,6 +5,7 @@ import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
 import { Gradient } from "@/components/Gradient/Gradient";
+import { StatusRows } from "@/components/StatusRows/StatusRows";
 import { SourceChip } from "@/components/SourceChip/SourceChip";
 import { StatusBadge, StatusIcon, statuses } from "@/components/StatusBadge/StatusBadge";
 import { formatSelfCheck } from "@/lib/explanation-match";
@@ -46,6 +47,35 @@ function headline(results: ResultsKind, weakTopicCount: number): [string, string
             }[results.mode];
   if (weakTopicCount === 0) return [first, "Nothing to repeat this time."];
   return [first, `Review ${weakTopicCount} ${weakTopicCount === 1 ? "topic" : "topics"} below.`];
+}
+
+/** Share answered correctly, as a ring. The text next to it says the same in words. */
+function Ring({ correct, total }: { correct: number; total: number }) {
+  const radius = 29;
+  const length = 2 * Math.PI * radius;
+  const share = total === 0 ? 0 : correct / total;
+  return (
+    <svg
+      width="64"
+      height="64"
+      viewBox="0 0 64 64"
+      role="img"
+      aria-label={`${correct} of ${total} correct`}
+      className="shrink-0 -rotate-90"
+    >
+      <circle cx="32" cy="32" r={radius} fill="none" strokeWidth="6" className="stroke-border" />
+      <circle
+        cx="32"
+        cy="32"
+        r={radius}
+        fill="none"
+        strokeWidth="6"
+        strokeLinecap="round"
+        strokeDasharray={`${share * length} ${length}`}
+        className="stroke-correct"
+      />
+    </svg>
+  );
 }
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -109,34 +139,47 @@ export function ResultsView({
 
       {shortEnding && <p className="text-text-secondary">{shortEnding.continues}</p>}
 
-      <Card className="flex flex-col gap-2">
-        {quiz && (
-          <p className="px-1 pb-1 text-lg font-medium tabular-nums">
-            {formatPoints(totalScore(items))} of {items.length} points
-          </p>
-        )}
-        {[
-          { status: "correct" as const, label: "correct", count: correct },
-          {
-            status: "wrong" as const,
-            label: quiz ? "not fully correct" : "incorrect",
-            count: items.length - correct,
-          },
-        ].map((row) => (
-          <div
-            key={row.status}
-            className="flex min-h-14 items-center gap-4 rounded-panel bg-surface-muted px-3 py-2"
-          >
-            <span
-              className={`flex h-10 w-10 items-center justify-center rounded-panel ${statuses[row.status].className}`}
-            >
-              <StatusIcon status={row.status} size={18} />
-            </span>
-            <span className="flex-1 text-lg">
-              <span className="tabular-nums">{row.count}</span> {row.label}
-            </span>
+      <Card className="flex flex-col gap-4">
+        <div className="flex items-center gap-4">
+          <Ring correct={correct} total={items.length} />
+          <div className="flex flex-col">
+            <p className="text-lg font-medium">
+              <span className="tabular-nums">
+                {correct}/{items.length}
+              </span>{" "}
+              correct
+            </p>
+            {quiz && (
+              <p className="text-sm text-text-secondary tabular-nums">
+                {formatPoints(totalScore(items))} of {items.length} points
+              </p>
+            )}
           </div>
-        ))}
+        </div>
+        <div className="flex flex-col gap-2">
+          {(
+            [
+              { status: "correct", count: correct, tint: "bg-correct-bg", icon: "text-correct" },
+              {
+                status: "wrong",
+                count: items.length - correct,
+                tint: "bg-wrong-bg",
+                icon: "text-wrong",
+              },
+            ] as const
+          ).map((row) => (
+            <div
+              key={row.status}
+              className={`flex min-h-14 items-center gap-3 rounded-panel px-4 py-2 ${row.tint}`}
+            >
+              <span className={row.icon}>
+                <StatusIcon status={row.status} size={20} />
+              </span>
+              <span className="flex-1 text-lg font-medium tabular-nums">{row.count}</span>
+              <StatusBadge status={row.status} onTint />
+            </div>
+          ))}
+        </div>
       </Card>
 
       <Section title="Error types">
@@ -202,12 +245,13 @@ export function ResultsView({
           {items.map((item) => (
             <li key={item.id}>
               <Card className="flex flex-col gap-3">
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className={item.kind === "step" ? "font-serif text-lg" : "font-medium"}>
-                    {item.title}
-                  </h3>
-                  <StatusBadge status={item.errorType} />
-                </div>
+                <h3 className={item.kind === "step" ? "font-serif text-lg" : "font-medium"}>
+                  {item.title}
+                </h3>
+                <StatusRows
+                  result={item.correct ? "correct" : item.score > 0 ? "partial" : "wrong"}
+                  errorType={item.hasConfidence ? item.errorType : null}
+                />
                 <p className="text-sm">
                   <span className="text-text-secondary">
                     {item.kind === "step" ? "You chose: " : "Your answer: "}

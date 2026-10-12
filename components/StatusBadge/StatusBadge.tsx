@@ -3,16 +3,7 @@ import type { LucideIcon } from "lucide-react";
 import type { ErrorType } from "@/lib/scoring";
 
 export type Status =
-  | ErrorType
-  | "correct"
-  | "wrong"
-  | "partial"
-  | "ready"
-  | "processing"
-  | "failed"
-  | "looks_correct"
-  | "no_match"
-  | "marked";
+  ErrorType | "correct" | "wrong" | "partial" | "ready" | "processing" | "failed" | "marked";
 
 const icons = {
   check: Check,
@@ -35,29 +26,27 @@ export const statuses: Record<
     icon: "half",
     className: "border border-border bg-surface-muted text-text-secondary",
   },
-  looks_correct: { label: "Looks correct", icon: "check", className: "bg-correct-bg text-correct" },
-  no_match: {
-    label: "Doesn't match our answer",
-    icon: "cross",
-    className: "bg-wrong-bg text-wrong",
-  },
   marked: {
     label: "Marked correct by you",
     icon: "user",
     className: "border border-border bg-surface-muted text-text-secondary",
   },
-  ready: { label: "Ready", icon: "check", className: "bg-correct-bg text-correct" },
+  ready: {
+    label: "Ready",
+    icon: "check",
+    className: "border border-border bg-surface-muted text-text-secondary",
+  },
   processing: {
     label: "Processing",
     icon: "clock",
     className: "border border-border bg-surface-muted text-text-secondary",
   },
-  failed: { label: "Failed", icon: "cross", className: "bg-wrong-bg text-wrong" },
+  failed: { label: "Failed", icon: "cross", className: "bg-caution-bg text-caution" },
   secure: {
     label: "Secure",
     description: "Right answer, high confidence",
     icon: "check",
-    className: "bg-correct-bg text-correct",
+    className: "bg-secure-bg text-secure",
   },
   guess: {
     label: "Guess",
@@ -75,7 +64,7 @@ export const statuses: Record<
     label: "Misconception",
     description: "Wrong answer, high confidence",
     icon: "cross",
-    className: "bg-wrong-bg text-wrong",
+    className: "bg-misconception-bg text-misconception",
   },
 };
 
@@ -84,12 +73,21 @@ export function StatusIcon({ status, size = 14 }: { status: Status; size?: numbe
   return <Icon size={size} strokeWidth={2} aria-hidden="true" />;
 }
 
-/** Icon + label + colour. Never colour alone. */
-export function StatusBadge({ status }: { status: Status }) {
+const statusText: Partial<Record<Status, string>> = {
+  correct: "text-correct",
+  wrong: "text-wrong",
+};
+
+/**
+ * Icon + label + colour. Never colour alone. onTint: a white chip, for the tinted Correct and
+ * Incorrect rows on results, so the chip stands out from the row.
+ */
+export function StatusBadge({ status, onTint = false }: { status: Status; onTint?: boolean }) {
   const { label, className } = statuses[status];
+  const style = onTint ? `bg-surface ${statusText[status] ?? "text-text"}` : className;
   return (
     <span
-      className={`inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${className}`}
+      className={`inline-flex w-fit shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${style}`}
     >
       <StatusIcon status={status} />
       {label}

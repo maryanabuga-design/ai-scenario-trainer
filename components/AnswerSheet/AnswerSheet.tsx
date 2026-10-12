@@ -1,29 +1,16 @@
 "use client";
 
-import { Check, Contrast, Minus, UserCheck, X } from "lucide-react";
+import { Check, Contrast, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/Button/Button";
 import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
 import { SourceChip } from "@/components/SourceChip/SourceChip";
-import type {
-  AnswerBox,
-  BoxTone,
-  QuestionVerdict,
-  SheetContent,
-  StepSheet,
-} from "@/lib/answer-sheet";
+import { statuses } from "@/components/StatusBadge/StatusBadge";
+import { StatusRows } from "@/components/StatusRows/StatusRows";
+import type { AnswerBox, BoxTone, SheetContent, StepSheet } from "@/lib/answer-sheet";
 import { formatSelfCheck } from "@/lib/explanation-match";
-
-const verdictIcons: Record<StepSheet["verdict"] | QuestionVerdict, [LucideIcon, string]> = {
-  right: [Check, "text-correct"],
-  wrong: [X, "text-wrong"],
-  noMatch: [X, "text-wrong"],
-  partial: [Contrast, "text-text-secondary"],
-  marked: [UserCheck, "text-text-secondary"],
-  dontKnow: [Minus, "text-text-secondary"],
-};
 
 const boxStyles: Record<BoxTone, { className: string; icon?: [LucideIcon, string] }> = {
   right: { className: "border border-correct", icon: [Check, "text-correct"] },
@@ -158,7 +145,13 @@ export function AnswerSheet({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const [announced, setAnnounced] = useState("");
-  const [Icon, color] = verdictIcons[content.verdict];
+  const announcement = [
+    `Result: ${statuses[content.result].label}`,
+    content.errorType && `Error type: ${statuses[content.errorType].label}`,
+    content.kind === "question" && content.note,
+  ]
+    .filter(Boolean)
+    .join(". ");
 
   // Open as a modal (focus stays inside, the page behind is inert), focus the title and
   // announce the verdict. Escape and the scrim do not close it: only Continue does.
@@ -172,9 +165,9 @@ export function AnswerSheet({
   }, [inline]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setAnnounced(content.title), 100);
+    const timer = setTimeout(() => setAnnounced(announcement), 100);
     return () => clearTimeout(timer);
-  }, [content.title]);
+  }, [announcement]);
 
   const body = (
     <>
@@ -182,20 +175,17 @@ export function AnswerSheet({
         <span className="h-1 w-9 rounded-full bg-border-strong" />
       </div>
       <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pt-3 pb-6">
-        <h2
-          ref={titleRef}
-          id="answer-sheet-title"
-          tabIndex={-1}
-          className="flex items-start gap-2 text-xl leading-tight font-medium"
-        >
-          <Icon
-            size={24}
-            strokeWidth={2}
-            aria-hidden="true"
-            className={`mt-0.5 shrink-0 ${color}`}
+        <div className="flex flex-col gap-1">
+          <StatusRows
+            result={content.result}
+            errorType={content.errorType}
+            titleId="answer-sheet-title"
+            titleRef={titleRef}
           />
-          {content.title}
-        </h2>
+          {content.kind === "question" && content.note && (
+            <p className="text-sm text-text-secondary">{content.note}</p>
+          )}
+        </div>
         <p role="status" className="sr-only">
           {announced}
         </p>

@@ -26,6 +26,8 @@ export type ScoredItem = {
   score: number;
   correct: boolean;
   errorType: ErrorType;
+  /** False for a quiz answer given without a confidence rating: then only the result is shown. */
+  hasConfidence: boolean;
   effects: Effects;
   yourAnswer: string;
   correctAnswer: string;
@@ -49,6 +51,7 @@ export function scoreStep(step: Step, optionId: string, confidence: Confidence):
     score: option.correct ? 1 : 0,
     correct: option.correct,
     errorType: errorType(option.correct, confidence),
+    hasConfidence: true,
     effects: option.effects ?? {},
     yourAnswer: option.text,
     correctAnswer: best.text,

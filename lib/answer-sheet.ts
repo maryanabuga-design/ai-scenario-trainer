@@ -4,11 +4,12 @@ import { describeEffects } from "@/lib/outcome";
 import { describeAnswer, describeResponse, scoreQuestion, scoreResponse } from "@/lib/quiz";
 import type { Choice, Question, Response } from "@/lib/quiz";
 import type { Step } from "@/lib/scenario";
+import type { ErrorType } from "@/lib/scoring";
 import type { Answer, QuizAnswer } from "@/lib/session";
 
 /**
- * What the answer sheet shows right after an answer. On purpose there is no error type, no
- * percentage and no score here: those belong to the final analysis on the results screen.
+ * What the answer sheet shows right after an answer: the result and error type as status rows,
+ * the answers, the why and, for a step, what happened. Never a percentage, points or a score.
  */
 
 /** right: a check and a solid green outline; wrong: a cross; better: a check and a dashed outline. */
@@ -24,10 +25,13 @@ export type AnswerBox = {
 
 export type SheetPoint = { text: string; covered: boolean };
 
+export type SheetResult = "correct" | "wrong" | "partial";
+
 export type StepSheet = {
   kind: "step";
   verdict: "right" | "wrong";
-  title: "Right call" | "Not the best action";
+  result: SheetResult;
+  errorType: ErrorType;
   boxes: AnswerBox[];
   why: string[];
   sources: string[];
@@ -44,7 +48,11 @@ export type QuestionVerdict = "right" | "partial" | "wrong" | "noMatch" | "marke
 export type QuestionSheet = {
   kind: "question";
   verdict: QuestionVerdict;
-  title: string;
+  result: SheetResult;
+  /** Null without a confidence rating: then only the Result row is shown. */
+  errorType: ErrorType | null;
+  /** Short text only: "Doesn't match our answer. Yours might still be right." and the like. */
+  note: string | null;
   boxes: AnswerBox[];
   /** How many are right, for multiple choice and ordering ("2 of 3 correct options chosen"). */
   detail: string | null;
@@ -56,10 +64,7 @@ export type QuestionSheet = {
 
 export type SheetContent = StepSheet | QuestionSheet;
 
-export const questionTitles: Record<QuestionVerdict, string> = {
-  right: "Correct",
-  partial: "Partly right",
-  wrong: "Not correct",
+const notes: Partial<Record<QuestionVerdict, string>> = {
   noMatch: "Doesn't match our answer. Yours might still be right.",
   marked: "Marked correct by you",
   dontKnow: "You said you don't know",
@@ -79,7 +84,8 @@ export function stepSheet(step: Step, answer: Answer): StepSheet {
   return {
     kind: "step",
     verdict: feedback.correct ? "right" : "wrong",
-    title: feedback.correct ? "Right call" : "Not the best action",
+    result: feedback.correct ? "correct" : "wrong",
+    errorType: feedback.errorType,
     boxes: feedback.correct
       ? [{ tone: "right", label: "Your choice", lines: [feedback.chosen.text] }]
       : [
@@ -175,7 +181,9 @@ export function questionSheet(question: Question, answer: QuizAnswer): QuestionS
   return {
     kind: "question",
     verdict,
-    title: verdict === "right" && text ? "Looks correct" : questionTitles[verdict],
+    result: scored.correct ? "correct" : verdict === "partial" ? "partial" : "wrong",
+    errorType: scored.hasConfidence ? scored.errorType : null,
+    note: notes[verdict] ?? null,
     boxes,
     detail: countDetail(question, response),
     why: [question.why],

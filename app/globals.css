@@ -18,6 +18,10 @@
   --correct-bg: #e8f3ec;
   --wrong-bg: #fbeae8;
   --caution-bg: #f8efd9;
+  --secure: #1d5a85;
+  --secure-bg: #e3eef7;
+  --misconception: #7a2e6b;
+  --misconception-bg: #f5e6f1;
 
   --tag-yellow: #f6efa6;
   --tag-peach: #fad6c2;
@@ -47,6 +51,10 @@
   --color-correct-bg: var(--correct-bg);
   --color-wrong-bg: var(--wrong-bg);
   --color-caution-bg: var(--caution-bg);
+  --color-secure: var(--secure);
+  --color-secure-bg: var(--secure-bg);
+  --color-misconception: var(--misconception);
+  --color-misconception-bg: var(--misconception-bg);
   --color-tag-yellow: var(--tag-yellow);
   --color-tag-peach: var(--tag-peach);
   --color-tag-blue: var(--tag-blue);
