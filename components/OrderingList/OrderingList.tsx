@@ -125,10 +125,10 @@ export function OrderingList({
               >
                 <GripVertical size={20} strokeWidth={2} aria-hidden="true" />
               </button>
-              <span className="w-6 shrink-0 text-sm text-text-secondary tabular-nums">
+              <span className="type-small w-6 shrink-0 text-text-secondary tabular-nums">
                 {index + 1}.
               </span>
-              <span className="flex-1 text-base">{item.text}</span>
+              <span className="type-body flex-1">{item.text}</span>
             </li>
           );
         })}

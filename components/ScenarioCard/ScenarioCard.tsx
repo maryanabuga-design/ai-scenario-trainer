@@ -26,9 +26,9 @@ export function ScenarioCard({
           <ArrowRight size={20} strokeWidth={2} />
         </span>
       </span>
-      <span className="text-lg leading-snug font-semibold">{title}</span>
+      <span className="type-item-title">{title}</span>
       {lines.map((line) => (
-        <span key={line} className="text-sm text-text-secondary">
+        <span key={line} className="type-small text-text-secondary">
           {line}
         </span>
       ))}

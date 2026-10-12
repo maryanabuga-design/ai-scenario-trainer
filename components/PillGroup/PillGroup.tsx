@@ -14,14 +14,14 @@ export function PillGroup<T extends string | number>({
 }) {
   return (
     <fieldset className="flex flex-col gap-3">
-      <legend className="mb-3 font-medium">{legend}</legend>
+      <legend className="type-body-strong mb-3">{legend}</legend>
       <div className="flex flex-wrap gap-2">
         {options.map((option) => {
           const checked = value === option.value;
           return (
             <label
               key={String(option.value)}
-              className={`inline-flex min-h-11 items-center rounded-full border px-4 text-sm has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${
+              className={`inline-flex min-h-11 items-center rounded-full border px-4 type-small has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${
                 option.disabled
                   ? "cursor-not-allowed border-transparent bg-surface-muted text-text-secondary"
                   : checked

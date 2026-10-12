@@ -50,19 +50,19 @@ export function SourceSheetProvider({
         {section && (
           <div className="flex flex-col gap-4 px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
             <div className="flex items-start justify-between gap-4">
-              <h2 id="source-sheet-title" className="font-semibold text-xl">
+              <h2 id="source-sheet-title" className="type-card-title">
                 {section.id}. {section.title}
               </h2>
               <button
                 type="button"
                 onClick={() => dialogRef.current?.close()}
-                className="-mt-2 -mr-2 min-h-11 min-w-11 rounded-full px-3 text-base text-text hover:underline"
+                className="type-body -mt-2 -mr-2 min-h-11 min-w-11 rounded-full px-3 text-text hover:underline"
               >
                 Close
               </button>
             </div>
-            <p className="text-sm text-text-secondary">Guide · {section.id}</p>
-            <ul className="flex list-disc flex-col gap-2 pl-5 text-base">
+            <p className="type-small text-text-secondary">Guide · {section.id}</p>
+            <ul className="type-body flex list-disc flex-col gap-2 pl-5">
               {section.lines.map((line) => (
                 <li key={line}>{line}</li>
               ))}

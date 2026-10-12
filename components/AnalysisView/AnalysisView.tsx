@@ -19,9 +19,7 @@ import { analysisOrder, groupByErrorType, weakItems } from "@/lib/scoring";
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex flex-col gap-1">
-      <h4 className="text-xs font-medium tracking-[0.06em] text-text-secondary uppercase">
-        {label}
-      </h4>
+      <h4 className="type-label text-text-secondary">{label}</h4>
       {children}
     </div>
   );
@@ -33,7 +31,7 @@ function AnswerCard({ item }: { item: ScoredItem }) {
   const change = step ? describeEffects(item.id, item.effects) : [];
   return (
     <article className="flex flex-col gap-4 rounded-card bg-soft-card p-5 shadow-(--soft-shadow)">
-      <h3 className="text-lg leading-snug font-semibold">{item.title}</h3>
+      <h3 className="type-item-title">{item.title}</h3>
       <StatusRows
         result={item.correct ? "correct" : item.score > 0 ? "partial" : "wrong"}
         errorType={item.hasConfidence ? item.errorType : null}
@@ -48,7 +46,7 @@ function AnswerCard({ item }: { item: ScoredItem }) {
         </Field>
       )}
       {item.kind === "question" && item.score > 0 && item.score < 1 && (
-        <p className="text-sm text-text-secondary tabular-nums">
+        <p className="type-small text-text-secondary tabular-nums">
           Partly correct: {formatPoints(item.score)} of 1 point
         </p>
       )}
@@ -65,7 +63,9 @@ function AnswerCard({ item }: { item: ScoredItem }) {
       {step && item.consequence && (
         <Field label="What happened">
           <p>{item.consequence}</p>
-          {change.length > 0 && <p className="text-sm text-text-secondary">{change.join(" · ")}</p>}
+          {change.length > 0 && (
+            <p className="type-small text-text-secondary">{change.join(" · ")}</p>
+          )}
         </Field>
       )}
       {step && <AskAiButton step={getStep(item.id)} phase="feedback" variant="link" />}
@@ -96,7 +96,7 @@ export function AnalysisView({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col items-start gap-4">
         <CircleBackButton href={backHref} label="Back to results" />
-        <h1 className="text-2xl leading-tight font-semibold">{analysisTitles[filter]}</h1>
+        <h1 className="type-page-title">{analysisTitles[filter]}</h1>
       </div>
       {shown.length === 0 && <p className="text-text-secondary">No answers here.</p>}
       {groupByErrorType(shown, analysisOrder).map((group) => (
@@ -107,7 +107,7 @@ export function AnalysisView({
         >
           <h2 id={`analysis-${group.type}`} className="flex items-center gap-2">
             <StatusBadge status={group.type} />
-            <span className="text-sm text-text-secondary tabular-nums">
+            <span className="type-small text-text-secondary tabular-nums">
               {group.items.length} {group.items.length === 1 ? "answer" : "answers"}
             </span>
           </h2>

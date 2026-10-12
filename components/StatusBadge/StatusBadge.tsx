@@ -84,7 +84,7 @@ export function StatusBadge({ status, onTint = false }: { status: Status; onTint
   const style = onTint ? `bg-surface ${statusText[status] ?? "text-text"}` : className;
   return (
     <span
-      className={`inline-flex w-fit shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap ${style}`}
+      className={`inline-flex w-fit shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 type-caption whitespace-nowrap ${style}`}
     >
       <StatusIcon status={status} />
       {label}

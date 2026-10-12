@@ -38,7 +38,7 @@ function Ring({ correct, total }: { correct: number; total: number }) {
         {all ? (
           <Check size={32} strokeWidth={2} className="text-ring" />
         ) : (
-          <span className="text-xl font-semibold text-text tabular-nums">{correct}</span>
+          <span className="type-card-title text-text tabular-nums">{correct}</span>
         )}
       </span>
     </div>
@@ -86,10 +86,8 @@ function ResultRow({
       >
         <Icon size={20} strokeWidth={2} aria-hidden="true" />
       </span>
-      <span className="flex-1 text-2xl text-text tabular-nums">{count}</span>
-      <span className={`text-xs font-medium tracking-[0.06em] uppercase ${style.ink}`}>
-        {style.label}
-      </span>
+      <span className="type-numeral flex-1 text-text tabular-nums">{count}</span>
+      <span className={`type-label ${style.ink}`}>{style.label}</span>
       {count > 0 && (
         <>
           <span className="sr-only">, show these answers</span>
@@ -133,11 +131,11 @@ export function ProgressCard({
       <div className="flex items-center gap-4">
         <Ring correct={correct} total={total} />
         <div className="flex min-w-0 flex-col gap-1">
-          <h2 id="progress-title" className="text-xl font-semibold tabular-nums">
+          <h2 id="progress-title" className="type-card-title tabular-nums">
             {correct}/{total} correct
           </h2>
-          <p className="text-sm text-text-secondary">{sentence}</p>
-          {points && <p className="text-sm text-text-secondary tabular-nums">{points}</p>}
+          <p className="type-small text-text-secondary">{sentence}</p>
+          {points && <p className="type-small text-text-secondary tabular-nums">{points}</p>}
         </div>
       </div>
       <div className="flex flex-col gap-2">

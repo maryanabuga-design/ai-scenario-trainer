@@ -28,7 +28,7 @@ function TextAction({ onClick, children }: { onClick: () => void; children: stri
     <button
       type="button"
       onClick={onClick}
-      className="min-h-11 rounded-full px-3 text-base underline decoration-1 underline-offset-4 hover:decoration-2"
+      className="type-body min-h-11 rounded-full px-3 underline decoration-1 underline-offset-4 hover:decoration-2"
     >
       {children}
     </button>
@@ -60,13 +60,13 @@ export function OnboardingView({
         <div className="flex min-h-11 items-center justify-between">
           <div className="-ml-3">{step > 0 && <TextAction onClick={onBack}>Back</TextAction>}</div>
           <div className="flex items-center gap-3">
-            <span className="text-sm tabular-nums">Step {step + 1} of 3</span>
+            <span className="type-small tabular-nums">Step {step + 1} of 3</span>
             <div className="-mr-3">
               <TextAction onClick={onSkip}>Skip</TextAction>
             </div>
           </div>
         </div>
-        <h1 className="text-3xl leading-tight font-medium">
+        <h1 className="type-display">
           {first} <span className="text-text-secondary">{second}</span>
         </h1>
       </Gradient>
@@ -80,14 +80,14 @@ export function OnboardingView({
           <ol className="flex flex-col gap-4">
             {howItWorks.map((point, index) => (
               <li key={point} className="flex gap-4">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface font-medium tabular-nums">
+                <span className="type-caption flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface tabular-nums">
                   {index + 1}
                 </span>
                 <span className="pt-1">{point}</span>
               </li>
             ))}
           </ol>
-          <p className="text-sm text-text-secondary">
+          <p className="type-small text-text-secondary">
             AI behavior is simulated in this prototype: every answer comes from a prepared scenario
             built from the guide.
           </p>
@@ -99,9 +99,9 @@ export function OnboardingView({
           <div>
             <Tag tone="yellow">Scenario</Tag>
           </div>
-          <h2 className="font-semibold text-xl">{scenario.title}</h2>
+          <h2 className="type-card-title">{scenario.title}</h2>
           <p>{scenario.steps[0].narrative}</p>
-          <p className="text-sm text-text-secondary">
+          <p className="type-small text-text-secondary">
             <span className="tabular-nums">{sessionLengths.full.stepIds.length}</span> decisions,
             about <span className="tabular-nums">{sessionLengths.full.minutes}</span> min, or a
             short session of{" "}

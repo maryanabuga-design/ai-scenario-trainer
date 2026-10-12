@@ -7,7 +7,7 @@ export type Result = "correct" | "wrong" | "partial";
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <>
-      <span className="text-sm text-text-secondary">{label}</span>
+      <span className="type-small text-text-secondary">{label}</span>
       {children}
     </>
   );
@@ -39,7 +39,7 @@ export function StatusRows({
   return (
     <div className="flex flex-col divide-y divide-border">
       {titleId ? (
-        <h2 ref={titleRef} id={titleId} tabIndex={-1} className={`${rowClass} font-normal`}>
+        <h2 ref={titleRef} id={titleId} tabIndex={-1} className={rowClass}>
           {resultRow}
         </h2>
       ) : (

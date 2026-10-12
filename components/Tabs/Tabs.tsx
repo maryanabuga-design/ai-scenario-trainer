@@ -61,9 +61,9 @@ export function Tabs<T extends string>({
             tabIndex={selected ? 0 : -1}
             onClick={() => onChange(tab.id)}
             onKeyDown={(event) => onKeyDown(event, index)}
-            className={`-mb-px min-h-11 border-b-2 text-base ${
+            className={`-mb-px type-body min-h-11 border-b-2 ${
               selected
-                ? "border-text font-medium text-text"
+                ? "type-body-strong border-text text-text"
                 : "border-transparent text-text-secondary hover:text-text"
             }`}
           >

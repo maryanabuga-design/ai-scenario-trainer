@@ -160,8 +160,8 @@ export function QuizQuestion({
       <SessionTopBar index={index} total={total} unit={unit} />
       <div className="flex flex-col items-start gap-3">
         <Tag tone="blue">{`Guide ${question.section}`}</Tag>
-        <h1 className="text-lg font-medium">{question.question}</h1>
-        <p className="text-sm text-text-secondary">{hint}</p>
+        <h1 className="type-item-title">{question.question}</h1>
+        <p className="type-small text-text-secondary">{hint}</p>
       </div>
 
       <Answer
@@ -200,7 +200,7 @@ export function QuizQuestion({
       {!submitted && question.type !== "text" && (
         <ActionBar>
           {!answered && (
-            <p className="text-center text-sm text-text-secondary">
+            <p className="type-small text-center text-text-secondary">
               Answer the question to continue.
             </p>
           )}

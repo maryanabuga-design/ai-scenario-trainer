@@ -47,8 +47,8 @@ export function DecisionStep({
     <div className="flex flex-col gap-6">
       <SessionTopBar index={index} total={total} unit={unit} />
       <section className="flex flex-col gap-3">
-        <h1 className="font-semibold text-2xl">{step.title}</h1>
-        <p className="text-lg">{step.narrative}</p>
+        <h1 className="type-page-title">{step.title}</h1>
+        <p className="type-body">{step.narrative}</p>
         <div className="flex flex-wrap gap-2">
           {step.sources.map((sectionId) => (
             <SourceChip key={sectionId} sectionId={sectionId} />
@@ -58,7 +58,7 @@ export function DecisionStep({
       </section>
 
       <fieldset className="flex flex-col gap-3">
-        <legend className="mb-3 text-lg font-medium">{step.question}</legend>
+        <legend className="type-item-title mb-3">{step.question}</legend>
         {step.options.map((option) => (
           <ChoiceCard
             key={option.id}
@@ -81,7 +81,7 @@ export function DecisionStep({
       )}
 
       <ActionBar>
-        {hint && <p className="text-center text-sm text-text-secondary">{hint}</p>}
+        {hint && <p className="type-small text-center text-text-secondary">{hint}</p>}
         <Button disabled={hint !== null} onClick={onSubmit}>
           Continue
         </Button>

@@ -19,11 +19,7 @@ const boxStyles: Record<BoxTone, { className: string; icon?: [LucideIcon, string
 };
 
 function Label({ children }: { children: ReactNode }) {
-  return (
-    <h3 className="text-xs font-medium tracking-[0.04em] text-text-secondary uppercase">
-      {children}
-    </h3>
-  );
+  return <h3 className="type-label text-text-secondary">{children}</h3>;
 }
 
 function Box({ box }: { box: AnswerBox }) {
@@ -115,7 +111,7 @@ export function AnswerSheet({
             titleRef={titleRef}
           />
           {content.kind === "question" && content.note && (
-            <p className="text-sm text-text-secondary">{content.note}</p>
+            <p className="type-small text-text-secondary">{content.note}</p>
           )}
         </div>
         <p role="status" className="sr-only">
@@ -127,7 +123,7 @@ export function AnswerSheet({
             <Box key={box.label} box={box} />
           ))}
           {content.kind === "question" && content.detail && (
-            <p className="text-sm text-text-secondary">{content.detail}</p>
+            <p className="type-small text-text-secondary">{content.detail}</p>
           )}
           {content.kind === "question" && content.canMarkCorrect && onMarkCorrect && (
             <div>
@@ -168,7 +164,7 @@ export function AnswerSheet({
             <Label>What happened</Label>
             <p>{content.whatHappened}</p>
             {content.stateChange.length > 0 && (
-              <p className="text-sm text-text-secondary">{content.stateChange.join(" · ")}</p>
+              <p className="type-small text-text-secondary">{content.stateChange.join(" · ")}</p>
             )}
           </section>
         )}

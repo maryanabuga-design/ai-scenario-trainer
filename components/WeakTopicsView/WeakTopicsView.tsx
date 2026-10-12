@@ -45,8 +45,8 @@ function TopicOption({
       onChange={onToggle}
     >
       <span className="flex flex-col gap-0.5">
-        <span className="font-medium">{name}</span>
-        <span className="text-xs text-text-secondary">
+        <span className="type-body-strong">{name}</span>
+        <span className="type-small text-text-secondary">
           {materialForSection(topic.sectionId)} · {topic.sectionId} ·{" "}
           <span className="tabular-nums">{topic.items.length}</span> to repeat
         </span>
@@ -71,7 +71,7 @@ export function WeakTopicsView({
     return (
       <div className="flex flex-col items-start gap-6">
         <BackLink href="/" label="Back to Home" />
-        <h1 className="font-semibold text-2xl">Weak topics</h1>
+        <h1 className="type-page-title">Weak topics</h1>
         <div className="w-full">
           <EmptyState
             icon={ListChecks}
@@ -93,7 +93,7 @@ export function WeakTopicsView({
     <div className="flex flex-col gap-6">
       <BackLink href="/" label="Back to Home" />
       <div className="flex flex-col gap-1">
-        <h1 className="font-semibold text-2xl">Weak topics</h1>
+        <h1 className="type-page-title">Weak topics</h1>
         <p className="text-text-secondary">
           Choose the topics to repeat. A repeat round brings back their steps and questions.
         </p>
@@ -104,7 +104,7 @@ export function WeakTopicsView({
         if (group.length === 0) return null;
         return (
           <fieldset key={type} className="flex flex-col gap-2">
-            <legend className="mb-3 flex items-center gap-2 font-medium">
+            <legend className="type-body-strong mb-3 flex items-center gap-2">
               <span className={iconColours[type]}>
                 <StatusIcon status={type} size={16} />
               </span>
@@ -124,7 +124,7 @@ export function WeakTopicsView({
 
       <ActionBar>
         {count === 0 && (
-          <p className="text-center text-sm text-text-secondary">
+          <p className="type-small text-center text-text-secondary">
             Choose at least one topic to repeat.
           </p>
         )}

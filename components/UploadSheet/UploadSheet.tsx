@@ -43,17 +43,17 @@ export function UploadPanel({
     <div className="flex flex-col gap-5 px-4 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col">
-          <h2 id="upload-title" className="font-semibold text-xl">
+          <h2 id="upload-title" className="type-card-title">
             Upload a file
           </h2>
-          <p className="text-sm text-text-secondary">
+          <p className="type-small text-text-secondary">
             Upload is simulated for this prototype. Choose a sample file.
           </p>
         </div>
         <button
           type="button"
           onClick={onClose}
-          className="-mt-2 -mr-2 min-h-11 min-w-11 rounded-full px-3 text-base text-text underline decoration-1 underline-offset-4 hover:decoration-2"
+          className="type-body -mt-2 -mr-2 min-h-11 min-w-11 rounded-full px-3 text-text underline decoration-1 underline-offset-4 hover:decoration-2"
         >
           Close
         </button>
@@ -70,9 +70,9 @@ export function UploadPanel({
               >
                 <FileCover type={file.name.endsWith(".jpg") ? "Image" : "PDF"} />
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <span className="font-medium break-words">{file.name}</span>
-                  <span className="text-sm text-text-secondary">{formatSize(file.size)}</span>
-                  <span className="text-sm text-text-secondary">{file.summary}</span>
+                  <span className="type-body-strong break-words">{file.name}</span>
+                  <span className="type-small text-text-secondary">{formatSize(file.size)}</span>
+                  <span className="type-small text-text-secondary">{file.summary}</span>
                 </span>
                 <ChevronRight
                   size={20}
@@ -88,8 +88,8 @@ export function UploadPanel({
 
       {stage.kind === "progress" && (
         <div className="flex flex-col gap-3" role="status" aria-live="polite">
-          <p className="font-medium break-all">{stage.file.name}</p>
-          <p className="text-sm text-text-secondary">
+          <p className="type-body-strong break-all">{stage.file.name}</p>
+          <p className="type-small text-text-secondary">
             {formatSize(stage.file.size)} · Checking the file
           </p>
           <div
@@ -102,14 +102,14 @@ export function UploadPanel({
           >
             <div className="h-full bg-primary" style={{ width: `${stage.percent}%` }} />
           </div>
-          <p className="text-sm tabular-nums">{stage.percent}%</p>
+          <p className="type-small tabular-nums">{stage.percent}%</p>
         </div>
       )}
 
       {stage.kind === "done" && (
         <div className="flex flex-col gap-4" role="status" aria-live="polite">
           <div className="flex flex-col gap-2">
-            <p className="font-medium break-all">{stage.material.name}</p>
+            <p className="type-body-strong break-all">{stage.material.name}</p>
             <StatusBadge status={stage.material.status} />
           </div>
           {stage.material.status === "failed" ? (

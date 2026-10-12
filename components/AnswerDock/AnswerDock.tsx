@@ -86,12 +86,12 @@ export function AnswerDock({
           onKeyDown={onKeyDown}
           placeholder={placeholder}
           autoComplete="off"
-          className="dock-field min-h-11 min-w-0 flex-1 resize-none bg-transparent py-2.5 text-base placeholder:text-text-secondary"
+          className="type-body dock-field min-h-11 min-w-0 flex-1 resize-none bg-transparent py-2.5 placeholder:text-text-secondary"
         />
         <button
           type="button"
           onClick={onDontKnow}
-          className="min-h-11 shrink-0 px-2 text-sm text-text underline decoration-1 underline-offset-4 hover:decoration-2"
+          className="type-small min-h-11 shrink-0 px-2 text-text underline decoration-1 underline-offset-4 hover:decoration-2"
         >
           I don&apos;t know
         </button>

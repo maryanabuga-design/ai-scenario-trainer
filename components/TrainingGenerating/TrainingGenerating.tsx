@@ -35,14 +35,14 @@ export function TrainingGenerating({
         <button
           type="button"
           onClick={onCancel}
-          className="min-h-11 rounded-full px-3 text-base underline decoration-1 underline-offset-4 hover:decoration-2"
+          className="type-body min-h-11 rounded-full px-3 underline decoration-1 underline-offset-4 hover:decoration-2"
         >
           Cancel
         </button>
       </div>
       <div className="flex flex-col gap-2">
-        <h1 className="font-semibold text-2xl">Creating your training</h1>
-        <p className="text-sm text-text-secondary">
+        <h1 className="type-page-title">Creating your training</h1>
+        <p className="type-small text-text-secondary">
           Generation is simulated for this prototype. Prepared content is shown.
         </p>
       </div>
@@ -58,7 +58,7 @@ export function TrainingGenerating({
         >
           <div className="h-full bg-primary" style={{ width: `${percent}%` }} />
         </div>
-        <p className="text-sm tabular-nums">{percent}%</p>
+        <p className="type-small tabular-nums">{percent}%</p>
       </div>
 
       <ol className="flex flex-col divide-y divide-border rounded-card bg-card shadow-(--card-shadow) px-4">
@@ -78,8 +78,8 @@ export function TrainingGenerating({
                 {step.label}
               </span>
               <span
-                className={`inline-flex shrink-0 items-center gap-1.5 text-sm ${
-                  state === "done" ? "font-medium text-correct" : "text-text-secondary"
+                className={`inline-flex shrink-0 items-center gap-1.5 type-small ${
+                  state === "done" ? "text-correct" : "text-text-secondary"
                 }`}
               >
                 {state === "done" && <StatusIcon status="correct" size={14} />}

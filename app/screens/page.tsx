@@ -50,7 +50,7 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
       id={title.toLowerCase().replace(/ /g, "-")}
       className="flex scroll-mt-4 flex-col gap-3"
     >
-      <h2 className="font-semibold text-xl">{title}</h2>
+      <h2 className="type-card-title">{title}</h2>
       <div className="flex gap-6 overflow-x-auto pb-2">{children}</div>
     </section>
   );
@@ -77,16 +77,16 @@ function FoundationKit() {
   return (
     <>
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
-        <h1 className="font-semibold text-2xl">Foundation kit</h1>
+        <h1 className="type-page-title">Foundation kit</h1>
         <Gradient tone="warm" className="flex h-32 items-end rounded-card p-4">
-          <p className="font-semibold text-xl">Warm gradient zone</p>
+          <p className="type-card-title">Warm gradient zone</p>
         </Gradient>
         <Gradient tone="cool" className="flex h-32 items-end rounded-card p-4">
-          <p className="font-semibold text-xl">Cool gradient zone</p>
+          <p className="type-card-title">Cool gradient zone</p>
         </Gradient>
         <Card>
-          <p className="text-sm text-text-secondary">Card</p>
-          <p className="font-semibold text-xl">White card, 24px radius</p>
+          <p className="type-small text-text-secondary">Card</p>
+          <p className="type-card-title">White card, 24px radius</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <Tag tone="yellow">Scenario</Tag>
             <Tag tone="peach">Short</Tag>
@@ -117,8 +117,8 @@ export default function Screens() {
     <SourceSheetProvider sections={loadAllSections()}>
       <main className="flex flex-col gap-10 bg-surface-muted p-8">
         <header className="flex flex-col gap-1">
-          <h1 className="font-semibold text-2xl">Screen review</h1>
-          <p className="text-sm text-text-secondary">
+          <h1 className="type-page-title">Screen review</h1>
+          <p className="type-small text-text-secondary">
             Development only. Every planned screen at 390 by 844. Dashed frames are not built yet.
           </p>
         </header>

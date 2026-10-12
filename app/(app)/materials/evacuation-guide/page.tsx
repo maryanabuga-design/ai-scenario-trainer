@@ -24,8 +24,8 @@ export default function MaterialPage() {
           <div>
             <Tag tone="yellow">Scenario</Tag>
           </div>
-          <h2 className="font-semibold text-xl">{scenario.title}</h2>
-          <p className="text-sm text-text-secondary">
+          <h2 className="type-card-title">{scenario.title}</h2>
+          <p className="type-small text-text-secondary">
             Short: <span className="tabular-nums">{sessionLengths.short.stepIds.length}</span>{" "}
             decisions, about <span className="tabular-nums">{sessionLengths.short.minutes}</span>{" "}
             min. Full: <span className="tabular-nums">{sessionLengths.full.stepIds.length}</span>,
@@ -33,7 +33,7 @@ export default function MaterialPage() {
             <span className="tabular-nums">{sessionLengths.extended.stepIds.length}</span>, about{" "}
             <span className="tabular-nums">{sessionLengths.extended.minutes}</span> min.
           </p>
-          <p className="text-sm text-text-secondary">
+          <p className="type-small text-text-secondary">
             For a {audienceLabel}. A quiz on the guide is also available.
           </p>
         </Card>

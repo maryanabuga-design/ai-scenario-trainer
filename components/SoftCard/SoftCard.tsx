@@ -24,12 +24,12 @@ export function SoftCard({
       {title && (
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center justify-between gap-4">
-            <h2 id={titleId} className="text-xl leading-tight font-semibold">
+            <h2 id={titleId} className="type-card-title">
               {title}
             </h2>
             {action}
           </div>
-          {subtitle && <p className="text-sm text-text-secondary">{subtitle}</p>}
+          {subtitle && <p className="type-small text-text-secondary">{subtitle}</p>}
         </div>
       )}
       {children}

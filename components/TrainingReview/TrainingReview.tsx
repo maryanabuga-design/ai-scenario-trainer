@@ -79,7 +79,7 @@ export function TrainingReview({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
-        <h1 className="font-semibold text-2xl">Your training is ready</h1>
+        <h1 className="type-page-title">Your training is ready</h1>
         <p className="break-words text-text-secondary">{material.name}</p>
       </div>
 
@@ -91,10 +91,10 @@ export function TrainingReview({
           title={
             <div className="flex flex-col items-start gap-2">
               <Tag tone="yellow">Scenario</Tag>
-              <h2 className="text-lg font-medium">
+              <h2 className="type-item-title">
                 Scenario: <span className="tabular-nums">{steps.length}</span> decisions
               </h2>
-              <p className="text-sm text-text-secondary">
+              <p className="type-small text-text-secondary">
                 {scenarioDef.title}.{" "}
                 {others.length > 0
                   ? `Also as a ${others.join(" or an ")}.`
@@ -110,7 +110,7 @@ export function TrainingReview({
                   <span className="text-text-secondary tabular-nums">{index + 1}. </span>
                   {step.title}
                 </p>
-                <p className="text-sm text-text-secondary">{step.question}</p>
+                <p className="type-small text-text-secondary">{step.question}</p>
                 <div className="flex flex-wrap gap-2">
                   {step.sources.map((sectionId) => (
                     <SourceChip key={sectionId} sectionId={sectionId} />
@@ -130,11 +130,11 @@ export function TrainingReview({
           title={
             <div className="flex flex-col items-start gap-2">
               <Tag tone="blue">Quiz</Tag>
-              <h2 className="text-lg font-medium">
+              <h2 className="type-item-title">
                 Quiz: <span className="tabular-nums">{questions.length}</span>{" "}
                 {questions.length === 1 ? "question" : "questions"}
               </h2>
-              <p className="text-sm text-text-secondary">
+              <p className="type-small text-text-secondary">
                 From {training.sections.join(", ")}. You choose how many to answer in setup.
               </p>
             </div>
@@ -143,7 +143,7 @@ export function TrainingReview({
           <ol className="flex flex-col divide-y divide-border">
             {questions.map((question, index) => (
               <li key={question.id} className="flex flex-col gap-2 py-3">
-                <span className="text-xs text-text-secondary uppercase tracking-[0.04em]">
+                <span className="type-label text-text-secondary">
                   {index + 1}. {typeLabels[question.type]}
                 </span>
                 <p>{question.question}</p>

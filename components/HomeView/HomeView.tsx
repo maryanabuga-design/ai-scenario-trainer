@@ -37,16 +37,16 @@ export function HomeView({
   return (
     <div className="flex flex-col gap-8 pb-4">
       <header className="flex flex-col items-start gap-3 pt-2">
-        <p className="flex flex-col gap-2 text-sm text-text-secondary">
+        <p className="type-small flex flex-col gap-2 text-text-secondary">
           {directionTitle}
           <span aria-hidden="true" className="h-px w-14 bg-border-strong" />
         </p>
         <h1 className="flex flex-col gap-3">
-          <span className="text-[26px] leading-[1.2] font-normal text-text">
+          <span className="type-display text-text">
             <span className="block">Practise a decision.</span>
             <span className="block">Explain it, then check it against the guide.</span>
           </span>
-          <span className="text-sm text-text-secondary">Small steps. Real progress.</span>
+          <span className="type-small text-text-secondary">Small steps. Real progress.</span>
         </h1>
       </header>
 
@@ -55,12 +55,12 @@ export function HomeView({
       {topics.length > 0 && (
         <section aria-labelledby="topics-title" className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-4">
-            <h2 id="topics-title" className="text-lg font-medium">
+            <h2 id="topics-title" className="type-item-title">
               Topics
             </h2>
             <Link
               href="/weak-topics"
-              className="-mr-2 inline-flex min-h-11 items-center gap-1.5 px-2 text-base text-text underline decoration-1 underline-offset-4 hover:decoration-2"
+              className="type-body -mr-2 inline-flex min-h-11 items-center gap-1.5 px-2 text-text underline decoration-1 underline-offset-4 hover:decoration-2"
             >
               See all
               <ArrowRight size={18} strokeWidth={2} aria-hidden="true" />
@@ -76,7 +76,7 @@ export function HomeView({
       )}
 
       <section aria-labelledby="new-title" className="flex flex-col gap-3">
-        <h2 id="new-title" className="text-lg font-medium">
+        <h2 id="new-title" className="type-item-title">
           New scenario
         </h2>
         <ul className="flex flex-col gap-3">

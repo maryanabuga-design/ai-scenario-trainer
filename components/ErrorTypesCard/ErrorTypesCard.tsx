@@ -30,12 +30,12 @@ function TypeSummary({ row }: { row: TypeSummaryRow }) {
         <StatusIcon status={row.type} size={20} />
       </span>
       <span aria-hidden="true" className="flex min-w-0 flex-1 flex-col">
-        <span className="font-semibold text-text">{row.label}</span>
-        <span className="text-sm text-text-secondary">{row.description}</span>
+        <span className="type-body-strong text-text">{row.label}</span>
+        <span className="type-small text-text-secondary">{row.description}</span>
       </span>
       <span
         aria-hidden="true"
-        className={`flex h-7 min-w-7 shrink-0 items-center justify-center rounded-full px-2 text-sm font-medium tabular-nums ${tint.tile} text-text`}
+        className={`flex h-7 min-w-7 shrink-0 items-center justify-center rounded-full px-2 type-caption tabular-nums ${tint.tile} text-text`}
       >
         {row.count}
       </span>
@@ -66,7 +66,7 @@ export function ErrorTypesCard({
           <Link
             href={detailsHref}
             onClick={onNavigate}
-            className="-my-3 -mr-2 inline-flex min-h-11 shrink-0 items-center gap-1.5 px-2 text-base text-text underline decoration-1 underline-offset-4 hover:decoration-2"
+            className="type-body -my-3 -mr-2 inline-flex min-h-11 shrink-0 items-center gap-1.5 px-2 text-text underline decoration-1 underline-offset-4 hover:decoration-2"
           >
             Details
             <ArrowRight size={18} strokeWidth={2} aria-hidden="true" />

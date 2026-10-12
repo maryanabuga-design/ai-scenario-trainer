@@ -49,7 +49,7 @@ function AiMessage({ reply }: { reply: ChatReply }) {
   return (
     <div className="flex flex-col gap-2">
       <p>{lead}</p>
-      {sourcesLabel && <p className="text-sm text-text-secondary">{sourcesLabel}</p>}
+      {sourcesLabel && <p className="type-small text-text-secondary">{sourcesLabel}</p>}
       <div className="flex flex-wrap gap-2">
         {reply.sources.map((sectionId) => (
           <SourceChip key={sectionId} sectionId={sectionId} showTitle={reply.kind !== "answer"} />
@@ -90,7 +90,7 @@ function ChipButton({
       type="button"
       disabled={disabled}
       onClick={() => onAsk({ text: chip.question, chipId: chip.id })}
-      className={`min-h-11 rounded-full border border-border bg-surface px-4 py-2 text-left text-sm text-text hover:bg-surface-muted disabled:cursor-not-allowed disabled:text-text-secondary ${
+      className={`min-h-11 rounded-full border border-border bg-surface px-4 py-2 text-left type-small text-text hover:bg-surface-muted disabled:cursor-not-allowed disabled:text-text-secondary ${
         wrap ? "max-w-full" : "shrink-0 whitespace-nowrap"
       }`}
     >
@@ -136,20 +136,20 @@ function ChatPanel({
     <div className="flex h-full flex-col">
       <div className="flex items-start justify-between gap-4 px-4 pt-4">
         <div className="flex flex-col">
-          <h2 id="ask-ai-title" className="font-semibold text-xl">
+          <h2 id="ask-ai-title" className="type-card-title">
             Ask AI
           </h2>
-          <p className="text-sm text-text-secondary">{chat.step.title}</p>
+          <p className="type-small text-text-secondary">{chat.step.title}</p>
         </div>
         <button
           type="button"
           onClick={onClose}
-          className="-mt-2 -mr-2 min-h-11 min-w-11 rounded-full px-3 text-base text-text underline decoration-1 underline-offset-4 hover:decoration-2"
+          className="type-body -mt-2 -mr-2 min-h-11 min-w-11 rounded-full px-3 text-text underline decoration-1 underline-offset-4 hover:decoration-2"
         >
           Close
         </button>
       </div>
-      <p className="border-b border-border px-4 pt-1 pb-3 text-sm text-text-secondary">
+      <p className="type-small border-b border-border px-4 pt-1 pb-3 text-text-secondary">
         Answers are simulated for this prototype.
       </p>
 
@@ -162,12 +162,12 @@ function ChatPanel({
       >
         {messages.length === 0 && (
           <div className="flex flex-col gap-3">
-            <p className="text-sm text-text-secondary">
+            <p className="type-small text-text-secondary">
               {chat.phase === "decide"
                 ? "Ask about the situation or the guide. Until you check your answer, I explain the material but do not say which action is right."
                 : "Ask about this step, including why the other actions are worse."}
             </p>
-            <p className="text-sm font-medium">Suggested questions</p>
+            <p className="type-small">Suggested questions</p>
             <div className="flex flex-col items-start gap-2">
               {chips.map((chip) => (
                 <ChipButton key={chip.id} chip={chip} disabled={typing} onAsk={onAsk} wrap />
@@ -215,12 +215,12 @@ function ChatPanel({
             onChange={(event) => setDraft(event.target.value)}
             placeholder="Ask about this step"
             autoComplete="off"
-            className="min-h-11 min-w-0 flex-1 rounded-full border border-border-strong bg-surface px-4 text-base hover:border-text focus-visible:border-primary"
+            className="type-body min-h-11 min-w-0 flex-1 rounded-full border border-border-strong bg-surface px-4 hover:border-text focus-visible:border-primary"
           />
           <button
             type="submit"
             disabled={!draft.trim() || typing}
-            className="inline-flex min-h-11 shrink-0 items-center rounded-full bg-primary px-5 font-medium text-primary-text hover:opacity-90 active:opacity-80 disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-text-secondary disabled:opacity-100"
+            className="type-button inline-flex min-h-11 shrink-0 items-center rounded-full bg-primary px-5 text-primary-text hover:opacity-90 active:opacity-80 disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-text-secondary disabled:opacity-100"
           >
             Send
           </button>
@@ -368,8 +368,8 @@ export function AskAiButton({
       onClick={() => open(step, phase)}
       className={
         variant === "link"
-          ? "inline-flex min-h-11 items-center gap-2 self-start text-sm font-medium text-text underline decoration-1 underline-offset-4 hover:decoration-2"
-          : "inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-full border border-primary bg-surface px-5 text-base font-medium text-primary hover:bg-surface-muted active:bg-border"
+          ? "type-small inline-flex min-h-11 items-center gap-2 self-start text-text underline decoration-1 underline-offset-4 hover:decoration-2"
+          : "type-body inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-full border border-primary bg-surface px-5 text-primary hover:bg-surface-muted active:bg-border"
       }
     >
       <Sparkles size={16} strokeWidth={2} aria-hidden="true" />

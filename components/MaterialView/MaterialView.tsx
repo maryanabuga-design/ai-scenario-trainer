@@ -50,12 +50,12 @@ function SectionRow({ section, openable }: { section: MaterialSection; openable:
     <button
       type="button"
       onClick={() => open(section.id)}
-      className="flex min-h-12 w-full items-start gap-3 py-3 text-left text-sm active:bg-surface-muted"
+      className="type-small flex min-h-12 w-full items-start gap-3 py-3 text-left active:bg-surface-muted"
     >
       {content}
     </button>
   ) : (
-    <div className="flex min-h-12 w-full items-start gap-3 py-3 text-sm">{content}</div>
+    <div className="type-small flex min-h-12 w-full items-start gap-3 py-3">{content}</div>
   );
 }
 
@@ -93,7 +93,7 @@ export function MaterialView({
           <FileCover type={material.type} size="lg" />
         )}
         <Tag tone="blue">{material.type}</Tag>
-        <h1 className="font-semibold text-2xl leading-tight break-words">{material.name}</h1>
+        <h1 className="type-page-title break-words">{material.name}</h1>
         <TrainingTags training={training} />
       </div>
 
@@ -123,7 +123,7 @@ export function MaterialView({
       {scenarioCard}
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium">Sections</h2>
+        <h2 className="type-small">Sections</h2>
         {shownSections.length > 0 ? (
           <ul className="flex flex-col divide-y divide-border rounded-card bg-card shadow-(--card-shadow) px-4">
             {shownSections.map((section) => (
@@ -160,7 +160,7 @@ export function MaterialView({
           <ButtonLink href={`/training/${material.id}`}>Create training</ButtonLink>
         ) : (
           <>
-            <p className="text-center text-sm text-text-secondary">
+            <p className="type-small text-center text-text-secondary">
               In this prototype, training can be created from the sample guide and its quick card
               only.
             </p>

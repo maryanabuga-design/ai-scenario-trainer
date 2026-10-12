@@ -564,7 +564,7 @@ export function TopicIconsSample() {
   const sections = ["F1", "F4", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10"];
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="font-semibold text-2xl">Topic cards</h1>
+      <h1 className="type-page-title">Topic cards</h1>
       <ul className="grid grid-cols-2 gap-3">
         {sections.map((sectionId) => (
           <li key={sectionId}>
@@ -584,7 +584,7 @@ export function TopicIconsSample() {
 export function EmptyStatesSample() {
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="font-semibold text-2xl">Empty states</h1>
+      <h1 className="type-page-title">Empty states</h1>
       <EmptyState
         icon={ListChecks}
         text="No weak topics yet. They appear here after a session or a quiz."

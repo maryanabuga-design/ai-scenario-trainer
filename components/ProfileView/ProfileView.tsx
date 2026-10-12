@@ -25,18 +25,18 @@ export function ProfileView({
 }) {
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="font-semibold text-2xl">Profile</h1>
+      <h1 className="type-page-title">Profile</h1>
 
       <DirectionPicker value={direction} onChange={onDirectionChange} legend="Direction" />
 
       <section aria-labelledby="settings-title" className="flex flex-col gap-3">
-        <h2 id="settings-title" className="font-medium">
+        <h2 id="settings-title" className="type-body-strong">
           Settings
         </h2>
         <div className="flex flex-col gap-3 rounded-card bg-card shadow-(--card-shadow) p-4">
           <div className="flex flex-col gap-1">
-            <h3 className="font-medium">Reset progress</h3>
-            <p className="text-sm text-text-secondary">
+            <h3 className="type-body-strong">Reset progress</h3>
+            <p className="type-small text-text-secondary">
               Deletes your saved sessions, weak topics and created trainings on this device. Your
               direction and uploaded files stay.
             </p>
@@ -47,7 +47,7 @@ export function ProfileView({
             </Button>
           </div>
           {resetDone && (
-            <p role="status" className="text-sm">
+            <p role="status" className="type-small">
               Progress reset. Your sessions, weak topics and created trainings are deleted.
             </p>
           )}

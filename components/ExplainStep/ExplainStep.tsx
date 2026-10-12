@@ -41,19 +41,17 @@ export function ExplainStep({
       <SessionTopBar index={index} total={total} unit={unit} />
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-xs font-medium tracking-[0.04em] text-text-secondary uppercase">
-          Your choice
-        </h2>
+        <h2 className="type-label text-text-secondary">Your choice</h2>
         <blockquote className="rounded-panel border-l-2 border-border-strong bg-surface-muted px-4 py-3">
           {chosen?.text}
         </blockquote>
       </section>
 
-      <h1 className="font-semibold text-2xl">{explanationPrompt}</h1>
+      <h1 className="type-page-title">{explanationPrompt}</h1>
 
       {submitted &&
         (answer.skipped || !answer.explanation ? (
-          <p className="text-sm text-text-secondary">Skipped</p>
+          <p className="type-small text-text-secondary">Skipped</p>
         ) : (
           <p className="max-w-[85%] self-end rounded-panel bg-surface-muted px-4 py-2">
             {answer.explanation}

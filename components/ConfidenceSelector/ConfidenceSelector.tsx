@@ -17,14 +17,14 @@ export function ConfidenceSelector({
 }) {
   return (
     <fieldset className="flex flex-col gap-3">
-      <legend className="mb-3 font-medium">{legend}</legend>
+      <legend className="type-body-strong mb-3">{legend}</legend>
       <div className="flex flex-wrap gap-2">
         {levels.map((level) => {
           const checked = value === level;
           return (
             <label
               key={level}
-              className={`inline-flex min-h-11 cursor-pointer items-center rounded-full border px-4 text-sm has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${
+              className={`inline-flex min-h-11 cursor-pointer items-center rounded-full border px-4 type-small has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${
                 checked
                   ? "border-primary bg-primary text-primary-text"
                   : "border-border bg-surface text-text hover:border-text-secondary"

@@ -67,12 +67,10 @@ export function ResultsHeader({
       <div className="relative flex flex-col items-start gap-3">
         <CircleBackButton href="/" label="Back to Home" />
         <div className="flex max-w-[80%] flex-col gap-1.5">
-          <p className="text-xs font-medium tracking-[0.06em] text-header-overline uppercase">
-            {overline}
-          </p>
+          <p className="type-label text-header-overline">{overline}</p>
           <h1 className="flex flex-col gap-1">
-            <span className="text-2xl leading-tight font-semibold text-text">{first}</span>
-            <span className="text-lg text-header-subline">{second}</span>
+            <span className="type-display text-text">{first}</span>
+            <span className="type-display-sub text-header-subline">{second}</span>
           </h1>
         </div>
       </div>

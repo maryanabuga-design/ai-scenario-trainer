@@ -37,7 +37,7 @@ export function TopicCard({
       <span className="flex w-full items-start gap-3">
         <TopicTile sectionId={topic.sectionId} icon={topic.icon} />
         <span className="flex flex-1 flex-col items-start gap-1.5 pt-1">
-          <span className="rounded-full bg-repeat-pill px-2.5 py-1 text-xs leading-none font-medium tracking-[0.04em] text-text uppercase">
+          <span className="type-label rounded-full bg-repeat-pill px-2.5 py-1 text-text">
             <span className="sr-only">Repeat: </span>
             {pill.text}
           </span>
@@ -52,8 +52,8 @@ export function TopicCard({
         </span>
         <ArrowRight size={20} strokeWidth={2} aria-hidden="true" className="mt-1 shrink-0" />
       </span>
-      <span className="text-lg leading-snug font-semibold">{name}</span>
-      <span className="text-sm text-text-secondary">
+      <span className="type-item-title">{name}</span>
+      <span className="type-small text-text-secondary">
         {materialForSection(topic.sectionId)} · {topic.sectionId}
       </span>
       <span className="mt-auto pt-1">

@@ -224,3 +224,69 @@ dialog[data-sheet]::backdrop,
 .scrim {
   background: color-mix(in srgb, var(--text) 40%, transparent);
 }
+
+/* Text styles (DESIGN.md: Typography). The only font sizes, weights, line heights and
+   letter-spacing the screens use. Locked from the Results screen. */
+@utility type-display {
+  font-size: 28px;
+  line-height: 1.25;
+  font-weight: 600;
+}
+@utility type-display-sub {
+  font-size: 18px;
+  line-height: 28px;
+  font-weight: 400;
+}
+@utility type-page-title {
+  font-size: 28px;
+  line-height: 1.25;
+  font-weight: 600;
+}
+@utility type-card-title {
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 600;
+}
+@utility type-item-title {
+  font-size: 18px;
+  line-height: 1.375;
+  font-weight: 600;
+}
+@utility type-body {
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 400;
+}
+@utility type-body-strong {
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 600;
+}
+@utility type-small {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+}
+@utility type-label {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+@utility type-numeral {
+  font-size: 28px;
+  line-height: 1.33;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+@utility type-button {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+}
+@utility type-caption {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+}

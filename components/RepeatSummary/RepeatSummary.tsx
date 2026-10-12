@@ -25,7 +25,7 @@ export function RepeatSummary({
   if (topics.length === 0) {
     return (
       <section aria-labelledby="repeat-title" className="flex flex-col gap-3">
-        <h2 id="repeat-title" className="text-lg font-medium">
+        <h2 id="repeat-title" className="type-item-title">
           Weak topics
         </h2>
         <Card>
@@ -42,18 +42,18 @@ export function RepeatSummary({
     <section aria-labelledby="repeat-title" className="flex flex-col gap-4">
       <Card className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">
-          <h2 id="repeat-title" className="text-lg font-medium">
+          <h2 id="repeat-title" className="type-item-title">
             <span className="tabular-nums">{topics.length}</span>{" "}
             {topics.length === 1 ? "topic" : "topics"} to repeat
           </h2>
-          <p className="text-sm text-text-secondary">{describeCounts(countTopics(topics))}</p>
+          <p className="type-small text-text-secondary">{describeCounts(countTopics(topics))}</p>
         </div>
         <Button onClick={() => onRepeat(topics)}>Repeat weak topics</Button>
       </Card>
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <h3 id="topics-title" className="text-sm font-medium">
+          <h3 id="topics-title" className="type-small">
             Topics
           </h3>
           <div className="-mr-3">

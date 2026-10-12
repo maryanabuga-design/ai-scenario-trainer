@@ -22,13 +22,11 @@ export function NextUpCard({
         <Target size={24} strokeWidth={2} />
       </span>
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="text-xs font-medium tracking-[0.06em] text-text-secondary uppercase">
-          Next up
-        </span>
-        <span id="next-up-title" className="text-lg leading-snug font-medium text-text">
+        <span className="type-label text-text-secondary">Next up</span>
+        <span id="next-up-title" className="type-item-title text-text">
           {next.title}
         </span>
-        <span className="text-sm text-text-secondary">{next.detail}</span>
+        <span className="type-small text-text-secondary">{next.detail}</span>
       </span>
     </>
   );

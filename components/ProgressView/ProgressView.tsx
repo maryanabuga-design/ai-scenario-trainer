@@ -40,16 +40,16 @@ function HistoryRow({ session }: { session: FinishedSession }) {
         >
           {sessionLabel(session)}
         </Tag>
-        <span className="text-sm text-text-secondary tabular-nums">
+        <span className="type-small text-text-secondary tabular-nums">
           {dateFormat.format(session.finishedAt)}
         </span>
       </div>
-      <p className="text-lg font-medium tabular-nums">
+      <p className="type-item-title tabular-nums">
         {quiz
           ? `${formatPoints(totalScore(scored))} of ${scored.length} points`
           : `${correct} of ${scored.length} correct`}
       </p>
-      <p className="text-sm text-text-secondary">
+      <p className="type-small text-text-secondary">
         {weak === 0 ? (
           "Nothing to repeat."
         ) : (
@@ -83,7 +83,7 @@ export function ProgressView({
 }) {
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="font-semibold text-2xl">Progress</h1>
+      <h1 className="type-page-title">Progress</h1>
 
       {history.length === 0 ? (
         <EmptyState
@@ -99,7 +99,7 @@ export function ProgressView({
         <>
           <RepeatSummary weakItems={weakItemsFromHistory(history)} onRepeat={onRepeat} />
           <section aria-labelledby="history-title" className="flex flex-col gap-3">
-            <h2 id="history-title" className="text-lg font-medium">
+            <h2 id="history-title" className="type-item-title">
               Session history
             </h2>
             <ol className="flex flex-col gap-3">

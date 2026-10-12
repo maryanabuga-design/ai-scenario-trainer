@@ -88,7 +88,7 @@ export function SessionSetup({
     <div className="flex flex-col gap-6">
       <BackLink href={`/materials/${training?.materialId ?? "evacuation-guide"}`} />
       <div className="flex flex-col gap-1">
-        <h1 className="font-semibold text-2xl">Session setup</h1>
+        <h1 className="type-page-title">Session setup</h1>
         <p className="break-words text-text-secondary">{materialName ?? scenarioDef.title}</p>
       </div>
 
@@ -108,7 +108,7 @@ export function SessionSetup({
 
       {!quiz && (
         <fieldset className="flex flex-col gap-3">
-          <legend className="mb-3 font-medium">How long do you want to practise?</legend>
+          <legend className="type-body-strong mb-3">How long do you want to practise?</legend>
           {lengthCards.map((option) => {
             const length = scenarioDef.lengths[option.id];
             return (
@@ -124,16 +124,16 @@ export function SessionSetup({
                   <Tag tone={option.tone}>{option.tag}</Tag>
                   {length ? (
                     <>
-                      <span className="text-lg font-medium">
+                      <span className="type-item-title">
                         <span className="tabular-nums">{length.stepIds.length}</span> decisions
                       </span>
-                      <span className="text-sm text-text-secondary">
+                      <span className="type-small text-text-secondary">
                         About <span className="tabular-nums">{length.minutes}</span> min (estimate).{" "}
                         {length.summary}
                       </span>
                     </>
                   ) : (
-                    <span className="text-sm">Not available for this material</span>
+                    <span className="type-small">Not available for this material</span>
                   )}
                 </span>
               </ChoiceCard>
@@ -145,7 +145,7 @@ export function SessionSetup({
       {quiz && (
         <>
           <fieldset className="flex flex-col gap-2">
-            <legend className="mb-3 flex w-full items-center justify-between font-medium">
+            <legend className="type-body-strong mb-3 flex w-full items-center justify-between">
               Guide sections
             </legend>
             <div className="-mt-1 mb-1">
@@ -172,7 +172,7 @@ export function SessionSetup({
                 checked={value.sections.includes(section.id)}
                 onChange={toggleSection}
               >
-                <span className="flex items-baseline gap-3 text-sm">
+                <span className="type-small flex items-baseline gap-3">
                   <span className="w-8 shrink-0 text-text-secondary tabular-nums">
                     {section.id}
                   </span>
@@ -209,7 +209,7 @@ export function SessionSetup({
             />
           )}
           {value.sections.length > 0 && (
-            <p className="text-sm text-text-secondary">
+            <p className="type-small text-text-secondary">
               These sections have <span className="tabular-nums">{available}</span> questions. Your
               quiz has <span className="tabular-nums">{size}</span>. Answering how sure you are is
               optional.
@@ -219,7 +219,7 @@ export function SessionSetup({
       )}
 
       {!quiz && (
-        <p className="text-sm text-text-secondary">
+        <p className="type-small text-text-secondary">
           At each step you choose an action, say how sure you are and explain your choice in one
           sentence.
         </p>
@@ -227,12 +227,12 @@ export function SessionSetup({
 
       <ActionBar>
         {replacesUnfinished && (
-          <p className="text-center text-sm text-text-secondary">
+          <p className="type-small text-center text-text-secondary">
             Starting replaces your unfinished session.
           </p>
         )}
         {blocked && (
-          <p className="text-center text-sm text-text-secondary">
+          <p className="type-small text-center text-text-secondary">
             Choose at least one guide section to continue.
           </p>
         )}

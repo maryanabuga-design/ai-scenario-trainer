@@ -12,19 +12,23 @@ export function PhoneFrame({ label, plannedStep, children }: Props) {
   const built = plannedStep === undefined;
   return (
     <figure className="flex w-[390px] shrink-0 flex-col gap-2">
-      <figcaption className="flex items-baseline justify-between text-sm">
-        <span className="font-medium">{label}</span>
-        <span className="text-text-secondary">{built ? "Built" : `Not built yet · step ${plannedStep}`}</span>
+      <figcaption className="type-small flex items-baseline justify-between">
+        <span className="type-body-strong">{label}</span>
+        <span className="text-text-secondary">
+          {built ? "Built" : `Not built yet · step ${plannedStep}`}
+        </span>
       </figcaption>
       <div
         className={`relative flex h-[844px] flex-col overflow-hidden rounded-card bg-bg ${
-          built ? "border border-border" : "items-center justify-center border border-dashed border-text-secondary"
+          built
+            ? "border border-border"
+            : "items-center justify-center border border-dashed border-text-secondary"
         }`}
       >
         {built ? (
           children
         ) : (
-          <p className="px-6 text-center text-sm text-text-secondary">{label}</p>
+          <p className="type-small px-6 text-center text-text-secondary">{label}</p>
         )}
       </div>
     </figure>

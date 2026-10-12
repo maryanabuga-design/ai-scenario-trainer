@@ -15,7 +15,7 @@ export function DirectionPicker({
 }) {
   return (
     <fieldset className="flex flex-col gap-3">
-      <legend className="mb-3 font-medium">{legend}</legend>
+      <legend className="type-body-strong mb-3">{legend}</legend>
       {directions.map((direction) => (
         <ChoiceCard
           key={direction.id}
@@ -28,7 +28,7 @@ export function DirectionPicker({
           <span className="flex flex-col gap-0.5">
             <span>{direction.title}</span>
             {!direction.available && (
-              <span className="text-sm">Not available in this prototype</span>
+              <span className="type-small">Not available in this prototype</span>
             )}
           </span>
         </ChoiceCard>

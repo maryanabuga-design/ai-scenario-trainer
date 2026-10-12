@@ -15,7 +15,7 @@ export function FileCover({ type, size = "md" }: { type: string; size?: "md" | "
   return (
     <span
       aria-hidden="true"
-      className={`flex shrink-0 items-center justify-center rounded-panel bg-surface-muted text-xs font-medium tracking-[0.04em] text-text-secondary ${
+      className={`flex shrink-0 items-center justify-center rounded-panel bg-surface-muted type-label text-text-secondary ${
         size === "lg" ? "h-24 w-24" : "h-14 w-14"
       }`}
     >

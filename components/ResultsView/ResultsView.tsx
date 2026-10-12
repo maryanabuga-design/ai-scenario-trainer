@@ -129,7 +129,7 @@ export function ResultsView({
                 className="flex min-h-12 items-center justify-between gap-4 py-2"
               >
                 <dt>{metric.label}</dt>
-                <dd className="text-right font-semibold">
+                <dd className="type-body-strong text-right">
                   {formatOutcome(
                     scenarioDef,
                     metric,
@@ -150,16 +150,16 @@ export function ResultsView({
               <li key={item.id} className="flex items-start gap-3">
                 <span
                   aria-hidden="true"
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-bg text-sm font-medium text-text-secondary tabular-nums"
+                  className="type-small flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-bg text-text-secondary tabular-nums"
                 >
                   {position + 1}
                 </span>
                 <div className="flex min-w-0 flex-col gap-0.5 pt-1">
-                  <h3 className="font-medium">
+                  <h3 className="type-body-strong">
                     <span className="sr-only">Step {position + 1}: </span>
                     {item.title}
                   </h3>
-                  <p className="text-sm text-text-secondary">{item.consequence}</p>
+                  <p className="type-small text-text-secondary">{item.consequence}</p>
                 </div>
               </li>
             ))}
@@ -180,7 +180,7 @@ export function ResultsView({
         {hasQuestions && (
           <div className="flex min-h-11 items-center justify-between gap-4 border-t border-soft-divider pt-3">
             <span>Marked correct by you</span>
-            <span className="font-semibold tabular-nums">{markedCount}</span>
+            <span className="type-body-strong tabular-nums">{markedCount}</span>
           </div>
         )}
       </SoftCard>
@@ -188,7 +188,7 @@ export function ResultsView({
       <ActionBar>
         {repeatIds.length > 0 ? (
           <>
-            <p className="text-center text-sm text-text-secondary">
+            <p className="type-small text-center text-text-secondary">
               Replays <span className="tabular-nums">{repeatIds.length}</span>{" "}
               {quiz
                 ? repeatIds.length === 1

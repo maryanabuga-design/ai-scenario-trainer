@@ -35,8 +35,8 @@ function MaterialRow({
       >
         {material.hasScenario ? <MaterialCover /> : <FileCover type={material.type} />}
         <span className="flex min-w-0 flex-1 flex-col gap-1">
-          <span className="leading-tight font-medium break-words">{material.name}</span>
-          <span className="text-sm text-text-secondary">
+          <span className="type-body-strong break-words">{material.name}</span>
+          <span className="type-small text-text-secondary">
             {material.type} · {material.size} · {formatAdded(material.added)}
           </span>
         </span>
@@ -68,7 +68,7 @@ function MaterialRow({
       )}
       {material.status === "failed" && (
         <>
-          <p className="text-sm text-text-secondary">{material.reason}</p>
+          <p className="type-small text-text-secondary">{material.reason}</p>
           <div>
             <UploadButton
               label="Try another file"
@@ -101,7 +101,7 @@ export function MaterialsList({ samples }: { samples: Material[] }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-4">
-        <h1 className="font-semibold text-2xl">Materials</h1>
+        <h1 className="type-page-title">Materials</h1>
         <UploadButton onUploadStart={() => setTab("processing")} onUploadEnd={setTab} />
       </div>
       <div className="flex flex-col gap-4">
