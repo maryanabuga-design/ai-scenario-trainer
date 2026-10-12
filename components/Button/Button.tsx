@@ -7,7 +7,7 @@ const variants: Record<Variant, string> = {
   primary:
     "type-button min-h-12 w-full bg-primary px-6 text-primary-text hover:opacity-90 active:opacity-80",
   secondary:
-    "type-button min-h-11 border border-primary bg-surface px-5 text-primary hover:bg-surface-muted active:bg-border",
+    "type-button min-h-11 bg-secondary px-5 text-primary active:bg-secondary-pressed",
   text: "type-body min-h-11 px-3 text-text underline decoration-1 underline-offset-4 hover:decoration-2 active:opacity-70",
 };
 

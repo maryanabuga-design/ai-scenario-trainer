@@ -51,6 +51,8 @@
   --tag-lilac: #e6ddf5;
   --tag-sage: #e7e8e0;
   --chip: #efece5;
+  --secondary: #d4dbcd;
+  --secondary-pressed: #c5cebc;
   --repeat-pill: #f9eecf;
   --nav-active: #f9edc8;
   --next-card: #f2f3ee;
@@ -111,6 +113,8 @@
   --color-tag-lilac: var(--tag-lilac);
   --color-tag-sage: var(--tag-sage);
   --color-chip: var(--chip);
+  --color-secondary: var(--secondary);
+  --color-secondary-pressed: var(--secondary-pressed);
   --color-repeat-pill: var(--repeat-pill);
   --color-nav-active: var(--nav-active);
   --color-next-card: var(--next-card);
