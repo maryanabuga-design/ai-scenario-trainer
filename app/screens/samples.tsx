@@ -397,15 +397,20 @@ export function QuizSample({
 export function QuizFeedbackSample({
   questionId,
   response,
+  marked = false,
 }: {
   questionId: string;
   response: Response;
+  marked?: boolean;
 }) {
+  const [markedCorrect, setMarkedCorrect] = useState(marked);
   return (
     <QuizFeedback
       question={getQuestion(questionId)}
       response={response}
       confidence={2}
+      markedCorrect={markedCorrect}
+      onMarkCorrect={() => setMarkedCorrect(true)}
       index={1}
       total={5}
       nextLabel="Next question"
@@ -419,7 +424,7 @@ export function QuizResultsSample() {
     scoreQuestion(getQuestion("q-s1-1"), { type: "single", optionId: "b" }, 3),
     scoreQuestion(getQuestion("q-s1-3"), { type: "multiple", optionIds: ["a", "b", "c"] }, 2),
     scoreQuestion(getQuestion("q-s2-3"), { type: "ordering", order: ["a", "b", "d", "c"] }, null),
-    scoreQuestion(getQuestion("q-s2-1"), { type: "text", text: "back of my hand" }, 3),
+    scoreQuestion(getQuestion("q-s2-1"), { type: "text", text: "with my knuckles" }, 3, true),
     scoreQuestion(getQuestion("q-s1-2"), { type: "truefalse", value: true }, 3),
   ];
   return (

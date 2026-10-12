@@ -286,6 +286,31 @@ export default function Screens() {
               />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Short answer: looks correct">
+            <Screen>
+              <QuizFeedbackSample
+                questionId="q-s2-1"
+                response={{ type: "text", text: "The back of my hand" }}
+              />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Short answer: doesn't match">
+            <Screen>
+              <QuizFeedbackSample
+                questionId="q-s2-1"
+                response={{ type: "text", text: "With my knuckles" }}
+              />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Short answer: marked correct by you">
+            <Screen>
+              <QuizFeedbackSample
+                questionId="q-s2-1"
+                response={{ type: "text", text: "With my knuckles" }}
+                marked
+              />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Quiz results">
             <Screen>
               <QuizResultsSample />

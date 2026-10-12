@@ -1,6 +1,6 @@
 # Build plan
 
-One commit per screen group, in this order. Steps 1 to 19 are built. Steps 2 to 6 were first built as a thin clickable path through the whole cycle. Each commit runs `npm run lint`, `npm run typecheck` and `npm run build`, and saves a screenshot in `docs/screens/`.
+One commit per screen group, in this order. Steps 1 to 20 are built. Steps 2 to 6 were first built as a thin clickable path through the whole cycle. Each commit runs `npm run lint`, `npm run typecheck` and `npm run build`, and saves a screenshot in `docs/screens/`.
 
 1. Foundation refresh: tokens, pill buttons, cards, tags, gradient helper, four-item bottom navigation, storage helper. (A temporary "Coming next" screen stood in for unbuilt sections and is now removed.)
 2. Materials: list, material page, upload sequence.
@@ -21,6 +21,7 @@ One commit per screen group, in this order. Steps 1 to 19 are built. Steps 2 to 
 17. Second sample material (flood preparedness): load its guide, scenario and question bank through adapters (namespaced step and question ids, ordering items shuffled in a fixed way, keyword-count text answers), offer it in the upload flow, limit lengths to what each scenario has, and show each scenario's own situation outcome.
 18. Weak topics redesign: repeat summary card and topic row on Home and Progress, a Weak topics page grouped by error type, and a repeat round that mixes steps and questions.
 19. Cards and icons: no hover on cards (pressed state, focus ring and a chevron on tappable cards), Lucide outline icons everywhere, topic icon tiles coloured by material, and icons on the empty states.
+20. The user is the judge: a separate Explain screen after the decision with a self-check of the key points (pre-checked by a keyword match, "You decide", or Skip), "N of M points" instead of a percentage, and short quiz answers shown next to the reference answer with "My answer is still correct".
 
 ## Screen review page
 `/screens` is a development-only page (404 in production, not linked from the navigation) that shows every planned screen at 390 by 844. Screens that are not built are dashed frames. Each screen commit replaces its frame with the real screen using sample data.
