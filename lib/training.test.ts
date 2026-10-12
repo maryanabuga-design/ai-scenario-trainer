@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { questionsFor } from "@/lib/quiz";
+import { amountForSize, amountOptions, availableWithCap } from "@/lib/quiz-setup";
 import { getScenario } from "@/lib/scenario";
 import {
+  chosenQuizSize,
   choiceProblem,
   createTraining,
+  defaultCreateAmount,
   materialFromSample,
   planTraining,
   sampleFiles,
@@ -97,6 +100,7 @@ describe("generated state", () => {
       scenario: true,
       quiz: true,
       sections: ["S1", "S5"],
+      quizSize: questionsFor(["S1", "S5"]).length,
       createdAt: 1000,
     });
   });
@@ -137,5 +141,64 @@ describe("sample files", () => {
       sectionIds: ["S1", "S2"],
     });
     expect(materialFromSample(photo, now)).toMatchObject({ status: "failed" });
+  });
+});
+
+describe("saved quiz size", () => {
+  it("starts Create training on the smaller of 10 and the questions available", () => {
+    expect(defaultCreateAmount(all)).toEqual({ countChoice: 10, customCount: 10 });
+    const few = questionsFor(["S1"]).length;
+    expect(few).toBeLessThan(10);
+    expect(defaultCreateAmount(["S1"])).toEqual({ countChoice: "custom", customCount: few });
+  });
+
+  it("saves the chosen quiz size with the training", () => {
+    const training = createTraining(
+      "evacuation-guide",
+      guide,
+      { scenario: true, quiz: true, sections: all, amount: { countChoice: 15, customCount: 8 } },
+      1,
+    );
+    expect(training.quizSize).toBe(15);
+    expect(
+      chosenQuizSize({
+        scenario: false,
+        quiz: true,
+        sections: all,
+        amount: { countChoice: "custom", customCount: 7 },
+      }),
+    ).toBe(7);
+  });
+
+  it("never saves more questions than the sections hold, and saves none without a quiz", () => {
+    const few = questionsFor(["S1"]).length;
+    expect(
+      chosenQuizSize({
+        scenario: false,
+        quiz: true,
+        sections: ["S1"],
+        amount: { countChoice: 15, customCount: 8 },
+      }),
+    ).toBe(few);
+    const scenarioOnly = createTraining(
+      "a",
+      guide,
+      { scenario: true, quiz: false, sections: all },
+      1,
+    );
+    expect(scenarioOnly.quizSize).toBeUndefined();
+  });
+
+  it("lets Session setup offer only amounts up to the saved size, starting on it", () => {
+    const capped = availableWithCap(all, 10);
+    expect(capped).toBe(10);
+    expect(amountOptions(capped)).toEqual([
+      { count: 5, disabled: false },
+      { count: 10, disabled: false },
+      { count: 15, disabled: true },
+    ]);
+    expect(availableWithCap(all)).toBe(questionsFor(all).length);
+    expect(amountForSize(10)).toEqual({ countChoice: 10, customCount: 10 });
+    expect(amountForSize(7)).toEqual({ countChoice: "custom", customCount: 7 });
   });
 });

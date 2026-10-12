@@ -50,3 +50,17 @@ export function quizAmount(value: QuizAmount, available: number): number {
   const wanted = value.countChoice === "custom" ? value.customCount : value.countChoice;
   return Math.min(wanted, available);
 }
+
+/** The amount that stands for a saved quiz size: a fixed amount when it is one, else custom. */
+export function amountForSize(size: number): QuizAmount {
+  const fixed = quizCounts.find((count) => count === size);
+  return fixed
+    ? { countChoice: fixed, customCount: size }
+    : { countChoice: "custom", customCount: size };
+}
+
+/** The questions a quiz can draw on: the sections' questions, capped by a saved quiz size. */
+export function availableWithCap(sections: string[], cap?: number): number {
+  const available = availableQuestions(sections);
+  return cap === undefined ? available : Math.min(available, cap);
+}

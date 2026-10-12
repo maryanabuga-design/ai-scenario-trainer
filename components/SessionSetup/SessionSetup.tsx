@@ -4,18 +4,16 @@ import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { Button } from "@/components/Button/Button";
 import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
-import { PillGroup } from "@/components/PillGroup/PillGroup";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { SectionList } from "@/components/SectionList/SectionList";
-import { Stepper } from "@/components/Stepper/Stepper";
+import { QuizAmountPicker } from "@/components/QuizAmountPicker/QuizAmountPicker";
 import { Tag } from "@/components/Tag/Tag";
 import { quizCounts } from "@/lib/quiz";
 import {
-  amountOptions,
   availableLine,
   availableQuestions,
-  customCap,
+  availableWithCap,
   fitAmount,
   questionCountLabel,
   quizAmount,
@@ -49,15 +47,18 @@ const lengthCards: { id: Length; tag: string; tone: "peach" | "lilac" | "blue" }
   { id: "extended", tag: "Extended", tone: "blue" },
 ];
 
-/** How many questions the quiz will have: the chosen count, never more than the bank holds. */
-export function quizSize(value: SetupValue) {
-  const available = availableQuestions(value.sections);
+/**
+ * How many questions the quiz will have: the chosen count, never more than the sections hold
+ * nor than the quiz size saved with the training (cap).
+ */
+export function quizSize(value: SetupValue, cap?: number) {
+  const available = availableWithCap(value.sections, cap);
   return { available, size: quizAmount(value, available) };
 }
 
-/** A setup whose amount fits the questions its sections hold. */
-export function fitSetup(value: SetupValue): SetupValue {
-  return fitAmount(value, availableQuestions(value.sections));
+/** A setup whose amount fits the questions its sections hold and the saved quiz size. */
+export function fitSetup(value: SetupValue, cap?: number): SetupValue {
+  return fitAmount(value, availableWithCap(value.sections, cap));
 }
 
 export function SessionSetup({
@@ -74,7 +75,7 @@ export function SessionSetup({
   /** Shown under the title; the scenario's title when there is no training. */
   materialName?: string;
   /** The created training this setup belongs to; limits the modes and the quiz sections. */
-  training?: Pick<Training, "materialId" | "scenario" | "quiz" | "sections">;
+  training?: Pick<Training, "materialId" | "scenario" | "quiz" | "sections" | "quizSize">;
   value: SetupValue;
   onChange: (value: SetupValue) => void;
   onStart: () => void;
@@ -88,7 +89,8 @@ export function SessionSetup({
     { value: "scenario" as const, label: "Scenario", allowed: !training || training.scenario },
     { value: "quiz" as const, label: "Quiz", allowed: !training || training.quiz },
   ].filter((mode) => mode.allowed);
-  const { available, size } = quizSize(value);
+  const cap = training?.quizSize;
+  const { available, size } = quizSize(value, cap);
   const quiz = value.mode === "quiz";
   const blocked = quiz && value.sections.length === 0;
 
@@ -164,41 +166,19 @@ export function SessionSetup({
               detail: questionCountLabel(availableQuestions([section.id])),
             }))}
             selected={value.sections}
-            onChange={(selected) => onChange(fitSetup({ ...value, sections: selected }))}
+            onChange={(selected) => onChange(fitSetup({ ...value, sections: selected }, cap))}
           />
           <p aria-live="polite" className="type-small -mt-3 text-text-secondary tabular-nums">
             {availableLine(value.sections)}
           </p>
 
-          <PillGroup
+          <QuizAmountPicker
             name="count"
-            legend="How many questions?"
-            options={[
-              ...amountOptions(available).map((option) => ({
-                value: option.count as SetupValue["countChoice"],
-                label: String(option.count),
-                disabled: option.disabled,
-              })),
-              { value: "custom" as const, label: "Custom" },
-            ]}
-            value={value.countChoice}
-            onChange={(countChoice) => onChange({ ...value, countChoice })}
+            amount={value}
+            available={available}
+            hasSections={value.sections.length > 0}
+            onChange={(amount) => onChange({ ...value, ...amount })}
           />
-          {value.countChoice === "custom" && (
-            <Stepper
-              label="Number of questions"
-              value={Math.min(value.customCount, customCap(available))}
-              min={1}
-              max={customCap(available)}
-              onChange={(customCount) => onChange({ ...value, customCount })}
-            />
-          )}
-          {value.sections.length > 0 &&
-            amountOptions(available).some((option) => option.disabled) && (
-              <p className="type-small text-text-secondary">
-                Not enough questions for these sections
-              </p>
-            )}
           {value.sections.length > 0 && (
             <p className="type-small text-text-secondary">
               Your quiz has <span className="tabular-nums">{questionCountLabel(size)}</span>.

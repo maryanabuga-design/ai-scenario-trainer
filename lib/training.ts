@@ -2,6 +2,8 @@ import sampleFileData from "@/content/sample-files.json";
 import type { Material } from "@/lib/materials";
 import { materialFromUpload, simulateUpload } from "@/lib/materials";
 import { questionsFor } from "@/lib/quiz";
+import { availableQuestions, fitAmount, quizAmount } from "@/lib/quiz-setup";
+import type { QuizAmount } from "@/lib/quiz-setup";
 import { defaultStory, getScenario } from "@/lib/scenario";
 import type { ScenarioDef } from "@/lib/scenario";
 
@@ -51,10 +53,32 @@ export type Training = {
   scenario: boolean;
   quiz: boolean;
   sections: string[];
+  /** How many questions the quiz has; trainings saved before it existed use every question. */
+  quizSize?: number;
   createdAt: number;
 };
 
-export type TrainingChoice = { scenario: boolean; quiz: boolean; sections: string[] };
+export type TrainingChoice = {
+  scenario: boolean;
+  quiz: boolean;
+  sections: string[];
+  /** The quiz size chosen on Create training (missing in choices saved before it existed). */
+  amount?: QuizAmount;
+};
+
+/** The quiz size Create training starts with: the smaller of 10 and the questions available. */
+export function defaultCreateAmount(sections: string[]): QuizAmount {
+  return fitAmount({ countChoice: 10, customCount: 10 }, availableQuestions(sections));
+}
+
+/** The number of questions a choice makes. */
+export function chosenQuizSize(choice: TrainingChoice): number {
+  const available = availableQuestions(choice.sections);
+  return quizAmount(
+    fitAmount(choice.amount ?? defaultCreateAmount(choice.sections), available),
+    available,
+  );
+}
 
 /**
  * Checks a choice made on Create training. Returns the reason it cannot be generated, or null.
@@ -83,6 +107,7 @@ export function createTraining(
     scenario: choice.scenario,
     quiz: choice.quiz,
     sections: plan.sections.filter((section) => choice.sections.includes(section)),
+    ...(choice.quiz && { quizSize: chosenQuizSize(choice) }),
     createdAt: now,
   };
 }

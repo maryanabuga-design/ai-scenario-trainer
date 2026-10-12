@@ -10,6 +10,7 @@ import { SourceChip } from "@/components/SourceChip/SourceChip";
 import { Tag } from "@/components/Tag/Tag";
 import type { Material } from "@/lib/materials";
 import { questionsFor } from "@/lib/quiz";
+import { questionCountLabel } from "@/lib/quiz-setup";
 import type { Question } from "@/lib/quiz";
 import { defaultStory, getScenario } from "@/lib/scenario";
 import type { Training } from "@/lib/training";
@@ -76,6 +77,7 @@ export function TrainingReview({
     .filter((length) => length !== scenarioDef.defaultLength && scenarioDef.lengths[length])
     .map((length) => `${length} session of ${scenarioDef.lengths[length]?.stepIds.length}`);
   const questions = questionsFor(training.sections);
+  const quizSize = Math.min(training.quizSize ?? questions.length, questions.length);
 
   return (
     <div className="flex flex-col gap-6">
@@ -133,11 +135,12 @@ export function TrainingReview({
             <div className="flex flex-col items-start gap-2">
               <Tag tone="blue">Quiz</Tag>
               <h2 className="type-item-title">
-                Quiz: <span className="tabular-nums">{questions.length}</span>{" "}
-                {questions.length === 1 ? "question" : "questions"}
+                Quiz: <span className="tabular-nums">{questionCountLabel(quizSize)}</span>
               </h2>
               <p className="type-small text-text-secondary">
-                From {training.sections.join(", ")}. You choose how many to answer in setup.
+                Drawn from{" "}
+                <span className="tabular-nums">{questionCountLabel(questions.length)}</span> in{" "}
+                {training.sections.join(", ")}. Session setup offers up to {quizSize}.
               </p>
             </div>
           }

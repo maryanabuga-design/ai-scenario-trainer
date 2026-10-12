@@ -10,6 +10,7 @@ import {
 } from "@/components/SessionSetup/SessionSetup";
 import type { SetupValue } from "@/components/SessionSetup/SessionSetup";
 import { pickQuestions } from "@/lib/quiz";
+import { amountForSize } from "@/lib/quiz-setup";
 import { getScenario } from "@/lib/scenario";
 import { startQuiz, startSession, useSession } from "@/lib/session";
 import type { Training } from "@/lib/training";
@@ -30,13 +31,17 @@ function Setup({
   const session = useSession();
   const scenarioDef = getScenario(scenarioId);
   const [value, setValue] = useState<SetupValue>(() =>
-    fitSetup({
-      ...defaultSetup,
-      length: scenarioDef.defaultLength,
-      ...(training
-        ? { mode: training.scenario ? "scenario" : "quiz", sections: training.sections }
-        : {}),
-    }),
+    fitSetup(
+      {
+        ...defaultSetup,
+        length: scenarioDef.defaultLength,
+        ...(training
+          ? { mode: training.scenario ? "scenario" : "quiz", sections: training.sections }
+          : {}),
+        ...(training?.quizSize ? amountForSize(training.quizSize) : {}),
+      },
+      training?.quizSize,
+    ),
   );
 
   return (
@@ -49,7 +54,10 @@ function Setup({
       replacesUnfinished={session !== "loading" && session !== null && !session.finished}
       onStart={() => {
         if (value.mode === "quiz") {
-          startQuiz(pickQuestions(value.sections, quizSize(value).size), value.sections);
+          startQuiz(
+            pickQuestions(value.sections, quizSize(value, training?.quizSize).size),
+            value.sections,
+          );
         } else {
           startSession(
             value.length,
