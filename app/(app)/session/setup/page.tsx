@@ -9,7 +9,9 @@ import {
   SessionSetup,
 } from "@/components/SessionSetup/SessionSetup";
 import type { SetupValue } from "@/components/SessionSetup/SessionSetup";
+import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { pickQuestions } from "@/lib/quiz";
+import { defaultSections } from "@/lib/sections";
 import { amountForSize } from "@/lib/quiz-setup";
 import { getScenario } from "@/lib/scenario";
 import { startQuiz, startSession, useSession } from "@/lib/session";
@@ -30,14 +32,18 @@ function Setup({
   const router = useRouter();
   const session = useSession();
   const scenarioDef = getScenario(scenarioId);
+  const { sections: guideSections } = useSourceSheet();
   const [value, setValue] = useState<SetupValue>(() =>
     fitSetup(
       {
         ...defaultSetup,
         length: scenarioDef.defaultLength,
-        ...(training
-          ? { mode: training.scenario ? "scenario" : "quiz", sections: training.sections }
-          : {}),
+        // Every section starts selected: the training's, or every guide section.
+        sections: defaultSections(
+          guideSections.map((section) => section.id),
+          training?.sections,
+        ),
+        ...(training ? { mode: training.scenario ? "scenario" : "quiz" } : {}),
         ...(training?.quizSize ? amountForSize(training.quizSize) : {}),
       },
       training?.quizSize,

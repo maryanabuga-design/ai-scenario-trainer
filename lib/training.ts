@@ -3,6 +3,7 @@ import type { Material } from "@/lib/materials";
 import { materialFromUpload, simulateUpload } from "@/lib/materials";
 import { questionsFor } from "@/lib/quiz";
 import { availableQuestions, fitAmount, quizAmount } from "@/lib/quiz-setup";
+import { keepOneHint } from "@/lib/sections";
 import type { QuizAmount } from "@/lib/quiz-setup";
 import { defaultStory, getScenario } from "@/lib/scenario";
 import type { ScenarioDef } from "@/lib/scenario";
@@ -85,7 +86,7 @@ export function chosenQuizSize(choice: TrainingChoice): number {
  * The scenario is one prepared story, so the sections only shape the quiz.
  */
 export function choiceProblem(plan: TrainingPlan, choice: TrainingChoice): string | null {
-  if (choice.sections.length === 0) return "Keep at least one section.";
+  if (choice.sections.length === 0) return keepOneHint;
   if (choice.scenario && !plan.canScenario) return "Not enough material for a scenario.";
   if (!choice.scenario && !choice.quiz) return "Choose a scenario, a quiz or both.";
   if (choice.quiz && questionsFor(choice.sections).length === 0) {

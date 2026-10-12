@@ -2,13 +2,24 @@
 
 import { Check } from "lucide-react";
 import { Button } from "@/components/Button/Button";
-import { deselectAll, selectAll, selectionState, toggleSection } from "@/lib/sections";
+import { selectionToggle, toggleSection } from "@/lib/sections";
+import type { TopicTint } from "@/lib/weak-topics";
+import { topicTint } from "@/lib/weak-topics";
 
 export type SectionRow = { id: string; title: string; detail?: string };
 
+/** Pastel code circles, in the same cycle as the topic tiles. */
+const codeTints: Record<TopicTint, string> = {
+  yellow: "bg-code-yellow",
+  blue: "bg-code-blue",
+  lilac: "bg-code-lilac",
+  sage: "bg-code-sage",
+  peach: "bg-code-peach",
+};
+
 /**
- * The guide sections to keep, on Create training and Session setup: a title with "Select all"
- * and "Deselect all", then one white card of rows (round code tile, title, check box).
+ * The guide sections to keep, on Create training and Session setup: a title with one Select all /
+ * Deselect all toggle, then one row card per section (code circle, title, check box).
  */
 export function SectionList({
   title,
@@ -26,30 +37,27 @@ export function SectionList({
   onChange: (selected: string[]) => void;
 }) {
   const ids = sections.map((section) => section.id);
-  const { canSelectAll, canDeselectAll } = selectionState(ids, selected);
+  const toggle = selectionToggle(ids, selected);
 
   return (
     <div role="group" aria-labelledby={titleId} className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center justify-between gap-x-2">
+      <div className="flex items-center justify-between gap-2">
         <h2 id={titleId} className="type-item-title">
           {title}
         </h2>
-        <div className="-mr-3 flex">
-          <Button variant="text" disabled={!canSelectAll} onClick={() => onChange(selectAll(ids))}>
-            Select all
-          </Button>
-          <Button variant="text" disabled={!canDeselectAll} onClick={() => onChange(deselectAll())}>
-            Deselect all
+        <div className="-mr-3">
+          <Button variant="text" onClick={() => onChange(toggle.next)}>
+            {toggle.label}
           </Button>
         </div>
       </div>
       {helper && <p className="type-small text-text-secondary">{helper}</p>}
-      <ul className="flex flex-col divide-y divide-border overflow-hidden rounded-card bg-surface">
+      <ul className="flex flex-col gap-2">
         {sections.map((section) => {
           const checked = selected.includes(section.id);
           return (
             <li key={section.id}>
-              <label className="flex min-h-14 cursor-pointer items-center gap-3 px-4 py-2 active:bg-surface-muted has-focus-visible:outline-2 has-focus-visible:-outline-offset-2 has-focus-visible:outline-accent">
+              <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-[20px] bg-card px-4 py-3 shadow-(--card-shadow) active:bg-surface-muted has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent">
                 <input
                   type="checkbox"
                   name={titleId}
@@ -60,7 +68,7 @@ export function SectionList({
                 />
                 <span
                   aria-hidden="true"
-                  className="type-caption flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-next-tile text-text"
+                  className={`type-caption flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-text ${codeTints[topicTint(section.id)]}`}
                 >
                   {section.id}
                 </span>

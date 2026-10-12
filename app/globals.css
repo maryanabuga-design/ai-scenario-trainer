@@ -51,6 +51,13 @@
   --tag-lilac: #e6ddf5;
   --tag-sage: #dfe5d8;
   --chip: #efece5;
+  --stroke-neutral: #d3cdc2;
+  --stroke-sage: #a9b5a0;
+  --code-yellow: #f9f4c1;
+  --code-blue: #e1eff4;
+  --code-lilac: #eee7f8;
+  --code-sage: #e9ede4;
+  --code-peach: #fce2d4;
   --secondary-pressed: #e3e8dc;
   --repeat-pill: #f9eecf;
   --nav-active: #f9edc8;
@@ -113,6 +120,13 @@
   --color-tag-sage: var(--tag-sage);
   --color-chip: var(--chip);
   --color-secondary-pressed: var(--secondary-pressed);
+  --color-stroke-neutral: var(--stroke-neutral);
+  --color-stroke-sage: var(--stroke-sage);
+  --color-code-yellow: var(--code-yellow);
+  --color-code-blue: var(--code-blue);
+  --color-code-lilac: var(--code-lilac);
+  --color-code-sage: var(--code-sage);
+  --color-code-peach: var(--code-peach);
   --color-repeat-pill: var(--repeat-pill);
   --color-nav-active: var(--nav-active);
   --color-next-card: var(--next-card);

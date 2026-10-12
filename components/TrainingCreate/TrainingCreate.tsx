@@ -47,8 +47,8 @@ function CreateOption({
         disabled
           ? "cursor-not-allowed border-transparent bg-surface-muted text-text-secondary"
           : checked
-            ? "cursor-pointer border-secondary-pressed bg-next-card active:bg-secondary-pressed"
-            : "cursor-pointer border-border bg-surface active:bg-surface-muted"
+            ? "cursor-pointer border-[1.5px] border-stroke-sage bg-next-card active:bg-secondary-pressed"
+            : "cursor-pointer border-stroke-neutral bg-card shadow-(--card-shadow) active:bg-surface-muted"
       }`}
     >
       <input
