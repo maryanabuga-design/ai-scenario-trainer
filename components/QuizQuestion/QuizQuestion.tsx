@@ -35,7 +35,7 @@ function hasAnswer(response: Response | null) {
 const hints: Record<Question["type"], string> = {
   single: "Choose one answer.",
   multiple: "",
-  ordering: "Put the steps in order. Use the arrows or drag.",
+  ordering: "Drag the handles to reorder",
   text: "A few words are enough.",
   truefalse: "Is this true or false?",
 };

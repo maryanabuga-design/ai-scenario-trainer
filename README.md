@@ -61,13 +61,14 @@ Sessions, history and the profile are saved in this browser on this device (`loc
 
 Build order and decisions: `docs/build-plan.md`.
 
-## Known limits
+## Known limitations
 
 - AI behavior is simulated. Every answer, chat reply and key point comes from the prepared scenario, and a trainee's explanation is never graded automatically: the trainee ticks the key points it covers. Free questions in Ask AI are matched by keywords, so rephrasing can change which prepared answer comes back.
 - The flood scenario has 3 decisions only (Full and Extended are not available for it) and no prepared Ask AI answers, so Ask AI is not offered on its steps. Its results show time lost and water level.
 - Upload and generation are simulated. Upload offers sample files; generation shows prepared content. Only the guide has a prepared scenario and question bank, so the quick card's quiz uses the guide's S1 and S2 questions.
 - Short text answers are checked by matching accepted words and phrases, so an unusual but correct wording can be marked wrong. The trainee can then mark it correct, which the prototype trusts.
 - Progress lives in one browser on one device. There are no accounts.
+- Ordering questions are reordered by dragging the handles (mouse, touch, or the keyboard drag mode with screen reader announcements). There is no tap-to-move alternative to dragging yet, so WCAG 2.2 success criterion 2.5.7 (Dragging Movements) is not met.
 
 ## Project files
 
