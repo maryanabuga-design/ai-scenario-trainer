@@ -1,6 +1,6 @@
 # Build plan
 
-One commit per screen group, in this order. Steps 1 to 27 are built. Steps 2 to 6 were first built as a thin clickable path through the whole cycle. Each commit runs `npm run lint`, `npm run typecheck` and `npm run build`, and saves a screenshot in `docs/screens/`.
+One commit per screen group, in this order. Steps 1 to 28 are built. Steps 2 to 6 were first built as a thin clickable path through the whole cycle. Each commit runs `npm run lint`, `npm run typecheck` and `npm run build`, and saves a screenshot in `docs/screens/`.
 
 1. Foundation refresh: tokens, pill buttons, cards, tags, gradient helper, four-item bottom navigation, storage helper. (A temporary "Coming next" screen stood in for unbuilt sections and is now removed.)
 2. Materials: list, material page, upload sequence.
@@ -29,6 +29,7 @@ One commit per screen group, in this order. Steps 1 to 27 are built. Steps 2 to 
 25. Home rebuilt from the target image (12 Oct 2026), with a new global style: deep olive primary buttons and outlines, DM Sans as the only font (chosen over Figtree, Plus Jakarta Sans and Instrument Sans), a greige page and warm near-white cards with a soft shadow. Home: eyebrow and headline, the Next up card in four states, the snapping topic row with dots, and scenario cards per material.
 26. Typography locked to twelve named text styles read from the Results screen (`type-*` utilities, no one-off sizes or weights); the Results header became a flat beige band; every AI entry point is a sparkle text button.
 27. Design fixes: one chip colour token and no hover on chips, an answer sheet without status rows (hidden verdict, "N of M right"), sage secondary pills, sage file-type tags on every cover, question totals and fitting amounts in quiz setup, and topic tiles coloured by guide section.
+28. Outline secondary pills and option chips, one circular back button, Select all and Deselect all on a shared section list, and Create training rebuilt with option cards and a quiz size that is saved and caps Session setup.
 
 ## Screen review page
 `/screens` is a development-only page (404 in production, not linked from the navigation) that shows every planned screen at 390 by 844. Screens that are not built are dashed frames. Each screen commit replaces its frame with the real screen using sample data.

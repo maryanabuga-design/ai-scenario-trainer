@@ -459,7 +459,7 @@ export function QuizResultsSample() {
 
 const guideMaterial = sampleMaterials[0];
 const quickCard = {
-  ...materialFromSample(sampleFiles[1], new Date("2026-10-08")),
+  ...materialFromSample(sampleFiles[2], new Date("2026-10-08")),
   id: "sample-quick-card",
 };
 
