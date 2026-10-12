@@ -27,9 +27,7 @@
   --soft-card: var(--card);
   --soft-divider: #eae8e7;
   --soft-shadow: var(--card-shadow);
-  --header-light: #eee7dc;
-  --header-deep: #e3dacd;
-  --header-shadow: #91785c;
+  --header-bg: #e8e0d4;
   --header-overline: #5f5a54;
   --header-subline: #524c45;
   --ring: #417851;
@@ -89,6 +87,7 @@
   --color-misconception-bg: var(--misconception-bg);
   --color-soft-card: var(--soft-card);
   --color-soft-divider: var(--soft-divider);
+  --color-header-bg: var(--header-bg);
   --color-header-overline: var(--header-overline);
   --color-header-subline: var(--header-subline);
   --color-ring: var(--ring);
