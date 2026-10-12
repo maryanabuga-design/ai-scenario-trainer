@@ -2,7 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { defaultSetup, quizSize, SessionSetup } from "@/components/SessionSetup/SessionSetup";
+import {
+  defaultSetup,
+  fitSetup,
+  quizSize,
+  SessionSetup,
+} from "@/components/SessionSetup/SessionSetup";
 import type { SetupValue } from "@/components/SessionSetup/SessionSetup";
 import { pickQuestions } from "@/lib/quiz";
 import { getScenario } from "@/lib/scenario";
@@ -24,13 +29,15 @@ function Setup({
   const router = useRouter();
   const session = useSession();
   const scenarioDef = getScenario(scenarioId);
-  const [value, setValue] = useState<SetupValue>(() => ({
-    ...defaultSetup,
-    length: scenarioDef.defaultLength,
-    ...(training
-      ? { mode: training.scenario ? "scenario" : "quiz", sections: training.sections }
-      : {}),
-  }));
+  const [value, setValue] = useState<SetupValue>(() =>
+    fitSetup({
+      ...defaultSetup,
+      length: scenarioDef.defaultLength,
+      ...(training
+        ? { mode: training.scenario ? "scenario" : "quiz", sections: training.sections }
+        : {}),
+    }),
+  );
 
   return (
     <SessionSetup

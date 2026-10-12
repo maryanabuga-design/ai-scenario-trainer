@@ -9,7 +9,16 @@ import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { Stepper } from "@/components/Stepper/Stepper";
 import { Tag } from "@/components/Tag/Tag";
-import { questionsFor, quizCounts } from "@/lib/quiz";
+import { quizCounts } from "@/lib/quiz";
+import {
+  amountOptions,
+  availableLine,
+  availableQuestions,
+  customCap,
+  fitAmount,
+  questionCountLabel,
+  quizAmount,
+} from "@/lib/quiz-setup";
 import { getScenario } from "@/lib/scenario";
 import type { Length, ScenarioDef } from "@/lib/scenario";
 import type { Training } from "@/lib/training";
@@ -40,9 +49,13 @@ const lengthCards: { id: Length; tag: string; tone: "peach" | "lilac" | "blue" }
 
 /** How many questions the quiz will have: the chosen count, never more than the bank holds. */
 export function quizSize(value: SetupValue) {
-  const available = questionsFor(value.sections).length;
-  const wanted = value.countChoice === "custom" ? value.customCount : value.countChoice;
-  return { available, size: Math.min(wanted, available) };
+  const available = availableQuestions(value.sections);
+  return { available, size: quizAmount(value, available) };
+}
+
+/** A setup whose amount fits the questions its sections hold. */
+export function fitSetup(value: SetupValue): SetupValue {
+  return fitAmount(value, availableQuestions(value.sections));
 }
 
 export function SessionSetup({
@@ -81,7 +94,9 @@ export function SessionSetup({
     const next = value.sections.includes(id)
       ? value.sections.filter((section) => section !== id)
       : [...value.sections, id];
-    onChange({ ...value, sections: sections.map((s) => s.id).filter((s) => next.includes(s)) });
+    onChange(
+      fitSetup({ ...value, sections: sections.map((s) => s.id).filter((s) => next.includes(s)) }),
+    );
   }
 
   return (
@@ -152,11 +167,13 @@ export function SessionSetup({
               <Button
                 variant="text"
                 onClick={() =>
-                  onChange({
-                    ...value,
-                    sections:
-                      value.sections.length === sections.length ? [] : sections.map((s) => s.id),
-                  })
+                  onChange(
+                    fitSetup({
+                      ...value,
+                      sections:
+                        value.sections.length === sections.length ? [] : sections.map((s) => s.id),
+                    }),
+                  )
                 }
               >
                 {value.sections.length === sections.length ? "Clear all" : "Select all"}
@@ -177,22 +194,25 @@ export function SessionSetup({
                     {section.id}
                   </span>
                   <span className="flex-1">{section.title}</span>
-                  <span className="text-text-secondary tabular-nums">
-                    {questionsFor([section.id]).length}
+                  <span className="shrink-0 text-right text-text-secondary tabular-nums">
+                    {questionCountLabel(availableQuestions([section.id]))}
                   </span>
                 </span>
               </ChoiceCard>
             ))}
           </fieldset>
+          <p aria-live="polite" className="type-small -mt-3 text-text-secondary tabular-nums">
+            {availableLine(value.sections)}
+          </p>
 
           <PillGroup
             name="count"
             legend="How many questions?"
             options={[
-              ...quizCounts.map((count) => ({
-                value: count as SetupValue["countChoice"],
-                label: String(count),
-                disabled: value.sections.length > 0 && count > available,
+              ...amountOptions(available).map((option) => ({
+                value: option.count as SetupValue["countChoice"],
+                label: String(option.count),
+                disabled: option.disabled,
               })),
               { value: "custom" as const, label: "Custom" },
             ]}
@@ -202,17 +222,22 @@ export function SessionSetup({
           {value.countChoice === "custom" && (
             <Stepper
               label="Number of questions"
-              value={Math.min(value.customCount, Math.max(1, available))}
+              value={Math.min(value.customCount, customCap(available))}
               min={1}
-              max={Math.max(1, available)}
+              max={customCap(available)}
               onChange={(customCount) => onChange({ ...value, customCount })}
             />
           )}
+          {value.sections.length > 0 &&
+            amountOptions(available).some((option) => option.disabled) && (
+              <p className="type-small text-text-secondary">
+                Not enough questions for these sections
+              </p>
+            )}
           {value.sections.length > 0 && (
             <p className="type-small text-text-secondary">
-              These sections have <span className="tabular-nums">{available}</span> questions. Your
-              quiz has <span className="tabular-nums">{size}</span>. Answering how sure you are is
-              optional.
+              Your quiz has <span className="tabular-nums">{questionCountLabel(size)}</span>.
+              Answering how sure you are is optional.
             </p>
           )}
         </>
