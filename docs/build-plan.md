@@ -1,6 +1,6 @@
 # Build plan
 
-One commit per screen group, in this order. Steps 1 to 23 are built. Steps 2 to 6 were first built as a thin clickable path through the whole cycle. Each commit runs `npm run lint`, `npm run typecheck` and `npm run build`, and saves a screenshot in `docs/screens/`.
+One commit per screen group, in this order. Steps 1 to 24 are built. Steps 2 to 6 were first built as a thin clickable path through the whole cycle. Each commit runs `npm run lint`, `npm run typecheck` and `npm run build`, and saves a screenshot in `docs/screens/`.
 
 1. Foundation refresh: tokens, pill buttons, cards, tags, gradient helper, four-item bottom navigation, storage helper. (A temporary "Coming next" screen stood in for unbuilt sections and is now removed.)
 2. Materials: list, material page, upload sequence.
@@ -25,6 +25,7 @@ One commit per screen group, in this order. Steps 1 to 23 are built. Steps 2 to 
 21. Answer sheet: the feedback screens are replaced by a bottom sheet after every scenario step and quiz question (verdict, the right answer, a short why with sources, what happened, the self-check), the explanation and short answers are typed in an input docked above the keyboard with "I don't know", the AI follow-up question is gone, and the error type, the full why and the consequence timeline move to the final analysis on results.
 22. Status rows and colour: "Result" and "Error type" rows everywhere, a ring "N/M correct" with tinted rows on results, green and red only for answers (Secure, Misconception and material status recoloured), the explanation as a reflection with no keyword check, Ask AI moved to the results analysis, drag-only ordering with a keyboard drag mode, and a muted sand-to-olive gradient.
 23. Error types card on results: four type summary rows (tile, name and description, count; zero rows muted) and "Details" to the error analysis grouped by error type. The card is reusable, so Progress can later show it for all saved sessions.
+24. Results screen rebuilt 1:1 from the reference screens (12 Oct 2026): soft light header with a circular back button, progress card with a ring, a conclusion rule and tappable Correct and Incorrect rows, soft Error types, Outcome (state labels in the scenario JSON) and Step by step cards, and a separate Error analysis screen with filters and scroll memory.
 
 ## Screen review page
 `/screens` is a development-only page (404 in production, not linked from the navigation) that shows every planned screen at 390 by 844. Screens that are not built are dashed frames. Each screen commit replaces its frame with the real screen using sample data.
