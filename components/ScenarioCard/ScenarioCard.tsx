@@ -18,7 +18,7 @@ export function ScenarioCard({
       className="flex w-full flex-col items-start gap-2 rounded-card bg-card p-5 text-left shadow-(--card-shadow) active:bg-surface-muted"
     >
       <span className="flex w-full items-start justify-between gap-3">
-        <Tag tone="sage">Scenario</Tag>
+        <Tag tone="yellow">Scenario</Tag>
         <span
           aria-hidden="true"
           className="-mt-1 -mr-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface text-text"

@@ -33,7 +33,11 @@ function MaterialRow({
         href={`/materials/${material.id}`}
         className="-m-2 flex items-center gap-4 rounded-panel p-2 active:bg-surface-muted"
       >
-        {material.hasScenario ? <MaterialCover /> : <FileCover type={material.type} />}
+        {material.hasScenario ? (
+          <MaterialCover type={material.type} />
+        ) : (
+          <FileCover type={material.type} />
+        )}
         <span className="flex min-w-0 flex-1 flex-col gap-1">
           <span className="type-body-strong break-words">{material.name}</span>
           <span className="type-small text-text-secondary">

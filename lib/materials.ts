@@ -111,3 +111,13 @@ const dateFormat = new Intl.DateTimeFormat("en-GB", {
 export function formatAdded(isoDate: string) {
   return dateFormat.format(new Date(`${isoDate}T12:00:00`));
 }
+
+/** The short file-type tag for a material: PDF, DOCX, LINK, JPG, TXT. */
+export function fileTypeLabel(type: string): string {
+  if (type.startsWith("PDF")) return "PDF";
+  if (type === "Word document") return "DOCX";
+  if (type === "Link") return "LINK";
+  if (type === "Image") return "JPG";
+  if (type.startsWith("Text")) return "TXT";
+  return type.slice(0, 4).toUpperCase();
+}

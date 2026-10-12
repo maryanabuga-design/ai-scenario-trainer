@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { formatSize, materialFromUpload, sampleMaterials, simulateUpload } from "@/lib/materials";
+import {
+  fileTypeLabel,
+  formatSize,
+  materialFromUpload,
+  sampleMaterials,
+  simulateUpload,
+} from "@/lib/materials";
 
 describe("sample materials", () => {
   it("has one ready guide with a scenario and one item in each other state", () => {
@@ -55,5 +61,15 @@ describe("simulated upload", () => {
   it("formats sizes", () => {
     expect(formatSize(900)).toBe("900 B");
     expect(formatSize(84_000)).toBe("82 KB");
+  });
+});
+
+describe("file-type tags", () => {
+  it("gives every material a short label", () => {
+    expect(fileTypeLabel("PDF")).toBe("PDF");
+    expect(fileTypeLabel("PDF (scanned)")).toBe("PDF");
+    expect(fileTypeLabel("Word document")).toBe("DOCX");
+    expect(fileTypeLabel("Link")).toBe("LINK");
+    expect(fileTypeLabel("Image")).toBe("JPG");
   });
 });

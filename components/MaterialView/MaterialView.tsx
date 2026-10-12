@@ -11,7 +11,6 @@ import { FileCover } from "@/components/FileCover/FileCover";
 import { MaterialCover } from "@/components/MaterialCover/MaterialCover";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
-import { Tag } from "@/components/Tag/Tag";
 import { TrainingTags } from "@/components/TrainingTags/TrainingTags";
 import { startTraining, useTrainings } from "@/lib/trainings";
 import { UploadButton } from "@/components/UploadSheet/UploadSheet";
@@ -88,11 +87,10 @@ export function MaterialView({
       <BackLink href="/materials" label="Back to materials" />
       <div className="flex flex-col items-start gap-4">
         {material.hasScenario ? (
-          <MaterialCover size="lg" />
+          <MaterialCover type={material.type} size="lg" />
         ) : (
           <FileCover type={material.type} size="lg" />
         )}
-        <Tag tone="blue">{material.type}</Tag>
         <h1 className="type-page-title break-words">{material.name}</h1>
         <TrainingTags training={training} />
       </div>
