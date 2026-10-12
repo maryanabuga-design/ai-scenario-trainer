@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { useId } from "react";
+import { useEffect, useId, useRef } from "react";
 
 /** One-sentence explanation. The label is the step's follow-up question. */
 export function ExplanationField({
@@ -14,13 +14,30 @@ export function ExplanationField({
   error?: string;
 }) {
   const id = useId();
+  const fieldRef = useRef<HTMLTextAreaElement>(null);
+
+  // Keep the field clear of the fixed action bar, also when the on-screen keyboard opens.
+  // The field's bottom scroll margin leaves room for the bar.
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    const reveal = () => {
+      if (document.activeElement === fieldRef.current) {
+        fieldRef.current?.scrollIntoView({ block: "nearest" });
+      }
+    };
+    viewport?.addEventListener("resize", reveal);
+    return () => viewport?.removeEventListener("resize", reveal);
+  }, []);
+
   return (
     <div className="flex flex-col gap-2">
       <label htmlFor={id} className="font-medium">
         {label}
       </label>
       <textarea
+        ref={fieldRef}
         id={id}
+        onFocus={(event) => event.currentTarget.scrollIntoView({ block: "nearest" })}
         rows={3}
         value={value}
         onChange={(event) => onChange(event.target.value)}
