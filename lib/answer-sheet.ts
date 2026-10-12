@@ -49,7 +49,7 @@ export type QuestionSheet = {
   /** Short text only: "Doesn't match our answer. Yours might still be right." and the like. */
   note: string | null;
   boxes: AnswerBox[];
-  /** How many are right, for multiple choice and ordering ("2 of 3 correct options chosen"). */
+  /** How many are right, for multiple choice and ordering ("2 of 3 right"). */
   detail: string | null;
   why: string[];
   sources: string[];
@@ -92,17 +92,15 @@ function texts(choices: Choice[], ids: string[]) {
   return ids.map((id) => choices.find((choice) => choice.id === id)?.text ?? id);
 }
 
-/** How many are right, for the types with partial credit. */
+/** "N of M right", for the types with partial credit (multiple choice and ordering). */
 function countDetail(question: Question, response: Response): string | null {
   if (question.type === "multiple" && response.type === "multiple") {
     const right = response.optionIds.filter((id) => question.answer.includes(id)).length;
-    const wrong = response.optionIds.length - right;
-    const extra = wrong > 0 ? `, ${wrong} not correct` : "";
-    return `${right} of ${question.answer.length} correct options chosen${extra}`;
+    return `${right} of ${question.answer.length} right`;
   }
   if (question.type === "ordering" && response.type === "ordering") {
     const inPlace = question.answer.filter((id, index) => response.order[index] === id).length;
-    return `${inPlace} of ${question.answer.length} in the right place`;
+    return `${inPlace} of ${question.answer.length} right`;
   }
   return null;
 }

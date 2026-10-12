@@ -116,7 +116,7 @@ describe("answer sheet for a quiz question", () => {
     );
     expect(sheet.verdict).toBe("partial");
     expect(sheet.result).toBe("partial");
-    expect(sheet.detail).toBe("2 of 3 correct options chosen, 1 not correct");
+    expect(sheet.detail).toBe("2 of 3 right");
     expect(sheet.boxes[1].lines).toHaveLength(3);
   });
 
@@ -126,7 +126,7 @@ describe("answer sheet for a quiz question", () => {
       quiz("q-s2-3", { response: { type: "ordering", order: ["a", "b", "d", "c"] } }),
     );
     expect(sheet.verdict).toBe("partial");
-    expect(sheet.detail).toBe("2 of 4 in the right place");
+    expect(sheet.detail).toBe("2 of 4 right");
     expect(sheet.boxes.every((box) => box.ordered)).toBe(true);
   });
 
@@ -214,7 +214,9 @@ describe("state change", () => {
       "Time lost +30 s",
       "Smoke on the route +2",
     ]);
-    expect(describeEffects("s4", { casualtyStability: -1 })).toEqual(["Colleague's condition worsened"]);
+    expect(describeEffects("s4", { casualtyStability: -1 })).toEqual([
+      "Colleague's condition worsened",
+    ]);
     expect(describeEffects("flood-s2", { waterLevel: 1 })).toEqual(["Water level +1"]);
     expect(describeEffects("s1", {})).toEqual([]);
   });

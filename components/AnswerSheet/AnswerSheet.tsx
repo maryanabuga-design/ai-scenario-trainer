@@ -6,8 +6,6 @@ import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/Button/Button";
 import { SourceChip } from "@/components/SourceChip/SourceChip";
-import { statuses } from "@/components/StatusBadge/StatusBadge";
-import { StatusRows } from "@/components/StatusRows/StatusRows";
 import type { AnswerBox, BoxTone, SheetContent } from "@/lib/answer-sheet";
 
 const boxStyles: Record<BoxTone, { className: string; icon?: [LucideIcon, string] }> = {
@@ -16,6 +14,12 @@ const boxStyles: Record<BoxTone, { className: string; icon?: [LucideIcon, string
   better: { className: "border border-dashed border-correct", icon: [Check, "text-correct"] },
   partial: { className: "border border-border-strong", icon: [Contrast, "text-text-secondary"] },
   neutral: { className: "border border-border" },
+};
+
+const verdicts: Record<SheetContent["result"], string> = {
+  correct: "Correct.",
+  wrong: "Incorrect.",
+  partial: "Partly correct.",
 };
 
 function Label({ children }: { children: ReactNode }) {
@@ -73,13 +77,10 @@ export function AnswerSheet({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const [announced, setAnnounced] = useState("");
-  const announcement = [
-    `Result: ${statuses[content.result].label}`,
-    content.errorType && `Error type: ${statuses[content.errorType].label}`,
-    content.kind === "question" && content.note,
-  ]
+  const verdict = verdicts[content.result];
+  const announcement = [verdict, content.kind === "question" && content.note]
     .filter(Boolean)
-    .join(". ");
+    .join(" ");
 
   // Open as a modal (focus stays inside, the page behind is inert), focus the title and
   // announce the verdict. Escape and the scrim do not close it: only Continue does.
@@ -103,17 +104,16 @@ export function AnswerSheet({
         <span className="h-1 w-9 rounded-full bg-border-strong" />
       </div>
       <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pt-3 pb-6">
-        <div className="flex flex-col gap-1">
-          <StatusRows
-            result={content.result}
-            errorType={content.errorType}
-            titleId="answer-sheet-title"
-            titleRef={titleRef}
-          />
-          {content.kind === "question" && content.note && (
-            <p className="type-small text-text-secondary">{content.note}</p>
-          )}
-        </div>
+        {/* The verdict is for screen readers; the boxes below show it with icons and labels. */}
+        <h2 ref={titleRef} id="answer-sheet-title" tabIndex={-1} className="sr-only">
+          {verdict}
+        </h2>
+        {content.kind === "question" && (content.detail || content.note) && (
+          <div className="-mb-2 flex flex-col gap-1">
+            {content.detail && <p className="type-small text-text-secondary">{content.detail}</p>}
+            {content.note && <p className="type-small text-text-secondary">{content.note}</p>}
+          </div>
+        )}
         <p role="status" className="sr-only">
           {announced}
         </p>
@@ -122,9 +122,6 @@ export function AnswerSheet({
           {content.boxes.map((box) => (
             <Box key={box.label} box={box} />
           ))}
-          {content.kind === "question" && content.detail && (
-            <p className="type-small text-text-secondary">{content.detail}</p>
-          )}
           {content.kind === "question" && content.canMarkCorrect && onMarkCorrect && (
             <div>
               <Button
@@ -201,7 +198,7 @@ export function AnswerSheet({
           dialogRef.current.showModal();
         }
       }}
-      className="fixed inset-x-0 top-auto bottom-0 m-0 mx-auto max-h-[65dvh] w-full max-w-app flex-col overflow-hidden rounded-t-card bg-surface p-0 text-text open:flex"
+      className="fixed inset-x-0 top-auto bottom-0 m-0 mx-auto max-h-[65dvh] outline-none focus-visible:outline-none w-full max-w-app flex-col overflow-hidden rounded-t-card bg-surface p-0 text-text open:flex"
     >
       {body}
     </dialog>
