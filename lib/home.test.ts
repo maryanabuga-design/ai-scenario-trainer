@@ -1,0 +1,116 @@
+import { describe, expect, it } from "vitest";
+import { dotCount, nextUp, topicPill, topicRow } from "@/lib/home";
+import { getStep } from "@/lib/scenario";
+import { scoreStep } from "@/lib/scoring";
+import type { RepeatSession, ScenarioSession } from "@/lib/session";
+import { weakTopics } from "@/lib/weak-topics";
+import type { WeakTopic } from "@/lib/weak-topics";
+
+// s2 c unsure: guess on S2; s5 a unsure: knowledge gap on S5.
+const topics = weakTopics([scoreStep(getStep("s2"), "c", 2), scoreStep(getStep("s5"), "a", 1)]);
+const s2 = topics.find((topic) => topic.sectionId === "S2")!;
+
+const repeatRound = (sectionIds: string[], answered: number): RepeatSession => ({
+  kind: "repeat",
+  topics: sectionIds,
+  items: [
+    { type: "step", id: "s2" },
+    { type: "question", id: "q-s2-1" },
+  ],
+  index: answered,
+  phase: "decide",
+  answers: Array.from({ length: answered }, () => ({
+    type: "step" as const,
+    stepId: "s2",
+    optionId: "c",
+    confidence: 3 as const,
+    explanation: "",
+  })),
+  finished: false,
+});
+
+const scenarioSession: ScenarioSession = {
+  mode: "full",
+  stepIds: ["s1", "s2", "s3", "s4", "s5", "s6"],
+  index: 2,
+  phase: "decide",
+  answers: [],
+  finished: false,
+};
+
+describe("Next up", () => {
+  it("continues an unfinished session first", () => {
+    expect(nextUp({ unfinished: scenarioSession, topics, hasHistory: true })).toEqual({
+      kind: "continue",
+      title: "Continue your full session",
+      detail: "Step 3 of 6",
+      action: "Continue",
+      linksToTopics: false,
+    });
+    const round = nextUp({ unfinished: repeatRound(["S2"], 0), topics, hasHistory: true });
+    expect(round.title).toBe("Continue your repeat round");
+    expect(round.detail).toBe("Item 1 of 2");
+  });
+
+  it("then offers the weak topics with a breakdown, linking to the Weak topics page", () => {
+    expect(nextUp({ unfinished: null, topics, hasHistory: true })).toEqual({
+      kind: "repeat",
+      title: "2 topics to repeat",
+      detail: "1 knowledge gap, 1 guess",
+      action: "Repeat weak topics",
+      linksToTopics: true,
+    });
+    expect(nextUp({ unfinished: null, topics: [s2], hasHistory: true }).title).toBe(
+      "1 topic to repeat",
+    );
+  });
+
+  it("starts the first scenario when there are no sessions yet", () => {
+    const first = nextUp({ unfinished: null, topics: [], hasHistory: false });
+    expect(first.kind).toBe("first");
+    expect(first.title).toBe("Start your first scenario");
+    expect(first.action).toBe("Start a scenario");
+    expect(first.linksToTopics).toBe(false);
+  });
+
+  it("is ready for a new scenario when every topic has been repeated", () => {
+    const ready = nextUp({ unfinished: null, topics: [], hasHistory: true });
+    expect(ready.kind).toBe("new");
+    expect(ready.title).toBe("Ready for a new scenario");
+    expect(ready.action).toBe("Start a scenario");
+  });
+});
+
+describe("topic pill", () => {
+  it("says how many answers to repeat", () => {
+    expect(topicPill(s2, null)).toEqual({ text: "1 to repeat", progress: null });
+  });
+
+  it("counts the repeated items once that topic's repeat round has started", () => {
+    expect(topicPill(s2, repeatRound(["S2"], 1))).toEqual({
+      text: "1 of 2 repeated",
+      progress: 0.5,
+    });
+    expect(topicPill(s2, repeatRound(["S2"], 0))).toEqual({ text: "0 of 2 repeated", progress: 0 });
+  });
+
+  it("ignores a repeat round for other or several topics", () => {
+    expect(topicPill(s2, repeatRound(["S5"], 1)).progress).toBeNull();
+    expect(topicPill(s2, repeatRound(["S2", "S5"], 1)).progress).toBeNull();
+    expect(topicPill(s2, scenarioSession).progress).toBeNull();
+  });
+});
+
+describe("topic row and dots", () => {
+  const many: WeakTopic[] = Array.from({ length: 7 }, (_, index) => ({
+    ...s2,
+    sectionId: `S${index + 1}`,
+  }));
+
+  it("shows at most five cards and one dot per card", () => {
+    expect(topicRow(many)).toHaveLength(5);
+    expect(dotCount(many)).toBe(5);
+    expect(dotCount(topics)).toBe(2);
+    expect(dotCount([])).toBe(0);
+  });
+});
