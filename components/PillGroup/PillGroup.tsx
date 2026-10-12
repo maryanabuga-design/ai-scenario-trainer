@@ -1,4 +1,5 @@
-/** A row of pill-shaped radio buttons. The selected one is the black pill. */
+import { Check } from "lucide-react";
+/** A row of option chips (radio buttons). The selected one is the dark green pill with a check. */
 export function PillGroup<T extends string | number>({
   name,
   legend,
@@ -21,12 +22,12 @@ export function PillGroup<T extends string | number>({
           return (
             <label
               key={String(option.value)}
-              className={`inline-flex min-h-11 items-center rounded-full border px-4 type-small has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${
+              className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 type-small has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${
                 option.disabled
                   ? "cursor-not-allowed border-transparent bg-surface-muted text-text-secondary"
                   : checked
                     ? "cursor-pointer border-primary bg-primary text-primary-text"
-                    : "cursor-pointer border-border bg-surface text-text active:bg-surface-muted"
+                    : "cursor-pointer border-border-strong bg-transparent text-text active:bg-secondary-pressed"
               }`}
             >
               <input
@@ -38,6 +39,7 @@ export function PillGroup<T extends string | number>({
                 onChange={() => onChange(option.value)}
                 className="sr-only"
               />
+              {checked && <Check size={14} strokeWidth={2.5} aria-hidden="true" />}
               {option.label}
             </label>
           );

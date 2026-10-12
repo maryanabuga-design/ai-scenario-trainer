@@ -1,3 +1,4 @@
+import { Check } from "lucide-react";
 import type { Confidence } from "@/lib/scenario";
 import { scenario } from "@/lib/scenario";
 
@@ -24,10 +25,10 @@ export function ConfidenceSelector({
           return (
             <label
               key={level}
-              className={`inline-flex min-h-11 cursor-pointer items-center rounded-full border px-4 type-small has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${
+              className={`inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full border px-4 type-small has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${
                 checked
                   ? "border-primary bg-primary text-primary-text"
-                  : "border-border bg-surface text-text active:bg-surface-muted"
+                  : "border-border-strong bg-transparent text-text active:bg-secondary-pressed"
               }`}
             >
               <input
@@ -38,6 +39,7 @@ export function ConfidenceSelector({
                 onChange={() => onChange(level)}
                 className="sr-only"
               />
+              {checked && <Check size={14} strokeWidth={2.5} aria-hidden="true" />}
               {scenario.confidenceScale[`${level}`]}
             </label>
           );
