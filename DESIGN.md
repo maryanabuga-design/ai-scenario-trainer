@@ -35,10 +35,10 @@ Status: draft v1. Values marked (proposal) are open for change. Update this file
   --correct-bg: #E8F3EC;     /* reserved: Correct only */
   --wrong-bg: #FBEAE8;       /* reserved: Incorrect only */
   --caution-bg: #F8EFD9;
-  --secure: #1D5A85;         /* Secure error type, 6.3:1 on --secure-bg */
-  --secure-bg: #E3EEF7;
-  --misconception: #7A2E6B;  /* Misconception error type, 7.2:1 on --misconception-bg */
-  --misconception-bg: #F5E6F1;
+  --secure: #3D5A43;         /* Secure error type (sage), 6.1:1 on --secure-bg */
+  --secure-bg: #E2E7DD;
+  --misconception: #7A3049;  /* Misconception error type (rose), 6.9:1 on --misconception-bg */
+  --misconception-bg: #F5DCE0;
 
   /* Category tags: pastel background, always --text on top (12:1 or more) */
   --tag-yellow: #F6EFA6;
@@ -57,7 +57,7 @@ Status: draft v1. Values marked (proposal) are open for change. Update this file
 ```
 Rules:
 - Accent must not be green or red (those carry meaning).
-- Green and red are reserved for the answer result: `--correct` / `--correct-bg` mean "Correct" and `--wrong` / `--wrong-bg` mean "Incorrect", nothing else. Error types and material status use their own colours. The status green stays clearly apart from the olive of the gradient.
+- The saturated status green and red are reserved for the answer result: `--correct` / `--correct-bg` mean "Correct" and `--wrong` / `--wrong-bg` mean "Incorrect". Error types use their own muted tints (sage, warm grey, soft amber, soft rose), always with their own icon and name, so a type is never read from its colour. Material status uses neutral and amber. The status green stays clearly apart from the olive of the gradient.
 - Status = icon + label + color. Never color alone.
 - Tags are categories, never status. Pastel green and pink are not tag colours, so tags cannot be read as correct or wrong.
 - Dark theme is out of scope for the MVP.
@@ -76,7 +76,7 @@ Rules:
 - No shadows except a subtle one on overlays (sheet, dialogs).
 
 ## Gradients
-- Allowed only in: onboarding screens, the top area of Home, material covers, and the header of Session results.
+- Allowed only in: onboarding screens, the top area of Home and material covers. The Results header uses the soft light header instead (see "Results screen").
 - One smooth mesh in a muted military palette: sand, khaki, moss and dark olive (`--mesh-*`), soft and low in contrast. Built from a three-colour linear blend plus two round colour fields, blurred by about 70px and mixed with `--bg` (sand about 85%, khaki about 65%, moss about 40%, olive about 30%). The cool variant uses the same colours in a different arrangement. Colours only: no camouflage pattern, no military imagery. No separate visible blobs, edges or stripes. The blur layer is clipped by the card's rounded corners.
 - Never on Session setup, the decision step or the answer sheet. Never behind body text, form controls or status badges. Text on a gradient keeps 4.5:1 against its darkest point (3:1 for text 24px and larger): `--text` is 9:1 or more on every mesh tone; inside a gradient zone `--text-secondary` is replaced by `--text-secondary-on-mesh` (5:1 or more), and secondary text there is 24px or larger.
 - Material cover: a 56px or larger rounded square (16px radius) filled with a gradient. Each material gets a fixed combination, not random.
@@ -118,7 +118,7 @@ From `docs/mvp-matrix-and-ia.md`.
   - Scenario: length cards Short (3 decisions, about 5 min, steps 1 to 3), Full (6, about 10 min) and Extended (10, about 16 min: the full story with four extra steps). Times are always labelled as estimates ("about"). Lengths the material's scenario does not have are shown disabled with "Not available for this material" (the flood guide has only 3 decisions, so it starts there).
   - Quiz: guide sections as compact checkbox rows (section id, title, number of questions in the bank), with "Select all"; then the number of questions as pills 5, 10, 15 and Custom. Custom shows a stepper: a "−" and a "+" icon button of 44px around the number, the number announced politely. Counts above what the chosen sections hold are disabled, with the line "These sections have N questions." At least one section must be chosen; the start button explains what is missing.
 - Scenario session: Decision (situation, options, confidence, "Continue") → Explain (the chosen option as a quote and one question: "In one sentence, why did you choose this?") → the answer sheet rises over the Explain screen → "Continue" → next step. There is no separate feedback screen and no AI follow-up question. The progress dots count steps, not screens. Source sheet available throughout.
-- Session results (the final analysis): results card → Error types card → the consequence timeline → error analysis grouped by error type (status rows, the full why, sources, Ask AI link) → weak topics → "Marked correct by you" count → repeat action. Everything that is not in the answer sheet lives here.
+- Session results (the final analysis): soft light header → progress card → Error types card → Outcome card → Step by step card → weak topics → "Marked correct by you" count; the Error analysis is a separate screen (from "Details" and from the Correct and Incorrect rows). See "Results screen (soft surface)".
 
 ## Components and states
 Every component needs: default, hover, focus-visible, active, disabled. Inputs also need error.
@@ -162,9 +162,7 @@ Every component needs: default, hover, focus-visible, active, disabled. Inputs a
   - Misconception: cross icon, `--misconception` on `--misconception-bg`.
   - Shape: pill, 12 label size, 4px 10px padding. No description next to the chip; the Error types card on the results screen explains each type ("Wrong answer, high confidence").
 - Status rows (answer sheet and every result card in the analysis): two key-value rows, the label on the left in 14 `--text-secondary`, the chip on the right: "Result" with the result chip, then "Error type" with the error-type chip. The same pattern everywhere; never a chip floating at the top of a card, never sticky. Without a confidence rating (a quiz question answered without one, or "I don't know") only the "Result" row is shown.
-- Results card (top of Session results and Quiz results): a ring progress (64px, 6px stroke, `--border` track, `--correct` arc for the share answered correctly) with "N/M" in its centre in 18 medium tabular numerals and "correct" beside it; the ring is an image with the text equivalent "N of M correct". Under it two tinted rows (16px radius, at least 56px high): a soft green row (`--correct-bg`) with a check icon, the count and a "Correct" chip, and a soft red row (`--wrong-bg`) with a cross icon, the count and an "Incorrect" chip (chips white with the status colour so they stand out on the tint). Icon + label + colour, never colour alone. These tints are used for nothing else.
-- Error types card (Session results and Quiz results, reusable for Progress over all saved sessions): one white card, 24px radius, 16px padding. Header row: "Error types" (18 medium) on the left and a text button "Details" with an arrow icon on the right (underlined, at least 44px). Details jumps to the error analysis, which is grouped by error type. Then four type summary rows, always in this order and always all four: Secure, Guess, Knowledge gap, Misconception. No dark backgrounds, glass effects or gradients inside the card.
-- Type summary row: a non-interactive row on `--bg` (the warm off-white tint), 16px radius, 12px padding, 8px between rows. Left: a 40px round tile in the type's chip tint with its icon in the chip colour, 20px (Secure check `--secure` on `--secure-bg` 6.3:1, Guess question mark `--text-secondary` on `--surface-muted` with a 1px `--border` 5.8:1, Knowledge gap minus `--caution` on `--caution-bg` 5.2:1, Misconception cross `--misconception` on `--misconception-bg` 7.2:1). Middle: the type name (16 medium, `--text`) and its description below in 14 `--text-secondary` (6.1:1 on `--bg`): "Right answer, high confidence", "Right answer, but not sure", "Wrong answer, not sure", "Wrong answer, high confidence". Right: the count in a 32px round neutral badge (`--surface`, 1px `--border`, 14 medium tabular `--text`). A row with a count of 0 stays visible but muted: name in `--text-secondary` and regular weight, count in `--text-secondary`; the tile keeps its icon. Each row reads as one accessible name, for example "Secure, right answer, high confidence: 2". Icon + label, never colour alone.
+- Results screen components (soft light header, progress card, Error types card with type summary rows, Outcome card, Step by step card, circular back button): see "Results screen (soft surface)".
 - Source chip: shows "Guide · S2" (document name + section id; the guide has no page numbers) after a small document icon. Smaller than a button: 32px visible height, 12px horizontal padding, 14 text, `--text` on a soft `--surface-muted` fill, no border. The tap area still reaches 44px (an invisible extension above and below). It reads as a reference, not an action. Opens that section in the bottom sheet. Focus: the same 2px `--accent` ring. Text on the fill is 14:1.
 - Material cover: gradient square, see "Gradients".
 - Bottom navigation: a floating rounded bar, not attached to the screen edge. White pill-shaped bar, 1px `--border`, a very subtle shadow (it floats over content), 16px space at the sides and at least 12px below it (plus the safe area), on a flat `--bg` strip. Four items (Home, Materials, Progress, Profile), each with a simple line icon and a visible label, at least 44px high. Current item: a soft yellow pill (`--tag-yellow`) behind icon and label, text in `--text` medium, `aria-current="page"`. Others in `--text-secondary`.
@@ -182,7 +180,7 @@ Every component needs: default, hover, focus-visible, active, disabled. Inputs a
   - Short text: the answer dock (with "I don't know") instead of a field in the page, and the hint "A few words are enough."
   - True or false: two option cards side by side, True and False.
   - Then the optional confidence selector, labelled "How sure are you? (optional)". A primary "Check" in the action bar is enabled once there is an answer (short text sends with the dock instead). The answer sheet then rises over the question.
-- Quiz results: the same final analysis as session results without the situation outcome and timeline: the results card with points under the ring ("7.5 of 10 points"), the Error types card, analysis grouped by error type (status rows, the full why, sources; partial credit as "0.5 of 1 point"; a short answer the user marked correct shows "Marked correct by you"), "Marked correct by you: N", weak topics, and "Repeat weak questions".
+- Quiz results: the same Results screen without the Outcome and Step by step cards: the progress card shows the points under the title ("7.5 of 10 points"); the Error analysis marks a short answer the user marked correct with "Marked correct by you"; the summary card shows "Marked correct by you: N"; the action is "Repeat weak questions".
 - Ask AI button: only for steps with prepared answers (the flood scenario has none, so it is not shown there). Secondary pill with a sparkle icon, "Ask AI about this step", shown on the decision step under the source chips. In the results analysis each step card has "Ask AI about this step" as a secondary text link (underlined, sparkle icon, at least 44px) that opens the Ask AI sheet with the after-answer questions.
 - Ask AI sheet: a bottom sheet like the source sheet (24px top corners, `--surface`, scrim, subtle overlay shadow, Escape and Close dismiss it, focus is trapped and returns to the button), 85% of the screen height so the conversation has room. From top to bottom:
   - Header: "Ask AI" (serif 22), the step title in 14 `--text-secondary`, a Close button of at least 44px.
@@ -194,7 +192,7 @@ Every component needs: default, hover, focus-visible, active, disabled. Inputs a
   - With the on-screen keyboard open the sheet shrinks to the visible area so the input row stays above the keyboard.
 - The conversation is kept per step while the session is open.
 - Footer note: one line at the end of the content on every screen, above the bottom navigation or action bar, in 14 `--text-secondary`: "AI behavior is simulated for this prototype. All feedback comes from the source guide."
-- Session results (final analysis): two-tone headline on a gradient header → the results card (ring "N/M correct" and the tinted Correct and Incorrect rows) → the Error types card (four type summary rows and "Details") → situation outcome (each scenario's own rows as plain label/value rows, no charts: evacuation shows time lost, smoke level and, in Full and Extended, the injured colleague; flood shows time lost and water level) → "What happened": the consequence timeline, a numbered list with each step's title, consequence and state change → error analysis grouped by error type (a group heading with the chip and its count for each type that has items, in the order Secure, Guess, Knowledge gap, Misconception; within a group, steps or questions in the order answered; each card: title, the status rows, your choice and the better one, the full why, source chips, and on scenario steps the "Ask AI about this step" text link) → weak topics → "Marked correct by you: N" (only when the session had questions) → primary action "Repeat weak topics" with the number of items it replays in one line above it, text action "Back to Home".
+- Session results: see "Results screen (soft surface)" below.
 - Tutor message: plain text, source chips inline, no avatar character. Used for AI answers in the Ask AI sheet.
 - Progress: segmented dots or a thin bar with a numeric label. No hatched or decorative bars.
 - Dropzone: dashed border on `--surface-muted`, 16px radius, one line of instruction, a "Choose a PDF" secondary button.
@@ -217,3 +215,68 @@ Every component needs: default, hover, focus-visible, active, disabled. Inputs a
 - Do: keep gradients to the four allowed zones.
 - Don't: use identical cards without hierarchy, random gradients or decorative icons.
 - Don't: celebrate with confetti or mascots; use a neutral confirmation instead.
+
+## Results screen (soft surface)
+Built 1:1 from the two reference screens (target images from 12 Oct 2026). Colours were measured from them; the ones marked "darkened" were adjusted to reach 4.5:1.
+
+Tokens (only on Results and Error analysis):
+```css
+:root {
+  --soft-page: #F4F1EC;      /* = --bg; measured #F2EEEB, the difference is not visible */
+  --soft-card: #FBF9F6;      /* warm near-white card fill */
+  --soft-divider: #EAE8E7;   /* thin row dividers inside cards */
+  --soft-shadow: 0 1px 2px rgba(60, 45, 30, 0.04), 0 8px 24px rgba(60, 45, 30, 0.05);
+  --soft-text-secondary: #5C5A55; /* grey descriptions, 6.1:1 or more on every tint below */
+
+  --header-light: #EEE7DC;   /* soft warm beige header, top */
+  --header-deep: #E3DACD;    /* soft warm beige header, bottom */
+  --header-shadow: #91785C;  /* plant shadow and window frame, drawn at 10 to 20% opacity */
+  --header-overline: #5F5A54; /* darkened from #6C6863: 4.9:1 on --header-deep */
+  --header-subline: #524C45;  /* 6.1:1 on --header-deep */
+
+  --ring: #417851;           /* ring arc and its check, 5:1 on --soft-card */
+  --ring-track: #E9E6E0;
+
+  --correct-row: #ECEFE8;  --correct-tile: #D9E4D7;  --correct-ink: #3F5F47; /* 6.2:1 on the row */
+  --wrong-row: #F7E9E9;    --wrong-tile: #F6DDDC;    --wrong-ink: #86474A;   /* 5.9:1 on the row */
+
+  --secure-row: #F3F4EF;   /* tile and badge: --secure-bg, icon --secure */
+  --guess-row: #F5F1EE;    --guess-tile: #E8E2DB;    --guess-ink: #4B433D;   /* 7.5:1 on the tile */
+  --gap-row: #F8F4EE;      /* tile and badge: --caution-bg, icon --caution */
+  --misconception-row: #F8F1EF; /* tile and badge: --misconception-bg, icon --misconception */
+}
+```
+
+Surface rules:
+- Page `--soft-page`; cards `--soft-card`, 24px radius, 20px padding, `--soft-shadow`, no border; 16px between cards. Card titles are sans, 22 semibold (not serif). Card subtitles 14 `--soft-text-secondary`.
+- Small uppercase labels: 12, medium, letter-spacing 0.06em; on a tint they use that tint's ink.
+- Circular back button: a 44px white (`--surface`) circle with a very soft shadow and a 20px arrow-left icon in `--text`, labelled "Back to Home" (Results) or "Back to results" (Error analysis). Focus: the usual 2px `--accent` ring.
+
+Soft light header (Results only; the other gradient zones keep the mesh):
+- About 180px high at 390 wide, full bleed. A vertical blend from `--header-light` to `--header-deep`, a blurred plant-leaf shadow in the top right and one thin vertical window-frame line (2px) on the right, both inline SVG in `--header-shadow` at 10 to 20% opacity and blurred. Nothing sits behind the text but the plain blend. No camouflage, no military imagery. If `public/results-header.jpg` exists it replaces the drawing.
+- Contents, 16px from the left: the circular back button (to Home; the session is already saved); 16px below it a 12 uppercase overline in `--header-overline` with the mode ("SHORT SESSION", "FULL SESSION", "EXTENDED SESSION", "QUIZ", "QUIZ REPEAT", "REPEAT ROUND"); the headline in 28 semibold `--text` (for example "You reached the south stairwell."); below it one line in 18 regular `--header-subline` ("Nothing to repeat this time." or "2 topics to repeat."). One heading element for screen readers. `--text` is 12.6:1 on the header.
+
+Progress card (overlaps the bottom of the header by 16px):
+- Top: a ring on the left (88px, 6px stroke, `--ring` arc on `--ring-track`, round caps). Inside: a 32px check in `--ring` when every answer is correct, otherwise the number correct in 22 semibold `--text`. The ring is an image with the text "N of M correct". Beside it the title "N/M correct" (22 semibold) and one sentence in 14 `--soft-text-secondary`:
+  - Short session: the scenario's "continues" sentence ("The full session continues to an injured colleague, the call for help and the assembly point.").
+  - Otherwise the first matching rule: misconceptions "You were sure, but N answer(s) did not match the guide."; knowledge gaps "N answer(s) need another look in the guide."; guesses "N right answer(s) were guesses. Repeat them to be sure."; else "Every answer was right and confident." (singular forms when N is 1).
+  - Quiz: points under the sentence in 14 `--soft-text-secondary` ("7.5 of 10 points").
+- Two rows under it, 8px apart, 16px radius, at least 56px high, 12px padding: Correct (`--correct-row`, a 36px round `--correct-tile` with a check in `--correct-ink`, the count in 24 regular `--text`, "CORRECT" uppercase label in `--correct-ink` on the right and a chevron in `--correct-ink`), Incorrect (`--wrong-row`, `--wrong-tile` with a cross, "INCORRECT", in `--wrong-ink`). A row opens the Error analysis screen filtered to those answers; a row with 0 is not a link and has no chevron. Icon + label, never colour alone. These two tints are used for nothing else.
+
+Error types card:
+- Title "Error types", subtitle "See what kind of mistakes you made", and on the right "Details" with an arrow (underlined text button, at least 44px) that opens the Error analysis screen.
+- Type summary rows, always all four in this order: Secure, Guess, Knowledge gap, Misconception. Each row on its own tint (`--secure-row`, `--guess-row`, `--gap-row`, `--misconception-row`), no outline, 20px radius, 12px padding, 10px apart. Left: a 40px round tile in the type's tint with its outline icon, 20px (check; question mark in a circle; minus; cross). Middle: the name in 16 semibold `--text` and the description in 14 `--soft-text-secondary` ("Right answer, high confidence", "Right answer, but not sure", "Wrong answer, not sure", "Wrong answer, high confidence"). Right: the count in a 28px round badge in the tile's tint, 14 medium `--text`. Zero rows look the same as the others (not muted). Each row reads as one accessible name ("Secure, right answer, high confidence: 2"). Rows are not buttons. Reusable for Progress.
+
+Outcome card (scenario sessions only, not quizzes):
+- Title "Outcome". Rows: label in 16 regular `--text` on the left, value in 16 semibold on the right, thin `--soft-divider` lines between rows, at least 48px each. "Time lost" ("1 min 30 s", "0 s"); "Smoke on the route" with the state label and the start ("Moderate (up from Light)", "Light (unchanged)"); in Full and Extended "Colleague's condition" ("Stable" or "Worsened"). Short shows time lost and smoke only. The flood scenario shows "Time lost" and "Water level" ("Rising (up from Low)"). The labels for every state value live in each scenario JSON (`stateLabels`).
+
+Step by step card (scenario sessions only):
+- Title "Step by step", subtitle "How each choice played out". A numbered list: a 32px soft circle (`--soft-page`) with the number in 14 medium `--soft-text-secondary`, then the step title in 16 medium `--text` and the consequence in 14 `--soft-text-secondary`, 16px between items.
+
+Error analysis screen (`/session/results/analysis`, also `?show=correct` and `?show=incorrect`):
+- Same page and card style. The circular back button (to Results, back at the same scroll position), then the title "Error analysis" ("Correct answers" or "Incorrect answers" when filtered) in 28 semibold. It works after a reload: the finished session is saved.
+- Groups in this order: Misconception, Knowledge gap, Guess, Secure; empty groups are hidden. Group header: the error-type chip and "N answers" in 14 `--soft-text-secondary`.
+- Each answer is a soft card: the step or question title in 18 semibold; the status rows (Result, Error type); "You chose" (and "Better choice" when wrong; "Your answer" and "Correct answer" for a question); "Why" with source chips; "What happened" with the state change (scenario only); the "Ask AI about this step" text link (scenario steps with prepared answers).
+- A sticky primary "Repeat weak topics" (or "Repeat weak questions") only when there are weak answers.
+
+Results actions: the sticky action bar keeps "Repeat weak topics" (when there is something to repeat) and the text action "Back to Home". The footer note stays at the end of the content.
