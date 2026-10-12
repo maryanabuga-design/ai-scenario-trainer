@@ -7,6 +7,7 @@ import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
 import { PillGroup } from "@/components/PillGroup/PillGroup";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
+import { SectionList } from "@/components/SectionList/SectionList";
 import { Stepper } from "@/components/Stepper/Stepper";
 import { Tag } from "@/components/Tag/Tag";
 import { quizCounts } from "@/lib/quiz";
@@ -20,6 +21,7 @@ import {
   quizAmount,
 } from "@/lib/quiz-setup";
 import { getScenario } from "@/lib/scenario";
+import { keepOneHint } from "@/lib/sections";
 import type { Length, ScenarioDef } from "@/lib/scenario";
 import type { Training } from "@/lib/training";
 
@@ -90,15 +92,6 @@ export function SessionSetup({
   const quiz = value.mode === "quiz";
   const blocked = quiz && value.sections.length === 0;
 
-  function toggleSection(id: string) {
-    const next = value.sections.includes(id)
-      ? value.sections.filter((section) => section !== id)
-      : [...value.sections, id];
-    onChange(
-      fitSetup({ ...value, sections: sections.map((s) => s.id).filter((s) => next.includes(s)) }),
-    );
-  }
-
   return (
     <div className="flex flex-col gap-6">
       <CircleBackButton
@@ -162,48 +155,17 @@ export function SessionSetup({
 
       {quiz && (
         <>
-          <fieldset className="flex flex-col gap-2">
-            <legend className="type-body-strong mb-3 flex w-full items-center justify-between">
-              Guide sections
-            </legend>
-            <div className="-mt-1 mb-1">
-              <Button
-                variant="text"
-                onClick={() =>
-                  onChange(
-                    fitSetup({
-                      ...value,
-                      sections:
-                        value.sections.length === sections.length ? [] : sections.map((s) => s.id),
-                    }),
-                  )
-                }
-              >
-                {value.sections.length === sections.length ? "Clear all" : "Select all"}
-              </Button>
-            </div>
-            {sections.map((section) => (
-              <ChoiceCard
-                key={section.id}
-                type="checkbox"
-                compact
-                name="sections"
-                value={section.id}
-                checked={value.sections.includes(section.id)}
-                onChange={toggleSection}
-              >
-                <span className="type-small flex items-baseline gap-3">
-                  <span className="w-8 shrink-0 text-text-secondary tabular-nums">
-                    {section.id}
-                  </span>
-                  <span className="flex-1">{section.title}</span>
-                  <span className="shrink-0 text-right text-text-secondary tabular-nums">
-                    {questionCountLabel(availableQuestions([section.id]))}
-                  </span>
-                </span>
-              </ChoiceCard>
-            ))}
-          </fieldset>
+          <SectionList
+            title="Guide sections"
+            titleId="setup-sections"
+            sections={sections.map((section) => ({
+              id: section.id,
+              title: section.title,
+              detail: questionCountLabel(availableQuestions([section.id])),
+            }))}
+            selected={value.sections}
+            onChange={(selected) => onChange(fitSetup({ ...value, sections: selected }))}
+          />
           <p aria-live="polite" className="type-small -mt-3 text-text-secondary tabular-nums">
             {availableLine(value.sections)}
           </p>
@@ -259,11 +221,7 @@ export function SessionSetup({
             Starting replaces your unfinished session.
           </p>
         )}
-        {blocked && (
-          <p className="type-small text-center text-text-secondary">
-            Choose at least one guide section to continue.
-          </p>
-        )}
+        {blocked && <p className="type-small text-center text-text-secondary">{keepOneHint}</p>}
         <Button disabled={blocked} onClick={onStart}>
           {quiz ? "Start quiz" : "Start session"}
         </Button>

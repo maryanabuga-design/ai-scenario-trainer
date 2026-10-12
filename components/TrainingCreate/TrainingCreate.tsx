@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { Button } from "@/components/Button/Button";
 import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
+import { SectionList } from "@/components/SectionList/SectionList";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import type { Material } from "@/lib/materials";
 import { questionsFor } from "@/lib/quiz";
@@ -31,23 +31,7 @@ export function TrainingCreate({
   const { sections: guideSections } = useSourceSheet();
   const plan = planTraining(material);
   const problem = choiceProblem(plan, choice);
-  const [keepOne, setKeepOne] = useState(false);
   const questionCount = questionsFor(choice.sections).length;
-
-  function toggleSection(id: string) {
-    const ticked = choice.sections.includes(id);
-    if (ticked && choice.sections.length === 1) {
-      setKeepOne(true);
-      return;
-    }
-    setKeepOne(false);
-    onChange({
-      ...choice,
-      sections: ticked
-        ? choice.sections.filter((section) => section !== id)
-        : plan.sections.filter((section) => section === id || choice.sections.includes(section)),
-    });
-  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -99,36 +83,17 @@ export function TrainingCreate({
         </ChoiceCard>
       </fieldset>
 
-      <fieldset className="flex flex-col gap-2">
-        <legend className="type-body-strong mb-3">Sections found</legend>
-        <p className="type-small mb-1 text-text-secondary">
-          The scenario is one prepared story through the guide. The sections you keep shape the
-          quiz.
-        </p>
-        {plan.sections.map((id) => (
-          <ChoiceCard
-            key={id}
-            type="checkbox"
-            compact
-            name="sections"
-            value={id}
-            checked={choice.sections.includes(id)}
-            onChange={toggleSection}
-          >
-            <span className="type-small flex items-baseline gap-3">
-              <span className="w-8 shrink-0 text-text-secondary tabular-nums">{id}</span>
-              <span className="flex-1">
-                {guideSections.find((section) => section.id === id)?.title}
-              </span>
-            </span>
-          </ChoiceCard>
-        ))}
-        {keepOne && (
-          <p role="status" className="type-small text-text-secondary">
-            Keep at least one section.
-          </p>
-        )}
-      </fieldset>
+      <SectionList
+        title="Sections found"
+        titleId="create-sections"
+        helper="The scenario is one prepared story through the guide. The sections you keep shape the quiz."
+        sections={plan.sections.map((id) => ({
+          id,
+          title: guideSections.find((section) => section.id === id)?.title ?? id,
+        }))}
+        selected={choice.sections}
+        onChange={(sections) => onChange({ ...choice, sections })}
+      />
 
       <ActionBar>
         {problem && <p className="type-small text-center text-text-secondary">{problem}</p>}

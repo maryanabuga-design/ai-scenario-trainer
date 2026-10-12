@@ -8,7 +8,7 @@ const variants: Record<Variant, string> = {
     "type-button min-h-12 w-full bg-primary px-6 text-primary-text hover:opacity-90 active:opacity-80",
   secondary:
     "type-button min-h-11 border-[1.5px] border-primary bg-transparent px-5 text-primary active:bg-secondary-pressed",
-  text: "type-body min-h-11 px-3 text-text underline decoration-1 underline-offset-4 hover:decoration-2 active:opacity-70",
+  text: "type-body min-h-11 px-3 text-text underline decoration-1 underline-offset-4 hover:decoration-2 active:opacity-70 disabled:bg-transparent disabled:decoration-1",
 };
 
 function classes(variant: Variant) {
