@@ -1,5 +1,8 @@
 import { sessionLabel } from "@/lib/progress";
-import { sessionLengths } from "@/lib/scenario";
+import type { Material } from "@/lib/materials";
+import { getScenario, sessionLengths } from "@/lib/scenario";
+import type { ScenarioDef } from "@/lib/scenario";
+import { planTraining } from "@/lib/training";
 import type { Session } from "@/lib/session";
 import { isQuiz, isRepeatRound, itemCount } from "@/lib/session";
 import type { WeakTopic } from "@/lib/weak-topics";
@@ -94,4 +97,34 @@ export function topicPill(topic: WeakTopic, unfinished: Session | null): TopicPi
     return { text: `${done} of ${total} repeated`, progress: total === 0 ? 0 : done / total };
   }
   return { text: `${topic.items.length} to repeat`, progress: null };
+}
+
+/**
+ * The materials shown under "New scenario": ready ones whose content holds a whole prepared
+ * scenario, one card per scenario (a re-uploaded copy of the guide does not add a second card).
+ */
+export function homeScenarios(materials: Material[]): Material[] {
+  const seen = new Set<string>();
+  return materials.filter((material) => {
+    if (material.status !== "ready") return false;
+    const plan = planTraining(material);
+    if (!plan.canScenario || seen.has(plan.scenarioId)) return false;
+    seen.add(plan.scenarioId);
+    return true;
+  });
+}
+
+/** "Short: 3 decisions, about 5 min. Full: 6 decisions, about 10 min." and the quiz line. */
+export function scenarioLines(def: ScenarioDef): string[] {
+  const lengths = (["short", "full"] as const).flatMap((length) => {
+    const option = def.lengths[length];
+    if (!option) return [];
+    const name = length === "short" ? "Short" : "Full";
+    return [`${name}: ${option.stepIds.length} decisions, about ${option.minutes} min.`];
+  });
+  return [lengths.join(" "), "Or take a quiz on any guide sections, with five kinds of questions."];
+}
+
+export function scenarioTitle(material: Material): string {
+  return getScenario(material.scenarioId).title;
 }

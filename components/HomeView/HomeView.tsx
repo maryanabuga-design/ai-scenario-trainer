@@ -1,121 +1,91 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { Gradient } from "@/components/Gradient/Gradient";
-import { RepeatSummary } from "@/components/RepeatSummary/RepeatSummary";
-import { Tag } from "@/components/Tag/Tag";
-import { sessionLabel } from "@/lib/progress";
-import { getScenario, scenario, sessionLengths } from "@/lib/scenario";
+import { NextUpCard } from "@/components/NextUpCard/NextUpCard";
+import { ScenarioCard } from "@/components/ScenarioCard/ScenarioCard";
+import { TopicRow } from "@/components/TopicRow/TopicRow";
+import { nextUp } from "@/lib/home";
 import type { ScoredItem } from "@/lib/scoring";
 import type { Session } from "@/lib/session";
 import type { WeakTopic } from "@/lib/weak-topics";
-import { isQuiz, isRepeatRound, itemCount } from "@/lib/session";
+import { weakTopics } from "@/lib/weak-topics";
 
+export type HomeScenario = { id: string; title: string; lines: string[]; onOpen: () => void };
+
+/** Home: the direction, the headline, Next up, the weak topics row and the scenarios. */
 export function HomeView({
   directionTitle,
   unfinished,
   weakItems,
+  hasHistory,
+  scenarios,
   onRepeat,
+  onStartScenario,
 }: {
   directionTitle: string;
   unfinished: Session | null;
   weakItems: ScoredItem[];
+  hasHistory: boolean;
+  scenarios: HomeScenario[];
   onRepeat: (topics: WeakTopic[]) => void;
+  onStartScenario: () => void;
 }) {
-  return (
-    <div className="flex flex-col gap-8">
-      <Gradient
-        tone="warm"
-        className="-mx-4 -mt-6 flex flex-col items-start gap-4 px-4 pt-10 pb-10"
-      >
-        <Tag tone="yellow">{directionTitle}</Tag>
-        <h1 className="text-3xl leading-tight font-medium">
-          Practise a decision.{" "}
-          <span className="text-text-secondary">Explain it, then check it against the guide.</span>
-        </h1>
-      </Gradient>
+  const topics = weakTopics(weakItems);
+  const next = nextUp({ unfinished, topics, hasHistory });
 
-      {unfinished && (
-        <section aria-labelledby="continue-title" className="flex flex-col gap-3">
-          <h2 id="continue-title" className="text-lg font-medium">
-            Continue session
-          </h2>
-          <Link
-            href="/session"
-            className="flex items-center gap-3 rounded-card bg-surface p-4 active:bg-surface-muted"
-          >
-            <span className="flex min-w-0 flex-1 flex-col gap-2">
-              <div>
-                <Tag
-                  tone={
-                    isRepeatRound(unfinished)
-                      ? "yellow"
-                      : isQuiz(unfinished)
-                        ? "blue"
-                        : unfinished.mode === "short"
-                          ? "peach"
-                          : "lilac"
-                  }
-                >
-                  {sessionLabel(unfinished)}
-                </Tag>
-              </div>
-              <p className="font-semibold text-xl">
-                {isRepeatRound(unfinished)
-                  ? `Weak topics: ${unfinished.topics.join(", ")}`
-                  : isQuiz(unfinished)
-                    ? `Quiz on ${unfinished.sections.join(", ")}`
-                    : getScenario(unfinished.scenarioId).title}
-              </p>
-              <p className="text-sm text-text-secondary tabular-nums">
-                {isRepeatRound(unfinished) ? "Item" : isQuiz(unfinished) ? "Question" : "Step"}{" "}
-                {unfinished.index + 1} of {itemCount(unfinished)}
-              </p>
-            </span>
-            <ChevronRight
-              size={20}
-              strokeWidth={2}
-              aria-hidden="true"
-              className="shrink-0 text-text-secondary"
-            />
-          </Link>
+  return (
+    <div className="flex flex-col gap-8 pb-4">
+      <header className="flex flex-col items-start gap-3 pt-2">
+        <p className="flex flex-col gap-2 text-sm text-text-secondary">
+          {directionTitle}
+          <span aria-hidden="true" className="h-px w-14 bg-border-strong" />
+        </p>
+        <h1 className="flex flex-col gap-3">
+          <span className="text-[26px] leading-[1.2] font-normal text-text">
+            <span className="block">Practise a decision.</span>
+            <span className="block">Explain it, then check it against the guide.</span>
+          </span>
+          <span className="text-sm text-text-secondary">Small steps. Real progress.</span>
+        </h1>
+      </header>
+
+      <NextUpCard next={next} onRepeat={() => onRepeat(topics)} onStartScenario={onStartScenario} />
+
+      {topics.length > 0 && (
+        <section aria-labelledby="topics-title" className="flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-4">
+            <h2 id="topics-title" className="text-lg font-medium">
+              Topics
+            </h2>
+            <Link
+              href="/weak-topics"
+              className="-mr-2 inline-flex min-h-11 items-center gap-1.5 px-2 text-base text-text underline decoration-1 underline-offset-4 hover:decoration-2"
+            >
+              See all
+              <ArrowRight size={18} strokeWidth={2} aria-hidden="true" />
+            </Link>
+          </div>
+          <TopicRow
+            topics={topics}
+            unfinished={unfinished}
+            labelledBy="topics-title"
+            onRepeat={(topic) => onRepeat([topic])}
+          />
         </section>
       )}
-
-      <RepeatSummary weakItems={weakItems} onRepeat={onRepeat} />
 
       <section aria-labelledby="new-title" className="flex flex-col gap-3">
         <h2 id="new-title" className="text-lg font-medium">
           New scenario
         </h2>
-        <Link
-          href="/training/evacuation-guide"
-          className="flex items-center gap-3 rounded-card bg-surface p-4 active:bg-surface-muted"
-        >
-          <span className="flex min-w-0 flex-1 flex-col gap-2">
-            <div>
-              <Tag tone="yellow">Scenario</Tag>
-            </div>
-            <p className="font-semibold text-xl">{scenario.title}</p>
-            <p className="text-sm text-text-secondary">
-              Short: <span className="tabular-nums">{sessionLengths.short.stepIds.length}</span>{" "}
-              decisions, about <span className="tabular-nums">{sessionLengths.short.minutes}</span>{" "}
-              min. Full: <span className="tabular-nums">{sessionLengths.full.stepIds.length}</span>{" "}
-              decisions, about <span className="tabular-nums">{sessionLengths.full.minutes}</span>{" "}
-              min.
-            </p>
-            <p className="text-sm text-text-secondary">
-              Or take a quiz on any guide sections, with five kinds of questions.
-            </p>
-          </span>
-          <ChevronRight
-            size={20}
-            strokeWidth={2}
-            aria-hidden="true"
-            className="shrink-0 text-text-secondary"
-          />
-        </Link>
+        <ul className="flex flex-col gap-3">
+          {scenarios.map((card) => (
+            <li key={card.id}>
+              <ScenarioCard title={card.title} lines={card.lines} onOpen={card.onOpen} />
+            </li>
+          ))}
+        </ul>
       </section>
     </div>
   );

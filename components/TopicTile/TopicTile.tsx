@@ -35,7 +35,7 @@ export function TopicTile({ sectionId, icon }: { sectionId: string; icon: TopicI
   return (
     <span
       aria-hidden="true"
-      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] text-text ${tones[topicTone(sectionId)]}`}
+      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-text ${tones[topicTone(sectionId)]}`}
     >
       <Icon size={24} strokeWidth={2} />
     </span>

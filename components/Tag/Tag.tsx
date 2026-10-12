@@ -1,12 +1,13 @@
 import type { ReactNode } from "react";
 
-type Tone = "yellow" | "peach" | "blue" | "lilac";
+type Tone = "yellow" | "peach" | "blue" | "lilac" | "sage";
 
 const tones: Record<Tone, string> = {
   yellow: "bg-tag-yellow",
   peach: "bg-tag-peach",
   blue: "bg-tag-blue",
   lilac: "bg-tag-lilac",
+  sage: "bg-tag-sage",
 };
 
 export function Tag({ tone = "yellow", children }: { tone?: Tone; children: ReactNode }) {

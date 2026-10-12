@@ -47,6 +47,7 @@ import { sampleMaterials } from "@/lib/materials";
 import { materialFromSample, sampleFiles } from "@/lib/training";
 import { currentWeakItems, scoreStep } from "@/lib/scoring";
 import { topicIcon, weakTopics } from "@/lib/weak-topics";
+import { scenarioLines } from "@/lib/home";
 
 /** Interactive sample screens for the /screens review page. They never touch the saved session. */
 export function SetupSample({
@@ -193,13 +194,18 @@ export function RepeatSample() {
   );
 }
 
-/** Home on a first visit (nothing saved) or with an unfinished session and weak topics. */
-export function HomeSample({ withProgress = false }: { withProgress?: boolean }) {
+/** Home in each Next up state: first visit, weak topics, an unfinished session, all repeated. */
+export function HomeSample({
+  state = "first",
+}: {
+  state?: "first" | "repeat" | "continue" | "new";
+}) {
+  const scenarioDef = getScenario(undefined);
   return (
     <HomeView
       directionTitle={defaultDirection.title}
       unfinished={
-        withProgress
+        state === "continue"
           ? {
               mode: "full",
               stepIds: [...sessionLengths.full.stepIds],
@@ -210,8 +216,18 @@ export function HomeSample({ withProgress = false }: { withProgress?: boolean })
             }
           : null
       }
-      weakItems={withProgress ? currentWeakItems(sampleAnswers) : []}
+      weakItems={state === "repeat" || state === "continue" ? currentWeakItems(sampleAnswers) : []}
+      hasHistory={state !== "first"}
+      scenarios={[
+        {
+          id: "evacuation-guide",
+          title: scenarioDef.title,
+          lines: scenarioLines(scenarioDef),
+          onOpen: () => undefined,
+        },
+      ]}
       onRepeat={() => undefined}
+      onStartScenario={() => undefined}
     />
   );
 }
@@ -554,6 +570,7 @@ export function TopicIconsSample() {
           <li key={sectionId}>
             <TopicCard
               topic={{ sectionId, icon: topicIcon(sectionId), errorType: "guess", items: [item] }}
+              pill={{ text: "1 to repeat", progress: null }}
               onRepeat={() => undefined}
             />
           </li>

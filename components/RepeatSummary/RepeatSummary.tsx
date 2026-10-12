@@ -4,16 +4,14 @@ import { Button, ButtonLink } from "@/components/Button/Button";
 import { ListChecks } from "lucide-react";
 import { Card } from "@/components/Card/Card";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
-import { TopicCard } from "@/components/TopicCard/TopicCard";
+import { TopicRow } from "@/components/TopicRow/TopicRow";
 import type { ScoredItem } from "@/lib/scoring";
 import type { WeakTopic } from "@/lib/weak-topics";
 import { countTopics, describeCounts, weakTopics } from "@/lib/weak-topics";
 
-const ROW_LIMIT = 5;
-
 /**
  * The repeat summary card and the sideways row of up to five topic cards, by priority.
- * Used on Home and Progress.
+ * Used on Progress (Home has the Next up card).
  */
 export function RepeatSummary({
   weakItems,
@@ -64,16 +62,12 @@ export function RepeatSummary({
             </ButtonLink>
           </div>
         </div>
-        <ul
-          aria-labelledby="topics-title"
-          className="-mx-4 flex snap-x gap-3 overflow-x-auto scroll-px-4 px-4 pb-2"
-        >
-          {topics.slice(0, ROW_LIMIT).map((topic) => (
-            <li key={topic.sectionId} className="w-[40%] min-w-[136px] shrink-0 snap-start">
-              <TopicCard topic={topic} onRepeat={() => onRepeat([topic])} />
-            </li>
-          ))}
-        </ul>
+        <TopicRow
+          topics={topics}
+          unfinished={null}
+          labelledBy="topics-title"
+          onRepeat={(topic) => onRepeat([topic])}
+        />
       </div>
     </section>
   );

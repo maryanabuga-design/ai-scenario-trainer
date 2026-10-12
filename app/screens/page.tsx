@@ -441,12 +441,22 @@ export default function Screens() {
         <Group title="Home and progress">
           <PhoneFrame label="Home: first visit">
             <Screen nav="/">
-              <HomeSample />
+              <HomeSample state="first" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Home: with progress">
+          <PhoneFrame label="Home: topics to repeat">
             <Screen nav="/">
-              <HomeSample withProgress />
+              <HomeSample state="repeat" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Home: continue a session">
+            <Screen nav="/">
+              <HomeSample state="continue" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Home: all repeated">
+            <Screen nav="/">
+              <HomeSample state="new" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Weak topics">
