@@ -2,7 +2,49 @@ import type { Confidence, Effects, Step } from "@/lib/scenario";
 
 export type ErrorType = "secure" | "guess" | "knowledge_gap" | "misconception";
 
+/** The fixed order everywhere: Secure, Guess, Knowledge gap, Misconception. */
 export const errorTypes: ErrorType[] = ["secure", "guess", "knowledge_gap", "misconception"];
+
+export const errorTypeText: Record<ErrorType, { label: string; description: string }> = {
+  secure: { label: "Secure", description: "Right answer, high confidence" },
+  guess: { label: "Guess", description: "Right answer, but not sure" },
+  knowledge_gap: { label: "Knowledge gap", description: "Wrong answer, not sure" },
+  misconception: { label: "Misconception", description: "Wrong answer, high confidence" },
+};
+
+export type TypeSummaryRow = {
+  type: ErrorType;
+  label: string;
+  description: string;
+  count: number;
+  /** A count of 0: the row stays visible but muted. */
+  muted: boolean;
+  /** For example "Secure, right answer, high confidence: 2". */
+  accessibleName: string;
+};
+
+/** The four rows of the Error types card, always all four, in the fixed order. */
+export function errorTypeSummary(counts: Record<ErrorType, number>): TypeSummaryRow[] {
+  return errorTypes.map((type) => {
+    const { label, description } = errorTypeText[type];
+    const count = counts[type] ?? 0;
+    return {
+      type,
+      label,
+      description,
+      count,
+      muted: count === 0,
+      accessibleName: `${label}, ${description.charAt(0).toLowerCase()}${description.slice(1)}: ${count}`,
+    };
+  });
+}
+
+/** Answers grouped by error type, in the fixed order, leaving out empty groups. */
+export function groupByErrorType(items: ScoredItem[]): { type: ErrorType; items: ScoredItem[] }[] {
+  return errorTypes
+    .map((type) => ({ type, items: items.filter((item) => item.errorType === type) }))
+    .filter((group) => group.items.length > 0);
+}
 
 /**
  * From the scenario's errorTypeRule: high confidence means level 3.

@@ -8,6 +8,7 @@ import { AskAiProvider } from "@/components/AskAi/AskAi";
 import type { ChatMessage } from "@/components/AskAi/AskAi";
 import { AnswerSheet } from "@/components/AnswerSheet/AnswerSheet";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
+import { ErrorTypesCard } from "@/components/ErrorTypesCard/ErrorTypesCard";
 import { ExplainStep } from "@/components/ExplainStep/ExplainStep";
 import { HomeView } from "@/components/HomeView/HomeView";
 import { TopicCard } from "@/components/TopicCard/TopicCard";
@@ -574,6 +575,19 @@ export function EmptyStatesSample() {
         icon={History}
         text="No sessions yet. Finished sessions are saved here, in this browser only."
       />
+    </div>
+  );
+}
+
+/** The Error types card on its own: counts with a zero row, and an empty one. */
+export function ErrorTypesSample() {
+  return (
+    <div className="flex flex-col gap-6">
+      <ErrorTypesCard
+        counts={{ secure: 2, guess: 1, knowledge_gap: 0, misconception: 1 }}
+        detailsHref="#error-analysis"
+      />
+      <ErrorTypesCard counts={{ secure: 0, guess: 0, knowledge_gap: 0, misconception: 0 }} />
     </div>
   );
 }

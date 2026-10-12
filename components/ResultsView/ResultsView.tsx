@@ -5,10 +5,11 @@ import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
 import { AskAiButton } from "@/components/AskAi/AskAi";
+import { ErrorTypesCard } from "@/components/ErrorTypesCard/ErrorTypesCard";
 import { Gradient } from "@/components/Gradient/Gradient";
 import { StatusRows } from "@/components/StatusRows/StatusRows";
 import { SourceChip } from "@/components/SourceChip/SourceChip";
-import { StatusBadge, StatusIcon, statuses } from "@/components/StatusBadge/StatusBadge";
+import { StatusBadge, StatusIcon } from "@/components/StatusBadge/StatusBadge";
 import { describeEffects, formatMetric } from "@/lib/outcome";
 import { formatPoints } from "@/lib/progress";
 import { getScenario, getStep } from "@/lib/scenario";
@@ -16,7 +17,7 @@ import type { SessionMode } from "@/lib/scenario";
 import type { ScoredItem } from "@/lib/scoring";
 import {
   countErrorTypes,
-  errorTypes,
+  groupByErrorType,
   sumEffects,
   totalScore,
   weakItems,
@@ -178,22 +179,7 @@ export function ResultsView({
         </div>
       </Card>
 
-      <Section title="Error types">
-        <div className="flex flex-col divide-y divide-border">
-          {errorTypes.map((type) => (
-            <Row
-              key={type}
-              label={
-                <span className="flex flex-wrap items-center gap-2">
-                  <StatusBadge status={type} />
-                  <span className="text-sm text-text-secondary">{statuses[type].description}</span>
-                </span>
-              }
-              value={counts[type]}
-            />
-          ))}
-        </div>
-      </Section>
+      <ErrorTypesCard counts={counts} detailsHref="#error-analysis" />
 
       {showOutcome && outcomeRows.length > 0 && (
         <Section title="How the situation ended">
@@ -236,61 +222,76 @@ export function ResultsView({
         </Section>
       )}
 
-      <Section title="Error analysis">
-        <ol className="flex flex-col gap-3">
-          {items.map((item) => (
-            <li key={item.id}>
-              <Card className="flex flex-col gap-3">
-                <h3 className={item.kind === "step" ? "font-serif text-lg" : "font-medium"}>
-                  {item.title}
-                </h3>
-                <StatusRows
-                  result={item.correct ? "correct" : item.score > 0 ? "partial" : "wrong"}
-                  errorType={item.hasConfidence ? item.errorType : null}
-                />
-                <p className="text-sm">
-                  <span className="text-text-secondary">
-                    {item.kind === "step" ? "You chose: " : "Your answer: "}
-                  </span>
-                  {item.yourAnswer || "No answer"}
-                </p>
-                {!item.correct && (
-                  <p className="text-sm">
-                    <span className="text-text-secondary">
-                      {item.kind === "step" ? "Better: " : "Correct answer: "}
-                    </span>
-                    {item.correctAnswer}
-                  </p>
-                )}
-                {item.markedByYou && (
-                  <div>
-                    <StatusBadge status="marked" />
-                  </div>
-                )}
-                <div className="flex flex-col gap-1 text-sm">
-                  <span className="text-text-secondary">Why</span>
-                  {item.why.map((line) => (
-                    <p key={line}>{line}</p>
-                  ))}
-                </div>
-                {item.kind === "question" && item.score > 0 && item.score < 1 && (
-                  <p className="text-sm text-text-secondary tabular-nums">
-                    Partly correct: {formatPoints(item.score)} of 1 point
-                  </p>
-                )}
-                <div className="flex flex-wrap gap-2">
-                  {item.sources.map((sectionId) => (
-                    <SourceChip key={sectionId} sectionId={sectionId} />
-                  ))}
-                </div>
-                {item.kind === "step" && (
-                  <AskAiButton step={getStep(item.id)} phase="feedback" variant="link" />
-                )}
-              </Card>
-            </li>
-          ))}
-        </ol>
-      </Section>
+      <section id="error-analysis" tabIndex={-1} className="flex scroll-mt-4 flex-col gap-6">
+        <h2 className="text-lg font-medium">Error analysis</h2>
+        {groupByErrorType(items).map((group) => (
+          <section
+            key={group.type}
+            aria-labelledby={`analysis-${group.type}`}
+            className="flex flex-col gap-3"
+          >
+            <h3 id={`analysis-${group.type}`} className="flex items-center gap-2">
+              <StatusBadge status={group.type} />
+              <span className="text-sm text-text-secondary tabular-nums">
+                {group.items.length} {group.items.length === 1 ? "answer" : "answers"}
+              </span>
+            </h3>
+            <ol className="flex flex-col gap-3">
+              {group.items.map((item) => (
+                <li key={item.id}>
+                  <Card className="flex flex-col gap-3">
+                    <h4 className={item.kind === "step" ? "font-serif text-lg" : "font-medium"}>
+                      {item.title}
+                    </h4>
+                    <StatusRows
+                      result={item.correct ? "correct" : item.score > 0 ? "partial" : "wrong"}
+                      errorType={item.hasConfidence ? item.errorType : null}
+                    />
+                    <p className="text-sm">
+                      <span className="text-text-secondary">
+                        {item.kind === "step" ? "You chose: " : "Your answer: "}
+                      </span>
+                      {item.yourAnswer || "No answer"}
+                    </p>
+                    {!item.correct && (
+                      <p className="text-sm">
+                        <span className="text-text-secondary">
+                          {item.kind === "step" ? "Better: " : "Correct answer: "}
+                        </span>
+                        {item.correctAnswer}
+                      </p>
+                    )}
+                    {item.markedByYou && (
+                      <div>
+                        <StatusBadge status="marked" />
+                      </div>
+                    )}
+                    <div className="flex flex-col gap-1 text-sm">
+                      <span className="text-text-secondary">Why</span>
+                      {item.why.map((line) => (
+                        <p key={line}>{line}</p>
+                      ))}
+                    </div>
+                    {item.kind === "question" && item.score > 0 && item.score < 1 && (
+                      <p className="text-sm text-text-secondary tabular-nums">
+                        Partly correct: {formatPoints(item.score)} of 1 point
+                      </p>
+                    )}
+                    <div className="flex flex-wrap gap-2">
+                      {item.sources.map((sectionId) => (
+                        <SourceChip key={sectionId} sectionId={sectionId} />
+                      ))}
+                    </div>
+                    {item.kind === "step" && (
+                      <AskAiButton step={getStep(item.id)} phase="feedback" variant="link" />
+                    )}
+                  </Card>
+                </li>
+              ))}
+            </ol>
+          </section>
+        ))}
+      </section>
 
       <Section title="Weak topics">
         {topics.length === 0 ? (

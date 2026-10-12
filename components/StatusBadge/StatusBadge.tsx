@@ -1,5 +1,6 @@
 import { Check, CircleHelp, Clock, Contrast, Minus, UserCheck, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { errorTypeText } from "@/lib/scoring";
 import type { ErrorType } from "@/lib/scoring";
 
 export type Status =
@@ -43,26 +44,22 @@ export const statuses: Record<
   },
   failed: { label: "Failed", icon: "cross", className: "bg-caution-bg text-caution" },
   secure: {
-    label: "Secure",
-    description: "Right answer, high confidence",
+    ...errorTypeText.secure,
     icon: "check",
     className: "bg-secure-bg text-secure",
   },
   guess: {
-    label: "Guess",
-    description: "Right answer, but not sure",
+    ...errorTypeText.guess,
     icon: "question",
     className: "border border-border bg-surface-muted text-text-secondary",
   },
   knowledge_gap: {
-    label: "Knowledge gap",
-    description: "Wrong answer, not sure",
+    ...errorTypeText.knowledge_gap,
     icon: "minus",
     className: "bg-caution-bg text-caution",
   },
   misconception: {
-    label: "Misconception",
-    description: "Wrong answer, high confidence",
+    ...errorTypeText.misconception,
     icon: "cross",
     className: "bg-misconception-bg text-misconception",
   },

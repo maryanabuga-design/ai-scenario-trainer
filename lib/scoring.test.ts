@@ -4,6 +4,8 @@ import {
   countErrorTypes,
   currentWeakItems,
   errorType,
+  errorTypeSummary,
+  groupByErrorType,
   scoreStep,
   sumEffects,
   totalScore,
@@ -109,5 +111,51 @@ describe("currentWeakItems", () => {
 
   it("is empty for an empty history", () => {
     expect(currentWeakItems([])).toEqual([]);
+  });
+});
+
+describe("error types card", () => {
+  // s1 b sure: secure; s2 c unsure: guess; s3 b sure: misconception; s5 b sure: secure.
+  const items = [
+    scoreStep(getStep("s1"), "b", 3),
+    scoreStep(getStep("s2"), "c", 2),
+    scoreStep(getStep("s3"), "b", 3),
+    scoreStep(getStep("s5"), "b", 3),
+  ];
+
+  it("always shows all four types in the fixed order", () => {
+    expect(errorTypeSummary(countErrorTypes([])).map((row) => row.label)).toEqual([
+      "Secure",
+      "Guess",
+      "Knowledge gap",
+      "Misconception",
+    ]);
+    expect(errorTypeSummary(countErrorTypes(items)).map((row) => row.type)).toEqual([
+      "secure",
+      "guess",
+      "knowledge_gap",
+      "misconception",
+    ]);
+  });
+
+  it("counts each type and names each row for screen readers", () => {
+    const rows = errorTypeSummary(countErrorTypes(items));
+    expect(rows.map((row) => row.count)).toEqual([2, 1, 0, 1]);
+    expect(rows[0].accessibleName).toBe("Secure, right answer, high confidence: 2");
+    expect(rows[3].description).toBe("Wrong answer, high confidence");
+  });
+
+  it("keeps rows with a count of 0, muted", () => {
+    const rows = errorTypeSummary(countErrorTypes(items));
+    expect(rows).toHaveLength(4);
+    expect(rows.map((row) => row.muted)).toEqual([false, false, true, false]);
+    expect(rows[2].accessibleName).toBe("Knowledge gap, wrong answer, not sure: 0");
+    expect(errorTypeSummary(countErrorTypes([])).every((row) => row.muted)).toBe(true);
+  });
+
+  it("groups the analysis by error type in the same order, without empty groups", () => {
+    const groups = groupByErrorType(items);
+    expect(groups.map((group) => group.type)).toEqual(["secure", "guess", "misconception"]);
+    expect(groups[0].items.map((item) => item.id)).toEqual(["s1", "s5"]);
   });
 });

@@ -18,6 +18,7 @@ import {
   ChatFeedbackSample,
   DecisionSample,
   EmptyStatesSample,
+  ErrorTypesSample,
   ExplainSample,
   CreateTrainingSample,
   GeneratingSample,
@@ -393,6 +394,11 @@ export default function Screens() {
           </PhoneFrame>
         </Group>
         <Group title="Results">
+          <PhoneFrame label="Error types card">
+            <Screen>
+              <ErrorTypesSample />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Results: summary">
             <Screen>
               <ResultsSample />
