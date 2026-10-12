@@ -121,7 +121,7 @@ export function MaterialView({
       {scenarioCard}
 
       <section className="flex flex-col gap-3">
-        <h2 className="type-small">Sections</h2>
+        <h2 className="type-item-title">Sections</h2>
         {shownSections.length > 0 ? (
           <ul className="flex flex-col divide-y divide-border rounded-card bg-card shadow-(--card-shadow) px-4">
             {shownSections.map((section) => (

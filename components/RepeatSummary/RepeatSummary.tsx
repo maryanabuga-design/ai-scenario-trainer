@@ -53,7 +53,7 @@ export function RepeatSummary({
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <h3 id="topics-title" className="type-small">
+          <h3 id="topics-title" className="type-item-title">
             Topics
           </h3>
           <div className="-mr-3">

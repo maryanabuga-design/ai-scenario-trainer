@@ -8,6 +8,7 @@ import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { StatusIcon } from "@/components/StatusBadge/StatusBadge";
 import { useTopicName } from "@/components/TopicCard/TopicCard";
+import { TopicTile } from "@/components/TopicTile/TopicTile";
 import type { ErrorType } from "@/lib/scoring";
 import type { WeakTopic } from "@/lib/weak-topics";
 import { materialForSection, weakPriority } from "@/lib/weak-topics";
@@ -44,11 +45,14 @@ function TopicOption({
       checked={checked}
       onChange={onToggle}
     >
-      <span className="flex flex-col gap-0.5">
-        <span className="type-body-strong">{name}</span>
-        <span className="type-small text-text-secondary">
-          {materialForSection(topic.sectionId)} · {topic.sectionId} ·{" "}
-          <span className="tabular-nums">{topic.items.length}</span> to repeat
+      <span className="flex items-center gap-3">
+        <TopicTile sectionId={topic.sectionId} icon={topic.icon} />
+        <span className="flex flex-col gap-0.5">
+          <span className="type-body-strong">{name}</span>
+          <span className="type-small text-text-secondary">
+            {materialForSection(topic.sectionId)} · {topic.sectionId} ·{" "}
+            <span className="tabular-nums">{topic.items.length}</span> to repeat
+          </span>
         </span>
       </span>
     </ChoiceCard>

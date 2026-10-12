@@ -9,7 +9,7 @@ import {
   materialForSection,
   repeatItems,
   topicIcon,
-  topicTone,
+  topicTint,
   weakTopics,
 } from "@/lib/weak-topics";
 
@@ -103,8 +103,22 @@ describe("repeat round", () => {
     expect(weakTopics(items).find((topic) => topic.sectionId === "S3")?.icon).toBe("Wind");
   });
 
-  it("takes the tile colour from the material", () => {
-    expect(topicTone("S5")).toBe("yellow");
-    expect(topicTone("F2")).toBe("blue");
+  it("takes the tile colour from the section, cycling yellow, blue, lilac, sage, peach", () => {
+    expect(["S1", "S2", "S3", "S4", "S5"].map(topicTint)).toEqual([
+      "yellow",
+      "blue",
+      "lilac",
+      "sage",
+      "peach",
+    ]);
+    expect(topicTint("S6")).toBe("yellow");
+    expect(topicTint("S10")).toBe("peach");
+    expect(topicTint("F1")).toBe("yellow");
+    expect(topicTint("F7")).toBe("blue");
+  });
+
+  it("keeps the same colour for a topic every time and has a safe default", () => {
+    expect(topicTint("S3")).toBe(topicTint("S3"));
+    expect(topicTint("X")).toBe("yellow");
   });
 });
