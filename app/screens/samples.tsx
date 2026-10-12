@@ -38,6 +38,7 @@ import type { Response } from "@/lib/quiz";
 import type { Answer } from "@/lib/session";
 import { questionSheet, stepSheet } from "@/lib/answer-sheet";
 import { getScenario, getStep, scenario, sessionLengths } from "@/lib/scenario";
+import type { Confidence } from "@/lib/scenario";
 import { defaultDirection } from "@/lib/directions";
 import { sampleMaterials } from "@/lib/materials";
 import { materialFromSample, sampleFiles } from "@/lib/training";
@@ -388,15 +389,17 @@ export function QuestionSheetSample({
   response,
   marked = false,
   dontKnow = false,
+  confidence = null,
 }: {
   questionId: string;
   response: Response;
   marked?: boolean;
   dontKnow?: boolean;
+  confidence?: Confidence | null;
 }) {
   const question = getQuestion(questionId);
   const [markedCorrect, setMarkedCorrect] = useState(marked);
-  const answer = { questionId, response, confidence: null, markedCorrect, dontKnow };
+  const answer = { questionId, response, confidence, markedCorrect, dontKnow };
   return (
     <>
       <QuizQuestion

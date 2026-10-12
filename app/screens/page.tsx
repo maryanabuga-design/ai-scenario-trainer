@@ -294,11 +294,20 @@ export default function Screens() {
               />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Single choice: not correct">
+          <PhoneFrame label="Single choice: incorrect, no confidence">
             <Screen>
               <QuestionSheetSample
                 questionId="q-s1-1"
                 response={{ type: "single", optionId: "a" }}
+              />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Single choice: incorrect, very confident">
+            <Screen>
+              <QuestionSheetSample
+                questionId="q-s1-1"
+                response={{ type: "single", optionId: "a" }}
+                confidence={3}
               />
             </Screen>
           </PhoneFrame>
@@ -318,7 +327,7 @@ export default function Screens() {
               />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="True or false: not correct">
+          <PhoneFrame label="True or false: incorrect">
             <Screen>
               <QuestionSheetSample
                 questionId="q-s1-2"
@@ -326,7 +335,7 @@ export default function Screens() {
               />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Short text: looks correct">
+          <PhoneFrame label="Short text: correct">
             <Screen>
               <QuestionSheetSample
                 questionId="q-s2-1"
