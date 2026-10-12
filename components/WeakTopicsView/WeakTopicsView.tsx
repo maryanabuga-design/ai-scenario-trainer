@@ -2,7 +2,7 @@
 
 import { ListChecks } from "lucide-react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
-import { BackLink } from "@/components/BackLink/BackLink";
+import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
@@ -74,7 +74,7 @@ export function WeakTopicsView({
   if (topics.length === 0) {
     return (
       <div className="flex flex-col items-start gap-6">
-        <BackLink href="/" label="Back to Home" />
+        <CircleBackButton href="/" label="Back to Home" />
         <h1 className="type-page-title">Weak topics</h1>
         <div className="w-full">
           <EmptyState
@@ -95,7 +95,7 @@ export function WeakTopicsView({
 
   return (
     <div className="flex flex-col gap-6">
-      <BackLink href="/" label="Back to Home" />
+      <CircleBackButton href="/" label="Back to Home" />
       <div className="flex flex-col gap-1">
         <h1 className="type-page-title">Weak topics</h1>
         <p className="text-text-secondary">

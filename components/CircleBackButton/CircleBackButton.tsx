@@ -1,24 +1,28 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
-/** A 44px white circle with an arrow, for the Results and Error analysis screens. */
-export function CircleBackButton({
-  href,
-  label,
-  onClick,
-}: {
-  href: string;
-  label: string;
-  onClick?: () => void;
-}) {
+const circle =
+  "flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface text-text shadow-(--card-shadow) active:bg-surface-muted";
+
+/**
+ * The one back button: a 44px white circle with a dark arrow, top left, no visible text. Its
+ * accessible name names the destination ("Back to materials"). A link, or a button for a back
+ * step that runs code (Generating cancels).
+ */
+export function CircleBackButton(
+  props: { label: string } & ({ href: string; onClick?: () => void } | { onClick: () => void }),
+) {
+  const icon = <ArrowLeft size={20} strokeWidth={2} aria-hidden="true" />;
+  if ("href" in props) {
+    return (
+      <Link href={props.href} aria-label={props.label} onClick={props.onClick} className={circle}>
+        {icon}
+      </Link>
+    );
+  }
   return (
-    <Link
-      href={href}
-      aria-label={label}
-      onClick={onClick}
-      className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-text shadow-(--soft-shadow) active:bg-surface-muted"
-    >
-      <ArrowLeft size={20} strokeWidth={2} aria-hidden="true" />
-    </Link>
+    <button type="button" aria-label={props.label} onClick={props.onClick} className={circle}>
+      {icon}
+    </button>
   );
 }

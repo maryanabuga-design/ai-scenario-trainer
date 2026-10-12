@@ -3,6 +3,7 @@
 import { useId, useState } from "react";
 import type { ReactNode } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
+import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
 import { SourceChip } from "@/components/SourceChip/SourceChip";
@@ -78,6 +79,7 @@ export function TrainingReview({
 
   return (
     <div className="flex flex-col gap-6">
+      <CircleBackButton href={`/materials/${material.id}`} label="Back to material" />
       <div className="flex flex-col gap-1">
         <h1 className="type-page-title">Your training is ready</h1>
         <p className="break-words text-text-secondary">{material.name}</p>

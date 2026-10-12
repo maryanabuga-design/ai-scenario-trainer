@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
-import { BackLink } from "@/components/BackLink/BackLink";
+import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
 import { FileCover } from "@/components/FileCover/FileCover";
@@ -84,7 +84,7 @@ export function MaterialView({
 
   return (
     <div className="flex flex-col gap-6">
-      <BackLink href="/materials" label="Back to materials" />
+      <CircleBackButton href="/materials" label="Back to materials" />
       <div className="flex flex-col items-start gap-4">
         {material.hasScenario ? (
           <MaterialCover type={material.type} size="lg" />

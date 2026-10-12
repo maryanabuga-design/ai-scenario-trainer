@@ -1,7 +1,7 @@
 "use client";
 
 import { ActionBar } from "@/components/ActionBar/ActionBar";
-import { BackLink } from "@/components/BackLink/BackLink";
+import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { Button } from "@/components/Button/Button";
 import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
 import { PillGroup } from "@/components/PillGroup/PillGroup";
@@ -101,7 +101,10 @@ export function SessionSetup({
 
   return (
     <div className="flex flex-col gap-6">
-      <BackLink href={`/materials/${training?.materialId ?? "evacuation-guide"}`} />
+      <CircleBackButton
+        href={`/materials/${training?.materialId ?? "evacuation-guide"}`}
+        label="Back to material"
+      />
       <div className="flex flex-col gap-1">
         <h1 className="type-page-title">Session setup</h1>
         <p className="break-words text-text-secondary">{materialName ?? scenarioDef.title}</p>

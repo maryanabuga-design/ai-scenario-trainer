@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
-import { BackLink } from "@/components/BackLink/BackLink";
+import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { Button } from "@/components/Button/Button";
 import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
@@ -51,7 +51,7 @@ export function TrainingCreate({
 
   return (
     <div className="flex flex-col gap-6">
-      <BackLink href={`/materials/${material.id}`} label="Back to material" />
+      <CircleBackButton href={`/materials/${material.id}`} label="Back to material" />
       <div className="flex flex-col gap-1">
         <h1 className="type-page-title">Create training</h1>
         <p className="break-words text-text-secondary">{material.name}</p>
