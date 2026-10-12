@@ -39,9 +39,15 @@ export function errorTypeSummary(counts: Record<ErrorType, number>): TypeSummary
   });
 }
 
-/** Answers grouped by error type, in the fixed order, leaving out empty groups. */
-export function groupByErrorType(items: ScoredItem[]): { type: ErrorType; items: ScoredItem[] }[] {
-  return errorTypes
+/** The Error analysis screen starts with the most serious type. */
+export const analysisOrder: ErrorType[] = ["misconception", "knowledge_gap", "guess", "secure"];
+
+/** Answers grouped by error type, in the given order, leaving out empty groups. */
+export function groupByErrorType(
+  items: ScoredItem[],
+  order: ErrorType[] = errorTypes,
+): { type: ErrorType; items: ScoredItem[] }[] {
+  return order
     .map((type) => ({ type, items: items.filter((item) => item.errorType === type) }))
     .filter((group) => group.items.length > 0);
 }

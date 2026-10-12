@@ -9,6 +9,10 @@
     "timeLostSeconds": 0,
     "casualtyStability": 0
   },
+  "stateLabels": {
+    "smokeLevel": { "1": "Light", "2": "Moderate", "3": "Heavy" },
+    "casualtyStability": { "-1": "Worsened", "0": "Stable" }
+  },
   "confidenceScale": {
     "1": "Not very confident",
     "2": "Somewhat confident",

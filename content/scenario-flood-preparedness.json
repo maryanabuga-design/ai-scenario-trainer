@@ -8,6 +8,9 @@
     "waterLevel": 1,
     "timeLostSeconds": 0
   },
+  "stateLabels": {
+    "waterLevel": { "1": "Low", "2": "Rising", "3": "High" }
+  },
   "confidenceScale": {
     "1": "Not very confident",
     "2": "Somewhat confident",

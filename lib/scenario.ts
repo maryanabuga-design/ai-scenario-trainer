@@ -51,6 +51,8 @@ export type Scenario = {
   title: string;
   audience: string;
   initialState: Effects;
+  /** Human labels for state values, for example smokeLevel 2 is "Moderate". */
+  stateLabels?: Record<string, Record<string, string>>;
   confidenceScale: Record<`${Confidence}`, string>;
   steps: Step[];
 };
@@ -122,16 +124,16 @@ export const scenarios: ScenarioDef[] = [
     defaultLength: "full",
     outcome: [
       { key: "timeLostSeconds", label: "Time lost", format: "time" },
-      { key: "smokeLevel", label: "Smoke level", format: "level" },
+      { key: "smokeLevel", label: "Smoke on the route", format: "level" },
       {
         key: "casualtyStability",
-        label: "Injured colleague",
+        label: "Colleague's condition",
         format: "stability",
         lengths: ["full", "extended"],
       },
     ],
     shortEnding: {
-      headline: "Short session: you reached the south stairwell.",
+      headline: "You reached the south stairwell.",
       continues:
         "The full session continues to an injured colleague, the call for help and the assembly point.",
     },

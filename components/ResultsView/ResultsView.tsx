@@ -10,7 +10,7 @@ import { Gradient } from "@/components/Gradient/Gradient";
 import { StatusRows } from "@/components/StatusRows/StatusRows";
 import { SourceChip } from "@/components/SourceChip/SourceChip";
 import { StatusBadge, StatusIcon } from "@/components/StatusBadge/StatusBadge";
-import { describeEffects, formatMetric } from "@/lib/outcome";
+import { describeEffects, formatOutcome } from "@/lib/outcome";
 import { formatPoints } from "@/lib/progress";
 import { getScenario, getStep } from "@/lib/scenario";
 import type { SessionMode } from "@/lib/scenario";
@@ -188,7 +188,8 @@ export function ResultsView({
               <Row
                 key={metric.key}
                 label={metric.label}
-                value={formatMetric(
+                value={formatOutcome(
+                  scenarioDef,
                   metric,
                   outcome[metric.key],
                   scenarioDef.initialState[metric.key],

@@ -57,7 +57,7 @@ describe("answer sheet for a scenario step", () => {
       ["wrong", "Your choice"],
       ["better", "Better choice"],
     ]);
-    expect(sheet.stateChange).toEqual(["Time lost +1 min 30 s", "Smoke level +1"]);
+    expect(sheet.stateChange).toEqual(["Time lost +1 min 30 s", "Smoke on the route +1"]);
   });
 
   it("shows the user's own sentence as a reflection, unchanged and never checked", () => {
@@ -212,9 +212,9 @@ describe("state change", () => {
   it("describes time, levels and stability, and leaves out no change", () => {
     expect(describeEffects("s2", { timeLostSeconds: 30, smokeLevel: 2 })).toEqual([
       "Time lost +30 s",
-      "Smoke level +2",
+      "Smoke on the route +2",
     ]);
-    expect(describeEffects("s4", { casualtyStability: -1 })).toEqual(["Injured colleague worse"]);
+    expect(describeEffects("s4", { casualtyStability: -1 })).toEqual(["Colleague's condition worsened"]);
     expect(describeEffects("flood-s2", { waterLevel: 1 })).toEqual(["Water level +1"]);
     expect(describeEffects("s1", {})).toEqual([]);
   });
