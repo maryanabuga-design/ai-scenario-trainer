@@ -30,13 +30,7 @@ const icons: Record<TopicIcon, LucideIcon> = {
 const tones = { yellow: "bg-tag-yellow", blue: "bg-tag-blue" };
 
 /** A topic's icon on a pastel tile coloured by its material. Decorative: the name sits next to it. */
-export function TopicTile({
-  sectionId,
-  icon,
-}: {
-  sectionId: string;
-  icon: TopicIcon;
-}) {
+export function TopicTile({ sectionId, icon }: { sectionId: string; icon: TopicIcon }) {
   const Icon = icons[icon];
   return (
     <span

@@ -1,11 +1,7 @@
 import type { ErrorType, ScoredItem } from "@/lib/scoring";
 
 /** Weak error types, most serious first. Secure answers are never weak. */
-export const weakPriority: ErrorType[] = [
-  "misconception",
-  "knowledge_gap",
-  "guess",
-];
+export const weakPriority: ErrorType[] = ["misconception", "knowledge_gap", "guess"];
 
 /** Names of the Lucide icons a topic can show. The component maps each name to its icon. */
 export type TopicIcon =
@@ -57,8 +53,7 @@ export type WeakTopic = {
 
 export type RepeatItem = { type: "step" | "question"; id: string };
 
-const sectionOrder = (id: string) =>
-  [id[0] === "S" ? 0 : 1, Number(id.slice(1))] as const;
+const sectionOrder = (id: string) => [id[0] === "S" ? 0 : 1, Number(id.slice(1))] as const;
 
 /**
  * Groups weak answers into topics (one per guide section). Ordered by error type priority,
@@ -79,16 +74,12 @@ export function weakTopics(weakItems: ScoredItem[]): WeakTopic[] {
       icon: topicIcon(sectionId),
       items,
       errorType:
-        weakPriority.find((type) =>
-          items.some((item) => item.errorType === type),
-        ) ?? "guess",
+        weakPriority.find((type) => items.some((item) => item.errorType === type)) ?? "guess",
     }))
     .sort((a, b) => {
-      const byType =
-        weakPriority.indexOf(a.errorType) - weakPriority.indexOf(b.errorType);
+      const byType = weakPriority.indexOf(a.errorType) - weakPriority.indexOf(b.errorType);
       if (byType !== 0) return byType;
-      if (a.items.length !== b.items.length)
-        return b.items.length - a.items.length;
+      if (a.items.length !== b.items.length) return b.items.length - a.items.length;
       const [ag, an] = sectionOrder(a.sectionId);
       const [bg, bn] = sectionOrder(b.sectionId);
       return ag - bg || an - bn;
@@ -117,10 +108,7 @@ const countWords: Record<ErrorType, [string, string]> = {
 export function describeCounts(counts: Record<ErrorType, number>): string {
   return weakPriority
     .filter((type) => counts[type] > 0)
-    .map(
-      (type) =>
-        `${counts[type]} ${countWords[type][counts[type] === 1 ? 0 : 1]}`,
-    )
+    .map((type) => `${counts[type]} ${countWords[type][counts[type] === 1 ? 0 : 1]}`)
     .join(", ");
 }
 

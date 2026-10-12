@@ -33,15 +33,9 @@ function MaterialRow({
         href={`/materials/${material.id}`}
         className="-m-2 flex items-center gap-4 rounded-panel p-2 active:bg-surface-muted"
       >
-        {material.hasScenario ? (
-          <MaterialCover />
-        ) : (
-          <FileCover type={material.type} />
-        )}
+        {material.hasScenario ? <MaterialCover /> : <FileCover type={material.type} />}
         <span className="flex min-w-0 flex-1 flex-col gap-1">
-          <span className="leading-tight font-medium break-words">
-            {material.name}
-          </span>
+          <span className="leading-tight font-medium break-words">{material.name}</span>
           <span className="text-sm text-text-secondary">
             {material.type} · {material.size} · {formatAdded(material.added)}
           </span>
@@ -101,18 +95,14 @@ export function MaterialsList({ samples }: { samples: Material[] }) {
   const trainings = useTrainings();
   const [tab, setTab] = useState<TabId>("ready");
   const all = [...(uploads === "loading" ? [] : (uploads ?? [])), ...samples];
-  const count = (status: TabId) =>
-    all.filter((material) => material.status === status).length;
+  const count = (status: TabId) => all.filter((material) => material.status === status).length;
   const shown = all.filter((material) => material.status === tab);
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-4">
         <h1 className="font-serif text-2xl">Materials</h1>
-        <UploadButton
-          onUploadStart={() => setTab("processing")}
-          onUploadEnd={setTab}
-        />
+        <UploadButton onUploadStart={() => setTab("processing")} onUploadEnd={setTab} />
       </div>
       <div className="flex flex-col gap-4">
         <Tabs
@@ -120,11 +110,7 @@ export function MaterialsList({ samples }: { samples: Material[] }) {
           label="Materials by status"
           tabs={[
             { id: "ready", label: "Ready" },
-            {
-              id: "processing",
-              label: "Processing",
-              count: count("processing"),
-            },
+            { id: "processing", label: "Processing", count: count("processing") },
             { id: "failed", label: "Failed", count: count("failed") },
           ]}
           value={tab}
@@ -139,11 +125,7 @@ export function MaterialsList({ samples }: { samples: Material[] }) {
                 <li key={material.id}>
                   <MaterialRow
                     material={material}
-                    training={
-                      trainings === "loading"
-                        ? undefined
-                        : trainings?.[material.id]
-                    }
+                    training={trainings === "loading" ? undefined : trainings?.[material.id]}
                     onUploadStart={() => setTab("processing")}
                     onUploadEnd={setTab}
                   />

@@ -11,19 +11,11 @@ import { materialForSection, topicTone } from "@/lib/weak-topics";
 /** The section title, for example "Checking the route", or the code if it is unknown. */
 export function useTopicName(sectionId: string) {
   const { sections } = useSourceSheet();
-  return (
-    sections.find((section) => section.id === sectionId)?.title ?? sectionId
-  );
+  return sections.find((section) => section.id === sectionId)?.title ?? sectionId;
 }
 
 /** A weak topic in the sideways row. The whole card repeats only this topic. */
-export function TopicCard({
-  topic,
-  onRepeat,
-}: {
-  topic: WeakTopic;
-  onRepeat: () => void;
-}) {
+export function TopicCard({ topic, onRepeat }: { topic: WeakTopic; onRepeat: () => void }) {
   const name = useTopicName(topic.sectionId);
   const count = topic.items.length;
   return (

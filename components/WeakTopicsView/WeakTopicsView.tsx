@@ -95,8 +95,7 @@ export function WeakTopicsView({
       <div className="flex flex-col gap-1">
         <h1 className="font-serif text-2xl">Weak topics</h1>
         <p className="text-text-secondary">
-          Choose the topics to repeat. A repeat round brings back their steps
-          and questions.
+          Choose the topics to repeat. A repeat round brings back their steps and questions.
         </p>
       </div>
 
@@ -109,8 +108,7 @@ export function WeakTopicsView({
               <span className={iconColours[type]}>
                 <StatusIcon status={type} size={16} />
               </span>
-              {groupTitles[type]}{" "}
-              <span className="tabular-nums">({group.length})</span>
+              {groupTitles[type]} <span className="tabular-nums">({group.length})</span>
             </legend>
             {group.map((topic) => (
               <TopicOption

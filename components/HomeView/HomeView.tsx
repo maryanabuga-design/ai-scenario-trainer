@@ -32,17 +32,12 @@ export function HomeView({
         <Tag tone="yellow">{directionTitle}</Tag>
         <h1 className="text-3xl leading-tight font-medium">
           Practise a decision.{" "}
-          <span className="text-text-secondary">
-            Explain it, then check it against the guide.
-          </span>
+          <span className="text-text-secondary">Explain it, then check it against the guide.</span>
         </h1>
       </Gradient>
 
       {unfinished && (
-        <section
-          aria-labelledby="continue-title"
-          className="flex flex-col gap-3"
-        >
+        <section aria-labelledby="continue-title" className="flex flex-col gap-3">
           <h2 id="continue-title" className="text-lg font-medium">
             Continue session
           </h2>
@@ -74,11 +69,7 @@ export function HomeView({
                     : getScenario(unfinished.scenarioId).title}
               </p>
               <p className="text-sm text-text-secondary tabular-nums">
-                {isRepeatRound(unfinished)
-                  ? "Item"
-                  : isQuiz(unfinished)
-                    ? "Question"
-                    : "Step"}{" "}
+                {isRepeatRound(unfinished) ? "Item" : isQuiz(unfinished) ? "Question" : "Step"}{" "}
                 {unfinished.index + 1} of {itemCount(unfinished)}
               </p>
             </span>
@@ -108,27 +99,14 @@ export function HomeView({
             </div>
             <p className="font-serif text-xl">{scenario.title}</p>
             <p className="text-sm text-text-secondary">
-              Short:{" "}
-              <span className="tabular-nums">
-                {sessionLengths.short.stepIds.length}
-              </span>{" "}
-              decisions, about{" "}
-              <span className="tabular-nums">
-                {sessionLengths.short.minutes}
-              </span>{" "}
-              min. Full:{" "}
-              <span className="tabular-nums">
-                {sessionLengths.full.stepIds.length}
-              </span>{" "}
-              decisions, about{" "}
-              <span className="tabular-nums">
-                {sessionLengths.full.minutes}
-              </span>{" "}
+              Short: <span className="tabular-nums">{sessionLengths.short.stepIds.length}</span>{" "}
+              decisions, about <span className="tabular-nums">{sessionLengths.short.minutes}</span>{" "}
+              min. Full: <span className="tabular-nums">{sessionLengths.full.stepIds.length}</span>{" "}
+              decisions, about <span className="tabular-nums">{sessionLengths.full.minutes}</span>{" "}
               min.
             </p>
             <p className="text-sm text-text-secondary">
-              Or take a quiz on any guide sections, with five kinds of
-              questions.
+              Or take a quiz on any guide sections, with five kinds of questions.
             </p>
           </span>
           <ChevronRight

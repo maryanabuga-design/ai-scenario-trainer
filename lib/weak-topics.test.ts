@@ -27,11 +27,7 @@ describe("weak topics", () => {
   const topics = weakTopics(items);
 
   it("makes one topic per guide section behind weak answers", () => {
-    expect(topics.map((topic) => topic.sectionId).sort()).toEqual([
-      "S2",
-      "S3",
-      "S5",
-    ]);
+    expect(topics.map((topic) => topic.sectionId).sort()).toEqual(["S2", "S3", "S5"]);
   });
 
   it("gives each topic its most serious error type", () => {
@@ -49,9 +45,7 @@ describe("weak topics", () => {
   });
 
   it("counts topics by error type and describes the counts", () => {
-    expect(describeCounts(countTopics(topics))).toBe(
-      "2 misconceptions, 1 knowledge gap",
-    );
+    expect(describeCounts(countTopics(topics))).toBe("2 misconceptions, 1 knowledge gap");
     expect(describeCounts(countTopics([]))).toBe("");
   });
 
@@ -62,9 +56,7 @@ describe("weak topics", () => {
       { type: "step", id: "s5" },
       { type: "question", id: "q-s5-3" },
     ]);
-    expect(
-      repeatItems(topics.filter((topic) => topic.sectionId === "S5")),
-    ).toEqual([
+    expect(repeatItems(topics.filter((topic) => topic.sectionId === "S5"))).toEqual([
       { type: "step", id: "s5" },
       { type: "question", id: "q-s5-3" },
     ]);
@@ -87,13 +79,7 @@ describe("repeat round", () => {
       topics: ["S5"],
       finishedAt: 0,
       answers: [
-        {
-          type: "step",
-          stepId: "s5",
-          optionId: "b",
-          confidence: 3,
-          explanation: "",
-        },
+        { type: "step", stepId: "s5", optionId: "b", confidence: 3, explanation: "" },
         {
           type: "question",
           questionId: "q-s5-3",
@@ -114,9 +100,7 @@ describe("repeat round", () => {
     expect(topicIcon("S8")).toBe("Bandage");
     expect(topicIcon("F4")).toBe("Droplet");
     expect(topicIcon("X9")).toBe("BookOpen");
-    expect(
-      weakTopics(items).find((topic) => topic.sectionId === "S3")?.icon,
-    ).toBe("Wind");
+    expect(weakTopics(items).find((topic) => topic.sectionId === "S3")?.icon).toBe("Wind");
   });
 
   it("takes the tile colour from the material", () => {

@@ -6,12 +6,7 @@ import { Card } from "@/components/Card/Card";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { Tag } from "@/components/Tag/Tag";
 import { RepeatSummary } from "@/components/RepeatSummary/RepeatSummary";
-import {
-  formatPoints,
-  scoreSession,
-  sessionLabel,
-  weakItemsFromHistory,
-} from "@/lib/progress";
+import { formatPoints, scoreSession, sessionLabel, weakItemsFromHistory } from "@/lib/progress";
 import { totalScore, weakItems } from "@/lib/scoring";
 import type { FinishedSession } from "@/lib/session";
 import type { WeakTopic } from "@/lib/weak-topics";
@@ -102,14 +97,8 @@ export function ProgressView({
         />
       ) : (
         <>
-          <RepeatSummary
-            weakItems={weakItemsFromHistory(history)}
-            onRepeat={onRepeat}
-          />
-          <section
-            aria-labelledby="history-title"
-            className="flex flex-col gap-3"
-          >
+          <RepeatSummary weakItems={weakItemsFromHistory(history)} onRepeat={onRepeat} />
+          <section aria-labelledby="history-title" className="flex flex-col gap-3">
             <h2 id="history-title" className="text-lg font-medium">
               Session history
             </h2>
