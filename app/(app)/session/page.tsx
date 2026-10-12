@@ -28,7 +28,7 @@ import type { RepeatItem } from "@/lib/weak-topics";
 function NoSession() {
   return (
     <div className="flex flex-col items-start gap-4">
-      <h1 className="font-serif text-2xl">No session in progress</h1>
+      <h1 className="font-semibold text-2xl">No session in progress</h1>
       <p className="text-text-secondary">Start a scenario from a material.</p>
       <ButtonLink href="/materials" variant="secondary">
         Go to Materials

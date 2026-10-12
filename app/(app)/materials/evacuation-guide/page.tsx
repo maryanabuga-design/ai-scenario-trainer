@@ -24,7 +24,7 @@ export default function MaterialPage() {
           <div>
             <Tag tone="yellow">Scenario</Tag>
           </div>
-          <h2 className="font-serif text-xl">{scenario.title}</h2>
+          <h2 className="font-semibold text-xl">{scenario.title}</h2>
           <p className="text-sm text-text-secondary">
             Short: <span className="tabular-nums">{sessionLengths.short.stepIds.length}</span>{" "}
             decisions, about <span className="tabular-nums">{sessionLengths.short.minutes}</span>{" "}

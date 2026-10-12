@@ -50,7 +50,7 @@ export function SourceSheetProvider({
         {section && (
           <div className="flex flex-col gap-4 px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
             <div className="flex items-start justify-between gap-4">
-              <h2 id="source-sheet-title" className="font-serif text-xl">
+              <h2 id="source-sheet-title" className="font-semibold text-xl">
                 {section.id}. {section.title}
               </h2>
               <button

@@ -83,7 +83,7 @@ export function ProgressView({
 }) {
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="font-serif text-2xl">Progress</h1>
+      <h1 className="font-semibold text-2xl">Progress</h1>
 
       {history.length === 0 ? (
         <EmptyState

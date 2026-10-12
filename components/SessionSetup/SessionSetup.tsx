@@ -88,7 +88,7 @@ export function SessionSetup({
     <div className="flex flex-col gap-6">
       <BackLink href={`/materials/${training?.materialId ?? "evacuation-guide"}`} />
       <div className="flex flex-col gap-1">
-        <h1 className="font-serif text-2xl">Session setup</h1>
+        <h1 className="font-semibold text-2xl">Session setup</h1>
         <p className="break-words text-text-secondary">{materialName ?? scenarioDef.title}</p>
       </div>
 

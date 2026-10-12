@@ -79,7 +79,7 @@ export function TrainingReview({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
-        <h1 className="font-serif text-2xl">Your training is ready</h1>
+        <h1 className="font-semibold text-2xl">Your training is ready</h1>
         <p className="break-words text-text-secondary">{material.name}</p>
       </div>
 
@@ -106,7 +106,7 @@ export function TrainingReview({
           <ol className="flex flex-col divide-y divide-border">
             {steps.map((step, index) => (
               <li key={step.id} className="flex flex-col gap-2 py-3">
-                <p className="font-serif">
+                <p>
                   <span className="text-text-secondary tabular-nums">{index + 1}. </span>
                   {step.title}
                 </p>

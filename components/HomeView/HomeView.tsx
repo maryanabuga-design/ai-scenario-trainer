@@ -61,7 +61,7 @@ export function HomeView({
                   {sessionLabel(unfinished)}
                 </Tag>
               </div>
-              <p className="font-serif text-xl">
+              <p className="font-semibold text-xl">
                 {isRepeatRound(unfinished)
                   ? `Weak topics: ${unfinished.topics.join(", ")}`
                   : isQuiz(unfinished)
@@ -97,7 +97,7 @@ export function HomeView({
             <div>
               <Tag tone="yellow">Scenario</Tag>
             </div>
-            <p className="font-serif text-xl">{scenario.title}</p>
+            <p className="font-semibold text-xl">{scenario.title}</p>
             <p className="text-sm text-text-secondary">
               Short: <span className="tabular-nums">{sessionLengths.short.stepIds.length}</span>{" "}
               decisions, about <span className="tabular-nums">{sessionLengths.short.minutes}</span>{" "}

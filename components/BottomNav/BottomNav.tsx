@@ -36,7 +36,7 @@ export function BottomNav({ activePath }: { activePath?: string }) {
                 aria-current={current ? "page" : undefined}
                 className={`flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-full text-xs ${
                   current
-                    ? "bg-tag-yellow font-medium text-text"
+                    ? "bg-nav-active font-medium text-text"
                     : "text-text-secondary hover:text-text"
                 }`}
               >

@@ -93,7 +93,7 @@ export function MaterialView({
           <FileCover type={material.type} size="lg" />
         )}
         <Tag tone="blue">{material.type}</Tag>
-        <h1 className="font-serif text-2xl leading-tight break-words">{material.name}</h1>
+        <h1 className="font-semibold text-2xl leading-tight break-words">{material.name}</h1>
         <TrainingTags training={training} />
       </div>
 
@@ -125,7 +125,7 @@ export function MaterialView({
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-medium">Sections</h2>
         {shownSections.length > 0 ? (
-          <ul className="flex flex-col divide-y divide-border rounded-card bg-surface px-4">
+          <ul className="flex flex-col divide-y divide-border rounded-card bg-card shadow-(--card-shadow) px-4">
             {shownSections.map((section) => (
               <li key={section.id}>
                 <SectionRow section={section} openable={openable} />

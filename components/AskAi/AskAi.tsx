@@ -136,7 +136,7 @@ function ChatPanel({
     <div className="flex h-full flex-col">
       <div className="flex items-start justify-between gap-4 px-4 pt-4">
         <div className="flex flex-col">
-          <h2 id="ask-ai-title" className="font-serif text-xl">
+          <h2 id="ask-ai-title" className="font-semibold text-xl">
             Ask AI
           </h2>
           <p className="text-sm text-text-secondary">{chat.step.title}</p>
@@ -369,7 +369,7 @@ export function AskAiButton({
       className={
         variant === "link"
           ? "inline-flex min-h-11 items-center gap-2 self-start text-sm font-medium text-text underline decoration-1 underline-offset-4 hover:decoration-2"
-          : "inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-full border border-text bg-surface px-5 text-base font-medium text-text hover:bg-surface-muted active:bg-border"
+          : "inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-full border border-primary bg-surface px-5 text-base font-medium text-primary hover:bg-surface-muted active:bg-border"
       }
     >
       <Sparkles size={16} strokeWidth={2} aria-hidden="true" />

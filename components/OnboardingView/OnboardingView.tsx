@@ -99,8 +99,8 @@ export function OnboardingView({
           <div>
             <Tag tone="yellow">Scenario</Tag>
           </div>
-          <h2 className="font-serif text-xl">{scenario.title}</h2>
-          <p className="font-serif">{scenario.steps[0].narrative}</p>
+          <h2 className="font-semibold text-xl">{scenario.title}</h2>
+          <p>{scenario.steps[0].narrative}</p>
           <p className="text-sm text-text-secondary">
             <span className="tabular-nums">{sessionLengths.full.stepIds.length}</span> decisions,
             about <span className="tabular-nums">{sessionLengths.full.minutes}</span> min, or a

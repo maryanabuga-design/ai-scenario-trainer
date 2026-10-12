@@ -28,7 +28,7 @@ function MaterialRow({
   onUploadEnd: (status: "ready" | "failed") => void;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-card bg-surface p-4">
+    <div className="flex flex-col gap-3 rounded-card bg-card shadow-(--card-shadow) p-4">
       <Link
         href={`/materials/${material.id}`}
         className="-m-2 flex items-center gap-4 rounded-panel p-2 active:bg-surface-muted"
@@ -101,7 +101,7 @@ export function MaterialsList({ samples }: { samples: Material[] }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-4">
-        <h1 className="font-serif text-2xl">Materials</h1>
+        <h1 className="font-semibold text-2xl">Materials</h1>
         <UploadButton onUploadStart={() => setTab("processing")} onUploadEnd={setTab} />
       </div>
       <div className="flex flex-col gap-4">

@@ -41,7 +41,7 @@ export function TrainingGenerating({
         </button>
       </div>
       <div className="flex flex-col gap-2">
-        <h1 className="font-serif text-2xl">Creating your training</h1>
+        <h1 className="font-semibold text-2xl">Creating your training</h1>
         <p className="text-sm text-text-secondary">
           Generation is simulated for this prototype. Prepared content is shown.
         </p>
@@ -61,7 +61,7 @@ export function TrainingGenerating({
         <p className="text-sm tabular-nums">{percent}%</p>
       </div>
 
-      <ol className="flex flex-col divide-y divide-border rounded-card bg-surface px-4">
+      <ol className="flex flex-col divide-y divide-border rounded-card bg-card shadow-(--card-shadow) px-4">
         {steps.map((step, index) => {
           const state = step.skipped
             ? "skipped"

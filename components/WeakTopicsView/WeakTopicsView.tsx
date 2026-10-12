@@ -71,7 +71,7 @@ export function WeakTopicsView({
     return (
       <div className="flex flex-col items-start gap-6">
         <BackLink href="/" label="Back to Home" />
-        <h1 className="font-serif text-2xl">Weak topics</h1>
+        <h1 className="font-semibold text-2xl">Weak topics</h1>
         <div className="w-full">
           <EmptyState
             icon={ListChecks}
@@ -93,7 +93,7 @@ export function WeakTopicsView({
     <div className="flex flex-col gap-6">
       <BackLink href="/" label="Back to Home" />
       <div className="flex flex-col gap-1">
-        <h1 className="font-serif text-2xl">Weak topics</h1>
+        <h1 className="font-semibold text-2xl">Weak topics</h1>
         <p className="text-text-secondary">
           Choose the topics to repeat. A repeat round brings back their steps and questions.
         </p>

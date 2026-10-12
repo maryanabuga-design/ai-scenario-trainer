@@ -53,7 +53,7 @@ export function TrainingCreate({
     <div className="flex flex-col gap-6">
       <BackLink href={`/materials/${material.id}`} label="Back to material" />
       <div className="flex flex-col gap-1">
-        <h1 className="font-serif text-2xl">Create training</h1>
+        <h1 className="font-semibold text-2xl">Create training</h1>
         <p className="break-words text-text-secondary">{material.name}</p>
       </div>
 

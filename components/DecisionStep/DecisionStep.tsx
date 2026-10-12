@@ -47,8 +47,8 @@ export function DecisionStep({
     <div className="flex flex-col gap-6">
       <SessionTopBar index={index} total={total} unit={unit} />
       <section className="flex flex-col gap-3">
-        <h1 className="font-serif text-2xl">{step.title}</h1>
-        <p className="font-serif text-lg">{step.narrative}</p>
+        <h1 className="font-semibold text-2xl">{step.title}</h1>
+        <p className="text-lg">{step.narrative}</p>
         <div className="flex flex-wrap gap-2">
           {step.sources.map((sectionId) => (
             <SourceChip key={sectionId} sectionId={sectionId} />

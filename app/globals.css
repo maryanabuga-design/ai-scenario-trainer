@@ -2,14 +2,14 @@
 
 /* Tokens from DESIGN.md. Change DESIGN.md first, then this file. */
 :root {
-  --bg: #f4f1ec;
+  --bg: #f3eee9;
   --surface: #ffffff;
   --surface-muted: #efece5;
   --border: #e2ded5;
   --border-strong: #8a867e;
   --text: #1a1a1a;
   --text-secondary: #5c5a55;
-  --primary: #1a1a1a;
+  --primary: #3f4638;
   --primary-text: #ffffff;
   --accent: #3d3a8c;
   --correct: #1f7a4d;
@@ -24,9 +24,9 @@
   --misconception-bg: #f5dce0;
 
   /* Results screen (soft surface), measured from the reference screens */
-  --soft-card: #fbf9f6;
+  --soft-card: var(--card);
   --soft-divider: #eae8e7;
-  --soft-shadow: 0 1px 2px rgb(60 45 30 / 0.04), 0 8px 24px rgb(60 45 30 / 0.05);
+  --soft-shadow: var(--card-shadow);
   --header-light: #eee7dc;
   --header-deep: #e3dacd;
   --header-shadow: #91785c;
@@ -51,6 +51,13 @@
   --tag-peach: #fad6c2;
   --tag-blue: #d4e8f0;
   --tag-lilac: #e6ddf5;
+  --tag-sage: #e7e8e0;
+  --repeat-pill: #f9eecf;
+  --nav-active: #f9edc8;
+  --next-card: #f2f3ee;
+  --next-tile: #d4dbcd;
+  --card: #faf7f3;
+  --card-shadow: 0 1px 2px rgb(60 45 30 / 0.04), 0 8px 24px rgb(60 45 30 / 0.05);
 
   --mesh-sand: #e6dcc3;
   --mesh-khaki: #c9bc8f;
@@ -102,9 +109,14 @@
   --color-tag-peach: var(--tag-peach);
   --color-tag-blue: var(--tag-blue);
   --color-tag-lilac: var(--tag-lilac);
+  --color-tag-sage: var(--tag-sage);
+  --color-repeat-pill: var(--repeat-pill);
+  --color-nav-active: var(--nav-active);
+  --color-next-card: var(--next-card);
+  --color-next-tile: var(--next-tile);
+  --color-card: var(--card);
 
-  --font-sans: var(--font-inter), system-ui, sans-serif;
-  --font-serif: var(--font-source-serif), Georgia, serif;
+  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
 }
 
 @theme {

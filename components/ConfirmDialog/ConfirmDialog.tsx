@@ -23,7 +23,7 @@ function DialogCard({
 }: Omit<Props, "open" | "inline">) {
   return (
     <div className="flex flex-col gap-4 rounded-card bg-surface p-6">
-      <h2 id="confirm-title" className="font-serif text-xl">
+      <h2 id="confirm-title" className="font-semibold text-xl">
         {title}
       </h2>
       <p className="text-text-secondary">{description}</p>

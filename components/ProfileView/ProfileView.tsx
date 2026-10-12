@@ -25,7 +25,7 @@ export function ProfileView({
 }) {
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="font-serif text-2xl">Profile</h1>
+      <h1 className="font-semibold text-2xl">Profile</h1>
 
       <DirectionPicker value={direction} onChange={onDirectionChange} legend="Direction" />
 
@@ -33,7 +33,7 @@ export function ProfileView({
         <h2 id="settings-title" className="font-medium">
           Settings
         </h2>
-        <div className="flex flex-col gap-3 rounded-card bg-surface p-4">
+        <div className="flex flex-col gap-3 rounded-card bg-card shadow-(--card-shadow) p-4">
           <div className="flex flex-col gap-1">
             <h3 className="font-medium">Reset progress</h3>
             <p className="text-sm text-text-secondary">

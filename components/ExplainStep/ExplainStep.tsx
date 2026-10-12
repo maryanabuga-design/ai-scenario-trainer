@@ -49,7 +49,7 @@ export function ExplainStep({
         </blockquote>
       </section>
 
-      <h1 className="font-serif text-2xl">{explanationPrompt}</h1>
+      <h1 className="font-semibold text-2xl">{explanationPrompt}</h1>
 
       {submitted &&
         (answer.skipped || !answer.explanation ? (

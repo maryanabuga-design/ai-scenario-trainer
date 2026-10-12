@@ -20,7 +20,7 @@ export default function ReviewTrainingPage() {
   if (!training) {
     return (
       <div className="flex flex-col items-start gap-4">
-        <h1 className="font-serif text-2xl">No training yet</h1>
+        <h1 className="font-semibold text-2xl">No training yet</h1>
         <p className="text-text-secondary">Create training from this material first.</p>
         <ButtonLink href={`/training/${id}`} variant="secondary">
           Create training

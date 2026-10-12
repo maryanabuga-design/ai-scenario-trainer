@@ -43,7 +43,7 @@ export function UploadPanel({
     <div className="flex flex-col gap-5 px-4 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col">
-          <h2 id="upload-title" className="font-serif text-xl">
+          <h2 id="upload-title" className="font-semibold text-xl">
             Upload a file
           </h2>
           <p className="text-sm text-text-secondary">
