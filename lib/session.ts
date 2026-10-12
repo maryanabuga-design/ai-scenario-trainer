@@ -21,6 +21,8 @@ export type QuizAnswer = {
   confidence: Confidence | null;
   /** A short text answer the keyword check rejected but the user marked correct. */
   markedCorrect?: boolean;
+  /** "I don't know" on a short text question: an empty answer, no confidence. */
+  dontKnow?: boolean;
 };
 
 type Progress = {

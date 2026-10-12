@@ -14,13 +14,11 @@ import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { Tag } from "@/components/Tag/Tag";
 import { loadAllSections } from "@/lib/guide";
 import {
-  AskSample,
   ChatDecideSample,
   ChatFeedbackSample,
   DecisionSample,
   EmptyStatesSample,
   ExplainSample,
-  FeedbackSample,
   CreateTrainingSample,
   GeneratingSample,
   FloodResultsSample,
@@ -30,7 +28,8 @@ import {
   TopicIconsSample,
   WeakTopicsSample,
   ReviewSample,
-  QuizFeedbackSample,
+  QuestionSheetSample,
+  StepSheetSample,
   QuizResultsSample,
   QuizSample,
   NotesMaterialSample,
@@ -214,19 +213,36 @@ export default function Screens() {
               <DecisionSample start="complete" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Explain: write">
+          <PhoneFrame label="Explain: the docked input">
             <Screen>
               <ExplainSample />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Explain: self-check">
+        </Group>
+        <Group title="Answer sheet: scenario">
+          <PhoneFrame label="Sheet: right call, all points covered">
             <Screen>
-              <ExplainSample revealed />
+              <StepSheetSample
+                stepId="s1"
+                optionId="b"
+                explanation="The alarm is real, so we take the stairs, not the lift, and leave our things behind."
+                index={0}
+              />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Feedback">
+          <PhoneFrame label="Sheet: not the best action, points to check">
             <Screen>
-              <FeedbackSample />
+              <StepSheetSample
+                stepId="s2"
+                optionId="b"
+                explanation="Waiting is safer than walking into fire."
+                index={1}
+              />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Sheet: I don't know">
+            <Screen>
+              <StepSheetSample stepId="s3" optionId="a" index={2} />
             </Screen>
           </PhoneFrame>
         </Group>
@@ -269,45 +285,78 @@ export default function Screens() {
             </Screen>
           </PhoneFrame>
         </Group>
-        <Group title="Quiz feedback and results">
-          <PhoneFrame label="Quiz feedback: partly correct">
+        <Group title="Answer sheet: quiz">
+          <PhoneFrame label="Single choice: correct">
             <Screen>
-              <QuizFeedbackSample
+              <QuestionSheetSample
+                questionId="q-s1-1"
+                response={{ type: "single", optionId: "b" }}
+              />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Single choice: not correct">
+            <Screen>
+              <QuestionSheetSample
+                questionId="q-s1-1"
+                response={{ type: "single", optionId: "a" }}
+              />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Multiple choice: partly right">
+            <Screen>
+              <QuestionSheetSample
                 questionId="q-s1-3"
                 response={{ type: "multiple", optionIds: ["a", "b", "c"] }}
               />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Quiz feedback: ordering">
+          <PhoneFrame label="Ordering: partly right">
             <Screen>
-              <QuizFeedbackSample
+              <QuestionSheetSample
                 questionId="q-s2-3"
                 response={{ type: "ordering", order: ["a", "b", "d", "c"] }}
               />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Short answer: looks correct">
+          <PhoneFrame label="True or false: not correct">
             <Screen>
-              <QuizFeedbackSample
+              <QuestionSheetSample
+                questionId="q-s1-2"
+                response={{ type: "truefalse", value: true }}
+              />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Short text: looks correct">
+            <Screen>
+              <QuestionSheetSample
                 questionId="q-s2-1"
                 response={{ type: "text", text: "The back of my hand" }}
               />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Short answer: doesn't match">
+          <PhoneFrame label="Short text: doesn't match">
             <Screen>
-              <QuizFeedbackSample
+              <QuestionSheetSample
                 questionId="q-s2-1"
                 response={{ type: "text", text: "With my knuckles" }}
               />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Short answer: marked correct by you">
+          <PhoneFrame label="Short text: marked correct by you">
             <Screen>
-              <QuizFeedbackSample
+              <QuestionSheetSample
                 questionId="q-s2-1"
                 response={{ type: "text", text: "With my knuckles" }}
                 marked
+              />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Short text: I don't know">
+            <Screen>
+              <QuestionSheetSample
+                questionId="q-s2-1"
+                response={{ type: "text", text: "" }}
+                dontKnow
               />
             </Screen>
           </PhoneFrame>
@@ -334,12 +383,7 @@ export default function Screens() {
             </Screen>
           </PhoneFrame>
         </Group>
-        <Group title="Feedback and results">
-          <PhoneFrame label="Ask about this step">
-            <Screen>
-              <AskSample />
-            </Screen>
-          </PhoneFrame>
+        <Group title="Results">
           <PhoneFrame label="Results: summary">
             <Screen>
               <ResultsSample />

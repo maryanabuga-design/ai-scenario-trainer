@@ -48,11 +48,15 @@ export function suggestedChips(step: Step, phase: ChatPhase, askedIds: string[])
   const suggested = entries(step).filter(
     (entry) => entry.suggested && isAvailable(entry, phase) && !askedIds.includes(entry.id),
   );
+  // After the answer, the "why not" questions come first, then the guide's not-covered question,
+  // so the honest "This is not covered by the material." stays one tap away.
   const ordered =
     phase === "feedback"
       ? [
-          ...suggested.filter((entry) => entry.availability === "afterFeedback"),
-          ...suggested.filter((entry) => entry.availability === "always"),
+          ...suggested.filter((entry) => entry.availability === "afterFeedback").slice(0, 2),
+          ...suggested.filter((entry) => entry.notCovered),
+          ...suggested.filter((entry) => entry.availability === "afterFeedback").slice(2),
+          ...suggested.filter((entry) => entry.availability === "always" && !entry.notCovered),
         ]
       : suggested;
   return ordered.slice(0, MAX_CHIPS).map(({ id, question }) => ({ id, question }));

@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { explanationPrompt } from "@/components/ExplainStep/ExplainStep";
 import { simulatedFeedback } from "@/lib/feedback";
-import { getStep, scenario } from "@/lib/scenario";
+import { getStep, scenario, scenarios } from "@/lib/scenario";
 
 describe("simulatedFeedback", () => {
-  it("brings the step's follow-up question and key points into the feedback", () => {
+  it("brings the step's key points and sources into the feedback", () => {
     const step = getStep("s1");
     const feedback = simulatedFeedback.evaluate(step, { optionId: "b", confidence: 3 });
-    expect(feedback.followUp).toBe(step.followUp);
     expect(feedback.keyBeats).toEqual(step.explanationKeyBeats);
     expect(feedback.sources).toEqual(["S1"]);
   });
@@ -27,8 +26,10 @@ describe("simulatedFeedback", () => {
 });
 
 describe("explanation prompt", () => {
-  it("is neutral and never one of the steps' follow-up questions", () => {
+  it("is neutral and the only question: no step has an AI follow-up question", () => {
     expect(explanationPrompt).toBe("In one sentence, why did you choose this?");
-    scenario.steps.forEach((step) => expect(step.followUp).not.toBe(explanationPrompt));
+    scenarios
+      .flatMap((def) => def.steps)
+      .forEach((step) => expect(step).not.toHaveProperty("followUp"));
   });
 });

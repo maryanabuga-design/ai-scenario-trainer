@@ -1,7 +1,7 @@
 "use client";
 
-import { useId } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
+import { AnswerDock } from "@/components/AnswerDock/AnswerDock";
 import { Button } from "@/components/Button/Button";
 import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
 import { ConfidenceSelector } from "@/components/ConfidenceSelector/ConfidenceSelector";
@@ -49,7 +49,6 @@ function Answer({
   response: Response | null;
   onChange: (response: Response) => void;
 }) {
-  const inputId = useId();
   switch (question.type) {
     case "single":
       return (
@@ -104,21 +103,8 @@ function Answer({
         />
       );
     case "text":
-      return (
-        <div className="flex flex-col gap-2">
-          <label htmlFor={inputId} className="sr-only">
-            Your answer
-          </label>
-          <input
-            id={inputId}
-            value={response?.type === "text" ? response.text : ""}
-            onChange={(event) => onChange({ type: "text", text: event.target.value })}
-            placeholder={question.placeholder}
-            autoComplete="off"
-            className="min-h-12 w-full rounded-panel border border-border-strong bg-surface px-4 text-base hover:border-text focus-visible:border-primary"
-          />
-        </div>
-      );
+      // Typed in the answer dock at the bottom of the screen.
+      return null;
     case "truefalse":
       return (
         <div className="grid grid-cols-2 gap-3">
@@ -138,7 +124,10 @@ function Answer({
   }
 }
 
-/** One quiz question. Confidence is optional; Check my answer needs only an answer. */
+/**
+ * One quiz question. Confidence is optional; Check needs only an answer. Short text is typed in
+ * the answer dock, with "I don't know". Once submitted, the answer sheet rises over it.
+ */
 export function QuizQuestion({
   question,
   index,
@@ -147,6 +136,8 @@ export function QuizQuestion({
   draft,
   onDraftChange,
   onSubmit,
+  onDontKnow,
+  submitted = false,
 }: {
   question: Question;
   index: number;
@@ -154,7 +145,9 @@ export function QuizQuestion({
   unit?: Unit;
   draft: QuizDraft;
   onDraftChange: (draft: QuizDraft) => void;
-  onSubmit: () => void;
+  onSubmit: (draft: QuizDraft) => void;
+  onDontKnow?: () => void;
+  submitted?: boolean;
 }) {
   const answered = hasAnswer(draft.response);
   const hint =
@@ -177,7 +170,15 @@ export function QuizQuestion({
         onChange={(response) => onDraftChange({ ...draft, response })}
       />
 
-      {answered && (
+      {question.type === "text" && submitted && (
+        <p className="max-w-[85%] self-end rounded-panel bg-surface-muted px-4 py-2">
+          {draft.response?.type === "text" && draft.response.text
+            ? draft.response.text
+            : "I don't know"}
+        </p>
+      )}
+
+      {answered && !submitted && (
         <ConfidenceSelector
           name={`confidence-${question.id}`}
           legend="How sure are you? (optional)"
@@ -186,16 +187,28 @@ export function QuizQuestion({
         />
       )}
 
-      <ActionBar>
-        {!answered && (
-          <p className="text-center text-sm text-text-secondary">
-            Answer the question to continue.
-          </p>
-        )}
-        <Button disabled={!answered} onClick={onSubmit}>
-          Check my answer
-        </Button>
-      </ActionBar>
+      {!submitted && question.type === "text" && (
+        <AnswerDock
+          label={question.question}
+          placeholder={question.placeholder}
+          value={draft.response?.type === "text" ? draft.response.text : ""}
+          onChange={(text) => onDraftChange({ ...draft, response: { type: "text", text } })}
+          onSend={(text) => onSubmit({ ...draft, response: { type: "text", text } })}
+          onDontKnow={() => onDontKnow?.()}
+        />
+      )}
+      {!submitted && question.type !== "text" && (
+        <ActionBar>
+          {!answered && (
+            <p className="text-center text-sm text-text-secondary">
+              Answer the question to continue.
+            </p>
+          )}
+          <Button disabled={!answered} onClick={() => onSubmit(draft)}>
+            Check
+          </Button>
+        </ActionBar>
+      )}
     </div>
   );
 }

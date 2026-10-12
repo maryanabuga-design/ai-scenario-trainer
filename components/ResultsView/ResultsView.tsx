@@ -9,9 +9,9 @@ import { SourceChip } from "@/components/SourceChip/SourceChip";
 import { StatusBadge, StatusIcon, statuses } from "@/components/StatusBadge/StatusBadge";
 import { formatSelfCheck } from "@/lib/explanation-match";
 import type { SelfCheck } from "@/lib/explanation-match";
+import { describeEffects, formatMetric } from "@/lib/outcome";
 import { formatPoints } from "@/lib/progress";
 import { getScenario } from "@/lib/scenario";
-import type { OutcomeMetric } from "@/lib/scenario";
 import type { SessionMode } from "@/lib/scenario";
 import type { ScoredItem } from "@/lib/scoring";
 import {
@@ -28,19 +28,6 @@ export type ResultsKind =
   | { kind: "scenario"; mode: SessionMode; scenarioId?: string }
   | { kind: "quiz"; mode: "quiz" | "repeat" }
   | { kind: "repeat" };
-
-function formatTime(seconds: number) {
-  const minutes = Math.floor(seconds / 60);
-  const rest = seconds % 60;
-  if (minutes === 0) return `${rest} s`;
-  return rest === 0 ? `${minutes} min` : `${minutes} min ${rest} s`;
-}
-
-function formatMetric(metric: OutcomeMetric, value: number, start: number) {
-  if (metric.format === "time") return formatTime(value);
-  if (metric.format === "stability") return value < 0 ? `Worse (${value})` : "Stable";
-  return `${value} (started at ${start})`;
-}
 
 function headline(results: ResultsKind, weakTopicCount: number): [string, string] {
   const first =
@@ -106,6 +93,9 @@ export function ResultsView({
       results.mode !== "repeat" &&
       (!metric.lengths || metric.lengths.includes(results.mode)),
   );
+  const timeline = items.filter((item) => item.kind === "step" && item.consequence);
+  const hasQuestions = items.some((item) => item.kind === "question");
+  const markedCount = items.filter((item) => item.markedByYou).length;
   const shortEnding =
     results.kind === "scenario" && results.mode === "short" ? scenarioDef.shortEnding : undefined;
 
@@ -184,14 +174,27 @@ export function ResultsView({
         </Section>
       )}
 
-      {selfCheck && (
-        <div className="flex min-h-11 flex-wrap items-center gap-x-2 border-y border-border py-2 text-sm text-text-secondary">
-          <span>Explained in your own words:</span>
-          <span className="font-medium text-text tabular-nums">
-            {formatSelfCheck(selfCheck)}
-            {selfCheck !== "skipped" && " (self-checked)"}
-          </span>
-        </div>
+      {timeline.length > 0 && (
+        <Section title="What happened">
+          <ol className="flex flex-col gap-4">
+            {timeline.map((item, position) => (
+              <li key={item.id} className="flex gap-3">
+                <span className="w-5 shrink-0 text-text-secondary tabular-nums">
+                  {position + 1}.
+                </span>
+                <div className="flex flex-col gap-1">
+                  <h3 className="font-medium">{item.title}</h3>
+                  <p className="text-sm">{item.consequence}</p>
+                  {describeEffects(item.id, item.effects).length > 0 && (
+                    <p className="text-sm text-text-secondary">
+                      {describeEffects(item.id, item.effects).join(" · ")}
+                    </p>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </Section>
       )}
 
       <Section title="Error analysis">
@@ -224,6 +227,12 @@ export function ResultsView({
                     <StatusBadge status="marked" />
                   </div>
                 )}
+                <div className="flex flex-col gap-1 text-sm">
+                  <span className="text-text-secondary">Why</span>
+                  {item.why.map((line) => (
+                    <p key={line}>{line}</p>
+                  ))}
+                </div>
                 {item.kind === "question" && item.score > 0 && item.score < 1 && (
                   <p className="text-sm text-text-secondary tabular-nums">
                     Partly correct: {formatPoints(item.score)} of 1 point
@@ -251,6 +260,26 @@ export function ResultsView({
           </div>
         )}
       </Section>
+
+      {(selfCheck || hasQuestions) && (
+        <div className="flex flex-col divide-y divide-border border-y border-border text-sm">
+          {selfCheck && (
+            <div className="flex min-h-11 flex-wrap items-center gap-x-2 py-2">
+              <span className="text-text-secondary">Explained in your own words:</span>
+              <span className="font-medium tabular-nums">
+                {formatSelfCheck(selfCheck)}
+                {selfCheck !== "skipped" && " (self-checked)"}
+              </span>
+            </div>
+          )}
+          {hasQuestions && (
+            <div className="flex min-h-11 flex-wrap items-center gap-x-2 py-2">
+              <span className="text-text-secondary">Marked correct by you:</span>
+              <span className="font-medium tabular-nums">{markedCount}</span>
+            </div>
+          )}
+        </div>
+      )}
 
       <ActionBar>
         {repeatIds.length > 0 ? (

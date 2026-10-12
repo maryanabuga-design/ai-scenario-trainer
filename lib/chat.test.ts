@@ -82,6 +82,13 @@ describe("suggested chips", () => {
     });
   });
 
+  it("keeps the not-covered question among the chips after the answer", () => {
+    const step = getStep("s3");
+    const ids = suggestedChips(step, "feedback", []).map((chip) => chip.id);
+    expect(ids).toContain(notCoveredId(step));
+    expect(suggestedChips(step, "decide", []).map((chip) => chip.id)).toContain(notCoveredId(step));
+  });
+
   it("hides a chip once it has been asked", () => {
     const step = getStep("s1");
     const [first] = suggestedChips(step, "decide", []);

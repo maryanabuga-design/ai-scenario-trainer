@@ -8,7 +8,6 @@ export type Feedback = {
   best: Option;
   errorType: ErrorType;
   sources: string[];
-  followUp: string;
   keyBeats: string[];
 };
 
@@ -29,7 +28,6 @@ export const simulatedFeedback: FeedbackProvider = {
       best,
       errorType: errorType(chosen.correct, answer.confidence),
       sources: step.sources,
-      followUp: step.followUp,
       keyBeats: step.explanationKeyBeats,
     };
   },

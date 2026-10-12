@@ -2,18 +2,17 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { AskAiProvider } from "@/components/AskAi/AskAi";
+import { AnswerSheet } from "@/components/AnswerSheet/AnswerSheet";
+import { AskAiButton, AskAiProvider } from "@/components/AskAi/AskAi";
 import { ButtonLink } from "@/components/Button/Button";
 import { DecisionStep, emptyDraft } from "@/components/DecisionStep/DecisionStep";
 import { ExplainStep } from "@/components/ExplainStep/ExplainStep";
 import type { Draft } from "@/components/DecisionStep/DecisionStep";
-import { FeedbackView } from "@/components/FeedbackView/FeedbackView";
-import { QuizFeedback } from "@/components/QuizFeedback/QuizFeedback";
 import { emptyQuizDraft, QuizQuestion } from "@/components/QuizQuestion/QuizQuestion";
 import type { QuizDraft } from "@/components/QuizQuestion/QuizQuestion";
 import type { Unit } from "@/components/SessionTopBar/SessionTopBar";
-import { selfCheckOf } from "@/lib/explanation-match";
-import { simulatedFeedback } from "@/lib/feedback";
+import { questionSheet, stepSheet } from "@/lib/answer-sheet";
+import { prefillSelfCheck } from "@/lib/explanation-match";
 import { getQuestion } from "@/lib/quiz";
 import { getStep } from "@/lib/scenario";
 import type { Answer, QuizAnswer, Session } from "@/lib/session";
@@ -174,14 +173,18 @@ function QuestionDecide({
       unit={unit}
       draft={draft}
       onDraftChange={setDraft}
-      onSubmit={() => {
-        if (!draft.response) return;
+      onSubmit={(sent) => {
+        if (!sent.response) return;
+        onAnswer({ questionId: question.id, response: sent.response, confidence: sent.confidence });
+      }}
+      onDontKnow={() =>
         onAnswer({
           questionId: question.id,
-          response: draft.response,
-          confidence: draft.confidence,
-        });
-      }}
+          response: { type: "text", text: "" },
+          confidence: null,
+          dontKnow: true,
+        })
+      }
     />
   );
 }
@@ -215,9 +218,12 @@ export default function SessionPage() {
     }
   }
 
-  if (session.phase === "decide") {
-    return item.type === "step" ? (
-      <AskAiProvider>
+  const nextLabel = last ? "See results" : "Continue";
+
+  function content() {
+    if (session === "loading" || !session) return null;
+    if (session.phase === "decide") {
+      return item.type === "step" ? (
         <StepDecide
           key={session.index}
           stepId={item.id}
@@ -226,81 +232,85 @@ export default function SessionPage() {
           unit={unit}
           onAnswer={answer}
         />
-      </AskAiProvider>
-    ) : (
-      <QuestionDecide
-        key={session.index}
-        questionId={item.id}
-        index={session.index}
-        total={total}
-        unit={unit}
-        onAnswer={answer}
-      />
-    );
-  }
-
-  const saved = savedAnswer(session, item);
-  if (!saved) return <NoSession />;
-
-  function updateStep(stepId: string, patch: Partial<Answer>, phase?: Session["phase"]) {
-    if (session === "loading" || !session) return;
-    const next = withStepAnswer(session, stepId, patch);
-    saveSession(phase ? { ...next, phase } : next);
-    if (phase) window.scrollTo(0, 0);
-  }
-
-  if ("stepId" in saved && session.phase === "explain") {
-    return (
-      <ExplainStep
-        key={session.index}
-        step={getStep(saved.stepId)}
-        answer={saved}
-        index={session.index}
-        total={total}
-        unit={unit}
-        onCheck={(explanation, selfCheck) => updateStep(saved.stepId, { explanation, selfCheck })}
-        onSelfCheckChange={(selfCheck) => updateStep(saved.stepId, { selfCheck })}
-        onSkip={() =>
-          updateStep(
-            saved.stepId,
-            { explanation: "", selfCheck: undefined, skipped: true },
-            "feedback",
-          )
-        }
-        onSeeFeedback={() => updateStep(saved.stepId, {}, "feedback")}
-      />
-    );
-  }
-
-  if ("stepId" in saved) {
-    const step = getStep(saved.stepId);
-    return (
-      <AskAiProvider>
-        <FeedbackView
-          step={step}
-          feedback={simulatedFeedback.evaluate(step, saved)}
-          selfCheck={selfCheckOf(saved)}
+      ) : (
+        <QuestionDecide
+          key={session.index}
+          questionId={item.id}
           index={session.index}
           total={total}
           unit={unit}
-          nextLabel={last ? "See results" : unit === "Item" ? "Next item" : "Next step"}
-          onNext={goOn}
+          onAnswer={answer}
         />
-      </AskAiProvider>
+      );
+    }
+
+    const saved = savedAnswer(session, item);
+    if (!saved) return <NoSession />;
+
+    function updateStep(stepId: string, patch: Partial<Answer>, phase?: Session["phase"]) {
+      if (session === "loading" || !session) return;
+      const next = withStepAnswer(session, stepId, patch);
+      saveSession(phase ? { ...next, phase } : next);
+    }
+
+    if ("stepId" in saved) {
+      const step = getStep(saved.stepId);
+      const submitted = session.phase === "feedback";
+      return (
+        <>
+          <ExplainStep
+            key={session.index}
+            step={step}
+            answer={saved}
+            index={session.index}
+            total={total}
+            unit={unit}
+            submitted={submitted}
+            onSend={(explanation) =>
+              updateStep(
+                step.id,
+                { explanation, selfCheck: prefillSelfCheck(step, explanation) },
+                "feedback",
+              )
+            }
+            onDontKnow={() => updateStep(step.id, { explanation: "", skipped: true }, "feedback")}
+          />
+          {submitted && (
+            <AnswerSheet
+              content={stepSheet(step, saved)}
+              continueLabel={nextLabel}
+              onContinue={goOn}
+              onSelfCheckChange={(selfCheck) => updateStep(step.id, { selfCheck })}
+              askAi={<AskAiButton step={step} phase="feedback" size="small" />}
+            />
+          )}
+        </>
+      );
+    }
+
+    const question = getQuestion(saved.questionId);
+    return (
+      <>
+        <QuizQuestion
+          key={session.index}
+          question={question}
+          index={session.index}
+          total={total}
+          unit={unit}
+          draft={{ response: saved.response, confidence: saved.confidence }}
+          onDraftChange={() => undefined}
+          onSubmit={() => undefined}
+          submitted
+        />
+        <AnswerSheet
+          content={questionSheet(question, saved)}
+          continueLabel={nextLabel}
+          onContinue={goOn}
+          onMarkCorrect={() => saveSession(withMarkedCorrect(session, saved.questionId))}
+        />
+      </>
     );
   }
-  return (
-    <QuizFeedback
-      question={getQuestion(saved.questionId)}
-      response={saved.response}
-      confidence={saved.confidence}
-      markedCorrect={saved.markedCorrect}
-      onMarkCorrect={() => saveSession(withMarkedCorrect(session, saved.questionId))}
-      index={session.index}
-      total={total}
-      unit={unit}
-      nextLabel={last ? "See results" : unit === "Item" ? "Next item" : "Next question"}
-      onNext={goOn}
-    />
-  );
+
+  return <AskAiProvider>{content()}</AskAiProvider>;
 }

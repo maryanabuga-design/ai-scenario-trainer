@@ -5,7 +5,7 @@ import { errorType } from "@/lib/scoring";
 import type { ScoredItem } from "@/lib/scoring";
 
 type Base = { id: string; section: string; question: string; why: string; misconception: string };
-type Choice = { id: string; text: string };
+export type Choice = { id: string; text: string };
 
 export type SingleQuestion = Base & { type: "single"; options: Choice[]; answer: string };
 export type MultipleQuestion = Base & { type: "multiple"; options: Choice[]; answer: string[] };
@@ -260,6 +260,7 @@ export function scoreQuestion(
     effects: {},
     yourAnswer: describeResponse(question, response),
     correctAnswer: describeAnswer(question),
+    why: [question.why],
     ...(markedByYou && { markedByYou }),
   };
 }

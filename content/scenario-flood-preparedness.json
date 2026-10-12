@@ -76,7 +76,6 @@
           "effects": { "timeLostSeconds": 90, "waterLevel": 1 }
         }
       ],
-      "followUp": "In one sentence, why is this the right first instruction?",
       "explanationKeyBeats": [
         "treat the warning as real",
         "help people who need support first",
@@ -130,7 +129,6 @@
           "consequence": "The group arrives ten minutes later, safe and dry."
         }
       ],
-      "followUp": "Why is the longer route the better choice?",
       "explanationKeyBeats": [
         "cannot judge depth or current",
         "a longer dry route is safer"
@@ -182,7 +180,6 @@
           "effects": { "timeLostSeconds": 60, "waterLevel": 2 }
         }
       ],
-      "followUp": "Why do you wait for the official all-clear?",
       "explanationKeyBeats": [
         "structures and electrics may be unsafe",
         "wait for authorities to confirm it is safe"

@@ -4,9 +4,9 @@ import { FileText, History, ListChecks } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { DecisionStep, emptyDraft } from "@/components/DecisionStep/DecisionStep";
 import type { Draft } from "@/components/DecisionStep/DecisionStep";
-import { AskAiProvider } from "@/components/AskAi/AskAi";
+import { AskAiButton, AskAiProvider } from "@/components/AskAi/AskAi";
 import type { ChatMessage } from "@/components/AskAi/AskAi";
-import { FeedbackView } from "@/components/FeedbackView/FeedbackView";
+import { AnswerSheet } from "@/components/AnswerSheet/AnswerSheet";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { ExplainStep } from "@/components/ExplainStep/ExplainStep";
 import { HomeView } from "@/components/HomeView/HomeView";
@@ -18,7 +18,6 @@ import {
   TrainingGenerating,
 } from "@/components/TrainingGenerating/TrainingGenerating";
 import { TrainingReview } from "@/components/TrainingReview/TrainingReview";
-import { QuizFeedback } from "@/components/QuizFeedback/QuizFeedback";
 import { emptyQuizDraft, QuizQuestion } from "@/components/QuizQuestion/QuizQuestion";
 import type { QuizDraft } from "@/components/QuizQuestion/QuizQuestion";
 import { MaterialView } from "@/components/MaterialView/MaterialView";
@@ -38,7 +37,7 @@ import { getQuestion, scoreQuestion } from "@/lib/quiz";
 import type { Response } from "@/lib/quiz";
 import { prefillSelfCheck } from "@/lib/explanation-match";
 import type { Answer } from "@/lib/session";
-import { simulatedFeedback } from "@/lib/feedback";
+import { questionSheet, stepSheet } from "@/lib/answer-sheet";
 import { getScenario, getStep, scenario, sessionLengths } from "@/lib/scenario";
 import { defaultDirection } from "@/lib/directions";
 import { sampleMaterials } from "@/lib/materials";
@@ -108,60 +107,59 @@ function useScrollFrameToEnd(enabled: boolean) {
   return endRef;
 }
 
-/** The Explain screen for step 1: writing the sentence, or after checking it. */
-export function ExplainSample({ revealed = false }: { revealed?: boolean }) {
-  const sentence = "The alarm is real, so we use the stairs.";
-  const [answer, setAnswer] = useState<Answer>({
-    stepId: sampleStep.id,
-    optionId: "b",
-    confidence: 2,
-    explanation: revealed ? sentence : "",
-    selfCheck: revealed ? prefillSelfCheck(sampleStep, sentence) : undefined,
-  });
+/** The Explain screen for step 1, before anything is sent. */
+export function ExplainSample() {
   return (
     <ExplainStep
       step={sampleStep}
-      answer={answer}
+      answer={{ stepId: sampleStep.id, optionId: "b", confidence: 2, explanation: "" }}
       index={0}
       total={sessionLengths.full.stepIds.length}
-      onCheck={(explanation, selfCheck) => setAnswer({ ...answer, explanation, selfCheck })}
-      onSelfCheckChange={(selfCheck) => setAnswer({ ...answer, selfCheck })}
-      onSkip={() => undefined}
-      onSeeFeedback={() => undefined}
+      onSend={() => undefined}
+      onDontKnow={() => undefined}
     />
   );
 }
 
-/** Feedback for a wrong answer given with high confidence (step 1, elevator). */
-export function FeedbackSample() {
-  return (
-    <FeedbackView
-      feedback={simulatedFeedback.evaluate(getStep("s1"), { optionId: "c", confidence: 3 })}
-      selfCheck={{ covered: 1, total: 3 }}
-      index={0}
-      total={sessionLengths.full.stepIds.length}
-      nextLabel="Next step"
-      onNext={() => undefined}
-      step={getStep("s1")}
-    />
-  );
-}
-
-/** The smoke step's feedback, with "Ask about this step" at the end. */
-export function AskSample() {
-  const endRef = useScrollFrameToEnd(true);
+/** The answer sheet over the Explain screen, with a working self-check. */
+export function StepSheetSample({
+  stepId,
+  optionId,
+  explanation = "",
+  index,
+}: {
+  stepId: string;
+  optionId: string;
+  explanation?: string;
+  index: number;
+}) {
+  const step = getStep(stepId);
+  const [answer, setAnswer] = useState<Answer>({
+    stepId,
+    optionId,
+    confidence: 3,
+    explanation,
+    skipped: !explanation,
+    selfCheck: explanation ? prefillSelfCheck(step, explanation) : undefined,
+  });
   return (
     <>
-      <FeedbackView
-        feedback={simulatedFeedback.evaluate(getStep("s3"), { optionId: "a", confidence: 2 })}
-        selfCheck="skipped"
-        index={2}
+      <ExplainStep
+        step={step}
+        answer={answer}
+        index={index}
         total={sessionLengths.full.stepIds.length}
-        nextLabel="Next step"
-        onNext={() => undefined}
-        step={getStep("s3")}
+        submitted
+        onSend={() => undefined}
+        onDontKnow={() => undefined}
       />
-      <div ref={endRef} />
+      <AnswerSheet
+        inline
+        content={stepSheet(step, answer)}
+        onContinue={() => undefined}
+        onSelfCheckChange={(selfCheck) => setAnswer({ ...answer, selfCheck })}
+        askAi={<AskAiButton step={step} phase="feedback" size="small" />}
+      />
     </>
   );
 }
@@ -304,7 +302,7 @@ export function ChatDecideSample() {
   );
 }
 
-/** The Ask AI sheet after feedback on the smoke step: a "why not" answer, the not-covered answer, typing. */
+/** The Ask AI sheet over the smoke step's answer sheet: a "why not" answer, the not-covered answer, typing. */
 export function ChatFeedbackSample() {
   const step = getStep("s3");
   const messages: ChatMessage[] = [
@@ -320,7 +318,12 @@ export function ChatFeedbackSample() {
   ];
   return (
     <AskAiProvider inline initial={{ chat: { step, phase: "feedback" }, messages, typing: true }}>
-      <AskSample />
+      <StepSheetSample
+        stepId="s3"
+        optionId="a"
+        explanation="Smoke rises, so we stay low."
+        index={2}
+      />
     </AskAiProvider>
   );
 }
@@ -394,28 +397,39 @@ export function QuizSample({
   );
 }
 
-export function QuizFeedbackSample({
+/** A quiz question with the answer sheet over it, for every question type. */
+export function QuestionSheetSample({
   questionId,
   response,
   marked = false,
+  dontKnow = false,
 }: {
   questionId: string;
   response: Response;
   marked?: boolean;
+  dontKnow?: boolean;
 }) {
+  const question = getQuestion(questionId);
   const [markedCorrect, setMarkedCorrect] = useState(marked);
+  const answer = { questionId, response, confidence: null, markedCorrect, dontKnow };
   return (
-    <QuizFeedback
-      question={getQuestion(questionId)}
-      response={response}
-      confidence={2}
-      markedCorrect={markedCorrect}
-      onMarkCorrect={() => setMarkedCorrect(true)}
-      index={1}
-      total={5}
-      nextLabel="Next question"
-      onNext={() => undefined}
-    />
+    <>
+      <QuizQuestion
+        question={question}
+        index={1}
+        total={5}
+        draft={{ response, confidence: null }}
+        onDraftChange={() => undefined}
+        onSubmit={() => undefined}
+        submitted
+      />
+      <AnswerSheet
+        inline
+        content={questionSheet(question, answer)}
+        onContinue={() => undefined}
+        onMarkCorrect={() => setMarkedCorrect(true)}
+      />
+    </>
   );
 }
 

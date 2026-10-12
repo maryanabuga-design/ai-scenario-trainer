@@ -7,7 +7,6 @@ import { SourceChip } from "@/components/SourceChip/SourceChip";
 import {
   deferredText,
   matchQuestion,
-  notCoveredId,
   notCoveredText,
   replyToChip,
   suggestedChips,
@@ -24,7 +23,7 @@ type OpenChat = { step: Step; phase: ChatPhase };
 const TYPING_MS = 700;
 
 const AskAiContext = createContext<{
-  open: (step: Step, phase: ChatPhase, options?: { answerNotCovered?: boolean }) => void;
+  open: (step: Step, phase: ChatPhase) => void;
 } | null>(null);
 
 export function useAskAi() {
@@ -286,19 +285,7 @@ export function AskAiProvider({
     }));
   }
 
-  function open(step: Step, phase: ChatPhase, options?: { answerNotCovered?: boolean }) {
-    const question = step.suggestedQuestion;
-    const id = notCoveredId(step);
-    const asked = (conversations[step.id] ?? []).some(
-      (message) => message.role === "trainee" && message.chipId === id,
-    );
-    if (options?.answerNotCovered && question && !asked) {
-      add(
-        step.id,
-        { role: "trainee", text: question.question, chipId: id },
-        { role: "ai", reply: replyToChip(step, id, phase) },
-      );
-    }
+  function open(step: Step, phase: ChatPhase) {
     setChat({ step, phase });
   }
 
@@ -360,7 +347,16 @@ export function AskAiProvider({
 }
 
 /** Secondary pill that opens the Ask AI sheet for the current step, if it has prepared answers. */
-export function AskAiButton({ step, phase }: { step: Step; phase: ChatPhase }) {
+export function AskAiButton({
+  step,
+  phase,
+  size = "regular",
+}: {
+  step: Step;
+  phase: ChatPhase;
+  /** small: a 40px pill for the answer sheet, with the tap area kept at 44px. */
+  size?: "regular" | "small";
+}) {
   const { open } = useAskAi();
   // Only steps with prepared answers offer the chat (the flood scenario has none).
   if (step.chat.length === 0 && !step.suggestedQuestion) return null;
@@ -368,7 +364,11 @@ export function AskAiButton({ step, phase }: { step: Step; phase: ChatPhase }) {
     <button
       type="button"
       onClick={() => open(step, phase)}
-      className="inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-full border border-text bg-surface px-5 text-base font-medium text-text hover:bg-surface-muted active:bg-border"
+      className={`relative inline-flex items-center justify-center gap-2 self-start rounded-full border border-text bg-surface font-medium text-text hover:bg-surface-muted active:bg-border ${
+        size === "small"
+          ? "min-h-10 px-4 text-sm after:absolute after:-inset-y-0.5 after:inset-x-0"
+          : "min-h-11 px-5 text-base"
+      }`}
     >
       <Sparkles size={16} strokeWidth={2} aria-hidden="true" />
       Ask AI about this step

@@ -29,6 +29,10 @@ export type ScoredItem = {
   effects: Effects;
   yourAnswer: string;
   correctAnswer: string;
+  /** The full why for the final analysis: for a wrong step, why the choice fails and why the better one works. */
+  why: string[];
+  /** What happened after a scenario step. */
+  consequence?: string;
   /** A short answer the user marked correct after the keyword check rejected it. */
   markedByYou?: boolean;
 };
@@ -48,6 +52,8 @@ export function scoreStep(step: Step, optionId: string, confidence: Confidence):
     effects: option.effects ?? {},
     yourAnswer: option.text,
     correctAnswer: best.text,
+    why: option.correct ? [option.why] : [option.why, best.why],
+    consequence: option.consequence,
   };
 }
 
