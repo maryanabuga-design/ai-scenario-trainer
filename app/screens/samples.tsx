@@ -4,7 +4,7 @@ import { FileText, History, ListChecks } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { DecisionStep, emptyDraft } from "@/components/DecisionStep/DecisionStep";
 import type { Draft } from "@/components/DecisionStep/DecisionStep";
-import { AskAiButton, AskAiProvider } from "@/components/AskAi/AskAi";
+import { AskAiProvider } from "@/components/AskAi/AskAi";
 import type { ChatMessage } from "@/components/AskAi/AskAi";
 import { AnswerSheet } from "@/components/AnswerSheet/AnswerSheet";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
@@ -35,7 +35,6 @@ import type { SetupValue } from "@/components/SessionSetup/SessionSetup";
 import { matchQuestion, notCoveredId, replyToChip } from "@/lib/chat";
 import { getQuestion, scoreQuestion } from "@/lib/quiz";
 import type { Response } from "@/lib/quiz";
-import { prefillSelfCheck } from "@/lib/explanation-match";
 import type { Answer } from "@/lib/session";
 import { questionSheet, stepSheet } from "@/lib/answer-sheet";
 import { getScenario, getStep, scenario, sessionLengths } from "@/lib/scenario";
@@ -121,7 +120,7 @@ export function ExplainSample() {
   );
 }
 
-/** The answer sheet over the Explain screen, with a working self-check. */
+/** The answer sheet over the Explain screen. */
 export function StepSheetSample({
   stepId,
   optionId,
@@ -134,14 +133,7 @@ export function StepSheetSample({
   index: number;
 }) {
   const step = getStep(stepId);
-  const [answer, setAnswer] = useState<Answer>({
-    stepId,
-    optionId,
-    confidence: 3,
-    explanation,
-    skipped: !explanation,
-    selfCheck: explanation ? prefillSelfCheck(step, explanation) : undefined,
-  });
+  const answer: Answer = { stepId, optionId, confidence: 3, explanation, skipped: !explanation };
   return (
     <>
       <ExplainStep
@@ -153,13 +145,7 @@ export function StepSheetSample({
         onSend={() => undefined}
         onDontKnow={() => undefined}
       />
-      <AnswerSheet
-        inline
-        content={stepSheet(step, answer)}
-        onContinue={() => undefined}
-        onSelfCheckChange={(selfCheck) => setAnswer({ ...answer, selfCheck })}
-        askAi={<AskAiButton step={step} phase="feedback" size="small" />}
-      />
+      <AnswerSheet inline content={stepSheet(step, answer)} onContinue={() => undefined} />
     </>
   );
 }
@@ -181,7 +167,6 @@ export function ResultsSample({ scrolled = false }: { scrolled?: boolean }) {
       <ResultsView
         results={{ kind: "scenario", mode: "full" }}
         items={sampleAnswers}
-        selfCheck={{ covered: 9, total: 13 }}
         onRepeat={() => undefined}
       />
       <div ref={endRef} />

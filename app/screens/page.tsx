@@ -220,7 +220,7 @@ export default function Screens() {
           </PhoneFrame>
         </Group>
         <Group title="Answer sheet: scenario">
-          <PhoneFrame label="Sheet: right call, all points covered">
+          <PhoneFrame label="Sheet: correct, with your explanation">
             <Screen>
               <StepSheetSample
                 stepId="s1"
@@ -230,7 +230,7 @@ export default function Screens() {
               />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Sheet: not the best action, points to check">
+          <PhoneFrame label="Sheet: incorrect, with your explanation">
             <Screen>
               <StepSheetSample
                 stepId="s2"

@@ -40,9 +40,8 @@ export type Step = {
   narrative: string;
   question: string;
   options: Option[];
+  /** Points a strong explanation covers. Kept as data; the app does not check explanations. */
   explanationKeyBeats: string[];
-  /** For each key beat, words and short phrases (with a few synonyms) that count as covering it. */
-  keyBeatKeywords: string[][];
   suggestedQuestion?: SuggestedQuestion;
   chat: ChatEntry[];
 };
@@ -90,23 +89,15 @@ export type ScenarioDef = Scenario & {
   shortEnding?: { headline: string; continues: string };
 };
 
-type FloodStep = Omit<Step, "keyBeatKeywords" | "chat"> & {
-  explanationKeywords: { beat: string; keywords: string[] }[];
-};
-
 /**
- * The flood scenario uses its own step ids (s1 to s3) and keyword format. Its ids get a
- * "flood-" prefix so saved answers never mix with the evacuation steps, and its keywords are
- * put in the same order as its key points. It has no prepared Ask AI answers.
+ * The flood scenario uses its own step ids (s1 to s3). Its ids get a "flood-" prefix so saved
+ * answers never mix with the evacuation steps. It has no prepared Ask AI answers.
  */
 const floodScenario: Scenario = {
   ...(floodData as unknown as Omit<Scenario, "steps">),
-  steps: (floodData.steps as unknown as FloodStep[]).map(({ explanationKeywords, ...step }) => ({
+  steps: (floodData.steps as unknown as Omit<Step, "chat">[]).map((step) => ({
     ...step,
     id: `flood-${step.id}`,
-    keyBeatKeywords: step.explanationKeyBeats.map(
-      (beat) => explanationKeywords.find((entry) => entry.beat === beat)?.keywords ?? [],
-    ),
     chat: [],
   })),
 };

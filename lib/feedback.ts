@@ -8,7 +8,6 @@ export type Feedback = {
   best: Option;
   errorType: ErrorType;
   sources: string[];
-  keyBeats: string[];
 };
 
 /** The seam for a real AI provider later. This prototype only has the simulated one. */
@@ -28,7 +27,6 @@ export const simulatedFeedback: FeedbackProvider = {
       best,
       errorType: errorType(chosen.correct, answer.confidence),
       sources: step.sources,
-      keyBeats: step.explanationKeyBeats,
     };
   },
 };

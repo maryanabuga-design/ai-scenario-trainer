@@ -1,4 +1,3 @@
-import { prefillSelfCheck } from "@/lib/explanation-match";
 import { simulatedFeedback } from "@/lib/feedback";
 import { describeEffects } from "@/lib/outcome";
 import { describeAnswer, describeResponse, scoreQuestion, scoreResponse } from "@/lib/quiz";
@@ -23,8 +22,6 @@ export type AnswerBox = {
   ordered?: boolean;
 };
 
-export type SheetPoint = { text: string; covered: boolean };
-
 export type SheetResult = "correct" | "wrong" | "partial";
 
 export type StepSheet = {
@@ -35,12 +32,10 @@ export type StepSheet = {
   boxes: AnswerBox[];
   why: string[];
   sources: string[];
+  /** The user's own sentence, shown as a reflection next to the why; null after "I don't know". */
+  explanation: string | null;
   whatHappened: string;
   stateChange: string[];
-  points: SheetPoint[];
-  /** "I don't know": the points are a hint, without checkboxes. */
-  skipped: boolean;
-  allCovered: boolean;
 };
 
 export type QuestionVerdict = "right" | "partial" | "wrong" | "noMatch" | "marked" | "dontKnow";
@@ -70,17 +65,10 @@ const notes: Partial<Record<QuestionVerdict, string>> = {
   dontKnow: "You said you don't know",
 };
 
-/** The sheet after a scenario step. The checkboxes are the user's own self-check. */
+/** The sheet after a scenario step. */
 export function stepSheet(step: Step, answer: Answer): StepSheet {
   const feedback = simulatedFeedback.evaluate(step, answer);
-  const skipped = answer.skipped === true || !answer.explanation.trim();
-  const boxes = skipped
-    ? step.explanationKeyBeats.map(() => false)
-    : (answer.selfCheck ?? prefillSelfCheck(step, answer.explanation));
-  const points = step.explanationKeyBeats.map((text, index) => ({
-    text,
-    covered: boxes[index] ?? false,
-  }));
+  const explanation = answer.skipped ? "" : answer.explanation.trim();
   return {
     kind: "step",
     verdict: feedback.correct ? "right" : "wrong",
@@ -94,11 +82,9 @@ export function stepSheet(step: Step, answer: Answer): StepSheet {
         ],
     why: feedback.correct ? [feedback.chosen.why] : [feedback.best.why],
     sources: feedback.sources,
+    explanation: explanation || null,
     whatHappened: feedback.chosen.consequence,
     stateChange: describeEffects(step.id, feedback.chosen.effects ?? {}),
-    points,
-    skipped,
-    allCovered: !skipped && points.every((point) => point.covered),
   };
 }
 

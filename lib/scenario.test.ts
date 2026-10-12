@@ -28,11 +28,8 @@ describe("scenarios", () => {
     expect(getStep("flood-s1").title).toBe("A flood warning");
   });
 
-  it("brings the flood keywords in, in the order of the key points", () => {
-    const step = getStep("flood-s1");
-    expect(step.keyBeatKeywords).toHaveLength(step.explanationKeyBeats.length);
-    expect(step.keyBeatKeywords[1]).toContain("support");
-    expect(step.chat).toEqual([]);
+  it("gives the flood steps no prepared Ask AI answers", () => {
+    expect(getStep("flood-s1").chat).toEqual([]);
   });
 
   it("shows time lost and water level for the flood scenario, and no casualty", () => {

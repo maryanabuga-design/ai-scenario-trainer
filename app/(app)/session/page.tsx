@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AnswerSheet } from "@/components/AnswerSheet/AnswerSheet";
-import { AskAiButton, AskAiProvider } from "@/components/AskAi/AskAi";
+import { AskAiProvider } from "@/components/AskAi/AskAi";
 import { ButtonLink } from "@/components/Button/Button";
 import { DecisionStep, emptyDraft } from "@/components/DecisionStep/DecisionStep";
 import { ExplainStep } from "@/components/ExplainStep/ExplainStep";
@@ -12,7 +12,6 @@ import { emptyQuizDraft, QuizQuestion } from "@/components/QuizQuestion/QuizQues
 import type { QuizDraft } from "@/components/QuizQuestion/QuizQuestion";
 import type { Unit } from "@/components/SessionTopBar/SessionTopBar";
 import { questionSheet, stepSheet } from "@/lib/answer-sheet";
-import { prefillSelfCheck } from "@/lib/explanation-match";
 import { getQuestion } from "@/lib/quiz";
 import { getStep } from "@/lib/scenario";
 import type { Answer, QuizAnswer, Session } from "@/lib/session";
@@ -95,7 +94,7 @@ function withMarkedCorrect(session: Session, questionId: string): Session {
   };
 }
 
-/** Changes the saved answer of a step: its explanation, self-check or skip. */
+/** Changes the saved answer of a step: its explanation or skip. */
 function withStepAnswer(session: Session, stepId: string, patch: Partial<Answer>): Session {
   if (isRepeatRound(session)) {
     return {
@@ -266,13 +265,7 @@ export default function SessionPage() {
             total={total}
             unit={unit}
             submitted={submitted}
-            onSend={(explanation) =>
-              updateStep(
-                step.id,
-                { explanation, selfCheck: prefillSelfCheck(step, explanation) },
-                "feedback",
-              )
-            }
+            onSend={(explanation) => updateStep(step.id, { explanation }, "feedback")}
             onDontKnow={() => updateStep(step.id, { explanation: "", skipped: true }, "feedback")}
           />
           {submitted && (
@@ -280,8 +273,6 @@ export default function SessionPage() {
               content={stepSheet(step, saved)}
               continueLabel={nextLabel}
               onContinue={goOn}
-              onSelfCheckChange={(selfCheck) => updateStep(step.id, { selfCheck })}
-              askAi={<AskAiButton step={step} phase="feedback" size="small" />}
             />
           )}
         </>

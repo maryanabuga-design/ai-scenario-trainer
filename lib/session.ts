@@ -8,10 +8,8 @@ export type Answer = {
   stepId: string;
   optionId: string;
   confidence: Confidence;
-  /** Empty until the Explain screen is checked, and when it is skipped. */
+  /** The user's own sentence, a reflection that is never checked. Empty after "I don't know". */
   explanation: string;
-  /** One box per key point: whether the user says their sentence covers it. */
-  selfCheck?: boolean[];
   skipped?: boolean;
 };
 

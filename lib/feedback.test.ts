@@ -4,10 +4,8 @@ import { simulatedFeedback } from "@/lib/feedback";
 import { getStep, scenario, scenarios } from "@/lib/scenario";
 
 describe("simulatedFeedback", () => {
-  it("brings the step's key points and sources into the feedback", () => {
-    const step = getStep("s1");
-    const feedback = simulatedFeedback.evaluate(step, { optionId: "b", confidence: 3 });
-    expect(feedback.keyBeats).toEqual(step.explanationKeyBeats);
+  it("brings the step's sources into the feedback", () => {
+    const feedback = simulatedFeedback.evaluate(getStep("s1"), { optionId: "b", confidence: 3 });
     expect(feedback.sources).toEqual(["S1"]);
   });
 

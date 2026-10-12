@@ -5,12 +5,10 @@ import type { LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/Button/Button";
-import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
 import { SourceChip } from "@/components/SourceChip/SourceChip";
 import { statuses } from "@/components/StatusBadge/StatusBadge";
 import { StatusRows } from "@/components/StatusRows/StatusRows";
-import type { AnswerBox, BoxTone, SheetContent, StepSheet } from "@/lib/answer-sheet";
-import { formatSelfCheck } from "@/lib/explanation-match";
+import type { AnswerBox, BoxTone, SheetContent } from "@/lib/answer-sheet";
 
 const boxStyles: Record<BoxTone, { className: string; icon?: [LucideIcon, string] }> = {
   right: { className: "border border-correct", icon: [Check, "text-correct"] },
@@ -58,88 +56,22 @@ function Box({ box }: { box: AnswerBox }) {
   );
 }
 
-function SelfCheck({
-  sheet,
-  onChange,
-}: {
-  sheet: StepSheet;
-  onChange?: (selfCheck: boolean[]) => void;
-}) {
-  const boxes = sheet.points.map((point) => point.covered);
-  return (
-    <section className="flex flex-col gap-3">
-      <Label>Points a strong answer covers</Label>
-      {sheet.skipped ? (
-        <>
-          <p className="text-sm text-text-secondary">Skipped</p>
-          <ul className="flex list-disc flex-col gap-1 pl-5">
-            {sheet.points.map((point) => (
-              <li key={point.text}>{point.text}</li>
-            ))}
-          </ul>
-        </>
-      ) : (
-        <fieldset className="flex flex-col gap-3">
-          <legend className="sr-only">Points a strong answer covers</legend>
-          <p className="text-sm text-text-secondary tabular-nums" aria-live="polite">
-            {formatSelfCheck({ covered: boxes.filter(Boolean).length, total: boxes.length })}
-          </p>
-          {sheet.points.map((point, position) => (
-            <ChoiceCard
-              key={point.text}
-              type="checkbox"
-              compact
-              name="self-check"
-              value={String(position)}
-              checked={point.covered}
-              onChange={() =>
-                onChange?.(boxes.map((box, other) => (other === position ? !box : box)))
-              }
-            >
-              <span className="flex flex-col">
-                <span>{point.text}</span>
-                <span className="text-sm text-text-secondary">My answer covers this</span>
-              </span>
-            </ChoiceCard>
-          ))}
-          {!sheet.allCovered && (
-            <>
-              <p className="text-sm text-text-secondary">
-                Your explanation may still be right. Check the points you covered.
-              </p>
-              <div>
-                <Button variant="secondary" onClick={() => onChange?.(boxes.map(() => true))}>
-                  My answer covers all points
-                </Button>
-              </div>
-            </>
-          )}
-        </fieldset>
-      )}
-    </section>
-  );
-}
-
 /**
- * The answer sheet: rises over the screen just answered with the verdict, the right answer, the
- * why with sources and, for a scenario step, what happened and the self-check. Only Continue
- * closes it. With inline, it is drawn inside its nearest positioned parent (the screen review).
+ * The answer sheet: rises over the screen just answered with the Result and Error type rows,
+ * the right answer, the user's own explanation, the why with sources and, for a scenario step,
+ * what happened. Only Continue closes it. With inline, it is drawn inside its nearest positioned parent (the screen review).
  */
 export function AnswerSheet({
   content,
   continueLabel = "Continue",
   onContinue,
-  onSelfCheckChange,
   onMarkCorrect,
-  askAi,
   inline = false,
 }: {
   content: SheetContent;
   continueLabel?: string;
   onContinue: () => void;
-  onSelfCheckChange?: (selfCheck: boolean[]) => void;
   onMarkCorrect?: () => void;
-  askAi?: ReactNode;
   inline?: boolean;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -212,6 +144,13 @@ export function AnswerSheet({
           )}
         </div>
 
+        {content.kind === "step" && content.explanation && (
+          <section className="flex flex-col gap-1">
+            <Label>Your explanation</Label>
+            <p>{content.explanation}</p>
+          </section>
+        )}
+
         <section className="flex flex-col gap-2">
           <Label>Why</Label>
           {content.why.map((line) => (
@@ -225,20 +164,16 @@ export function AnswerSheet({
         </section>
 
         {content.kind === "step" && (
-          <>
-            <section className="flex flex-col gap-1">
-              <Label>What happened</Label>
-              <p>{content.whatHappened}</p>
-              {content.stateChange.length > 0 && (
-                <p className="text-sm text-text-secondary">{content.stateChange.join(" · ")}</p>
-              )}
-            </section>
-            <SelfCheck sheet={content} onChange={onSelfCheckChange} />
-          </>
+          <section className="flex flex-col gap-1">
+            <Label>What happened</Label>
+            <p>{content.whatHappened}</p>
+            {content.stateChange.length > 0 && (
+              <p className="text-sm text-text-secondary">{content.stateChange.join(" · ")}</p>
+            )}
+          </section>
         )}
       </div>
       <div className="flex flex-col gap-3 border-t border-border bg-surface px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
-        {askAi}
         <Button onClick={onContinue}>{continueLabel}</Button>
       </div>
     </>

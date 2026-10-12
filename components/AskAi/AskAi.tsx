@@ -346,16 +346,18 @@ export function AskAiProvider({
   );
 }
 
-/** Secondary pill that opens the Ask AI sheet for the current step, if it has prepared answers. */
+/**
+ * Opens the Ask AI sheet for a step, if it has prepared answers. pill: the secondary button on the
+ * decision step; link: a secondary text link, for each step in the results analysis.
+ */
 export function AskAiButton({
   step,
   phase,
-  size = "regular",
+  variant = "pill",
 }: {
   step: Step;
   phase: ChatPhase;
-  /** small: a 40px pill for the answer sheet, with the tap area kept at 44px. */
-  size?: "regular" | "small";
+  variant?: "pill" | "link";
 }) {
   const { open } = useAskAi();
   // Only steps with prepared answers offer the chat (the flood scenario has none).
@@ -364,11 +366,11 @@ export function AskAiButton({
     <button
       type="button"
       onClick={() => open(step, phase)}
-      className={`relative inline-flex items-center justify-center gap-2 self-start rounded-full border border-text bg-surface font-medium text-text hover:bg-surface-muted active:bg-border ${
-        size === "small"
-          ? "min-h-10 px-4 text-sm after:absolute after:-inset-y-0.5 after:inset-x-0"
-          : "min-h-11 px-5 text-base"
-      }`}
+      className={
+        variant === "link"
+          ? "inline-flex min-h-11 items-center gap-2 self-start text-sm font-medium text-text underline decoration-1 underline-offset-4 hover:decoration-2"
+          : "inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-full border border-text bg-surface px-5 text-base font-medium text-text hover:bg-surface-muted active:bg-border"
+      }
     >
       <Sparkles size={16} strokeWidth={2} aria-hidden="true" />
       Ask AI about this step

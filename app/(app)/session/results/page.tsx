@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { AskAiProvider } from "@/components/AskAi/AskAi";
 import { ButtonLink } from "@/components/Button/Button";
 import { ResultsView } from "@/components/ResultsView/ResultsView";
-import { sessionSelfCheck } from "@/lib/explanation-match";
 import { scoreSession } from "@/lib/progress";
 import { getQuestion } from "@/lib/quiz";
 import {
@@ -35,37 +35,32 @@ export default function ResultsPage() {
   const items = scoreSession(session);
 
   return (
-    <ResultsView
-      results={
-        isRepeatRound(session)
-          ? { kind: "repeat" }
-          : isQuiz(session)
-            ? { kind: "quiz", mode: session.mode }
-            : { kind: "scenario", mode: session.mode, scenarioId: session.scenarioId }
-      }
-      items={items}
-      selfCheck={
-        isRepeatRound(session)
-          ? sessionSelfCheck(session.answers.filter((answer) => answer.type === "step"))
-          : isQuiz(session)
-            ? null
-            : sessionSelfCheck(session.answers)
-      }
-      onRepeat={(ids) => {
-        if (isRepeatRound(session)) {
-          const again = items.filter((item) => ids.includes(item.id));
-          startRepeatRound(
-            again.map((item) => ({ type: item.kind, id: item.id })),
-            [...new Set(again.flatMap((item) => item.sources))],
-          );
-        } else if (isQuiz(session)) {
-          startQuiz(ids, [...new Set(ids.map((id) => getQuestion(id).section))], true);
-        } else {
-          startSession("repeat", ids, session.scenarioId);
+    <AskAiProvider>
+      <ResultsView
+        results={
+          isRepeatRound(session)
+            ? { kind: "repeat" }
+            : isQuiz(session)
+              ? { kind: "quiz", mode: session.mode }
+              : { kind: "scenario", mode: session.mode, scenarioId: session.scenarioId }
         }
-        window.scrollTo(0, 0);
-        router.push("/session");
-      }}
-    />
+        items={items}
+        onRepeat={(ids) => {
+          if (isRepeatRound(session)) {
+            const again = items.filter((item) => ids.includes(item.id));
+            startRepeatRound(
+              again.map((item) => ({ type: item.kind, id: item.id })),
+              [...new Set(again.flatMap((item) => item.sources))],
+            );
+          } else if (isQuiz(session)) {
+            startQuiz(ids, [...new Set(ids.map((id) => getQuestion(id).section))], true);
+          } else {
+            startSession("repeat", ids, session.scenarioId);
+          }
+          window.scrollTo(0, 0);
+          router.push("/session");
+        }}
+      />
+    </AskAiProvider>
   );
 }

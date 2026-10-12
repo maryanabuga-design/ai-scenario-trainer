@@ -60,24 +60,17 @@ describe("answer sheet for a scenario step", () => {
     expect(sheet.stateChange).toEqual(["Time lost +1 min 30 s", "Smoke level +1"]);
   });
 
-  it("pre-checks the points from the sentence and uses the user's own boxes once saved", () => {
-    const sentence = "We should use the stairs right away.";
-    const fresh = stepSheet(getStep("s1"), step("s1", { explanation: sentence }));
-    expect(fresh.points.map((point) => point.covered)).toEqual([false, true, true]);
-    expect(fresh.allCovered).toBe(false);
-    const ticked = stepSheet(
-      getStep("s1"),
-      step("s1", { explanation: sentence, selfCheck: [true, true, true] }),
-    );
-    expect(ticked.allCovered).toBe(true);
+  it("shows the user's own sentence as a reflection, unchanged and never checked", () => {
+    const sentence = "  We should use the stairs right away.  ";
+    const sheet = stepSheet(getStep("s1"), step("s1", { explanation: sentence }));
+    expect(sheet.explanation).toBe("We should use the stairs right away.");
+    expect(keys(sheet)).not.toContain("points");
+    expect(keys(sheet)).not.toContain("covered");
   });
 
-  it("skip path: I don't know shows the points as a hint, unchecked, and Skipped", () => {
-    const sheet = stepSheet(getStep("s1"), step("s1", { skipped: true }));
-    expect(sheet.skipped).toBe(true);
-    expect(sheet.allCovered).toBe(false);
-    expect(sheet.points.map((point) => point.text)).toEqual(getStep("s1").explanationKeyBeats);
-    expect(sheet.points.some((point) => point.covered)).toBe(false);
+  it("skip path: after I don't know there is no explanation block", () => {
+    expect(stepSheet(getStep("s1"), step("s1", { skipped: true })).explanation).toBeNull();
+    expect(stepSheet(getStep("s1"), step("s1")).explanation).toBeNull();
   });
 
   it("has a result and an error type for every option, and never a percentage or a score", () => {

@@ -4,15 +4,14 @@ import type { ReactNode } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
+import { AskAiButton } from "@/components/AskAi/AskAi";
 import { Gradient } from "@/components/Gradient/Gradient";
 import { StatusRows } from "@/components/StatusRows/StatusRows";
 import { SourceChip } from "@/components/SourceChip/SourceChip";
 import { StatusBadge, StatusIcon, statuses } from "@/components/StatusBadge/StatusBadge";
-import { formatSelfCheck } from "@/lib/explanation-match";
-import type { SelfCheck } from "@/lib/explanation-match";
 import { describeEffects, formatMetric } from "@/lib/outcome";
 import { formatPoints } from "@/lib/progress";
-import { getScenario } from "@/lib/scenario";
+import { getScenario, getStep } from "@/lib/scenario";
 import type { SessionMode } from "@/lib/scenario";
 import type { ScoredItem } from "@/lib/scoring";
 import {
@@ -99,13 +98,10 @@ function Row({ label, value }: { label: ReactNode; value: ReactNode }) {
 export function ResultsView({
   results,
   items,
-  selfCheck = null,
   onRepeat,
 }: {
   results: ResultsKind;
   items: ScoredItem[];
-  /** The self-check over the session's steps; null for a quiz. Never part of the score. */
-  selfCheck?: SelfCheck | null;
   onRepeat: (ids: string[]) => void;
 }) {
   const quiz = results.kind === "quiz";
@@ -287,6 +283,9 @@ export function ResultsView({
                     <SourceChip key={sectionId} sectionId={sectionId} />
                   ))}
                 </div>
+                {item.kind === "step" && (
+                  <AskAiButton step={getStep(item.id)} phase="feedback" variant="link" />
+                )}
               </Card>
             </li>
           ))}
@@ -305,23 +304,10 @@ export function ResultsView({
         )}
       </Section>
 
-      {(selfCheck || hasQuestions) && (
-        <div className="flex flex-col divide-y divide-border border-y border-border text-sm">
-          {selfCheck && (
-            <div className="flex min-h-11 flex-wrap items-center gap-x-2 py-2">
-              <span className="text-text-secondary">Explained in your own words:</span>
-              <span className="font-medium tabular-nums">
-                {formatSelfCheck(selfCheck)}
-                {selfCheck !== "skipped" && " (self-checked)"}
-              </span>
-            </div>
-          )}
-          {hasQuestions && (
-            <div className="flex min-h-11 flex-wrap items-center gap-x-2 py-2">
-              <span className="text-text-secondary">Marked correct by you:</span>
-              <span className="font-medium tabular-nums">{markedCount}</span>
-            </div>
-          )}
+      {hasQuestions && (
+        <div className="flex min-h-11 flex-wrap items-center gap-x-2 border-y border-border py-2 text-sm">
+          <span className="text-text-secondary">Marked correct by you:</span>
+          <span className="font-medium tabular-nums">{markedCount}</span>
         </div>
       )}
 
