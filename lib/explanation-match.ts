@@ -1,12 +1,5 @@
+import { getStep } from "@/lib/scenario";
 import type { Step } from "@/lib/scenario";
-
-export type BeatMatch = { beat: string; covered: boolean };
-
-export type ExplanationMatch = {
-  /** null when the sentence is empty: there is nothing to match. */
-  percent: number | null;
-  beats: BeatMatch[];
-};
 
 /** Lowercase words without punctuation, with simple endings removed ("rises", "rising" → "ris"). */
 function stems(text: string) {
@@ -33,18 +26,45 @@ function contains(sentence: string[], keyword: string) {
 }
 
 /**
- * Simulated keyword match of the trainee's sentence against the step's key points.
- * For reference only: it never changes the score, error types, weak topics or Progress.
+ * Pre-checks the self-check boxes: one per key point, checked when the sentence contains one of
+ * that point's keywords. An empty sentence checks nothing. The user has the final say.
  */
-export function matchExplanation(step: Step, sentence: string): ExplanationMatch {
+export function prefillSelfCheck(step: Step, sentence: string): boolean[] {
   const tokens = stems(sentence);
-  const beats = step.explanationKeyBeats.map((beat, index) => ({
-    beat,
-    covered:
+  return step.explanationKeyBeats.map(
+    (_, index) =>
       tokens.length > 0 &&
       (step.keyBeatKeywords[index] ?? []).some((keyword) => contains(tokens, keyword)),
-  }));
-  if (tokens.length === 0) return { percent: null, beats };
-  const covered = beats.filter((beat) => beat.covered).length;
-  return { percent: Math.round((covered / beats.length) * 100), beats };
+  );
+}
+
+/** How many key points the user says their explanation covers, or that they skipped it. */
+export type SelfCheck = { covered: number; total: number } | "skipped";
+
+type Explained = { stepId: string; explanation: string; selfCheck?: boolean[]; skipped?: boolean };
+
+/**
+ * The self-check of one step. Answers saved before the self-check existed have no boxes, so
+ * their sentence is pre-checked instead. Never part of the score or the error type.
+ */
+export function selfCheckOf(answer: Explained): SelfCheck {
+  if (answer.skipped) return "skipped";
+  const step = getStep(answer.stepId);
+  const boxes = answer.selfCheck ?? prefillSelfCheck(step, answer.explanation);
+  return { covered: boxes.filter(Boolean).length, total: step.explanationKeyBeats.length };
+}
+
+/** The self-check over a session's explained steps: null without steps, "skipped" if all were. */
+export function sessionSelfCheck(answers: Explained[]): SelfCheck | null {
+  if (answers.length === 0) return null;
+  const checks = answers.map(selfCheckOf).filter((check) => check !== "skipped");
+  if (checks.length === 0) return "skipped";
+  return {
+    covered: checks.reduce((sum, check) => sum + check.covered, 0),
+    total: checks.reduce((sum, check) => sum + check.total, 0),
+  };
+}
+
+export function formatSelfCheck(check: SelfCheck): string {
+  return check === "skipped" ? "Skipped" : `${check.covered} of ${check.total} points`;
 }

@@ -8,6 +8,7 @@ import { AskAiProvider } from "@/components/AskAi/AskAi";
 import type { ChatMessage } from "@/components/AskAi/AskAi";
 import { FeedbackView } from "@/components/FeedbackView/FeedbackView";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
+import { ExplainStep } from "@/components/ExplainStep/ExplainStep";
 import { HomeView } from "@/components/HomeView/HomeView";
 import { TopicCard } from "@/components/TopicCard/TopicCard";
 import { WeakTopicsView } from "@/components/WeakTopicsView/WeakTopicsView";
@@ -35,6 +36,8 @@ import type { SetupValue } from "@/components/SessionSetup/SessionSetup";
 import { matchQuestion, notCoveredId, replyToChip } from "@/lib/chat";
 import { getQuestion, scoreQuestion } from "@/lib/quiz";
 import type { Response } from "@/lib/quiz";
+import { prefillSelfCheck } from "@/lib/explanation-match";
+import type { Answer } from "@/lib/session";
 import { simulatedFeedback } from "@/lib/feedback";
 import { getScenario, getStep, scenario, sessionLengths } from "@/lib/scenario";
 import { defaultDirection } from "@/lib/directions";
@@ -66,16 +69,12 @@ export function SetupSample({
 
 const sampleStep = scenario.steps[0];
 
-/** The decision step with a starting draft: nothing chosen, an option chosen, or everything filled. */
+/** The decision step with a starting draft: nothing chosen, an option chosen, or both chosen. */
 export function DecisionSample({ start }: { start: "empty" | "option" | "complete" }) {
   const drafts: Record<typeof start, Draft> = {
     empty: emptyDraft,
     option: { ...emptyDraft, optionId: "b" },
-    complete: {
-      optionId: "b",
-      confidence: 2,
-      explanation: "An alarm counts as real, so everyone leaves by the stairs right away.",
-    },
+    complete: { optionId: "b", confidence: 2 },
   };
   const [draft, setDraft] = useState<Draft>(drafts[start]);
   const endRef = useScrollFrameToEnd(start !== "empty");
@@ -109,12 +108,36 @@ function useScrollFrameToEnd(enabled: boolean) {
   return endRef;
 }
 
+/** The Explain screen for step 1: writing the sentence, or after checking it. */
+export function ExplainSample({ revealed = false }: { revealed?: boolean }) {
+  const sentence = "The alarm is real, so we use the stairs.";
+  const [answer, setAnswer] = useState<Answer>({
+    stepId: sampleStep.id,
+    optionId: "b",
+    confidence: 2,
+    explanation: revealed ? sentence : "",
+    selfCheck: revealed ? prefillSelfCheck(sampleStep, sentence) : undefined,
+  });
+  return (
+    <ExplainStep
+      step={sampleStep}
+      answer={answer}
+      index={0}
+      total={sessionLengths.full.stepIds.length}
+      onCheck={(explanation, selfCheck) => setAnswer({ ...answer, explanation, selfCheck })}
+      onSelfCheckChange={(selfCheck) => setAnswer({ ...answer, selfCheck })}
+      onSkip={() => undefined}
+      onSeeFeedback={() => undefined}
+    />
+  );
+}
+
 /** Feedback for a wrong answer given with high confidence (step 1, elevator). */
 export function FeedbackSample() {
   return (
     <FeedbackView
       feedback={simulatedFeedback.evaluate(getStep("s1"), { optionId: "c", confidence: 3 })}
-      explanation="The elevator is the quickest way to get twelve people down."
+      selfCheck={{ covered: 1, total: 3 }}
       index={0}
       total={sessionLengths.full.stepIds.length}
       nextLabel="Next step"
@@ -131,7 +154,7 @@ export function AskSample() {
     <>
       <FeedbackView
         feedback={simulatedFeedback.evaluate(getStep("s3"), { optionId: "a", confidence: 2 })}
-        explanation="Staying low keeps us under the smoke."
+        selfCheck="skipped"
         index={2}
         total={sessionLengths.full.stepIds.length}
         nextLabel="Next step"
@@ -160,6 +183,7 @@ export function ResultsSample({ scrolled = false }: { scrolled?: boolean }) {
       <ResultsView
         results={{ kind: "scenario", mode: "full" }}
         items={sampleAnswers}
+        selfCheck={{ covered: 9, total: 13 }}
         onRepeat={() => undefined}
       />
       <div ref={endRef} />

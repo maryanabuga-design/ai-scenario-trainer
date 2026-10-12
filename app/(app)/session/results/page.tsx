@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { ButtonLink } from "@/components/Button/Button";
 import { ResultsView } from "@/components/ResultsView/ResultsView";
+import { sessionSelfCheck } from "@/lib/explanation-match";
 import { scoreSession } from "@/lib/progress";
 import { getQuestion } from "@/lib/quiz";
 import {
@@ -43,6 +44,13 @@ export default function ResultsPage() {
             : { kind: "scenario", mode: session.mode, scenarioId: session.scenarioId }
       }
       items={items}
+      selfCheck={
+        isRepeatRound(session)
+          ? sessionSelfCheck(session.answers.filter((answer) => answer.type === "step"))
+          : isQuiz(session)
+            ? null
+            : sessionSelfCheck(session.answers)
+      }
       onRepeat={(ids) => {
         if (isRepeatRound(session)) {
           const again = items.filter((item) => ids.includes(item.id));

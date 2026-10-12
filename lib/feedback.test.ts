@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { explanationPrompt } from "@/components/DecisionStep/DecisionStep";
+import { explanationPrompt } from "@/components/ExplainStep/ExplainStep";
 import { simulatedFeedback } from "@/lib/feedback";
 import { getStep, scenario } from "@/lib/scenario";
 

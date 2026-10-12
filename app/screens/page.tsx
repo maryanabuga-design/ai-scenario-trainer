@@ -19,6 +19,7 @@ import {
   ChatFeedbackSample,
   DecisionSample,
   EmptyStatesSample,
+  ExplainSample,
   FeedbackSample,
   CreateTrainingSample,
   GeneratingSample,
@@ -208,9 +209,19 @@ export default function Screens() {
               <DecisionSample start="option" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Explanation">
+          <PhoneFrame label="Decision: ready to continue">
             <Screen>
               <DecisionSample start="complete" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Explain: write">
+            <Screen>
+              <ExplainSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Explain: self-check">
+            <Screen>
+              <ExplainSample revealed />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Feedback">

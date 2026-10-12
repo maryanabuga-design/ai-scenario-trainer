@@ -7,6 +7,8 @@ import { Card } from "@/components/Card/Card";
 import { Gradient } from "@/components/Gradient/Gradient";
 import { SourceChip } from "@/components/SourceChip/SourceChip";
 import { StatusBadge, StatusIcon, statuses } from "@/components/StatusBadge/StatusBadge";
+import { formatSelfCheck } from "@/lib/explanation-match";
+import type { SelfCheck } from "@/lib/explanation-match";
 import { formatPoints } from "@/lib/progress";
 import { getScenario } from "@/lib/scenario";
 import type { OutcomeMetric } from "@/lib/scenario";
@@ -80,10 +82,13 @@ function Row({ label, value }: { label: ReactNode; value: ReactNode }) {
 export function ResultsView({
   results,
   items,
+  selfCheck = null,
   onRepeat,
 }: {
   results: ResultsKind;
   items: ScoredItem[];
+  /** The self-check over the session's steps; null for a quiz. Never part of the score. */
+  selfCheck?: SelfCheck | null;
   onRepeat: (ids: string[]) => void;
 }) {
   const quiz = results.kind === "quiz";
@@ -177,6 +182,16 @@ export function ResultsView({
             ))}
           </div>
         </Section>
+      )}
+
+      {selfCheck && (
+        <div className="flex min-h-11 flex-wrap items-center gap-x-2 border-y border-border py-2 text-sm text-text-secondary">
+          <span>Explained in your own words:</span>
+          <span className="font-medium text-text tabular-nums">
+            {formatSelfCheck(selfCheck)}
+            {selfCheck !== "skipped" && " (self-checked)"}
+          </span>
+        </div>
       )}
 
       <Section title="Error analysis">

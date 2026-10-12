@@ -5,7 +5,6 @@ import { AskAiButton } from "@/components/AskAi/AskAi";
 import { Button } from "@/components/Button/Button";
 import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
 import { ConfidenceSelector } from "@/components/ConfidenceSelector/ConfidenceSelector";
-import { ExplanationField } from "@/components/ExplanationField/ExplanationField";
 import { SessionTopBar } from "@/components/SessionTopBar/SessionTopBar";
 import type { Unit } from "@/components/SessionTopBar/SessionTopBar";
 import { SourceChip } from "@/components/SourceChip/SourceChip";
@@ -14,22 +13,17 @@ import type { Confidence, Step } from "@/lib/scenario";
 export type Draft = {
   optionId: string | null;
   confidence: Confidence | null;
-  explanation: string;
 };
 
-export const emptyDraft: Draft = { optionId: null, confidence: null, explanation: "" };
-
-/** Neutral on purpose: the step's follow-up question can assume the choice was right. */
-export const explanationPrompt = "In one sentence, why did you choose this?";
+export const emptyDraft: Draft = { optionId: null, confidence: null };
 
 function blockingHint(draft: Draft) {
   if (!draft.optionId) return "Choose an action to continue.";
   if (!draft.confidence) return "Say how sure you are to continue.";
-  if (!draft.explanation.trim()) return "Write one sentence to continue.";
   return null;
 }
 
-/** Situation and decision with progressive reveal: options, then confidence, then explanation. */
+/** Situation and decision with progressive reveal: options, then confidence. The explanation follows on its own screen. */
 export function DecisionStep({
   step,
   index,
@@ -86,18 +80,10 @@ export function DecisionStep({
         />
       )}
 
-      {draft.optionId && draft.confidence && (
-        <ExplanationField
-          label={explanationPrompt}
-          value={draft.explanation}
-          onChange={(explanation) => onDraftChange({ ...draft, explanation })}
-        />
-      )}
-
       <ActionBar>
         {hint && <p className="text-center text-sm text-text-secondary">{hint}</p>}
         <Button disabled={hint !== null} onClick={onSubmit}>
-          Check my answer
+          Continue
         </Button>
       </ActionBar>
     </div>

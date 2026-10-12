@@ -8,7 +8,11 @@ export type Answer = {
   stepId: string;
   optionId: string;
   confidence: Confidence;
+  /** Empty until the Explain screen is checked, and when it is skipped. */
   explanation: string;
+  /** One box per key point: whether the user says their sentence covers it. */
+  selfCheck?: boolean[];
+  skipped?: boolean;
 };
 
 export type QuizAnswer = {
@@ -19,7 +23,8 @@ export type QuizAnswer = {
 
 type Progress = {
   index: number;
-  phase: "decide" | "feedback";
+  /** Scenario steps go decide → explain → feedback; quiz questions skip explain. */
+  phase: "decide" | "explain" | "feedback";
   finished: boolean;
 };
 

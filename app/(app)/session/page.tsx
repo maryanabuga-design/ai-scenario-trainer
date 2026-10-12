@@ -5,12 +5,14 @@ import { useState } from "react";
 import { AskAiProvider } from "@/components/AskAi/AskAi";
 import { ButtonLink } from "@/components/Button/Button";
 import { DecisionStep, emptyDraft } from "@/components/DecisionStep/DecisionStep";
+import { ExplainStep } from "@/components/ExplainStep/ExplainStep";
 import type { Draft } from "@/components/DecisionStep/DecisionStep";
 import { FeedbackView } from "@/components/FeedbackView/FeedbackView";
 import { QuizFeedback } from "@/components/QuizFeedback/QuizFeedback";
 import { emptyQuizDraft, QuizQuestion } from "@/components/QuizQuestion/QuizQuestion";
 import type { QuizDraft } from "@/components/QuizQuestion/QuizQuestion";
 import type { Unit } from "@/components/SessionTopBar/SessionTopBar";
+import { selfCheckOf } from "@/lib/explanation-match";
 import { simulatedFeedback } from "@/lib/feedback";
 import { getQuestion } from "@/lib/quiz";
 import { getStep } from "@/lib/scenario";
@@ -54,21 +56,42 @@ function savedAnswer(session: Session, item: RepeatItem): Answer | QuizAnswer | 
   return session.answers.find((answer) => answer.stepId === item.id);
 }
 
+/** Adds an answer. A step goes on to the Explain screen; a question straight to feedback. */
 function withAnswer(session: Session, answer: Answer | QuizAnswer): Session {
+  const phase = "stepId" in answer ? "explain" : "feedback";
   if (isRepeatRound(session)) {
     const tagged =
       "stepId" in answer
         ? { type: "step" as const, ...answer }
         : { type: "question" as const, ...answer };
-    return { ...session, answers: [...session.answers, tagged], phase: "feedback" };
+    return { ...session, answers: [...session.answers, tagged], phase };
   }
   if (isQuiz(session) && "questionId" in answer) {
-    return { ...session, answers: [...session.answers, answer], phase: "feedback" };
+    return { ...session, answers: [...session.answers, answer], phase };
   }
   if (!isQuiz(session) && "stepId" in answer) {
-    return { ...session, answers: [...session.answers, answer], phase: "feedback" };
+    return { ...session, answers: [...session.answers, answer], phase };
   }
   return session;
+}
+
+/** Changes the saved answer of a step: its explanation, self-check or skip. */
+function withStepAnswer(session: Session, stepId: string, patch: Partial<Answer>): Session {
+  if (isRepeatRound(session)) {
+    return {
+      ...session,
+      answers: session.answers.map((answer) =>
+        answer.type === "step" && answer.stepId === stepId ? { ...answer, ...patch } : answer,
+      ),
+    };
+  }
+  if (isQuiz(session)) return session;
+  return {
+    ...session,
+    answers: session.answers.map((answer) =>
+      answer.stepId === stepId ? { ...answer, ...patch } : answer,
+    ),
+  };
 }
 
 function StepDecide({
@@ -100,7 +123,7 @@ function StepDecide({
           stepId: step.id,
           optionId: draft.optionId,
           confidence: draft.confidence,
-          explanation: draft.explanation.trim(),
+          explanation: "",
         });
       }}
     />
@@ -198,6 +221,36 @@ export default function SessionPage() {
   const saved = savedAnswer(session, item);
   if (!saved) return <NoSession />;
 
+  function updateStep(stepId: string, patch: Partial<Answer>, phase?: Session["phase"]) {
+    if (session === "loading" || !session) return;
+    const next = withStepAnswer(session, stepId, patch);
+    saveSession(phase ? { ...next, phase } : next);
+    if (phase) window.scrollTo(0, 0);
+  }
+
+  if ("stepId" in saved && session.phase === "explain") {
+    return (
+      <ExplainStep
+        key={session.index}
+        step={getStep(saved.stepId)}
+        answer={saved}
+        index={session.index}
+        total={total}
+        unit={unit}
+        onCheck={(explanation, selfCheck) => updateStep(saved.stepId, { explanation, selfCheck })}
+        onSelfCheckChange={(selfCheck) => updateStep(saved.stepId, { selfCheck })}
+        onSkip={() =>
+          updateStep(
+            saved.stepId,
+            { explanation: "", selfCheck: undefined, skipped: true },
+            "feedback",
+          )
+        }
+        onSeeFeedback={() => updateStep(saved.stepId, {}, "feedback")}
+      />
+    );
+  }
+
   if ("stepId" in saved) {
     const step = getStep(saved.stepId);
     return (
@@ -205,7 +258,7 @@ export default function SessionPage() {
         <FeedbackView
           step={step}
           feedback={simulatedFeedback.evaluate(step, saved)}
-          explanation={saved.explanation}
+          selfCheck={selfCheckOf(saved)}
           index={session.index}
           total={total}
           unit={unit}
