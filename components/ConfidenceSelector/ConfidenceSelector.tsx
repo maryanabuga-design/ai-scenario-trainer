@@ -27,7 +27,7 @@ export function ConfidenceSelector({
               className={`inline-flex min-h-11 cursor-pointer items-center rounded-full border px-4 type-small has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${
                 checked
                   ? "border-primary bg-primary text-primary-text"
-                  : "border-border bg-surface text-text hover:border-text-secondary"
+                  : "border-border bg-surface text-text active:bg-surface-muted"
               }`}
             >
               <input

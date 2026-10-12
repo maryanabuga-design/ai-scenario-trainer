@@ -50,6 +50,7 @@
   --tag-blue: #d4e8f0;
   --tag-lilac: #e6ddf5;
   --tag-sage: #e7e8e0;
+  --chip: #efece5;
   --repeat-pill: #f9eecf;
   --nav-active: #f9edc8;
   --next-card: #f2f3ee;
@@ -109,6 +110,7 @@
   --color-tag-blue: var(--tag-blue);
   --color-tag-lilac: var(--tag-lilac);
   --color-tag-sage: var(--tag-sage);
+  --color-chip: var(--chip);
   --color-repeat-pill: var(--repeat-pill);
   --color-nav-active: var(--nav-active);
   --color-next-card: var(--next-card);

@@ -21,7 +21,7 @@ export function SourceChip({
     <button
       type="button"
       onClick={() => open(sectionId)}
-      className="relative inline-flex min-h-9 items-center gap-1.5 rounded-full bg-surface-muted px-3 text-left type-small text-text before:absolute before:-inset-y-1 before:inset-x-0 before:content-[''] hover:bg-border active:bg-border"
+      className="relative inline-flex min-h-9 items-center gap-1.5 rounded-full bg-chip px-3 text-left type-small text-text before:absolute before:-inset-y-1 before:inset-x-0 before:content-[''] active:bg-border"
     >
       <FileText
         size={14}
