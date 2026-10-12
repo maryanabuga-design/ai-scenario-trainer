@@ -28,10 +28,11 @@
   --tag-blue: #d4e8f0;
   --tag-lilac: #e6ddf5;
 
-  --glow-yellow: #f2de6e;
-  --glow-peach: #f4b497;
-  --glow-lilac: #d6c6f0;
-  --glow-blue: #bcd9ea;
+  --mesh-sand: #e6dcc3;
+  --mesh-khaki: #c9bc8f;
+  --mesh-moss: #7a8450;
+  --mesh-olive: #4a5230;
+  --text-secondary-on-mesh: #4a4843;
 }
 
 @theme inline {
@@ -121,9 +122,11 @@ dialog[data-sheet] {
 }
 
 /* Soft gradient zones. Allowed only where DESIGN.md says.
-   One smooth mesh: large overlapping colour fields, heavily blurred, mixed with --bg. */
+   One smooth, low-contrast mesh in muted sand, khaki, moss and dark olive, mixed with --bg.
+   Colours only: no pattern. Secondary text inside a zone uses the darker on-mesh tone. */
 .gradient-warm,
 .gradient-cool {
+  --text-secondary: var(--text-secondary-on-mesh);
   position: relative;
   overflow: hidden;
   isolation: isolate;
@@ -141,25 +144,25 @@ dialog[data-sheet] {
 
 .gradient-warm::before {
   background:
-    radial-gradient(circle 200px at 25% 70%, color-mix(in srgb, var(--glow-yellow) 75%, var(--bg)), transparent),
-    radial-gradient(circle 200px at 80% 60%, color-mix(in srgb, var(--glow-peach) 70%, var(--bg)), transparent),
+    radial-gradient(circle 200px at 25% 70%, color-mix(in srgb, var(--mesh-khaki) 65%, var(--bg)), transparent),
+    radial-gradient(circle 200px at 85% 65%, color-mix(in srgb, var(--mesh-moss) 40%, var(--bg)), transparent),
     linear-gradient(
       110deg,
-      color-mix(in srgb, var(--glow-yellow) 75%, var(--bg)),
-      color-mix(in srgb, var(--glow-lilac) 80%, var(--bg)) 50%,
-      color-mix(in srgb, var(--glow-peach) 70%, var(--bg))
+      color-mix(in srgb, var(--mesh-sand) 85%, var(--bg)),
+      color-mix(in srgb, var(--mesh-khaki) 60%, var(--bg)) 50%,
+      color-mix(in srgb, var(--mesh-olive) 30%, var(--bg))
     );
 }
 
 .gradient-cool::before {
   background:
-    radial-gradient(circle 200px at 25% 35%, color-mix(in srgb, var(--glow-blue) 70%, var(--bg)), transparent),
-    radial-gradient(circle 200px at 80% 70%, color-mix(in srgb, var(--glow-lilac) 70%, var(--bg)), transparent),
+    radial-gradient(circle 200px at 25% 35%, color-mix(in srgb, var(--mesh-moss) 40%, var(--bg)), transparent),
+    radial-gradient(circle 200px at 80% 70%, color-mix(in srgb, var(--mesh-khaki) 65%, var(--bg)), transparent),
     linear-gradient(
       110deg,
-      color-mix(in srgb, var(--glow-blue) 70%, var(--bg)),
-      color-mix(in srgb, var(--glow-lilac) 80%, var(--bg)) 50%,
-      color-mix(in srgb, var(--glow-peach) 65%, var(--bg))
+      color-mix(in srgb, var(--mesh-olive) 30%, var(--bg)),
+      color-mix(in srgb, var(--mesh-sand) 85%, var(--bg)) 50%,
+      color-mix(in srgb, var(--mesh-khaki) 60%, var(--bg))
     );
 }
 
