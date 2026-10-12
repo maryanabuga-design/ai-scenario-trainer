@@ -12,7 +12,7 @@ This is a learning prototype. Keep scope small and the repo tidy.
 
 ## Stack
 - Next.js (App Router) + TypeScript + Tailwind CSS.
-- No live AI calls in this version. The AI behavior is simulated from `content/scenario-building-evacuation.json` (options, explanations, consequences, follow-up questions, key beats). Say so in the UI footer and the README ("AI behavior is simulated for this prototype").
+- No live AI calls in this version. The AI behavior is simulated from `content/scenario-building-evacuation.json` (options, explanations, consequences, key beats, prepared Ask AI answers). Say so in the UI footer and the README ("AI behavior is simulated for this prototype").
 - Keep the feedback logic behind a small interface in `lib/feedback.ts` so a real AI provider could be added later. Do not implement it now.
 - Deploy: Vercel. No environment variables are required.
 
