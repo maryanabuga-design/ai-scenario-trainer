@@ -73,6 +73,34 @@ function Screen({ nav, children }: { nav?: string; children: ReactNode }) {
   );
 }
 
+/** Every named text style from DESIGN.md (Typography), as the screens use them. */
+function TextStyles() {
+  const styles = [
+    ["type-display", "Display headline"],
+    ["type-display-sub", "Display sub-line"],
+    ["type-page-title", "Page title"],
+    ["type-card-title", "Card title"],
+    ["type-item-title", "Item title"],
+    ["type-body", "Body text for reading"],
+    ["type-body-strong", "Body strong"],
+    ["type-small text-text-secondary", "Grey secondary text"],
+    ["type-label", "Uppercase label"],
+    ["type-numeral", "28"],
+    ["type-button", "Button label"],
+    ["type-caption", "Small caption"],
+  ];
+  return (
+    <ul className="flex flex-1 flex-col gap-3 overflow-y-auto p-4">
+      {styles.map(([className, sample]) => (
+        <li key={className} className="flex flex-col">
+          <span className="type-caption text-text-secondary">{className}</span>
+          <span className={className}>{sample}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function FoundationKit() {
   return (
     <>
@@ -125,6 +153,9 @@ export default function Screens() {
         <Group title="Foundation">
           <PhoneFrame label="Foundation kit">
             <FoundationKit />
+          </PhoneFrame>
+          <PhoneFrame label="Text styles">
+            <TextStyles />
           </PhoneFrame>
         </Group>
         <Group title="Materials">
