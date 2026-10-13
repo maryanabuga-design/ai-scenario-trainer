@@ -35,6 +35,7 @@ function AnswerCard({ item }: { item: ScoredItem }) {
         errorType={item.hasConfidence ? item.errorType : null}
       />
       {item.markedByYou && <StatusBadge status="marked" />}
+      {item.reason && <p className="type-small text-text-secondary">{item.reason}</p>}
       <Field label={step ? "You chose" : "Your answer"}>
         <p>{item.yourAnswer || "No answer"}</p>
       </Field>

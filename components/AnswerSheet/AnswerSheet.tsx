@@ -148,7 +148,7 @@ export function AnswerSheet({
       </div>
       <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pt-3 pb-6">
         {/* The verdict is for screen readers; the boxes below show it with icons and labels. */}
-        <h2 ref={titleRef} id="answer-sheet-title" tabIndex={-1} className="sr-only">
+        <h2 ref={titleRef} id="answer-sheet-title" tabIndex={-1} className="sr-only outline-none">
           {verdict}
         </h2>
         {content.kind === "question" && content.detail && (
@@ -194,7 +194,15 @@ export function AnswerSheet({
       <div className="flex flex-col gap-3 border-t border-border bg-surface px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
         <Button onClick={onContinue}>{continueLabel}</Button>
         {content.override !== "none" && onMarkCorrect && (
-          <MarkCorrect marked={content.override === "marked"} onChange={onMarkCorrect} />
+          <MarkCorrect
+            label={
+              content.kind === "step"
+                ? "My explanation is still correct"
+                : "My answer is still correct"
+            }
+            marked={content.override === "marked"}
+            onChange={onMarkCorrect}
+          />
         )}
       </div>
     </>

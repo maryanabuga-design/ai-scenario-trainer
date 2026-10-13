@@ -7,8 +7,15 @@ import { loadAllSections } from "@/lib/guide";
 import { getStep } from "@/lib/scenario";
 import type { Answer } from "@/lib/session";
 
-const wrong: Answer = { stepId: "s1", optionId: "d", confidence: 2, explanation: "x" };
-const right: Answer = { stepId: "s1", optionId: "b", confidence: 3, explanation: "x" };
+/** A right choice with a typed explanation that misses the guide: the one case with the button. */
+const missed: Answer = { stepId: "s1", optionId: "b", confidence: 3, explanation: "лбтдлюью" };
+const matched: Answer = {
+  stepId: "s1",
+  optionId: "b",
+  confidence: 3,
+  explanation: "The alarm is real, so we take the stairs now.",
+};
+const wrong: Answer = { stepId: "s1", optionId: "d", confidence: 2, explanation: "лбтдлюью" };
 
 function render(answer: Answer) {
   return renderToStaticMarkup(
@@ -23,23 +30,28 @@ function render(answer: Answer) {
   );
 }
 
-describe("My answer is still correct", () => {
-  it("is a secondary button below Continue after a typed wrong answer", () => {
-    const html = render(wrong);
-    const button = html.indexOf(">My answer is still correct</button>");
+describe("My explanation is still correct", () => {
+  it("is a secondary button below Continue for a right choice with a missed explanation", () => {
+    const html = render(missed);
+    expect(html).toContain("Doesn&#x27;t match the guide yet");
+    const button = html.indexOf(">My explanation is still correct</button>");
     expect(button).toBeGreaterThan(-1);
     // Continue comes first on screen and in the Tab order.
     expect(html.indexOf(">Continue</button>")).toBeLessThan(button);
     expect(html.slice(html.lastIndexOf("<button", button), button)).toContain("border-primary");
   });
 
-  it("is not there after a right answer", () => {
-    expect(render(right)).not.toContain("My answer is still correct");
+  it("is not there for a matching explanation or a wrong choice", () => {
+    expect(render(matched)).toContain("Matches the guide");
+    expect(render(matched)).not.toContain("still correct");
+    expect(render(matched)).not.toContain("Better explanation");
+    expect(render(wrong)).not.toContain("still correct");
+    expect(render(wrong)).toContain("Better explanation");
   });
 
   it("becomes a confirmation with Undo once pressed", () => {
-    const html = render({ ...wrong, markedCorrect: true });
-    expect(html).not.toContain("My answer is still correct");
+    const html = render({ ...missed, markedCorrect: true });
+    expect(html).not.toContain("My explanation is still correct");
     expect(html).toContain("Marked as correct by you");
     expect(html).toContain(">Undo</span></button>");
     expect(html).toContain("Better explanation");
@@ -48,7 +60,7 @@ describe("My answer is still correct", () => {
 
 describe("Your choice block", () => {
   it("uses the Guide chip fill and a 3px dark green line on the left", () => {
-    const html = render(wrong);
+    const html = render(missed);
     const label = html.indexOf(">Your choice</h3>");
     const block = html.slice(
       html.lastIndexOf('<div class="', html.lastIndexOf("<svg", label)),

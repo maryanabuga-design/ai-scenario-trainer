@@ -4,13 +4,16 @@ import { useEffect, useRef } from "react";
 import { Button } from "@/components/Button/Button";
 
 /**
- * "My answer is still correct" in the answer sheet, the same for scenario steps and every quiz
- * question. Once pressed it becomes "Marked as correct by you" with Undo; focus follows.
+ * "My explanation is still correct" (scenario) or "My answer is still correct" (short text) in the
+ * answer sheet. Once pressed it becomes "Marked as correct by you" with Undo; focus follows.
  */
 export function MarkCorrect({
+  label,
   marked,
   onChange,
 }: {
+  /** "My explanation is still correct" or "My answer is still correct". */
+  label: string;
   marked: boolean;
   onChange: (marked: boolean) => void;
 }) {
@@ -29,7 +32,7 @@ export function MarkCorrect({
   if (!marked) {
     return (
       <Button ref={markRef} variant="secondary" onClick={() => onChange(true)}>
-        My answer is still correct
+        {label}
       </Button>
     );
   }

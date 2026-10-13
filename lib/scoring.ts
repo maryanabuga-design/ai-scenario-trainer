@@ -1,3 +1,4 @@
+import type { ExplanationCheck } from "@/lib/feedback";
 import type { Confidence, Effects, Step } from "@/lib/scenario";
 
 export type ErrorType = "secure" | "guess" | "knowledge_gap" | "misconception";
@@ -80,22 +81,36 @@ export type ScoredItem = {
   why: string[];
   /** What happened after a scenario step. */
   consequence?: string;
-  /** An answer the user marked correct ("My answer is still correct"). */
+  /** An answer or explanation the user marked correct ("My … is still correct"). */
   markedByYou?: boolean;
+  /** Why a right answer still counts as weak, for the Error analysis. */
+  reason?: string;
 };
 
+/** Shown in the Error analysis for a right choice whose explanation missed the guide. */
+export const explanationMissedReason = "Right choice, but your explanation didn't match the guide.";
+
+/**
+ * The score depends only on the chosen option. A right choice whose typed explanation did not
+ * match the guide counts as a Guess, unless the person marked the explanation correct.
+ */
 export function scoreStep(
   step: Step,
   optionId: string,
   confidence: Confidence,
-  markedCorrect = false,
+  {
+    explanation,
+    markedCorrect = false,
+  }: { explanation?: ExplanationCheck; markedCorrect?: boolean } = {},
 ): ScoredItem {
   const option = step.options.find((candidate) => candidate.id === optionId);
   const best = step.options.find((candidate) => candidate.correct);
   if (!option || !best) throw new Error(`Step ${step.id} has no option ${optionId}`);
-  /** "My answer is still correct": a wrong choice counts as right, with the same confidence. */
-  const markedByYou = markedCorrect && !option.correct;
-  const correct = option.correct || markedByYou;
+  const correct = option.correct;
+  const notMatched = correct && explanation === "not_matched";
+  /** "My explanation is still correct": the explanation counts as matched. */
+  const markedByYou = notMatched && markedCorrect;
+  const explanationMissed = notMatched && !markedCorrect;
   return {
     kind: "step",
     id: step.id,
@@ -103,7 +118,7 @@ export function scoreStep(
     sources: step.sources,
     score: correct ? 1 : 0,
     correct,
-    errorType: errorType(correct, confidence),
+    errorType: explanationMissed ? "guess" : errorType(correct, confidence),
     hasConfidence: true,
     effects: option.effects ?? {},
     yourAnswer: option.text,
@@ -111,6 +126,7 @@ export function scoreStep(
     why: option.correct ? [option.why] : [option.why, best.why],
     consequence: option.consequence,
     ...(markedByYou && { markedByYou }),
+    ...(explanationMissed && { reason: explanationMissedReason }),
   };
 }
 
@@ -140,9 +156,14 @@ export function countErrorTypes(items: ScoredItem[]): Record<ErrorType, number> 
   return counts;
 }
 
-/** Items to repeat: every answer that was wrong, partly right or guessed, unless marked correct. */
+/**
+ * Items to repeat: every answer that was wrong, partly right or guessed. A short-text answer the
+ * user marked correct is not repeated; a scenario step leaves the list only once it is no longer a Guess.
+ */
 export function weakItems(items: ScoredItem[]): ScoredItem[] {
-  return items.filter((item) => item.errorType !== "secure" && !item.markedByYou);
+  return items.filter(
+    (item) => item.errorType !== "secure" && !(item.markedByYou && item.kind === "question"),
+  );
 }
 
 /** Guide sections behind the weak items, without duplicates, in order of appearance. */

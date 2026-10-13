@@ -151,6 +151,13 @@ body {
   outline-offset: 2px;
 }
 
+/* Containers and headings that receive focus from the app (the answer sheet, its hidden title,
+   a step headline) are not controls: they never show a ring (DESIGN.md: Focus). */
+dialog:focus-visible,
+[tabindex="-1"]:focus-visible {
+  outline: none;
+}
+
 /* No focus ring after a mouse click or tap, also when the app moves focus itself: the ring is
    for the keyboard only (DESIGN.md: Focus). Covers the rings drawn on a parent of a focused input. */
 :root[data-input="pointer"] :focus-visible,

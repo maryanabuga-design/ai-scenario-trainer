@@ -82,7 +82,10 @@ describe("answer sheet for a scenario step", () => {
 
   it("has a result and an error type for every option, and never a percentage or a score", () => {
     for (const optionId of ["a", "b", "c", "d"]) {
-      const sheet = stepSheet(getStep("s2"), step("s2", { optionId, explanation: "Hot door." }));
+      const sheet = stepSheet(
+        getStep("s2"),
+        step("s2", { optionId, explanation: "The door is hot, so we use another route." }),
+      );
       const all = keys(sheet);
       expect(["correct", "wrong"]).toContain(sheet.result);
       expect(sheet.errorType).toBe(optionId === "c" ? "secure" : "misconception");

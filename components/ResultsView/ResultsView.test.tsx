@@ -20,7 +20,7 @@ const session: ScenarioSession = {
   phase: "feedback",
   finished: true,
   answers: [
-    { stepId: "s1", optionId: "d", confidence: 2, explanation: "x" },
+    { stepId: "s1", optionId: "b", confidence: 3, explanation: "лбтдлюью" },
     { stepId: "s2", optionId: "c", confidence: 3, explanation: "x" },
     { stepId: "s3", optionId: "a", confidence: 3, explanation: "x" },
   ],
@@ -40,13 +40,13 @@ function render(current: ScenarioSession) {
   );
 }
 
-describe("Results after My answer is still correct", () => {
-  it("labels the step Marked correct by you and counts it as correct", () => {
+describe("Results after My explanation is still correct", () => {
+  it("labels the step Marked correct by you; the score depends only on the choice", () => {
     const before = render(session);
     const after = render(setMarkedCorrect(session, "s1", true));
     expect(before).not.toContain("Marked correct by you");
     expect(after).toContain("Marked correct by you");
     const correct = (html: string) => Number(/(\d)\/3 correct/.exec(html)?.[1]);
-    expect(correct(after)).toBe(correct(before) + 1);
+    expect(correct(after)).toBe(correct(before));
   });
 });

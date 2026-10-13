@@ -260,40 +260,44 @@ export default function Screens() {
           </PhoneFrame>
         </Group>
         <Group title="Answer sheet: scenario">
-          <PhoneFrame label="Sheet: correct, with your explanation">
+          <PhoneFrame label="Sheet: Right choice + matching explanation">
             <Screen>
               <StepSheetSample
                 stepId="s1"
                 optionId="b"
-                explanation="The alarm is real, so we take the stairs, not the lift, and leave our things behind."
+                explanation="The alarm is real, so we take the stairs now."
                 index={0}
               />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Sheet: incorrect, typed explanation (with My answer is still correct)">
+          <PhoneFrame label="Sheet: Right choice + gibberish (My explanation is still correct)">
+            <Screen>
+              <StepSheetSample stepId="s1" optionId="b" explanation="лбтдлюью" index={0} />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Sheet: Right choice + gibberish, marked correct by you, with Undo">
+            <Screen>
+              <StepSheetSample stepId="s1" optionId="b" explanation="лбтдлюью" index={0} marked />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Sheet: Right choice + I don't know">
+            <Screen>
+              <StepSheetSample stepId="s1" optionId="b" explanation="" index={0} />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Sheet: Wrong choice + matching explanation">
             <Screen>
               <StepSheetSample
-                stepId="s2"
-                optionId="b"
-                explanation="Waiting is safer than walking into fire."
-                index={1}
+                stepId="s1"
+                optionId="d"
+                explanation="The alarm is real, so we take the stairs now."
+                index={0}
               />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Sheet: marked correct by you, with Undo">
+          <PhoneFrame label="Sheet: Wrong choice + gibberish">
             <Screen>
-              <StepSheetSample
-                stepId="s2"
-                optionId="b"
-                explanation="Waiting is safer than walking into fire."
-                index={1}
-                marked
-              />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Sheet: incorrect after I don't know (no button)">
-            <Screen>
-              <StepSheetSample stepId="s2" optionId="b" index={1} />
+              <StepSheetSample stepId="s1" optionId="d" explanation="лбтдлюью" index={0} />
             </Screen>
           </PhoneFrame>
         </Group>

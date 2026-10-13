@@ -1,9 +1,10 @@
+import { explanationOutcome } from "@/lib/feedback";
 import { getQuestion, scoreQuestion } from "@/lib/quiz";
 import { getStep } from "@/lib/scenario";
 import type { SessionMode } from "@/lib/scenario";
 import { currentWeakItems, scoreStep } from "@/lib/scoring";
 import type { ScoredItem } from "@/lib/scoring";
-import type { FinishedSession, Session } from "@/lib/session";
+import type { Answer, FinishedSession, Session } from "@/lib/session";
 
 export function sessionLabel(
   session:
@@ -21,6 +22,15 @@ export function sessionLabel(
   }[session.mode];
 }
 
+/** A saved scenario answer, with its explanation check and any "still correct" mark. */
+function scoreAnswerStep(answer: Answer): ScoredItem {
+  const step = getStep(answer.stepId);
+  return scoreStep(step, answer.optionId, answer.confidence, {
+    explanation: explanationOutcome(step, answer),
+    markedCorrect: answer.markedCorrect,
+  });
+}
+
 export function scoreSession(session: Session | FinishedSession): ScoredItem[] {
   if (session.kind === "repeat") {
     return session.answers.map((answer) =>
@@ -31,12 +41,7 @@ export function scoreSession(session: Session | FinishedSession): ScoredItem[] {
             answer.confidence,
             answer.markedCorrect,
           )
-        : scoreStep(
-            getStep(answer.stepId),
-            answer.optionId,
-            answer.confidence,
-            answer.markedCorrect,
-          ),
+        : scoreAnswerStep(answer),
     );
   }
   if (session.kind === "quiz") {
@@ -49,9 +54,7 @@ export function scoreSession(session: Session | FinishedSession): ScoredItem[] {
       ),
     );
   }
-  return session.answers.map((answer) =>
-    scoreStep(getStep(answer.stepId), answer.optionId, answer.confidence, answer.markedCorrect),
-  );
+  return session.answers.map((answer) => scoreAnswerStep(answer));
 }
 
 /** Weak steps and questions across all finished sessions, oldest session first. */

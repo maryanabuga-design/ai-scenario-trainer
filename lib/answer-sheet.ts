@@ -3,7 +3,7 @@ import { describeEffects } from "@/lib/outcome";
 import { describeAnswer, describeResponse, scoreQuestion, scoreResponse } from "@/lib/quiz";
 import type { Choice, Question, Response } from "@/lib/quiz";
 import type { Step } from "@/lib/scenario";
-import { errorType } from "@/lib/scoring";
+import { scoreStep } from "@/lib/scoring";
 import type { ErrorType } from "@/lib/scoring";
 import { answerSource } from "@/lib/session";
 import type { Answer, QuizAnswer } from "@/lib/session";
@@ -29,8 +29,9 @@ export type AnswerBox = {
 export type SheetResult = "correct" | "wrong" | "partial";
 
 /**
- * "My answer is still correct": available after a wrong, partly right or rejected answer,
- * marked once pressed (with Undo), none after a right answer or "I don't know".
+ * "My explanation is still correct" (scenario) or "My answer is still correct" (short text):
+ * available for typed text that missed the guide (behind a right choice, for a scenario step),
+ * marked once pressed (with Undo), otherwise none.
  */
 export type Override = "none" | "available" | "marked";
 
@@ -89,15 +90,22 @@ export type SheetContent = StepSheet | QuestionSheet;
 export function stepSheet(step: Step, answer: Answer): StepSheet {
   const feedback = simulatedFeedback.evaluate(step, answer);
   const outcome = explanationOutcome(step, answer);
-  const marked = !feedback.correct && answer.markedCorrect === true;
+  const scored = scoreStep(step, answer.optionId, answer.confidence, {
+    explanation: outcome,
+    markedCorrect: answer.markedCorrect,
+  });
+  // Only a typed explanation that missed the guide, behind a right choice, can be defended.
+  const canDefend =
+    feedback.correct && outcome === "not_matched" && answerSource(answer) === "typed";
+  const marked = canDefend && scored.markedByYou === true;
   return {
     kind: "step",
-    verdict: feedback.correct || marked ? "right" : "wrong",
-    result: feedback.correct || marked ? "correct" : "wrong",
-    errorType: marked ? errorType(true, answer.confidence) : feedback.errorType,
+    verdict: feedback.correct ? "right" : "wrong",
+    result: feedback.correct ? "correct" : "wrong",
+    errorType: scored.errorType,
     boxes: [
       {
-        tone: feedback.correct ? "right" : marked ? "neutral" : "wrong",
+        tone: feedback.correct ? "right" : "wrong",
         label: "Your choice",
         lines: [feedback.chosen.text],
         yours: true,
@@ -106,8 +114,9 @@ export function stepSheet(step: Step, answer: Answer): StepSheet {
     open: {
       label: "Your explanation",
       text: outcome === "skipped" ? null : answer.explanation.trim(),
-      verdict: outcome === "skipped" ? null : outcome,
+      verdict: outcome === "skipped" ? null : marked ? "marked" : outcome,
     },
+    // The guide stays the source of truth: hidden only for a right choice explained as the guide does.
     better:
       feedback.correct && outcome === "matched"
         ? null
@@ -116,13 +125,7 @@ export function stepSheet(step: Step, answer: Answer): StepSheet {
     sources: feedback.sources,
     whatHappened: feedback.chosen.consequence,
     stateChange: describeEffects(step.id, feedback.chosen.effects ?? {}),
-    // Only typed text can be defended: never after "I don't know" or an empty explanation.
-    override:
-      feedback.correct || answerSource(answer) !== "typed"
-        ? "none"
-        : marked
-          ? "marked"
-          : "available",
+    override: !canDefend ? "none" : marked ? "marked" : "available",
   };
 }
 
