@@ -119,15 +119,12 @@ export function homeScenarios(materials: Material[]): Material[] {
   });
 }
 
-/** "Short: 3 decisions, about 5 min. Full: 6 decisions, about 10 min." and the quiz line. */
-export function scenarioLines(def: ScenarioDef): string[] {
-  const lengths = (["short", "full"] as const).flatMap((length) => {
-    const option = def.lengths[length];
-    if (!option) return [];
-    const name = length === "short" ? "Short" : "Full";
-    return [`${name}: ${option.stepIds.length} decisions, about ${option.minutes} min.`];
-  });
-  return [lengths.join(" "), "Or take a quiz on any guide sections, with five kinds of questions."];
+/** The New scenario card line, from the Short length: "Short: 3 decisions, about 5 min." */
+export function scenarioLine(def: ScenarioDef): string {
+  const length = def.lengths.short ? "short" : def.defaultLength;
+  const option = def.lengths[length];
+  const name = length === "short" ? "Short" : length === "full" ? "Full" : "Extended";
+  return `${name}: ${option?.stepIds.length ?? 0} decisions, about ${option?.minutes ?? 0} min.`;
 }
 
 export function scenarioTitle(material: Material): string {

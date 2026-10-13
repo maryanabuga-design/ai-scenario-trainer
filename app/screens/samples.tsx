@@ -48,7 +48,7 @@ import { sampleMaterials } from "@/lib/materials";
 import { materialFromSample, sampleFiles } from "@/lib/training";
 import { currentWeakItems, scoreStep } from "@/lib/scoring";
 import { topicIcon, weakTopics } from "@/lib/weak-topics";
-import { scenarioLines } from "@/lib/home";
+import { scenarioLine } from "@/lib/home";
 
 /** Interactive sample screens for the /screens review page. They never touch the saved session. */
 export function SetupSample({
@@ -223,7 +223,7 @@ export function HomeSample({
         {
           id: "evacuation-guide",
           title: scenarioDef.title,
-          lines: scenarioLines(scenarioDef),
+          line: scenarioLine(scenarioDef),
           onOpen: () => undefined,
         },
       ]}

@@ -12,7 +12,7 @@ import type { Session } from "@/lib/session";
 import type { WeakTopic } from "@/lib/weak-topics";
 import { weakTopics } from "@/lib/weak-topics";
 
-export type HomeScenario = { id: string; title: string; lines: string[]; onOpen: () => void };
+export type HomeScenario = { id: string; title: string; line: string; onOpen: () => void };
 
 /** Home: the direction, the headline, Next up, the weak topics row and the scenarios. */
 export function HomeView({
@@ -70,7 +70,7 @@ export function HomeView({
         <ul className="flex flex-col gap-3">
           {scenarios.map((card) => (
             <li key={card.id}>
-              <ScenarioCard title={card.title} lines={card.lines} onOpen={card.onOpen} />
+              <ScenarioCard title={card.title} line={card.line} onOpen={card.onOpen} />
             </li>
           ))}
         </ul>

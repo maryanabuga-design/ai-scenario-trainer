@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
 import { HomeView } from "@/components/HomeView/HomeView";
+import { SoftShape } from "@/components/SoftShape/SoftShape";
 import type { HomeScenario } from "@/components/HomeView/HomeView";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { loadAllSections } from "@/lib/guide";
@@ -99,5 +100,33 @@ describe("Topics on Home", () => {
     expect(row.match(/rounded-full bg-primary/g)).toHaveLength(2);
     expect(row).toContain("Card 1 of 2");
     expect(topicRow(renderHome(oneTopic)).match(/rounded-full bg-primary/g)).toBeNull();
+  });
+});
+
+describe("New scenario card", () => {
+  const scenarios: HomeScenario[] = [
+    {
+      id: "evacuation-guide",
+      title: "Fire alarm in a training centre",
+      line: "Short: 3 decisions, about 5 min.",
+      onOpen: () => undefined,
+    },
+  ];
+  const card = () => {
+    const html = renderHome([], scenarios);
+    const start = html.indexOf('aria-labelledby="new-title"');
+    return html.slice(start, html.indexOf("</section>", start));
+  };
+
+  it("shows only the Short line", () => {
+    expect(card()).toContain("Short: 3 decisions, about 5 min.");
+    expect(card()).not.toContain("Full:");
+    expect(card()).not.toContain("Or take a quiz");
+  });
+
+  it("keeps the tag, uses the shared ArrowCircle and the faint soft shape", () => {
+    expect(card()).toContain(">Scenario<");
+    expect(card()).toContain(renderToStaticMarkup(<ArrowCircle />));
+    expect(card()).toContain(renderToStaticMarkup(<SoftShape variant="faint" />));
   });
 });

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { HomeView } from "@/components/HomeView/HomeView";
 import { directionTitle } from "@/lib/directions";
-import { homeScenarios, repeatUnderWay, scenarioLines, scenarioTitle } from "@/lib/home";
+import { homeScenarios, repeatUnderWay, scenarioLine, scenarioTitle } from "@/lib/home";
 import type { Material } from "@/lib/materials";
 import { needsOnboarding, onboardingHref } from "@/lib/onboarding";
 import { sampleMaterials } from "@/lib/materials";
@@ -63,7 +63,7 @@ export default function Home() {
       scenarios={materials.map((material) => ({
         id: material.id,
         title: scenarioTitle(material),
-        lines: scenarioLines(getScenario(material.scenarioId)),
+        line: scenarioLine(getScenario(material.scenarioId)),
         onOpen: () => openScenario(material),
       }))}
       onRepeat={(topics) => {

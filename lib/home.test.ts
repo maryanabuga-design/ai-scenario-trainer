@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { currentCard, dotCount, homeScenarios, nextUp, scenarioLines, topicRow } from "@/lib/home";
+import { currentCard, dotCount, homeScenarios, nextUp, scenarioLine, topicRow } from "@/lib/home";
 import { sampleMaterials } from "@/lib/materials";
 import { getScenario } from "@/lib/scenario";
 import { materialFromSample, sampleFiles } from "@/lib/training";
@@ -130,12 +130,14 @@ describe("New scenario cards", () => {
     expect(homeScenarios([...sampleMaterials, copy, quickCard, processing])).toHaveLength(1);
   });
 
-  it("describes the lengths the scenario has", () => {
-    expect(scenarioLines(getScenario("building-evacuation-001"))).toEqual([
-      "Short: 3 decisions, about 5 min. Full: 6 decisions, about 10 min.",
-      "Or take a quiz on any guide sections, with five kinds of questions.",
-    ]);
-    expect(scenarioLines(getScenario("flood-preparedness-001"))[0]).toBe(
+  it("describes only the Short length, from the scenario data", () => {
+    const evacuation = getScenario("building-evacuation-001");
+    const short = evacuation.lengths.short!;
+    expect(scenarioLine(evacuation)).toBe(
+      `Short: ${short.stepIds.length} decisions, about ${short.minutes} min.`,
+    );
+    expect(scenarioLine(evacuation)).toBe("Short: 3 decisions, about 5 min.");
+    expect(scenarioLine(getScenario("flood-preparedness-001"))).toBe(
       "Short: 3 decisions, about 5 min.",
     );
   });
