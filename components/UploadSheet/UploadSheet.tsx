@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
+import { ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/Button/Button";
@@ -74,12 +74,7 @@ export function UploadPanel({
                   <span className="type-small text-text-secondary">{formatSize(file.size)}</span>
                   <span className="type-small text-text-secondary">{file.summary}</span>
                 </span>
-                <ChevronRight
-                  size={20}
-                  strokeWidth={2}
-                  aria-hidden="true"
-                  className="shrink-0 self-center text-text-secondary"
-                />
+                <ArrowCircle />
               </button>
             </li>
           ))}

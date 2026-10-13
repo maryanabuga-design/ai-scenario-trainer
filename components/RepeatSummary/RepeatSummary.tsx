@@ -1,7 +1,8 @@
 "use client";
 
-import { Button, ButtonLink } from "@/components/Button/Button";
+import { Button } from "@/components/Button/Button";
 import { ListChecks } from "lucide-react";
+import { ArrowLink } from "@/components/ArrowCircle/ArrowCircle";
 import { Card } from "@/components/Card/Card";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { TopicRow } from "@/components/TopicRow/TopicRow";
@@ -56,11 +57,7 @@ export function RepeatSummary({
           <h3 id="topics-title" className="type-item-title">
             Topics
           </h3>
-          <div className="-mr-3">
-            <ButtonLink href="/weak-topics" variant="text">
-              See all
-            </ButtonLink>
-          </div>
+          <ArrowLink href="/weak-topics" label="See all" />
         </div>
         <TopicRow
           topics={topics}

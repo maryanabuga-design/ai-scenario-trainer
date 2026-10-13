@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronRight, FileText } from "lucide-react";
+import { FileText } from "lucide-react";
+import { ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
 import Link from "next/link";
 import { useState } from "react";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
@@ -39,12 +40,7 @@ function MaterialRow({
             {material.type} · {material.size} · {formatAdded(material.added)}
           </span>
         </span>
-        <ChevronRight
-          size={20}
-          strokeWidth={2}
-          aria-hidden="true"
-          className="shrink-0 text-text-secondary"
-        />
+        <ArrowCircle />
       </Link>
       <div className="flex flex-wrap items-center gap-2">
         <StatusBadge status={material.status} />

@@ -1,7 +1,6 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
-import Link from "next/link";
+import { ArrowLink } from "@/components/ArrowCircle/ArrowCircle";
 import { NextUpCard } from "@/components/NextUpCard/NextUpCard";
 import { ScenarioCard } from "@/components/ScenarioCard/ScenarioCard";
 import { TopicRow } from "@/components/TopicRow/TopicRow";
@@ -58,13 +57,7 @@ export function HomeView({
             <h2 id="topics-title" className="type-item-title">
               Topics
             </h2>
-            <Link
-              href="/weak-topics"
-              className="type-body -mr-2 inline-flex min-h-11 items-center gap-1.5 px-2 text-text underline decoration-1 underline-offset-4 hover:decoration-2"
-            >
-              See all
-              <ArrowRight size={18} strokeWidth={2} aria-hidden="true" />
-            </Link>
+            <ArrowLink href="/weak-topics" label="See all" />
           </div>
           <TopicRow
             topics={topics}

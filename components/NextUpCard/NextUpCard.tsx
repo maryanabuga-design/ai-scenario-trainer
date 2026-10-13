@@ -1,4 +1,5 @@
-import { ArrowRight, Target } from "lucide-react";
+import { Target } from "lucide-react";
+import { ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
 import Link from "next/link";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import type { NextUp } from "@/lib/home";
@@ -40,12 +41,7 @@ export function NextUpCard({
         <Link href="/weak-topics" className="-m-1 flex items-center gap-3 rounded-panel p-1">
           {top}
           <span className="sr-only">, see all weak topics</span>
-          <span
-            aria-hidden="true"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface text-text"
-          >
-            <ArrowRight size={20} strokeWidth={2} />
-          </span>
+          <ArrowCircle variant="on-tint" />
         </Link>
       ) : (
         <div className="flex items-center gap-3">{top}</div>
