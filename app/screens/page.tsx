@@ -262,7 +262,7 @@ export default function Screens() {
               />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Sheet: incorrect, with your explanation">
+          <PhoneFrame label="Sheet: incorrect, typed explanation (with My answer is still correct)">
             <Screen>
               <StepSheetSample
                 stepId="s2"
@@ -283,9 +283,9 @@ export default function Screens() {
               />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Sheet: I don't know">
+          <PhoneFrame label="Sheet: incorrect after I don't know (no button)">
             <Screen>
-              <StepSheetSample stepId="s3" optionId="a" index={2} />
+              <StepSheetSample stepId="s2" optionId="b" index={1} />
             </Screen>
           </PhoneFrame>
         </Group>
