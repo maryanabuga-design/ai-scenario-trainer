@@ -31,7 +31,12 @@ export function scoreSession(session: Session | FinishedSession): ScoredItem[] {
             answer.confidence,
             answer.markedCorrect,
           )
-        : scoreStep(getStep(answer.stepId), answer.optionId, answer.confidence),
+        : scoreStep(
+            getStep(answer.stepId),
+            answer.optionId,
+            answer.confidence,
+            answer.markedCorrect,
+          ),
     );
   }
   if (session.kind === "quiz") {
@@ -45,7 +50,7 @@ export function scoreSession(session: Session | FinishedSession): ScoredItem[] {
     );
   }
   return session.answers.map((answer) =>
-    scoreStep(getStep(answer.stepId), answer.optionId, answer.confidence),
+    scoreStep(getStep(answer.stepId), answer.optionId, answer.confidence, answer.markedCorrect),
   );
 }
 

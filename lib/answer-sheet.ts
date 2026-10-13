@@ -3,6 +3,7 @@ import { describeEffects } from "@/lib/outcome";
 import { describeAnswer, describeResponse, scoreQuestion, scoreResponse } from "@/lib/quiz";
 import type { Choice, Question, Response } from "@/lib/quiz";
 import type { Step } from "@/lib/scenario";
+import { errorType } from "@/lib/scoring";
 import type { ErrorType } from "@/lib/scoring";
 import type { Answer, QuizAnswer } from "@/lib/session";
 
@@ -24,6 +25,12 @@ export type AnswerBox = {
 
 export type SheetResult = "correct" | "wrong" | "partial";
 
+/**
+ * "My answer is still correct": available after a wrong, partly right or rejected answer,
+ * marked once pressed (with Undo), none after a right answer or "I don't know".
+ */
+export type Override = "none" | "available" | "marked";
+
 export type StepSheet = {
   kind: "step";
   verdict: "right" | "wrong";
@@ -36,6 +43,7 @@ export type StepSheet = {
   explanation: string | null;
   whatHappened: string;
   stateChange: string[];
+  override: Override;
 };
 
 export type QuestionVerdict = "right" | "partial" | "wrong" | "noMatch" | "marked" | "dontKnow";
@@ -53,15 +61,13 @@ export type QuestionSheet = {
   detail: string | null;
   why: string[];
   sources: string[];
-  /** A short text answer the keyword check rejected: the user may mark it correct. */
-  canMarkCorrect: boolean;
+  override: Override;
 };
 
 export type SheetContent = StepSheet | QuestionSheet;
 
 const notes: Partial<Record<QuestionVerdict, string>> = {
   noMatch: "Doesn't match our answer. Yours might still be right.",
-  marked: "Marked correct by you",
   dontKnow: "You said you don't know",
 };
 
@@ -69,15 +75,20 @@ const notes: Partial<Record<QuestionVerdict, string>> = {
 export function stepSheet(step: Step, answer: Answer): StepSheet {
   const feedback = simulatedFeedback.evaluate(step, answer);
   const explanation = answer.skipped ? "" : answer.explanation.trim();
+  const marked = !feedback.correct && answer.markedCorrect === true;
   return {
     kind: "step",
-    verdict: feedback.correct ? "right" : "wrong",
-    result: feedback.correct ? "correct" : "wrong",
-    errorType: feedback.errorType,
+    verdict: feedback.correct || marked ? "right" : "wrong",
+    result: feedback.correct || marked ? "correct" : "wrong",
+    errorType: marked ? errorType(true, answer.confidence) : feedback.errorType,
     boxes: feedback.correct
       ? [{ tone: "right", label: "Your choice", lines: [feedback.chosen.text] }]
       : [
-          { tone: "wrong", label: "Your choice", lines: [feedback.chosen.text] },
+          {
+            tone: marked ? "neutral" : "wrong",
+            label: "Your choice",
+            lines: [feedback.chosen.text],
+          },
           { tone: "better", label: "Better choice", lines: [feedback.best.text] },
         ],
     why: feedback.correct ? [feedback.chosen.why] : [feedback.best.why],
@@ -85,6 +96,7 @@ export function stepSheet(step: Step, answer: Answer): StepSheet {
     explanation: explanation || null,
     whatHappened: feedback.chosen.consequence,
     stateChange: describeEffects(step.id, feedback.chosen.effects ?? {}),
+    override: feedback.correct ? "none" : marked ? "marked" : "available",
   };
 }
 
@@ -156,7 +168,7 @@ export function questionSheet(question: Question, answer: QuizAnswer): QuestionS
         : verdict === "marked"
           ? [
               { ...yours, tone: "neutral" },
-              { ...correct, tone: "neutral" },
+              { ...correct, tone: "better" },
             ]
           : [
               { ...yours, tone: verdict === "partial" ? "partial" : "wrong" },
@@ -172,6 +184,11 @@ export function questionSheet(question: Question, answer: QuizAnswer): QuestionS
     detail: countDetail(question, response),
     why: [question.why],
     sources: [question.section],
-    canMarkCorrect: verdict === "noMatch",
+    override:
+      verdict === "marked"
+        ? "marked"
+        : verdict === "right" || verdict === "dontKnow"
+          ? "none"
+          : "available",
   };
 }

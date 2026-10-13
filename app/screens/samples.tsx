@@ -133,14 +133,24 @@ export function StepSheetSample({
   optionId,
   explanation = "",
   index,
+  marked = false,
 }: {
   stepId: string;
   optionId: string;
   explanation?: string;
   index: number;
+  marked?: boolean;
 }) {
   const step = getStep(stepId);
-  const answer: Answer = { stepId, optionId, confidence: 3, explanation, skipped: !explanation };
+  const [markedCorrect, setMarkedCorrect] = useState(marked);
+  const answer: Answer = {
+    stepId,
+    optionId,
+    confidence: 3,
+    explanation,
+    skipped: !explanation,
+    markedCorrect,
+  };
   return (
     <>
       <ExplainStep
@@ -152,7 +162,12 @@ export function StepSheetSample({
         onSend={() => undefined}
         onDontKnow={() => undefined}
       />
-      <AnswerSheet inline content={stepSheet(step, answer)} onContinue={() => undefined} />
+      <AnswerSheet
+        inline
+        content={stepSheet(step, answer)}
+        onContinue={() => undefined}
+        onMarkCorrect={setMarkedCorrect}
+      />
     </>
   );
 }
@@ -451,7 +466,7 @@ export function QuestionSheetSample({
         inline
         content={questionSheet(question, answer)}
         onContinue={() => undefined}
-        onMarkCorrect={() => setMarkedCorrect(true)}
+        onMarkCorrect={setMarkedCorrect}
       />
     </>
   );

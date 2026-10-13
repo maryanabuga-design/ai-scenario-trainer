@@ -155,7 +155,7 @@ describe("answer sheet for a quiz question", () => {
     expect(rejected.verdict).toBe("noMatch");
     expect(rejected.result).toBe("wrong");
     expect(rejected.note).toBe("Doesn't match our answer. Yours might still be right.");
-    expect(rejected.canMarkCorrect).toBe(true);
+    expect(rejected.override).toBe("available");
   });
 
   it("short text marked correct by the user", () => {
@@ -165,8 +165,8 @@ describe("answer sheet for a quiz question", () => {
     );
     expect(sheet.verdict).toBe("marked");
     expect(sheet.result).toBe("correct");
-    expect(sheet.note).toBe("Marked correct by you");
-    expect(sheet.canMarkCorrect).toBe(false);
+    expect(sheet.note).toBeNull();
+    expect(sheet.override).toBe("marked");
   });
 
   it("short text skip path: I don't know shows the reference answer and no override", () => {
@@ -179,7 +179,7 @@ describe("answer sheet for a quiz question", () => {
     expect(sheet.errorType).toBeNull();
     expect(sheet.note).toBe("You said you don't know");
     expect(sheet.boxes.map((box) => box.label)).toEqual(["Reference answer"]);
-    expect(sheet.canMarkCorrect).toBe(false);
+    expect(sheet.override).toBe("none");
   });
 
   it("shows the error type only with a confidence rating, and never a score", () => {

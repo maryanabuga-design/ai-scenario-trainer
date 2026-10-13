@@ -272,6 +272,17 @@ export default function Screens() {
               />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Sheet: marked correct by you, with Undo">
+            <Screen>
+              <StepSheetSample
+                stepId="s2"
+                optionId="b"
+                explanation="Waiting is safer than walking into fire."
+                index={1}
+                marked
+              />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Sheet: I don't know">
             <Screen>
               <StepSheetSample stepId="s3" optionId="a" index={2} />

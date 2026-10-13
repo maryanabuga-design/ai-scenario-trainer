@@ -8,6 +8,7 @@ import { ProgressCard } from "@/components/ProgressCard/ProgressCard";
 import { ResultsHeader } from "@/components/ResultsHeader/ResultsHeader";
 import { SoftCard } from "@/components/SoftCard/SoftCard";
 import { SourceChip } from "@/components/SourceChip/SourceChip";
+import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
 import { formatOutcome } from "@/lib/outcome";
 import { formatPoints, sessionLabel } from "@/lib/progress";
 import type { ResultsKind } from "@/lib/repeat";
@@ -159,6 +160,11 @@ export function ResultsView({
                     <span className="sr-only">Step {position + 1}: </span>
                     {item.title}
                   </h3>
+                  {item.markedByYou && (
+                    <span className="py-1">
+                      <StatusBadge status="marked" />
+                    </span>
+                  )}
                   <p className="type-small text-text-secondary">{item.consequence}</p>
                 </div>
               </li>
@@ -177,7 +183,7 @@ export function ResultsView({
             ))}
           </div>
         )}
-        {hasQuestions && (
+        {(hasQuestions || markedCount > 0) && (
           <div className="flex min-h-11 items-center justify-between gap-4 border-t border-soft-divider pt-3">
             <span>Marked correct by you</span>
             <span className="type-body-strong tabular-nums">{markedCount}</span>

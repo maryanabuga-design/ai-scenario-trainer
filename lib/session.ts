@@ -11,13 +11,15 @@ export type Answer = {
   /** The user's own sentence, a reflection that is never checked. Empty after "I don't know". */
   explanation: string;
   skipped?: boolean;
+  /** A wrong choice the user marked correct ("My answer is still correct"). */
+  markedCorrect?: boolean;
 };
 
 export type QuizAnswer = {
   questionId: string;
   response: Response;
   confidence: Confidence | null;
-  /** A short text answer the keyword check rejected but the user marked correct. */
+  /** A wrong, partly right or rejected answer the user marked correct. */
   markedCorrect?: boolean;
   /** "I don't know" on a short text question: an empty answer, no confidence. */
   dontKnow?: boolean;
@@ -165,4 +167,39 @@ export function resetProgress() {
   sessionStore.write(null);
   historyStore.write(null);
   clearTrainings();
+}
+
+/**
+ * "My answer is still correct" (marked true) and its Undo (false), on the answer to one step or
+ * question. Saved with the session, so it survives a reload.
+ */
+export function setMarkedCorrect<T extends Session>(
+  session: T,
+  itemId: string,
+  marked: boolean,
+): T {
+  const mark = <A extends Answer | QuizAnswer>(answer: A): A => {
+    const { markedCorrect: _previous, ...rest } = answer;
+    return (marked ? { ...rest, markedCorrect: true } : rest) as A;
+  };
+  const matches = (answer: Answer | QuizAnswer) =>
+    "stepId" in answer ? answer.stepId === itemId : answer.questionId === itemId;
+  if (isRepeatRound(session)) {
+    return {
+      ...session,
+      answers: session.answers.map((answer) => (matches(answer) ? mark(answer) : answer)),
+    };
+  }
+  if (isQuiz(session)) {
+    return {
+      ...session,
+      answers: session.answers.map((answer) => (matches(answer) ? mark(answer) : answer)),
+    };
+  }
+  return {
+    ...session,
+    answers: (session as ScenarioSession).answers.map((answer) =>
+      matches(answer) ? mark(answer) : answer,
+    ),
+  };
 }

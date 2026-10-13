@@ -5,6 +5,7 @@ import type { LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/Button/Button";
+import { MarkCorrect } from "@/components/MarkCorrect/MarkCorrect";
 import { SourceChip } from "@/components/SourceChip/SourceChip";
 import type { AnswerBox, BoxTone, SheetContent } from "@/lib/answer-sheet";
 
@@ -59,7 +60,7 @@ function Box({ box }: { box: AnswerBox }) {
 /**
  * The answer sheet: rises over the screen just answered with the Result and Error type rows,
  * the right answer, the user's own explanation, the why with sources and, for a scenario step,
- * what happened. Only Continue closes it. With inline, it is drawn inside its nearest positioned parent (the screen review).
+ * what happened, and the override after a wrong answer. Only Continue closes it. With inline, it is drawn inside its nearest positioned parent (the screen review).
  */
 export function AnswerSheet({
   content,
@@ -71,7 +72,8 @@ export function AnswerSheet({
   content: SheetContent;
   continueLabel?: string;
   onContinue: () => void;
-  onMarkCorrect?: () => void;
+  /** "My answer is still correct" (true) and its Undo (false). */
+  onMarkCorrect?: (marked: boolean) => void;
   inline?: boolean;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -122,19 +124,6 @@ export function AnswerSheet({
           {content.boxes.map((box) => (
             <Box key={box.label} box={box} />
           ))}
-          {content.kind === "question" && content.canMarkCorrect && onMarkCorrect && (
-            <div>
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  onMarkCorrect();
-                  titleRef.current?.focus();
-                }}
-              >
-                My answer is still correct
-              </Button>
-            </div>
-          )}
         </div>
 
         {content.kind === "step" && content.explanation && (
@@ -167,6 +156,9 @@ export function AnswerSheet({
         )}
       </div>
       <div className="flex flex-col gap-3 border-t border-border bg-surface px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        {content.override !== "none" && onMarkCorrect && (
+          <MarkCorrect marked={content.override === "marked"} onChange={onMarkCorrect} />
+        )}
         <Button onClick={onContinue}>{continueLabel}</Button>
       </div>
     </>

@@ -40,7 +40,7 @@ function AnswerCard({ item }: { item: ScoredItem }) {
       <Field label={step ? "You chose" : "Your answer"}>
         <p>{item.yourAnswer || "No answer"}</p>
       </Field>
-      {!item.correct && (
+      {(!item.correct || item.markedByYou) && (
         <Field label={step ? "Better choice" : "Correct answer"}>
           <p>{item.correctAnswer}</p>
         </Field>

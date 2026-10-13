@@ -80,28 +80,37 @@ export type ScoredItem = {
   why: string[];
   /** What happened after a scenario step. */
   consequence?: string;
-  /** A short answer the user marked correct after the keyword check rejected it. */
+  /** An answer the user marked correct ("My answer is still correct"). */
   markedByYou?: boolean;
 };
 
-export function scoreStep(step: Step, optionId: string, confidence: Confidence): ScoredItem {
+export function scoreStep(
+  step: Step,
+  optionId: string,
+  confidence: Confidence,
+  markedCorrect = false,
+): ScoredItem {
   const option = step.options.find((candidate) => candidate.id === optionId);
   const best = step.options.find((candidate) => candidate.correct);
   if (!option || !best) throw new Error(`Step ${step.id} has no option ${optionId}`);
+  /** "My answer is still correct": a wrong choice counts as right, with the same confidence. */
+  const markedByYou = markedCorrect && !option.correct;
+  const correct = option.correct || markedByYou;
   return {
     kind: "step",
     id: step.id,
     title: step.title,
     sources: step.sources,
-    score: option.correct ? 1 : 0,
-    correct: option.correct,
-    errorType: errorType(option.correct, confidence),
+    score: correct ? 1 : 0,
+    correct,
+    errorType: errorType(correct, confidence),
     hasConfidence: true,
     effects: option.effects ?? {},
     yourAnswer: option.text,
     correctAnswer: best.text,
     why: option.correct ? [option.why] : [option.why, best.why],
     consequence: option.consequence,
+    ...(markedByYou && { markedByYou }),
   };
 }
 
@@ -131,9 +140,9 @@ export function countErrorTypes(items: ScoredItem[]): Record<ErrorType, number> 
   return counts;
 }
 
-/** Items to repeat: every answer that was wrong, partly right or guessed. */
+/** Items to repeat: every answer that was wrong, partly right or guessed, unless marked correct. */
 export function weakItems(items: ScoredItem[]): ScoredItem[] {
-  return items.filter((item) => item.errorType !== "secure");
+  return items.filter((item) => item.errorType !== "secure" && !item.markedByYou);
 }
 
 /** Guide sections behind the weak items, without duplicates, in order of appearance. */

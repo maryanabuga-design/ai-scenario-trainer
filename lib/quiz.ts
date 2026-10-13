@@ -245,8 +245,8 @@ export function scoreQuestion(
   markedCorrect = false,
 ): ScoredItem {
   const checked = scoreResponse(question, response);
-  /** Only a short text answer can be overruled, and only when the keyword check rejected it. */
-  const markedByYou = markedCorrect && question.type === "text" && checked < 1;
+  /** Any answer that was not fully right can be marked correct by the user. */
+  const markedByYou = markedCorrect && checked < 1;
   const score = markedByYou ? 1 : checked;
   const correct = score === 1;
   return {
