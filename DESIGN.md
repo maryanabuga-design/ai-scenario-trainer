@@ -23,13 +23,15 @@ Status: draft v1. Values marked (proposal) are open for change. Update this file
   --surface: #FFFFFF;       /* inputs, option cards, sheets, the navigation bar */
   --card: #FAF7F3;          /* warm near-white card fill, with --card-shadow */
   --card-shadow: 0 1px 2px rgb(60 45 30 / 0.04), 0 8px 24px rgb(60 45 30 / 0.05);
-  --neutral-surface: #E2DED5;        /* the one neutral fill: tracks, chips, tags, disabled, inactive dots (see "Neutral surface") */
-  --neutral-surface-pressed: #D3CDC2; /* pressed neutral elements and pressed white cards; same tone as --stroke-neutral */
+  --secondary-olive: #DFE5D8;        /* Secondary = light olive: inactive states and tonal backgrounds (see "Colour system") */
+  --secondary-olive-pressed: #D4DBCD; /* pressed secondary, and its 1px stroke where the olive meets the page */
+  --surface-muted: #E2DED5;          /* neutral panels: status chips, empty-state circles, chat bubbles, thin progress tracks */
   --border: #E2DED5;
   --border-strong: #8A867E; /* edge of text inputs, 3.6:1 on white, 3.2:1 on --bg */
   --text: #1A1A1A;
   --text-secondary: #5C5A55; /* 6.1:1 on --bg, 6.9:1 on white */
   --primary: #3F4638;        /* deep olive green: primary buttons, secondary outlines, selected states; white on it 9.8:1 */
+  --primary-pressed: color-mix(in srgb, var(--primary) 70%, var(--text)); /* #34392F, pressed primary; white on it 11.85:1 */
   --primary-text: #FFFFFF;
   --accent: #3D3A8C;         /* focus ring and links only, 9:1 on white */
   --correct: #1F7A4D;        /* 5.3:1 on white */
@@ -102,21 +104,13 @@ Where this file writes "14 `--text-secondary`" it means grey secondary text, "12
 - Cards are white on the warm page with no border; inner panels are `--neutral-surface` inside a white card.
 - No shadows except a subtle one on overlays (sheet, dialogs).
 
-## Neutral surface
-- One token for every inactive and secondary neutral fill (13 Oct 2026): `--neutral-surface` #E2DED5, a warm grey-beige from the existing palette (the same tone as `--border`), a little darker than the old switch track and lighter than the old Guide chips. Pressed: `--neutral-surface-pressed` #D3CDC2 (the existing `--stroke-neutral` tone). No component sets its own grey-beige value.
-- Contrast on `--neutral-surface`: `--text` 12.96:1, `--text-secondary` 5.13:1, `--primary` 7.29:1, the focus ring 7.17:1, the red cross icon 4.87:1, the green check icon 3.96:1. Against its surroundings: 1.16:1 on the page, 1.26:1 on cards, 1.34:1 on the white sheet, 1.20:1 on the Next up card; the active dot or segment (`--primary`) on it 7.29:1. On `--neutral-surface-pressed`: `--text` 11.01:1.
-- Audit before the change (old value → now `--neutral-surface`):
-  - Scenario/Quiz switch track (segmented control): `--neutral-surface` #EFECE5.
-  - Guide chips and the Your choice block: `--neutral-surface` #D3CDC2 (#EFECE5 earlier the same day).
-  - Tags (SCENARIO #F6EFA6 yellow, QUIZ #D4E8F0 blue, TRAINING #DFE5D8 sage, session lengths SHORT #FAD6C2 peach, FULL #E6DDF5 lilac, EXTENDED #D4E8F0 blue, Progress mode tags in yellow, blue or lilac, and the direction chip on Home #F6EFA6).
-  - Neutral status chips (Ready, Processing, Guess, Marked correct by you): #EFECE5 with a 1px #E2DED5 outline (the outline is gone, it matched the new fill).
-  - Disabled buttons, disabled option cards and chips, the disabled send button: #EFECE5.
-  - Inactive step indicator segments: `--border` #E2DED5 (same value, now the token).
-  - Home topic carousel dots: `--primary` at 25% (#C6C4BD on the page); onboarding dots: `--border-strong` #8A867E.
-  - Progress ring track on Results: `--ring-track` #E9E6E0; Step by step number circles: the page colour #F3EEE9.
-  - Other neutral fills: empty-state circles, the Ask AI user bubbles and the own-sentence bubble on the Explain screen, thin progress bar tracks (material processing, Generating), the body around the app column on wide screens: #EFECE5.
-  - Pressed states: white cards and rows #EFECE5 → `--neutral-surface`; Guide chips #C0BBB1, neutral cards and the segment hover #E2DED5 → `--neutral-surface-pressed`.
-- Left as they are, on purpose: the white circular back button and arrow circles (white controls on cards), error-type tints and rows (they carry status), material status Failed (caution), selected cards (tint and stroke), primary and outline secondary buttons, the Results header band `--header-bg` #E8E0D4 (a page area, not an element), divider lines (`--border`, `--soft-divider`), topic icon tiles and section code circles (pastels by section), the Next up card and its tile, the material tile.
+## Colour system (locked 13 Oct 2026)
+Primary = deep green. Secondary = light olive.
+- Primary `--primary` #3F4638 (deep olive-green): filled primary buttons and selected controls. Pressed: `--primary-pressed` (#34392F, the same green mixed 30% towards `--text`); white on it 11.85:1.
+- Secondary `--secondary-olive` #DFE5D8 (light olive, the palette's existing muted sage; replaces `--neutral-surface` #E2DED5 and, before it, #D3CDC2 and #EFECE5): inactive states and tonal backgrounds. Pressed and borders: `--secondary-olive-pressed` #D4DBCD (the existing darker sage of the Next up tile).
+- Contrast on `--secondary-olive`: `--text` 13.54:1, `--text-secondary` (muted labels) 5.36:1, `--primary` 7.62:1, the focus ring 7.49:1, the red cross 5.09:1, the green check 4.14:1. On `--secondary-olive-pressed`: `--text` 12.28:1, `--text-secondary` 4.86:1. Against its surroundings the olive is close to the page (1.12:1 on the page, 1.20:1 on cards, 1.29:1 on white), so a large olive area that must read as a shape on the page (the segmented control track) also gets a 1px `--secondary-olive-pressed` stroke.
+- Used for: Guide chips; the Your choice block (with its 3px dark green line); inactive step segments, carousel and onboarding dots and the empty part of the progress ring; the segmented control track (with the stroke); disabled button backgrounds with a muted label; tonal icon buttons (the arrow circle on a card); the pressed state of outline and text buttons.
+- Not used for (unchanged on purpose): the coloured tags (SCENARIO yellow, QUIZ blue, SHORT peach, FULL lilac, EXTENDED blue, TRAINING sage, Progress mode tags, the direction chip), the icon backgrounds (topic tiles, section code circles, What to create tiles, the Next up tile, material tiles), error-type chips and rows, selected cards (tint and stroke), the white circular back button and the white arrow circle on the Next up card, neutral status chips (Ready, Processing, Marked correct by you) and neutral panels such as empty-state circles and chat bubbles, which use `--surface-muted`.
 
 ## Gradients
 - None. The app has no gradients (the evacuation guide's gradient cover was removed on 13 Oct 2026; every material uses the material tile). Home has no graphic elements at the top, and the Results header uses the soft light header (see "Results screen").
