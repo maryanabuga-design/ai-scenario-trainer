@@ -35,7 +35,7 @@ export function NextUpCard({
   return (
     <section
       aria-labelledby="next-up-title"
-      className="flex flex-col gap-4 rounded-[28px] border-[1.5px] border-stroke-tint bg-tint p-4 shadow-(--card-shadow)"
+      className="flex flex-col gap-4 rounded-[28px] bg-next-card p-4 shadow-(--card-shadow)"
     >
       {next.linksToTopics ? (
         <Link href="/weak-topics" className="-m-1 flex items-center gap-3 rounded-panel p-1">

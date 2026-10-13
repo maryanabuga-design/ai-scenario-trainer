@@ -47,8 +47,10 @@
 
   --chip: #efece5;
   --icon-tile: #f9edc8;
-  --tint: #d4dbcd;
-  --stroke-tint: #7a8450;
+  --stroke-neutral: #d3cdc2;
+  --stroke-sage: #a9b5a0;
+  --secondary-pressed: #e3e8dc;
+  --next-card: #f2f3ee;
   --card: #faf7f3;
   --card-shadow: 0 1px 2px rgb(60 45 30 / 0.04), 0 8px 24px rgb(60 45 30 / 0.05);
 
@@ -101,8 +103,10 @@
   --color-misconception-row: var(--misconception-row);
   --color-chip: var(--chip);
   --color-icon-tile: var(--icon-tile);
-  --color-tint: var(--tint);
-  --color-stroke-tint: var(--stroke-tint);
+  --color-secondary-pressed: var(--secondary-pressed);
+  --color-stroke-neutral: var(--stroke-neutral);
+  --color-stroke-sage: var(--stroke-sage);
+  --color-next-card: var(--next-card);
   --color-card: var(--card);
 
   --font-sans: var(--font-dm-sans), system-ui, sans-serif;

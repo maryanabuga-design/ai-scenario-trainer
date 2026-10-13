@@ -9,14 +9,10 @@ import { SourceChip } from "@/components/SourceChip/SourceChip";
 import type { AnswerBox, BoxTone, SheetContent } from "@/lib/answer-sheet";
 
 const boxStyles: Record<BoxTone, { className: string; icon?: [LucideIcon, string] }> = {
-  // "Your choice": a quote block with a dark green line on the left.
-  right: { className: "border-l-[3px] border-primary bg-card", icon: [Check, "text-correct"] },
-  wrong: { className: "border-l-[3px] border-primary bg-card", icon: [X, "text-wrong"] },
+  right: { className: "border border-correct", icon: [Check, "text-correct"] },
+  wrong: { className: "border border-wrong", icon: [X, "text-wrong"] },
   better: { className: "border border-dashed border-correct", icon: [Check, "text-correct"] },
-  partial: {
-    className: "border-l-[3px] border-primary bg-card",
-    icon: [Contrast, "text-text-secondary"],
-  },
+  partial: { className: "border border-border-strong", icon: [Contrast, "text-text-secondary"] },
   neutral: { className: "border border-border" },
 };
 
