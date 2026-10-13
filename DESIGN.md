@@ -12,7 +12,7 @@ Status: draft v1. Values marked (proposal) are open for change. Update this file
 1. Calm, warm and focused. Trust matters more than delight.
 2. Hierarchy comes from type, spacing and contrast, not from color.
 3. Black is the action colour. One accent (indigo) for focus and links. Semantic colours only for status, always paired with an icon and a text label.
-4. Soft blurred gradients only in the places listed under "Gradients". Never on the decision and feedback screens, never behind body text. No glows, mascots, emoji, 3D icons or decorative illustration.
+4. No gradients. The only decoration is the abstract SoftShape in two Home cards (see "Decorative shapes"). No glows, mascots, emoji, 3D icons or decorative illustration.
 5. AI shows itself through behavior (a source citation, stated uncertainty, an honest "not covered"), not through sparkles or orbs.
 6. Readable under stress: large targets, short copy, one primary action per screen.
 
@@ -62,13 +62,8 @@ Status: draft v1. Values marked (proposal) are open for change. Update this file
   --tag-blue: #D4E8F0;
   --tag-lilac: #E6DDF5;
 
-  /* Gradient colours: a muted sand, khaki, moss and dark olive mesh, used only inside the
-     gradient zones below and always mixed with --bg so the contrast stays low */
-  --mesh-sand: #E6DCC3;
-  --mesh-khaki: #C9BC8F;
-  --mesh-moss: #7A8450;
-  --mesh-olive: #4A5230;
-  --text-secondary-on-mesh: #4A4843; /* replaces --text-secondary inside a gradient zone, 5:1 or more on every mesh tone */
+  --mesh-moss: #7A8450;      /* moss sage: only the SoftShape curves (see "Decorative shapes") */
+  --material-tile: var(--next-tile); /* #D4DBCD, the one material tile fill for PDF, DOCX and LINK */
 }
 ```
 Rules:
@@ -108,11 +103,11 @@ Where this file writes "14 `--text-secondary`" it means grey secondary text, "12
 - No shadows except a subtle one on overlays (sheet, dialogs).
 
 ## Gradients
-- Allowed only in: material covers. Onboarding has no gradient. Home has no gradient and no graphic elements at the top. The Results header uses the soft light header instead (see "Results screen").
-- One smooth mesh in a muted military palette: sand, khaki, moss and dark olive (`--mesh-*`), soft and low in contrast. Built from a three-colour linear blend plus two round colour fields, blurred by about 70px and mixed with `--bg` (sand about 85%, khaki about 65%, moss about 40%, olive about 30%). The cool variant uses the same colours in a different arrangement. Colours only: no camouflage pattern, no military imagery. No separate visible blobs, edges or stripes. The blur layer is clipped by the card's rounded corners.
-- Never on Session setup, the decision step or the answer sheet. Never behind body text, form controls or status badges. Text on a gradient keeps 4.5:1 against its darkest point (3:1 for text 24px and larger): `--text` is 9:1 or more on every mesh tone; inside a gradient zone `--text-secondary` is replaced by `--text-secondary-on-mesh` (5:1 or more), and secondary text there is 24px or larger.
-- Material cover: a 56px or larger rounded square (16px radius). The evacuation guide keeps its gradient fill; every other material has a plain `--surface-muted` tile. Every cover shows the material's icon and plain type label (see "Material tile content"), on the list and on the material page.
-- Static. No animation.
+- None. The app has no gradients (the evacuation guide's gradient cover was removed on 13 Oct 2026; every material uses the material tile). Home has no graphic elements at the top, and the Results header uses the soft light header (see "Results screen").
+
+## Material tile
+- One tile for every material, on the Materials list (Ready, Processing and Failed), the material page header and the upload sheet's sample files: a 64px rounded square, 20px radius, filled with `--material-tile` (#D4DBCD, the soft sage of the Home Next up tile), the same for PDF, DOCX and LINK. The type is told by the icon and the plain label (see "Material tile content"), never by the colour. Static, decorative (`aria-hidden`), no gradient, no shapes.
+- Contrast: the dark green icon and label (`--primary`) on the tile 6.91:1 (AA for the 12px label). The tile against the near-white card is a 1.33:1 step in lightness, the most visible of the existing pastels (sage `--tag-sage` 1.20, peach 1.27, lilac 1.23); it is a decorative fill, so the 3:1 rule for meaningful graphics does not apply, and the icon on it carries the information at 6.91:1 against the tile and 9.17:1 against the card around it.
 
 ## Decorative shapes
 - One shared component, SoftShape: two or three overlapping soft organic curves rising from the bottom-right corner of a card along part of its lower edge, clipped by the card's rounded corners and drawn behind all content. Abstract only: no leaves, trees, mountains or any recognisable object. Inline SVG, static (no animation), `aria-hidden`, no pointer events.
@@ -145,7 +140,7 @@ From `docs/mvp-matrix-and-ia.md`.
   - Material tile content: a 24px Lucide outline icon, stroke 2, in `--primary` (dark green): `FileText` for PDF and DOCX (and any other file), `Link2` for LINK. Directly under it, 2px apart, the type label (PDF, DOCX, LINK) as plain text in the small uppercase label style, `--primary`, with no pill and no background of its own. The tile is decorative (`aria-hidden`): the type is also in the meta line.
   - Materials list: one row per material (tile, name, the meta line, status badge): your uploads first, newest first, then the sample materials with the guide on top. An "Upload a file" secondary button sits next to the page title. Under the title row a one-line subtitle "Guides you can turn into scenarios and quizzes." in 14 `--text-secondary` (the grey sub-line style, as on Home), 4px below it at full width, so it stays on one line at 360px. Below the header (24px), underline tabs "Ready", "Processing (N)" and "Failed (N)" filter the list (counts on the last two); Ready is open by default, and starting a simulated upload switches to Processing, where the new file shows with its progress until it is Ready or Failed; then the list follows it to that tab. Each tab has a one-line empty state. Every row has its material tile (see Material tile content). A Processing row adds a thin progress bar; a Failed row adds its reason in 14 `--text-secondary` and a "Try another file" secondary button that opens the upload sheet.
   - Material status badge (icon + label + colour): Ready (check, neutral outlined like Guess), Processing (clock, neutral outlined), Failed (cross, `--caution` on `--caution-bg`). Green and red stay reserved for answers.
-  - Upload sheet: a bottom sheet like the source sheet, with the line "Upload is simulated for this prototype. Choose a sample file." Three states: choose (a list of sample files as option rows: file cover, name, type and size, and one line on what it contains), progress (file name, a progress bar with percent, "Checking the file"; the file also appears under the Processing tab), result (Ready: status badge, "Create training" primary and "Open material" text action; Failed: reason and "Try another file"). Sample files: the full evacuation guide, the flood preparedness guide (F1 to F7, with its own scenario and quiz), a one-page "Evacuation quick card" (guide sections S1 and S2 only, too short for a scenario) and a photo of a notice (fails: no readable text). Uploaded items stay in this browser.
+  - Upload sheet: a bottom sheet like the source sheet, with the line "Upload is simulated for this prototype. Choose a sample file." Three states: choose (a list of sample files as option rows: material tile, name, type and size, and one line on what it contains), progress (file name, a progress bar with percent, "Checking the file"; the file also appears under the Processing tab), result (Ready: status badge, "Create training" primary and "Open material" text action; Failed: reason and "Try another file"). Sample files: the full evacuation guide, the flood preparedness guide (F1 to F7, with its own scenario and quiz), a one-page "Evacuation quick card" (guide sections S1 and S2 only, too short for a scenario) and a photo of a notice (fails: no readable text). Uploaded items stay in this browser.
   - Material page: the circular back button (to Materials), the material tile, name (page title), a details card with label/value rows (Type, Size, Added, Status), the scenario card, then sections with a one-line excerpt each (tap opens the source sheet for the guide). Materials without sections say why ("This prototype does not read uploaded files, so there are no sections to show."). Once training has been created, small tags "Scenario" and "Quiz" (pastel, uppercase) show under the name, on the material page and on its row in the list. The action bar's primary button is "Start training" when training exists (with a text action "Create again"), otherwise "Create training" when the material holds guide content. For a material without guide content it is disabled with the line above it: "In this prototype, training can be created from the sample guide and its quick card only." and a text action "Open the sample guide".
 - Progress: the repeat summary card and topic row (as on Home) · Session history (newest first: date, mode tag, "4 of 6 correct", and how many steps were weak). Empty state for a first visit: one line and a "Start a scenario" secondary button. Sessions are saved when they finish.
 - Create training (from a Ready material's "Create training" and from Home "New scenario"). Flat page background, no graphics:
@@ -211,7 +206,7 @@ Every component needs: default, hover, focus-visible, active, disabled. Inputs a
 - Status rows (every answer card in the Error analysis): two key-value rows, the label on the left in 14 `--text-secondary`, the chip on the right: "Result" with the result chip, then "Error type" with the error-type chip. Never a chip floating at the top of a card, never sticky. Without a confidence rating (a quiz question answered without one, or "I don't know") only the "Result" row is shown. The answer sheet has no status rows.
 - Results screen components (soft light header, progress card, Error types card with type summary rows, Outcome card, Step by step card, circular back button): see "Results screen (soft surface)".
 - Source chip: shows "Guide · S2" (document name + section id; the guide has no page numbers) after a small document icon. One colour everywhere (answer sheet, Error analysis cards, chat answers, material and source pages): `--text` on `--chip`, no border. Smaller than a button: 32px visible height, 12px horizontal padding, small text. The tap area still reaches 44px (an invisible extension above and below). It reads as a reference, not an action. Opens that section in the bottom sheet. No hover change; pressed `--border`; focus: the same 2px `--accent` ring. Text on the fill is 14.8:1.
-- Material cover: gradient square, see "Gradients".
+- Material tile: see "Material tile".
 - Bottom navigation: a floating rounded bar, not attached to the screen edge. White pill-shaped bar, 1px `--border`, a very subtle shadow (it floats over content), 16px space at the sides and at least 12px below it (plus the safe area), on a flat `--bg` strip. Four items (Home, Materials, Progress, Profile), each with a simple line icon and a visible label, at least 44px high. Current item: a soft yellow pill (`--nav-active`) behind icon and label, text in `--text` medium, `aria-current="page"`. Others in `--text-secondary`.
 - Action bar: fixed at the bottom, `--bg` with a 1px `--border` on top, 16px padding, safe-area padding when it is the lowest element. Holds one primary pill button, full width. A disabled button explains why in one line above it (for example "Choose an answer to continue").
 - Bottom sheet: opens from the bottom, up to 80% of the screen height, content scrolls inside. 24px radius on the top corners, `--surface` background, a scrim behind it. Has a title (section id and name), a close button of at least 44px, closes with the scrim, the Escape key and the close button. Traps focus while open and returns focus to the source chip on close. Opening animates briefly and not at all with reduced motion.
@@ -260,7 +255,7 @@ Every component needs: default, hover, focus-visible, active, disabled. Inputs a
 ## Do / Don't
 - Do: use whitespace and type size to create hierarchy.
 - Do: show the source next to every AI claim.
-- Do: keep gradients to the four allowed zones.
+- Do: keep the screens flat; the only decoration is the SoftShape on two Home cards.
 - Don't: use identical cards without hierarchy, random gradients or decorative icons.
 - Don't: celebrate with confetti or mascots; use a neutral confirmation instead.
 

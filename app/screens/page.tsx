@@ -8,7 +8,6 @@ import { defaultSetup } from "@/components/SessionSetup/SessionSetup";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
 import { Button } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
-import { Gradient } from "@/components/Gradient/Gradient";
 import { PhoneFrame } from "@/components/PhoneFrame/PhoneFrame";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { Tag } from "@/components/Tag/Tag";
@@ -107,12 +106,6 @@ function FoundationKit() {
     <>
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
         <h1 className="type-page-title">Foundation kit</h1>
-        <Gradient tone="warm" className="flex h-32 items-end rounded-card p-4">
-          <p className="type-card-title">Warm gradient zone</p>
-        </Gradient>
-        <Gradient tone="cool" className="flex h-32 items-end rounded-card p-4">
-          <p className="type-card-title">Cool gradient zone</p>
-        </Gradient>
         <Card>
           <p className="type-small text-text-secondary">Card</p>
           <p className="type-card-title">White card, 24px radius</p>

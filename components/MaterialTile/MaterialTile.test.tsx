@@ -23,4 +23,13 @@ describe("material tile", () => {
       expect(html.match(/rounded-full/g)).toBeNull();
     }
   });
+
+  it("uses the one material tile for all three types", () => {
+    for (const { type } of cases) {
+      const html = renderToStaticMarkup(<MaterialTile type={type} />);
+      expect(html).toContain("bg-material-tile");
+      expect(html).toContain("h-16 w-16");
+      expect(html).toContain("rounded-[20px]");
+    }
+  });
 });
