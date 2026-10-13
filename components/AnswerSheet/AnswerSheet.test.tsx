@@ -31,6 +31,10 @@ function render(answer: Answer) {
 }
 
 describe("My explanation is still correct", () => {
+  it("is there for a wrong choice with typed gibberish too", () => {
+    expect(render(wrong)).toContain(">My explanation is still correct</button>");
+  });
+
   it("is a secondary button below Continue for a right choice with a missed explanation", () => {
     const html = render(missed);
     expect(html).toContain("Doesn&#x27;t match the guide yet");
@@ -41,11 +45,10 @@ describe("My explanation is still correct", () => {
     expect(html.slice(html.lastIndexOf("<button", button), button)).toContain("border-primary");
   });
 
-  it("is not there for a matching explanation or a wrong choice", () => {
+  it("is not there for a matching explanation", () => {
     expect(render(matched)).toContain("Matches the guide");
     expect(render(matched)).not.toContain("still correct");
     expect(render(matched)).not.toContain("Better explanation");
-    expect(render(wrong)).not.toContain("still correct");
     expect(render(wrong)).toContain("Better explanation");
   });
 

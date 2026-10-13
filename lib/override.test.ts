@@ -77,11 +77,15 @@ describe("the scenario answer sheet decision table", () => {
     expect(sheet(answer("d", GOOD, 3)).errorType).toBe("misconception");
   });
 
-  it("wrong option + typed wrong: Better explanation, no button", () => {
+  it("wrong option + typed gibberish: Doesn't match yet, Better explanation, and the button", () => {
     const s = sheet(answer("d", GIBBERISH));
     expect(s.open.verdict).toBe("not_matched");
     expect(s.better).not.toBeNull();
-    expect(s.override).toBe("none");
+    expect(s.override).toBe("available");
+  });
+
+  it("wrong option + I don't know: no button", () => {
+    expect(sheet(answer("d", null)).override).toBe("none");
   });
 
   it("never shows the old Better choice box", () => {

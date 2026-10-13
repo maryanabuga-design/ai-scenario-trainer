@@ -30,7 +30,7 @@ export type SheetResult = "correct" | "wrong" | "partial";
 
 /**
  * "My explanation is still correct" (scenario) or "My answer is still correct" (short text):
- * available for typed text that missed the guide (behind a right choice, for a scenario step),
+ * available for typed text that missed the guide (whatever the option, for a scenario step),
  * marked once pressed (with Undo), otherwise none.
  */
 export type Override = "none" | "available" | "marked";
@@ -94,10 +94,10 @@ export function stepSheet(step: Step, answer: Answer): StepSheet {
     explanation: outcome,
     markedCorrect: answer.markedCorrect,
   });
-  // Only a typed explanation that missed the guide, behind a right choice, can be defended.
-  const canDefend =
-    feedback.correct && outcome === "not_matched" && answerSource(answer) === "typed";
-  const marked = canDefend && scored.markedByYou === true;
+  // Any typed explanation that missed the guide can be defended, whatever the option: the check is
+  // a simple keyword match and a right explanation can be worded differently.
+  const canDefend = outcome === "not_matched" && answerSource(answer) === "typed";
+  const marked = canDefend && answer.markedCorrect === true;
   return {
     kind: "step",
     verdict: feedback.correct ? "right" : "wrong",
