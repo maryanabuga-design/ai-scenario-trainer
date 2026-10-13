@@ -1,5 +1,5 @@
 import { ArrowRight } from "lucide-react";
-import Link from "next/link";
+import { ButtonLink } from "@/components/Button/Button";
 import { SoftCard } from "@/components/SoftCard/SoftCard";
 import { StatusIcon } from "@/components/StatusBadge/StatusBadge";
 import { errorTypeSummary } from "@/lib/scoring";
@@ -63,14 +63,11 @@ export function ErrorTypesCard({
       subtitle="See what kind of mistakes you made"
       action={
         detailsHref && (
-          <Link
-            href={detailsHref}
-            onClick={onNavigate}
-            className="type-body -my-3 -mr-2 inline-flex min-h-11 shrink-0 items-center gap-1.5 px-2 text-text underline decoration-1 underline-offset-4 hover:decoration-2"
-          >
-            Details
-            <ArrowRight size={18} strokeWidth={2} aria-hidden="true" />
-          </Link>
+          <span className="-my-3 -mr-3 shrink-0">
+            <ButtonLink href={detailsHref} variant="text" iconEnd={ArrowRight} onClick={onNavigate}>
+              Details
+            </ButtonLink>
+          </span>
         )
       }
     >

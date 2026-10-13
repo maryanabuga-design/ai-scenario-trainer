@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/Button/Button";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { Circle } from "lucide-react";
 import { StatusIcon } from "@/components/StatusBadge/StatusBadge";
@@ -34,13 +35,11 @@ export function TrainingGenerating({
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-4">
         <CircleBackButton label="Back to Create training" onClick={onCancel} />
-        <button
-          type="button"
-          onClick={onCancel}
-          className="type-body -mr-3 min-h-11 rounded-full px-3 underline decoration-1 underline-offset-4 hover:decoration-2"
-        >
-          Cancel
-        </button>
+        <div className="-mr-3">
+          <Button variant="text" onClick={onCancel}>
+            Cancel
+          </Button>
+        </div>
       </div>
       <div className="flex flex-col gap-2">
         <h1 className="type-page-title">Creating your training</h1>

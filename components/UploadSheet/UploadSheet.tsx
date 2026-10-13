@@ -50,13 +50,11 @@ export function UploadPanel({
             Upload is simulated for this prototype. Choose a sample file.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="type-body -mt-2 -mr-2 min-h-11 min-w-11 rounded-full px-3 text-text underline decoration-1 underline-offset-4 hover:decoration-2"
-        >
-          Close
-        </button>
+        <div className="-mt-2 -mr-3">
+          <Button variant="text" onClick={onClose}>
+            Close
+          </Button>
+        </div>
       </div>
 
       {stage.kind === "choose" && (

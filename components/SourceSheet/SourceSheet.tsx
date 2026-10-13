@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
+import { Button } from "@/components/Button/Button";
 import type { GuideSection } from "@/lib/guide";
 
 type SourceSheetContextValue = {
@@ -53,13 +54,11 @@ export function SourceSheetProvider({
               <h2 id="source-sheet-title" className="type-card-title">
                 {section.id}. {section.title}
               </h2>
-              <button
-                type="button"
-                onClick={() => dialogRef.current?.close()}
-                className="type-body -mt-2 -mr-2 min-h-11 min-w-11 rounded-full px-3 text-text hover:underline"
-              >
-                Close
-              </button>
+              <div className="-mt-2 -mr-3">
+                <Button variant="text" onClick={() => dialogRef.current?.close()}>
+                  Close
+                </Button>
+              </div>
             </div>
             <p className="type-small text-text-secondary">Guide · {section.id}</p>
             <ul className="type-body flex list-disc flex-col gap-2 pl-5">

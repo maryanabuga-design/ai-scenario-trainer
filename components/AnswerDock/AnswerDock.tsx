@@ -3,6 +3,7 @@
 import { ArrowUp } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent } from "react";
+import { Button } from "@/components/Button/Button";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 
 const MAX_HEIGHT = 128;
@@ -88,13 +89,11 @@ export function AnswerDock({
           autoComplete="off"
           className="type-body dock-field min-h-11 min-w-0 flex-1 resize-none bg-transparent py-2.5 placeholder:text-text-secondary"
         />
-        <button
-          type="button"
-          onClick={onDontKnow}
-          className="type-small min-h-11 shrink-0 px-2 text-text underline decoration-1 underline-offset-4 hover:decoration-2"
-        >
-          I don&apos;t know
-        </button>
+        <span className="shrink-0">
+          <Button variant="text" small onClick={onDontKnow}>
+            I don&apos;t know
+          </Button>
+        </span>
         <button
           type="submit"
           aria-label="Send"

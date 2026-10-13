@@ -3,6 +3,7 @@
 import { Sparkles } from "lucide-react";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
+import { Button } from "@/components/Button/Button";
 import { GuideChip } from "@/components/GuideChip/GuideChip";
 import {
   deferredText,
@@ -141,13 +142,11 @@ function ChatPanel({
           </h2>
           <p className="type-small text-text-secondary">{chat.step.title}</p>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="type-body -mt-2 -mr-2 min-h-11 min-w-11 rounded-full px-3 text-text underline decoration-1 underline-offset-4 hover:decoration-2"
-        >
-          Close
-        </button>
+        <div className="-mt-2 -mr-3">
+          <Button variant="text" onClick={onClose}>
+            Close
+          </Button>
+        </div>
       </div>
       <p className="type-small border-b border-border px-4 pt-1 pb-3 text-text-secondary">
         Answers are simulated for this prototype.
@@ -215,15 +214,11 @@ function ChatPanel({
             onChange={(event) => setDraft(event.target.value)}
             placeholder="Ask about this step"
             autoComplete="off"
-            className="type-body min-h-11 min-w-0 flex-1 rounded-full border border-border-strong bg-surface px-4 hover:border-text focus-visible:border-primary"
+            className="type-body min-h-11 min-w-0 flex-1 rounded-full border border-border-strong bg-surface px-4 focus-visible:border-primary"
           />
-          <button
-            type="submit"
-            disabled={!draft.trim() || typing}
-            className="type-button inline-flex min-h-11 shrink-0 items-center rounded-full bg-primary px-5 text-primary-text hover:opacity-90 active:opacity-80 disabled:cursor-not-allowed disabled:bg-secondary-olive disabled:text-text-secondary disabled:opacity-100"
-          >
+          <Button type="submit" wide={false} disabled={!draft.trim() || typing}>
             Send
-          </button>
+          </Button>
         </form>
       </div>
     </div>
@@ -347,8 +342,7 @@ export function AskAiProvider({
 }
 
 /**
- * The AI text button: a sparkle before an underlined label, no fill and no outline, with
- * invisible padding so the touch target is at least 44px. Opens the Ask AI sheet for a step that
+ * The AI text button: the Text button with the sparkle before its label. Opens the Ask AI sheet for a step that
  * has prepared answers (on the decision step and in the Error analysis cards).
  */
 export function AskAiButton({ step, phase }: { step: Step; phase: ChatPhase }) {
@@ -356,15 +350,10 @@ export function AskAiButton({ step, phase }: { step: Step; phase: ChatPhase }) {
   // Only steps with prepared answers offer the chat (the flood scenario has none).
   if (step.chat.length === 0 && !step.suggestedQuestion) return null;
   return (
-    <button
-      type="button"
-      onClick={() => open(step, phase)}
-      className="type-body -mx-2 inline-flex min-h-11 items-center gap-2 self-start rounded-panel px-2 text-text active:opacity-70"
-    >
-      <Sparkles size={16} strokeWidth={2} aria-hidden="true" />
-      <span className="underline decoration-1 underline-offset-4 hover:decoration-2">
+    <div className="-ml-3 self-start">
+      <Button variant="text" icon={Sparkles} onClick={() => open(step, phase)}>
         Ask AI about this step
-      </span>
-    </button>
+      </Button>
+    </div>
   );
 }

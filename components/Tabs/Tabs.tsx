@@ -64,7 +64,7 @@ export function Tabs<T extends string>({
             className={`-mb-px type-body min-h-11 border-b-2 ${
               selected
                 ? "type-body-strong border-text text-text"
-                : "border-transparent text-text-secondary hover:text-text"
+                : "border-transparent text-text-secondary"
             }`}
           >
             {tab.label}

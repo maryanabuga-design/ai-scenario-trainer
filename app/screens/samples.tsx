@@ -1,11 +1,12 @@
 "use client";
 
-import { FileText, History, ListChecks } from "lucide-react";
+import { FileText, History, ListChecks, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { DecisionStep, emptyDraft } from "@/components/DecisionStep/DecisionStep";
 import type { Draft } from "@/components/DecisionStep/DecisionStep";
 import { AskAiProvider } from "@/components/AskAi/AskAi";
 import type { ChatMessage } from "@/components/AskAi/AskAi";
+import { ButtonPreview } from "@/components/Button/Button";
 import { AnswerSheet } from "@/components/AnswerSheet/AnswerSheet";
 import { AnalysisView } from "@/components/AnalysisView/AnalysisView";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
@@ -650,5 +651,55 @@ export function AnalysisSample() {
       backHref="#results"
       onRepeat={() => undefined}
     />
+  );
+}
+
+const buttonStates = ["default", "pressed", "disabled", "focus"] as const;
+
+function ButtonStates() {
+  return (
+    <div className="flex flex-col gap-4">
+      {(["primary", "secondary", "text"] as const).map((variant) => (
+        <div key={variant} className="flex flex-col gap-2">
+          <h3 className="type-label text-text-secondary">
+            {{ primary: "Filled", secondary: "Outline", text: "Text" }[variant]}
+          </h3>
+          <div className="grid grid-cols-2 gap-3">
+            {buttonStates.map((state) => (
+              <div key={state} className="flex flex-col items-start gap-1">
+                <span className="type-caption text-text-secondary">{state}</span>
+                <ButtonPreview
+                  variant={variant}
+                  state={state}
+                  icon={variant === "text" && state === "default" ? Sparkles : undefined}
+                >
+                  {variant === "text" ? "Ask AI" : "Continue"}
+                </ButtonPreview>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** The three locked button types in every state, on the page and on a card. */
+export function ButtonsSample() {
+  return (
+    <div className="flex flex-col gap-6">
+      <h1 className="type-page-title">Buttons</h1>
+      <p className="type-small text-text-secondary">
+        Filled, outline and text, in the default, pressed, disabled and keyboard focus states.
+      </p>
+      <section className="flex flex-col gap-3">
+        <h2 className="type-item-title">On the page</h2>
+        <ButtonStates />
+      </section>
+      <section className="flex flex-col gap-3 rounded-card bg-card p-4 shadow-(--card-shadow)">
+        <h2 className="type-item-title">On a card</h2>
+        <ButtonStates />
+      </section>
+    </div>
   );
 }

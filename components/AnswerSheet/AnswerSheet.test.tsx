@@ -41,7 +41,7 @@ describe("My answer is still correct", () => {
     const html = render({ ...wrong, markedCorrect: true });
     expect(html).not.toContain("My answer is still correct");
     expect(html).toContain("Marked as correct by you");
-    expect(html).toContain(">Undo</button>");
+    expect(html).toContain(">Undo</span></button>");
     expect(html).toContain("Better choice");
   });
 });

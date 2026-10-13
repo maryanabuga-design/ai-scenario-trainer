@@ -17,6 +17,7 @@ import {
   ChatFeedbackSample,
   DecisionSample,
   AnalysisSample,
+  ButtonsSample,
   EmptyStatesSample,
   ErrorTypesSample,
   ExplainSample,
@@ -144,6 +145,13 @@ export default function Screens() {
             Development only. Every planned screen at 390 by 844. Dashed frames are not built yet.
           </p>
         </header>
+        <Group title="Buttons">
+          <PhoneFrame label="Buttons: three types in every state">
+            <Screen>
+              <ButtonsSample />
+            </Screen>
+          </PhoneFrame>
+        </Group>
         <Group title="Foundation">
           <PhoneFrame label="Foundation kit">
             <FoundationKit />
