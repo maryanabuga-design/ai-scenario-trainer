@@ -27,7 +27,7 @@ export function PillGroup<T extends string | number>({
                   ? "cursor-not-allowed border-transparent bg-surface-muted text-text-secondary"
                   : checked
                     ? "cursor-pointer border-primary bg-primary text-primary-text"
-                    : "cursor-pointer border-border-strong bg-transparent text-text active:bg-secondary-pressed"
+                    : "cursor-pointer border-border-strong bg-transparent text-text active:bg-tint"
               }`}
             >
               <input
