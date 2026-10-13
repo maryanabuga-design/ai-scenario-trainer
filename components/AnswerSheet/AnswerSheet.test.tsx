@@ -24,11 +24,12 @@ function render(answer: Answer) {
 }
 
 describe("My answer is still correct", () => {
-  it("is a secondary button above Continue after a typed wrong answer", () => {
+  it("is a secondary button below Continue after a typed wrong answer", () => {
     const html = render(wrong);
     const button = html.indexOf(">My answer is still correct</button>");
     expect(button).toBeGreaterThan(-1);
-    expect(button).toBeLessThan(html.indexOf(">Continue</button>"));
+    // Continue comes first on screen and in the Tab order.
+    expect(html.indexOf(">Continue</button>")).toBeLessThan(button);
     expect(html.slice(html.lastIndexOf("<button", button), button)).toContain("border-primary");
   });
 

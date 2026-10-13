@@ -161,10 +161,10 @@ export function AnswerSheet({
         )}
       </div>
       <div className="flex flex-col gap-3 border-t border-border bg-surface px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <Button onClick={onContinue}>{continueLabel}</Button>
         {content.override !== "none" && onMarkCorrect && (
           <MarkCorrect marked={content.override === "marked"} onChange={onMarkCorrect} />
         )}
-        <Button onClick={onContinue}>{continueLabel}</Button>
       </div>
     </>
   );
