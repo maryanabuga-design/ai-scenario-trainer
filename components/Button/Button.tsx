@@ -12,7 +12,7 @@ const variants: Record<Variant, string> = {
 };
 
 function classes(variant: Variant) {
-  return `inline-flex items-center justify-center rounded-full disabled:cursor-not-allowed disabled:border-transparent disabled:bg-surface-muted disabled:text-text-secondary disabled:opacity-100 ${variants[variant]}`;
+  return `inline-flex items-center justify-center rounded-full disabled:cursor-not-allowed disabled:border-transparent disabled:bg-neutral-surface disabled:text-text-secondary disabled:opacity-100 ${variants[variant]}`;
 }
 
 export function Button({

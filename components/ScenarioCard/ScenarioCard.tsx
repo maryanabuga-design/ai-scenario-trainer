@@ -16,11 +16,11 @@ export function ScenarioCard({
     <button
       type="button"
       onClick={onOpen}
-      className="relative isolate flex w-full flex-col items-start gap-2 overflow-hidden rounded-card bg-card p-5 text-left shadow-(--card-shadow) active:bg-surface-muted"
+      className="relative isolate flex w-full flex-col items-start gap-2 overflow-hidden rounded-card bg-card p-5 text-left shadow-(--card-shadow) active:bg-neutral-surface"
     >
       <SoftShape variant="faint" />
       <span className="flex w-full items-start justify-between gap-3">
-        <Tag tone="yellow">Scenario</Tag>
+        <Tag>Scenario</Tag>
         <ArrowCircle />
       </span>
       <span className="type-item-title">{title}</span>

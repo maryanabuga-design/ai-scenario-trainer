@@ -54,7 +54,7 @@ describe("Your choice block", () => {
       html.lastIndexOf('<div class="', html.lastIndexOf("<svg", label)),
       label,
     );
-    expect(block).toContain("bg-chip");
+    expect(block).toContain("bg-neutral-surface");
     expect(block).toContain("border-l-[3px] border-primary");
   });
 });

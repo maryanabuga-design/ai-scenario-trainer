@@ -171,7 +171,7 @@ export function QuizQuestion({
       />
 
       {question.type === "text" && submitted && (
-        <p className="max-w-[85%] self-end rounded-panel bg-surface-muted px-4 py-2">
+        <p className="max-w-[85%] self-end rounded-panel bg-neutral-surface px-4 py-2">
           {draft.response?.type === "text" && draft.response.text
             ? draft.response.text
             : "I don't know"}

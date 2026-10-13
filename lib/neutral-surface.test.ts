@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const css = readFileSync("app/globals.css", "utf8");
@@ -41,5 +42,33 @@ describe("neutral surface token", () => {
     for (const around of ["bg", "card", "surface"]) {
       expect(fill).toBeLessThan(luminance(token(around)));
     }
+  });
+});
+
+describe("no leftover neutral values", () => {
+  /** Every component, screen and style file. */
+  function files(dir: string): string[] {
+    return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const path = join(dir, entry.name);
+      if (entry.isDirectory()) return files(path);
+      return /\.(tsx|css)$/.test(path) && !path.endsWith(".test.tsx") ? [path] : [];
+    });
+  }
+
+  it("has no old grey-beige values or tokens left", () => {
+    const sources = [...files("components"), ...files("app")];
+    const leftovers = sources.filter((file) =>
+      /#efece5|#c0bbb1|--surface-muted|surface-muted\b|--chip\b|bg-chip\b|chip-pressed/i.test(
+        readFileSync(file, "utf8"),
+      ),
+    );
+    expect(leftovers).toEqual([]);
+  });
+
+  it("lets no component set its own colour value", () => {
+    const own = files("components").filter((file) =>
+      /(bg|text|border|fill|stroke)-\[#|#[0-9a-f]{6}\b/i.test(readFileSync(file, "utf8")),
+    );
+    expect(own).toEqual([]);
   });
 });

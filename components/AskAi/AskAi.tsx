@@ -90,7 +90,7 @@ function ChipButton({
       type="button"
       disabled={disabled}
       onClick={() => onAsk({ text: chip.question, chipId: chip.id })}
-      className={`min-h-11 rounded-full border border-border bg-surface px-4 py-2 text-left type-small text-text active:bg-surface-muted disabled:cursor-not-allowed disabled:text-text-secondary ${
+      className={`min-h-11 rounded-full border border-border bg-surface px-4 py-2 text-left type-small text-text active:bg-neutral-surface disabled:cursor-not-allowed disabled:text-text-secondary ${
         wrap ? "max-w-full" : "shrink-0 whitespace-nowrap"
       }`}
     >
@@ -179,7 +179,7 @@ function ChatPanel({
           message.role === "trainee" ? (
             <p
               key={index}
-              className="max-w-[85%] self-end rounded-panel bg-surface-muted px-4 py-2"
+              className="max-w-[85%] self-end rounded-panel bg-neutral-surface px-4 py-2"
             >
               {message.text}
             </p>
@@ -220,7 +220,7 @@ function ChatPanel({
           <button
             type="submit"
             disabled={!draft.trim() || typing}
-            className="type-button inline-flex min-h-11 shrink-0 items-center rounded-full bg-primary px-5 text-primary-text hover:opacity-90 active:opacity-80 disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-text-secondary disabled:opacity-100"
+            className="type-button inline-flex min-h-11 shrink-0 items-center rounded-full bg-primary px-5 text-primary-text hover:opacity-90 active:opacity-80 disabled:cursor-not-allowed disabled:bg-neutral-surface disabled:text-text-secondary disabled:opacity-100"
           >
             Send
           </button>

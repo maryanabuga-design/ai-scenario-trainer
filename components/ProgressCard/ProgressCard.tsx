@@ -19,7 +19,7 @@ function Ring({ correct, total }: { correct: number; total: number }) {
           r={radius}
           fill="none"
           strokeWidth="6"
-          className="stroke-ring-track"
+          className="stroke-neutral-surface"
         />
         <circle
           cx="44"

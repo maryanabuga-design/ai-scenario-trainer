@@ -6,7 +6,6 @@
   --surface: #ffffff;
   --neutral-surface: #e2ded5;
   --neutral-surface-pressed: #d3cdc2;
-  --surface-muted: #efece5;
   --border: #e2ded5;
   --border-strong: #8a867e;
   --text: #1a1a1a;
@@ -33,7 +32,6 @@
   --header-overline: #5f5a54;
   --header-subline: #524c45;
   --ring: #417851;
-  --ring-track: #e9e6e0;
   --secure-row: #f3f4ef;
   --guess-row: #f5f1ee;
   --guess-tile: #e8e2db;
@@ -46,8 +44,6 @@
   --tag-blue: #d4e8f0;
   --tag-lilac: #e6ddf5;
   --tag-sage: #dfe5d8;
-  --chip: var(--stroke-neutral);
-  --chip-pressed: color-mix(in srgb, var(--chip) 90%, var(--text));
   --stroke-neutral: #d3cdc2;
   --stroke-sage: #a9b5a0;
   --code-yellow: #f9f4c1;
@@ -71,7 +67,6 @@
   --color-neutral-surface-pressed: var(--neutral-surface-pressed);
   --color-bg: var(--bg);
   --color-surface: var(--surface);
-  --color-surface-muted: var(--surface-muted);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
   --color-text: var(--text);
@@ -95,7 +90,6 @@
   --color-header-overline: var(--header-overline);
   --color-header-subline: var(--header-subline);
   --color-ring: var(--ring);
-  --color-ring-track: var(--ring-track);
   --color-secure-row: var(--secure-row);
   --color-guess-row: var(--guess-row);
   --color-guess-tile: var(--guess-tile);
@@ -107,8 +101,6 @@
   --color-tag-blue: var(--tag-blue);
   --color-tag-lilac: var(--tag-lilac);
   --color-tag-sage: var(--tag-sage);
-  --color-chip: var(--chip);
-  --color-chip-pressed: var(--chip-pressed);
   --color-secondary-pressed: var(--secondary-pressed);
   --color-stroke-neutral: var(--stroke-neutral);
   --color-stroke-sage: var(--stroke-sage);
@@ -143,7 +135,7 @@
 }
 
 body {
-  background: var(--surface-muted);
+  background: var(--neutral-surface);
   color: var(--text);
   font-family: var(--font-sans);
   font-size: 16px;

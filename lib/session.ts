@@ -184,8 +184,9 @@ export function setMarkedCorrect<T extends Session>(
   marked: boolean,
 ): T {
   const mark = <A extends Answer | QuizAnswer>(answer: A): A => {
-    const { markedCorrect: _previous, ...rest } = answer;
-    return (marked ? { ...rest, markedCorrect: true } : rest) as A;
+    const next = { ...answer };
+    delete next.markedCorrect;
+    return marked ? { ...next, markedCorrect: true } : next;
   };
   const matches = (answer: Answer | QuizAnswer) =>
     "stepId" in answer ? answer.stepId === itemId : answer.questionId === itemId;

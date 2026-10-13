@@ -10,7 +10,7 @@ import { GuideChip } from "@/components/GuideChip/GuideChip";
 import type { AnswerBox, BoxTone, SheetContent } from "@/lib/answer-sheet";
 
 /** Your own answer is always the Your choice block; the tone only picks its icon. */
-const yoursBlock = "border-l-[3px] border-primary bg-chip";
+const yoursBlock = "border-l-[3px] border-primary bg-neutral-surface";
 
 const boxStyles: Record<BoxTone, { className: string; icon?: [LucideIcon, string] }> = {
   right: { className: yoursBlock, icon: [Check, "text-correct"] },
@@ -26,7 +26,7 @@ const verdicts: Record<SheetContent["result"], string> = {
   partial: "Partly correct.",
 };
 
-/** A section label; on the Your choice block it is dark, because grey is below AA on `--chip`. */
+/** A section label; dark on the Your choice block, grey everywhere else. */
 function Label({ children, dark = false }: { children: ReactNode; dark?: boolean }) {
   return <h3 className={`type-label ${dark ? "text-text" : "text-text-secondary"}`}>{children}</h3>;
 }

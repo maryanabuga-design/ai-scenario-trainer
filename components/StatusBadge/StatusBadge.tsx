@@ -25,22 +25,22 @@ export const statuses: Record<
   partial: {
     label: "Partly correct",
     icon: "half",
-    className: "border border-border bg-surface-muted text-text-secondary",
+    className: "bg-neutral-surface text-text-secondary",
   },
   marked: {
     label: "Marked correct by you",
     icon: "user",
-    className: "border border-border bg-surface-muted text-text-secondary",
+    className: "bg-neutral-surface text-text-secondary",
   },
   ready: {
     label: "Ready",
     icon: "check",
-    className: "border border-border bg-surface-muted text-text-secondary",
+    className: "bg-neutral-surface text-text-secondary",
   },
   processing: {
     label: "Processing",
     icon: "clock",
-    className: "border border-border bg-surface-muted text-text-secondary",
+    className: "bg-neutral-surface text-text-secondary",
   },
   failed: { label: "Failed", icon: "cross", className: "bg-caution-bg text-caution" },
   secure: {
@@ -51,7 +51,7 @@ export const statuses: Record<
   guess: {
     ...errorTypeText.guess,
     icon: "question",
-    className: "border border-border bg-surface-muted text-text-secondary",
+    className: "bg-neutral-surface text-text-secondary",
   },
   knowledge_gap: {
     ...errorTypeText.knowledge_gap,

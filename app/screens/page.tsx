@@ -110,10 +110,10 @@ function FoundationKit() {
           <p className="type-small text-text-secondary">Card</p>
           <p className="type-card-title">White card, 24px radius</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Tag tone="yellow">Scenario</Tag>
-            <Tag tone="peach">Short</Tag>
-            <Tag tone="blue">Material</Tag>
-            <Tag tone="lilac">S2</Tag>
+            <Tag>Scenario</Tag>
+            <Tag>Short</Tag>
+            <Tag>Material</Tag>
+            <Tag>S2</Tag>
           </div>
         </Card>
         <div className="flex flex-col gap-6">
@@ -137,7 +137,7 @@ export default function Screens() {
 
   return (
     <SourceSheetProvider sections={loadAllSections()}>
-      <main className="flex flex-col gap-10 bg-surface-muted p-8">
+      <main className="flex flex-col gap-10 bg-neutral-surface p-8">
         <header className="flex flex-col gap-1">
           <h1 className="type-page-title">Screen review</h1>
           <p className="type-small text-text-secondary">
