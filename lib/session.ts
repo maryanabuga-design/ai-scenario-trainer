@@ -1,4 +1,5 @@
 import type { Response } from "@/lib/quiz";
+import type { ExplanationCheck } from "@/lib/feedback";
 import type { Confidence, SessionMode } from "@/lib/scenario";
 import { createStore } from "@/lib/store";
 import type { RepeatItem } from "@/lib/weak-topics";
@@ -17,6 +18,8 @@ export type Answer = {
   /** A wrong choice the user marked correct ("My answer is still correct"). */
   markedCorrect?: boolean;
   answerSource?: AnswerSource;
+  /** The simulated check of the typed explanation; worked out again for older answers. */
+  explanationCheck?: ExplanationCheck;
 };
 
 export type QuizAnswer = {

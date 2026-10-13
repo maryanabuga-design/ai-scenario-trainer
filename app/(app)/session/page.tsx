@@ -11,6 +11,7 @@ import type { Draft } from "@/components/DecisionStep/DecisionStep";
 import { emptyQuizDraft, QuizQuestion } from "@/components/QuizQuestion/QuizQuestion";
 import type { QuizDraft } from "@/components/QuizQuestion/QuizQuestion";
 import type { Unit } from "@/components/SessionTopBar/SessionTopBar";
+import { simulatedFeedback } from "@/lib/feedback";
 import { questionSheet, stepSheet } from "@/lib/answer-sheet";
 import { getQuestion } from "@/lib/quiz";
 import { getStep } from "@/lib/scenario";
@@ -255,14 +256,23 @@ export default function SessionPage() {
             onSend={(explanation) =>
               updateStep(
                 step.id,
-                { explanation, answerSource: explanation.trim() ? "typed" : "dont_know" },
+                {
+                  explanation,
+                  answerSource: explanation.trim() ? "typed" : "dont_know",
+                  explanationCheck: simulatedFeedback.checkExplanation(step, explanation),
+                },
                 "feedback",
               )
             }
             onDontKnow={() =>
               updateStep(
                 step.id,
-                { explanation: "", skipped: true, answerSource: "dont_know" },
+                {
+                  explanation: "",
+                  skipped: true,
+                  answerSource: "dont_know",
+                  explanationCheck: "skipped",
+                },
                 "feedback",
               )
             }
