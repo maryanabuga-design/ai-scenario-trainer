@@ -1,6 +1,4 @@
-import { Check, ChevronRight, X } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import Link from "next/link";
+import { Check } from "lucide-react";
 
 /** Share answered correctly as a ring: a check inside when all are right, else the number. */
 function Ring({ correct, total }: { correct: number; total: number }) {
@@ -45,88 +43,22 @@ function Ring({ correct, total }: { correct: number; total: number }) {
   );
 }
 
-const rowStyles = {
-  correct: {
-    label: "Correct",
-    icon: Check,
-    row: "bg-correct-row",
-    tile: "bg-correct-tile",
-    ink: "text-correct-ink",
-  },
-  incorrect: {
-    label: "Incorrect",
-    icon: X,
-    row: "bg-wrong-row",
-    tile: "bg-wrong-tile",
-    ink: "text-wrong-ink",
-  },
-} satisfies Record<
-  string,
-  { label: string; icon: LucideIcon; row: string; tile: string; ink: string }
->;
-
-/** A tinted Correct or Incorrect row. It opens the analysis filtered; with 0 it is plain. */
-function ResultRow({
-  kind,
-  count,
-  href,
-  onNavigate,
-}: {
-  kind: keyof typeof rowStyles;
-  count: number;
-  href: string;
-  onNavigate?: () => void;
-}) {
-  const style = rowStyles[kind];
-  const Icon = style.icon;
-  const content = (
-    <>
-      <span
-        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${style.tile} ${style.ink}`}
-      >
-        <Icon size={20} strokeWidth={2} aria-hidden="true" />
-      </span>
-      <span className="type-numeral flex-1 text-text tabular-nums">{count}</span>
-      <span className={`type-label ${style.ink}`}>{style.label}</span>
-      {count > 0 && (
-        <>
-          <span className="sr-only">, show these answers</span>
-          <ChevronRight size={20} strokeWidth={2} aria-hidden="true" className={style.ink} />
-        </>
-      )}
-    </>
-  );
-  const className = `flex min-h-14 items-center gap-3 rounded-panel px-3 py-2 ${style.row}`;
-  if (count === 0) {
-    return <div className={className}>{content}</div>;
-  }
-  return (
-    <Link href={href} onClick={onNavigate} className={`${className} active:brightness-95`}>
-      {content}
-    </Link>
-  );
-}
-
-/** The card under the Results header: ring, title, one sentence, and the two result rows. */
+/** The card under the Results header: ring, title and one sentence. */
 export function ProgressCard({
   correct,
   total,
   sentence,
   points,
-  analysisHref,
-  onNavigate,
 }: {
   correct: number;
   total: number;
   sentence: string;
   points?: string;
-  analysisHref: string;
-  onNavigate?: () => void;
 }) {
   return (
     <section
       aria-labelledby="progress-title"
-      className="relative -mt-8 flex flex-col gap-4 rounded-card bg-soft-card p-5 shadow-(--soft-shadow)"
+      className="relative -mt-8 flex flex-col rounded-card bg-soft-card p-5 shadow-(--soft-shadow)"
     >
       <div className="flex items-center gap-4">
         <Ring correct={correct} total={total} />
@@ -137,20 +69,6 @@ export function ProgressCard({
           <p className="type-small text-text-secondary">{sentence}</p>
           {points && <p className="type-small text-text-secondary tabular-nums">{points}</p>}
         </div>
-      </div>
-      <div className="flex flex-col gap-2">
-        <ResultRow
-          kind="correct"
-          count={correct}
-          href={`${analysisHref}?show=correct`}
-          onNavigate={onNavigate}
-        />
-        <ResultRow
-          kind="incorrect"
-          count={total - correct}
-          href={`${analysisHref}?show=incorrect`}
-          onNavigate={onNavigate}
-        />
       </div>
     </section>
   );
