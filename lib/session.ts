@@ -4,6 +4,9 @@ import { createStore } from "@/lib/store";
 import type { RepeatItem } from "@/lib/weak-topics";
 import { clearTrainings } from "@/lib/trainings";
 
+/** How an answer was given: typed text, "I don't know", or only a choice. */
+export type AnswerSource = "typed" | "dont_know" | "choice";
+
 export type Answer = {
   stepId: string;
   optionId: string;
@@ -13,6 +16,7 @@ export type Answer = {
   skipped?: boolean;
   /** A wrong choice the user marked correct ("My answer is still correct"). */
   markedCorrect?: boolean;
+  answerSource?: AnswerSource;
 };
 
 export type QuizAnswer = {
@@ -23,6 +27,7 @@ export type QuizAnswer = {
   markedCorrect?: boolean;
   /** "I don't know" on a short text question: an empty answer, no confidence. */
   dontKnow?: boolean;
+  answerSource?: AnswerSource;
 };
 
 type Progress = {
@@ -202,4 +207,15 @@ export function setMarkedCorrect<T extends Session>(
       matches(answer) ? mark(answer) : answer,
     ),
   };
+}
+
+/** The saved source, or for answers saved before it existed, worked out from the answer. */
+export function answerSource(answer: Answer | QuizAnswer): AnswerSource {
+  if (answer.answerSource) return answer.answerSource;
+  if ("stepId" in answer) {
+    if (answer.skipped) return "dont_know";
+    return answer.explanation.trim() ? "typed" : "choice";
+  }
+  if (answer.dontKnow) return "dont_know";
+  return answer.response.type === "text" && answer.response.text.trim() ? "typed" : "choice";
 }

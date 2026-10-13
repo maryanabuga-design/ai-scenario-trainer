@@ -4,7 +4,7 @@ import { scoreSession } from "@/lib/progress";
 import { getQuestion } from "@/lib/quiz";
 import { getStep } from "@/lib/scenario";
 import { totalScore, weakItems } from "@/lib/scoring";
-import { saveSession, setMarkedCorrect } from "@/lib/session";
+import { answerSource, saveSession, setMarkedCorrect } from "@/lib/session";
 import type { Answer, QuizAnswer, QuizSession, ScenarioSession } from "@/lib/session";
 import { createStore } from "@/lib/store";
 
@@ -48,27 +48,68 @@ const rejectedText: QuizAnswer = {
 };
 
 describe("when the override is offered", () => {
-  it("offers it after a wrong scenario step, never after a right one", () => {
-    expect(stepSheet(getStep("s1"), wrongStep).override).toBe("available");
-    expect(stepSheet(getStep("s1"), rightStep).override).toBe("none");
+  const step = getStep("s1");
+  const question = (answer: QuizAnswer) => questionSheet(getQuestion(answer.questionId), answer);
+
+  it("typed explanation and a wrong decision: shown", () => {
+    expect(stepSheet(step, { ...wrongStep, answerSource: "typed" }).override).toBe("available");
   });
 
-  it("offers it after a wrong, partly right or rejected quiz answer", () => {
-    expect(questionSheet(getQuestion("q-s1-1"), wrongSingle).override).toBe("available");
-    expect(questionSheet(getQuestion("q-s1-3"), partlyMultiple).override).toBe("available");
-    expect(questionSheet(getQuestion("q-s2-1"), rejectedText).override).toBe("available");
+  it("I don't know or an empty explanation with a wrong decision: not shown", () => {
+    const dontKnow: Answer = {
+      ...wrongStep,
+      explanation: "",
+      skipped: true,
+      answerSource: "dont_know",
+    };
+    expect(stepSheet(step, dontKnow).override).toBe("none");
+    expect(stepSheet(step, { ...wrongStep, explanation: "  " }).override).toBe("none");
   });
 
-  it("does not offer it after a right answer or after I don't know", () => {
-    const right: QuizAnswer = { ...wrongSingle, response: { type: "single", optionId: "b" } };
-    expect(questionSheet(getQuestion("q-s1-1"), right).override).toBe("none");
+  it("typed explanation and a right decision: not shown", () => {
+    expect(stepSheet(step, { ...rightStep, answerSource: "typed" }).override).toBe("none");
+  });
+
+  it("short text typed and rejected: shown; I don't know: not shown", () => {
+    expect(question({ ...rejectedText, answerSource: "typed" }).override).toBe("available");
     const dontKnow: QuizAnswer = {
       questionId: "q-s2-1",
       response: { type: "text", text: "" },
       confidence: null,
       dontKnow: true,
+      answerSource: "dont_know",
     };
-    expect(questionSheet(getQuestion("q-s2-1"), dontKnow).override).toBe("none");
+    expect(question(dontKnow).override).toBe("none");
+  });
+
+  it("never on single, multiple, ordering or true or false questions", () => {
+    const choices: QuizAnswer[] = [
+      { ...wrongSingle, answerSource: "choice" },
+      { ...partlyMultiple, answerSource: "choice" },
+      {
+        questionId: "q-s2-3",
+        response: { type: "ordering", order: ["d", "c", "b", "a"] },
+        confidence: 3,
+        answerSource: "choice",
+      },
+      {
+        questionId: "q-s1-2",
+        response: { type: "truefalse", value: true },
+        confidence: 3,
+        answerSource: "choice",
+      },
+    ];
+    choices.forEach((answer) => {
+      expect(question(answer).result).not.toBe("correct");
+      expect(question(answer).override).toBe("none");
+    });
+  });
+
+  it("works out the source for answers saved before it was stored", () => {
+    expect(answerSource(wrongStep)).toBe("typed");
+    expect(answerSource({ ...wrongStep, explanation: "", skipped: true })).toBe("dont_know");
+    expect(answerSource(rejectedText)).toBe("typed");
+    expect(answerSource(wrongSingle)).toBe("choice");
   });
 });
 
@@ -91,22 +132,23 @@ describe("pressing My answer is still correct", () => {
     expect(sheet.boxes[0].tone).toBe("neutral");
   });
 
-  it("works for every quiz type and keeps the correct answer visible", () => {
-    const after = setMarkedCorrect(quiz([wrongSingle, partlyMultiple]), "q-s1-3", true);
+  it("counts a typed short-text answer as right and keeps the reference answer visible", () => {
+    const after = setMarkedCorrect(quiz([wrongSingle, rejectedText]), "q-s2-1", true);
     const items = scoreSession(after);
-    expect(items[1]).toMatchObject({ score: 1, correct: true, errorType: "secure" });
+    expect(items[1]).toMatchObject({ score: 1, correct: true, errorType: "guess" });
     expect(items[0].correct).toBe(false);
-    const sheet = questionSheet(getQuestion("q-s1-3"), after.answers[1] as QuizAnswer);
+    expect(weakItems(items).map((item) => item.id)).toEqual(["q-s1-1"]);
+    const sheet = questionSheet(getQuestion("q-s2-1"), after.answers[1] as QuizAnswer);
     expect(sheet.override).toBe("marked");
-    expect(sheet.boxes.map((box) => box.label)).toEqual(["Your answer", "Correct answer"]);
+    expect(sheet.boxes.map((box) => box.label)).toEqual(["Your answer", "Reference answer"]);
   });
 
   it("is undone completely by Undo", () => {
-    const before = quiz([wrongSingle]);
-    const undone = setMarkedCorrect(setMarkedCorrect(before, "q-s1-1", true), "q-s1-1", false);
+    const before = scenario([wrongStep]);
+    const undone = setMarkedCorrect(setMarkedCorrect(before, "s1", true), "s1", false);
     expect(scoreSession(undone)).toEqual(scoreSession(before));
-    expect(questionSheet(getQuestion("q-s1-1"), undone.answers[0] as QuizAnswer)).toEqual(
-      questionSheet(getQuestion("q-s1-1"), wrongSingle),
+    expect(stepSheet(getStep("s1"), undone.answers[0])).toEqual(
+      stepSheet(getStep("s1"), wrongStep),
     );
   });
 });

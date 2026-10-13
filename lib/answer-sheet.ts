@@ -5,6 +5,7 @@ import type { Choice, Question, Response } from "@/lib/quiz";
 import type { Step } from "@/lib/scenario";
 import { errorType } from "@/lib/scoring";
 import type { ErrorType } from "@/lib/scoring";
+import { answerSource } from "@/lib/session";
 import type { Answer, QuizAnswer } from "@/lib/session";
 
 /**
@@ -99,7 +100,13 @@ export function stepSheet(step: Step, answer: Answer): StepSheet {
     explanation: explanation || null,
     whatHappened: feedback.chosen.consequence,
     stateChange: describeEffects(step.id, feedback.chosen.effects ?? {}),
-    override: feedback.correct ? "none" : marked ? "marked" : "available",
+    // Only typed text can be defended: never after "I don't know" or an empty explanation.
+    override:
+      feedback.correct || answerSource(answer) !== "typed"
+        ? "none"
+        : marked
+          ? "marked"
+          : "available",
   };
 }
 
@@ -192,11 +199,12 @@ export function questionSheet(question: Question, answer: QuizAnswer): QuestionS
     detail: countDetail(question, response),
     why: [question.why],
     sources: [question.section],
+    // Only a typed short-text answer the check rejected can be marked correct.
     override:
       verdict === "marked"
         ? "marked"
-        : verdict === "right" || verdict === "dontKnow"
-          ? "none"
-          : "available",
+        : verdict === "noMatch" && answerSource(answer) === "typed"
+          ? "available"
+          : "none",
   };
 }

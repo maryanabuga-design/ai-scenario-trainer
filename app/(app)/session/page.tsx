@@ -123,6 +123,7 @@ function StepDecide({
           optionId: draft.optionId,
           confidence: draft.confidence,
           explanation: "",
+          answerSource: "choice",
         });
       }}
     />
@@ -154,7 +155,12 @@ function QuestionDecide({
       onDraftChange={setDraft}
       onSubmit={(sent) => {
         if (!sent.response) return;
-        onAnswer({ questionId: question.id, response: sent.response, confidence: sent.confidence });
+        onAnswer({
+          questionId: question.id,
+          response: sent.response,
+          confidence: sent.confidence,
+          answerSource: sent.response.type === "text" ? "typed" : "choice",
+        });
       }}
       onDontKnow={() =>
         onAnswer({
@@ -162,6 +168,7 @@ function QuestionDecide({
           response: { type: "text", text: "" },
           confidence: null,
           dontKnow: true,
+          answerSource: "dont_know",
         })
       }
     />
@@ -245,8 +252,20 @@ export default function SessionPage() {
             total={total}
             unit={unit}
             submitted={submitted}
-            onSend={(explanation) => updateStep(step.id, { explanation }, "feedback")}
-            onDontKnow={() => updateStep(step.id, { explanation: "", skipped: true }, "feedback")}
+            onSend={(explanation) =>
+              updateStep(
+                step.id,
+                { explanation, answerSource: explanation.trim() ? "typed" : "dont_know" },
+                "feedback",
+              )
+            }
+            onDontKnow={() =>
+              updateStep(
+                step.id,
+                { explanation: "", skipped: true, answerSource: "dont_know" },
+                "feedback",
+              )
+            }
           />
           {submitted && (
             <AnswerSheet

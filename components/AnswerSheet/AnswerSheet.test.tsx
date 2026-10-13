@@ -24,7 +24,7 @@ function render(answer: Answer) {
 }
 
 describe("My answer is still correct", () => {
-  it("is a secondary button above Continue after a wrong answer", () => {
+  it("is a secondary button above Continue after a typed wrong answer", () => {
     const html = render(wrong);
     const button = html.indexOf(">My answer is still correct</button>");
     expect(button).toBeGreaterThan(-1);

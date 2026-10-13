@@ -207,16 +207,13 @@ describe("marked correct by you", () => {
     expect(marked.markedByYou).toBeUndefined();
   });
 
-  it("applies to every question type, and never to an answer that was already right", () => {
+  it("only applies to short text questions", () => {
     const single = questions.find((question) => question.type === "single")!;
     const wrong =
       single.type === "single" ? single.options.find((o) => o.id !== single.answer)! : null;
     const scored = scoreQuestion(single, { type: "single", optionId: wrong!.id }, 3, true);
-    expect(scored).toMatchObject({ correct: true, score: 1, markedByYou: true });
-    const right = single.type === "single" ? single.answer : "";
-    expect(
-      scoreQuestion(single, { type: "single", optionId: right }, 3, true).markedByYou,
-    ).toBeUndefined();
+    expect(scored.correct).toBe(false);
+    expect(scored.markedByYou).toBeUndefined();
   });
 
   it("counts in a finished quiz's score and weak topics", () => {

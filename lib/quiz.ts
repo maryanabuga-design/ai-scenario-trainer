@@ -245,8 +245,8 @@ export function scoreQuestion(
   markedCorrect = false,
 ): ScoredItem {
   const checked = scoreResponse(question, response);
-  /** Any answer that was not fully right can be marked correct by the user. */
-  const markedByYou = markedCorrect && checked < 1;
+  /** Only a typed short-text answer the check rejected can be marked correct by the user. */
+  const markedByYou = markedCorrect && question.type === "text" && checked < 1;
   const score = markedByYou ? 1 : checked;
   const correct = score === 1;
   return {
