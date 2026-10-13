@@ -1,4 +1,4 @@
-import { ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
+import { ArrowRight } from "lucide-react";
 import { Tag } from "@/components/Tag/Tag";
 
 /** A material's prepared scenario on Home. The whole card opens Session setup for it. */
@@ -19,7 +19,12 @@ export function ScenarioCard({
     >
       <span className="flex w-full items-start justify-between gap-3">
         <Tag>Scenario</Tag>
-        <ArrowCircle />
+        <span
+          aria-hidden="true"
+          className="-mt-1 -mr-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface text-text"
+        >
+          <ArrowRight size={20} strokeWidth={2} />
+        </span>
       </span>
       <span className="type-item-title">{title}</span>
       {lines.map((line) => (

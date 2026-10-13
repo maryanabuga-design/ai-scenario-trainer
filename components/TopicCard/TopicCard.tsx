@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
+import { ArrowRight } from "lucide-react";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
 import { TopicTile } from "@/components/TopicTile/TopicTile";
@@ -50,7 +50,7 @@ export function TopicCard({
             </span>
           )}
         </span>
-        <ArrowCircle />
+        <ArrowRight size={20} strokeWidth={2} aria-hidden="true" className="mt-1 shrink-0" />
       </span>
       <span className="type-item-title">{name}</span>
       <span className="type-small text-text-secondary">
