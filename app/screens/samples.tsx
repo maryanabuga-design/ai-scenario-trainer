@@ -23,6 +23,7 @@ import { TrainingReview } from "@/components/TrainingReview/TrainingReview";
 import { emptyQuizDraft, QuizQuestion } from "@/components/QuizQuestion/QuizQuestion";
 import type { QuizDraft } from "@/components/QuizQuestion/QuizQuestion";
 import { MaterialView } from "@/components/MaterialView/MaterialView";
+import type { Material } from "@/lib/materials";
 import { MaterialsList } from "@/components/MaterialsList/MaterialsList";
 import { UploadPanel } from "@/components/UploadSheet/UploadSheet";
 import type { Stage } from "@/components/UploadSheet/UploadSheet";
@@ -332,6 +333,24 @@ export function ChatFeedbackSample() {
 }
 
 /** The materials list with the upload sheet drawn over it in one of its states. */
+/** The three material types side by side: a ready PDF, a DOCX and an example LINK (screens only). */
+export function MaterialTypesSample() {
+  const link: Material = {
+    id: "link-example",
+    name: "Article: Planning a workplace evacuation drill",
+    type: "Link",
+    url: "example.org/evacuation-drill",
+    added: "2026-10-01",
+    status: "ready",
+    hasScenario: false,
+  };
+  return (
+    <MaterialsList
+      samples={[...sampleMaterials.filter((material) => material.status === "ready"), link]}
+    />
+  );
+}
+
 export function UploadSample({ state }: { state: "choose" | "progress" | "failed" }) {
   const sample = state === "failed" ? sampleFiles[2] : sampleFiles[0];
   const result = materialFromSample(sample, new Date("2026-10-08"));

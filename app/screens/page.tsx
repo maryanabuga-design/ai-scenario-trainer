@@ -27,6 +27,7 @@ import {
   FloodSetupSample,
   FloodStepSample,
   HomeSample,
+  MaterialTypesSample,
   TopicIconsSample,
   WeakTopicsSample,
   ReviewSample,
@@ -162,6 +163,11 @@ export default function Screens() {
           <PhoneFrame label="Materials list">
             <Screen nav="/materials">
               <Materials />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Material types: PDF, DOCX and an example LINK">
+            <Screen nav="/materials">
+              <MaterialTypesSample />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Material page">

@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
   fileTypeLabel,
+  formatAdded,
   formatSize,
   materialFromUpload,
+  materialKind,
+  metaLine,
   sampleMaterials,
   simulateUpload,
 } from "@/lib/materials";
+import type { Material } from "@/lib/materials";
 
 describe("sample materials", () => {
   it("has one ready guide with a scenario and one item in each other state", () => {
@@ -71,5 +75,39 @@ describe("file-type tags", () => {
     expect(fileTypeLabel("Word document")).toBe("DOCX");
     expect(fileTypeLabel("Link")).toBe("LINK");
     expect(fileTypeLabel("Image")).toBe("JPG");
+  });
+});
+
+describe("material types", () => {
+  const link: Material = {
+    id: "link",
+    name: "Article: Planning a workplace evacuation drill",
+    type: "Link",
+    url: "example.org/evacuation-drill",
+    added: "2026-10-01",
+    status: "ready",
+    hasScenario: false,
+  };
+
+  it("supports PDF, DOCX and LINK", () => {
+    expect(materialKind("PDF")).toBe("document");
+    expect(materialKind("Word document")).toBe("document");
+    expect(materialKind("Link")).toBe("link");
+    expect(fileTypeLabel("Link")).toBe("LINK");
+  });
+
+  it("describes a LINK as a web page with its site and date, without a file size", () => {
+    expect(metaLine(link)).toBe("Web page · example.org · 1 Oct 2026");
+  });
+
+  it("describes a file by its type, size and date", () => {
+    const guide = sampleMaterials.find((material) => material.id === "evacuation-guide")!;
+    expect(metaLine(guide)).toBe(`PDF · 1.2 MB · ${formatAdded(guide.added)}`);
+  });
+
+  it("keeps the sample link an address, not a size", () => {
+    const article = sampleMaterials.find((material) => material.type === "Link")!;
+    expect(article.size).toBeUndefined();
+    expect(article.url).toBe("example.org/evacuation-drill");
   });
 });

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/Button/Button";
 import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
-import { FileCover } from "@/components/FileCover/FileCover";
+import { MaterialTile } from "@/components/MaterialTile/MaterialTile";
 import { formatSize } from "@/lib/materials";
 import { materialFromSample, sampleFiles } from "@/lib/training";
 import type { SampleFile } from "@/lib/training";
@@ -68,7 +68,7 @@ export function UploadPanel({
                 onClick={() => onChooseFile(file)}
                 className="flex w-full items-start gap-3 rounded-panel border border-border bg-surface p-3 text-left active:bg-surface-muted"
               >
-                <FileCover type={file.name.endsWith(".jpg") ? "Image" : "PDF"} />
+                <MaterialTile type={file.name.endsWith(".jpg") ? "Image" : "PDF"} />
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <span className="type-body-strong break-words">{file.name}</span>
                   <span className="type-small text-text-secondary">{formatSize(file.size)}</span>

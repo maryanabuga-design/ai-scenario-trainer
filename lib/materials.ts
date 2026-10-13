@@ -8,7 +8,10 @@ export type Material = {
   id: string;
   name: string;
   type: string;
-  size: string;
+  /** File size; a LINK has none. */
+  size?: string;
+  /** A LINK's address, for example example.org/evacuation-drill. */
+  url?: string;
   /** ISO date, for example 2026-10-07. */
   added: string;
   status: MaterialStatus;
@@ -120,4 +123,18 @@ export function fileTypeLabel(type: string): string {
   if (type === "Image") return "JPG";
   if (type.startsWith("Text")) return "TXT";
   return type.slice(0, 4).toUpperCase();
+}
+
+/** How a material is drawn: a document icon, or a link icon for a web page. */
+export function materialKind(type: string): "document" | "link" {
+  return type === "Link" ? "link" : "document";
+}
+
+/** "PDF · 1.2 MB · 7 Oct 2026", or "Web page · example.org · 7 Oct 2026" for a LINK. */
+export function metaLine(material: Material): string {
+  const added = formatAdded(material.added);
+  if (materialKind(material.type) === "link") {
+    return `Web page · ${(material.url ?? "").split("/")[0]} · ${added}`;
+  }
+  return `${material.type} · ${material.size} · ${added}`;
 }

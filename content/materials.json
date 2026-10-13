@@ -52,7 +52,7 @@
     "id": "drill-article",
     "name": "Article: Planning a workplace evacuation drill",
     "type": "Link",
-    "size": "example.org/evacuation-drill",
+    "url": "example.org/evacuation-drill",
     "added": "2026-10-07",
     "status": "processing",
     "progress": 60,

@@ -4,13 +4,13 @@ import { ChevronRight, FileText } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
-import { FileCover } from "@/components/FileCover/FileCover";
+import { MaterialTile } from "@/components/MaterialTile/MaterialTile";
 import { MaterialCover } from "@/components/MaterialCover/MaterialCover";
 import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
 import { Tabs, tabPanelProps } from "@/components/Tabs/Tabs";
 import { TrainingTags } from "@/components/TrainingTags/TrainingTags";
 import { UploadButton } from "@/components/UploadSheet/UploadSheet";
-import { formatAdded } from "@/lib/materials";
+import { metaLine } from "@/lib/materials";
 import type { Training } from "@/lib/training";
 import { useTrainings } from "@/lib/trainings";
 import { useUploads } from "@/lib/uploads";
@@ -36,13 +36,11 @@ function MaterialRow({
         {material.hasScenario ? (
           <MaterialCover type={material.type} />
         ) : (
-          <FileCover type={material.type} />
+          <MaterialTile type={material.type} />
         )}
         <span className="flex min-w-0 flex-1 flex-col gap-1">
           <span className="type-body-strong break-words">{material.name}</span>
-          <span className="type-small text-text-secondary">
-            {material.type} · {material.size} · {formatAdded(material.added)}
-          </span>
+          <span className="type-small text-text-secondary">{metaLine(material)}</span>
         </span>
         <ChevronRight
           size={20}

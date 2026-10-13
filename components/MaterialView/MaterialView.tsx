@@ -7,14 +7,14 @@ import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
-import { FileCover } from "@/components/FileCover/FileCover";
+import { MaterialTile } from "@/components/MaterialTile/MaterialTile";
 import { MaterialCover } from "@/components/MaterialCover/MaterialCover";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
 import { TrainingTags } from "@/components/TrainingTags/TrainingTags";
 import { startTraining, useTrainings } from "@/lib/trainings";
 import { UploadButton } from "@/components/UploadSheet/UploadSheet";
-import { formatAdded } from "@/lib/materials";
+import { formatAdded, materialKind } from "@/lib/materials";
 import type { Material, MaterialSection } from "@/lib/materials";
 
 function Detail({ label, children }: { label: string; children: ReactNode }) {
@@ -89,7 +89,7 @@ export function MaterialView({
         {material.hasScenario ? (
           <MaterialCover type={material.type} size="lg" />
         ) : (
-          <FileCover type={material.type} size="lg" />
+          <MaterialTile type={material.type} size="lg" />
         )}
         <h1 className="type-page-title break-words">{material.name}</h1>
         <TrainingTags training={training} />
@@ -97,8 +97,17 @@ export function MaterialView({
 
       <Card>
         <dl className="flex flex-col divide-y divide-border">
-          <Detail label="Type">{material.type}</Detail>
-          <Detail label={material.type === "Link" ? "Address" : "Size"}>{material.size}</Detail>
+          {materialKind(material.type) === "link" ? (
+            <>
+              <Detail label="Type">Web page</Detail>
+              <Detail label="Address">{material.url}</Detail>
+            </>
+          ) : (
+            <>
+              <Detail label="Type">{material.type}</Detail>
+              <Detail label="Size">{material.size}</Detail>
+            </>
+          )}
           <Detail label="Added">{formatAdded(material.added)}</Detail>
           <Detail label="Status">
             <StatusBadge status={material.status} />
