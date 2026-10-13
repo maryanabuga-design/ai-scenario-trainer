@@ -151,6 +151,13 @@ body {
   outline-offset: 2px;
 }
 
+/* No focus ring after a mouse click or tap, also when the app moves focus itself: the ring is
+   for the keyboard only (DESIGN.md: Focus). Covers the rings drawn on a parent of a focused input. */
+:root[data-input="pointer"] :focus-visible,
+:root[data-input="pointer"] :has(:focus-visible) {
+  outline-color: transparent;
+}
+
 /* The answer dock draws one focus ring around the whole field, so the text area has none. */
 .dock-field:focus-visible {
   outline: none;

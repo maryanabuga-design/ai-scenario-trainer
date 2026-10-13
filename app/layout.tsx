@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { DM_Sans } from "next/font/google";
+import { InputModality } from "@/components/InputModality/InputModality";
 import "./globals.css";
 
 /** One sans family for headings and UI (DESIGN.md: Typography). */
@@ -25,7 +26,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={dmSans.variable}>
-      <body>{children}</body>
+      <body>
+        <InputModality />
+        {children}
+      </body>
     </html>
   );
 }

@@ -251,7 +251,7 @@ Every component needs: default, hover, focus-visible, active, disabled. Inputs a
 
 ## Accessibility
 - WCAG AA: 4.5:1 text, 3:1 for large text and UI boundaries.
-- Visible focus ring: 2px `--accent`, 2px offset.
+- Focus: one app focus ring, 2px `--accent` (#3D3A8C), 2px offset, shown only for keyboard focus (`:focus-visible`), never after a mouse click or a tap. The app remembers how the person last interacted: a pointer press (mouse, finger, pen) switches rings off, and a navigation key (Tab, the arrow keys, Home, End, Page Up, Page Down, Escape) switches them back on, so a ring never appears on a chip, button, card or link after a tap, even when focus is moved by the app (for example back to a Guide chip when the source sheet closes). This replaces every browser default outline. Keyboard focus stays clearly visible: the ring is 8.35:1 against the page, 9.01:1 on cards, 9.62:1 on white, 6.09:1 on the Guide chip and 8.63:1 on the Next up card.
 - Everything operable by keyboard. Respect `prefers-reduced-motion`.
 - Minimum touch target 44×44px.
 
