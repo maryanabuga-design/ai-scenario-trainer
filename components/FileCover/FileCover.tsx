@@ -1,15 +1,16 @@
+import { Tag } from "@/components/Tag/Tag";
 import { fileTypeLabel } from "@/lib/materials";
 
-/** The cover of every material: its file type as plain dark green text on the icon tile. */
+/** The cover of every material: its file type on the one icon-tile colour. */
 export function FileCover({ type, size = "md" }: { type: string; size?: "md" | "lg" }) {
   return (
     <span
       aria-hidden="true"
-      className={`flex shrink-0 items-center justify-center rounded-panel bg-icon-tile type-label text-primary ${
+      className={`flex shrink-0 items-center justify-center rounded-panel bg-icon-tile ${
         size === "lg" ? "h-24 w-24" : "h-14 w-14"
       }`}
     >
-      {fileTypeLabel(type)}
+      <Tag>{fileTypeLabel(type)}</Tag>
     </span>
   );
 }
