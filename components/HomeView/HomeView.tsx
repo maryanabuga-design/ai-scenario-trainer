@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ButtonLink } from "@/components/Button/Button";
 import { NextUpCard } from "@/components/NextUpCard/NextUpCard";
 import { ScenarioCard } from "@/components/ScenarioCard/ScenarioCard";
+import { Tag } from "@/components/Tag/Tag";
 import { TopicRow } from "@/components/TopicRow/TopicRow";
 import { nextUp } from "@/lib/home";
 import { onboardingHref } from "@/lib/onboarding";
@@ -39,10 +40,7 @@ export function HomeView({
   return (
     <div className="flex flex-col gap-8 pb-4">
       <header className="flex flex-col items-start gap-3 pt-2">
-        <p className="type-small flex flex-col gap-2 text-text-secondary">
-          {directionTitle}
-          <span aria-hidden="true" className="h-px w-14 bg-border-strong" />
-        </p>
+        <Tag sentenceCase>{directionTitle}</Tag>
         <h1 className="flex flex-col gap-3">
           <span className="type-display text-text">
             <span className="block">Practise a decision.</span>
