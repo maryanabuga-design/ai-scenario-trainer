@@ -1,4 +1,4 @@
-import { simulatedFeedback } from "@/lib/feedback";
+import { explanationOutcome, simulatedFeedback } from "@/lib/feedback";
 import { describeEffects } from "@/lib/outcome";
 import { describeAnswer, describeResponse, scoreQuestion, scoreResponse } from "@/lib/quiz";
 import type { Choice, Question, Response } from "@/lib/quiz";
@@ -34,16 +34,29 @@ export type SheetResult = "correct" | "wrong" | "partial";
  */
 export type Override = "none" | "available" | "marked";
 
+/** The verdict line under typed text: "Matches the guide", "Doesn't match the guide yet". */
+export type OpenVerdict = "matched" | "not_matched" | "marked";
+
+/** The answer to the open question: the typed text and its verdict, or "I don't know". */
+export type OpenAnswer = {
+  label: "Your explanation" | "Your answer";
+  /** Null after "I don't know" (or an empty explanation). */
+  text: string | null;
+  verdict: OpenVerdict | null;
+};
+
 export type StepSheet = {
   kind: "step";
   verdict: "right" | "wrong";
   result: SheetResult;
   errorType: ErrorType;
+  /** "Your choice": the closed question. */
   boxes: AnswerBox[];
+  open: OpenAnswer;
+  /** "Better explanation", unless the option was right and the explanation matched. */
+  better: AnswerBox | null;
   why: string[];
   sources: string[];
-  /** The user's own sentence, shown as a reflection next to the why; null after "I don't know". */
-  explanation: string | null;
   whatHappened: string;
   stateChange: string[];
   override: Override;
@@ -57,9 +70,12 @@ export type QuestionSheet = {
   result: SheetResult;
   /** Null without a confidence rating: then only the Result row is shown. */
   errorType: ErrorType | null;
-  /** Short text only: "Doesn't match our answer. Yours might still be right." and the like. */
-  note: string | null;
+  /** Choice questions: "Your answer" and "Correct answer". Short text uses open and better. */
   boxes: AnswerBox[];
+  /** Short text only: the typed answer and its verdict. */
+  open: OpenAnswer | null;
+  /** Short text only: "Better answer", whenever the answer was not accepted. */
+  better: AnswerBox | null;
   /** How many are right, for multiple choice and ordering ("2 of 3 right"). */
   detail: string | null;
   why: string[];
@@ -69,35 +85,35 @@ export type QuestionSheet = {
 
 export type SheetContent = StepSheet | QuestionSheet;
 
-const notes: Partial<Record<QuestionVerdict, string>> = {
-  noMatch: "Doesn't match our answer. Yours might still be right.",
-  dontKnow: "You said you don't know",
-};
-
 /** The sheet after a scenario step. */
 export function stepSheet(step: Step, answer: Answer): StepSheet {
   const feedback = simulatedFeedback.evaluate(step, answer);
-  const explanation = answer.skipped ? "" : answer.explanation.trim();
+  const outcome = explanationOutcome(step, answer);
   const marked = !feedback.correct && answer.markedCorrect === true;
   return {
     kind: "step",
     verdict: feedback.correct || marked ? "right" : "wrong",
     result: feedback.correct || marked ? "correct" : "wrong",
     errorType: marked ? errorType(true, answer.confidence) : feedback.errorType,
-    boxes: feedback.correct
-      ? [{ tone: "right", label: "Your choice", lines: [feedback.chosen.text], yours: true }]
-      : [
-          {
-            tone: marked ? "neutral" : "wrong",
-            label: "Your choice",
-            lines: [feedback.chosen.text],
-            yours: true,
-          },
-          { tone: "better", label: "Better choice", lines: [feedback.best.text] },
-        ],
+    boxes: [
+      {
+        tone: feedback.correct ? "right" : marked ? "neutral" : "wrong",
+        label: "Your choice",
+        lines: [feedback.chosen.text],
+        yours: true,
+      },
+    ],
+    open: {
+      label: "Your explanation",
+      text: outcome === "skipped" ? null : answer.explanation.trim(),
+      verdict: outcome === "skipped" ? null : outcome,
+    },
+    better:
+      feedback.correct && outcome === "matched"
+        ? null
+        : { tone: "better", label: "Better explanation", lines: [step.referenceExplanation] },
     why: feedback.correct ? [feedback.chosen.why] : [feedback.best.why],
     sources: feedback.sources,
-    explanation: explanation || null,
     whatHappened: feedback.chosen.consequence,
     stateChange: describeEffects(step.id, feedback.chosen.effects ?? {}),
     // Only typed text can be defended: never after "I don't know" or an empty explanation.
@@ -162,40 +178,47 @@ export function questionSheet(question: Question, answer: QuizAnswer): QuestionS
             ? "partial"
             : "wrong";
   const ordered = question.type === "ordering";
-  const correctLabel = text ? "Reference answer" : "Correct answer";
   const yours = {
     label: "Your answer",
     lines: yourLines(question, response),
     ordered,
     yours: true,
   };
-  const correct = { label: correctLabel, lines: correctLines(question), ordered };
-  const boxes: AnswerBox[] =
-    verdict === "right"
-      ? text
-        ? [
-            { ...yours, tone: "right" },
-            { ...correct, tone: "neutral" },
-          ]
-        : [{ ...yours, tone: "right" }]
-      : verdict === "dontKnow"
-        ? [{ ...correct, tone: "better" }]
-        : verdict === "marked"
-          ? [
-              { ...yours, tone: "neutral" },
-              { ...correct, tone: "better" },
-            ]
-          : [
-              { ...yours, tone: verdict === "partial" ? "partial" : "wrong" },
-              { ...correct, tone: "better" },
-            ];
+  const correct = { label: "Correct answer", lines: correctLines(question), ordered };
+  const boxes: AnswerBox[] = text
+    ? []
+    : verdict === "right"
+      ? [{ ...yours, tone: "right" }]
+      : [
+          { ...yours, tone: verdict === "partial" ? "partial" : "wrong" },
+          { ...correct, tone: "better" },
+        ];
+  const open: OpenAnswer | null = text
+    ? {
+        label: "Your answer",
+        text: dontKnow ? null : yourLines(question, response)[0],
+        verdict:
+          verdict === "right"
+            ? "matched"
+            : verdict === "marked"
+              ? "marked"
+              : dontKnow
+                ? null
+                : "not_matched",
+      }
+    : null;
+  const better: AnswerBox | null =
+    text && verdict !== "right"
+      ? { tone: "better", label: "Better answer", lines: correctLines(question) }
+      : null;
   return {
     kind: "question",
     verdict,
     result: scored.correct ? "correct" : verdict === "partial" ? "partial" : "wrong",
     errorType: scored.hasConfidence ? scored.errorType : null,
-    note: notes[verdict] ?? null,
     boxes,
+    open,
+    better,
     detail: countDetail(question, response),
     why: [question.why],
     sources: [question.section],

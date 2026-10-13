@@ -48,29 +48,36 @@ describe("answer sheet for a scenario step", () => {
     expect(sheet.stateChange).toEqual([]);
   });
 
-  it("not the best action: your choice and the better choice, and the state change", () => {
+  it("not the best action: your choice, the better explanation, and the state change", () => {
     const sheet = stepSheet(getStep("s1"), step("s1", { optionId: "d" }));
     expect(sheet.verdict).toBe("wrong");
     expect(sheet.result).toBe("wrong");
     expect(sheet.errorType).toBe("misconception");
-    expect(sheet.boxes.map((box) => [box.tone, box.label])).toEqual([
-      ["wrong", "Your choice"],
-      ["better", "Better choice"],
-    ]);
+    expect(sheet.boxes.map((box) => [box.tone, box.label])).toEqual([["wrong", "Your choice"]]);
+    expect(sheet.better).toEqual({
+      tone: "better",
+      label: "Better explanation",
+      lines: [getStep("s1").referenceExplanation],
+    });
+    expect(text(sheet)).not.toContain("Better choice");
     expect(sheet.stateChange).toEqual(["Time lost +1 min 30 s", "Smoke on the route +1"]);
   });
 
-  it("shows the user's own sentence as a reflection, unchanged and never checked", () => {
+  it("shows the user's own sentence with its verdict, and never points", () => {
     const sentence = "  We should use the stairs right away.  ";
     const sheet = stepSheet(getStep("s1"), step("s1", { explanation: sentence }));
-    expect(sheet.explanation).toBe("We should use the stairs right away.");
+    expect(sheet.open).toEqual({
+      label: "Your explanation",
+      text: "We should use the stairs right away.",
+      verdict: "matched",
+    });
     expect(keys(sheet)).not.toContain("points");
-    expect(keys(sheet)).not.toContain("covered");
   });
 
-  it("skip path: after I don't know there is no explanation block", () => {
-    expect(stepSheet(getStep("s1"), step("s1", { skipped: true })).explanation).toBeNull();
-    expect(stepSheet(getStep("s1"), step("s1")).explanation).toBeNull();
+  it("skip path: after I don't know the text is replaced and there is no verdict", () => {
+    const skipped = stepSheet(getStep("s1"), step("s1", { skipped: true }));
+    expect(skipped.open).toEqual({ label: "Your explanation", text: null, verdict: null });
+    expect(stepSheet(getStep("s1"), step("s1")).open.text).toBeNull();
   });
 
   it("has a result and an error type for every option, and never a percentage or a score", () => {
@@ -97,7 +104,7 @@ describe("answer sheet for a quiz question", () => {
     expect(right.verdict).toBe("right");
     expect(right.result).toBe("correct");
     expect(right.errorType).toBe("secure");
-    expect(right.note).toBeNull();
+    expect(right.open).toBeNull();
     expect(right.boxes).toHaveLength(1);
     const other = question.options.find((option) => option.id !== question.answer)!;
     const wrong = questionSheet(
@@ -141,20 +148,27 @@ describe("answer sheet for a quiz question", () => {
     expect(sheet.boxes[1].lines).toEqual([question.answer ? "True" : "False"]);
   });
 
-  it("short text: looks correct, or does not match with the override offered", () => {
+  it("short text: Your answer with its verdict, and a Better answer when not accepted", () => {
     const right = questionSheet(
       getQuestion("q-s2-1"),
       quiz("q-s2-1", { response: { type: "text", text: "The back of my hand" } }),
     );
     expect(right.result).toBe("correct");
-    expect(right.boxes.map((box) => box.label)).toEqual(["Your answer", "Reference answer"]);
+    expect(right.boxes).toEqual([]);
+    expect(right.open).toEqual({
+      label: "Your answer",
+      text: "The back of my hand",
+      verdict: "matched",
+    });
+    expect(right.better).toBeNull();
     const rejected = questionSheet(
       getQuestion("q-s2-1"),
       quiz("q-s2-1", { response: { type: "text", text: "With my knuckles" } }),
     );
     expect(rejected.verdict).toBe("noMatch");
     expect(rejected.result).toBe("wrong");
-    expect(rejected.note).toBe("Doesn't match our answer. Yours might still be right.");
+    expect(rejected.open?.verdict).toBe("not_matched");
+    expect(rejected.better?.label).toBe("Better answer");
     expect(rejected.override).toBe("available");
   });
 
@@ -165,7 +179,8 @@ describe("answer sheet for a quiz question", () => {
     );
     expect(sheet.verdict).toBe("marked");
     expect(sheet.result).toBe("correct");
-    expect(sheet.note).toBeNull();
+    expect(sheet.open?.verdict).toBe("marked");
+    expect(sheet.better?.label).toBe("Better answer");
     expect(sheet.override).toBe("marked");
   });
 
@@ -177,8 +192,8 @@ describe("answer sheet for a quiz question", () => {
     expect(sheet.verdict).toBe("dontKnow");
     expect(sheet.result).toBe("wrong");
     expect(sheet.errorType).toBeNull();
-    expect(sheet.note).toBe("You said you don't know");
-    expect(sheet.boxes.map((box) => box.label)).toEqual(["Reference answer"]);
+    expect(sheet.open).toEqual({ label: "Your answer", text: null, verdict: null });
+    expect(sheet.better?.label).toBe("Better answer");
     expect(sheet.override).toBe("none");
   });
 

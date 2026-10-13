@@ -42,7 +42,7 @@ describe("My answer is still correct", () => {
     expect(html).not.toContain("My answer is still correct");
     expect(html).toContain("Marked as correct by you");
     expect(html).toContain(">Undo</span></button>");
-    expect(html).toContain("Better choice");
+    expect(html).toContain("Better explanation");
   });
 });
 

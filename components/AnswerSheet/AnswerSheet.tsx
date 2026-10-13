@@ -1,16 +1,17 @@
 "use client";
 
-import { Check, Contrast, X } from "lucide-react";
+import { Check, Contrast, Minus, UserCheck, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/Button/Button";
 import { MarkCorrect } from "@/components/MarkCorrect/MarkCorrect";
 import { GuideChip } from "@/components/GuideChip/GuideChip";
-import type { AnswerBox, BoxTone, SheetContent } from "@/lib/answer-sheet";
+import type { AnswerBox, BoxTone, OpenAnswer, OpenVerdict, SheetContent } from "@/lib/answer-sheet";
 
 /** Your own answer is always the Your choice block; the tone only picks its icon. */
-const yoursBlock = "border border-l-[3px] border-secondary-sand-pressed border-l-primary bg-secondary-sand";
+const yoursBlock =
+  "border border-l-[3px] border-secondary-sand-pressed border-l-primary bg-secondary-sand";
 
 const boxStyles: Record<BoxTone, { className: string; icon?: [LucideIcon, string] }> = {
   right: { className: yoursBlock, icon: [Check, "text-correct"] },
@@ -29,6 +30,37 @@ const verdicts: Record<SheetContent["result"], string> = {
 /** A section label; dark on the Your choice block, grey everywhere else. */
 function Label({ children, dark = false }: { children: ReactNode; dark?: boolean }) {
   return <h3 className={`type-label ${dark ? "text-text" : "text-text-secondary"}`}>{children}</h3>;
+}
+
+/** The verdict line under typed text: icon and words, never colour alone. */
+const openVerdicts: Record<OpenVerdict, { icon: LucideIcon; color: string; text: string }> = {
+  matched: { icon: Check, color: "text-correct", text: "Matches the guide" },
+  not_matched: { icon: Minus, color: "text-caution", text: "Doesn't match the guide yet" },
+  marked: { icon: UserCheck, color: "text-text", text: "Marked correct by you" },
+};
+
+/** "Your explanation" or "Your answer": the typed text with its verdict, or "I don't know". */
+function Open({ open }: { open: OpenAnswer }) {
+  const verdict = open.verdict ? openVerdicts[open.verdict] : null;
+  const Icon = verdict?.icon;
+  return (
+    <section className="flex flex-col gap-1">
+      <Label>{open.label}</Label>
+      {open.text === null ? (
+        <p className="text-text-secondary">You pressed I don&apos;t know.</p>
+      ) : (
+        <>
+          <p>{open.text}</p>
+          {verdict && Icon && (
+            <p className="type-small flex items-center gap-1.5 text-text">
+              <Icon size={16} strokeWidth={2} aria-hidden="true" className={verdict.color} />
+              {verdict.text}
+            </p>
+          )}
+        </>
+      )}
+    </section>
+  );
 }
 
 function Box({ box }: { box: AnswerBox }) {
@@ -90,9 +122,8 @@ export function AnswerSheet({
   const titleRef = useRef<HTMLHeadingElement>(null);
   const [announced, setAnnounced] = useState("");
   const verdict = verdicts[content.result];
-  const announcement = [verdict, content.kind === "question" && content.note]
-    .filter(Boolean)
-    .join(" ");
+  const openVerdict = content.open?.verdict ? openVerdicts[content.open.verdict].text : null;
+  const announcement = [verdict, openVerdict && `${openVerdict}.`].filter(Boolean).join(" ");
 
   // Open as a modal (focus stays inside, the page behind is inert), focus the title and
   // announce the verdict. Escape and the scrim do not close it: only Continue does.
@@ -120,28 +151,23 @@ export function AnswerSheet({
         <h2 ref={titleRef} id="answer-sheet-title" tabIndex={-1} className="sr-only">
           {verdict}
         </h2>
-        {content.kind === "question" && (content.detail || content.note) && (
-          <div className="-mb-2 flex flex-col gap-1">
-            {content.detail && <p className="type-small text-text-secondary">{content.detail}</p>}
-            {content.note && <p className="type-small text-text-secondary">{content.note}</p>}
-          </div>
+        {content.kind === "question" && content.detail && (
+          <p className="type-small -mb-2 text-text-secondary">{content.detail}</p>
         )}
         <p role="status" className="sr-only">
           {announced}
         </p>
 
-        <div className="flex flex-col gap-3">
-          {content.boxes.map((box) => (
-            <Box key={box.label} box={box} />
-          ))}
-        </div>
-
-        {content.kind === "step" && content.explanation && (
-          <section className="flex flex-col gap-1">
-            <Label>Your explanation</Label>
-            <p>{content.explanation}</p>
-          </section>
+        {content.boxes.length > 0 && (
+          <div className="flex flex-col gap-3">
+            {content.boxes.map((box) => (
+              <Box key={box.label} box={box} />
+            ))}
+          </div>
         )}
+
+        {content.open && <Open open={content.open} />}
+        {content.better && <Box box={content.better} />}
 
         <section className="flex flex-col gap-2">
           <Label>Why</Label>

@@ -128,7 +128,8 @@ describe("pressing My answer is still correct", () => {
     const sheet = stepSheet(getStep("s1"), { ...wrongStep, markedCorrect: true });
     expect(sheet.override).toBe("marked");
     expect(sheet.result).toBe("correct");
-    expect(sheet.boxes.map((box) => box.label)).toEqual(["Your choice", "Better choice"]);
+    expect(sheet.boxes.map((box) => box.label)).toEqual(["Your choice"]);
+    expect(sheet.better?.label).toBe("Better explanation");
     expect(sheet.boxes[0].tone).toBe("neutral");
   });
 
@@ -140,7 +141,7 @@ describe("pressing My answer is still correct", () => {
     expect(weakItems(items).map((item) => item.id)).toEqual(["q-s1-1"]);
     const sheet = questionSheet(getQuestion("q-s2-1"), after.answers[1] as QuizAnswer);
     expect(sheet.override).toBe("marked");
-    expect(sheet.boxes.map((box) => box.label)).toEqual(["Your answer", "Reference answer"]);
+    expect(sheet.better?.label).toBe("Better answer");
   });
 
   it("is undone completely by Undo", () => {
