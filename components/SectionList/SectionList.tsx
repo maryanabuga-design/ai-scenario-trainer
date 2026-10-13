@@ -57,7 +57,7 @@ export function SectionList({
           const checked = selected.includes(section.id);
           return (
             <li key={section.id}>
-              <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-[20px] bg-card px-4 py-3 shadow-(--card-shadow) active:bg-neutral-surface has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent">
+              <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-[20px] bg-card px-4 py-3 shadow-(--card-shadow) active:bg-surface-muted has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent">
                 <input
                   type="checkbox"
                   name={titleId}

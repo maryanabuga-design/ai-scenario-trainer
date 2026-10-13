@@ -19,7 +19,7 @@ describe("Your choice on the Explain screen", () => {
       </ActionBarProvider>,
     );
     const quote = /<blockquote class="([^"]*)"/.exec(html)?.[1] ?? "";
-    expect(quote).toContain("bg-neutral-surface");
+    expect(quote).toContain("bg-secondary-olive");
     expect(quote).toContain("border-l-[3px] border-primary");
     expect(quote).not.toContain("text-text-secondary");
   });

@@ -99,7 +99,7 @@ export function OnboardingView({
             {onboardingSteps.map((item, index) => (
               <span
                 key={item.title}
-                className={`h-2 w-2 rounded-full ${index === step ? "bg-primary" : "bg-neutral-surface"}`}
+                className={`h-2 w-2 rounded-full ${index === step ? "bg-primary" : "bg-secondary-olive"}`}
               />
             ))}
           </div>

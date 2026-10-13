@@ -23,7 +23,7 @@ export function TopicCard({ topic, onRepeat }: { topic: WeakTopic; onRepeat: () 
     <button
       type="button"
       onClick={onRepeat}
-      className="relative flex h-full w-full flex-col items-start gap-3 rounded-card bg-card p-5 text-left shadow-(--card-shadow) active:bg-neutral-surface"
+      className="relative flex h-full w-full flex-col items-start gap-3 rounded-card bg-card p-5 text-left shadow-(--card-shadow) active:bg-surface-muted"
     >
       <span className="flex w-full items-start gap-3">
         <TopicTile sectionId={topic.sectionId} icon={topic.icon} />

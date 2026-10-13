@@ -30,7 +30,7 @@ function MaterialRow({
     <div className="flex flex-col gap-3 rounded-card bg-card shadow-(--card-shadow) p-4">
       <Link
         href={`/materials/${material.id}`}
-        className="-m-2 flex items-center gap-4 rounded-panel p-2 active:bg-neutral-surface"
+        className="-m-2 flex items-center gap-4 rounded-panel p-2 active:bg-surface-muted"
       >
         <MaterialTile type={material.type} />
         <span className="flex min-w-0 flex-1 flex-col gap-1">
@@ -50,7 +50,7 @@ function MaterialRow({
       </div>
       {material.status === "processing" && (
         <div
-          className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-surface"
+          className="h-1.5 w-full overflow-hidden rounded-full bg-secondary-olive"
           role="progressbar"
           aria-label={`${material.name} processing`}
           aria-valuemin={0}

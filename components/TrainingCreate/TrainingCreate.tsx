@@ -45,10 +45,10 @@ function CreateOption({
     <label
       className={`flex min-h-18 items-center gap-3 rounded-card border p-4 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${
         disabled
-          ? "cursor-not-allowed border-transparent bg-neutral-surface text-text-secondary"
+          ? "cursor-not-allowed border-transparent bg-secondary-olive text-text-secondary"
           : checked
             ? "cursor-pointer border-[1.5px] border-stroke-sage bg-next-card active:bg-secondary-pressed"
-            : "cursor-pointer border-stroke-neutral bg-card shadow-(--card-shadow) active:bg-neutral-surface"
+            : "cursor-pointer border-stroke-neutral bg-card shadow-(--card-shadow) active:bg-surface-muted"
       }`}
     >
       <input
@@ -115,13 +115,13 @@ export function TrainingCreate({
     <div className="flex flex-col gap-6">
       <CircleBackButton href={`/materials/${material.id}`} label="Back to material" />
       <div className="flex flex-col items-start gap-2">
-        <Tag>Training</Tag>
+        <Tag tone="sage">Training</Tag>
         <h1 className="type-page-title">Create training</h1>
         <p className="break-words text-text-secondary">{material.name}</p>
       </div>
 
       {!plan.canScenario && (
-        <p role="status" className="rounded-panel bg-neutral-surface px-4 py-3">
+        <p role="status" className="rounded-panel bg-surface-muted px-4 py-3">
           Not enough material for a scenario. A quiz is available.
         </p>
       )}

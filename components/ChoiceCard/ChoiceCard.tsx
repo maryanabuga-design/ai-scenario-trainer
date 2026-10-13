@@ -38,8 +38,8 @@ export function ChoiceCard({
         checked ? "border-2 border-primary" : "border-border"
       } ${
         disabled
-          ? "cursor-not-allowed border-transparent bg-neutral-surface text-text-secondary"
-          : "cursor-pointer bg-surface active:bg-neutral-surface"
+          ? "cursor-not-allowed border-transparent bg-secondary-olive text-text-secondary"
+          : "cursor-pointer bg-surface active:bg-surface-muted"
       }`}
     >
       <input

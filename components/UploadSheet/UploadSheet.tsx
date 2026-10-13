@@ -66,7 +66,7 @@ export function UploadPanel({
               <button
                 type="button"
                 onClick={() => onChooseFile(file)}
-                className="flex w-full items-start gap-3 rounded-panel border border-border bg-surface p-3 text-left active:bg-neutral-surface"
+                className="flex w-full items-start gap-3 rounded-panel border border-border bg-surface p-3 text-left active:bg-surface-muted"
               >
                 <MaterialTile type={file.name.endsWith(".jpg") ? "Image" : "PDF"} />
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -93,7 +93,7 @@ export function UploadPanel({
             {formatSize(stage.file.size)} · Checking the file
           </p>
           <div
-            className="h-2 w-full overflow-hidden rounded-full bg-neutral-surface"
+            className="h-2 w-full overflow-hidden rounded-full bg-secondary-olive"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={100}

@@ -39,7 +39,7 @@ describe("Home eyebrow", () => {
     const html = renderHome();
     const chip = tagAround(html, DIRECTION);
     expect(chip).toMatch(/^<span /);
-    expect(chip).toContain("bg-neutral-surface");
+    expect(chip).toContain("bg-tag-yellow");
     expect(chip).toContain("type-label");
     expect(chip).toContain("normal-case");
     expect(html).not.toContain("h-px");
@@ -97,9 +97,9 @@ describe("Topics on Home", () => {
 
   it("shows one dot per topic with a text alternative, and none for a single topic", () => {
     const row = topicRow(renderHome(twoTopics));
-    expect(row.match(/h-2 w-2 rounded-full bg-(primary|neutral-surface)/g)).toHaveLength(2);
+    expect(row.match(/h-2 w-2 rounded-full bg-(primary|secondary-olive)/g)).toHaveLength(2);
     expect(row).toContain("Card 1 of 2");
-    expect(topicRow(renderHome(oneTopic)).match(/h-2 w-2 rounded-full bg-(primary|neutral-surface)/g)).toBeNull();
+    expect(topicRow(renderHome(oneTopic)).match(/h-2 w-2 rounded-full bg-(primary|secondary-olive)/g)).toBeNull();
   });
 });
 

@@ -6,8 +6,7 @@
   --surface: #ffffff;
   --secondary-olive: #dfe5d8;
   --secondary-olive-pressed: #d4dbcd;
-  --neutral-surface: #e2ded5;
-  --neutral-surface-pressed: #d3cdc2;
+  --surface-muted: #e2ded5;
   --border: #e2ded5;
   --border-strong: #8a867e;
   --text: #1a1a1a;
@@ -69,8 +68,7 @@
   --color-secondary-olive: var(--secondary-olive);
   --color-secondary-olive-pressed: var(--secondary-olive-pressed);
   --color-primary-pressed: var(--primary-pressed);
-  --color-neutral-surface: var(--neutral-surface);
-  --color-neutral-surface-pressed: var(--neutral-surface-pressed);
+  --color-surface-muted: var(--surface-muted);
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-border: var(--border);
@@ -141,7 +139,7 @@
 }
 
 body {
-  background: var(--neutral-surface);
+  background: var(--surface-muted);
   color: var(--text);
   font-family: var(--font-sans);
   font-size: 16px;

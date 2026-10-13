@@ -48,7 +48,7 @@ function SectionRow({ section, openable }: { section: MaterialSection; openable:
     <button
       type="button"
       onClick={() => open(section.id)}
-      className="type-small flex min-h-12 w-full items-start gap-3 py-3 text-left active:bg-neutral-surface"
+      className="type-small flex min-h-12 w-full items-start gap-3 py-3 text-left active:bg-surface-muted"
     >
       {content}
     </button>

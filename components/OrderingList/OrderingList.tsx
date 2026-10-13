@@ -121,7 +121,7 @@ export function OrderingList({
                 onPointerMove={(event) => onPointerMove(event, id)}
                 onPointerUp={() => setDragging(null)}
                 onPointerCancel={() => setDragging(null)}
-                className="flex h-11 w-11 shrink-0 cursor-grab touch-none items-center justify-center rounded-full text-text-secondary hover:bg-neutral-surface active:cursor-grabbing"
+                className="flex h-11 w-11 shrink-0 cursor-grab touch-none items-center justify-center rounded-full text-text-secondary active:bg-secondary-olive active:cursor-grabbing"
               >
                 <GripVertical size={20} strokeWidth={2} aria-hidden="true" />
               </button>

@@ -13,7 +13,7 @@ export function Stepper({
   onChange: (value: number) => void;
 }) {
   const button =
-    "type-card-title flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface text-text hover:border-text-secondary disabled:cursor-not-allowed disabled:border-transparent disabled:bg-neutral-surface disabled:text-text-secondary";
+    "type-card-title flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface text-text hover:border-text-secondary disabled:cursor-not-allowed disabled:border-transparent disabled:bg-secondary-olive disabled:text-text-secondary";
   return (
     <div role="group" aria-label={label} className="flex items-center gap-4">
       <button
