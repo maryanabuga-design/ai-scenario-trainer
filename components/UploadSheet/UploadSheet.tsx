@@ -3,6 +3,7 @@
 import { ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { HeaderRow } from "@/components/HeaderRow/HeaderRow";
 import { Button } from "@/components/Button/Button";
 import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
 import { MaterialTile } from "@/components/MaterialTile/MaterialTile";
@@ -41,21 +42,25 @@ export function UploadPanel({
 }) {
   return (
     <div className="flex flex-col gap-5 px-4 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex flex-col">
+      <HeaderRow
+        title={
           <h2 id="upload-title" className="type-card-title">
             Upload a file
           </h2>
+        }
+        action={
+          <div className="-mr-3">
+            <Button variant="text" onClick={onClose}>
+              Close
+            </Button>
+          </div>
+        }
+        subtitle={
           <p className="type-small text-text-secondary">
             Upload is simulated for this prototype. Choose a sample file.
           </p>
-        </div>
-        <div className="-mt-2 -mr-3">
-          <Button variant="text" onClick={onClose}>
-            Close
-          </Button>
-        </div>
-      </div>
+        }
+      />
 
       {stage.kind === "choose" && (
         <ul className="flex flex-col gap-2" aria-label="Sample files">

@@ -3,6 +3,7 @@
 import { ChevronRight, FileText } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { HeaderRow } from "@/components/HeaderRow/HeaderRow";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { MaterialTile } from "@/components/MaterialTile/MaterialTile";
 import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
@@ -97,15 +98,15 @@ export function MaterialsList({ samples }: { samples: Material[] }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center justify-between gap-4">
-          <h1 className="type-page-title">Materials</h1>
-          <UploadButton onUploadStart={() => setTab("processing")} onUploadEnd={setTab} />
-        </div>
-        <p className="type-small text-text-secondary">
-          Guides you can turn into scenarios and quizzes.
-        </p>
-      </div>
+      <HeaderRow
+        title={<h1 className="type-page-title">Materials</h1>}
+        action={<UploadButton onUploadStart={() => setTab("processing")} onUploadEnd={setTab} />}
+        subtitle={
+          <p className="type-small text-text-secondary">
+            Guides you can turn into scenarios and quizzes.
+          </p>
+        }
+      />
       <div className="flex flex-col gap-4">
         <Tabs
           idPrefix="materials"

@@ -3,6 +3,7 @@
 import { Sparkles } from "lucide-react";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
+import { HeaderRow } from "@/components/HeaderRow/HeaderRow";
 import { Button } from "@/components/Button/Button";
 import { GuideChip } from "@/components/GuideChip/GuideChip";
 import {
@@ -135,18 +136,22 @@ function ChatPanel({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-start justify-between gap-4 px-4 pt-4">
-        <div className="flex flex-col">
-          <h2 id="ask-ai-title" className="type-card-title">
-            Ask AI
-          </h2>
-          <p className="type-small text-text-secondary">{chat.step.title}</p>
-        </div>
-        <div className="-mt-2 -mr-3">
-          <Button variant="text" onClick={onClose}>
-            Close
-          </Button>
-        </div>
+      <div className="px-4 pt-4">
+        <HeaderRow
+          title={
+            <h2 id="ask-ai-title" className="type-card-title">
+              Ask AI
+            </h2>
+          }
+          action={
+            <div className="-mr-3">
+              <Button variant="text" onClick={onClose}>
+                Close
+              </Button>
+            </div>
+          }
+          subtitle={<p className="type-small text-text-secondary">{chat.step.title}</p>}
+        />
       </div>
       <p className="type-small border-b border-border px-4 pt-1 pb-3 text-text-secondary">
         Answers are simulated for this prototype.
