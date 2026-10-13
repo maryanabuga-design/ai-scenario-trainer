@@ -1,11 +1,13 @@
 "use client";
 
 import { History } from "lucide-react";
-import { ButtonLink } from "@/components/Button/Button";
+import { useState } from "react";
+import { Button, ButtonLink } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { Tag } from "@/components/Tag/Tag";
 import { RepeatSummary } from "@/components/RepeatSummary/RepeatSummary";
+import { HISTORY_PAGE, showMore, visibleHistory } from "@/lib/history";
 import { formatPoints, scoreSession, sessionLabel, weakItemsFromHistory } from "@/lib/progress";
 import { totalScore, weakItems } from "@/lib/scoring";
 import type { FinishedSession } from "@/lib/session";
@@ -69,6 +71,8 @@ export function ProgressView({
   history: FinishedSession[];
   onRepeat: (topics: WeakTopic[]) => void;
 }) {
+  const [shown, setShown] = useState(HISTORY_PAGE);
+  const { visible, hasMore } = visibleHistory([...history].reverse(), shown);
   return (
     <div className="flex flex-col gap-8">
       <h1 className="type-page-title">Progress</h1>
@@ -91,12 +95,19 @@ export function ProgressView({
               Session history
             </h2>
             <ol className="flex flex-col gap-3">
-              {[...history].reverse().map((session) => (
+              {visible.map((session) => (
                 <li key={session.finishedAt}>
                   <HistoryRow session={session} />
                 </li>
               ))}
             </ol>
+            {hasMore && (
+              <div className="-ml-3">
+                <Button variant="text" onClick={() => setShown(showMore(shown))}>
+                  Show more
+                </Button>
+              </div>
+            )}
           </section>
         </>
       )}
