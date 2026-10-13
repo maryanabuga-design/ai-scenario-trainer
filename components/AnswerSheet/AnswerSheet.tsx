@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Contrast, Minus, UserCheck, X } from "lucide-react";
+import { Check, Contrast, Minus, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
@@ -36,7 +36,7 @@ function Label({ children, dark = false }: { children: ReactNode; dark?: boolean
 const openVerdicts: Record<OpenVerdict, { icon: LucideIcon; color: string; text: string }> = {
   matched: { icon: Check, color: "text-correct", text: "Matches the guide" },
   not_matched: { icon: Minus, color: "text-caution", text: "Doesn't match the guide yet" },
-  marked: { icon: UserCheck, color: "text-text", text: "Marked correct by you" },
+  marked: { icon: Check, color: "text-text", text: "Marked correct by you" },
 };
 
 /** "Your explanation" or "Your answer": the typed text with its verdict, or "I don't know". */
