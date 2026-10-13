@@ -104,9 +104,14 @@ export function MaterialsList({ samples }: { samples: Material[] }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="type-page-title">Materials</h1>
-        <UploadButton onUploadStart={() => setTab("processing")} onUploadEnd={setTab} />
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="type-page-title">Materials</h1>
+          <UploadButton onUploadStart={() => setTab("processing")} onUploadEnd={setTab} />
+        </div>
+        <p className="type-small text-text-secondary">
+          Guides you can turn into scenarios and quizzes.
+        </p>
       </div>
       <div className="flex flex-col gap-4">
         <Tabs
