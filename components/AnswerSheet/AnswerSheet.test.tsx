@@ -44,3 +44,16 @@ describe("My answer is still correct", () => {
     expect(html).toContain("Better choice");
   });
 });
+
+describe("Your choice block", () => {
+  it("uses the Guide chip fill and a 3px dark green line on the left", () => {
+    const html = render(wrong);
+    const label = html.indexOf(">Your choice</h3>");
+    const block = html.slice(
+      html.lastIndexOf('<div class="', html.lastIndexOf("<svg", label)),
+      label,
+    );
+    expect(block).toContain("bg-chip");
+    expect(block).toContain("border-l-[3px] border-primary");
+  });
+});

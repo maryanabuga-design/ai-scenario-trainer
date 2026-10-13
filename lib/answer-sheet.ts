@@ -21,6 +21,8 @@ export type AnswerBox = {
   lines: string[];
   /** Ordering answers are numbered lists. */
   ordered?: boolean;
+  /** "Your choice" or "Your answer": drawn as the Your choice block. */
+  yours?: boolean;
 };
 
 export type SheetResult = "correct" | "wrong" | "partial";
@@ -82,12 +84,13 @@ export function stepSheet(step: Step, answer: Answer): StepSheet {
     result: feedback.correct || marked ? "correct" : "wrong",
     errorType: marked ? errorType(true, answer.confidence) : feedback.errorType,
     boxes: feedback.correct
-      ? [{ tone: "right", label: "Your choice", lines: [feedback.chosen.text] }]
+      ? [{ tone: "right", label: "Your choice", lines: [feedback.chosen.text], yours: true }]
       : [
           {
             tone: marked ? "neutral" : "wrong",
             label: "Your choice",
             lines: [feedback.chosen.text],
+            yours: true,
           },
           { tone: "better", label: "Better choice", lines: [feedback.best.text] },
         ],
@@ -153,7 +156,12 @@ export function questionSheet(question: Question, answer: QuizAnswer): QuestionS
             : "wrong";
   const ordered = question.type === "ordering";
   const correctLabel = text ? "Reference answer" : "Correct answer";
-  const yours = { label: "Your answer", lines: yourLines(question, response), ordered };
+  const yours = {
+    label: "Your answer",
+    lines: yourLines(question, response),
+    ordered,
+    yours: true,
+  };
   const correct = { label: correctLabel, lines: correctLines(question), ordered };
   const boxes: AnswerBox[] =
     verdict === "right"

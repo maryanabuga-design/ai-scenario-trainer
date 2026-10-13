@@ -9,11 +9,14 @@ import { MarkCorrect } from "@/components/MarkCorrect/MarkCorrect";
 import { SourceChip } from "@/components/SourceChip/SourceChip";
 import type { AnswerBox, BoxTone, SheetContent } from "@/lib/answer-sheet";
 
+/** Your own answer is always the Your choice block; the tone only picks its icon. */
+const yoursBlock = "border-l-[3px] border-primary bg-chip";
+
 const boxStyles: Record<BoxTone, { className: string; icon?: [LucideIcon, string] }> = {
-  right: { className: "border border-correct", icon: [Check, "text-correct"] },
-  wrong: { className: "border border-wrong", icon: [X, "text-wrong"] },
+  right: { className: yoursBlock, icon: [Check, "text-correct"] },
+  wrong: { className: yoursBlock, icon: [X, "text-wrong"] },
   better: { className: "border border-dashed border-correct", icon: [Check, "text-correct"] },
-  partial: { className: "border border-border-strong", icon: [Contrast, "text-text-secondary"] },
+  partial: { className: yoursBlock, icon: [Contrast, "text-text-secondary"] },
   neutral: { className: "border border-border" },
 };
 
@@ -32,7 +35,9 @@ function Box({ box }: { box: AnswerBox }) {
   const [Icon, color] = style.icon ?? [null, ""];
   const List = box.ordered ? "ol" : "ul";
   return (
-    <div className={`flex items-start gap-3 rounded-panel p-4 ${style.className}`}>
+    <div
+      className={`flex items-start gap-3 rounded-panel p-4 ${box.yours ? yoursBlock : style.className}`}
+    >
       {Icon && (
         <Icon size={20} strokeWidth={2} aria-hidden="true" className={`mt-0.5 shrink-0 ${color}`} />
       )}

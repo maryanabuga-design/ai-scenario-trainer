@@ -40,7 +40,7 @@ describe("answer sheet for a scenario step", () => {
     expect(sheet.result).toBe("correct");
     expect(sheet.errorType).toBe("secure");
     expect(sheet.boxes).toEqual([
-      { tone: "right", label: "Your choice", lines: [getStep("s1").options[1].text] },
+      { tone: "right", label: "Your choice", lines: [getStep("s1").options[1].text], yours: true },
     ]);
     expect(sheet.why).toHaveLength(1);
     expect(sheet.sources).toEqual(["S1"]);
