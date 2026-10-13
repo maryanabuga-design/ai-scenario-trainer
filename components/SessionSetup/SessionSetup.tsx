@@ -41,10 +41,10 @@ export const defaultSetup: SetupValue = {
   customCount: 8,
 };
 
-const lengthCards: { id: Length; tag: string; tone: "peach" | "lilac" | "blue" }[] = [
-  { id: "short", tag: "Short", tone: "peach" },
-  { id: "full", tag: "Full", tone: "lilac" },
-  { id: "extended", tag: "Extended", tone: "blue" },
+const lengthCards: { id: Length; tag: string }[] = [
+  { id: "short", tag: "Short" },
+  { id: "full", tag: "Full" },
+  { id: "extended", tag: "Extended" },
 ];
 
 /**
@@ -134,7 +134,7 @@ export function SessionSetup({
                 onChange={(next) => onChange({ ...value, length: next as Length })}
               >
                 <span className="flex flex-col items-start gap-2">
-                  <Tag tone={option.tone}>{option.tag}</Tag>
+                  <Tag>{option.tag}</Tag>
                   {length ? (
                     <>
                       <span className="type-item-title">

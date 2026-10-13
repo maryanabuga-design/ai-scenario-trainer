@@ -6,8 +6,8 @@ export function TrainingTags({ training }: { training: Training | undefined }) {
   if (!training) return null;
   return (
     <span className="flex flex-wrap gap-2">
-      {training.scenario && <Tag tone="yellow">Scenario</Tag>}
-      {training.quiz && <Tag tone="blue">Quiz</Tag>}
+      {training.scenario && <Tag>Scenario</Tag>}
+      {training.quiz && <Tag>Quiz</Tag>}
     </span>
   );
 }

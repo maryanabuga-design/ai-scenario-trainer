@@ -159,7 +159,7 @@ export function QuizQuestion({
     <div className="flex flex-col gap-6">
       <SessionTopBar index={index} total={total} unit={unit} />
       <div className="flex flex-col items-start gap-3">
-        <Tag tone="blue">{`Guide ${question.section}`}</Tag>
+        <Tag>{`Guide ${question.section}`}</Tag>
         <h1 className="type-item-title">{question.question}</h1>
         <p className="type-small text-text-secondary">{hint}</p>
       </div>

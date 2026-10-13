@@ -22,7 +22,7 @@ export default function MaterialPage() {
       scenarioCard={
         <Card className="flex flex-col gap-2">
           <div>
-            <Tag tone="yellow">Scenario</Tag>
+            <Tag>Scenario</Tag>
           </div>
           <h2 className="type-card-title">{scenario.title}</h2>
           <p className="type-small text-text-secondary">

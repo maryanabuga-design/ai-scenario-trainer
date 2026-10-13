@@ -62,7 +62,7 @@ function CreateOption({
       />
       <span
         aria-hidden="true"
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-next-tile text-text"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-icon-tile text-primary"
       >
         <Icon size={20} strokeWidth={2} />
       </span>
@@ -115,7 +115,7 @@ export function TrainingCreate({
     <div className="flex flex-col gap-6">
       <CircleBackButton href={`/materials/${material.id}`} label="Back to material" />
       <div className="flex flex-col items-start gap-2">
-        <Tag tone="sage">Training</Tag>
+        <Tag>Training</Tag>
         <h1 className="type-page-title">Create training</h1>
         <p className="break-words text-text-secondary">{material.name}</p>
       </div>

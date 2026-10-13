@@ -35,21 +35,6 @@ export function topicIcon(sectionId: string): TopicIcon {
   return sectionIcons[sectionId] ?? "BookOpen";
 }
 
-export type TopicTint = "yellow" | "blue" | "lilac" | "sage" | "peach";
-
-/** The tints topic tiles cycle through, in order. */
-export const topicTints: TopicTint[] = ["yellow", "blue", "lilac", "sage", "peach"];
-
-/**
- * The tile colour comes from the guide section, never from the error type or the material:
- * the section number picks the next tint of the cycle (S1 and F1 yellow, S2 blue, S6 yellow).
- */
-export function topicTint(sectionId: string): TopicTint {
-  const number = Number.parseInt(sectionId.slice(1), 10);
-  const index = Number.isNaN(number) || number < 1 ? 0 : (number - 1) % topicTints.length;
-  return topicTints[index];
-}
-
 export type WeakTopic = {
   /** The guide section, for example S2 or F5. */
   sectionId: string;
