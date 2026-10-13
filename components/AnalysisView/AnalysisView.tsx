@@ -10,8 +10,6 @@ import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
 import { StatusRows } from "@/components/StatusRows/StatusRows";
 import { describeEffects } from "@/lib/outcome";
 import { formatPoints } from "@/lib/progress";
-import type { AnalysisFilter } from "@/lib/results";
-import { analysisTitles, filterItems } from "@/lib/results";
 import { getStep } from "@/lib/scenario";
 import type { ScoredItem } from "@/lib/scoring";
 import { analysisOrder, groupByErrorType, weakItems } from "@/lib/scoring";
@@ -79,27 +77,23 @@ function AnswerCard({ item }: { item: ScoredItem }) {
  */
 export function AnalysisView({
   items,
-  filter,
   quiz,
   backHref,
   onRepeat,
 }: {
   items: ScoredItem[];
-  filter: AnalysisFilter;
   quiz: boolean;
   backHref: string;
   onRepeat: (ids: string[]) => void;
 }) {
-  const shown = filterItems(items, filter);
   const repeatIds = weakItems(items).map((item) => item.id);
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col items-start gap-4">
         <CircleBackButton href={backHref} label="Back to results" />
-        <h1 className="type-page-title">{analysisTitles[filter]}</h1>
+        <h1 className="type-page-title">Error analysis</h1>
       </div>
-      {shown.length === 0 && <p className="text-text-secondary">No answers here.</p>}
-      {groupByErrorType(shown, analysisOrder).map((group) => (
+      {groupByErrorType(items, analysisOrder).map((group) => (
         <section
           key={group.type}
           aria-labelledby={`analysis-${group.type}`}

@@ -441,11 +441,6 @@ export default function Screens() {
               <AnalysisSample />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Error analysis: incorrect answers">
-            <Screen>
-              <AnalysisSample filter="incorrect" />
-            </Screen>
-          </PhoneFrame>
           <PhoneFrame label="Error types card">
             <Screen>
               <ErrorTypesSample />

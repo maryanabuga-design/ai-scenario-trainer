@@ -111,8 +111,6 @@ export function ResultsView({
         total={items.length}
         sentence={shortEnding?.continues ?? conclusion(items)}
         points={quiz ? `${formatPoints(totalScore(items))} of ${items.length} points` : undefined}
-        analysisHref={analysisPath}
-        onNavigate={rememberScroll}
       />
 
       <ErrorTypesCard
