@@ -163,6 +163,7 @@ export function ResultsView({
                       <StatusBadge status="marked" />
                     </span>
                   )}
+                  {item.note && <p className="type-small text-text-secondary">{item.note}</p>}
                   <p className="type-small text-text-secondary">{item.consequence}</p>
                 </div>
               </li>

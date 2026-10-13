@@ -50,3 +50,21 @@ describe("Results after My explanation is still correct", () => {
     expect(correct(after)).toBe(correct(before));
   });
 });
+
+describe("Results after marking the explanation of a wrong choice", () => {
+  it("shows the neutral note and keeps the choice wrong", () => {
+    const wrong: ScenarioSession = {
+      ...session,
+      answers: [
+        { stepId: "s1", optionId: "d", confidence: 2, explanation: "лбтдлюью" },
+        ...session.answers.slice(1),
+      ],
+    };
+    const before = render(wrong);
+    const after = render(setMarkedCorrect(wrong, "s1", true));
+    expect(before).not.toContain("Explanation marked correct by you");
+    expect(after).toContain("Explanation marked correct by you");
+    const correct = (html: string) => Number(/(\d)\/3 correct/.exec(html)?.[1]);
+    expect(correct(after)).toBe(correct(before));
+  });
+});

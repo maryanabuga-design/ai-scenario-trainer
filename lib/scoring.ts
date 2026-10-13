@@ -85,10 +85,15 @@ export type ScoredItem = {
   markedByYou?: boolean;
   /** Why a right answer still counts as weak, for the Error analysis. */
   reason?: string;
+  /** A neutral note, for a wrong choice whose explanation the user marked correct. */
+  note?: string;
 };
 
 /** Shown in the Error analysis for a right choice whose explanation missed the guide. */
 export const explanationMissedReason = "Right choice, but your explanation didn't match the guide.";
+
+/** Shown on Results and in the Error analysis for a wrong choice whose explanation was marked. */
+export const explanationMarkedNote = "Explanation marked correct by you";
 
 /**
  * The score depends only on the chosen option. A right choice whose typed explanation did not
@@ -107,10 +112,11 @@ export function scoreStep(
   const best = step.options.find((candidate) => candidate.correct);
   if (!option || !best) throw new Error(`Step ${step.id} has no option ${optionId}`);
   const correct = option.correct;
-  const notMatched = correct && explanation === "not_matched";
-  /** "My explanation is still correct": the explanation counts as matched. */
-  const markedByYou = notMatched && markedCorrect;
-  const explanationMissed = notMatched && !markedCorrect;
+  /** "My explanation is still correct" on a typed explanation that missed the guide. */
+  const marked = explanation === "not_matched" && markedCorrect;
+  /** With a right choice the explanation counts as matched; with a wrong one only the label changes. */
+  const markedByYou = correct && marked;
+  const explanationMissed = correct && explanation === "not_matched" && !markedCorrect;
   return {
     kind: "step",
     id: step.id,
@@ -127,6 +133,7 @@ export function scoreStep(
     consequence: option.consequence,
     ...(markedByYou && { markedByYou }),
     ...(explanationMissed && { reason: explanationMissedReason }),
+    ...(marked && !correct && { note: explanationMarkedNote }),
   };
 }
 

@@ -36,6 +36,7 @@ function AnswerCard({ item }: { item: ScoredItem }) {
       />
       {item.markedByYou && <StatusBadge status="marked" />}
       {item.reason && <p className="type-small text-text-secondary">{item.reason}</p>}
+      {item.note && <p className="type-small text-text-secondary">{item.note}</p>}
       <Field label={step ? "You chose" : "Your answer"}>
         <p>{item.yourAnswer || "No answer"}</p>
       </Field>

@@ -110,6 +110,33 @@ describe("My explanation is still correct", () => {
     expect(totalScore(scoreSession(sure))).toBe(1);
   });
 
+  it("on a wrong option changes only the explanation label and adds the note", () => {
+    const before = scenario([answer("d", GIBBERISH, 2)]);
+    const after = setMarkedCorrect(before, "s1", true);
+    const s = sheet(after.answers[0]);
+    expect(s.open.verdict).toBe("marked");
+    expect(s.override).toBe("marked");
+    expect(s.result).toBe("wrong");
+    expect(s.errorType).toBe("knowledge_gap");
+    const [item] = scoreSession(after);
+    const [original] = scoreSession(before);
+    expect(item.score).toBe(original.score);
+    expect(item.errorType).toBe(original.errorType);
+    expect(item.markedByYou).toBeUndefined();
+    expect(item.note).toBe("Explanation marked correct by you");
+    expect(weakItems([item])).toHaveLength(1);
+    const undone = setMarkedCorrect(after, "s1", false);
+    expect(scoreSession(undone)).toEqual(scoreSession(before));
+  });
+
+  it("on a right option leaves the repeat list, and Undo brings it back", () => {
+    const before = scenario([answer("b", GIBBERISH, 3)]);
+    const after = setMarkedCorrect(before, "s1", true);
+    expect(weakItems(scoreSession(before))).toHaveLength(1);
+    expect(weakItems(scoreSession(after))).toHaveLength(0);
+    expect(weakItems(scoreSession(setMarkedCorrect(after, "s1", false)))).toHaveLength(1);
+  });
+
   it("is undone completely by Undo", () => {
     const before = scenario([answer("b", GIBBERISH)]);
     const undone = setMarkedCorrect(setMarkedCorrect(before, "s1", true), "s1", false);
