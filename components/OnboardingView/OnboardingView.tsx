@@ -1,125 +1,113 @@
 "use client";
 
+import { FileCheck2, RefreshCw, Target } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button } from "@/components/Button/Button";
-import { Card } from "@/components/Card/Card";
-import { DirectionPicker } from "@/components/DirectionPicker/DirectionPicker";
-import { Gradient } from "@/components/Gradient/Gradient";
-import { Tag } from "@/components/Tag/Tag";
-import { scenario, sessionLengths } from "@/lib/scenario";
+import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
+import { FINAL_STEP, onboardingSteps, stepLabel } from "@/lib/onboarding";
+import type { OnboardingStep } from "@/lib/onboarding";
 
-export type OnboardingStep = 0 | 1 | 2;
+const icons = [Target, FileCheck2, RefreshCw];
 
-const titles: [string, string][] = [
-  ["Choose a direction.", "Scenarios are built from its study guide."],
-  ["How it works.", "Decide, explain, then check against the guide."],
-  ["Try an example.", "A ready scenario from the sample guide."],
-];
+/** A horizontal swipe of at least this many pixels moves one step. */
+const SWIPE = 50;
 
-const howItWorks = [
-  "Choose an action in a realistic situation.",
-  "Say how sure you are.",
-  "Explain your choice in one sentence.",
-  "Get feedback from the guide: what was right, the error type and the source section.",
-];
-
-function TextAction({ onClick, children }: { onClick: () => void; children: string }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="type-body min-h-11 rounded-full px-3 underline decoration-1 underline-offset-4 hover:decoration-2"
-    >
-      {children}
-    </button>
-  );
-}
-
+/** The first-run introduction: three short steps, then "Ready to start?". */
 export function OnboardingView({
   step,
-  direction,
-  onDirectionChange,
-  onBack,
   onNext,
+  onBack,
   onSkip,
-  onTry,
+  onFinish,
 }: {
   step: OnboardingStep;
-  direction: string;
-  onDirectionChange: (id: string) => void;
-  onBack: () => void;
   onNext: () => void;
+  onBack: () => void;
   onSkip: () => void;
-  onTry: () => void;
+  onFinish: () => void;
 }) {
-  const [first, second] = titles[step];
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const firstRender = useRef(true);
+  const touchStart = useRef<number | null>(null);
+  const final = step === FINAL_STEP;
+  const content = final ? null : onboardingSteps[step as 0 | 1 | 2];
+  const Icon = icons[step];
+
+  // Focus moves to the new headline when the step changes, not on the first screen.
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    headingRef.current?.focus();
+  }, [step]);
 
   return (
-    <div className="flex flex-col gap-6">
-      <Gradient tone="warm" className="-mx-4 -mt-6 flex flex-col gap-8 px-4 pt-4 pb-10">
-        <div className="flex min-h-11 items-center justify-between">
-          <div className="-ml-3">{step > 0 && <TextAction onClick={onBack}>Back</TextAction>}</div>
-          <div className="flex items-center gap-3">
-            <span className="type-small tabular-nums">Step {step + 1} of 3</span>
-            <div className="-mr-3">
-              <TextAction onClick={onSkip}>Skip</TextAction>
-            </div>
+    <div
+      className="flex min-h-[calc(100dvh-11rem)] flex-col"
+      onTouchStart={(event) => {
+        touchStart.current = event.touches[0].clientX;
+      }}
+      onTouchEnd={(event) => {
+        if (touchStart.current === null) return;
+        const distance = event.changedTouches[0].clientX - touchStart.current;
+        touchStart.current = null;
+        if (distance < -SWIPE && !final) onNext();
+        if (distance > SWIPE && step > 0) onBack();
+      }}
+    >
+      <div className="flex min-h-11 items-center justify-between">
+        <div>{step > 0 && <CircleBackButton label="Previous step" onClick={onBack} />}</div>
+        {!final && (
+          <div className="-mr-3">
+            <Button variant="text" onClick={onSkip}>
+              Skip
+            </Button>
           </div>
-        </div>
-        <h1 className="type-display">
-          {first} <span className="text-text-secondary">{second}</span>
+        )}
+      </div>
+
+      <div className="flex flex-1 flex-col justify-center gap-3 py-8">
+        {content && (
+          <>
+            <span
+              aria-hidden="true"
+              className="mb-3 flex h-22 w-22 items-center justify-center rounded-full bg-next-tile text-text"
+            >
+              <Icon size={40} strokeWidth={1.75} />
+            </span>
+            <p className="type-label text-text-secondary">{stepLabel(step)}</p>
+          </>
+        )}
+        <h1 ref={headingRef} tabIndex={-1} className="type-display">
+          {content ? content.title : "Ready to start?"}
         </h1>
-      </Gradient>
-
-      {step === 0 && (
-        <DirectionPicker value={direction} onChange={onDirectionChange} legend="Your direction" />
-      )}
-
-      {step === 1 && (
-        <div className="flex flex-col gap-6">
-          <ol className="flex flex-col gap-4">
-            {howItWorks.map((point, index) => (
-              <li key={point} className="flex gap-4">
-                <span className="type-caption flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface tabular-nums">
-                  {index + 1}
-                </span>
-                <span className="pt-1">{point}</span>
-              </li>
-            ))}
-          </ol>
+        <p className="text-text-secondary">
+          {content ? content.body : "Upload a guide or try the sample materials."}
+        </p>
+        {final && (
           <p className="type-small text-text-secondary">
-            AI behavior is simulated in this prototype: every answer comes from a prepared scenario
-            built from the guide.
+            AI behavior is simulated for this prototype. All feedback comes from the source guide.
           </p>
-        </div>
-      )}
-
-      {step === 2 && (
-        <Card className="flex flex-col gap-3">
-          <div>
-            <Tag tone="yellow">Scenario</Tag>
-          </div>
-          <h2 className="type-card-title">{scenario.title}</h2>
-          <p>{scenario.steps[0].narrative}</p>
-          <p className="type-small text-text-secondary">
-            <span className="tabular-nums">{sessionLengths.full.stepIds.length}</span> decisions,
-            about <span className="tabular-nums">{sessionLengths.full.minutes}</span> min, or a
-            short session of{" "}
-            <span className="tabular-nums">{sessionLengths.short.stepIds.length}</span>.
-          </p>
-        </Card>
-      )}
+        )}
+      </div>
 
       <ActionBar>
-        {step < 2 ? (
-          <Button onClick={onNext}>Continue</Button>
+        {!final && (
+          <div role="img" aria-label={stepLabel(step)} className="flex justify-center gap-2 pb-2">
+            {onboardingSteps.map((item, index) => (
+              <span
+                key={item.title}
+                className={`h-2 w-2 rounded-full ${index === step ? "bg-primary" : "bg-border-strong"}`}
+              />
+            ))}
+          </div>
+        )}
+        {final ? (
+          <Button onClick={onFinish}>Get started</Button>
         ) : (
-          <>
-            <Button onClick={onTry}>Try it</Button>
-            <Button variant="text" onClick={onSkip}>
-              Go to Home
-            </Button>
-          </>
+          <Button onClick={onNext}>{step === 2 ? "Continue" : "Next"}</Button>
         )}
       </ActionBar>
     </div>

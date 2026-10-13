@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import type { ReactNode } from "react";
 import { ActionBarProvider, ActionBarSlot } from "@/components/ActionBar/ActionBar";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
-import { Footer } from "@/components/Footer/Footer";
+import { Footer, FooterNote } from "@/components/Footer/Footer";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { loadAllSections } from "@/lib/guide";
 
@@ -12,7 +12,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       <SourceSheetProvider sections={loadAllSections()}>
         <ActionBarProvider>
           <main className="flex-1 px-4 pt-6">{children}</main>
-          <Footer />
+          <Suspense fallback={<FooterNote />}>
+            <Footer />
+          </Suspense>
           <div className="sticky bottom-0 z-10 bg-bg pb-[env(safe-area-inset-bottom)]">
             <ActionBarSlot />
             <Suspense fallback={null}>

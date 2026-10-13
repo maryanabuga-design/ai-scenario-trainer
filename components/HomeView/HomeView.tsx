@@ -2,10 +2,12 @@
 
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { ButtonLink } from "@/components/Button/Button";
 import { NextUpCard } from "@/components/NextUpCard/NextUpCard";
 import { ScenarioCard } from "@/components/ScenarioCard/ScenarioCard";
 import { TopicRow } from "@/components/TopicRow/TopicRow";
 import { nextUp } from "@/lib/home";
+import { onboardingHref } from "@/lib/onboarding";
 import type { ScoredItem } from "@/lib/scoring";
 import type { Session } from "@/lib/session";
 import type { WeakTopic } from "@/lib/weak-topics";
@@ -87,6 +89,12 @@ export function HomeView({
           ))}
         </ul>
       </section>
+
+      <div className="-ml-3">
+        <ButtonLink href={onboardingHref} variant="text">
+          How it works
+        </ButtonLink>
+      </div>
     </div>
   );
 }

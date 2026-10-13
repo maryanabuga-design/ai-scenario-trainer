@@ -524,19 +524,24 @@ export default function Screens() {
           </PhoneFrame>
         </Group>
         <Group title="Onboarding">
-          <PhoneFrame label="Onboarding: choose direction">
+          <PhoneFrame label="Onboarding: step 1, practise a decision">
             <Screen>
               <OnboardingSample start={0} />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Onboarding: how it works">
+          <PhoneFrame label="Onboarding: step 2, explain it">
             <Screen>
               <OnboardingSample start={1} />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Onboarding: example scenario">
+          <PhoneFrame label="Onboarding: step 3, see what to repeat">
             <Screen>
               <OnboardingSample start={2} />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Onboarding: ready to start">
+            <Screen>
+              <OnboardingSample start={3} />
             </Screen>
           </PhoneFrame>
         </Group>

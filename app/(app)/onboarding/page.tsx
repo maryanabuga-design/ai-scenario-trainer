@@ -3,32 +3,34 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { OnboardingView } from "@/components/OnboardingView/OnboardingView";
-import type { OnboardingStep } from "@/components/OnboardingView/OnboardingView";
-import { defaultDirection } from "@/lib/directions";
-import { saveProfile } from "@/lib/session";
+import { finishOnboarding, nextStep, previousStep } from "@/lib/onboarding";
+import type { OnboardingStep } from "@/lib/onboarding";
+import { saveProfile, useProfile } from "@/lib/session";
 
 export default function Onboarding() {
   const router = useRouter();
+  const profile = useProfile();
   const [step, setStep] = useState<OnboardingStep>(0);
-  const [direction, setDirection] = useState(defaultDirection.id);
 
-  function finish(next: string) {
-    saveProfile({ direction, onboarded: true });
-    router.replace(next);
+  function go(next: OnboardingStep) {
+    setStep(next);
+    window.scrollTo(0, 0);
+  }
+
+  // Skip and Get started mark it done and open Home; a replay saves nothing.
+  function finish() {
+    const saved = finishOnboarding(profile === "loading" ? null : profile);
+    if (saved) saveProfile(saved);
+    router.replace("/");
   }
 
   return (
     <OnboardingView
       step={step}
-      direction={direction}
-      onDirectionChange={setDirection}
-      onBack={() => setStep((step - 1) as OnboardingStep)}
-      onNext={() => {
-        setStep((step + 1) as OnboardingStep);
-        window.scrollTo(0, 0);
-      }}
-      onSkip={() => finish("/")}
-      onTry={() => finish("/training/evacuation-guide")}
+      onNext={() => go(nextStep(step))}
+      onBack={() => go(previousStep(step))}
+      onSkip={finish}
+      onFinish={finish}
     />
   );
 }

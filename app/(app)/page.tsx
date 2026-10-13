@@ -6,6 +6,7 @@ import { HomeView } from "@/components/HomeView/HomeView";
 import { directionTitle } from "@/lib/directions";
 import { homeScenarios, repeatUnderWay, scenarioLines, scenarioTitle } from "@/lib/home";
 import type { Material } from "@/lib/materials";
+import { needsOnboarding, onboardingHref } from "@/lib/onboarding";
 import { sampleMaterials } from "@/lib/materials";
 import { weakItemsFromHistory } from "@/lib/progress";
 import { getScenario } from "@/lib/scenario";
@@ -21,11 +22,11 @@ export default function Home() {
   const history = useHistory();
   const uploads = useUploads();
   const trainings = useTrainings();
-  const needsOnboarding = profile !== "loading" && !profile?.onboarded;
+  const showOnboarding = profile !== "loading" && needsOnboarding(profile);
 
   useEffect(() => {
-    if (needsOnboarding) router.replace("/onboarding");
-  }, [needsOnboarding, router]);
+    if (showOnboarding) router.replace(onboardingHref);
+  }, [showOnboarding, router]);
 
   if (
     profile === "loading" ||
@@ -33,7 +34,7 @@ export default function Home() {
     history === "loading" ||
     uploads === "loading" ||
     trainings === "loading" ||
-    needsOnboarding
+    showOnboarding
   ) {
     return null;
   }

@@ -28,7 +28,8 @@ import { UploadPanel } from "@/components/UploadSheet/UploadSheet";
 import type { Stage } from "@/components/UploadSheet/UploadSheet";
 import { OnboardingView } from "@/components/OnboardingView/OnboardingView";
 import { ProfileView } from "@/components/ProfileView/ProfileView";
-import type { OnboardingStep } from "@/components/OnboardingView/OnboardingView";
+import { nextStep, previousStep } from "@/lib/onboarding";
+import type { OnboardingStep } from "@/lib/onboarding";
 import { ProgressView } from "@/components/ProgressView/ProgressView";
 import { ResultsView } from "@/components/ResultsView/ResultsView";
 import { SessionSetup } from "@/components/SessionSetup/SessionSetup";
@@ -261,16 +262,13 @@ export function ProgressSample({ withHistory = false }: { withHistory?: boolean 
 
 export function OnboardingSample({ start }: { start: OnboardingStep }) {
   const [step, setStep] = useState<OnboardingStep>(start);
-  const [direction, setDirection] = useState(defaultDirection.id);
   return (
     <OnboardingView
       step={step}
-      direction={direction}
-      onDirectionChange={setDirection}
-      onBack={() => setStep((step - 1) as OnboardingStep)}
-      onNext={() => setStep((step + 1) as OnboardingStep)}
+      onNext={() => setStep(nextStep(step))}
+      onBack={() => setStep(previousStep(step))}
       onSkip={() => undefined}
-      onTry={() => undefined}
+      onFinish={() => undefined}
     />
   );
 }
