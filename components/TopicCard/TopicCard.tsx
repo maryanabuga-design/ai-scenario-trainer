@@ -35,9 +35,9 @@ export function TopicCard({
       className="relative flex h-full w-full flex-col items-start gap-3 rounded-card bg-card p-5 text-left shadow-(--card-shadow) active:bg-surface-muted"
     >
       <span className="flex w-full items-start gap-3">
-        <TopicTile icon={topic.icon} />
+        <TopicTile sectionId={topic.sectionId} icon={topic.icon} />
         <span className="flex flex-1 flex-col items-start gap-1.5 pt-1">
-          <span className="type-label rounded-full bg-chip px-2.5 py-1 text-text">
+          <span className="type-label rounded-full bg-repeat-pill px-2.5 py-1 text-text">
             <span className="sr-only">Repeat: </span>
             {pill.text}
           </span>

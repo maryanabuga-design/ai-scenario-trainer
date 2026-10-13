@@ -17,7 +17,7 @@ export function NextUpCard({
     <>
       <span
         aria-hidden="true"
-        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-icon-tile text-primary"
+        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-next-tile text-text"
       >
         <Target size={24} strokeWidth={2} />
       </span>

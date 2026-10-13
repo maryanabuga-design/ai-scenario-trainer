@@ -80,7 +80,7 @@ export function OnboardingView({
           <ol className="flex flex-col gap-4">
             {howItWorks.map((point, index) => (
               <li key={point} className="flex gap-4">
-                <span className="type-caption flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-icon-tile text-primary tabular-nums">
+                <span className="type-caption flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface tabular-nums">
                   {index + 1}
                 </span>
                 <span className="pt-1">{point}</span>
@@ -97,7 +97,7 @@ export function OnboardingView({
       {step === 2 && (
         <Card className="flex flex-col gap-3">
           <div>
-            <Tag>Scenario</Tag>
+            <Tag tone="yellow">Scenario</Tag>
           </div>
           <h2 className="type-card-title">{scenario.title}</h2>
           <p>{scenario.steps[0].narrative}</p>

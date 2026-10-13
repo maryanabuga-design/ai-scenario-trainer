@@ -1,9 +1,20 @@
 import type { ReactNode } from "react";
 
-/** A category tag: uppercase label on the one neutral chip colour. The text tells the type. */
-export function Tag({ children }: { children: ReactNode }) {
+type Tone = "yellow" | "peach" | "blue" | "lilac" | "sage";
+
+const tones: Record<Tone, string> = {
+  yellow: "bg-tag-yellow",
+  peach: "bg-tag-peach",
+  blue: "bg-tag-blue",
+  lilac: "bg-tag-lilac",
+  sage: "bg-tag-sage",
+};
+
+export function Tag({ tone = "yellow", children }: { tone?: Tone; children: ReactNode }) {
   return (
-    <span className="inline-flex items-center rounded-full bg-chip px-2.5 py-1 type-label text-text">
+    <span
+      className={`inline-flex items-center rounded-full px-2.5 py-1 type-label text-text ${tones[tone]}`}
+    >
       {children}
     </span>
   );

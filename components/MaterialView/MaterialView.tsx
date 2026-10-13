@@ -8,6 +8,7 @@ import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
 import { FileCover } from "@/components/FileCover/FileCover";
+import { MaterialCover } from "@/components/MaterialCover/MaterialCover";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
 import { TrainingTags } from "@/components/TrainingTags/TrainingTags";
@@ -85,7 +86,11 @@ export function MaterialView({
     <div className="flex flex-col gap-6">
       <CircleBackButton href="/materials" label="Back to materials" />
       <div className="flex flex-col items-start gap-4">
-        <FileCover type={material.type} size="lg" />
+        {material.hasScenario ? (
+          <MaterialCover type={material.type} size="lg" />
+        ) : (
+          <FileCover type={material.type} size="lg" />
+        )}
         <h1 className="type-page-title break-words">{material.name}</h1>
         <TrainingTags training={training} />
       </div>

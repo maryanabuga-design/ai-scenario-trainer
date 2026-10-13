@@ -116,10 +116,10 @@ function FoundationKit() {
           <p className="type-small text-text-secondary">Card</p>
           <p className="type-card-title">White card, 24px radius</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Tag>Scenario</Tag>
-            <Tag>Short</Tag>
-            <Tag>Material</Tag>
-            <Tag>S2</Tag>
+            <Tag tone="yellow">Scenario</Tag>
+            <Tag tone="peach">Short</Tag>
+            <Tag tone="blue">Material</Tag>
+            <Tag tone="lilac">S2</Tag>
           </div>
         </Card>
         <div className="flex flex-col gap-6">

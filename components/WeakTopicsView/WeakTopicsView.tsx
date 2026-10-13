@@ -46,7 +46,7 @@ function TopicOption({
       onChange={onToggle}
     >
       <span className="flex items-center gap-3">
-        <TopicTile icon={topic.icon} />
+        <TopicTile sectionId={topic.sectionId} icon={topic.icon} />
         <span className="flex flex-col gap-0.5">
           <span className="type-body-strong">{name}</span>
           <span className="type-small text-text-secondary">

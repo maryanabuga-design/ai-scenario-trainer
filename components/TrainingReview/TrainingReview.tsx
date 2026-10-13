@@ -94,7 +94,7 @@ export function TrainingReview({
           hideLabel="Hide decisions"
           title={
             <div className="flex flex-col items-start gap-2">
-              <Tag>Scenario</Tag>
+              <Tag tone="yellow">Scenario</Tag>
               <h2 className="type-item-title">
                 Scenario: <span className="tabular-nums">{steps.length}</span> decisions
               </h2>
@@ -133,7 +133,7 @@ export function TrainingReview({
           hideLabel="Hide questions"
           title={
             <div className="flex flex-col items-start gap-2">
-              <Tag>Quiz</Tag>
+              <Tag tone="blue">Quiz</Tag>
               <h2 className="type-item-title">
                 Quiz: <span className="tabular-nums">{questionCountLabel(quizSize)}</span>
               </h2>

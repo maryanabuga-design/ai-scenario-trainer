@@ -3,8 +3,19 @@
 import { Check } from "lucide-react";
 import { Button } from "@/components/Button/Button";
 import { selectionToggle, toggleSection } from "@/lib/sections";
+import type { TopicTint } from "@/lib/weak-topics";
+import { topicTint } from "@/lib/weak-topics";
 
 export type SectionRow = { id: string; title: string; detail?: string };
+
+/** Pastel code circles, in the same cycle as the topic tiles. */
+const codeTints: Record<TopicTint, string> = {
+  yellow: "bg-code-yellow",
+  blue: "bg-code-blue",
+  lilac: "bg-code-lilac",
+  sage: "bg-code-sage",
+  peach: "bg-code-peach",
+};
 
 /**
  * The guide sections to keep, on Create training and Session setup: a title with one Select all /
@@ -57,7 +68,7 @@ export function SectionList({
                 />
                 <span
                   aria-hidden="true"
-                  className={`type-caption flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-icon-tile text-primary`}
+                  className={`type-caption flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-text ${codeTints[topicTint(section.id)]}`}
                 >
                   {section.id}
                 </span>

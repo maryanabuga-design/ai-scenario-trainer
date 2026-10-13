@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { FileCover } from "@/components/FileCover/FileCover";
+import { MaterialCover } from "@/components/MaterialCover/MaterialCover";
 import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
 import { Tabs, tabPanelProps } from "@/components/Tabs/Tabs";
 import { TrainingTags } from "@/components/TrainingTags/TrainingTags";
@@ -32,7 +33,11 @@ function MaterialRow({
         href={`/materials/${material.id}`}
         className="-m-2 flex items-center gap-4 rounded-panel p-2 active:bg-surface-muted"
       >
-        <FileCover type={material.type} />
+        {material.hasScenario ? (
+          <MaterialCover type={material.type} />
+        ) : (
+          <FileCover type={material.type} />
+        )}
         <span className="flex min-w-0 flex-1 flex-col gap-1">
           <span className="type-body-strong break-words">{material.name}</span>
           <span className="type-small text-text-secondary">

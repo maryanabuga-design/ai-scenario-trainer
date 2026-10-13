@@ -150,7 +150,7 @@ export function ResultsView({
               <li key={item.id} className="flex items-start gap-3">
                 <span
                   aria-hidden="true"
-                  className="type-small flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-icon-tile text-primary tabular-nums"
+                  className="type-small flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-bg text-text-secondary tabular-nums"
                 >
                   {position + 1}
                 </span>
