@@ -40,8 +40,12 @@ export type Step = {
   narrative: string;
   question: string;
   options: Option[];
-  /** Points a strong explanation covers. Kept as data; the app does not check explanations. */
+  /** Points a strong explanation covers. */
   explanationKeyBeats: string[];
+  /** Words that show each key beat in a typed explanation (the simulated check). */
+  explanationKeywords: { beat: string; keywords: string[] }[];
+  /** One sentence from the guide: the right action, then the reason. The "Better explanation". */
+  referenceExplanation: string;
   suggestedQuestion?: SuggestedQuestion;
   chat: ChatEntry[];
 };

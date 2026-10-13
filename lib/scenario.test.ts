@@ -41,3 +41,25 @@ describe("scenarios", () => {
     expect(sumEffects(flood.initialState, items)).toEqual({ waterLevel: 4, timeLostSeconds: 240 });
   });
 });
+
+describe("open-question content", () => {
+  const steps = scenarios.flatMap((def) => def.steps);
+
+  it("gives every step one reference explanation: the action, then the reason", () => {
+    steps.forEach((step) => {
+      const sentence = step.referenceExplanation;
+      expect(sentence, step.id).toMatch(/^[A-Z][^.]*, because [^.]*\.$/);
+      expect(sentence.split(/[.!?] /)).toHaveLength(1);
+    });
+  });
+
+  it("gives every key beat its keywords", () => {
+    steps.forEach((step) => {
+      expect(
+        step.explanationKeywords.map((entry) => entry.beat),
+        step.id,
+      ).toEqual(step.explanationKeyBeats);
+      step.explanationKeywords.forEach((entry) => expect(entry.keywords.length).toBeGreaterThan(0));
+    });
+  });
+});

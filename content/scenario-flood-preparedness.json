@@ -88,7 +88,8 @@
         { "beat": "treat the warning as real", "keywords": ["real", "act", "warning", "do not wait", "serious"] },
         { "beat": "help people who need support first", "keywords": ["help", "support", "need", "mobility", "check on"] },
         { "beat": "move before the water arrives", "keywords": ["before", "higher ground", "move", "early", "in time"] }
-      ]
+      ],
+      "referenceExplanation": "Gather the group, check first on the two people who need help and start moving to the meeting point on higher ground, because the warning is real and you must move before the water arrives."
     },
     {
       "id": "s2",
@@ -139,7 +140,8 @@
       "explanationKeywords": [
         { "beat": "cannot judge depth or current", "keywords": ["depth", "current", "hidden", "deep", "flow", "cannot see"] },
         { "beat": "a longer dry route is safer", "keywords": ["longer", "dry", "above the water", "safer", "avoid"] }
-      ]
+      ],
+      "referenceExplanation": "Take the longer path over the hill that stays above the water, because you cannot judge the depth or current of floodwater."
     },
     {
       "id": "s3",
@@ -190,7 +192,8 @@
       "explanationKeywords": [
         { "beat": "structures and electrics may be unsafe", "keywords": ["electric", "shock", "unsafe", "weakened", "danger", "structure"] },
         { "beat": "wait for authorities to confirm it is safe", "keywords": ["authorities", "all-clear", "official", "safe", "confirm"] }
-      ]
+      ],
+      "referenceExplanation": "Stay out of the building until the official all-clear and keep away from the electrics, because structures and electrics may be unsafe."
     }
   ]
 }

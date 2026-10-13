@@ -214,40 +214,12 @@
           "suggested": false
         }
       ],
-      "keyBeatKeywords": [
-        [
-          "real",
-          "genuine",
-          "not a drill",
-          "not drill",
-          "treat it as",
-          "assume",
-          "official"
-        ],
-        [
-          "stair",
-          "staircase",
-          "steps",
-          "elevator",
-          "lift"
-        ],
-        [
-          "belonging",
-          "thing",
-          "bag",
-          "document",
-          "equipment",
-          "laptop",
-          "delay",
-          "immediately",
-          "straight away",
-          "right away",
-          "nothing",
-          "now",
-          "quick",
-          "fast"
-        ]
-      ]
+      "explanationKeywords": [
+        { "beat": "treat the alarm as real", "keywords": ["real", "genuine", "not a drill", "not drill", "treat it as", "assume", "official"] },
+        { "beat": "stairs, not the elevator", "keywords": ["stair", "staircase", "steps", "elevator", "lift"] },
+        { "beat": "do not delay for belongings", "keywords": ["belonging", "thing", "bag", "document", "equipment", "laptop", "delay", "immediately", "straight away", "right away", "nothing", "now", "quick", "fast"] }
+      ],
+      "referenceExplanation": "Get everyone out now by the stairs, not the elevator, without stopping for belongings, because the alarm must be treated as real."
     },
     {
       "id": "s2",
@@ -419,28 +391,11 @@
           "suggested": false
         }
       ],
-      "keyBeatKeywords": [
-        [
-          "hot",
-          "heat",
-          "warm",
-          "fire behind",
-          "fire on the other side",
-          "burning"
-        ],
-        [
-          "another route",
-          "other route",
-          "another way",
-          "other way",
-          "different route",
-          "different way",
-          "another exit",
-          "other exit",
-          "south",
-          "alternative"
-        ]
-      ]
+      "explanationKeywords": [
+        { "beat": "hot door suggests fire behind it", "keywords": ["hot", "heat", "warm", "fire behind", "fire on the other side", "burning"] },
+        { "beat": "use another route", "keywords": ["another route", "other route", "another way", "other way", "different route", "different way", "another exit", "other exit", "south", "alternative"] }
+      ],
+      "referenceExplanation": "Keep the door closed and lead the group to the south stairwell, because a hot door means fire behind it."
     },
     {
       "id": "s3",
@@ -609,28 +564,11 @@
           "suggested": false
         }
       ],
-      "keyBeatKeywords": [
-        [
-          "rise",
-          "rising",
-          "goes up",
-          "go up",
-          "ceiling",
-          "upward",
-          "gas",
-          "hot air"
-        ],
-        [
-          "low",
-          "floor",
-          "crawl",
-          "below",
-          "clean air",
-          "cleaner air",
-          "fresh air",
-          "breathable"
-        ]
-      ]
+      "explanationKeywords": [
+        { "beat": "smoke and hot gases rise", "keywords": ["rise", "rising", "goes up", "go up", "ceiling", "upward", "gas", "hot air"] },
+        { "beat": "cleaner air near the floor", "keywords": ["low", "floor", "crawl", "below", "clean air", "cleaner air", "fresh air", "breathable"] }
+      ],
+      "referenceExplanation": "Move low with nose and mouth covered, a hand on the wall and doors closed behind you, because smoke rises and the cleaner air is near the floor."
     },
     {
       "id": "s4",
@@ -802,25 +740,11 @@
           "suggested": false
         }
       ],
-      "keyBeatKeywords": [
-        [
-          "life-threatening",
-          "life threatening",
-          "bleed",
-          "blood",
-          "dangerous",
-          "serious",
-          "priority",
-          "first",
-          "worse"
-        ],
-        [
-          "pressure",
-          "press",
-          "pressing",
-          "compress"
-        ]
-      ]
+      "explanationKeywords": [
+        { "beat": "severe bleeding is life-threatening", "keywords": ["life-threatening", "life threatening", "bleed", "blood", "dangerous", "serious", "priority", "first", "worse"] },
+        { "beat": "direct pressure", "keywords": ["pressure", "press", "pressing", "compress"] }
+      ],
+      "referenceExplanation": "Press firmly on the wound with a clean cloth and keep the pressure on, because severe bleeding is life-threatening and direct pressure controls it."
     },
     {
       "id": "s5",
@@ -990,31 +914,11 @@
           "suggested": false
         }
       ],
-      "keyBeatKeywords": [
-        [
-          "someone else",
-          "somebody else",
-          "assume",
-          "everyone thinks",
-          "nobody",
-          "no one",
-          "bystander",
-          "responsib",
-          "one person",
-          "specific",
-          "name"
-        ],
-        [
-          "location",
-          "address",
-          "where",
-          "injur",
-          "bleeding",
-          "detail",
-          "what happened",
-          "wound"
-        ]
-      ]
+      "explanationKeywords": [
+        { "beat": "avoid assuming someone else called", "keywords": ["someone else", "somebody else", "assume", "everyone thinks", "nobody", "no one", "bystander", "responsib", "one person", "specific", "name"] },
+        { "beat": "clear details: location, injury", "keywords": ["location", "address", "where", "injur", "bleeding", "detail", "what happened", "wound"] }
+      ],
+      "referenceExplanation": "Name one person to call 112 with the location and the injury and to report back, because otherwise everyone assumes someone else has called."
     },
     {
       "id": "s6",
@@ -1182,26 +1086,11 @@
           "suggested": false
         }
       ],
-      "keyBeatKeywords": [
-        [
-          "name",
-          "last known",
-          "last seen",
-          "where they were",
-          "location",
-          "missing"
-        ],
-        [
-          "what happened",
-          "what i did",
-          "what we did",
-          "what was done",
-          "when",
-          "time",
-          "handover",
-          "hand over"
-        ]
-      ]
+      "explanationKeywords": [
+        { "beat": "name and last known location", "keywords": ["name", "last known", "last seen", "where they were", "location", "missing"] },
+        { "beat": "what happened, what you did, when", "keywords": ["what happened", "what i did", "what we did", "what was done", "when", "time", "handover", "hand over"] }
+      ],
+      "referenceExplanation": "Give responders the missing person's name and last known location, then hand over what happened, what you did and when, because clear information lets them act at once."
     },
     {
       "id": "s7",
@@ -1367,22 +1256,11 @@
           "suggested": false
         }
       ],
-      "keyBeatKeywords": [
-        [
-          "safe",
-          "safely",
-          "safety",
-          "risk"
-        ],
-        [
-          "report",
-          "location",
-          "where",
-          "responder",
-          "tell",
-          "firefighter"
-        ]
-      ]
+      "explanationKeywords": [
+        { "beat": "help only if it is safe", "keywords": ["safe", "safely", "safety", "risk"] },
+        { "beat": "report their location to responders", "keywords": ["report", "location", "where", "responder", "tell", "firefighter"] }
+      ],
+      "referenceExplanation": "Have a colleague help the visitor down the stairs only if it is safe, and otherwise report their exact location to responders, because helpers must not put themselves at risk."
     },
     {
       "id": "s8",
@@ -1549,22 +1427,11 @@
           "suggested": false
         }
       ],
-      "keyBeatKeywords": [
-        [
-          "close",
-          "shut",
-          "ready",
-          "slowly",
-          "careful"
-        ],
-        [
-          "smoke",
-          "heat",
-          "hot",
-          "fire",
-          "behind"
-        ]
-      ]
+      "explanationKeywords": [
+        { "beat": "be ready to close it", "keywords": ["close", "shut", "ready", "slowly", "careful"] },
+        { "beat": "smoke or heat can still be behind it", "keywords": ["smoke", "heat", "hot", "fire", "behind"] }
+      ],
+      "referenceExplanation": "Open the cool door slowly, ready to close it at once, because smoke or heat can still be behind it."
     },
     {
       "id": "s9",
@@ -1730,27 +1597,11 @@
           "suggested": false
         }
       ],
-      "keyBeatKeywords": [
-        [
-          "stay on",
-          "on the line",
-          "keep talking",
-          "don't hang up",
-          "do not hang up",
-          "stay connected",
-          "keep the line",
-          "not hang up"
-        ],
-        [
-          "until",
-          "told",
-          "instruction",
-          "they say",
-          "call taker",
-          "dispatcher",
-          "operator"
-        ]
-      ]
+      "explanationKeywords": [
+        { "beat": "stay on the line", "keywords": ["stay on", "on the line", "keep talking", "don't hang up", "do not hang up", "stay connected", "keep the line", "not hang up"] },
+        { "beat": "until told to hang up", "keywords": ["until", "told", "instruction", "they say", "call taker", "dispatcher", "operator"] }
+      ],
+      "referenceExplanation": "Stay on the line and pass on the instructions until the call taker says you can hang up, because they may still need details or have instructions for you."
     },
     {
       "id": "s10",
@@ -1915,26 +1766,11 @@
           "suggested": false
         }
       ],
-      "keyBeatKeywords": [
-        [
-          "change",
-          "update",
-          "news",
-          "turned up",
-          "found",
-          "arrived",
-          "safe now",
-          "back"
-        ],
-        [
-          "search",
-          "stop",
-          "looking",
-          "call off",
-          "risk",
-          "danger"
-        ]
-      ]
+      "explanationKeywords": [
+        { "beat": "changes since the handover", "keywords": ["change", "update", "news", "turned up", "found", "arrived", "safe now", "back"] },
+        { "beat": "the search can stop", "keywords": ["search", "stop", "looking", "call off", "risk", "danger"] }
+      ],
+      "referenceExplanation": "Tell the responders and the person doing the headcount at once, because any change since the handover matters and the search can stop."
     }
   ]
 }
