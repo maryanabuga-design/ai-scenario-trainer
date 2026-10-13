@@ -21,7 +21,7 @@ export function GuideChip({
     <button
       type="button"
       onClick={() => open(sectionId)}
-      className="relative inline-flex min-h-9 items-center gap-1.5 rounded-full bg-secondary-olive px-3 text-left type-small text-text before:absolute before:-inset-y-1 before:inset-x-0 before:content-[''] active:bg-secondary-olive-pressed"
+      className="relative inline-flex min-h-9 items-center gap-1.5 rounded-full bg-secondary-sand px-3 text-left type-small text-text before:absolute before:-inset-y-1 before:inset-x-0 before:content-[''] active:bg-secondary-sand-pressed"
     >
       <FileText
         size={14}

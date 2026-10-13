@@ -22,17 +22,17 @@ function contrast(a: string, b: string) {
   return (light + 0.05) / (dark + 0.05);
 }
 
-describe("colour system: primary deep green, secondary light olive", () => {
-  it("has the light olive and its darker pressed tone of the same hue", () => {
-    expect(token("secondary-olive")).toBe("#dfe5d8");
-    expect(token("secondary-olive-pressed")).toBe("#d4dbcd");
-    expect(luminance(token("secondary-olive-pressed"))).toBeLessThan(
-      luminance(token("secondary-olive")),
+describe("colour system: primary deep green, secondary sand", () => {
+  it("has the sand and its darker pressed tone of the same warm hue", () => {
+    expect(token("secondary-sand")).toBe("#f0ece6");
+    expect(token("secondary-sand-pressed")).toBe("#e2ded5");
+    expect(luminance(token("secondary-sand-pressed"))).toBeLessThan(
+      luminance(token("secondary-sand")),
     );
   });
 
-  it("keeps dark and muted text readable on the olive and on its pressed tone", () => {
-    for (const fill of [token("secondary-olive"), token("secondary-olive-pressed")]) {
+  it("keeps dark and muted text readable on the sand and on its pressed tone", () => {
+    for (const fill of [token("secondary-sand"), token("secondary-sand-pressed")]) {
       expect(contrast(token("text"), fill)).toBeGreaterThanOrEqual(4.5);
       expect(contrast(token("text-secondary"), fill)).toBeGreaterThanOrEqual(4.5);
       expect(contrast(token("primary"), fill)).toBeGreaterThanOrEqual(4.5);
@@ -99,11 +99,13 @@ describe("no leftover grey-beige for inactive states", () => {
   }
 
   it("has no old neutral tokens or values left", () => {
-    const leftovers = [...files("components"), ...files("app")].filter((file) =>
-      /#efece5|#c0bbb1|neutral-surface|--chip\b|bg-chip\b|chip-pressed|ring-track/i.test(
-        readFileSync(file, "utf8"),
-      ),
-    );
+    const leftovers = [...files("components"), ...files("app")].filter((file) => {
+      // The sage #DFE5D8 may only stay as the TRAINING tag and sage topic tile colour.
+      const code = readFileSync(file, "utf8").replace(/--tag-sage: #dfe5d8;/i, "");
+      return /#efece5|#c0bbb1|#dfe5d8|#d4dbcd|secondary-olive|neutral-surface|--chip\b|bg-chip\b|chip-pressed|ring-track/i.test(
+        code.replace(/--next-tile: #d4dbcd;/i, ""),
+      );
+    });
     expect(leftovers).toEqual([]);
   });
 
@@ -127,7 +129,7 @@ describe("no leftover grey-beige for inactive states", () => {
     ];
     for (const file of inactive) {
       const code = readFileSync(file, "utf8");
-      expect(code, file).toMatch(/secondary-olive/);
+      expect(code, file).toMatch(/secondary-sand/);
       expect(code, file).not.toMatch(/surface-muted|bg-border\b/);
     }
   });

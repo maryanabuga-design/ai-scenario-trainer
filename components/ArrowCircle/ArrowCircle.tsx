@@ -10,7 +10,7 @@ export function ArrowCircle() {
       aria-hidden="true"
       className="-mt-1 -mr-1 flex h-11 w-11 shrink-0 items-center justify-center"
     >
-      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary-olive text-text shadow-(--card-shadow)">
+      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary-sand text-text shadow-(--card-shadow)">
         <ArrowRight size={18} strokeWidth={2} />
       </span>
     </span>

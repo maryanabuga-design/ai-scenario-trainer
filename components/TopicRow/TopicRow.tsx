@@ -125,7 +125,7 @@ export function TopicRow({
             {Array.from({ length: dots }, (_, index) => (
               <span
                 key={index}
-                className={`h-2 w-2 rounded-full ${index === current ? "bg-primary" : "bg-secondary-olive"}`}
+                className={`h-2 w-2 rounded-full ${index === current ? "bg-primary" : "bg-secondary-sand"}`}
               />
             ))}
           </div>

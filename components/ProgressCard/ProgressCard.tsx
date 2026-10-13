@@ -19,7 +19,7 @@ function Ring({ correct, total }: { correct: number; total: number }) {
           r={radius}
           fill="none"
           strokeWidth="6"
-          className="stroke-secondary-olive"
+          className="stroke-secondary-sand"
         />
         <circle
           cx="44"

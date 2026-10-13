@@ -91,7 +91,7 @@ function ChipButton({
       type="button"
       disabled={disabled}
       onClick={() => onAsk({ text: chip.question, chipId: chip.id })}
-      className={`min-h-11 rounded-full border border-border bg-surface px-4 py-2 text-left type-small text-text active:bg-secondary-olive disabled:cursor-not-allowed disabled:text-text-secondary ${
+      className={`min-h-11 rounded-full border border-border bg-surface px-4 py-2 text-left type-small text-text active:bg-secondary-sand disabled:cursor-not-allowed disabled:text-text-secondary ${
         wrap ? "max-w-full" : "shrink-0 whitespace-nowrap"
       }`}
     >

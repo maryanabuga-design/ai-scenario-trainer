@@ -42,7 +42,7 @@ export function ExplainStep({
 
       <section className="flex flex-col gap-2">
         <h2 className="type-label text-text-secondary">Your choice</h2>
-        <blockquote className="rounded-panel border-l-[3px] border-primary bg-secondary-olive px-4 py-3 text-text">
+        <blockquote className="rounded-panel border-l-[3px] border-primary bg-secondary-sand px-4 py-3 text-text">
           {chosen?.text}
         </blockquote>
       </section>

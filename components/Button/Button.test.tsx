@@ -17,7 +17,7 @@ describe("the three locked button types", () => {
     expect(filled).toContain("text-primary-text");
     expect(filled).toContain("min-h-12");
     expect(filled).toContain("active:bg-primary-pressed");
-    expect(filled).toContain("disabled:bg-secondary-olive");
+    expect(filled).toContain("disabled:bg-secondary-sand");
     expect(filled).toContain("disabled:text-text-secondary");
   });
 
@@ -25,8 +25,8 @@ describe("the three locked button types", () => {
     const outline = classes(renderToStaticMarkup(<Button variant="secondary">Repeat</Button>));
     expect(outline).toContain("border-[1.5px] border-primary bg-transparent text-primary");
     expect(outline).toContain("min-h-11");
-    expect(outline).toContain("active:bg-secondary-olive");
-    expect(outline).toContain("disabled:border-secondary-olive-pressed");
+    expect(outline).toContain("active:bg-secondary-sand");
+    expect(outline).toContain("disabled:border-secondary-sand-pressed");
     expect(outline).toContain("disabled:text-text-secondary");
   });
 
@@ -37,7 +37,7 @@ describe("the three locked button types", () => {
       </Button>,
     );
     expect(classes(html)).toContain("text-primary");
-    expect(classes(html)).toContain("active:bg-secondary-olive");
+    expect(classes(html)).toContain("active:bg-secondary-sand");
     expect(classes(html)).toContain("disabled:text-text-secondary");
     expect(html).toContain("underline");
     expect(html).toContain("group-disabled:no-underline");

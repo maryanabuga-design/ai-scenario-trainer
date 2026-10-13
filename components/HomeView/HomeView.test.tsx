@@ -97,9 +97,9 @@ describe("Topics on Home", () => {
 
   it("shows one dot per topic with a text alternative, and none for a single topic", () => {
     const row = topicRow(renderHome(twoTopics));
-    expect(row.match(/h-2 w-2 rounded-full bg-(primary|secondary-olive)/g)).toHaveLength(2);
+    expect(row.match(/h-2 w-2 rounded-full bg-(primary|secondary-sand)/g)).toHaveLength(2);
     expect(row).toContain("Card 1 of 2");
-    expect(topicRow(renderHome(oneTopic)).match(/h-2 w-2 rounded-full bg-(primary|secondary-olive)/g)).toBeNull();
+    expect(topicRow(renderHome(oneTopic)).match(/h-2 w-2 rounded-full bg-(primary|secondary-sand)/g)).toBeNull();
   });
 });
 

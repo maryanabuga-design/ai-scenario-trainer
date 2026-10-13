@@ -55,7 +55,7 @@ export function TrainingGenerating({
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={percent}
-          className="h-1.5 w-full overflow-hidden rounded-full bg-secondary-olive"
+          className="h-1.5 w-full overflow-hidden rounded-full bg-secondary-sand"
         >
           <div className="h-full bg-primary" style={{ width: `${percent}%` }} />
         </div>

@@ -98,7 +98,7 @@ export function AnswerDock({
           type="submit"
           aria-label="Send"
           disabled={empty}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-text active:opacity-80 disabled:cursor-not-allowed disabled:bg-secondary-olive disabled:text-text-secondary"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-text active:opacity-80 disabled:cursor-not-allowed disabled:bg-secondary-sand disabled:text-text-secondary"
         >
           <ArrowUp size={20} strokeWidth={2} aria-hidden="true" />
         </button>

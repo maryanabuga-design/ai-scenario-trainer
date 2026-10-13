@@ -45,7 +45,7 @@ function CreateOption({
     <label
       className={`flex min-h-18 items-center gap-3 rounded-card border p-4 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${
         disabled
-          ? "cursor-not-allowed border-transparent bg-secondary-olive text-text-secondary"
+          ? "cursor-not-allowed border-transparent bg-secondary-sand text-text-secondary"
           : checked
             ? "cursor-pointer border-[1.5px] border-stroke-sage bg-next-card active:bg-secondary-pressed"
             : "cursor-pointer border-stroke-neutral bg-card shadow-(--card-shadow) active:bg-surface-muted"

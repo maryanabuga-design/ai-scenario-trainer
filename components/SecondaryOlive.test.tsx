@@ -50,18 +50,18 @@ describe("secondary olive for inactive states and tonal backgrounds", () => {
       />,
     );
     const track = classWith(html, "rounded-full") ?? "";
-    expect(track).toContain("bg-secondary-olive");
-    expect(track).toContain("border border-secondary-olive-pressed");
+    expect(track).toContain("bg-secondary-sand");
+    expect(track).toContain("border border-secondary-sand-pressed");
   });
 
   it("is every Guide chip, pressed one tone darker", () => {
     const chip = classWith(withSheet(<GuideChip sectionId="S1" />), "min-h-9") ?? "";
-    expect(chip).toContain("bg-secondary-olive");
-    expect(chip).toContain("active:bg-secondary-olive-pressed");
+    expect(chip).toContain("bg-secondary-sand");
+    expect(chip).toContain("active:bg-secondary-sand-pressed");
   });
 
   it("is the arrow circle on cards", () => {
-    expect(renderToStaticMarkup(<ArrowCircle />)).toContain("bg-secondary-olive");
+    expect(renderToStaticMarkup(<ArrowCircle />)).toContain("bg-secondary-sand");
   });
 
   it("is the Your choice block on the Explain screen and in the answer sheet", () => {
@@ -75,25 +75,25 @@ describe("secondary olive for inactive states and tonal backgrounds", () => {
         onDontKnow={() => undefined}
       />,
     );
-    expect(classWith(explain, "border-l-[3px]")).toContain("bg-secondary-olive");
+    expect(classWith(explain, "border-l-[3px]")).toContain("bg-secondary-sand");
     const sheet = withSheet(
       <AnswerSheet inline content={stepSheet(getStep("s1"), wrong)} onContinue={() => undefined} />,
     );
-    expect(classWith(sheet, "border-l-[3px]")).toContain("bg-secondary-olive");
+    expect(classWith(sheet, "border-l-[3px]")).toContain("bg-secondary-sand");
   });
 
   it("is the background of disabled buttons, with a lower-contrast label", () => {
     const html = renderToStaticMarkup(<Button disabled>Continue</Button>);
-    expect(html).toContain("disabled:bg-secondary-olive");
+    expect(html).toContain("disabled:bg-secondary-sand");
     expect(html).toContain("disabled:text-text-secondary");
   });
 
   it("is every inactive step segment and carousel dot", () => {
     const bar = renderToStaticMarkup(<SessionTopBar index={0} total={3} unit="Step" />);
-    expect(bar.match(/h-1.5 w-4 rounded-full bg-secondary-olive/g)).toHaveLength(2);
+    expect(bar.match(/h-1.5 w-4 rounded-full bg-secondary-sand/g)).toHaveLength(2);
     const topics = weakTopics([scoreStep(getStep("s2"), "c", 2), scoreStep(getStep("s5"), "a", 1)]);
     const row = withSheet(<TopicRow topics={topics} labelledBy="t" onRepeat={() => undefined} />);
-    expect(row.match(/h-2 w-2 rounded-full bg-secondary-olive/g)).toHaveLength(1);
+    expect(row.match(/h-2 w-2 rounded-full bg-secondary-sand/g)).toHaveLength(1);
   });
 });
 
@@ -109,7 +109,7 @@ describe("coloured chips and icon backgrounds stay as they are", () => {
     for (const [tone, fill] of Object.entries(tones)) {
       const html = renderToStaticMarkup(<Tag tone={tone as keyof typeof tones}>Scenario</Tag>);
       expect(html).toContain(fill);
-      expect(html).not.toContain("secondary-olive");
+      expect(html).not.toContain("secondary-sand");
     }
   });
 
@@ -124,6 +124,6 @@ describe("coloured chips and icon backgrounds stay as they are", () => {
   it("keeps neutral status chips on the neutral panel colour", () => {
     const ready = renderToStaticMarkup(<StatusBadge status="ready" />);
     expect(ready).toContain("bg-surface-muted");
-    expect(ready).not.toContain("secondary-olive");
+    expect(ready).not.toContain("secondary-sand");
   });
 });

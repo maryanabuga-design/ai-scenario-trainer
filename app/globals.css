@@ -4,8 +4,8 @@
 :root {
   --bg: #f3eee9;
   --surface: #ffffff;
-  --secondary-olive: #dfe5d8;
-  --secondary-olive-pressed: #d4dbcd;
+  --secondary-sand: #f0ece6;
+  --secondary-sand-pressed: #e2ded5;
   --surface-muted: #e2ded5;
   --border: #e2ded5;
   --border-strong: #8a867e;
@@ -65,8 +65,8 @@
 }
 
 @theme inline {
-  --color-secondary-olive: var(--secondary-olive);
-  --color-secondary-olive-pressed: var(--secondary-olive-pressed);
+  --color-secondary-sand: var(--secondary-sand);
+  --color-secondary-sand-pressed: var(--secondary-sand-pressed);
   --color-primary-pressed: var(--primary-pressed);
   --color-surface-muted: var(--surface-muted);
   --color-bg: var(--bg);
