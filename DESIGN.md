@@ -264,6 +264,9 @@ Tokens (only on Results and Error analysis):
   --ring: #417851;           /* ring arc and its check, 5:1 on --soft-card */
   --ring-track: #E9E6E0;
 
+  --correct-row: #ECEFE8;  --correct-tile: #D9E4D7;  --correct-ink: #3F5F47; /* 6.2:1 on the row */
+  --wrong-row: #F7E9E9;    --wrong-tile: #F6DDDC;    --wrong-ink: #86474A;   /* 5.9:1 on the row */
+
   --secure-row: #F3F4EF;   /* tile and badge: --secure-bg, icon --secure */
   --guess-row: #F5F1EE;    --guess-tile: #E8E2DB;    --guess-ink: #4B433D;   /* 7.5:1 on the tile */
   --gap-row: #F8F4EE;      /* tile and badge: --caution-bg, icon --caution */
@@ -285,7 +288,7 @@ Progress card (overlaps the bottom of the header by 16px):
   - Short session: the scenario's "continues" sentence ("The full session continues to an injured colleague, the call for help and the assembly point.").
   - Otherwise the first matching rule: misconceptions "You were sure, but N answer(s) did not match the guide."; knowledge gaps "N answer(s) need another look in the guide."; guesses "N right answer(s) were guesses. Repeat them to be sure."; else "Every answer was right and confident." (singular forms when N is 1).
   - Quiz: points under the sentence in 14 `--soft-text-secondary` ("7.5 of 10 points").
-- Nothing else: no Correct or Incorrect rows (removed 13 Oct 2026). The Error analysis screen opens from the Error types card → Details.
+- Two rows under it, 8px apart, 16px radius, at least 56px high, 12px padding: Correct (`--correct-row`, a 36px round `--correct-tile` with a check in `--correct-ink`, the count in the large numeral style, "CORRECT" uppercase label in `--correct-ink` on the right and a chevron in `--correct-ink`), Incorrect (`--wrong-row`, `--wrong-tile` with a cross, "INCORRECT", in `--wrong-ink`). A row opens the Error analysis screen filtered to those answers; a row with 0 is not a link and has no chevron. Icon + label, never colour alone. These two tints are used for nothing else.
 
 Error types card:
 - Title "Error types", subtitle "See what kind of mistakes you made", and on the right "Details" with an arrow (underlined text button, at least 44px) that opens the Error analysis screen.
@@ -297,8 +300,8 @@ Outcome card (scenario sessions only, not quizzes):
 Step by step card (scenario sessions only):
 - Title "Step by step", subtitle "How each choice played out". A numbered list: a 32px soft circle (`--soft-page`) with the number in small caption, `--soft-text-secondary`, then the step title in body strong `--text` and the consequence in 14 `--soft-text-secondary`, 16px between items.
 
-Error analysis screen (`/session/results/analysis`, opened from Error types → Details; there are no filtered views):
-- Same page and card style. The circular back button (to Results, back at the same scroll position), then the title "Error analysis" in the page title style. It works after a reload: the finished session is saved.
+Error analysis screen (`/session/results/analysis`, also `?show=correct` and `?show=incorrect`):
+- Same page and card style. The circular back button (to Results, back at the same scroll position), then the title "Error analysis" ("Correct answers" or "Incorrect answers" when filtered) in the page title style. It works after a reload: the finished session is saved.
 - Groups in this order: Misconception, Knowledge gap, Guess, Secure; empty groups are hidden. Group header: the error-type chip and "N answers" in 14 `--soft-text-secondary`.
 - Each answer is a soft card: the step or question title in the item title style; the status rows (Result, Error type); "You chose" (and "Better choice" when wrong; "Your answer" and "Correct answer" for a question); "Why" with source chips; "What happened" with the state change (scenario only); the "Ask AI about this step" text link (scenario steps with prepared answers).
 - A sticky primary "Repeat weak topics" (or "Repeat weak questions") only when there are weak answers.

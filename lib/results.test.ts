@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getQuestion, scoreQuestion } from "@/lib/quiz";
-import { conclusion } from "@/lib/results";
+import { analysisTitles, conclusion, filterItems, parseFilter } from "@/lib/results";
 import { getStep } from "@/lib/scenario";
 import { analysisOrder, groupByErrorType, scoreStep } from "@/lib/scoring";
 
@@ -39,13 +39,31 @@ describe("conclusion sentence", () => {
   });
 });
 
-describe("the Error analysis screen", () => {
+describe("filtered lists for the Error analysis screen", () => {
   const partly = scoreQuestion(
     getQuestion("q-s1-3"),
     { type: "multiple", optionIds: ["a", "b", "c"] },
     2,
   );
   const items = [secure, guess, misconception, gap, partly];
+
+  it("shows correct answers, or every answer that is not fully correct", () => {
+    expect(filterItems(items, "correct").map((item) => item.id)).toEqual(["s1", "s2"]);
+    expect(filterItems(items, "incorrect").map((item) => item.id)).toEqual(["s3", "s5", "q-s1-3"]);
+    expect(filterItems(items, "all")).toHaveLength(5);
+  });
+
+  it("reads the filter from the address and titles the screen", () => {
+    expect(parseFilter("correct")).toBe("correct");
+    expect(parseFilter("incorrect")).toBe("incorrect");
+    expect(parseFilter(null)).toBe("all");
+    expect(parseFilter("anything")).toBe("all");
+    expect(analysisTitles).toEqual({
+      all: "Error analysis",
+      correct: "Correct answers",
+      incorrect: "Incorrect answers",
+    });
+  });
 
   it("groups the analysis from the most serious type, hiding empty groups", () => {
     expect(analysisOrder).toEqual(["misconception", "knowledge_gap", "guess", "secure"]);
@@ -55,5 +73,8 @@ describe("the Error analysis screen", () => {
       "guess",
       "secure",
     ]);
+    expect(
+      groupByErrorType(filterItems(items, "correct"), analysisOrder).map((group) => group.type),
+    ).toEqual(["guess", "secure"]);
   });
 });

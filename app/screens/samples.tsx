@@ -38,6 +38,7 @@ import { matchQuestion, notCoveredId, replyToChip } from "@/lib/chat";
 import { getQuestion, scoreQuestion } from "@/lib/quiz";
 import type { Response } from "@/lib/quiz";
 import type { Answer } from "@/lib/session";
+import type { AnalysisFilter } from "@/lib/results";
 import { questionSheet, stepSheet } from "@/lib/answer-sheet";
 import { getScenario, getStep, scenario, sessionLengths } from "@/lib/scenario";
 import type { Confidence } from "@/lib/scenario";
@@ -610,11 +611,12 @@ export function ErrorTypesSample() {
   );
 }
 
-/** The Error analysis screen for the sample session. */
-export function AnalysisSample() {
+/** The Error analysis screen for the sample session: all answers, or only the incorrect ones. */
+export function AnalysisSample({ filter = "all" }: { filter?: AnalysisFilter }) {
   return (
     <AnalysisView
       items={sampleAnswers}
+      filter={filter}
       quiz={false}
       backHref="#results"
       onRepeat={() => undefined}
