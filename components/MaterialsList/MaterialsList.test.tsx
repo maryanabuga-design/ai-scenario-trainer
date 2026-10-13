@@ -22,7 +22,7 @@ describe("Materials header", () => {
   it("has the grey one-line subtitle under the title", () => {
     const html = renderList();
     expect(html).toContain(
-      '<p class="type-small text-text-secondary">Guides you can turn into scenarios and quizzes.</p>',
+      '<p class="type-small text-text-secondary">Guides you can turn into scenarios<br/>and quizzes.</p>',
     );
     expect(html.indexOf(">Materials</h1>")).toBeLessThan(html.indexOf("Guides you can turn"));
   });

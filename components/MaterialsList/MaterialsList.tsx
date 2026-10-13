@@ -103,7 +103,9 @@ export function MaterialsList({ samples }: { samples: Material[] }) {
         action={<UploadButton onUploadStart={() => setTab("processing")} onUploadEnd={setTab} />}
         subtitle={
           <p className="type-small text-text-secondary">
-            Guides you can turn into scenarios and quizzes.
+            Guides you can turn into scenarios
+            <br />
+            and quizzes.
           </p>
         }
       />
