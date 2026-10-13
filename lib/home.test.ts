@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dotCount, homeScenarios, nextUp, scenarioLines, topicPill, topicRow } from "@/lib/home";
+import { currentCard, dotCount, homeScenarios, nextUp, scenarioLines, topicRow } from "@/lib/home";
 import { sampleMaterials } from "@/lib/materials";
 import { getScenario } from "@/lib/scenario";
 import { materialFromSample, sampleFiles } from "@/lib/training";
@@ -84,26 +84,6 @@ describe("Next up", () => {
   });
 });
 
-describe("topic pill", () => {
-  it("says how many answers to repeat", () => {
-    expect(topicPill(s2, null)).toEqual({ text: "1 to repeat", progress: null });
-  });
-
-  it("counts the repeated items once that topic's repeat round has started", () => {
-    expect(topicPill(s2, repeatRound(["S2"], 1))).toEqual({
-      text: "1 of 2 repeated",
-      progress: 0.5,
-    });
-    expect(topicPill(s2, repeatRound(["S2"], 0))).toEqual({ text: "0 of 2 repeated", progress: 0 });
-  });
-
-  it("ignores a repeat round for other or several topics", () => {
-    expect(topicPill(s2, repeatRound(["S5"], 1)).progress).toBeNull();
-    expect(topicPill(s2, repeatRound(["S2", "S5"], 1)).progress).toBeNull();
-    expect(topicPill(s2, scenarioSession).progress).toBeNull();
-  });
-});
-
 describe("topic row and dots", () => {
   const many: WeakTopic[] = Array.from({ length: 7 }, (_, index) => ({
     ...s2,
@@ -115,6 +95,16 @@ describe("topic row and dots", () => {
     expect(dotCount(many)).toBe(5);
     expect(dotCount(topics)).toBe(2);
     expect(dotCount([])).toBe(0);
+  });
+
+  it("moves the current dot with the card in view, and to the last dot at the end", () => {
+    const row = { step: 300, maxScroll: 700, count: 3 };
+    expect(currentCard({ ...row, scrollLeft: 0 })).toBe(0);
+    expect(currentCard({ ...row, scrollLeft: 140 })).toBe(0);
+    expect(currentCard({ ...row, scrollLeft: 160 })).toBe(1);
+    expect(currentCard({ ...row, scrollLeft: 300 })).toBe(1);
+    expect(currentCard({ ...row, scrollLeft: 699 })).toBe(2);
+    expect(currentCard({ ...row, scrollLeft: 5000 })).toBe(2);
   });
 });
 

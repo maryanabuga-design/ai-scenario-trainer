@@ -87,16 +87,21 @@ export function repeatUnderWay(topic: WeakTopic, unfinished: Session | null): bo
   );
 }
 
-export type TopicPill = { text: string; progress: number | null };
-
-/** "2 to repeat", or "1 of 2 repeated" with a progress share once its repeat round has started. */
-export function topicPill(topic: WeakTopic, unfinished: Session | null): TopicPill {
-  if (unfinished && isRepeatRound(unfinished) && repeatUnderWay(topic, unfinished)) {
-    const done = unfinished.answers.length;
-    const total = unfinished.items.length;
-    return { text: `${done} of ${total} repeated`, progress: total === 0 ? 0 : done / total };
-  }
-  return { text: `${topic.items.length} to repeat`, progress: null };
+/** The card in view: by scroll position, and the last card once the row is scrolled to its end. */
+export function currentCard({
+  scrollLeft,
+  maxScroll,
+  step,
+  count,
+}: {
+  scrollLeft: number;
+  maxScroll: number;
+  step: number;
+  count: number;
+}): number {
+  if (count === 0) return 0;
+  if (scrollLeft >= maxScroll - 2) return count - 1;
+  return Math.min(count - 1, Math.max(0, Math.round(scrollLeft / step)));
 }
 
 /**

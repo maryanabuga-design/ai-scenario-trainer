@@ -64,7 +64,6 @@ export function RepeatSummary({
         </div>
         <TopicRow
           topics={topics}
-          unfinished={null}
           labelledBy="topics-title"
           onRepeat={(topic) => onRepeat([topic])}
         />

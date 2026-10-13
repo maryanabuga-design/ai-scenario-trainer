@@ -568,7 +568,6 @@ export function TopicIconsSample() {
           <li key={sectionId}>
             <TopicCard
               topic={{ sectionId, icon: topicIcon(sectionId), errorType: "guess", items: [item] }}
-              pill={{ text: "1 to repeat", progress: null }}
               onRepeat={() => undefined}
             />
           </li>

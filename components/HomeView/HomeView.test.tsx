@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
 import { HomeView } from "@/components/HomeView/HomeView";
 import type { HomeScenario } from "@/components/HomeView/HomeView";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
@@ -55,5 +56,48 @@ describe("Next up card", () => {
     const html = renderHome();
     const card = html.slice(html.indexOf('aria-labelledby="next-up-title"'));
     expect(card.slice(0, card.indexOf("</section>"))).toContain("<svg aria-hidden");
+  });
+});
+
+// s2 c unsure: a guess on S2; s5 a unsure: a knowledge gap on S5.
+const twoTopics = [scoreStep(getStep("s2"), "c", 2), scoreStep(getStep("s5"), "a", 1)];
+const oneTopic = [scoreStep(getStep("s2"), "c", 2)];
+
+/** The markup of the topic row: the list and the dots after it. */
+function topicRow(html: string) {
+  const start = html.indexOf('aria-labelledby="topics-title"');
+  return html.slice(start, html.indexOf("</section>", start));
+}
+
+describe("Topics on Home", () => {
+  it("has only the heading, no See all", () => {
+    const html = renderHome(twoTopics);
+    expect(html).toContain(">Topics</h2>");
+    expect(html).not.toContain("See all");
+  });
+
+  it("keeps the Weak topics page one tap away through the Next up arrow", () => {
+    const html = renderHome(twoTopics);
+    const card = html.slice(html.indexOf('aria-labelledby="next-up-title"'));
+    expect(card.slice(0, card.indexOf("</section>"))).toContain('href="/weak-topics"');
+  });
+
+  it("shows no repeat count or progress on topic cards", () => {
+    const row = topicRow(renderHome(twoTopics));
+    expect(row).not.toMatch(/to repeat|repeated/i);
+    expect(row).toContain("Evacuation guide · S2");
+  });
+
+  it("uses the shared ArrowCircle on topic cards", () => {
+    const arrow = renderToStaticMarkup(<ArrowCircle />);
+    const row = topicRow(renderHome(twoTopics));
+    expect(row.split(arrow)).toHaveLength(3);
+  });
+
+  it("shows one dot per topic with a text alternative, and none for a single topic", () => {
+    const row = topicRow(renderHome(twoTopics));
+    expect(row.match(/rounded-full bg-primary/g)).toHaveLength(2);
+    expect(row).toContain("Card 1 of 2");
+    expect(topicRow(renderHome(oneTopic)).match(/rounded-full bg-primary/g)).toBeNull();
   });
 });

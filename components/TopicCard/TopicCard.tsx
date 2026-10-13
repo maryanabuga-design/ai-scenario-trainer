@@ -1,10 +1,9 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
+import { ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
 import { TopicTile } from "@/components/TopicTile/TopicTile";
-import type { TopicPill } from "@/lib/home";
 import type { WeakTopic } from "@/lib/weak-topics";
 import { materialForSection } from "@/lib/weak-topics";
 
@@ -18,15 +17,7 @@ export function useTopicName(sectionId: string) {
  * A weak topic in the sideways row. The whole card starts the repeat for this topic only, or
  * resumes it when its repeat round is under way.
  */
-export function TopicCard({
-  topic,
-  pill,
-  onRepeat,
-}: {
-  topic: WeakTopic;
-  pill: TopicPill;
-  onRepeat: () => void;
-}) {
+export function TopicCard({ topic, onRepeat }: { topic: WeakTopic; onRepeat: () => void }) {
   const name = useTopicName(topic.sectionId);
   return (
     <button
@@ -36,21 +27,8 @@ export function TopicCard({
     >
       <span className="flex w-full items-start gap-3">
         <TopicTile sectionId={topic.sectionId} icon={topic.icon} />
-        <span className="flex flex-1 flex-col items-start gap-1.5 pt-1">
-          <span className="type-label rounded-full bg-repeat-pill px-2.5 py-1 text-text">
-            <span className="sr-only">Repeat: </span>
-            {pill.text}
-          </span>
-          {pill.progress !== null && (
-            <span aria-hidden="true" className="h-1 w-20 overflow-hidden rounded-full bg-border">
-              <span
-                className="block h-full rounded-full bg-primary"
-                style={{ width: `${Math.round(pill.progress * 100)}%` }}
-              />
-            </span>
-          )}
-        </span>
-        <ArrowRight size={20} strokeWidth={2} aria-hidden="true" className="mt-1 shrink-0" />
+        <span className="flex-1" />
+        <ArrowCircle />
       </span>
       <span className="type-item-title">{name}</span>
       <span className="type-small text-text-secondary">

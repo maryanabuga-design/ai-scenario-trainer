@@ -1,7 +1,5 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
-import Link from "next/link";
 import { ButtonLink } from "@/components/Button/Button";
 import { NextUpCard } from "@/components/NextUpCard/NextUpCard";
 import { ScenarioCard } from "@/components/ScenarioCard/ScenarioCard";
@@ -54,21 +52,11 @@ export function HomeView({
 
       {topics.length > 0 && (
         <section aria-labelledby="topics-title" className="flex flex-col gap-3">
-          <div className="flex items-center justify-between gap-4">
-            <h2 id="topics-title" className="type-item-title">
-              Topics
-            </h2>
-            <Link
-              href="/weak-topics"
-              className="type-body -mr-2 inline-flex min-h-11 items-center gap-1.5 px-2 text-text underline decoration-1 underline-offset-4 hover:decoration-2"
-            >
-              See all
-              <ArrowRight size={18} strokeWidth={2} aria-hidden="true" />
-            </Link>
-          </div>
+          <h2 id="topics-title" className="type-item-title">
+            Topics
+          </h2>
           <TopicRow
             topics={topics}
-            unfinished={unfinished}
             labelledBy="topics-title"
             onRepeat={(topic) => onRepeat([topic])}
           />
