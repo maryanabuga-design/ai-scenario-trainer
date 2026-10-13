@@ -295,9 +295,14 @@ export default function Screens() {
               />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Sheet: Wrong choice + gibberish">
+          <PhoneFrame label="Sheet: Wrong choice + gibberish (My explanation is still correct)">
             <Screen>
               <StepSheetSample stepId="s1" optionId="d" explanation="лбтдлюью" index={0} />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Sheet: Wrong choice + gibberish, explanation marked correct, with Undo">
+            <Screen>
+              <StepSheetSample stepId="s1" optionId="d" explanation="лбтдлюью" index={0} marked />
             </Screen>
           </PhoneFrame>
         </Group>
