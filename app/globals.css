@@ -44,7 +44,8 @@
   --tag-blue: #d4e8f0;
   --tag-lilac: #e6ddf5;
   --tag-sage: #dfe5d8;
-  --chip: #efece5;
+  --chip: var(--stroke-neutral);
+  --chip-pressed: color-mix(in srgb, var(--chip) 90%, var(--text));
   --stroke-neutral: #d3cdc2;
   --stroke-sage: #a9b5a0;
   --code-yellow: #f9f4c1;
@@ -103,6 +104,7 @@
   --color-tag-lilac: var(--tag-lilac);
   --color-tag-sage: var(--tag-sage);
   --color-chip: var(--chip);
+  --color-chip-pressed: var(--chip-pressed);
   --color-secondary-pressed: var(--secondary-pressed);
   --color-stroke-neutral: var(--stroke-neutral);
   --color-stroke-sage: var(--stroke-sage);

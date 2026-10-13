@@ -5,7 +5,7 @@ import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { AskAiButton } from "@/components/AskAi/AskAi";
 import { Button } from "@/components/Button/Button";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
-import { SourceChip } from "@/components/SourceChip/SourceChip";
+import { GuideChip } from "@/components/GuideChip/GuideChip";
 import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
 import { StatusRows } from "@/components/StatusRows/StatusRows";
 import { describeEffects } from "@/lib/outcome";
@@ -54,7 +54,7 @@ function AnswerCard({ item }: { item: ScoredItem }) {
         ))}
         <div className="flex flex-wrap gap-2 pt-1">
           {item.sources.map((sectionId) => (
-            <SourceChip key={sectionId} sectionId={sectionId} />
+            <GuideChip key={sectionId} sectionId={sectionId} />
           ))}
         </div>
       </Field>

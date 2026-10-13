@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { SourceChip } from "@/components/SourceChip/SourceChip";
+import { GuideChip } from "@/components/GuideChip/GuideChip";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { loadAllSections } from "@/lib/guide";
 
@@ -10,7 +10,7 @@ import { loadAllSections } from "@/lib/guide";
 function chip(sectionId: string, showTitle = false) {
   const html = renderToStaticMarkup(
     <SourceSheetProvider sections={loadAllSections()}>
-      <SourceChip sectionId={sectionId} showTitle={showTitle} />
+      <GuideChip sectionId={sectionId} showTitle={showTitle} />
     </SourceSheetProvider>,
   );
   const start = html.indexOf("<button");
@@ -32,9 +32,9 @@ describe("Guide chips", () => {
       expect(html).toContain("bg-chip");
       expect(html).toContain("text-text");
       expect(html).toContain("lucide-file-text");
-      expect(html).toContain("active:bg-border");
+      expect(html).toContain("active:bg-chip-pressed");
       expect(html).not.toContain("hover:");
-      expect(html).not.toMatch(/bg-(tag|surface|card)|border-/);
+      expect(html).not.toMatch(/bg-(tag|surface|card)|border-|text-text-secondary">·/);
     }
   });
 
@@ -44,11 +44,18 @@ describe("Guide chips", () => {
     expect(html).toContain("before:-inset-y-1");
   });
 
-  it("are the only way a guide section is shown as a chip", () => {
-    const offenders = [...sourceFiles("components"), ...sourceFiles("app")].filter((file) => {
-      if (file.includes("SourceChip") || file.includes("SourceSheet")) return false;
-      return /Guide[ ·]+\$?\{/.test(readFileSync(file, "utf8"));
+  it("are all rendered by the shared GuideChip, and no screen styles its own chip", () => {
+    const files = [...sourceFiles("components"), ...sourceFiles("app")].filter(
+      (file) => !file.includes("GuideChip"),
+    );
+    const own = files.filter((file) => {
+      const code = readFileSync(file, "utf8");
+      return (
+        /Guide[ ·]+\$?\{/.test(code.replace(/Guide · \{section\.id\}/, "")) ||
+        /rounded-full[^"`]*bg-chip|bg-chip[^"`]*rounded-full/.test(code) ||
+        code.includes("SourceChip")
+      );
     });
-    expect(offenders).toEqual([]);
+    expect(own).toEqual([]);
   });
 });

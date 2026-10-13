@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/Button/Button";
 import { MarkCorrect } from "@/components/MarkCorrect/MarkCorrect";
-import { SourceChip } from "@/components/SourceChip/SourceChip";
+import { GuideChip } from "@/components/GuideChip/GuideChip";
 import type { AnswerBox, BoxTone, SheetContent } from "@/lib/answer-sheet";
 
 /** Your own answer is always the Your choice block; the tone only picks its icon. */
@@ -26,8 +26,9 @@ const verdicts: Record<SheetContent["result"], string> = {
   partial: "Partly correct.",
 };
 
-function Label({ children }: { children: ReactNode }) {
-  return <h3 className="type-label text-text-secondary">{children}</h3>;
+/** A section label; on the Your choice block it is dark, because grey is below AA on `--chip`. */
+function Label({ children, dark = false }: { children: ReactNode; dark?: boolean }) {
+  return <h3 className={`type-label ${dark ? "text-text" : "text-text-secondary"}`}>{children}</h3>;
 }
 
 function Box({ box }: { box: AnswerBox }) {
@@ -42,7 +43,7 @@ function Box({ box }: { box: AnswerBox }) {
         <Icon size={20} strokeWidth={2} aria-hidden="true" className={`mt-0.5 shrink-0 ${color}`} />
       )}
       <div className="flex min-w-0 flex-col gap-1">
-        <Label>{box.label}</Label>
+        <Label dark={box.yours}>{box.label}</Label>
         {box.lines.length === 1 ? (
           <p>{box.lines[0]}</p>
         ) : (
@@ -50,7 +51,11 @@ function Box({ box }: { box: AnswerBox }) {
             {box.lines.map((line, index) => (
               <li key={line}>
                 {box.ordered && (
-                  <span className="text-text-secondary tabular-nums">{index + 1}. </span>
+                  <span
+                    className={`tabular-nums ${box.yours ? "text-text" : "text-text-secondary"}`}
+                  >
+                    {index + 1}.{" "}
+                  </span>
                 )}
                 {line}
               </li>
@@ -145,7 +150,7 @@ export function AnswerSheet({
           ))}
           <div className="flex flex-wrap gap-2">
             {content.sources.map((sectionId) => (
-              <SourceChip key={sectionId} sectionId={sectionId} />
+              <GuideChip key={sectionId} sectionId={sectionId} />
             ))}
           </div>
         </section>

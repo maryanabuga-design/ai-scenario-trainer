@@ -6,7 +6,7 @@ import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
-import { SourceChip } from "@/components/SourceChip/SourceChip";
+import { GuideChip } from "@/components/GuideChip/GuideChip";
 import { Tag } from "@/components/Tag/Tag";
 import type { Material } from "@/lib/materials";
 import { questionsFor } from "@/lib/quiz";
@@ -117,7 +117,7 @@ export function TrainingReview({
                 <p className="type-small text-text-secondary">{step.question}</p>
                 <div className="flex flex-wrap gap-2">
                   {step.sources.map((sectionId) => (
-                    <SourceChip key={sectionId} sectionId={sectionId} />
+                    <GuideChip key={sectionId} sectionId={sectionId} />
                   ))}
                 </div>
               </li>
@@ -153,7 +153,7 @@ export function TrainingReview({
                 </span>
                 <p>{question.question}</p>
                 <div>
-                  <SourceChip sectionId={question.section} />
+                  <GuideChip sectionId={question.section} />
                 </div>
               </li>
             ))}

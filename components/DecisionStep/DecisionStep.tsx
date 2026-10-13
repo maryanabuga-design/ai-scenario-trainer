@@ -7,7 +7,7 @@ import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
 import { ConfidenceSelector } from "@/components/ConfidenceSelector/ConfidenceSelector";
 import { SessionTopBar } from "@/components/SessionTopBar/SessionTopBar";
 import type { Unit } from "@/components/SessionTopBar/SessionTopBar";
-import { SourceChip } from "@/components/SourceChip/SourceChip";
+import { GuideChip } from "@/components/GuideChip/GuideChip";
 import type { Confidence, Step } from "@/lib/scenario";
 
 export type Draft = {
@@ -51,7 +51,7 @@ export function DecisionStep({
         <p className="type-body">{step.narrative}</p>
         <div className="flex flex-wrap gap-2">
           {step.sources.map((sectionId) => (
-            <SourceChip key={sectionId} sectionId={sectionId} />
+            <GuideChip key={sectionId} sectionId={sectionId} />
           ))}
         </div>
         <AskAiButton step={step} phase="decide" />

@@ -3,7 +3,7 @@
 import { Sparkles } from "lucide-react";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
-import { SourceChip } from "@/components/SourceChip/SourceChip";
+import { GuideChip } from "@/components/GuideChip/GuideChip";
 import {
   deferredText,
   matchQuestion,
@@ -52,7 +52,7 @@ function AiMessage({ reply }: { reply: ChatReply }) {
       {sourcesLabel && <p className="type-small text-text-secondary">{sourcesLabel}</p>}
       <div className="flex flex-wrap gap-2">
         {reply.sources.map((sectionId) => (
-          <SourceChip key={sectionId} sectionId={sectionId} showTitle={reply.kind !== "answer"} />
+          <GuideChip key={sectionId} sectionId={sectionId} showTitle={reply.kind !== "answer"} />
         ))}
       </div>
     </div>

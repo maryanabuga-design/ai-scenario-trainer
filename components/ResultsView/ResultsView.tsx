@@ -7,7 +7,7 @@ import { ErrorTypesCard } from "@/components/ErrorTypesCard/ErrorTypesCard";
 import { ProgressCard } from "@/components/ProgressCard/ProgressCard";
 import { ResultsHeader } from "@/components/ResultsHeader/ResultsHeader";
 import { SoftCard } from "@/components/SoftCard/SoftCard";
-import { SourceChip } from "@/components/SourceChip/SourceChip";
+import { GuideChip } from "@/components/GuideChip/GuideChip";
 import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
 import { formatOutcome } from "@/lib/outcome";
 import { formatPoints, sessionLabel } from "@/lib/progress";
@@ -177,7 +177,7 @@ export function ResultsView({
         ) : (
           <div className="flex flex-wrap gap-2">
             {topics.map((sectionId) => (
-              <SourceChip key={sectionId} sectionId={sectionId} showTitle />
+              <GuideChip key={sectionId} sectionId={sectionId} showTitle />
             ))}
           </div>
         )}
