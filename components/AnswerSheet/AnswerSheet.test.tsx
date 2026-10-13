@@ -55,6 +55,7 @@ describe("Your choice block", () => {
       label,
     );
     expect(block).toContain("bg-secondary-sand");
-    expect(block).toContain("border-l-[3px] border-primary");
+    expect(block).toContain("border-l-[3px]");
+    expect(block).toContain("border-l-primary");
   });
 });

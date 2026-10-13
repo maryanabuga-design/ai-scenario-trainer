@@ -38,7 +38,7 @@ export function ChoiceCard({
         checked ? "border-2 border-primary" : "border-border"
       } ${
         disabled
-          ? "cursor-not-allowed border-transparent bg-secondary-sand text-text-secondary"
+          ? "cursor-not-allowed border-secondary-sand-pressed bg-secondary-sand text-text-secondary"
           : "cursor-pointer bg-surface active:bg-surface-muted"
       }`}
     >

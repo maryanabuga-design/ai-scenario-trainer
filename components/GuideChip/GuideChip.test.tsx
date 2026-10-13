@@ -34,7 +34,10 @@ describe("Guide chips", () => {
       expect(html).toContain("lucide-file-text");
       expect(html).toContain("active:bg-secondary-sand-pressed");
       expect(html).not.toContain("hover:");
-      expect(html).not.toMatch(/bg-(tag|surface|card)|border-|text-text-secondary">·/);
+      expect(html).toContain("border border-secondary-sand-pressed");
+      expect(html).not.toMatch(
+        /bg-(tag|surface|card)|border-(?!secondary-sand-pressed)|text-text-secondary">·/,
+      );
     }
   });
 

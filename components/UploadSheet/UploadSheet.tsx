@@ -91,7 +91,7 @@ export function UploadPanel({
             {formatSize(stage.file.size)} · Checking the file
           </p>
           <div
-            className="h-2 w-full overflow-hidden rounded-full bg-secondary-sand"
+            className="h-2 w-full overflow-hidden rounded-full bg-secondary-sand-pressed"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={100}

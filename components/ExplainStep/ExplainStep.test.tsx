@@ -20,7 +20,8 @@ describe("Your choice on the Explain screen", () => {
     );
     const quote = /<blockquote class="([^"]*)"/.exec(html)?.[1] ?? "";
     expect(quote).toContain("bg-secondary-sand");
-    expect(quote).toContain("border-l-[3px] border-primary");
+    expect(quote).toContain("border-l-[3px]");
+    expect(quote).toContain("border-l-primary");
     expect(quote).not.toContain("text-text-secondary");
   });
 });

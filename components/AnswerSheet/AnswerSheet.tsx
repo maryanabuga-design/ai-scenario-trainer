@@ -10,7 +10,7 @@ import { GuideChip } from "@/components/GuideChip/GuideChip";
 import type { AnswerBox, BoxTone, SheetContent } from "@/lib/answer-sheet";
 
 /** Your own answer is always the Your choice block; the tone only picks its icon. */
-const yoursBlock = "border-l-[3px] border-primary bg-secondary-sand";
+const yoursBlock = "border border-l-[3px] border-secondary-sand-pressed border-l-primary bg-secondary-sand";
 
 const boxStyles: Record<BoxTone, { className: string; icon?: [LucideIcon, string] }> = {
   right: { className: yoursBlock, icon: [Check, "text-correct"] },

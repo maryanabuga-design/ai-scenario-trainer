@@ -19,7 +19,7 @@ export type ButtonLook = {
 
 const variants: Record<ButtonVariant, string> = {
   primary:
-    "type-button min-h-12 px-6 bg-primary text-primary-text active:bg-primary-pressed disabled:bg-secondary-sand disabled:text-text-secondary",
+    "type-button min-h-12 px-6 bg-primary text-primary-text active:bg-primary-pressed disabled:border disabled:border-secondary-sand-pressed disabled:bg-secondary-sand disabled:text-text-secondary",
   secondary:
     "type-button min-h-11 px-5 border-[1.5px] border-primary bg-transparent text-primary active:bg-secondary-sand disabled:border-secondary-sand-pressed disabled:bg-transparent disabled:text-text-secondary",
   text: "min-h-11 px-3 text-primary active:bg-secondary-sand disabled:bg-transparent disabled:text-text-secondary",

@@ -50,7 +50,7 @@ function MaterialRow({
       </div>
       {material.status === "processing" && (
         <div
-          className="h-1.5 w-full overflow-hidden rounded-full bg-secondary-sand"
+          className="h-1.5 w-full overflow-hidden rounded-full bg-secondary-sand-pressed"
           role="progressbar"
           aria-label={`${material.name} processing`}
           aria-valuemin={0}

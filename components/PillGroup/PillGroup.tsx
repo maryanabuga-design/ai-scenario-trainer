@@ -24,10 +24,10 @@ export function PillGroup<T extends string | number>({
               key={String(option.value)}
               className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 type-small has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${
                 option.disabled
-                  ? "cursor-not-allowed border-transparent bg-secondary-sand text-text-secondary"
+                  ? "cursor-not-allowed border-secondary-sand-pressed bg-secondary-sand text-text-secondary"
                   : checked
                     ? "cursor-pointer border-primary bg-primary text-primary-text"
-                    : "cursor-pointer border-border-strong bg-transparent text-text active:bg-secondary-pressed"
+                    : "cursor-pointer border-border-strong bg-transparent text-text active:bg-secondary-sand"
               }`}
             >
               <input

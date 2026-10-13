@@ -23,7 +23,7 @@ export function SessionTopBar({
           {Array.from({ length: total }, (_, position) => (
             <li
               key={position}
-              className={`h-1.5 w-4 rounded-full ${position <= index ? "bg-primary" : "bg-secondary-sand"}`}
+              className={`h-1.5 w-4 rounded-full ${position <= index ? "bg-primary" : "bg-secondary-sand-pressed"}`}
             />
           ))}
         </ol>
