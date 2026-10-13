@@ -85,8 +85,8 @@ Rules:
 
 | Style | Utility | Size / line height | Weight | Extra | Used for |
 |---|---|---|---|---|---|
-| Display headline | `type-display` | 28 / 35 (1.25) | 600 | | Results headline, Home headline, onboarding headlines |
-| Display sub-line | `type-display-sub` | 18 / 28 | 400 | `--text-secondary` or `--header-subline` | the grey second line of a display headline on Results and onboarding |
+| Display headline | `type-display` | 28 / 35 (1.25) | 600 | | Results headline, Home headline, onboarding step headlines |
+| Display sub-line | `type-display-sub` | 18 / 28 | 400 | `--text-secondary` or `--header-subline` | the grey second line of a display headline on Results |
 | Page title | `type-page-title` | 28 / 35 (1.25) | 600 | | the h1 of every other screen (Materials, Progress, Session setup, Error analysis…) |
 | Card title | `type-card-title` | 22 / 27.5 (1.25) | 600 | | card and sheet titles, the progress card title, the ring numeral |
 | Item title | `type-item-title` | 18 / 24.75 (1.375) | 600 | | titles inside cards and lists (answer cards, topic cards, scenario cards, Next up), section headings, question text |
@@ -109,7 +109,7 @@ Where this file writes "14 `--text-secondary`" it means grey secondary text, "12
 - No shadows except a subtle one on overlays (sheet, dialogs).
 
 ## Gradients
-- Allowed only in: onboarding screens and material covers. Home has no gradient and no graphic elements at the top. The Results header uses the soft light header instead (see "Results screen").
+- Allowed only in: material covers. Onboarding has no gradient. Home has no gradient and no graphic elements at the top. The Results header uses the soft light header instead (see "Results screen").
 - One smooth mesh in a muted military palette: sand, khaki, moss and dark olive (`--mesh-*`), soft and low in contrast. Built from a three-colour linear blend plus two round colour fields, blurred by about 70px and mixed with `--bg` (sand about 85%, khaki about 65%, moss about 40%, olive about 30%). The cool variant uses the same colours in a different arrangement. Colours only: no camouflage pattern, no military imagery. No separate visible blobs, edges or stripes. The blur layer is clipped by the card's rounded corners.
 - Never on Session setup, the decision step or the answer sheet. Never behind body text, form controls or status badges. Text on a gradient keeps 4.5:1 against its darkest point (3:1 for text 24px and larger): `--text` is 9:1 or more on every mesh tone; inside a gradient zone `--text-secondary` is replaced by `--text-secondary-on-mesh` (5:1 or more), and secondary text there is 24px or larger.
 - Material cover: a 56px or larger rounded square (16px radius). The evacuation guide keeps its gradient fill; every other material has a plain `--surface-muted` tile. Every cover shows the material's file-type tag (PDF, DOCX, LINK, JPG) centred on it, in the same file-type tag style, on the list and on the material page.
@@ -126,10 +126,7 @@ Where this file writes "14 `--text-secondary`" it means grey secondary text, "12
 
 ## Screen map
 From `docs/mvp-matrix-and-ia.md`.
-- Onboarding (first visit only, can be skipped): Choose direction → How it works → Example scenario. Opening Home before onboarding is done or skipped leads to onboarding. A "Skip" text action at the top right of every onboarding step marks it done and opens Home. Progress dots show the step (1 of 3). Gradient zone at the top of each step, with the step title on it.
-  - Choose direction: "Building evacuation and first aid" is the only selectable direction. "Road incident first aid", "Flood preparedness" and "Crisis communication" are listed as disabled with "Not available in this prototype".
-  - How it works: four numbered points (choose an action, say how sure you are, explain in one sentence, get feedback from the guide with the error type and source) and a line that AI behaviour is simulated in this prototype.
-  - Example scenario: a preview of the sample scenario (its first situation, decision count and time) with "Try it", which opens Session setup, and a text action "Go to Home".
+- Onboarding (replaced 13 Oct 2026; there is only this one): a first-run introduction that explains the app in under 20 seconds. Three short steps and a final screen, moved through with buttons (a horizontal swipe also works). See "Onboarding screen" below.
 - Home: see "Home screen" below.
 - Weak topics (Home, Progress and the Weak topics page) come from the saved session history, scenario steps and quiz questions alike: for each step or question, the most recent answer counts, and it is weak when that answer was wrong, partly right or guessed. A topic is a guide section behind weak answers (S2 "Checking the route", F5 "The dangers of floodwater"). Its error type is the most serious among its weak answers, in priority order misconception, knowledge gap, guess; topics are ordered by that priority, then by how many answers are weak. Repeating topics starts a repeat round with their weak steps and questions together.
 - Repeat summary card (Progress): a card with "N topics to repeat" (item title), one line of error-type counts in 14 `--text-secondary` ("1 misconception, 2 knowledge gaps"), and the primary button "Repeat weak topics" (full width). With nothing weak: "No weak topics yet. They appear here after a session or a quiz." and no button. On Home this job is done by the "Next up" card.
@@ -320,6 +317,25 @@ Error analysis screen (`/session/results/analysis`, also `?show=correct` and `?s
 
 Results actions: the sticky action bar keeps "Repeat weak topics" (when there is something to repeat) and the text action "Back to Home". The footer note stays at the end of the content.
 
+## Onboarding screen
+A first-run introduction, shown only on the first visit to Home. Strictly educational: no weapons, harm or combat language.
+
+- Steps (the copy is fixed):
+  1. Target icon. "Practise a decision". "You get a realistic situation and choose what to do."
+  2. Document-with-check icon. "Explain it, then check it". "Say how confident you are and explain your choice in your own words. Every answer is checked against your source guide."
+  3. Repeat icon (two arrows in a circle). "See what to repeat". "You see which mistakes were guesses, gaps or misconceptions, and repeat only those topics."
+  - Final screen: "Ready to start?", the line "Upload a guide or try the sample materials." and the note "AI behavior is simulated for this prototype. All feedback comes from the source guide." Primary button "Get started" (opens Home). On onboarding the global footer note is not shown again under the content; the final screen carries it.
+- Layout: the warm greige page (`--bg`), no bottom navigation. A top row 44px high: the circular back button on the left (steps 2 and 3 and the final screen; accessible name "Previous step"), and on the right on steps 1 to 3 an underlined "Skip" text button (44px tap area). Below it one content block centred vertically in the space above the action bar, text left-aligned:
+  - an 88px round icon tile in the Home "Next up" tile style (`--next-tile`, a 40px outline icon in `--text`, 12.3:1), decorative;
+  - 24px below, the overline "STEP 1 OF 3" in the label style, `--text-secondary`;
+  - the headline in the display headline style, `--text`; it is the screen's one `h1`;
+  - the body in the body style, `--text-secondary` (4.9:1 on `--bg`), at most two short sentences.
+  The final screen has no icon tile and no overline; its note is in 14 `--text-secondary`.
+- Action bar: on steps 1 to 3, the position dots centred above the button: three 8px dots 8px apart, the current one `--primary`, the others `--border-strong` (3.2:1 against the page); they are `aria-hidden` and a visually hidden "Step 2 of 3" stands for them. Then the full-width primary button: "Next" on steps 1 and 2, "Continue" on step 3, "Get started" on the final screen.
+- No images, illustrations, leaves, mountains or gradients; no shadow other than the card shadow token on the back button.
+- Motion: switching steps is instant (no slide), so it also respects reduced motion. Focus moves to the new headline when the step changes.
+- Behaviour: Home opens onboarding until it has been finished or skipped once; "Skip" and "Get started" mark it done (the `onboarded` flag in the saved profile, `ast.profile.v1`) and open Home. Direct links to any other page are never redirected. When the browser cannot save, onboarding is shown again on the next visit and nothing breaks. "How it works" at the bottom of Home replays it; a replay changes no saved data.
+
 ## Home screen
 Built from the Home target image of 12 Oct 2026; colours measured from it. Single column, 16px side padding, 32px between sections, on `--bg`. No gradient, no leaf shadow, no mountains or other graphics. Home has no action bar; the content keeps bottom padding above the floating navigation so nothing is hidden behind it.
 
@@ -336,4 +352,5 @@ Built from the Home target image of 12 Oct 2026; colours measured from it. Singl
   - Pill: uppercase label, `--text` on `--repeat-pill`, full pill: "N TO REPEAT"; once that topic's repeat round has started "N OF M REPEATED" with a 4px progress bar under it (`--primary` on `--border`), announced as text.
 - Pagination dots, centred 12px below the row: one 8px dot per card, 8px apart, the current one `--primary`, the others `--primary` at 25% opacity. They only show position: not controls, `aria-hidden`, with a visually hidden "Card 1 of N" that updates politely as the row scrolls. The cards themselves are in the Tab order.
 - New scenario: "New scenario" (item title), then one card per material with a prepared scenario (the evacuation guide; the flood guide once uploaded): `--card`, 24px radius, 20px padding, `--card-shadow`; a "SCENARIO" tag on `--tag-yellow`, the scenario title in the item title style, an arrow in a 40px white circle top right, and two lines in 14 `--text-secondary`: "Short: 3 decisions, about 5 min. Full: 6 decisions, about 10 min." and "Or take a quiz on any guide sections, with five kinds of questions." (the lengths the scenario has). No graphics. The whole card opens Session setup for that material (Create training first, for an uploaded material whose training has not been created).
+- "How it works": an underlined text button (44px tap area) at the end of Home's content that replays the onboarding.
 - The floating bottom navigation stays, with the current item on the `--nav-active` pill.

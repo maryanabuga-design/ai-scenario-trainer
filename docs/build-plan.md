@@ -31,6 +31,7 @@ One commit per screen group, in this order. Steps 1 to 29 are built. Steps 2 to 
 27. Design fixes: one chip colour token and no hover on chips, an answer sheet without status rows (hidden verdict, "N of M right"), sage secondary pills, sage file-type tags on every cover, question totals and fitting amounts in quiz setup, and topic tiles coloured by guide section.
 28. Outline secondary pills and option chips, one circular back button, Select all and Deselect all on a shared section list, and Create training rebuilt with option cards and a quiz size that is saved and caps Session setup.
 29. Create training fixes: section rows as separate cards with pastel code circles, one Select all / Deselect all toggle with everything selected by default (also on Session setup), and darker strokes on the Scenario and Quiz cards.
+30. Onboarding replaced (13 Oct 2026): a first-run introduction in three short steps and a "Ready to start?" screen, with Skip, Previous step, position dots, focus on each new headline, and "How it works" on Home to replay it. The direction picker and the example scenario left onboarding; the direction stays in Profile.
 
 ## Screen review page
 `/screens` is a development-only page (404 in production, not linked from the navigation) that shows every planned screen at 390 by 844. Screens that are not built are dashed frames. Each screen commit replaces its frame with the real screen using sample data.

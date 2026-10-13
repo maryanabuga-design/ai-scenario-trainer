@@ -19,7 +19,7 @@ Columns: value and complexity come from the board. "Prototype approach" is a pro
 | 6 | Session setup: number of decisions and estimated time | Must | High / Low | Selector for the number of decisions with an estimated time |
 | 7 | Progress and history: weak topics, return without a new prompt | Must | High / Medium | Store sessions in the browser on this device; show weak topics and session history |
 | 8 | Repeat weak topics (from results and from progress) | Must | High / Low | Replay the steps that were wrong or guessed |
-| 9 | Short onboarding + a ready example scenario | Must | Medium / Low | Three screens: choose direction, how it works, example scenario |
+| 9 | Short onboarding | Must | Medium / Low | First-run introduction, replaced on 13 Oct 2026: three short steps (Practise a decision; Explain it, then check it; See what to repeat) and a final "Ready to start?" screen with "Get started". Skip on every step; shown once; "How it works" on Home replays it. The direction is chosen in Profile (one direction is available) |
 | 10 | Confidence check "are you sure?" | Should | Medium / Low | Three-level selector; gives data for error analysis |
 | 11 | Document always nearby (source in a sheet) | Should | Medium / Low | Same bottom sheet as feature 5 |
 | 12 | Question about a highlighted fragment | Could | Medium / High | Not in this version (hard on mobile) |
@@ -43,8 +43,8 @@ Columns: value and complexity come from the board. "Prototype approach" is a pro
 ## Information architecture
 Assumption to confirm with the user: four sections live in the bottom navigation (Home, Materials, Progress, Profile). Onboarding, Scenario session and Session results are opened from other screens and have no navigation item.
 
-- Onboarding (Онбординг): Choose direction · How it works · Example scenario
-- Home (Головна): Continue session · Repeat summary and topic row · New scenario · Weak topics page (from See all)
+- Onboarding (Онбординг): Practise a decision · Explain it, then check it · See what to repeat · Ready to start? (replayed from "How it works" on Home)
+- Home (Головна): How it works (replays onboarding) · Continue session · Repeat summary and topic row · New scenario · Weak topics page (from See all)
 - Materials (Матеріали): Materials list with tabs Ready, Processing and Failed · Upload sheet (sample files) · Material page · Create training · Generating · Review training · Upload sheet (simulated) · Material page (details, sections and excerpts)
 - Progress (Прогрес): Repeat summary and topic row · Session history
 - Profile (Профіль): Direction · Settings
