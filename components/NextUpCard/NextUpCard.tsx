@@ -1,6 +1,7 @@
 import { ArrowRight, Target } from "lucide-react";
 import Link from "next/link";
 import { Button, ButtonLink } from "@/components/Button/Button";
+import { SoftShape } from "@/components/SoftShape/SoftShape";
 import type { NextUp } from "@/lib/home";
 
 /** The sage "Next up" card on Home: what to do now, with one primary button. */
@@ -34,8 +35,9 @@ export function NextUpCard({
   return (
     <section
       aria-labelledby="next-up-title"
-      className="flex flex-col gap-4 rounded-[28px] bg-next-card p-4 shadow-(--card-shadow)"
+      className="relative isolate flex flex-col gap-4 overflow-hidden rounded-[28px] bg-next-card p-4 shadow-(--card-shadow)"
     >
+      <SoftShape variant="strong" />
       {next.linksToTopics ? (
         <Link href="/weak-topics" className="-m-1 flex items-center gap-3 rounded-panel p-1">
           {top}

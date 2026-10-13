@@ -115,6 +115,14 @@ Where this file writes "14 `--text-secondary`" it means grey secondary text, "12
 - Material cover: a 56px or larger rounded square (16px radius). The evacuation guide keeps its gradient fill; every other material has a plain `--surface-muted` tile. Every cover shows the material's file-type tag (PDF, DOCX, LINK, JPG) centred on it, in the same file-type tag style, on the list and on the material page.
 - Static. No animation.
 
+## Decorative shapes
+- One shared component, SoftShape: two or three overlapping soft organic curves rising from the bottom-right corner of a card along part of its lower edge, clipped by the card's rounded corners and drawn behind all content. Abstract only: no leaves, trees, mountains or any recognisable object. Inline SVG, static (no animation), `aria-hidden`, no pointer events.
+- Colour: the moss sage `--mesh-moss` at low opacity, tone on tone with the card.
+  - "strong" (the Home "Next up" card): layers at 6%, 8% and 14%; where all three overlap the card reads #D3D7C6 (about 26% moss on `--next-card`).
+  - "faint" (the Home "New scenario" cards): layers at 3%, 3% and 4%; at most about 10% moss on `--card` (#EEECE3), barely noticeable.
+- Contrast at the darkest overlap: strong `--text` 11.9:1, `--text-secondary` 4.69:1, `--primary` 6.67:1; faint `--text` 14.7:1, `--text-secondary` 5.82:1. The primary button and the white arrow circle are opaque, so their contrast is unchanged (white on `--primary` 9.79:1).
+- These two Home cards are the only place decorative shapes are allowed. Every other screen and card stays flat.
+
 ## Layout
 - Single column with 16px side padding. Content width is the screen width, 430px maximum.
 - Safe areas: respect the top and bottom safe areas (`env(safe-area-inset-top)` and `env(safe-area-inset-bottom)`) on every fixed element.
@@ -337,11 +345,11 @@ A first-run introduction, shown only on the first visit to Home. Strictly educat
 - Behaviour: Home opens onboarding until it has been finished or skipped once; "Skip" and "Get started" mark it done (the `onboarded` flag in the saved profile, `ast.profile.v1`) and open Home. Direct links to any other page are never redirected. When the browser cannot save, onboarding is shown again on the next visit and nothing breaks. "How it works" at the bottom of Home replays it; a replay changes no saved data.
 
 ## Home screen
-Built from the Home target image of 12 Oct 2026; colours measured from it. Single column, 16px side padding, 32px between sections, on `--bg`. No gradient, no leaf shadow, no mountains or other graphics. Home has no action bar; the content keeps bottom padding above the floating navigation so nothing is hidden behind it.
+Built from the Home target image of 12 Oct 2026; colours measured from it. Single column, 16px side padding, 32px between sections, on `--bg`. No gradient, no leaf shadow, no mountains or other graphics; the only decoration is the abstract SoftShape inside the Next up and New scenario cards (see "Decorative shapes"). Home has no action bar; the content keeps bottom padding above the floating navigation so nothing is hidden behind it.
 
 - Eyebrow chip: the current direction name ("Building evacuation and first aid") as a chip in the same token and text style as the "SCENARIO" tag (`--tag-yellow`, the tag label style, `--text`, pill, 4px 10px padding) but in sentence case as written; no line under it. It is a label, not a control: no pressed state, no focus ring, not in the Tab order. `--text` on `--tag-yellow` 14.8:1.
 - Headline: "Practise a decision. Explain it, then check it against the guide." in the display headline style (the same semibold style as the Results headline), `--text`. Under it the sub-line "Small steps. Real progress." in 14 `--text-secondary`. One heading element.
-- "Next up" card: `--next-card`, 28px radius, 16px padding, `--card-shadow`. Top row: a 48px round `--next-tile` tile with a target icon (24px, `--text`), then an uppercase label "NEXT UP" in `--text-secondary` (darkened from the image's 2.3:1 grey), the title in the item title style and a sub-line in 14 `--text-secondary`; on the right an arrow in a 40px white circle. Below, a full-width primary button. One state, the first that applies:
+- "Next up" card: `--next-card`, 28px radius, 16px padding, `--card-shadow`, with the "strong" SoftShape in its bottom-right corner behind the content. Top row: a 48px round `--next-tile` tile with a target icon (24px, `--text`), then an uppercase label "NEXT UP" in `--text-secondary` (darkened from the image's 2.3:1 grey), the title in the item title style and a sub-line in 14 `--text-secondary`; on the right an arrow in a 40px white circle. Below, a full-width primary button. One state, the first that applies:
   - Unfinished session or repeat round: title "Continue your <session>" ("Continue your repeat round", "Continue your full session", "Continue your quiz"), sub-line "Item 1 of 2" ("Step 3 of 6", "Question 2 of 10"), button "Continue" (opens the session). No arrow.
   - Weak topics: "N topics to repeat", the breakdown by error type ("1 knowledge gap"), button "Repeat weak topics" (starts the repeat round). The top row (tile, text and arrow) is one link to the Weak topics page.
   - No sessions yet: "Start your first scenario", sub-line "A short scenario takes about 5 minutes.", button "Start a scenario". No arrow.

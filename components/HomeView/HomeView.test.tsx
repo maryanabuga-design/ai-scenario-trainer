@@ -49,3 +49,11 @@ describe("Home eyebrow", () => {
     expect(chip).not.toContain("active:");
   });
 });
+
+describe("Next up card", () => {
+  it("has the strong soft shape behind its content", () => {
+    const html = renderHome();
+    const card = html.slice(html.indexOf('aria-labelledby="next-up-title"'));
+    expect(card.slice(0, card.indexOf("</section>"))).toContain("<svg aria-hidden");
+  });
+});
