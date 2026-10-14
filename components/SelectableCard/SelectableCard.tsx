@@ -1,5 +1,6 @@
 import { Check } from "lucide-react";
 import type { ReactNode } from "react";
+import { SelectedProvider } from "@/components/SelectableCard/SelectedContext";
 
 type Props = {
   name: string;
@@ -51,7 +52,9 @@ export function SelectableCard({
         onChange={() => onChange(value)}
         className="sr-only"
       />
-      <span className="flex min-w-0 flex-1 items-center gap-3">{children}</span>
+      <SelectedProvider value={checked && !disabled}>
+        <span className="flex min-w-0 flex-1 items-center gap-3">{children}</span>
+      </SelectedProvider>
       <span
         aria-hidden="true"
         className={`flex h-5 w-5 shrink-0 items-center justify-center border ${

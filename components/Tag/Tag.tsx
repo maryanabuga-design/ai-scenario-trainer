@@ -1,3 +1,6 @@
+"use client";
+
+import { useCardSelected } from "@/components/SelectableCard/SelectedContext";
 import type { ReactNode } from "react";
 
 type Tone = "yellow" | "peach" | "blue" | "lilac" | "sage";
@@ -10,7 +13,7 @@ const tones: Record<Tone, string> = {
   sage: "border border-tag-sage-stroke bg-tag-sage",
 };
 
-/** A category label. `sentenceCase` keeps the text as written (only the direction chip on Home). */
+/** A category label; primary while its SelectableCard is selected. `sentenceCase` keeps the text as written (only the direction chip on Home). */
 export function Tag({
   tone = "yellow",
   sentenceCase = false,
@@ -20,9 +23,14 @@ export function Tag({
   sentenceCase?: boolean;
   children: ReactNode;
 }) {
+  // In a selected card the chip turns primary; its stroke is the same colour (an allowed exception).
+  const selected = useCardSelected();
+  const look = selected
+    ? "border border-primary bg-primary text-primary-text"
+    : `text-text ${tones[tone]}`;
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-1 type-label text-text ${tones[tone]} ${sentenceCase ? "normal-case" : ""}`}
+      className={`inline-flex items-center rounded-full px-2.5 py-1 type-label ${look} ${sentenceCase ? "normal-case" : ""}`}
     >
       {children}
     </span>

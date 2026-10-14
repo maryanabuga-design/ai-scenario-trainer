@@ -54,6 +54,7 @@ One commit per screen group, in this order. Steps 1 to 29 are built. Steps 2 to 
 50. "Details" on the Error types card: the underlined label with a plain arrow beside it, no circle. Screenshots: `docs/screens/55-*`.
 51. ArrowCircle in the top-right corner of every card that uses it (16px from top and right, 12px small), with text clearance so titles wrap before it; the plain chevron stays vertically centred. Screenshots: `docs/screens/56-*`.
 52. Three locked button types (primary, secondary, tertiary) with the audit by screen in `DESIGN.md`: a secondary only below a primary (the Materials header "Upload a file" is the one exception), tertiary as small underlined 14px text with a 44px tap area, no hover, one focus ring. Screenshots: `docs/screens/57-*`.
+53. A chip inside a selected SelectableCard turns primary (primary fill, white text, same-colour stroke); unselected cards keep their pastel chips. Screenshots: `docs/screens/58-*`.
 
 ## Screen review page
 `/screens` is a development-only page (404 in production, not linked from the navigation) that shows every planned screen at 390 by 844. Screens that are not built are dashed frames. Each screen commit replaces its frame with the real screen using sample data.
