@@ -1,15 +1,18 @@
 "use client";
 
 import { History } from "lucide-react";
-import { ButtonLink } from "@/components/Button/Button";
+import { useState } from "react";
+import { Button, ButtonLink } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
-import { Tag } from "@/components/Tag/Tag";
+import { HeaderRow } from "@/components/HeaderRow/HeaderRow";
 import { RepeatSummary } from "@/components/RepeatSummary/RepeatSummary";
-import { formatPoints, scoreSession, sessionLabel, weakItemsFromHistory } from "@/lib/progress";
-import { totalScore, weakItems } from "@/lib/scoring";
+import { Tag } from "@/components/Tag/Tag";
 import type { FinishedSession } from "@/lib/session";
 import type { WeakTopic } from "@/lib/weak-topics";
+import { HISTORY_PAGE, seeMore, visibleHistory } from "@/lib/history";
+import { formatPoints, scoreSession, sessionLabel, weakItemsFromHistory } from "@/lib/progress";
+import { totalScore, weakItems } from "@/lib/scoring";
 
 const dateFormat = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",
@@ -81,9 +84,16 @@ export function ProgressView({
   history: FinishedSession[];
   onRepeat: (topics: WeakTopic[]) => void;
 }) {
+  const [shown, setShown] = useState(HISTORY_PAGE);
+  const { visible, hasMore } = visibleHistory([...history].reverse(), shown);
   return (
-    <div className="flex flex-col gap-8">
-      <h1 className="type-page-title">Progress</h1>
+    <div className="flex flex-col gap-6">
+      <HeaderRow
+        title={<h1 className="type-page-title">Progress</h1>}
+        subtitle={
+          <p className="type-small text-text-secondary">Topics to repeat and your past sessions.</p>
+        }
+      />
 
       {history.length === 0 ? (
         <EmptyState
@@ -103,12 +113,19 @@ export function ProgressView({
               Session history
             </h2>
             <ol className="flex flex-col gap-3">
-              {[...history].reverse().map((session) => (
+              {visible.map((session) => (
                 <li key={session.finishedAt}>
                   <HistoryRow session={session} />
                 </li>
               ))}
             </ol>
+            {hasMore && (
+              <div className="-ml-3">
+                <Button variant="text" onClick={() => setShown(seeMore(shown))}>
+                  See more
+                </Button>
+              </div>
+            )}
           </section>
         </>
       )}

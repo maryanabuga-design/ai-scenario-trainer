@@ -1,7 +1,9 @@
 "use client";
 
-import { Button, ButtonLink } from "@/components/Button/Button";
 import { ListChecks } from "lucide-react";
+import Link from "next/link";
+import { ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
+import { Button } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { TopicRow } from "@/components/TopicRow/TopicRow";
@@ -41,27 +43,29 @@ export function RepeatSummary({
   return (
     <section aria-labelledby="repeat-title" className="flex flex-col gap-4">
       <Card className="flex flex-col gap-3">
-        <div className="flex flex-col gap-1">
-          <h2 id="repeat-title" className="type-item-title">
-            <span className="tabular-nums">{topics.length}</span>{" "}
-            {topics.length === 1 ? "topic" : "topics"} to repeat
-          </h2>
-          <p className="type-small text-text-secondary">{describeCounts(countTopics(topics))}</p>
-        </div>
+        <Link
+          href="/weak-topics"
+          className="-m-1 flex items-start justify-between gap-3 rounded-panel p-1"
+        >
+          <span className="flex min-w-0 flex-col gap-1">
+            <h2 id="repeat-title" className="type-item-title">
+              <span className="tabular-nums">{topics.length}</span>{" "}
+              {topics.length === 1 ? "topic" : "topics"} to repeat
+            </h2>
+            <span className="type-small text-text-secondary">
+              {describeCounts(countTopics(topics))}
+            </span>
+          </span>
+          <span className="sr-only">, see all weak topics</span>
+          <ArrowCircle />
+        </Link>
         <Button onClick={() => onRepeat(topics)}>Repeat weak topics</Button>
       </Card>
 
       <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <h3 id="topics-title" className="type-item-title">
-            Topics
-          </h3>
-          <div className="-mr-3">
-            <ButtonLink href="/weak-topics" variant="text">
-              See all
-            </ButtonLink>
-          </div>
-        </div>
+        <h3 id="topics-title" className="type-item-title">
+          Topics
+        </h3>
         <TopicRow
           topics={topics}
           labelledBy="topics-title"
