@@ -57,6 +57,7 @@ One commit per screen group, in this order. Steps 1 to 29 are built. Steps 2 to 
 53. A chip inside a selected SelectableCard turns primary (primary fill, white text, same-colour stroke); unselected cards keep their pastel chips. Screenshots: `docs/screens/58-*`.
 54. The answer sheet keeps a usable height on phones: at least 55% and at most 85% (92% on short viewports) of the visible viewport, a content area that grows from its content and scrolls, and a footer that is part of the sheet; Playwright phone-size tests (`npm run test:e2e`). Screenshots: `docs/screens/59-*`.
 55. One light olive tint (`--olive-tint` #D6DEC9) for the file-type tiles on every material and the S-number circles of the guide sections; the five per-section colours and `--material-tile` removed. Screenshots: `docs/screens/60-*`.
+56. Chips without strokes: one shared Chip (soft pastel fills in seven tones, dark text, no border), used by the tags, status chips and Guide chips; every tone at least 6 CIE76 ΔE from the page, cards and selected cards, the sand darkened to #E5DFD4 to get there; the tone table is in `DESIGN.md`. Screenshots: `docs/screens/61-*`.
 
 ## Screen review page
 `/screens` is a development-only page (404 in production, not linked from the navigation) that shows every planned screen at 390 by 844. Screens that are not built are dashed frames. Each screen commit replaces its frame with the real screen using sample data.

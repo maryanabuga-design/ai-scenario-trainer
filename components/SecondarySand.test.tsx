@@ -53,11 +53,10 @@ describe("secondary sand for inactive states and tonal backgrounds", () => {
     expect(track).toContain("border border-secondary-sand-pressed");
   });
 
-  it("is every Guide chip, pressed one tone darker", () => {
+  it("is not used for Guide chips any more: they are the chip sand, without a stroke", () => {
     const chip = classWith(withSheet(<GuideChip sectionId="S1" />), "min-h-9") ?? "";
-    expect(chip).toContain("bg-secondary-sand");
-    expect(chip).toContain("border border-secondary-sand-pressed");
-    expect(chip).toContain("active:bg-secondary-sand-pressed");
+    expect(chip).toContain("bg-chip-sand");
+    expect(chip).not.toMatch(/border|secondary-sand/);
   });
 
   it("is the Your choice block on the Explain screen and in the answer sheet", () => {
@@ -101,11 +100,11 @@ describe("secondary sand for inactive states and tonal backgrounds", () => {
 describe("coloured chips and icon backgrounds stay as they are", () => {
   it("keeps every tag in its pastel and never in the olive", () => {
     const tones = {
-      yellow: "bg-tag-yellow",
-      blue: "bg-tag-blue",
-      peach: "bg-tag-peach",
-      lilac: "bg-tag-lilac",
-      sage: "bg-tag-sage",
+      yellow: "bg-chip-yellow",
+      blue: "bg-chip-blue",
+      peach: "bg-chip-peach",
+      lilac: "bg-chip-lilac",
+      green: "bg-chip-green",
     } as const;
     for (const [tone, fill] of Object.entries(tones)) {
       const html = renderToStaticMarkup(<Tag tone={tone as keyof typeof tones}>Scenario</Tag>);
@@ -122,9 +121,9 @@ describe("coloured chips and icon backgrounds stay as they are", () => {
     expect(renderToStaticMarkup(<MaterialTile type="PDF" />)).toContain("bg-olive-tint");
   });
 
-  it("keeps the neutral status chip (Marked correct by you) on the neutral panel colour", () => {
+  it("keeps the neutral status chip (Marked correct by you) on the chip sand", () => {
     const marked = renderToStaticMarkup(<StatusChip status="marked" />);
-    expect(marked).toContain("bg-surface-muted");
+    expect(marked).toContain("bg-chip-sand");
     expect(marked).not.toContain("secondary-sand");
   });
 });

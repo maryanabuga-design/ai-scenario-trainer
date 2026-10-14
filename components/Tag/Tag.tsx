@@ -1,19 +1,13 @@
-"use client";
-
-import { useCardSelected } from "@/components/SelectableCard/SelectedContext";
 import type { ReactNode } from "react";
+import { Chip } from "@/components/Chip/Chip";
+import type { ChipTone } from "@/components/Chip/Chip";
 
-type Tone = "yellow" | "peach" | "blue" | "lilac" | "sage";
+type Tone = Extract<ChipTone, "yellow" | "peach" | "blue" | "lilac" | "green">;
 
-const tones: Record<Tone, string> = {
-  yellow: "border border-tag-yellow-stroke bg-tag-yellow",
-  peach: "border border-tag-peach-stroke bg-tag-peach",
-  blue: "border border-tag-blue-stroke bg-tag-blue",
-  lilac: "border border-tag-lilac-stroke bg-tag-lilac",
-  sage: "border border-tag-sage-stroke bg-tag-sage",
-};
-
-/** A category label; primary while its SelectableCard is selected. `sentenceCase` keeps the text as written (only the direction chip on Home). */
+/**
+ * A category label, drawn by the shared Chip; primary while its SelectableCard is selected.
+ * `sentenceCase` keeps the text as written (only the direction chip on Home).
+ */
 export function Tag({
   tone = "yellow",
   sentenceCase = false,
@@ -23,16 +17,9 @@ export function Tag({
   sentenceCase?: boolean;
   children: ReactNode;
 }) {
-  // In a selected card the chip turns primary; its stroke is the same colour (an allowed exception).
-  const selected = useCardSelected();
-  const look = selected
-    ? "border border-primary bg-primary text-primary-text"
-    : `text-text ${tones[tone]}`;
   return (
-    <span
-      className={`inline-flex items-center rounded-full px-2.5 py-1 type-label ${look} ${sentenceCase ? "normal-case" : ""}`}
-    >
+    <Chip tone={tone} size="label" sentenceCase={sentenceCase}>
       {children}
-    </span>
+    </Chip>
   );
 }

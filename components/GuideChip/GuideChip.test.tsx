@@ -29,15 +29,13 @@ function sourceFiles(dir: string): string[] {
 describe("Guide chips", () => {
   it("use one token: the grey-beige fill, dark text, a document icon, no hover", () => {
     for (const html of [chip("S1"), chip("S2", true), chip("F3")]) {
-      expect(html).toContain("bg-secondary-sand");
+      expect(html).toContain("bg-chip-sand");
       expect(html).toContain("text-text");
       expect(html).toContain("lucide-file-text");
-      expect(html).toContain("active:bg-secondary-sand-pressed");
+      expect(html).toContain("active:brightness-95");
       expect(html).not.toContain("hover:");
-      expect(html).toContain("border border-secondary-sand-pressed");
-      expect(html).not.toMatch(
-        /bg-(tag|surface|card)|border-(?!secondary-sand-pressed)|text-text-secondary">·/,
-      );
+      expect(html).not.toMatch(/border|-stroke/);
+      expect(html).not.toMatch(/bg-(tag|surface|card)|text-text-secondary">·/);
     }
   });
 

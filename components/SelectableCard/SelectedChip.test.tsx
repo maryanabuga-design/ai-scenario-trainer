@@ -32,30 +32,31 @@ function chip(html: string, label: string) {
 }
 
 describe("a chip in a selected card turns primary", () => {
-  it("selected: primary fill, white text, a stroke of the same primary", () => {
+  it("selected: primary fill and white text, no stroke", () => {
     const selected = chip(setup("full"), "full");
-    expect(selected).toContain("border border-primary bg-primary text-primary-text");
-    expect(selected).not.toContain("bg-tag-lilac");
+    expect(selected).toContain("bg-primary text-primary-text");
+    expect(selected).not.toMatch(/(^| )border/);
+    expect(selected).not.toContain("bg-chip-lilac");
   });
 
-  it("unselected cards keep their own pastel and darker stroke", () => {
+  it("unselected cards keep their own pastel", () => {
     const html = setup("full");
-    expect(chip(html, "short")).toContain("text-text border border-tag-peach-stroke bg-tag-peach");
-    expect(chip(html, "extended")).toContain("text-text border border-tag-blue-stroke bg-tag-blue");
+    expect(chip(html, "short")).toContain("bg-chip-peach");
+    expect(chip(html, "extended")).toContain("bg-chip-blue");
   });
 
   it("changing the selection swaps the states", () => {
     const first = setup("short");
     const second = setup("extended");
     expect(chip(first, "short")).toContain("bg-primary");
-    expect(chip(first, "extended")).toContain("bg-tag-blue");
-    expect(chip(second, "short")).toContain("bg-tag-peach");
+    expect(chip(first, "extended")).toContain("bg-chip-blue");
+    expect(chip(second, "short")).toContain("bg-chip-peach");
     expect(chip(second, "extended")).toContain("bg-primary");
   });
 
   it("a chip outside a selectable card is unchanged", () => {
     const html = renderToStaticMarkup(<Tag tone="yellow">Scenario</Tag>);
-    expect(html).toContain("bg-tag-yellow");
+    expect(html).toContain("bg-chip-yellow");
     expect(html).not.toContain("bg-primary");
   });
 

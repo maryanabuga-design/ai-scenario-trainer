@@ -1,5 +1,7 @@
 import { Check, CircleAlert, CircleHelp, Clock, Contrast, Minus, UserCheck, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { Chip } from "@/components/Chip/Chip";
+import type { ChipInk, ChipTone } from "@/components/Chip/Chip";
 import { errorTypeText } from "@/lib/scoring";
 import type { ErrorType } from "@/lib/scoring";
 
@@ -19,63 +21,19 @@ const icons = {
 
 export const statuses: Record<
   Status,
-  { label: string; description?: string; icon: keyof typeof icons; className: string }
+  { label: string; description?: string; icon: keyof typeof icons; tone: ChipTone; ink?: ChipInk }
 > = {
-  correct: {
-    label: "Correct",
-    icon: "check",
-    className: "border border-correct-stroke bg-correct-bg text-correct",
-  },
-  wrong: {
-    label: "Incorrect",
-    icon: "cross",
-    className: "border border-wrong-stroke bg-wrong-bg text-wrong",
-  },
-  partial: {
-    label: "Partly correct",
-    icon: "half",
-    className: "bg-surface-muted text-text-secondary",
-  },
-  marked: {
-    label: "Marked correct by you",
-    icon: "user",
-    className: "bg-surface-muted text-text-secondary",
-  },
-  ready: {
-    label: "Ready",
-    icon: "check",
-    className: "border border-correct-stroke bg-correct-bg text-correct",
-  },
-  processing: {
-    label: "Processing",
-    icon: "clock",
-    className: "border border-secondary-sand-pressed bg-secondary-sand text-text",
-  },
-  failed: {
-    label: "Failed",
-    icon: "alert",
-    className: "border border-wrong-stroke bg-wrong-bg text-wrong",
-  },
-  secure: {
-    ...errorTypeText.secure,
-    icon: "check",
-    className: "border border-secure-stroke bg-secure-bg text-secure",
-  },
-  guess: {
-    ...errorTypeText.guess,
-    icon: "question",
-    className: "border border-guess-stroke bg-guess-tile text-guess-ink",
-  },
-  knowledge_gap: {
-    ...errorTypeText.knowledge_gap,
-    icon: "minus",
-    className: "border border-caution-stroke bg-caution-bg text-caution",
-  },
-  misconception: {
-    ...errorTypeText.misconception,
-    icon: "cross",
-    className: "border border-misconception-stroke bg-misconception-bg text-misconception",
-  },
+  correct: { label: "Correct", icon: "check", tone: "green", ink: "green" },
+  wrong: { label: "Incorrect", icon: "cross", tone: "rose", ink: "red" },
+  partial: { label: "Partly correct", icon: "half", tone: "sand", ink: "grey" },
+  marked: { label: "Marked correct by you", icon: "user", tone: "sand", ink: "grey" },
+  ready: { label: "Ready", icon: "check", tone: "green", ink: "green" },
+  processing: { label: "Processing", icon: "clock", tone: "sand" },
+  failed: { label: "Failed", icon: "alert", tone: "rose", ink: "red" },
+  secure: { ...errorTypeText.secure, icon: "check", tone: "green", ink: "sage" },
+  guess: { ...errorTypeText.guess, icon: "question", tone: "sand", ink: "taupe" },
+  knowledge_gap: { ...errorTypeText.knowledge_gap, icon: "minus", tone: "yellow", ink: "amber" },
+  misconception: { ...errorTypeText.misconception, icon: "cross", tone: "rose", ink: "pink" },
 };
 
 export function StatusIcon({ status, size = 14 }: { status: Status; size?: number }) {
@@ -83,25 +41,16 @@ export function StatusIcon({ status, size = 14 }: { status: Status; size?: numbe
   return <Icon size={size} strokeWidth={2} aria-hidden="true" />;
 }
 
-const statusText: Partial<Record<Status, string>> = {
-  correct: "text-correct",
-  wrong: "text-wrong",
-};
-
 /**
- * The one status chip (answer results, error types, material status). Icon + label + colour.
- * Never colour alone. onTint: a white chip, for the tinted Correct and
- * Incorrect rows on results, so the chip stands out from the row.
+ * The one status chip (answer results, error types, material status), drawn by the shared Chip.
+ * Icon + label + colour. Never colour alone.
  */
-export function StatusChip({ status, onTint = false }: { status: Status; onTint?: boolean }) {
-  const { label, className } = statuses[status];
-  const style = onTint ? `bg-surface ${statusText[status] ?? "text-text"}` : className;
+export function StatusChip({ status }: { status: Status }) {
+  const { label, tone, ink } = statuses[status];
   return (
-    <span
-      className={`inline-flex w-fit shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 type-caption whitespace-nowrap ${style}`}
-    >
+    <Chip tone={tone} ink={ink} size="caption">
       <StatusIcon status={status} />
       {label}
-    </span>
+    </Chip>
   );
 }

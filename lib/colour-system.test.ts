@@ -100,7 +100,7 @@ describe("no leftover grey-beige for inactive states", () => {
     const leftovers = [...files("components"), ...files("app")].filter((file) => {
       // The sage #DFE5D8 may only stay as the TRAINING tag and sage topic tile colour.
       const code = readFileSync(file, "utf8").replace(/--tag-sage: #dfe5d8;/i, "");
-      return /#efece5|#c0bbb1|#dfe5d8|#d4dbcd|secondary-olive|neutral-surface|--chip\b|bg-chip\b|chip-pressed|ring-track/i.test(
+      return /#efece5|#c0bbb1|#dfe5d8|#d4dbcd|secondary-olive|neutral-surface|--chip(?![-\w])|bg-chip(?![-\w])|chip-pressed|ring-track/i.test(
         code.replace(/--next-tile: #d4dbcd;/i, ""),
       );
     });
@@ -120,7 +120,6 @@ describe("no leftover grey-beige for inactive states", () => {
       "components/TopicRow/TopicRow.tsx",
       "components/OnboardingView/OnboardingView.tsx",
       "components/SegmentedControl/SegmentedControl.tsx",
-      "components/GuideChip/GuideChip.tsx",
       "components/Button/Button.tsx",
       "components/ProgressCard/ProgressCard.tsx",
     ];

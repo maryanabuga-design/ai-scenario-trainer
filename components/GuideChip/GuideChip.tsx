@@ -1,6 +1,7 @@
 "use client";
 
 import { FileText } from "lucide-react";
+import { Chip } from "@/components/Chip/Chip";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 
 /**
@@ -18,10 +19,12 @@ export function GuideChip({
   const title = sections.find((section) => section.id === sectionId)?.title;
 
   return (
-    <button
-      type="button"
+    <Chip
+      as="button"
+      tone="sand"
+      size="small"
       onClick={() => open(sectionId)}
-      className="relative inline-flex min-h-9 items-center gap-1.5 rounded-full border border-secondary-sand-pressed bg-secondary-sand px-3 text-left type-small text-text before:absolute before:-inset-y-1 before:inset-x-0 before:content-[''] active:bg-secondary-sand-pressed"
+      className="relative min-h-9 text-left before:absolute before:-inset-y-1 before:inset-x-0 before:content-['']"
     >
       <FileText
         size={14}
@@ -31,6 +34,6 @@ export function GuideChip({
       />
       <span>Guide · {sectionId}</span>
       {showTitle && title && <span>· {title}</span>}
-    </button>
+    </Chip>
   );
 }

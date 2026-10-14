@@ -18,6 +18,7 @@ import {
   DecisionSample,
   AnalysisSample,
   ButtonsSample,
+  ChipTonesSample,
   EmptyStatesSample,
   ErrorTypesSample,
   ExplainSample,
@@ -147,6 +148,13 @@ export default function Screens() {
           <PhoneFrame label="Buttons: three types in every state">
             <Screen>
               <ButtonsSample />
+            </Screen>
+          </PhoneFrame>
+        </Group>
+        <Group title="Chips">
+          <PhoneFrame label="Chips: every tone and status, no strokes">
+            <Screen>
+              <ChipTonesSample />
             </Screen>
           </PhoneFrame>
         </Group>

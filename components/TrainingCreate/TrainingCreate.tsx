@@ -94,7 +94,7 @@ export function TrainingCreate({
     <div className="flex flex-col gap-6">
       <CircleBackButton href={`/materials/${material.id}`} label="Back to material" />
       <div className="flex flex-col items-start gap-2">
-        <Tag tone="sage">Training</Tag>
+        <Tag tone="green">Training</Tag>
         <h1 className="type-page-title">Create training</h1>
         <p className="break-words text-text-secondary">{material.name}</p>
       </div>

@@ -1,5 +1,9 @@
 "use client";
 
+import { Tag } from "@/components/Tag/Tag";
+import { StatusChip } from "@/components/StatusChip/StatusChip";
+import { GuideChip } from "@/components/GuideChip/GuideChip";
+import { Chip } from "@/components/Chip/Chip";
 import { FileText, History, ListChecks, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { DecisionStep, emptyDraft } from "@/components/DecisionStep/DecisionStep";
@@ -701,7 +705,8 @@ export function ButtonsSample() {
     <div className="flex flex-col gap-6">
       <h1 className="type-page-title">Buttons</h1>
       <p className="type-small text-text-secondary">
-        Primary, secondary and tertiary, in the default, pressed, disabled and keyboard focus states.
+        Primary, secondary and tertiary, in the default, pressed, disabled and keyboard focus
+        states.
       </p>
       <section className="flex flex-col gap-3">
         <h2 className="type-item-title">On the page</h2>
@@ -710,6 +715,67 @@ export function ButtonsSample() {
       <section className="flex flex-col gap-3 rounded-card bg-card p-4 shadow-(--card-shadow)">
         <h2 className="type-item-title">On a card</h2>
         <ButtonStates />
+      </section>
+    </div>
+  );
+}
+
+/** Every chip tone and status, on the page and on a card, without strokes. */
+export function ChipTonesSample() {
+  const tones = ["yellow", "peach", "blue", "lilac", "green", "rose", "sand", "primary"] as const;
+  const statuses = [
+    "ready",
+    "processing",
+    "failed",
+    "secure",
+    "guess",
+    "knowledge_gap",
+    "misconception",
+    "correct",
+    "wrong",
+    "partial",
+  ] as const;
+  const group = (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap gap-2">
+        {tones.map((tone) => (
+          <Chip key={tone} tone={tone}>
+            {tone}
+          </Chip>
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {statuses.map((status) => (
+          <StatusChip key={status} status={status} />
+        ))}
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <Tag tone="yellow">Scenario</Tag>
+        <Tag tone="blue">Quiz</Tag>
+        <Tag tone="peach">Short</Tag>
+        <Tag tone="lilac">Full</Tag>
+        <Tag tone="green">Training</Tag>
+        <GuideChip sectionId="S1" />
+      </div>
+    </div>
+  );
+  return (
+    <div className="flex flex-col gap-6">
+      <h1 className="type-page-title">Chips</h1>
+      <p className="type-small text-text-secondary">
+        Soft pastel fills, no strokes. The last tone is the selected-card chip.
+      </p>
+      <section className="flex flex-col gap-3">
+        <h2 className="type-item-title">On the page</h2>
+        {group}
+      </section>
+      <section className="flex flex-col gap-3 rounded-card bg-card p-4 shadow-(--card-shadow)">
+        <h2 className="type-item-title">On a card</h2>
+        {group}
+      </section>
+      <section className="flex flex-col gap-3 rounded-card border-[1.5px] border-selected-stroke bg-selected-tint p-4">
+        <h2 className="type-item-title">On a selected card</h2>
+        {group}
       </section>
     </div>
   );

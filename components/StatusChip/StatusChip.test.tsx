@@ -6,33 +6,34 @@ const chip = (status: "ready" | "processing" | "failed") =>
   renderToStaticMarkup(<StatusChip status={status} />);
 
 describe("material status chips", () => {
-  it("Ready: a chip with the light green fill, a darker green stroke and the check icon", () => {
+  it("Ready: a green chip with the check icon, no stroke", () => {
     const cls = /class="([^"]*)"/.exec(chip("ready"))?.[1] ?? "";
-    expect(cls).toContain("border border-correct-stroke bg-correct-bg text-correct");
+    expect(cls).toContain("bg-chip-green");
+    expect(cls).toContain("text-chip-ink-green");
     expect(cls).toContain("rounded-full");
     expect(chip("ready")).toContain("lucide-check");
     expect(chip("ready")).toContain(">Ready</span>");
   });
 
-  it("Processing: sand with a thin stroke, dark text, clock icon", () => {
-    expect(chip("processing")).toContain(
-      "border border-secondary-sand-pressed bg-secondary-sand text-text",
-    );
+  it("Processing: a sand chip with dark text and the clock icon", () => {
+    expect(chip("processing")).toContain("bg-chip-sand");
+    expect(chip("processing")).toContain("text-text");
     expect(chip("processing")).toContain("lucide-clock");
     expect(chip("processing")).toContain(">Processing</span>");
   });
 
-  it("Failed: red tint, red text, alert icon", () => {
-    expect(chip("failed")).toContain("bg-wrong-bg text-wrong");
+  it("Failed: a rose chip with red text and the alert icon", () => {
+    expect(chip("failed")).toContain("bg-chip-rose");
+    expect(chip("failed")).toContain("text-wrong");
     expect(chip("failed")).toContain("lucide-circle-alert");
     expect(chip("failed")).toContain(">Failed</span>");
   });
 
-  it("Ready, Processing and Failed are all chips with a fill and a stroke", () => {
+  it("Ready, Processing and Failed are all chips with a fill and no stroke", () => {
     for (const status of ["ready", "processing", "failed"] as const) {
       const cls = /class="([^"]*)"/.exec(chip(status))?.[1] ?? "";
-      expect(cls).toMatch(/bg-/);
-      expect(cls).toMatch(/border /);
+      expect(cls).toMatch(/bg-chip-/);
+      expect(cls).not.toMatch(/(^| )border/);
       expect(cls).toContain("rounded-full");
     }
   });
