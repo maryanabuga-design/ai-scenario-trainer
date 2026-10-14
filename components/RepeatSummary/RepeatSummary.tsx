@@ -45,7 +45,7 @@ export function RepeatSummary({
       <Card className="flex flex-col gap-3">
         <Link
           href="/weak-topics"
-          className="-m-1 flex items-start justify-between gap-3 rounded-panel p-1"
+          className="-m-1 flex items-center justify-between gap-3 rounded-panel p-1"
         >
           <span className="flex min-w-0 flex-col gap-1">
             <h2 id="repeat-title" className="type-item-title">

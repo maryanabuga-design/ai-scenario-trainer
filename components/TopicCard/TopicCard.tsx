@@ -23,20 +23,19 @@ export function TopicCard({ topic, onRepeat }: { topic: WeakTopic; onRepeat: () 
     <button
       type="button"
       onClick={onRepeat}
-      className="relative flex h-full w-full flex-col items-start gap-3 rounded-card bg-card p-5 text-left shadow-(--card-shadow) active:bg-surface-muted"
+      className="relative flex h-full w-full items-center gap-3 rounded-card bg-card p-5 text-left shadow-(--card-shadow) active:bg-surface-muted"
     >
-      <span className="flex w-full items-start gap-3">
+      <span className="flex h-full min-w-0 flex-1 flex-col items-start gap-3">
         <TopicTile sectionId={topic.sectionId} icon={topic.icon} />
-        <span className="flex-1" />
-        <ArrowCircle />
+        <span className="type-item-title">{name}</span>
+        <span className="type-small text-text-secondary">
+          {materialForSection(topic.sectionId)} · {topic.sectionId}
+        </span>
+        <span className="mt-auto pt-1">
+          <StatusChip status={topic.errorType} />
+        </span>
       </span>
-      <span className="type-item-title">{name}</span>
-      <span className="type-small text-text-secondary">
-        {materialForSection(topic.sectionId)} · {topic.sectionId}
-      </span>
-      <span className="mt-auto pt-1">
-        <StatusChip status={topic.errorType} />
-      </span>
+      <ArrowCircle />
     </button>
   );
 }

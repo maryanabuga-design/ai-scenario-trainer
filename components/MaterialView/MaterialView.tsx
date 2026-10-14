@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
+import { ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { Button, ButtonLink } from "@/components/Button/Button";
@@ -34,14 +34,7 @@ function SectionRow({ section, openable }: { section: MaterialSection; openable:
         <span>{section.title}</span>
         <span className="text-text-secondary">{section.excerpt}</span>
       </span>
-      {openable && (
-        <ChevronRight
-          size={20}
-          strokeWidth={2}
-          aria-hidden="true"
-          className="shrink-0 text-text-secondary"
-        />
-      )}
+      {openable && <ArrowCircle size="sm" />}
     </>
   );
   return openable ? (

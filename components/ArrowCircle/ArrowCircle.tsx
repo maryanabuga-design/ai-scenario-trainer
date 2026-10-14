@@ -1,18 +1,22 @@
 import { ArrowRight } from "lucide-react";
 
+const sizes = {
+  md: { circle: "h-10 w-10", icon: 20 },
+  sm: { circle: "h-8 w-8", icon: 16 },
+} as const;
+
 /**
- * The arrow of a card that opens something: a 36px white circle with a soft shadow inside a 44px
- * area, top right. Decorative; the whole card is the button.
+ * The one arrow for a card or row that opens something (DESIGN.md: ArrowCircle): always a white
+ * circle with a warm stroke and a very soft shadow, a dark green arrow. Decorative: the card itself
+ * is the link or button. "sm" only in compact rows.
  */
-export function ArrowCircle() {
+export function ArrowCircle({ size = "md" }: { size?: keyof typeof sizes }) {
   return (
     <span
       aria-hidden="true"
-      className="-mt-1 -mr-1 flex h-11 w-11 shrink-0 items-center justify-center"
+      className={`flex shrink-0 items-center justify-center self-center rounded-full border border-arrow-stroke bg-surface text-primary shadow-(--arrow-shadow) ${sizes[size].circle}`}
     >
-      <span className="flex h-9 w-9 items-center justify-center rounded-full border border-secondary-sand-pressed bg-secondary-sand text-text shadow-(--card-shadow)">
-        <ArrowRight size={18} strokeWidth={2} />
-      </span>
+      <ArrowRight size={sizes[size].icon} strokeWidth={2} />
     </span>
   );
 }

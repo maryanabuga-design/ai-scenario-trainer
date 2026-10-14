@@ -16,15 +16,15 @@ export function ScenarioCard({
     <button
       type="button"
       onClick={onOpen}
-      className="relative isolate flex w-full flex-col items-start gap-2 overflow-hidden rounded-card bg-card p-5 text-left shadow-(--card-shadow) active:bg-surface-muted"
+      className="relative isolate flex w-full items-center gap-3 overflow-hidden rounded-card bg-card p-5 text-left shadow-(--card-shadow) active:bg-surface-muted"
     >
       <SoftShape variant="faint" />
-      <span className="flex w-full items-start justify-between gap-3">
+      <span className="flex min-w-0 flex-1 flex-col items-start gap-2">
         <Tag tone="yellow">Scenario</Tag>
-        <ArrowCircle />
+        <span className="type-item-title">{title}</span>
+        <span className="type-small text-text-secondary">{line}</span>
       </span>
-      <span className="type-item-title">{title}</span>
-      <span className="type-small text-text-secondary">{line}</span>
+      <ArrowCircle />
     </button>
   );
 }

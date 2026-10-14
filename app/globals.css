@@ -75,12 +75,15 @@
   --next-tile: #d4dbcd;
   --material-tile: var(--next-tile);
   --card: #faf7f3;
+  --arrow-stroke: #e4dfd5;
+  --arrow-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
   --card-shadow: 0 1px 2px rgb(60 45 30 / 0.04), 0 8px 24px rgb(60 45 30 / 0.05);
 
   --mesh-moss: #7a8450;
 }
 
 @theme inline {
+  --color-arrow-stroke: var(--arrow-stroke);
   --color-secondary-sand: var(--secondary-sand);
   --color-secondary-sand-pressed: var(--secondary-sand-pressed);
   --color-primary-pressed: var(--primary-pressed);

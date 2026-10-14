@@ -1,7 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
-import { ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
 import { AnswerSheet } from "@/components/AnswerSheet/AnswerSheet";
 import { Button } from "@/components/Button/Button";
 import { ExplainStep } from "@/components/ExplainStep/ExplainStep";
@@ -59,12 +58,6 @@ describe("secondary sand for inactive states and tonal backgrounds", () => {
     expect(chip).toContain("bg-secondary-sand");
     expect(chip).toContain("border border-secondary-sand-pressed");
     expect(chip).toContain("active:bg-secondary-sand-pressed");
-  });
-
-  it("is the arrow circle on cards", () => {
-    const circle = renderToStaticMarkup(<ArrowCircle />);
-    expect(circle).toContain("bg-secondary-sand");
-    expect(circle).toContain("border border-secondary-sand-pressed");
   });
 
   it("is the Your choice block on the Explain screen and in the answer sheet", () => {

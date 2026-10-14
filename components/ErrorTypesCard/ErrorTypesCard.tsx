@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
 import { ButtonLink } from "@/components/Button/Button";
 import { SoftCard } from "@/components/SoftCard/SoftCard";
 import { StatusIcon } from "@/components/StatusChip/StatusChip";
@@ -64,7 +64,12 @@ export function ErrorTypesCard({
       action={
         detailsHref && (
           <span className="-my-3 -mr-3 shrink-0">
-            <ButtonLink href={detailsHref} variant="text" iconEnd={ArrowRight} onClick={onNavigate}>
+            <ButtonLink
+              href={detailsHref}
+              variant="text"
+              trailing={<ArrowCircle />}
+              onClick={onNavigate}
+            >
               Details
             </ButtonLink>
           </span>

@@ -44,7 +44,7 @@ describe("Progress", () => {
     expect(html).not.toContain("See all");
     const start = html.lastIndexOf("<a ", html.indexOf('href="/weak-topics"'));
     const link = html.slice(start);
-    expect(link.slice(0, link.indexOf("</a>"))).toContain("bg-secondary-sand");
+    expect(link.slice(0, link.indexOf("</a>"))).toContain("border-arrow-stroke bg-surface");
     expect(html).toContain(">Repeat weak topics</button>");
   });
 

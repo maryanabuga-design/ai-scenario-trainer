@@ -13,8 +13,8 @@ export type ButtonLook = {
   small?: boolean;
   /** A decorative icon before the label (the sparkle for AI actions). */
   icon?: LucideIcon;
-  /** A decorative icon after the label (the arrow of "Details"). */
-  iconEnd?: LucideIcon;
+  /** Decorative content after the label, outside its underline (the ArrowCircle of "Details"). */
+  trailing?: ReactNode;
 };
 
 const variants: Record<ButtonVariant, string> = {
@@ -41,7 +41,7 @@ export function buttonClasses({ variant = "primary", wide, small }: ButtonLook) 
 function Content({
   variant = "primary",
   icon: Icon,
-  iconEnd: IconEnd,
+  trailing,
   children,
 }: ButtonLook & { children: ReactNode }) {
   const label =
@@ -56,7 +56,7 @@ function Content({
     <>
       {Icon && <Icon size={18} strokeWidth={2} aria-hidden="true" className="shrink-0" />}
       {label}
-      {IconEnd && <IconEnd size={18} strokeWidth={2} aria-hidden="true" className="shrink-0" />}
+      {trailing}
     </>
   );
 }
@@ -66,13 +66,13 @@ export function Button({
   wide,
   small,
   icon,
-  iconEnd,
+  trailing,
   children,
   ...props
 }: Omit<ComponentProps<"button">, "className"> & ButtonLook) {
   return (
     <button type="button" className={buttonClasses({ variant, wide, small })} {...props}>
-      <Content variant={variant} icon={icon} iconEnd={iconEnd}>
+      <Content variant={variant} icon={icon} trailing={trailing}>
         {children}
       </Content>
     </button>
@@ -84,13 +84,13 @@ export function ButtonLink({
   variant = "primary",
   wide,
   icon,
-  iconEnd,
+  trailing,
   onClick,
   children,
 }: ButtonLook & { href: string; onClick?: () => void; children: ReactNode }) {
   return (
     <Link href={href} onClick={onClick} className={buttonClasses({ variant, wide })}>
-      <Content variant={variant} icon={icon} iconEnd={iconEnd}>
+      <Content variant={variant} icon={icon} trailing={trailing}>
         {children}
       </Content>
     </Link>

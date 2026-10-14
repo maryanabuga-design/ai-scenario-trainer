@@ -131,7 +131,6 @@ describe("no leftover grey-beige for inactive states", () => {
       "components/GuideChip/GuideChip.tsx",
       "components/Button/Button.tsx",
       "components/ProgressCard/ProgressCard.tsx",
-      "components/ArrowCircle/ArrowCircle.tsx",
     ];
     for (const file of inactive) {
       const code = readFileSync(file, "utf8");
