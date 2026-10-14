@@ -3,11 +3,11 @@ import type { ReactNode } from "react";
 type Tone = "yellow" | "peach" | "blue" | "lilac" | "sage";
 
 const tones: Record<Tone, string> = {
-  yellow: "bg-tag-yellow",
-  peach: "bg-tag-peach",
-  blue: "bg-tag-blue",
-  lilac: "bg-tag-lilac",
-  sage: "bg-tag-sage",
+  yellow: "border border-tag-yellow-stroke bg-tag-yellow",
+  peach: "border border-tag-peach-stroke bg-tag-peach",
+  blue: "border border-tag-blue-stroke bg-tag-blue",
+  lilac: "border border-tag-lilac-stroke bg-tag-lilac",
+  sage: "border border-tag-sage-stroke bg-tag-sage",
 };
 
 /** A category label. `sentenceCase` keeps the text as written (only the direction chip on Home). */

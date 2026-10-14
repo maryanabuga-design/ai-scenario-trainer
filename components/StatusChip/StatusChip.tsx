@@ -21,8 +21,16 @@ export const statuses: Record<
   Status,
   { label: string; description?: string; icon: keyof typeof icons; className: string }
 > = {
-  correct: { label: "Correct", icon: "check", className: "bg-correct-bg text-correct" },
-  wrong: { label: "Incorrect", icon: "cross", className: "bg-wrong-bg text-wrong" },
+  correct: {
+    label: "Correct",
+    icon: "check",
+    className: "border border-correct-stroke bg-correct-bg text-correct",
+  },
+  wrong: {
+    label: "Incorrect",
+    icon: "cross",
+    className: "border border-wrong-stroke bg-wrong-bg text-wrong",
+  },
   partial: {
     label: "Partly correct",
     icon: "half",
@@ -33,32 +41,40 @@ export const statuses: Record<
     icon: "user",
     className: "bg-surface-muted text-text-secondary",
   },
-  ready: { label: "Ready", icon: "check", className: "bg-correct-bg text-correct" },
+  ready: {
+    label: "Ready",
+    icon: "check",
+    className: "border border-correct-stroke bg-correct-bg text-correct",
+  },
   processing: {
     label: "Processing",
     icon: "clock",
     className: "border border-secondary-sand-pressed bg-secondary-sand text-text",
   },
-  failed: { label: "Failed", icon: "alert", className: "bg-wrong-bg text-wrong" },
+  failed: {
+    label: "Failed",
+    icon: "alert",
+    className: "border border-wrong-stroke bg-wrong-bg text-wrong",
+  },
   secure: {
     ...errorTypeText.secure,
     icon: "check",
-    className: "bg-secure-bg text-secure",
+    className: "border border-secure-stroke bg-secure-bg text-secure",
   },
   guess: {
     ...errorTypeText.guess,
     icon: "question",
-    className: "bg-surface-muted text-text-secondary",
+    className: "border border-guess-stroke bg-guess-tile text-guess-ink",
   },
   knowledge_gap: {
     ...errorTypeText.knowledge_gap,
     icon: "minus",
-    className: "bg-caution-bg text-caution",
+    className: "border border-caution-stroke bg-caution-bg text-caution",
   },
   misconception: {
     ...errorTypeText.misconception,
     icon: "cross",
-    className: "bg-misconception-bg text-misconception",
+    className: "border border-misconception-stroke bg-misconception-bg text-misconception",
   },
 };
 

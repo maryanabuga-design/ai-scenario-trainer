@@ -46,6 +46,18 @@
   --tag-blue: #d4e8f0;
   --tag-lilac: #e6ddf5;
   --tag-sage: #dfe5d8;
+  /* Chip strokes: the fill's hue, slightly darker (DESIGN.md: Chip tones) */
+  --tag-yellow-stroke: #d3cc7f;
+  --tag-peach-stroke: #f5af89;
+  --tag-blue-stroke: #a5cfe0;
+  --tag-lilac-stroke: #c1abe6;
+  --tag-sage-stroke: #c0ccb3;
+  --correct-stroke: #bcdcc8;
+  --wrong-stroke: #f1b5ae;
+  --secure-stroke: #c2cdb8;
+  --guess-stroke: #cfc3b4;
+  --caution-stroke: #eed8a2;
+  --misconception-stroke: #e7a9b3;
   --stroke-neutral: #d3cdc2;
   --stroke-sage: #a9b5a0;
   --code-yellow: #f9f4c1;
@@ -109,6 +121,17 @@
   --color-tag-blue: var(--tag-blue);
   --color-tag-lilac: var(--tag-lilac);
   --color-tag-sage: var(--tag-sage);
+  --color-tag-yellow-stroke: var(--tag-yellow-stroke);
+  --color-tag-peach-stroke: var(--tag-peach-stroke);
+  --color-tag-blue-stroke: var(--tag-blue-stroke);
+  --color-tag-lilac-stroke: var(--tag-lilac-stroke);
+  --color-tag-sage-stroke: var(--tag-sage-stroke);
+  --color-correct-stroke: var(--correct-stroke);
+  --color-wrong-stroke: var(--wrong-stroke);
+  --color-secure-stroke: var(--secure-stroke);
+  --color-guess-stroke: var(--guess-stroke);
+  --color-caution-stroke: var(--caution-stroke);
+  --color-misconception-stroke: var(--misconception-stroke);
   --color-secondary-pressed: var(--secondary-pressed);
   --color-stroke-neutral: var(--stroke-neutral);
   --color-stroke-sage: var(--stroke-sage);
