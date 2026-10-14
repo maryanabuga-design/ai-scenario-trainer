@@ -1,8 +1,9 @@
 "use client";
 
-import { ChevronRight, FileText } from "lucide-react";
+import { FileText } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { Chevron } from "@/components/Chevron/Chevron";
 import { HeaderRow } from "@/components/HeaderRow/HeaderRow";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { MaterialTile } from "@/components/MaterialTile/MaterialTile";
@@ -74,12 +75,7 @@ function MaterialRow({
           </>
         )}
       </div>
-      <span
-        aria-hidden="true"
-        className="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center text-primary"
-      >
-        <ChevronRight size={20} strokeWidth={2} />
-      </span>
+      <Chevron />
     </div>
   );
 }

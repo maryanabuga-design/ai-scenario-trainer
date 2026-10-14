@@ -49,7 +49,6 @@ describe("every card arrow goes through ArrowCircle", () => {
       "components/TopicCard/TopicCard.tsx",
       "components/ScenarioCard/ScenarioCard.tsx",
       "components/RepeatSummary/RepeatSummary.tsx",
-      "components/MaterialView/MaterialView.tsx",
       "components/UploadSheet/UploadSheet.tsx",
       "components/ErrorTypesCard/ErrorTypesCard.tsx",
     ]) {
@@ -58,12 +57,12 @@ describe("every card arrow goes through ArrowCircle", () => {
   });
 
   it("leaves no bare arrow or chevron anywhere else", () => {
-    // Allowed: the shared circle itself, the arrow inside the Generate button and the plain
-    // chevron on Materials list cards.
+    // Allowed: the shared circle itself, the arrow inside the Generate button and the shared
+    // plain Chevron.
     const allowed = [
       "ArrowCircle/ArrowCircle.tsx",
       "TrainingCreate/TrainingCreate.tsx",
-      "MaterialsList/MaterialsList.tsx",
+      "Chevron/Chevron.tsx",
     ];
     const own = [...files("components"), ...files("app")].filter((file) => {
       if (allowed.some((name) => file.endsWith(name))) return false;

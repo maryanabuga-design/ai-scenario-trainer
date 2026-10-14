@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
-import { ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
+import { Chevron } from "@/components/Chevron/Chevron";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { Button, ButtonLink } from "@/components/Button/Button";
@@ -34,7 +34,7 @@ function SectionRow({ section, openable }: { section: MaterialSection; openable:
         <span>{section.title}</span>
         <span className="text-text-secondary">{section.excerpt}</span>
       </span>
-      {openable && <ArrowCircle size="sm" />}
+      {openable && <Chevron />}
     </>
   );
   return openable ? (
