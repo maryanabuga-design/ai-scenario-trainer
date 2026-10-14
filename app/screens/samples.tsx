@@ -250,7 +250,14 @@ export function HomeSample({
 }
 
 /** Progress on a first visit, or after a short and a full session. */
-export function ProgressSample({ withHistory = false }: { withHistory?: boolean }) {
+export function ProgressSample({
+  withHistory = false,
+  sessions,
+}: {
+  withHistory?: boolean;
+  /** Many short sessions, to show the history pages and See more. */
+  sessions?: number;
+}) {
   const answer = (stepId: string, optionId: string, confidence: 1 | 2 | 3) => ({
     stepId,
     optionId,
@@ -272,7 +279,11 @@ export function ProgressSample({ withHistory = false }: { withHistory?: boolean 
           ),
         },
       ]
-    : [];
+    : Array.from({ length: sessions ?? 0 }, (_, index) => ({
+        mode: "short" as const,
+        finishedAt: Date.UTC(2026, 9, 1 + index, 9, 20),
+        answers: [answer("s1", "d", 1), answer("s2", "c", 3), answer("s3", "a", 3)],
+      }));
   return <ProgressView history={history} onRepeat={() => undefined} />;
 }
 

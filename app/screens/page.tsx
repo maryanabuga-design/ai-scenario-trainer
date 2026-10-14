@@ -532,6 +532,11 @@ export default function Screens() {
               <ProgressSample withHistory />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Progress: 12 sessions, 5 shown with See more">
+            <Screen nav="/progress">
+              <ProgressSample sessions={12} />
+            </Screen>
+          </PhoneFrame>
         </Group>
         <Group title="Cards and icons">
           <PhoneFrame label="Topic icons and tile colours">
