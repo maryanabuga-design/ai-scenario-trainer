@@ -143,10 +143,10 @@ export function AnswerSheet({
 
   const body = (
     <>
-      <div aria-hidden="true" className="flex justify-center pt-2 pb-1">
+      <div aria-hidden="true" className="flex shrink-0 justify-center pt-2 pb-1">
         <span className="h-1 w-9 rounded-full bg-border-strong" />
       </div>
-      <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pt-3 pb-6">
+      <div className="sheet-content flex flex-col gap-5 px-4 pt-3 pb-6">
         {/* The verdict is for screen readers; the boxes below show it with icons and labels. */}
         <h2 ref={titleRef} id="answer-sheet-title" tabIndex={-1} className="sr-only outline-none">
           {verdict}
@@ -191,7 +191,7 @@ export function AnswerSheet({
           </section>
         )}
       </div>
-      <div className="flex flex-col gap-3 border-t border-border bg-surface px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+      <div className="flex shrink-0 flex-col gap-3 border-t border-border bg-surface px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
         <Button onClick={onContinue}>{continueLabel}</Button>
         {content.override !== "none" && onMarkCorrect && (
           <MarkCorrect
@@ -214,7 +214,7 @@ export function AnswerSheet({
         <div
           role="dialog"
           aria-labelledby="answer-sheet-title"
-          className="flex max-h-[65%] w-full flex-col rounded-t-card bg-surface text-text"
+          className="answer-sheet-inline flex w-full flex-col rounded-t-card bg-surface text-text"
         >
           {body}
         </div>
@@ -234,7 +234,7 @@ export function AnswerSheet({
           dialogRef.current.showModal();
         }
       }}
-      className="fixed inset-x-0 top-auto bottom-0 m-0 mx-auto max-h-[65dvh] outline-none focus-visible:outline-none w-full max-w-app flex-col overflow-hidden rounded-t-card bg-surface p-0 text-text open:flex"
+      className="answer-sheet fixed inset-x-0 top-auto bottom-0 m-0 mx-auto w-full max-w-app flex-col overflow-hidden rounded-t-card bg-surface p-0 text-text outline-none focus-visible:outline-none open:flex"
     >
       {body}
     </dialog>

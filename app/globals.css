@@ -221,6 +221,40 @@ dialog:focus-visible,
   }
 }
 
+/* The answer sheet's size (DESIGN.md: Answer sheet). Height is auto but never below 55% and never
+   above 85% (92% on short viewports) of the visible viewport. The vh line comes first as a
+   fallback for browsers without dvh; dvh follows the visible area when browser toolbars move. */
+.answer-sheet {
+  height: auto;
+  min-height: 55vh;
+  min-height: 55dvh;
+  max-height: 85vh;
+  max-height: 85dvh;
+}
+
+@media (max-height: 640px) {
+  .answer-sheet {
+    max-height: 92vh;
+    max-height: 92dvh;
+  }
+}
+
+/* The scrolling part of a sheet: it takes the space between the handle and the footer. It grows
+   from its content (flex-basis auto), not from zero, which some Safari versions collapse. */
+.sheet-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* The same sheet drawn inside a frame on the screen review page. */
+.answer-sheet-inline {
+  min-height: 55%;
+  max-height: 85%;
+}
+
 dialog[data-sheet] {
   animation: sheet-in 200ms ease-out;
   box-shadow: 0 -4px 16px color-mix(in srgb, var(--text) 8%, transparent);

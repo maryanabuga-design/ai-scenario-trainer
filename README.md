@@ -75,3 +75,7 @@ Build order and decisions: `docs/build-plan.md`.
 
 - `CLAUDE.md`: project rules. `DESIGN.md`: design system.
 - `app/`: routes. `components/`: UI components. `lib/`: helpers. `content/`: sample material. `docs/`: notes and screenshots.
+
+## Phone-size checks
+
+`npm run test:e2e` runs Playwright against a production build (WebKit as iPhone 13, iPhone SE and two small in-app-browser sizes, and Chromium as Pixel 7) and checks that the answer sheet is tall enough, scrolls and keeps its buttons in reach. Install the browsers once with `npx playwright install webkit chromium`.
