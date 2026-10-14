@@ -6,10 +6,26 @@ const chip = (status: "ready" | "processing" | "failed") =>
   renderToStaticMarkup(<StatusChip status={status} />);
 
 describe("material status chips", () => {
-  it("Ready: green tint, dark green text, check icon", () => {
-    expect(chip("ready")).toContain("bg-correct-bg text-correct");
-    expect(chip("ready")).toContain("lucide-check");
-    expect(chip("ready")).toContain(">Ready</span>");
+  it("Ready: plain inline status, a green check and the word, no background, border or padding box", () => {
+    const html = chip("ready");
+    const cls = /class="([^"]*)"/.exec(html)?.[1] ?? "";
+    expect(cls).toContain("text-correct");
+    expect(cls).not.toMatch(/\bbg-|\bborder\b|border-|px-|rounded/);
+    expect(html).toContain("lucide-check");
+    expect(html).toContain('width="16"');
+    expect(html).toMatch(/<svg[^>]*aria-hidden="true"/);
+    expect(html).toContain(">Ready</span>");
+  });
+
+  it("Ready keeps the chip's row height, and its green passes AA on the card", () => {
+    expect(/class="([^"]*)"/.exec(chip("ready"))?.[1]).toContain("py-[5px]");
+    const lum = (hex: string) => {
+      const [r, g, b] = [1, 3, 5]
+        .map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+        .map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    expect((lum("#faf7f3") + 0.05) / (lum("#1f7a4d") + 0.05)).toBeGreaterThanOrEqual(4.5);
   });
 
   it("Processing: sand with a thin stroke, dark text, clock icon", () => {
@@ -24,6 +40,15 @@ describe("material status chips", () => {
     expect(chip("failed")).toContain("bg-wrong-bg text-wrong");
     expect(chip("failed")).toContain("lucide-circle-alert");
     expect(chip("failed")).toContain(">Failed</span>");
+  });
+
+  it("Processing and Failed stay chips with a fill and a stroke", () => {
+    for (const status of ["processing", "failed"] as const) {
+      const cls = /class="([^"]*)"/.exec(chip(status))?.[1] ?? "";
+      expect(cls).toMatch(/bg-/);
+      expect(cls).toMatch(/border /);
+      expect(cls).toContain("rounded-full");
+    }
   });
 
   it("gives the three statuses three different looks", () => {
