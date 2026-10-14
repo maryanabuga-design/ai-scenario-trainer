@@ -55,7 +55,6 @@ describe("ArrowCircle position: the top-right corner", () => {
       "components/NextUpCard/NextUpCard.tsx",
       "components/TopicCard/TopicCard.tsx",
       "components/ScenarioCard/ScenarioCard.tsx",
-      "components/RepeatSummary/RepeatSummary.tsx",
       "components/UploadSheet/UploadSheet.tsx",
     ]) {
       const code = readFileSync(file, "utf8");
@@ -79,7 +78,6 @@ describe("every card arrow goes through ArrowCircle", () => {
       "components/NextUpCard/NextUpCard.tsx",
       "components/TopicCard/TopicCard.tsx",
       "components/ScenarioCard/ScenarioCard.tsx",
-      "components/RepeatSummary/RepeatSummary.tsx",
       "components/UploadSheet/UploadSheet.tsx",
     ]) {
       expect(readFileSync(file, "utf8"), file).toContain("<ArrowCircle");

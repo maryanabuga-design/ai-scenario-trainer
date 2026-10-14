@@ -288,7 +288,7 @@ export function ProgressSample({
         finishedAt: Date.UTC(2026, 9, 1 + index, 9, 20),
         answers: [answer("s1", "d", 1), answer("s2", "c", 3), answer("s3", "a", 3)],
       }));
-  return <ProgressView history={history} onRepeat={() => undefined} />;
+  return <ProgressView history={history} />;
 }
 
 export function OnboardingSample({ start }: { start: OnboardingStep }) {

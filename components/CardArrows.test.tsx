@@ -3,7 +3,6 @@ import { describe, expect, it, vi } from "vitest";
 import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
 import { MaterialsList } from "@/components/MaterialsList/MaterialsList";
 import { NextUpCard } from "@/components/NextUpCard/NextUpCard";
-import { ProgressView } from "@/components/ProgressView/ProgressView";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { TopicCard } from "@/components/TopicCard/TopicCard";
 import { loadAllSections } from "@/lib/guide";
@@ -55,22 +54,6 @@ describe("long titles never run under the corner circle (360px)", () => {
     );
     expect(html).toContain("absolute top-4 right-4");
     expect(clearedBlock(html, "12 topics to repeat across both guides")).toBe(true);
-  });
-
-  it("Progress repeat card", () => {
-    const html = withSheet(
-      <ProgressView
-        history={[
-          {
-            mode: "short",
-            finishedAt: 1,
-            answers: [{ stepId: "s4", optionId: "a", confidence: 3, explanation: "" }],
-          },
-        ]}
-        onRepeat={() => undefined}
-      />,
-    );
-    expect(clearedBlock(html, "to repeat</h2>")).toBe(true);
   });
 });
 

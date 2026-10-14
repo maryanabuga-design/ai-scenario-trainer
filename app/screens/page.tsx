@@ -528,9 +528,14 @@ export default function Screens() {
               <WeakTopicsSample empty />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Progress: first visit">
+          <PhoneFrame label="Progress: no data">
             <Screen nav="/progress">
               <ProgressSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Progress: exactly one session">
+            <Screen nav="/progress">
+              <ProgressSample sessions={1} />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Progress: with history">
