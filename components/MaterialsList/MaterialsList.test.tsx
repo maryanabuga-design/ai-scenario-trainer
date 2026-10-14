@@ -44,6 +44,19 @@ describe("Materials cards", () => {
     expect(cards).not.toContain("border-arrow-stroke");
   });
 
+  it("put the chevron in the middle of the whole card, which is one link", () => {
+    const html = renderList();
+    const start = html.indexOf('<div class="relative flex items-center');
+    expect(start).toBeGreaterThan(-1);
+    const card = html.slice(start, html.indexOf("</li>", start));
+    // The link stretches over the whole card; the chevron is outside the link, on the card's right.
+    expect(card).toMatch(/<a class="[^"]*after:absolute after:inset-0/);
+    const link = card.slice(card.indexOf("<a "), card.indexOf("</a>"));
+    expect(link).not.toContain("lucide-chevron-right");
+    expect(card.lastIndexOf("lucide-chevron-right")).toBeGreaterThan(card.indexOf("Ready"));
+    expect(card).toContain("has-focus-visible:outline-accent");
+  });
+
   it("keep the Ready chip with its fill and stroke", () => {
     expect(renderList()).toContain("border border-correct-stroke bg-correct-bg text-correct");
   });

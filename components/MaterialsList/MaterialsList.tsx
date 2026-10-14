@@ -28,54 +28,58 @@ function MaterialRow({
   onUploadEnd: (status: "ready" | "failed") => void;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-card bg-card shadow-(--card-shadow) p-4">
-      <Link
-        href={`/materials/${material.id}`}
-        className="-m-2 flex items-center gap-4 rounded-panel p-2 active:bg-surface-muted"
-      >
-        <MaterialTile type={material.type} />
-        <span className="flex min-w-0 flex-1 flex-col gap-1">
-          <span className="type-body-strong break-words">{material.name}</span>
-          <span className="type-small text-text-secondary">{metaLine(material)}</span>
-        </span>
-        <span
-          aria-hidden="true"
-          className="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center text-primary"
+    // The whole card is one link (stretched over the card); the chevron sits in the middle of its
+    // right side. "Try another file" stays its own button above the link.
+    <div className="relative flex items-center gap-2 rounded-card bg-card p-4 shadow-(--card-shadow) has-[a:active]:bg-surface-muted has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent">
+      <div className="flex min-w-0 flex-1 flex-col gap-3">
+        <Link
+          href={`/materials/${material.id}`}
+          className="flex items-center gap-4 outline-none after:absolute after:inset-0 after:rounded-card after:content-['']"
         >
-          <ChevronRight size={20} strokeWidth={2} />
-        </span>
-      </Link>
-      <div className="flex flex-wrap items-center gap-2">
-        <StatusChip status={material.status} />
-        <TrainingTags training={training} />
-      </div>
-      {material.status === "processing" && (
-        <div
-          className="h-1.5 w-full overflow-hidden rounded-full bg-secondary-sand-pressed"
-          role="progressbar"
-          aria-label={`${material.name} processing`}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={material.progress ?? 0}
-        >
-          <div
-            className="h-full bg-text-secondary"
-            style={{ width: `${material.progress ?? 0}%` }}
-          />
+          <MaterialTile type={material.type} />
+          <span className="flex min-w-0 flex-1 flex-col gap-1">
+            <span className="type-body-strong break-words">{material.name}</span>
+            <span className="type-small text-text-secondary">{metaLine(material)}</span>
+          </span>
+        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <StatusChip status={material.status} />
+          <TrainingTags training={training} />
         </div>
-      )}
-      {material.status === "failed" && (
-        <>
-          <p className="type-small text-text-secondary">{material.reason}</p>
-          <div>
-            <UploadButton
-              label="Try another file"
-              onUploadStart={onUploadStart}
-              onUploadEnd={onUploadEnd}
+        {material.status === "processing" && (
+          <div
+            className="h-1.5 w-full overflow-hidden rounded-full bg-secondary-sand-pressed"
+            role="progressbar"
+            aria-label={`${material.name} processing`}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={material.progress ?? 0}
+          >
+            <div
+              className="h-full bg-text-secondary"
+              style={{ width: `${material.progress ?? 0}%` }}
             />
           </div>
-        </>
-      )}
+        )}
+        {material.status === "failed" && (
+          <>
+            <p className="type-small text-text-secondary">{material.reason}</p>
+            <div className="relative z-10">
+              <UploadButton
+                label="Try another file"
+                onUploadStart={onUploadStart}
+                onUploadEnd={onUploadEnd}
+              />
+            </div>
+          </>
+        )}
+      </div>
+      <span
+        aria-hidden="true"
+        className="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center text-primary"
+      >
+        <ChevronRight size={20} strokeWidth={2} />
+      </span>
     </div>
   );
 }
