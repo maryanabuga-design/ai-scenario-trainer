@@ -3,7 +3,7 @@
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { AnswerDock } from "@/components/AnswerDock/AnswerDock";
 import { Button } from "@/components/Button/Button";
-import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
+import { SelectableCard } from "@/components/SelectableCard/SelectableCard";
 import { ConfidenceSelector } from "@/components/ConfidenceSelector/ConfidenceSelector";
 import { OrderingList } from "@/components/OrderingList/OrderingList";
 import { GuideChip } from "@/components/GuideChip/GuideChip";
@@ -54,7 +54,7 @@ function Answer({
       return (
         <div className="flex flex-col gap-3">
           {question.options.map((option) => (
-            <ChoiceCard
+            <SelectableCard
               key={option.id}
               name={question.id}
               value={option.id}
@@ -62,7 +62,7 @@ function Answer({
               onChange={(optionId) => onChange({ type: "single", optionId })}
             >
               {option.text}
-            </ChoiceCard>
+            </SelectableCard>
           ))}
         </div>
       );
@@ -71,7 +71,7 @@ function Answer({
       return (
         <div className="flex flex-col gap-3">
           {question.options.map((option) => (
-            <ChoiceCard
+            <SelectableCard
               key={option.id}
               type="checkbox"
               name={question.id}
@@ -89,7 +89,7 @@ function Answer({
               }
             >
               {option.text}
-            </ChoiceCard>
+            </SelectableCard>
           ))}
         </div>
       );
@@ -109,7 +109,7 @@ function Answer({
       return (
         <div className="grid grid-cols-2 gap-3">
           {[true, false].map((value) => (
-            <ChoiceCard
+            <SelectableCard
               key={String(value)}
               name={question.id}
               value={String(value)}
@@ -117,7 +117,7 @@ function Answer({
               onChange={() => onChange({ type: "truefalse", value })}
             >
               {value ? "True" : "False"}
-            </ChoiceCard>
+            </SelectableCard>
           ))}
         </div>
       );

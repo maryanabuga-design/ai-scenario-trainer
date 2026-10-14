@@ -3,7 +3,7 @@
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { Button } from "@/components/Button/Button";
-import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
+import { SelectableCard } from "@/components/SelectableCard/SelectableCard";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { SectionList } from "@/components/SectionList/SectionList";
@@ -125,7 +125,7 @@ export function SessionSetup({
           {lengthCards.map((option) => {
             const length = scenarioDef.lengths[option.id];
             return (
-              <ChoiceCard
+              <SelectableCard
                 key={option.id}
                 name="length"
                 value={option.id}
@@ -149,7 +149,7 @@ export function SessionSetup({
                     <span className="type-small">Not available for this material</span>
                   )}
                 </span>
-              </ChoiceCard>
+              </SelectableCard>
             );
           })}
         </fieldset>

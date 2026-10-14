@@ -4,7 +4,7 @@ import { ListChecks } from "lucide-react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { Button, ButtonLink } from "@/components/Button/Button";
-import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
+import { SelectableCard } from "@/components/SelectableCard/SelectableCard";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { StatusIcon } from "@/components/StatusChip/StatusChip";
 import { useTopicName } from "@/components/TopicCard/TopicCard";
@@ -38,8 +38,9 @@ function TopicOption({
 }) {
   const name = useTopicName(topic.sectionId);
   return (
-    <ChoiceCard
+    <SelectableCard
       type="checkbox"
+      size="row"
       name="topics"
       value={topic.sectionId}
       checked={checked}
@@ -55,7 +56,7 @@ function TopicOption({
           </span>
         </span>
       </span>
-    </ChoiceCard>
+    </SelectableCard>
   );
 }
 

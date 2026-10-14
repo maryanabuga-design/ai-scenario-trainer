@@ -1,6 +1,6 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { SelectableCard } from "@/components/SelectableCard/SelectableCard";
 import { Button } from "@/components/Button/Button";
 import { selectionToggle, toggleSection } from "@/lib/sections";
 import type { TopicTint } from "@/lib/weak-topics";
@@ -57,15 +57,14 @@ export function SectionList({
           const checked = selected.includes(section.id);
           return (
             <li key={section.id}>
-              <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-[20px] bg-card px-4 py-3 shadow-(--card-shadow) active:bg-surface-muted has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent">
-                <input
-                  type="checkbox"
-                  name={titleId}
-                  value={section.id}
-                  checked={checked}
-                  onChange={() => onChange(toggleSection(ids, selected, section.id))}
-                  className="sr-only"
-                />
+              <SelectableCard
+                type="checkbox"
+                size="row"
+                name={titleId}
+                value={section.id}
+                checked={checked}
+                onChange={() => onChange(toggleSection(ids, selected, section.id))}
+              >
                 <span
                   aria-hidden="true"
                   className={`type-caption flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-text ${codeTints[topicTint(section.id)]}`}
@@ -81,15 +80,7 @@ export function SectionList({
                     {section.detail}
                   </span>
                 )}
-                <span
-                  aria-hidden="true"
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] border ${
-                    checked ? "border-primary bg-primary text-primary-text" : "border-primary"
-                  }`}
-                >
-                  {checked && <Check size={14} strokeWidth={2.5} />}
-                </span>
-              </label>
+              </SelectableCard>
             </li>
           );
         })}

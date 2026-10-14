@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowRight, Check, FileQuestionMark, FileText } from "lucide-react";
+import { SelectableCard } from "@/components/SelectableCard/SelectableCard";
+import { ArrowRight, FileQuestionMark, FileText } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
@@ -25,7 +26,7 @@ export function initialChoice(material: Material): TrainingChoice {
   };
 }
 
-/** One "What to create" card: sage tile with an icon, title, grey text, dark green check box. */
+/** One "What to create" card: a SelectableCard with the sage icon tile, title and grey text. */
 function CreateOption({
   icon: Icon,
   title,
@@ -42,24 +43,14 @@ function CreateOption({
   children: ReactNode;
 }) {
   return (
-    <label
-      className={`flex min-h-18 items-center gap-3 rounded-card border p-4 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${
-        disabled
-          ? "cursor-not-allowed border-secondary-sand-pressed bg-secondary-sand text-text-secondary"
-          : checked
-            ? "cursor-pointer border-[1.5px] border-stroke-sage bg-next-card active:bg-secondary-pressed"
-            : "cursor-pointer border-stroke-neutral bg-card shadow-(--card-shadow) active:bg-surface-muted"
-      }`}
+    <SelectableCard
+      type="checkbox"
+      name="create"
+      value={title}
+      checked={checked && !disabled}
+      disabled={disabled}
+      onChange={onToggle}
     >
-      <input
-        type="checkbox"
-        name="create"
-        value={title}
-        checked={checked}
-        disabled={disabled}
-        onChange={onToggle}
-        className="sr-only"
-      />
       <span
         aria-hidden="true"
         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-next-tile text-text"
@@ -70,19 +61,7 @@ function CreateOption({
         <span className="type-body-strong">{title}</span>
         <span className="type-small text-text-secondary">{children}</span>
       </span>
-      <span
-        aria-hidden="true"
-        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] border ${
-          disabled
-            ? "border-dashed border-text-secondary"
-            : checked
-              ? "border-primary bg-primary text-primary-text"
-              : "border-primary"
-        }`}
-      >
-        {checked && !disabled && <Check size={14} strokeWidth={2.5} />}
-      </span>
-    </label>
+    </SelectableCard>
   );
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
+import { SelectableCard } from "@/components/SelectableCard/SelectableCard";
 import { directions } from "@/lib/directions";
 
 /** The four directions. Only the available one can be chosen. */
@@ -17,7 +17,7 @@ export function DirectionPicker({
     <fieldset className="flex flex-col gap-3">
       <legend className="type-body-strong mb-3">{legend}</legend>
       {directions.map((direction) => (
-        <ChoiceCard
+        <SelectableCard
           key={direction.id}
           name="direction"
           value={direction.id}
@@ -31,7 +31,7 @@ export function DirectionPicker({
               <span className="type-small">Not available in this prototype</span>
             )}
           </span>
-        </ChoiceCard>
+        </SelectableCard>
       ))}
     </fieldset>
   );

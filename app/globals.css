@@ -56,6 +56,10 @@
   --secondary-pressed: #e3e8dc;
   --nav-active: #f9edc8;
   --next-card: #f2f3ee;
+  --selected-tint: var(--next-card);
+  --selected-stroke: var(--stroke-sage);
+  --selected-pressed: var(--secondary-pressed);
+  --selectable-stroke: var(--stroke-neutral);
   --next-tile: #d4dbcd;
   --material-tile: var(--next-tile);
   --card: #faf7f3;
@@ -115,6 +119,10 @@
   --color-code-peach: var(--code-peach);
   --color-nav-active: var(--nav-active);
   --color-next-card: var(--next-card);
+  --color-selected-tint: var(--selected-tint);
+  --color-selected-stroke: var(--selected-stroke);
+  --color-selected-pressed: var(--selected-pressed);
+  --color-selectable-stroke: var(--selectable-stroke);
   --color-next-tile: var(--next-tile);
   --color-material-tile: var(--material-tile);
   --color-card: var(--card);

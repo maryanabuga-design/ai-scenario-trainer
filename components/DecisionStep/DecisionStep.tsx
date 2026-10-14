@@ -3,7 +3,7 @@
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { AskAiButton } from "@/components/AskAi/AskAi";
 import { Button } from "@/components/Button/Button";
-import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
+import { SelectableCard } from "@/components/SelectableCard/SelectableCard";
 import { ConfidenceSelector } from "@/components/ConfidenceSelector/ConfidenceSelector";
 import { SessionTopBar } from "@/components/SessionTopBar/SessionTopBar";
 import type { Unit } from "@/components/SessionTopBar/SessionTopBar";
@@ -60,7 +60,7 @@ export function DecisionStep({
       <fieldset className="flex flex-col gap-3">
         <legend className="type-item-title mb-3">{step.question}</legend>
         {step.options.map((option) => (
-          <ChoiceCard
+          <SelectableCard
             key={option.id}
             name={`option-${step.id}`}
             value={option.id}
@@ -68,7 +68,7 @@ export function DecisionStep({
             onChange={(optionId) => onDraftChange({ ...draft, optionId })}
           >
             {option.text}
-          </ChoiceCard>
+          </SelectableCard>
         ))}
       </fieldset>
 
