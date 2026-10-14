@@ -22,9 +22,7 @@ export default function ReviewTrainingPage() {
       <div className="flex flex-col items-start gap-4">
         <h1 className="type-page-title">No training yet</h1>
         <p className="text-text-secondary">Create training from this material first.</p>
-        <ButtonLink href={`/training/${id}`} variant="secondary">
-          Create training
-        </ButtonLink>
+        <ButtonLink href={`/training/${id}`}>Create training</ButtonLink>
       </div>
     );
   }

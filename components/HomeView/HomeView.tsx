@@ -77,7 +77,7 @@ export function HomeView({
       </section>
 
       <div className="-ml-3">
-        <ButtonLink href={onboardingHref} variant="text">
+        <ButtonLink href={onboardingHref} variant="tertiary">
           How it works
         </ButtonLink>
       </div>

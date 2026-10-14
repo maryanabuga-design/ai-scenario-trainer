@@ -207,7 +207,7 @@ export function ResultsView({
             <Button onClick={() => onRepeat(repeatIds)}>
               {quiz ? "Repeat weak questions" : "Repeat weak topics"}
             </Button>
-            <ButtonLink href="/" variant="text">
+            <ButtonLink href="/" variant="tertiary">
               Back to Home
             </ButtonLink>
           </>

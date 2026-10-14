@@ -145,7 +145,7 @@ function ChatPanel({
           }
           action={
             <div className="-mr-3">
-              <Button variant="text" onClick={onClose}>
+              <Button variant="tertiary" onClick={onClose}>
                 Close
               </Button>
             </div>
@@ -356,7 +356,7 @@ export function AskAiButton({ step, phase }: { step: Step; phase: ChatPhase }) {
   if (step.chat.length === 0 && !step.suggestedQuestion) return null;
   return (
     <div className="-ml-3 self-start">
-      <Button variant="text" icon={Sparkles} onClick={() => open(step, phase)}>
+      <Button variant="tertiary" icon={Sparkles} onClick={() => open(step, phase)}>
         Ask AI about this step
       </Button>
     </div>

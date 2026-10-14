@@ -41,8 +41,8 @@ export function ProfileView({
               direction and uploaded files stay.
             </p>
           </div>
-          <div>
-            <Button variant="secondary" onClick={onAskReset}>
+          <div className="-ml-3">
+            <Button variant="tertiary" onClick={onAskReset}>
               Reset progress
             </Button>
           </div>

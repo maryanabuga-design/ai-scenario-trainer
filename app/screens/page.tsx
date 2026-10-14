@@ -88,6 +88,7 @@ function TextStyles() {
     ["type-label", "Uppercase label"],
     ["type-numeral", "28"],
     ["type-button", "Button label"],
+    ["type-action", "Small action (tertiary button)"],
     ["type-caption", "Small caption"],
   ];
   return (
@@ -117,14 +118,11 @@ function FoundationKit() {
             <Tag tone="lilac">S2</Tag>
           </div>
         </Card>
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-3">
           <Button>Primary action</Button>
-          <div className="flex flex-wrap items-center gap-4">
-            <Button variant="secondary">Secondary</Button>
-            <Button variant="text">Text</Button>
-            <Button variant="secondary" disabled>
-              Disabled
-            </Button>
+          <Button variant="secondary">Secondary action</Button>
+          <div className="-ml-3">
+            <Button variant="tertiary">Tertiary action</Button>
           </div>
         </div>
       </div>

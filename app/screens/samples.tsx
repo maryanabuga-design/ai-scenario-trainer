@@ -670,21 +670,21 @@ const buttonStates = ["default", "pressed", "disabled", "focus"] as const;
 function ButtonStates() {
   return (
     <div className="flex flex-col gap-4">
-      {(["primary", "secondary", "text"] as const).map((variant) => (
+      {(["primary", "secondary", "tertiary"] as const).map((variant) => (
         <div key={variant} className="flex flex-col gap-2">
           <h3 className="type-label text-text-secondary">
-            {{ primary: "Filled", secondary: "Outline", text: "Text" }[variant]}
+            {{ primary: "Primary", secondary: "Secondary", tertiary: "Tertiary" }[variant]}
           </h3>
           <div className="grid grid-cols-2 gap-3">
             {buttonStates.map((state) => (
-              <div key={state} className="flex flex-col items-start gap-1">
+              <div key={state} className="flex flex-col items-stretch gap-1">
                 <span className="type-caption text-text-secondary">{state}</span>
                 <ButtonPreview
                   variant={variant}
                   state={state}
-                  icon={variant === "text" && state === "default" ? Sparkles : undefined}
+                  icon={variant === "tertiary" && state === "default" ? Sparkles : undefined}
                 >
-                  {variant === "text" ? "Ask AI" : "Continue"}
+                  {variant === "tertiary" ? "Ask AI" : "Continue"}
                 </ButtonPreview>
               </div>
             ))}
@@ -701,7 +701,7 @@ export function ButtonsSample() {
     <div className="flex flex-col gap-6">
       <h1 className="type-page-title">Buttons</h1>
       <p className="type-small text-text-secondary">
-        Filled, outline and text, in the default, pressed, disabled and keyboard focus states.
+        Primary, secondary and tertiary, in the default, pressed, disabled and keyboard focus states.
       </p>
       <section className="flex flex-col gap-3">
         <h2 className="type-item-title">On the page</h2>

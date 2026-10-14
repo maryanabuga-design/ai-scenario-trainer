@@ -297,3 +297,10 @@ dialog[data-sheet]::backdrop,
   line-height: 16px;
   font-weight: 500;
 }
+
+/* Tertiary buttons: small underlined actions. */
+@utility type-action {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}

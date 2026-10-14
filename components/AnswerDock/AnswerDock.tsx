@@ -90,7 +90,7 @@ export function AnswerDock({
           className="type-body dock-field min-h-11 min-w-0 flex-1 resize-none bg-transparent py-2.5 placeholder:text-text-secondary"
         />
         <span className="shrink-0">
-          <Button variant="text" small onClick={onDontKnow}>
+          <Button variant="tertiary" onClick={onDontKnow}>
             I don&apos;t know
           </Button>
         </span>

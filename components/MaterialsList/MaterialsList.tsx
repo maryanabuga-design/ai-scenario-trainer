@@ -65,9 +65,10 @@ function MaterialRow({
         {material.status === "failed" && (
           <>
             <p className="type-small text-text-secondary">{material.reason}</p>
-            <div className="relative z-10">
+            <div className="relative z-10 -ml-3 self-start">
               <UploadButton
                 label="Try another file"
+                variant="tertiary"
                 onUploadStart={onUploadStart}
                 onUploadEnd={onUploadEnd}
               />

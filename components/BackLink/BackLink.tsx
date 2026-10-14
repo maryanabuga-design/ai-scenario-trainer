@@ -4,7 +4,7 @@ import { ButtonLink } from "@/components/Button/Button";
 export function BackLink({ href, label = "Back" }: { href: string; label?: string }) {
   return (
     <div className="-ml-3">
-      <ButtonLink href={href} variant="text">
+      <ButtonLink href={href} variant="tertiary">
         {label}
       </ButtonLink>
     </div>

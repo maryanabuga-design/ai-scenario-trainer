@@ -59,7 +59,7 @@ export function SourceSheetProvider({
               }
               action={
                 <div className="-mr-3">
-                  <Button variant="text" onClick={() => dialogRef.current?.close()}>
+                  <Button variant="tertiary" onClick={() => dialogRef.current?.close()}>
                     Close
                   </Button>
                 </div>

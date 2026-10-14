@@ -3,39 +3,38 @@ import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 
 /** The three locked button types (DESIGN.md: Buttons). */
-export type ButtonVariant = "primary" | "secondary" | "text";
+export type ButtonVariant = "primary" | "secondary" | "tertiary";
 
 export type ButtonLook = {
   variant?: ButtonVariant;
-  /** Filled buttons fill the width by default; false for one in a row (Ask AI Send). */
+  /** Primary and secondary fill the width by default; false for one in a row (Ask AI Send, the
+   * Materials header). */
   wide?: boolean;
-  /** Text buttons only: the small text size, inside the answer dock. */
-  small?: boolean;
   /** A decorative icon before the label (the sparkle for AI actions). */
   icon?: LucideIcon;
-  /** Decorative content after the label, outside its underline (the ArrowCircle of "Details"). */
+  /** Decorative content after the label, outside its underline (the arrow of "Details"). */
   trailing?: ReactNode;
 };
 
-const variants: Record<ButtonVariant, string> = {
+export const buttonVariants: Record<ButtonVariant, string> = {
   primary:
     "type-button min-h-12 px-6 bg-primary text-primary-text active:bg-primary-pressed disabled:border disabled:border-secondary-sand-pressed disabled:bg-secondary-sand disabled:text-text-secondary",
   secondary:
-    "type-button min-h-11 px-5 border-[1.5px] border-primary bg-transparent text-primary active:bg-secondary-sand disabled:border-secondary-sand-pressed disabled:bg-transparent disabled:text-text-secondary",
-  text: "min-h-11 px-3 text-primary active:bg-secondary-sand disabled:bg-transparent disabled:text-text-secondary",
+    "type-button min-h-12 px-6 border-[1.5px] border-primary bg-transparent text-primary active:bg-secondary-sand disabled:border-secondary-sand-pressed disabled:bg-transparent disabled:text-text-secondary",
+  // Small underlined text; the 44px tap area is invisible padding, never a visible box.
+  tertiary: "type-action text-primary min-h-11 px-3 disabled:text-text-secondary",
 };
 
 /** The pressed look without pressing, for the screen review page only. */
 export const pressedLook: Record<ButtonVariant, string> = {
   primary: "bg-primary-pressed",
   secondary: "bg-secondary-sand",
-  text: "bg-secondary-sand",
+  tertiary: "[&>span]:decoration-2",
 };
 
-export function buttonClasses({ variant = "primary", wide, small }: ButtonLook) {
-  const width = (wide ?? variant === "primary") ? "w-full" : "";
-  const size = variant === "text" ? (small ? "type-small" : "type-body") : "";
-  return `group inline-flex items-center justify-center gap-2 rounded-full disabled:cursor-not-allowed ${variants[variant]} ${size} ${width}`;
+export function buttonClasses({ variant = "primary", wide }: ButtonLook) {
+  const width = (wide ?? variant !== "tertiary") ? "w-full" : "";
+  return `group inline-flex items-center justify-center gap-2 rounded-full disabled:cursor-not-allowed ${buttonVariants[variant]} ${width}`;
 }
 
 function Content({
@@ -45,8 +44,8 @@ function Content({
   children,
 }: ButtonLook & { children: ReactNode }) {
   const label =
-    variant === "text" ? (
-      <span className="underline decoration-1 underline-offset-4 group-disabled:no-underline">
+    variant === "tertiary" ? (
+      <span className="underline decoration-1 underline-offset-4 group-active:decoration-2 group-disabled:no-underline">
         {children}
       </span>
     ) : (
@@ -64,14 +63,13 @@ function Content({
 export function Button({
   variant = "primary",
   wide,
-  small,
   icon,
   trailing,
   children,
   ...props
 }: Omit<ComponentProps<"button">, "className"> & ButtonLook) {
   return (
-    <button type="button" className={buttonClasses({ variant, wide, small })} {...props}>
+    <button type="button" className={buttonClasses({ variant, wide })} {...props}>
       <Content variant={variant} icon={icon} trailing={trailing}>
         {children}
       </Content>

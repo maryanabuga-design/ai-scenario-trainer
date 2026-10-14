@@ -99,11 +99,7 @@ export function ProgressView({
         <EmptyState
           icon={History}
           text="No sessions yet. Finished sessions are saved here, in this browser only."
-          action={
-            <ButtonLink href="/materials/evacuation-guide" variant="secondary">
-              Start a scenario
-            </ButtonLink>
-          }
+          action={<ButtonLink href="/materials/evacuation-guide">Start a scenario</ButtonLink>}
         />
       ) : (
         <>
@@ -121,7 +117,7 @@ export function ProgressView({
             </ol>
             {hasMore && (
               <div className="-ml-3">
-                <Button variant="text" onClick={() => setShown(seeMore(shown))}>
+                <Button variant="tertiary" onClick={() => setShown(seeMore(shown))}>
                   See more
                 </Button>
               </div>

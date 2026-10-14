@@ -29,7 +29,7 @@ function DialogCard({
       <p className="text-text-secondary">{description}</p>
       <div className="flex flex-col items-center gap-2">
         <Button onClick={onConfirm}>{confirmLabel}</Button>
-        <Button variant="text" onClick={onCancel}>
+        <Button variant="tertiary" onClick={onCancel}>
           Cancel
         </Button>
       </div>

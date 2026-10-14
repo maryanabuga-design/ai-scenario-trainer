@@ -46,7 +46,7 @@ export function SectionList({
           {title}
         </h2>
         <div className="-mr-3">
-          <Button variant="text" onClick={() => onChange(toggle.next)}>
+          <Button variant="tertiary" onClick={() => onChange(toggle.next)}>
             {toggle.label}
           </Button>
         </div>

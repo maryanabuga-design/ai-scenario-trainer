@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { Sparkles } from "lucide-react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { Button, ButtonLink } from "@/components/Button/Button";
+import { Button, ButtonLink, buttonVariants } from "@/components/Button/Button";
 
 /** The button's own class attribute. */
 function classes(html: string) {
@@ -11,42 +11,48 @@ function classes(html: string) {
 }
 
 describe("the three locked button types", () => {
-  it("filled: deep green, darker green when pressed, olive with a muted label when disabled", () => {
-    const filled = classes(renderToStaticMarkup(<Button>Continue</Button>));
-    expect(filled).toContain("bg-primary");
-    expect(filled).toContain("text-primary-text");
-    expect(filled).toContain("min-h-12");
-    expect(filled).toContain("active:bg-primary-pressed");
-    expect(filled).toContain("disabled:bg-secondary-sand");
-    expect(filled).toContain("disabled:text-text-secondary");
+  it("has exactly three variants", () => {
+    expect(Object.keys(buttonVariants).sort()).toEqual(["primary", "secondary", "tertiary"]);
   });
 
-  it("outline: 1.5px dark green stroke, olive when pressed, olive-pressed stroke when disabled", () => {
-    const outline = classes(renderToStaticMarkup(<Button variant="secondary">Repeat</Button>));
-    expect(outline).toContain("border-[1.5px] border-primary bg-transparent text-primary");
-    expect(outline).toContain("min-h-11");
-    expect(outline).toContain("active:bg-secondary-sand");
-    expect(outline).toContain("disabled:border-secondary-sand-pressed");
-    expect(outline).toContain("disabled:text-text-secondary");
+  it("primary: deep green fill, white label, darker green when pressed, sand when disabled", () => {
+    const primary = classes(renderToStaticMarkup(<Button>Continue</Button>));
+    expect(primary).toContain("bg-primary text-primary-text");
+    expect(primary).toContain("min-h-12");
+    expect(primary).toContain("w-full");
+    expect(primary).toContain("active:bg-primary-pressed");
+    expect(primary).toContain("disabled:bg-secondary-sand");
+    expect(primary).toContain("disabled:text-text-secondary");
   });
 
-  it("text: dark green underlined label, olive behind it when pressed, no underline when disabled", () => {
+  it("secondary: transparent with a 1.5px stroke, the primary's size; muted stroke when disabled", () => {
+    const secondary = classes(renderToStaticMarkup(<Button variant="secondary">Back</Button>));
+    expect(secondary).toContain("border-[1.5px] border-primary bg-transparent text-primary");
+    expect(secondary).toContain("min-h-12");
+    expect(secondary).toContain("w-full");
+    expect(secondary).toContain("disabled:border-secondary-sand-pressed");
+    expect(secondary).toContain("disabled:text-text-secondary");
+    expect(secondary).not.toMatch(/(^| )bg-(?!transparent)/);
+  });
+
+  it("tertiary: small underlined text, no background, no border, 44px tap area", () => {
     const html = renderToStaticMarkup(
-      <Button variant="text" icon={Sparkles}>
+      <Button variant="tertiary" icon={Sparkles}>
         Ask AI about this step
       </Button>,
     );
-    expect(classes(html)).toContain("text-primary");
-    expect(classes(html)).toContain("active:bg-secondary-sand");
-    expect(classes(html)).toContain("disabled:text-text-secondary");
+    const tertiary = classes(html);
+    expect(tertiary).toContain("type-action text-primary");
+    expect(tertiary).toContain("min-h-11");
+    expect(tertiary).not.toMatch(/(^| )(bg-|border|shadow)/);
+    expect(tertiary).not.toMatch(/active:bg-/);
     expect(html).toContain("underline");
     expect(html).toContain("group-disabled:no-underline");
     expect(html).toMatch(/<svg[^>]*aria-hidden="true"/);
-    expect(html).toContain(">Ask AI about this step</span>");
   });
 
-  it("has no hover state and a link looks the same as a button", () => {
-    for (const variant of ["primary", "secondary", "text"] as const) {
+  it("has no hover state, and a link looks like its button", () => {
+    for (const variant of ["primary", "secondary", "tertiary"] as const) {
       const button = classes(renderToStaticMarkup(<Button variant={variant}>Go</Button>));
       const link = classes(
         renderToStaticMarkup(
@@ -62,21 +68,63 @@ describe("the three locked button types", () => {
   });
 });
 
-describe("no ad-hoc buttons", () => {
-  function files(dir: string): string[] {
-    return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-      const path = join(dir, entry.name);
-      if (entry.isDirectory()) return files(path);
-      return path.endsWith(".tsx") && !path.endsWith(".test.tsx") ? [path] : [];
-    });
-  }
+function files(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) return files(path);
+    return path.endsWith(".tsx") && !path.endsWith(".test.tsx") ? [path] : [];
+  });
+}
 
-  it("draws underlined text actions and hover states only in the Button component", () => {
-    const own = [...files("components"), ...files("app")].filter((file) => {
-      if (file.includes("Button/Button.tsx")) return false;
-      const code = readFileSync(file, "utf8");
-      return /\bunderline\b|hover:/.test(code);
-    });
+/** App code, without the Button itself and the dev-only screen review page (it shows specimens). */
+const sources = () =>
+  [...files("components"), ...files("app")].filter(
+    (file) => !file.includes("Button/Button.tsx") && !file.startsWith("app/screens/"),
+  );
+
+describe("every button goes through the Button component", () => {
+  it("leaves no one-off button style: button text styles, underlines or hover anywhere else", () => {
+    const own = sources().filter((file) =>
+      /type-button|type-action|\bunderline\b|hover:/.test(readFileSync(file, "utf8")),
+    );
     expect(own).toEqual([]);
+  });
+
+  it("uses no other variant names", () => {
+    const old = sources().filter((file) => /variant="text"/.test(readFileSync(file, "utf8")));
+    expect(old).toEqual([]);
+  });
+});
+
+describe("a secondary always comes with a primary above it", () => {
+  it("is used only in the documented places", () => {
+    const withSecondary = sources()
+      .filter((file) =>
+        /variant="secondary"|variant = "secondary"/.test(readFileSync(file, "utf8")),
+      )
+      .sort();
+    expect(withSecondary).toEqual([
+      // The answer sheet's "still correct" button, rendered below Continue (see AnswerSheet tests).
+      "components/MarkCorrect/MarkCorrect.tsx",
+      // Review: Start training above Back to material.
+      "components/TrainingReview/TrainingReview.tsx",
+      // The page-header "Upload a file" on Materials: the one documented exception.
+      "components/UploadSheet/UploadSheet.tsx",
+    ]);
+  });
+
+  it("Review: the primary comes before the secondary", () => {
+    const code = readFileSync("components/TrainingReview/TrainingReview.tsx", "utf8");
+    const bar = code.slice(code.indexOf("<ActionBar>"));
+    expect(bar.indexOf("<Button onClick={onStart}>")).toBeLessThan(
+      bar.indexOf('variant="secondary"'),
+    );
+  });
+
+  it("Upload a file is secondary only in the Materials header; elsewhere it is not", () => {
+    const list = readFileSync("components/MaterialsList/MaterialsList.tsx", "utf8");
+    const view = readFileSync("components/MaterialView/MaterialView.tsx", "utf8");
+    expect(list).toMatch(/label="Try another file"\s+variant="tertiary"/);
+    expect(view).toMatch(/label="Try another file"\s+variant="tertiary"/);
   });
 });

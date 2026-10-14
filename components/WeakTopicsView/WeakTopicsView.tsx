@@ -81,11 +81,7 @@ export function WeakTopicsView({
           <EmptyState
             icon={ListChecks}
             text="No weak topics yet. Finish a scenario or a quiz and they appear here."
-            action={
-              <ButtonLink href="/training/evacuation-guide" variant="secondary">
-                Start a scenario
-              </ButtonLink>
-            }
+            action={<ButtonLink href="/training/evacuation-guide">Start a scenario</ButtonLink>}
           />
         </div>
       </div>

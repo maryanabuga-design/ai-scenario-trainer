@@ -36,7 +36,7 @@ export function TrainingGenerating({
       <div className="flex items-center justify-between gap-4">
         <CircleBackButton label="Back to Create training" onClick={onCancel} />
         <div className="-mr-3">
-          <Button variant="text" onClick={onCancel}>
+          <Button variant="tertiary" onClick={onCancel}>
             Cancel
           </Button>
         </div>

@@ -50,7 +50,7 @@ export function UploadPanel({
         }
         action={
           <div className="-mr-3">
-            <Button variant="text" onClick={onClose}>
+            <Button variant="tertiary" onClick={onClose}>
               Close
             </Button>
           </div>
@@ -113,17 +113,13 @@ export function UploadPanel({
           {stage.material.status === "failed" ? (
             <>
               <p className="text-text-secondary">{stage.material.reason}</p>
-              <div>
-                <Button variant="secondary" onClick={() => onStage({ kind: "choose" })}>
-                  Try another file
-                </Button>
-              </div>
+              <Button onClick={() => onStage({ kind: "choose" })}>Try another file</Button>
             </>
           ) : (
             <>
               <p className="text-text-secondary">The file is in your materials, under Ready.</p>
               <Button onClick={() => onCreateTraining(stage.material.id)}>Create training</Button>
-              <Button variant="text" onClick={() => onOpenMaterial(stage.material.id)}>
+              <Button variant="tertiary" onClick={() => onOpenMaterial(stage.material.id)}>
                 Open material
               </Button>
             </>
@@ -147,7 +143,8 @@ export function UploadButton({
   onUploadEnd,
 }: {
   label?: string;
-  variant?: "primary" | "secondary";
+  /** Secondary only as the Materials page-header action; tertiary inside a card or a page. */
+  variant?: "secondary" | "tertiary";
   /** Called when a file is chosen and appears in the list as Processing. */
   onUploadStart?: () => void;
   /** Called when the simulated processing ends, with the final status. */
@@ -184,7 +181,7 @@ export function UploadButton({
 
   return (
     <>
-      <Button variant={variant} onClick={open}>
+      <Button variant={variant} wide={false} onClick={open}>
         {label}
       </Button>
       <dialog

@@ -17,7 +17,9 @@ function useActionBarContext() {
 
 export function ActionBarProvider({ children }: { children: ReactNode }) {
   const [slot, setSlot] = useState<HTMLElement | null>(null);
-  return <ActionBarContext.Provider value={{ slot, setSlot }}>{children}</ActionBarContext.Provider>;
+  return (
+    <ActionBarContext.Provider value={{ slot, setSlot }}>{children}</ActionBarContext.Provider>
+  );
 }
 
 export function ActionBarSlot() {
@@ -29,7 +31,7 @@ export function ActionBar({ children }: { children: ReactNode }) {
   const { slot } = useActionBarContext();
   if (!slot) return null;
   return createPortal(
-    <div className="flex flex-col gap-2 border-t border-border bg-bg p-4">{children}</div>,
+    <div className="flex flex-col gap-3 border-t border-border bg-bg p-4">{children}</div>,
     slot,
   );
 }

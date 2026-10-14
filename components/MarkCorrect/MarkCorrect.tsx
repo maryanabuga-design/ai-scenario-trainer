@@ -40,7 +40,7 @@ export function MarkCorrect({
     <div className="flex min-h-11 items-center justify-between gap-3">
       <p role="status">Marked as correct by you</p>
       <div className="-mr-3">
-        <Button ref={undoRef} variant="text" onClick={() => onChange(false)}>
+        <Button ref={undoRef} variant="tertiary" onClick={() => onChange(false)}>
           Undo
         </Button>
       </div>

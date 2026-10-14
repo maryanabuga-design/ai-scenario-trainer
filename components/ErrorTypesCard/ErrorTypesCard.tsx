@@ -66,7 +66,7 @@ export function ErrorTypesCard({
           <span className="-my-3 -mr-3 shrink-0">
             <ButtonLink
               href={detailsHref}
-              variant="text"
+              variant="tertiary"
               trailing={
                 <ArrowRight size={18} strokeWidth={2} aria-hidden="true" className="shrink-0" />
               }

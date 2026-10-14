@@ -111,7 +111,9 @@ export function MaterialView({
       {material.status === "failed" && (
         <div className="flex flex-col items-start gap-3">
           <p className="text-text-secondary">{material.reason}</p>
-          <UploadButton label="Try another file" />
+          <div className="-ml-3">
+            <UploadButton label="Try another file" variant="tertiary" />
+          </div>
         </div>
       )}
 
@@ -147,7 +149,7 @@ export function MaterialView({
             >
               Start training
             </Button>
-            <ButtonLink href={`/training/${material.id}`} variant="text">
+            <ButtonLink href={`/training/${material.id}`} variant="tertiary">
               Create again
             </ButtonLink>
           </>
@@ -160,7 +162,7 @@ export function MaterialView({
               only.
             </p>
             <Button disabled>Create training</Button>
-            <ButtonLink href="/materials/evacuation-guide" variant="text">
+            <ButtonLink href="/materials/evacuation-guide" variant="tertiary">
               Open the sample guide
             </ButtonLink>
           </>

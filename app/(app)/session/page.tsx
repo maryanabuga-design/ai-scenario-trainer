@@ -32,9 +32,7 @@ function NoSession() {
     <div className="flex flex-col items-start gap-4">
       <h1 className="type-page-title">No session in progress</h1>
       <p className="text-text-secondary">Start a scenario from a material.</p>
-      <ButtonLink href="/materials" variant="secondary">
-        Go to Materials
-      </ButtonLink>
+      <ButtonLink href="/materials">Go to Materials</ButtonLink>
     </div>
   );
 }

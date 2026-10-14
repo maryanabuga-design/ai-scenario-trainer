@@ -61,7 +61,7 @@ export function OnboardingView({
         <div>{step > 0 && <CircleBackButton label="Previous step" onClick={onBack} />}</div>
         {!final && (
           <div className="-mr-3">
-            <Button variant="text" onClick={onSkip}>
+            <Button variant="tertiary" onClick={onSkip}>
               Skip
             </Button>
           </div>

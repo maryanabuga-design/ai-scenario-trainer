@@ -41,9 +41,9 @@ function Expandable({
   return (
     <Card className="flex flex-col gap-3">
       {title}
-      <div>
+      <div className="-ml-3">
         <Button
-          variant="text"
+          variant="tertiary"
           aria-expanded={open}
           aria-controls={id}
           onClick={() => setOpen(!open)}
