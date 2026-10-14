@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
+import { ARROW_CLEARANCE, ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
 import { HeaderRow } from "@/components/HeaderRow/HeaderRow";
 import { Button } from "@/components/Button/Button";
 import { StatusChip } from "@/components/StatusChip/StatusChip";
@@ -69,15 +69,15 @@ export function UploadPanel({
               <button
                 type="button"
                 onClick={() => onChooseFile(file)}
-                className="flex w-full items-start gap-3 rounded-panel border border-border bg-surface p-3 text-left active:bg-surface-muted"
+                className="relative flex w-full items-start gap-3 rounded-panel border border-border bg-surface p-3 text-left active:bg-surface-muted"
               >
+                <ArrowCircle size="sm" />
                 <MaterialTile type={file.name.endsWith(".jpg") ? "Image" : "PDF"} />
-                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span className={`flex min-w-0 flex-1 flex-col gap-0.5 ${ARROW_CLEARANCE.sm}`}>
                   <span className="type-body-strong break-words">{file.name}</span>
                   <span className="type-small text-text-secondary">{formatSize(file.size)}</span>
                   <span className="type-small text-text-secondary">{file.summary}</span>
                 </span>
-                <ArrowCircle size="sm" />
               </button>
             </li>
           ))}

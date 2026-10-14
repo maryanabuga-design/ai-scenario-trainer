@@ -1,6 +1,6 @@
 import { Target } from "lucide-react";
 import Link from "next/link";
-import { ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
+import { ARROW_CLEARANCE, ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { SoftShape } from "@/components/SoftShape/SoftShape";
 import type { NextUp } from "@/lib/home";
@@ -23,7 +23,9 @@ export function NextUpCard({
       >
         <Target size={24} strokeWidth={2} />
       </span>
-      <span className="flex min-w-0 flex-1 flex-col">
+      <span
+        className={`flex min-w-0 flex-1 flex-col ${next.linksToTopics ? ARROW_CLEARANCE.md : ""}`}
+      >
         <span className="type-label text-text-secondary">Next up</span>
         <span id="next-up-title" className="type-item-title text-text">
           {next.title}
@@ -41,9 +43,9 @@ export function NextUpCard({
       <SoftShape variant="strong" />
       {next.linksToTopics ? (
         <Link href="/weak-topics" className="-m-1 flex items-center gap-3 rounded-panel p-1">
+          <ArrowCircle />
           {top}
           <span className="sr-only">, see all weak topics</span>
-          <ArrowCircle />
         </Link>
       ) : (
         <div className="flex items-center gap-3">{top}</div>

@@ -52,6 +52,7 @@ One commit per screen group, in this order. Steps 1 to 29 are built. Steps 2 to 
 48. Materials cards: the chevron sits in the middle of the whole card, and the whole card is the link (Try another file stays its own button). Screenshots: `docs/screens/53-*`.
 49. One shared Chevron (plain dark green, no circle) on the material page's section rows and the Materials cards. Screenshots: `docs/screens/54-*`.
 50. "Details" on the Error types card: the underlined label with a plain arrow beside it, no circle. Screenshots: `docs/screens/55-*`.
+51. ArrowCircle in the top-right corner of every card that uses it (16px from top and right, 12px small), with text clearance so titles wrap before it; the plain chevron stays vertically centred. Screenshots: `docs/screens/56-*`.
 
 ## Screen review page
 `/screens` is a development-only page (404 in production, not linked from the navigation) that shows every planned screen at 390 by 844. Screens that are not built are dashed frames. Each screen commit replaces its frame with the real screen using sample data.

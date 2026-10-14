@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
+import { ARROW_CLEARANCE, ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
 
 const circle = (html: string) => /<span[^>]*class="([^"]*rounded-full[^"]*)"/.exec(html)?.[1] ?? "";
 
@@ -31,6 +31,37 @@ describe("ArrowCircle", () => {
     const css = readFileSync("app/globals.css", "utf8");
     expect(css).toMatch(/--surface: #ffffff;/);
     expect(css).toMatch(/--arrow-stroke: #e4dfd5;/);
+  });
+});
+
+describe("ArrowCircle position: the top-right corner", () => {
+  it("places itself in the card's top-right corner with equal offsets", () => {
+    expect(renderToStaticMarkup(<ArrowCircle />)).toMatch(
+      /^<span aria-hidden="true" class="pointer-events-none absolute top-4 right-4/,
+    );
+    expect(renderToStaticMarkup(<ArrowCircle size="sm" />)).toMatch(
+      /^<span aria-hidden="true" class="pointer-events-none absolute top-3 right-3/,
+    );
+  });
+
+  it("keeps text clear of the circle: at least the circle width + 12px", () => {
+    // 16px offset + 40px circle + 12px gap, minus the card's own 16px padding = 52px; we use 56px.
+    expect(ARROW_CLEARANCE.md).toBe("pr-14");
+    expect(ARROW_CLEARANCE.sm).toBe("pr-11");
+  });
+
+  it("is used only on cards that are positioned and give their text the clearance", () => {
+    for (const file of [
+      "components/NextUpCard/NextUpCard.tsx",
+      "components/TopicCard/TopicCard.tsx",
+      "components/ScenarioCard/ScenarioCard.tsx",
+      "components/RepeatSummary/RepeatSummary.tsx",
+      "components/UploadSheet/UploadSheet.tsx",
+    ]) {
+      const code = readFileSync(file, "utf8");
+      expect(code, file).toContain("ARROW_CLEARANCE");
+      expect(code, file).toMatch(/className=\{?[`"][^`"]*\brelative\b/);
+    }
   });
 });
 

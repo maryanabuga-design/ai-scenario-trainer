@@ -1,4 +1,4 @@
-import { ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
+import { ARROW_CLEARANCE, ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
 import { SoftShape } from "@/components/SoftShape/SoftShape";
 import { Tag } from "@/components/Tag/Tag";
 
@@ -16,15 +16,15 @@ export function ScenarioCard({
     <button
       type="button"
       onClick={onOpen}
-      className="relative isolate flex w-full items-center gap-3 overflow-hidden rounded-card bg-card p-5 text-left shadow-(--card-shadow) active:bg-surface-muted"
+      className="relative isolate flex w-full overflow-hidden rounded-card bg-card p-5 text-left shadow-(--card-shadow) active:bg-surface-muted"
     >
       <SoftShape variant="faint" />
-      <span className="flex min-w-0 flex-1 flex-col items-start gap-2">
+      <ArrowCircle />
+      <span className={`flex min-w-0 flex-1 flex-col items-start gap-2 ${ARROW_CLEARANCE.md}`}>
         <Tag tone="yellow">Scenario</Tag>
         <span className="type-item-title">{title}</span>
         <span className="type-small text-text-secondary">{line}</span>
       </span>
-      <ArrowCircle />
     </button>
   );
 }

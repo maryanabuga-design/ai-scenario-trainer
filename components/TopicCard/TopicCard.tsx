@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
+import { ARROW_CLEARANCE, ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { StatusChip } from "@/components/StatusChip/StatusChip";
 import { TopicTile } from "@/components/TopicTile/TopicTile";
@@ -23,9 +23,12 @@ export function TopicCard({ topic, onRepeat }: { topic: WeakTopic; onRepeat: () 
     <button
       type="button"
       onClick={onRepeat}
-      className="relative flex h-full w-full items-center gap-3 rounded-card bg-card p-5 text-left shadow-(--card-shadow) active:bg-surface-muted"
+      className="relative flex h-full w-full rounded-card bg-card p-5 text-left shadow-(--card-shadow) active:bg-surface-muted"
     >
-      <span className="flex h-full min-w-0 flex-1 flex-col items-start gap-3">
+      <ArrowCircle />
+      <span
+        className={`flex h-full min-w-0 flex-1 flex-col items-start gap-3 ${ARROW_CLEARANCE.md}`}
+      >
         <TopicTile sectionId={topic.sectionId} icon={topic.icon} />
         <span className="type-item-title">{name}</span>
         <span className="type-small text-text-secondary">
@@ -35,7 +38,6 @@ export function TopicCard({ topic, onRepeat }: { topic: WeakTopic; onRepeat: () 
           <StatusChip status={topic.errorType} />
         </span>
       </span>
-      <ArrowCircle />
     </button>
   );
 }

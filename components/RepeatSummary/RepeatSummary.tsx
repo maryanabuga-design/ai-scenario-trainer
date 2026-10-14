@@ -2,7 +2,7 @@
 
 import { ListChecks } from "lucide-react";
 import Link from "next/link";
-import { ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
+import { ARROW_CLEARANCE, ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
 import { Button } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
@@ -42,12 +42,10 @@ export function RepeatSummary({
 
   return (
     <section aria-labelledby="repeat-title" className="flex flex-col gap-4">
-      <Card className="flex flex-col gap-3">
-        <Link
-          href="/weak-topics"
-          className="-m-1 flex items-center justify-between gap-3 rounded-panel p-1"
-        >
-          <span className="flex min-w-0 flex-col gap-1">
+      <Card className="relative flex flex-col gap-3">
+        <Link href="/weak-topics" className="-m-1 flex items-center gap-3 rounded-panel p-1">
+          <ArrowCircle />
+          <span className={`flex min-w-0 flex-1 flex-col gap-1 ${ARROW_CLEARANCE.md}`}>
             <h2 id="repeat-title" className="type-item-title">
               <span className="tabular-nums">{topics.length}</span>{" "}
               {topics.length === 1 ? "topic" : "topics"} to repeat
@@ -57,7 +55,6 @@ export function RepeatSummary({
             </span>
           </span>
           <span className="sr-only">, see all weak topics</span>
-          <ArrowCircle />
         </Link>
         <Button onClick={() => onRepeat(topics)}>Repeat weak topics</Button>
       </Card>
