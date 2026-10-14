@@ -56,6 +56,7 @@ One commit per screen group, in this order. Steps 1 to 29 are built. Steps 2 to 
 52. Three locked button types (primary, secondary, tertiary) with the audit by screen in `DESIGN.md`: a secondary only below a primary (the Materials header "Upload a file" is the one exception), tertiary as small underlined 14px text with a 44px tap area, no hover, one focus ring. Screenshots: `docs/screens/57-*`.
 53. A chip inside a selected SelectableCard turns primary (primary fill, white text, same-colour stroke); unselected cards keep their pastel chips. Screenshots: `docs/screens/58-*`.
 54. The answer sheet keeps a usable height on phones: at least 55% and at most 85% (92% on short viewports) of the visible viewport, a content area that grows from its content and scrolls, and a footer that is part of the sheet; Playwright phone-size tests (`npm run test:e2e`). Screenshots: `docs/screens/59-*`.
+55. One light olive tint (`--olive-tint` #D6DEC9) for the file-type tiles on every material and the S-number circles of the guide sections; the five per-section colours and `--material-tile` removed. Screenshots: `docs/screens/60-*`.
 
 ## Screen review page
 `/screens` is a development-only page (404 in production, not linked from the navigation) that shows every planned screen at 390 by 844. Screens that are not built are dashed frames. Each screen commit replaces its frame with the real screen using sample data.

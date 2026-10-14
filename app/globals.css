@@ -60,11 +60,6 @@
   --misconception-stroke: #e7a9b3;
   --stroke-neutral: #d3cdc2;
   --stroke-sage: #a9b5a0;
-  --code-yellow: #f9f4c1;
-  --code-blue: #e1eff4;
-  --code-lilac: #eee7f8;
-  --code-sage: #e9ede4;
-  --code-peach: #fce2d4;
   --secondary-pressed: #e3e8dc;
   --nav-active: #f9edc8;
   --next-card: #f2f3ee;
@@ -73,7 +68,7 @@
   --selected-pressed: var(--secondary-pressed);
   --selectable-stroke: var(--stroke-neutral);
   --next-tile: #d4dbcd;
-  --material-tile: var(--next-tile);
+  --olive-tint: #d6dec9;
   --card: #faf7f3;
   --arrow-stroke: #e4dfd5;
   --arrow-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
@@ -138,11 +133,6 @@
   --color-secondary-pressed: var(--secondary-pressed);
   --color-stroke-neutral: var(--stroke-neutral);
   --color-stroke-sage: var(--stroke-sage);
-  --color-code-yellow: var(--code-yellow);
-  --color-code-blue: var(--code-blue);
-  --color-code-lilac: var(--code-lilac);
-  --color-code-sage: var(--code-sage);
-  --color-code-peach: var(--code-peach);
   --color-nav-active: var(--nav-active);
   --color-next-card: var(--next-card);
   --color-selected-tint: var(--selected-tint);
@@ -150,7 +140,7 @@
   --color-selected-pressed: var(--selected-pressed);
   --color-selectable-stroke: var(--selectable-stroke);
   --color-next-tile: var(--next-tile);
-  --color-material-tile: var(--material-tile);
+  --color-olive-tint: var(--olive-tint);
   --color-card: var(--card);
 
   --font-sans: var(--font-dm-sans), system-ui, sans-serif;

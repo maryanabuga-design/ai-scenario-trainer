@@ -10,7 +10,7 @@ export function MaterialTile({ type }: { type: string }) {
   return (
     <span
       aria-hidden="true"
-      className="flex h-16 w-16 shrink-0 flex-col items-center justify-center gap-0.5 rounded-[20px] bg-material-tile"
+      className="flex h-16 w-16 shrink-0 flex-col items-center justify-center gap-0.5 rounded-[20px] bg-olive-tint"
     >
       <Icon size={24} strokeWidth={2} className="text-primary" />
       <span className="type-label text-primary">{fileTypeLabel(type)}</span>

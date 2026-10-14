@@ -119,7 +119,7 @@ describe("coloured chips and icon backgrounds stay as they are", () => {
       renderToStaticMarkup(<TopicTile sectionId={sectionId} icon="DoorOpen" />);
     expect(tile("S1")).toContain("bg-tag-yellow");
     expect(tile("S2")).toContain("bg-tag-blue");
-    expect(renderToStaticMarkup(<MaterialTile type="PDF" />)).toContain("bg-material-tile");
+    expect(renderToStaticMarkup(<MaterialTile type="PDF" />)).toContain("bg-olive-tint");
   });
 
   it("keeps the neutral status chip (Marked correct by you) on the neutral panel colour", () => {

@@ -3,23 +3,12 @@
 import { SelectableCard } from "@/components/SelectableCard/SelectableCard";
 import { Button } from "@/components/Button/Button";
 import { selectionToggle, toggleSection } from "@/lib/sections";
-import type { TopicTint } from "@/lib/weak-topics";
-import { topicTint } from "@/lib/weak-topics";
 
 export type SectionRow = { id: string; title: string; detail?: string };
 
-/** Pastel code circles, in the same cycle as the topic tiles. */
-const codeTints: Record<TopicTint, string> = {
-  yellow: "bg-code-yellow",
-  blue: "bg-code-blue",
-  lilac: "bg-code-lilac",
-  sage: "bg-code-sage",
-  peach: "bg-code-peach",
-};
-
 /**
  * The guide sections to keep, on Create training and Session setup: a title with one Select all /
- * Deselect all toggle, then one row card per section (code circle, title, check box).
+ * Deselect all toggle, then one row card per section (S-number circle, title, check box).
  */
 export function SectionList({
   title,
@@ -67,7 +56,7 @@ export function SectionList({
               >
                 <span
                   aria-hidden="true"
-                  className={`type-caption flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-text ${codeTints[topicTint(section.id)]}`}
+                  className="type-caption flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-olive-tint text-text"
                 >
                   {section.id}
                 </span>

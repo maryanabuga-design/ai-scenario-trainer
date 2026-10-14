@@ -27,7 +27,7 @@ describe("material tile", () => {
   it("uses the one material tile for all three types", () => {
     for (const { type } of cases) {
       const html = renderToStaticMarkup(<MaterialTile type={type} />);
-      expect(html).toContain("bg-material-tile");
+      expect(html).toContain("bg-olive-tint");
       expect(html).toContain("h-16 w-16");
       expect(html).toContain("rounded-[20px]");
     }
