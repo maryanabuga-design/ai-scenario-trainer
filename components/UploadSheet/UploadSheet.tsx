@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { HeaderRow } from "@/components/HeaderRow/HeaderRow";
 import { Button } from "@/components/Button/Button";
-import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
+import { StatusChip } from "@/components/StatusChip/StatusChip";
 import { MaterialTile } from "@/components/MaterialTile/MaterialTile";
 import { formatSize } from "@/lib/materials";
 import { materialFromSample, sampleFiles } from "@/lib/training";
@@ -113,7 +113,7 @@ export function UploadPanel({
         <div className="flex flex-col gap-4" role="status" aria-live="polite">
           <div className="flex flex-col gap-2">
             <p className="type-body-strong break-all">{stage.material.name}</p>
-            <StatusBadge status={stage.material.status} />
+            <StatusChip status={stage.material.status} />
           </div>
           {stage.material.status === "failed" ? (
             <>

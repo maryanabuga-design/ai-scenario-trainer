@@ -3,7 +3,7 @@
 import { Button } from "@/components/Button/Button";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { Circle } from "lucide-react";
-import { StatusIcon } from "@/components/StatusBadge/StatusBadge";
+import { StatusIcon } from "@/components/StatusChip/StatusChip";
 
 export type GenerationStep = { label: string; skipped?: boolean };
 

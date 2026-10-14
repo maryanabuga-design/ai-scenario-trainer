@@ -9,7 +9,7 @@ import { GuideChip } from "@/components/GuideChip/GuideChip";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
 import { SessionTopBar } from "@/components/SessionTopBar/SessionTopBar";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
-import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
+import { StatusChip } from "@/components/StatusChip/StatusChip";
 import { Tag } from "@/components/Tag/Tag";
 import { TopicTile } from "@/components/TopicTile/TopicTile";
 import { MaterialTile } from "@/components/MaterialTile/MaterialTile";
@@ -129,9 +129,9 @@ describe("coloured chips and icon backgrounds stay as they are", () => {
     expect(renderToStaticMarkup(<MaterialTile type="PDF" />)).toContain("bg-material-tile");
   });
 
-  it("keeps neutral status chips on the neutral panel colour", () => {
-    const ready = renderToStaticMarkup(<StatusBadge status="ready" />);
-    expect(ready).toContain("bg-surface-muted");
-    expect(ready).not.toContain("secondary-sand");
+  it("keeps the neutral status chip (Marked correct by you) on the neutral panel colour", () => {
+    const marked = renderToStaticMarkup(<StatusChip status="marked" />);
+    expect(marked).toContain("bg-surface-muted");
+    expect(marked).not.toContain("secondary-sand");
   });
 });

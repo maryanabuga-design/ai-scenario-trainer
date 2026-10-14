@@ -6,7 +6,7 @@ import { useState } from "react";
 import { HeaderRow } from "@/components/HeaderRow/HeaderRow";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { MaterialTile } from "@/components/MaterialTile/MaterialTile";
-import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
+import { StatusChip } from "@/components/StatusChip/StatusChip";
 import { Tabs, tabPanelProps } from "@/components/Tabs/Tabs";
 import { TrainingTags } from "@/components/TrainingTags/TrainingTags";
 import { UploadButton } from "@/components/UploadSheet/UploadSheet";
@@ -46,7 +46,7 @@ function MaterialRow({
         />
       </Link>
       <div className="flex flex-wrap items-center gap-2">
-        <StatusBadge status={material.status} />
+        <StatusChip status={material.status} />
         <TrainingTags training={training} />
       </div>
       {material.status === "processing" && (

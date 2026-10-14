@@ -6,7 +6,7 @@ import { AskAiButton } from "@/components/AskAi/AskAi";
 import { Button } from "@/components/Button/Button";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { GuideChip } from "@/components/GuideChip/GuideChip";
-import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
+import { StatusChip } from "@/components/StatusChip/StatusChip";
 import { StatusRows } from "@/components/StatusRows/StatusRows";
 import { describeEffects } from "@/lib/outcome";
 import { formatPoints } from "@/lib/progress";
@@ -34,7 +34,7 @@ function AnswerCard({ item }: { item: ScoredItem }) {
         result={item.correct ? "correct" : item.score > 0 ? "partial" : "wrong"}
         errorType={item.hasConfidence ? item.errorType : null}
       />
-      {item.markedByYou && <StatusBadge status="marked" />}
+      {item.markedByYou && <StatusChip status="marked" />}
       {item.reason && <p className="type-small text-text-secondary">{item.reason}</p>}
       {item.note && <p className="type-small text-text-secondary">{item.note}</p>}
       <Field label={step ? "You chose" : "Your answer"}>
@@ -102,7 +102,7 @@ export function AnalysisView({
           className="flex flex-col gap-3"
         >
           <h2 id={`analysis-${group.type}`} className="flex items-center gap-2">
-            <StatusBadge status={group.type} />
+            <StatusChip status={group.type} />
             <span className="type-small text-text-secondary tabular-nums">
               {group.items.length} {group.items.length === 1 ? "answer" : "answers"}
             </span>

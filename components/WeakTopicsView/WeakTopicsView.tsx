@@ -6,7 +6,7 @@ import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { ChoiceCard } from "@/components/ChoiceCard/ChoiceCard";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
-import { StatusIcon } from "@/components/StatusBadge/StatusBadge";
+import { StatusIcon } from "@/components/StatusChip/StatusChip";
 import { useTopicName } from "@/components/TopicCard/TopicCard";
 import { TopicTile } from "@/components/TopicTile/TopicTile";
 import type { ErrorType } from "@/lib/scoring";

@@ -1,4 +1,4 @@
-import { Check, CircleHelp, Clock, Contrast, Minus, UserCheck, X } from "lucide-react";
+import { Check, CircleAlert, CircleHelp, Clock, Contrast, Minus, UserCheck, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { errorTypeText } from "@/lib/scoring";
 import type { ErrorType } from "@/lib/scoring";
@@ -14,6 +14,7 @@ const icons = {
   half: Contrast,
   question: CircleHelp,
   user: UserCheck,
+  alert: CircleAlert,
 } satisfies Record<string, LucideIcon>;
 
 export const statuses: Record<
@@ -32,17 +33,13 @@ export const statuses: Record<
     icon: "user",
     className: "bg-surface-muted text-text-secondary",
   },
-  ready: {
-    label: "Ready",
-    icon: "check",
-    className: "bg-surface-muted text-text-secondary",
-  },
+  ready: { label: "Ready", icon: "check", className: "bg-correct-bg text-correct" },
   processing: {
     label: "Processing",
     icon: "clock",
-    className: "bg-surface-muted text-text-secondary",
+    className: "border border-secondary-sand-pressed bg-secondary-sand text-text",
   },
-  failed: { label: "Failed", icon: "cross", className: "bg-caution-bg text-caution" },
+  failed: { label: "Failed", icon: "alert", className: "bg-wrong-bg text-wrong" },
   secure: {
     ...errorTypeText.secure,
     icon: "check",
@@ -76,10 +73,11 @@ const statusText: Partial<Record<Status, string>> = {
 };
 
 /**
- * Icon + label + colour. Never colour alone. onTint: a white chip, for the tinted Correct and
+ * The one status chip (answer results, error types, material status). Icon + label + colour.
+ * Never colour alone. onTint: a white chip, for the tinted Correct and
  * Incorrect rows on results, so the chip stands out from the row.
  */
-export function StatusBadge({ status, onTint = false }: { status: Status; onTint?: boolean }) {
+export function StatusChip({ status, onTint = false }: { status: Status; onTint?: boolean }) {
   const { label, className } = statuses[status];
   const style = onTint ? `bg-surface ${statusText[status] ?? "text-text"}` : className;
   return (

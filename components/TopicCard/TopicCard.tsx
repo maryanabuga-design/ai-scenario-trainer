@@ -2,7 +2,7 @@
 
 import { ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
-import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
+import { StatusChip } from "@/components/StatusChip/StatusChip";
 import { TopicTile } from "@/components/TopicTile/TopicTile";
 import type { WeakTopic } from "@/lib/weak-topics";
 import { materialForSection } from "@/lib/weak-topics";
@@ -35,7 +35,7 @@ export function TopicCard({ topic, onRepeat }: { topic: WeakTopic; onRepeat: () 
         {materialForSection(topic.sectionId)} · {topic.sectionId}
       </span>
       <span className="mt-auto pt-1">
-        <StatusBadge status={topic.errorType} />
+        <StatusChip status={topic.errorType} />
       </span>
     </button>
   );

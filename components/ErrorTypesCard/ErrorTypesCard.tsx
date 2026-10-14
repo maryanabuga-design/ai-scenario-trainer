@@ -1,7 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { ButtonLink } from "@/components/Button/Button";
 import { SoftCard } from "@/components/SoftCard/SoftCard";
-import { StatusIcon } from "@/components/StatusBadge/StatusBadge";
+import { StatusIcon } from "@/components/StatusChip/StatusChip";
 import { errorTypeSummary } from "@/lib/scoring";
 import type { ErrorType, TypeSummaryRow } from "@/lib/scoring";
 

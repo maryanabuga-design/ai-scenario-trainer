@@ -9,7 +9,7 @@ import { Button, ButtonLink } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
 import { MaterialTile } from "@/components/MaterialTile/MaterialTile";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
-import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
+import { StatusChip } from "@/components/StatusChip/StatusChip";
 import { TrainingTags } from "@/components/TrainingTags/TrainingTags";
 import { startTraining, useTrainings } from "@/lib/trainings";
 import { UploadButton } from "@/components/UploadSheet/UploadSheet";
@@ -105,7 +105,7 @@ export function MaterialView({
           )}
           <Detail label="Added">{formatAdded(material.added)}</Detail>
           <Detail label="Status">
-            <StatusBadge status={material.status} />
+            <StatusChip status={material.status} />
           </Detail>
         </dl>
       </Card>

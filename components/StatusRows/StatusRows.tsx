@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
+import { StatusChip } from "@/components/StatusChip/StatusChip";
 import type { ErrorType } from "@/lib/scoring";
 
 export type Result = "correct" | "wrong" | "partial";
@@ -22,11 +22,11 @@ export function StatusRows({ result, errorType }: { result: Result; errorType: E
   return (
     <div className="flex flex-col divide-y divide-border">
       <Row label="Result">
-        <StatusBadge status={result} />
+        <StatusChip status={result} />
       </Row>
       {errorType && (
         <Row label="Error type">
-          <StatusBadge status={errorType} />
+          <StatusChip status={errorType} />
         </Row>
       )}
     </div>

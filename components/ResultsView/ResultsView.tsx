@@ -8,7 +8,7 @@ import { ProgressCard } from "@/components/ProgressCard/ProgressCard";
 import { ResultsHeader } from "@/components/ResultsHeader/ResultsHeader";
 import { SoftCard } from "@/components/SoftCard/SoftCard";
 import { GuideChip } from "@/components/GuideChip/GuideChip";
-import { StatusBadge } from "@/components/StatusBadge/StatusBadge";
+import { StatusChip } from "@/components/StatusChip/StatusChip";
 import { formatOutcome } from "@/lib/outcome";
 import { formatPoints, sessionLabel } from "@/lib/progress";
 import type { ResultsKind } from "@/lib/repeat";
@@ -160,7 +160,7 @@ export function ResultsView({
                   </h3>
                   {item.markedByYou && (
                     <span className="py-1">
-                      <StatusBadge status="marked" />
+                      <StatusChip status="marked" />
                     </span>
                   )}
                   {item.note && <p className="type-small text-text-secondary">{item.note}</p>}
