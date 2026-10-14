@@ -29,7 +29,7 @@ function sourceFiles(dir: string): string[] {
 describe("Guide chips", () => {
   it("use one token: the grey-beige fill, dark text, a document icon, no hover", () => {
     for (const html of [chip("S1"), chip("S2", true), chip("F3")]) {
-      expect(html).toContain("bg-chip-sand");
+      expect(html).toContain("bg-pastel-sand");
       expect(html).toContain("text-text");
       expect(html).toContain("lucide-file-text");
       expect(html).toContain("active:brightness-95");

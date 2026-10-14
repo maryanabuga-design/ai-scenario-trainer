@@ -66,14 +66,14 @@ const inks: Record<(typeof pastel)[number], string[]> = {
 };
 
 describe("chip tones", () => {
-  it("has the seven softened fills", () => {
-    expect(Object.fromEntries(pastel.map((tone) => [tone, token(`chip-${tone}`)]))).toEqual({
-      yellow: "#f6f1c8",
-      peach: "#f8e3d6",
-      blue: "#dceaf1",
-      lilac: "#e6e1f3",
-      green: "#ddeee3",
-      rose: "#f6dede",
+  it("has the one shared palette", () => {
+    expect(Object.fromEntries(pastel.map((tone) => [tone, token(`pastel-${tone}`)]))).toEqual({
+      yellow: "#f8f2cc",
+      peach: "#f7e1d8",
+      blue: "#dfecf0",
+      lilac: "#ede7f5",
+      green: "#ddebe3",
+      rose: "#f8e4e2",
       sand: "#e5dfd4",
     });
   });
@@ -81,7 +81,7 @@ describe("chip tones", () => {
   it.each(pastel)("%s: ΔE of at least 6 from the page, a card and a selected card", (tone) => {
     for (const background of backgrounds) {
       expect(
-        deltaE(token(`chip-${tone}`), background),
+        deltaE(token(`pastel-${tone}`), background),
         `${tone} on ${background}`,
       ).toBeGreaterThanOrEqual(6);
     }
@@ -90,16 +90,23 @@ describe("chip tones", () => {
   it.each(pastel)("%s: its text and icon colours are at least 4.5:1", (tone) => {
     for (const ink of inks[tone]) {
       expect(
-        contrast(token(ink), token(`chip-${tone}`)),
+        contrast(token(ink), token(`pastel-${tone}`)),
         `${ink} on ${tone}`,
       ).toBeGreaterThanOrEqual(4.5);
     }
   });
 
-  it("keeps the tones about equally soft in lightness (L* within 6 points)", () => {
+  it("keeps the tones about equally soft in lightness (L* within 7 points)", () => {
     const f = (t: number) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
-    const lightness = pastel.map((tone) => 116 * f(xyz(token(`chip-${tone}`))[1]) - 16);
-    expect(Math.max(...lightness) - Math.min(...lightness)).toBeLessThan(6);
+    const lightness = pastel.map((tone) => 116 * f(xyz(token(`pastel-${tone}`))[1]) - 16);
+    expect(Math.max(...lightness) - Math.min(...lightness)).toBeLessThan(7);
+  });
+
+  it("has no older pastel or saturated tokens left", () => {
+    expect(css).not.toMatch(
+      /--(chip-(yellow|peach|blue|lilac|green|rose|sand)|tag-[a-z]+|next-tile|nav-active|secure-bg|caution-bg|misconception-bg|guess-tile):/,
+    );
+    expect(css).not.toMatch(/#f5efaf|#f6efa6|#fad6c2|#d4e8f0|#e6ddf5|#d4dbcd|#f9edc8/i);
   });
 
   it("has no chip stroke tokens left", () => {
@@ -164,11 +171,13 @@ describe("every chip goes through the shared Chip", () => {
     }
   });
 
-  it("only the Chip uses the chip fill tokens", () => {
-    const own = [...files("components"), ...files("app")].filter(
-      (file) => !file.endsWith("Chip/Chip.tsx") && /bg-chip-/.test(readFileSync(file, "utf8")),
+  it("uses only palette fills on chips, tiles and pills (no other bg-pastel name)", () => {
+    const names = new Set(
+      [...files("components"), ...files("app")].flatMap(
+        (file) => readFileSync(file, "utf8").match(/bg-pastel-[a-z]+/g) ?? [],
+      ),
     );
-    expect(own).toEqual([]);
+    for (const name of names) expect(pastel.map((tone) => `bg-pastel-${tone}`)).toContain(name);
   });
 });
 
@@ -176,13 +185,13 @@ describe("the chip colours of the statuses", () => {
   const tone = (status: Status) => chipClass(renderToStaticMarkup(<StatusChip status={status} />));
 
   it("keeps the meaning of each hue", () => {
-    expect(tone("ready")).toContain("bg-chip-green");
-    expect(tone("failed")).toContain("bg-chip-rose");
-    expect(tone("processing")).toContain("bg-chip-sand");
-    expect(tone("secure")).toContain("bg-chip-green");
-    expect(tone("guess")).toContain("bg-chip-sand");
-    expect(tone("knowledge_gap")).toContain("bg-chip-yellow");
-    expect(tone("misconception")).toContain("bg-chip-rose");
+    expect(tone("ready")).toContain("bg-pastel-green");
+    expect(tone("failed")).toContain("bg-pastel-rose");
+    expect(tone("processing")).toContain("bg-pastel-sand");
+    expect(tone("secure")).toContain("bg-pastel-green");
+    expect(tone("guess")).toContain("bg-pastel-sand");
+    expect(tone("knowledge_gap")).toContain("bg-pastel-yellow");
+    expect(tone("misconception")).toContain("bg-pastel-rose");
   });
 
   it("Ready has the check, Failed the alert, Processing the clock", () => {

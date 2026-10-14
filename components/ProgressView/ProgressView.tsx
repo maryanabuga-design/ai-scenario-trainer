@@ -38,12 +38,12 @@ const ERROR_ORDER: ErrorType[] = ["secure", "guess", "knowledge_gap", "misconcep
 
 /** Chart fills: the chip tone tokens (checked against the card), set as inline token colours. */
 const SEGMENT: Record<ErrorType, string> = {
-  secure: "var(--chip-green)",
-  guess: "var(--chip-sand)",
-  knowledge_gap: "var(--chip-yellow)",
-  misconception: "var(--chip-rose)",
+  secure: "var(--pastel-green)",
+  guess: "var(--pastel-sand)",
+  knowledge_gap: "var(--pastel-yellow)",
+  misconception: "var(--pastel-rose)",
 };
-const BAR_OLDER = "var(--chip-green)";
+const BAR_OLDER = "var(--pastel-green)";
 
 const CHART_HEIGHT = 120;
 

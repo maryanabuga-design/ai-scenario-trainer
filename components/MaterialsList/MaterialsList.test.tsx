@@ -58,6 +58,6 @@ describe("Materials cards", () => {
   });
 
   it("keep the Ready chip with its fill and stroke", () => {
-    expect(renderList()).toContain("bg-chip-green text-chip-ink-green");
+    expect(renderList()).toContain("bg-pastel-green text-chip-ink-green");
   });
 });

@@ -49,38 +49,13 @@ describe("colour system: primary deep green, secondary sand", () => {
 
 describe("coloured chips and icon backgrounds keep their tokens", () => {
   it("has the same tag, code circle and tile colours as before", () => {
-    const names = [
-      "tag-yellow",
-      "tag-peach",
-      "tag-blue",
-      "tag-lilac",
-      "tag-sage",
-      "next-tile",
-      "olive-tint",
-      "next-card",
-      "stroke-sage",
-      "secondary-pressed",
-      "secure-bg",
-      "caution-bg",
-      "misconception-bg",
-      "guess-tile",
-    ];
+    const names = ["olive-tint", "next-card", "stroke-sage", "secondary-pressed"];
     expect(Object.fromEntries(names.map((name) => [name, token(name)]))).toMatchInlineSnapshot(`
       {
-        "caution-bg": "#f8efd9",
-        "guess-tile": "#e8e2db",
-        "misconception-bg": "#f5dce0",
         "next-card": "#f2f3ee",
-        "next-tile": "#d4dbcd",
         "olive-tint": "#d6dec9",
         "secondary-pressed": "#e3e8dc",
-        "secure-bg": "#e2e7dd",
         "stroke-sage": "#a9b5a0",
-        "tag-blue": "#d4e8f0",
-        "tag-lilac": "#e6ddf5",
-        "tag-peach": "#fad6c2",
-        "tag-sage": "#dfe5d8",
-        "tag-yellow": "#f6efa6",
       }
     `);
   });
@@ -99,9 +74,9 @@ describe("no leftover grey-beige for inactive states", () => {
   it("has no old neutral tokens or values left", () => {
     const leftovers = [...files("components"), ...files("app")].filter((file) => {
       // The sage #DFE5D8 may only stay as the TRAINING tag and sage topic tile colour.
-      const code = readFileSync(file, "utf8").replace(/--tag-sage: #dfe5d8;/i, "");
+      const code = readFileSync(file, "utf8");
       return /#efece5|#c0bbb1|#dfe5d8|#d4dbcd|secondary-olive|neutral-surface|--chip(?![-\w])|bg-chip(?![-\w])|chip-pressed|ring-track/i.test(
-        code.replace(/--next-tile: #d4dbcd;/i, ""),
+        code,
       );
     });
     expect(leftovers).toEqual([]);

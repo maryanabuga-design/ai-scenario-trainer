@@ -40,14 +40,14 @@ function TopicOption({
   return (
     <SelectableCard
       type="checkbox"
-      size="row"
+      size="compactRow"
       name="topics"
       value={topic.sectionId}
       checked={checked}
       onChange={onToggle}
     >
       <span className="flex items-center gap-3">
-        <TopicTile sectionId={topic.sectionId} icon={topic.icon} />
+        <TopicTile sectionId={topic.sectionId} icon={topic.icon} size="compact" />
         <span className="flex flex-col gap-0.5">
           <span className="type-body-strong">{name}</span>
           <span className="type-small text-text-secondary">

@@ -10,14 +10,15 @@ type Props = {
   disabled?: boolean;
   /** A radio for a single choice, a check box for several. */
   type?: "radio" | "checkbox";
-  /** "card" for a title and a description, "row" for compact lists (sections, topics). */
-  size?: "card" | "row";
+  /** "card" for a title and a description, "row" for compact lists (sections), "compactRow" for the Weak topics rows. */
+  size?: "card" | "row" | "compactRow";
   children: ReactNode;
 };
 
 const sizes = {
   card: "min-h-14 gap-3 rounded-card p-4",
   row: "min-h-12 gap-2.5 rounded-[20px] px-4 py-2",
+  compactRow: "min-h-12 gap-2.5 rounded-[20px] px-4 py-1",
 } as const;
 
 /**

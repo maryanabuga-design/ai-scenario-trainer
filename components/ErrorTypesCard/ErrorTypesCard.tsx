@@ -7,12 +7,12 @@ import type { ErrorType, TypeSummaryRow } from "@/lib/scoring";
 
 /** Row tint, the tile's tint and icon ink, and the count badge in the tile's tint. */
 const tints: Record<ErrorType, { row: string; tile: string; ink: string }> = {
-  secure: { row: "bg-secure-row", tile: "bg-secure-bg", ink: "text-secure" },
-  guess: { row: "bg-guess-row", tile: "bg-guess-tile", ink: "text-guess-ink" },
-  knowledge_gap: { row: "bg-gap-row", tile: "bg-caution-bg", ink: "text-caution" },
+  secure: { row: "bg-secure-row", tile: "bg-pastel-green", ink: "text-secure" },
+  guess: { row: "bg-guess-row", tile: "bg-pastel-sand", ink: "text-guess-ink" },
+  knowledge_gap: { row: "bg-gap-row", tile: "bg-pastel-yellow", ink: "text-caution" },
   misconception: {
     row: "bg-misconception-row",
-    tile: "bg-misconception-bg",
+    tile: "bg-pastel-rose",
     ink: "text-misconception",
   },
 };

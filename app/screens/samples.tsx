@@ -780,3 +780,45 @@ export function ChipTonesSample() {
     </div>
   );
 }
+
+/** The shared pastel palette: swatch, token, hex and the ΔE from page, card and selected card. */
+export function PaletteSample() {
+  const tones = [
+    ["yellow", "#F8F2CC", "17.4 / 18.0 / 17.6"],
+    ["rose", "#F8E4E2", "6.3 / 8.2 / 8.5"],
+    ["blue", "#DFECF0", "7.4 / 8.2 / 6.6"],
+    ["lilac", "#EDE7F5", "9.5 / 10.1 / 10.1"],
+    ["green", "#DDEBE3", "7.2 / 8.6 / 6.4"],
+    ["peach", "#F7E1D8", "7.9 / 10.0 / 10.0"],
+    ["sand", "#E5DFD4", "6.5 / 9.4 / 8.0"],
+  ] as const;
+  return (
+    <div className="flex flex-col gap-6">
+      <h1 className="type-page-title">Pastel palette</h1>
+      <p className="type-small text-text-secondary">
+        One palette for chips and icon tiles. ΔE is the CIE76 distance from the page, a card and a
+        selected card (at least 6).
+      </p>
+      <ul className="flex flex-col gap-3">
+        {tones.map(([tone, hex, delta]) => (
+          <li
+            key={tone}
+            className="flex items-center gap-3 rounded-card bg-card p-3 shadow-(--card-shadow)"
+          >
+            <span
+              aria-hidden="true"
+              className="h-12 w-12 shrink-0 rounded-full"
+              style={{ backgroundColor: `var(--pastel-${tone})` }}
+            />
+            <span className="flex flex-col">
+              <span className="type-body-strong">
+                {tone} <span className="type-small text-text-secondary">{hex}</span>
+              </span>
+              <span className="type-small text-text-secondary tabular-nums">ΔE {delta}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}

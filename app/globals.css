@@ -18,11 +18,8 @@
   --correct: #1f7a4d;
   --wrong: #b3261e;
   --caution: #8a5a00;
-  --caution-bg: #f8efd9;
   --secure: #3d5a43;
-  --secure-bg: #e2e7dd;
   --misconception: #7a3049;
-  --misconception-bg: #f5dce0;
 
   /* Results screen (soft surface), measured from the reference screens */
   --soft-card: var(--card);
@@ -34,35 +31,27 @@
   --ring: #417851;
   --secure-row: #f3f4ef;
   --guess-row: #f5f1ee;
-  --guess-tile: #e8e2db;
   --guess-ink: #4b433d;
   --gap-row: #f8f4ee;
   --misconception-row: #f8f1ef;
 
-  --tag-yellow: #f6efa6;
-  --tag-peach: #fad6c2;
-  --tag-blue: #d4e8f0;
-  --tag-lilac: #e6ddf5;
-  --tag-sage: #dfe5d8;
-  /* Chip fills (DESIGN.md: Chip tones): soft pastels, no strokes */
-  --chip-yellow: #f6f1c8;
-  --chip-peach: #f8e3d6;
-  --chip-blue: #dceaf1;
-  --chip-lilac: #e6e1f3;
-  --chip-green: #ddeee3;
-  --chip-rose: #f6dede;
-  --chip-sand: #e5dfd4;
+  /* The one shared pastel palette (DESIGN.md: Pastel palette) */
+  --pastel-yellow: #f8f2cc;
+  --pastel-rose: #f8e4e2;
+  --pastel-blue: #dfecf0;
+  --pastel-lilac: #ede7f5;
+  --pastel-green: #ddebe3;
+  --pastel-peach: #f7e1d8;
+  --pastel-sand: #e5dfd4;
   --chip-ink-green: #1c7249;
   --stroke-neutral: #d3cdc2;
   --stroke-sage: #a9b5a0;
   --secondary-pressed: #e3e8dc;
-  --nav-active: #f9edc8;
   --next-card: #f2f3ee;
   --selected-tint: var(--next-card);
   --selected-stroke: var(--stroke-sage);
   --selected-pressed: var(--secondary-pressed);
   --selectable-stroke: var(--stroke-neutral);
-  --next-tile: #d4dbcd;
   --olive-tint: #d6dec9;
   --card: #faf7f3;
   --arrow-stroke: #e4dfd5;
@@ -90,11 +79,8 @@
   --color-correct: var(--correct);
   --color-wrong: var(--wrong);
   --color-caution: var(--caution);
-  --color-caution-bg: var(--caution-bg);
   --color-secure: var(--secure);
-  --color-secure-bg: var(--secure-bg);
   --color-misconception: var(--misconception);
-  --color-misconception-bg: var(--misconception-bg);
   --color-soft-card: var(--soft-card);
   --color-soft-divider: var(--soft-divider);
   --color-header-bg: var(--header-bg);
@@ -103,33 +89,25 @@
   --color-ring: var(--ring);
   --color-secure-row: var(--secure-row);
   --color-guess-row: var(--guess-row);
-  --color-guess-tile: var(--guess-tile);
   --color-guess-ink: var(--guess-ink);
   --color-gap-row: var(--gap-row);
   --color-misconception-row: var(--misconception-row);
-  --color-tag-yellow: var(--tag-yellow);
-  --color-tag-peach: var(--tag-peach);
-  --color-tag-blue: var(--tag-blue);
-  --color-tag-lilac: var(--tag-lilac);
-  --color-tag-sage: var(--tag-sage);
-  --color-chip-yellow: var(--chip-yellow);
-  --color-chip-peach: var(--chip-peach);
-  --color-chip-blue: var(--chip-blue);
-  --color-chip-lilac: var(--chip-lilac);
-  --color-chip-green: var(--chip-green);
-  --color-chip-rose: var(--chip-rose);
-  --color-chip-sand: var(--chip-sand);
   --color-chip-ink-green: var(--chip-ink-green);
+  --color-pastel-yellow: var(--pastel-yellow);
+  --color-pastel-rose: var(--pastel-rose);
+  --color-pastel-blue: var(--pastel-blue);
+  --color-pastel-lilac: var(--pastel-lilac);
+  --color-pastel-green: var(--pastel-green);
+  --color-pastel-peach: var(--pastel-peach);
+  --color-pastel-sand: var(--pastel-sand);
   --color-secondary-pressed: var(--secondary-pressed);
   --color-stroke-neutral: var(--stroke-neutral);
   --color-stroke-sage: var(--stroke-sage);
-  --color-nav-active: var(--nav-active);
   --color-next-card: var(--next-card);
   --color-selected-tint: var(--selected-tint);
   --color-selected-stroke: var(--selected-stroke);
   --color-selected-pressed: var(--selected-pressed);
   --color-selectable-stroke: var(--selectable-stroke);
-  --color-next-tile: var(--next-tile);
   --color-olive-tint: var(--olive-tint);
   --color-card: var(--card);
 
@@ -239,7 +217,6 @@ dialog[data-sheet] {
   animation: sheet-in 200ms ease-out;
   box-shadow: 0 -4px 16px color-mix(in srgb, var(--text) 8%, transparent);
 }
-
 
 dialog[data-sheet]::backdrop,
 .scrim {

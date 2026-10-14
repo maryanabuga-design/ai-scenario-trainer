@@ -14,13 +14,13 @@ export type ChipTone =
 export type ChipInk = "green" | "red" | "pink" | "sage" | "amber" | "taupe" | "grey";
 
 const tones: Record<ChipTone, string> = {
-  yellow: "bg-chip-yellow",
-  peach: "bg-chip-peach",
-  blue: "bg-chip-blue",
-  lilac: "bg-chip-lilac",
-  green: "bg-chip-green",
-  rose: "bg-chip-rose",
-  sand: "bg-chip-sand",
+  yellow: "bg-pastel-yellow",
+  peach: "bg-pastel-peach",
+  blue: "bg-pastel-blue",
+  lilac: "bg-pastel-lilac",
+  green: "bg-pastel-green",
+  rose: "bg-pastel-rose",
+  sand: "bg-pastel-sand",
   primary: "bg-primary",
 };
 

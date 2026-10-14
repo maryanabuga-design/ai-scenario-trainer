@@ -108,7 +108,7 @@ describe("repeat round", () => {
       "yellow",
       "blue",
       "lilac",
-      "sage",
+      "green",
       "peach",
     ]);
     expect(topicTint("S6")).toBe("yellow");

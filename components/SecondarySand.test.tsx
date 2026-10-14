@@ -55,7 +55,7 @@ describe("secondary sand for inactive states and tonal backgrounds", () => {
 
   it("is not used for Guide chips any more: they are the chip sand, without a stroke", () => {
     const chip = classWith(withSheet(<GuideChip sectionId="S1" />), "min-h-9") ?? "";
-    expect(chip).toContain("bg-chip-sand");
+    expect(chip).toContain("bg-pastel-sand");
     expect(chip).not.toMatch(/border|secondary-sand/);
   });
 
@@ -100,11 +100,11 @@ describe("secondary sand for inactive states and tonal backgrounds", () => {
 describe("coloured chips and icon backgrounds stay as they are", () => {
   it("keeps every tag in its pastel and never in the olive", () => {
     const tones = {
-      yellow: "bg-chip-yellow",
-      blue: "bg-chip-blue",
-      peach: "bg-chip-peach",
-      lilac: "bg-chip-lilac",
-      green: "bg-chip-green",
+      yellow: "bg-pastel-yellow",
+      blue: "bg-pastel-blue",
+      peach: "bg-pastel-peach",
+      lilac: "bg-pastel-lilac",
+      green: "bg-pastel-green",
     } as const;
     for (const [tone, fill] of Object.entries(tones)) {
       const html = renderToStaticMarkup(<Tag tone={tone as keyof typeof tones}>Scenario</Tag>);
@@ -116,14 +116,44 @@ describe("coloured chips and icon backgrounds stay as they are", () => {
   it("keeps topic tiles by section and the material tile on its own colour", () => {
     const tile = (sectionId: string) =>
       renderToStaticMarkup(<TopicTile sectionId={sectionId} icon="DoorOpen" />);
-    expect(tile("S1")).toContain("bg-tag-yellow");
-    expect(tile("S2")).toContain("bg-tag-blue");
+    expect(tile("S1")).toContain("bg-pastel-yellow");
+    expect(tile("S2")).toContain("bg-pastel-blue");
     expect(renderToStaticMarkup(<MaterialTile type="PDF" />)).toContain("bg-olive-tint");
   });
 
   it("keeps the neutral status chip (Marked correct by you) on the chip sand", () => {
     const marked = renderToStaticMarkup(<StatusChip status="marked" />);
-    expect(marked).toContain("bg-chip-sand");
+    expect(marked).toContain("bg-pastel-sand");
     expect(marked).not.toContain("secondary-sand");
+  });
+});
+
+describe("the shared pastel palette on icon tiles", () => {
+  it("draws the Home topic tile at the default size: 48px circle, 24px icon", () => {
+    const html = renderToStaticMarkup(<TopicTile sectionId="S1" icon="DoorOpen" />);
+    expect(html).toContain("h-12 w-12");
+    expect(html).toContain('width="24"');
+    expect(html).toContain('stroke-width="2"');
+  });
+
+  it("has a compact variant: 36px circle, 18px icon, 1.75 stroke", () => {
+    const html = renderToStaticMarkup(<TopicTile sectionId="S1" icon="DoorOpen" size="compact" />);
+    expect(html).toContain("h-9 w-9");
+    expect(html).toContain('width="18"');
+    expect(html).toContain('stroke-width="1.75"');
+  });
+
+  it("cycles the five palette tones by section, the sage now being the green", () => {
+    const fill = (id: string) =>
+      /bg-pastel-[a-z]+/.exec(
+        renderToStaticMarkup(<TopicTile sectionId={id} icon="DoorOpen" />),
+      )?.[0];
+    expect(["S1", "S2", "S3", "S4", "S5"].map(fill)).toEqual([
+      "bg-pastel-yellow",
+      "bg-pastel-blue",
+      "bg-pastel-lilac",
+      "bg-pastel-green",
+      "bg-pastel-peach",
+    ]);
   });
 });

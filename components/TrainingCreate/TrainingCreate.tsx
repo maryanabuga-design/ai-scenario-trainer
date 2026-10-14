@@ -53,7 +53,7 @@ function CreateOption({
     >
       <span
         aria-hidden="true"
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-next-tile text-text"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-pastel-green text-text"
       >
         <Icon size={20} strokeWidth={2} />
       </span>

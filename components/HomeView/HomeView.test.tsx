@@ -39,7 +39,7 @@ describe("Home eyebrow", () => {
     const html = renderHome();
     const chip = tagAround(html, DIRECTION);
     expect(chip).toMatch(/^<span /);
-    expect(chip).toContain("bg-chip-yellow");
+    expect(chip).toContain("bg-pastel-yellow");
     expect(chip).toContain("type-label");
     expect(chip).toContain("normal-case");
     expect(html).not.toContain("h-px");

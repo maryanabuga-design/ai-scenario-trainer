@@ -35,10 +35,10 @@ export function topicIcon(sectionId: string): TopicIcon {
   return sectionIcons[sectionId] ?? "BookOpen";
 }
 
-export type TopicTint = "yellow" | "blue" | "lilac" | "sage" | "peach";
+export type TopicTint = "yellow" | "blue" | "lilac" | "green" | "peach";
 
 /** The tints topic tiles cycle through, in order. */
-export const topicTints: TopicTint[] = ["yellow", "blue", "lilac", "sage", "peach"];
+export const topicTints: TopicTint[] = ["yellow", "blue", "lilac", "green", "peach"];
 
 /**
  * The tile colour comes from the guide section, never from the error type or the material:
