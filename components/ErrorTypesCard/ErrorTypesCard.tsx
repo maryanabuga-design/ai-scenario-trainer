@@ -1,4 +1,4 @@
-import { ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
+import { ArrowRight } from "lucide-react";
 import { ButtonLink } from "@/components/Button/Button";
 import { SoftCard } from "@/components/SoftCard/SoftCard";
 import { StatusIcon } from "@/components/StatusChip/StatusChip";
@@ -67,7 +67,9 @@ export function ErrorTypesCard({
             <ButtonLink
               href={detailsHref}
               variant="text"
-              trailing={<ArrowCircle />}
+              trailing={
+                <ArrowRight size={18} strokeWidth={2} aria-hidden="true" className="shrink-0" />
+              }
               onClick={onNavigate}
             >
               Details
