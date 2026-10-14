@@ -41,7 +41,11 @@ export const statuses: Record<
     icon: "user",
     className: "bg-surface-muted text-text-secondary",
   },
-  ready: { label: "Ready", icon: "check", className: "text-correct" },
+  ready: {
+    label: "Ready",
+    icon: "check",
+    className: "border border-correct-stroke bg-correct-bg text-correct",
+  },
   processing: {
     label: "Processing",
     icon: "clock",
@@ -86,21 +90,11 @@ const statusText: Partial<Record<Status, string>> = {
 
 /**
  * The one status chip (answer results, error types, material status). Icon + label + colour.
- * Never colour alone. Ready is the one exception: plain text and icon, without a chip. onTint: a white chip, for the tinted Correct and
+ * Never colour alone. onTint: a white chip, for the tinted Correct and
  * Incorrect rows on results, so the chip stands out from the row.
  */
 export function StatusChip({ status, onTint = false }: { status: Status; onTint?: boolean }) {
   const { label, className } = statuses[status];
-  // Ready is plain inline status, not a chip: a green check and the word, no box. It keeps the
-  // chip's 26px height so cards do not move.
-  if (status === "ready") {
-    return (
-      <span className="inline-flex w-fit shrink-0 items-center gap-1.5 py-[5px] type-caption whitespace-nowrap text-correct">
-        <StatusIcon status={status} size={16} />
-        {label}
-      </span>
-    );
-  }
   const style = onTint ? `bg-surface ${statusText[status] ?? "text-text"}` : className;
   return (
     <span

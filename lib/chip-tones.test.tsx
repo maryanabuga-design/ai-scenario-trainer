@@ -70,6 +70,7 @@ describe("chip tones", () => {
 
   it("keeps every coloured status chip coloured with its own stroke", () => {
     const coloured: [Status, string][] = [
+      ["ready", "correct"],
       ["correct", "correct"],
       ["failed", "wrong"],
       ["wrong", "wrong"],

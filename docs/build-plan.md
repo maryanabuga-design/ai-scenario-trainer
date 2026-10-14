@@ -48,6 +48,7 @@ One commit per screen group, in this order. Steps 1 to 29 are built. Steps 2 to 
 44. Chips stay coloured: every coloured chip (tags, Ready, Failed, Correct, Incorrect, the four error types) has a pastel fill with a 1px stroke of the same hue, slightly darker; Guess moved from neutral to its own warm taupe; only Guide chips, Processing and inactive states stay sand. Tone table in `DESIGN.md`. Screenshots: `docs/screens/49-*`.
 45. One white ArrowCircle (40px, 32px in compact rows; white fill, warm stroke, very soft shadow, dark green arrow) on every card and row that opens something: Next up, topic, New scenario, repeat summary and Materials cards, the material page's section rows, the upload sheet's sample files and Details on Error types; no bare chevrons. Screenshots: `docs/screens/50-*`.
 46. The material status Ready as plain inline status (a green check and the word, no chip), keeping its row height; Processing and Failed stay chips. Screenshots: `docs/screens/51-*`.
+47. Ready back to a chip (light green fill, darker green stroke, check); Materials list cards end in a plain dark green chevron without a circle, while all other card arrows keep the white ArrowCircle. Screenshots: `docs/screens/52-*`.
 
 ## Screen review page
 `/screens` is a development-only page (404 in production, not linked from the navigation) that shows every planned screen at 390 by 844. Screens that are not built are dashed frames. Each screen commit replaces its frame with the real screen using sample data.

@@ -27,3 +27,24 @@ describe("Materials header", () => {
     expect(html.indexOf(">Materials</h1>")).toBeLessThan(html.indexOf("Guides you can turn"));
   });
 });
+
+describe("Materials cards", () => {
+  it("end in a plain dark green chevron with no circle, inside a 44px area", () => {
+    const html = renderList();
+    const chevron = html.indexOf("lucide-chevron-right");
+    expect(chevron).toBeGreaterThan(-1);
+    const wrapper = html.slice(html.lastIndexOf("<span", chevron), chevron);
+    expect(wrapper).toContain("h-11 w-11");
+    expect(wrapper).not.toMatch(/bg-|border|shadow|rounded-full/);
+    expect(html).toMatch(
+      /lucide-chevron-right[^"]*text-primary|text-primary[^>]*><svg[^>]*lucide-chevron-right/,
+    );
+    // The cards (in the tab panel) have no ArrowCircle; the upload sheet's rows keep theirs.
+    const cards = html.slice(html.indexOf('role="tabpanel"'));
+    expect(cards).not.toContain("border-arrow-stroke");
+  });
+
+  it("keep the Ready chip with its fill and stroke", () => {
+    expect(renderList()).toContain("border border-correct-stroke bg-correct-bg text-correct");
+  });
+});

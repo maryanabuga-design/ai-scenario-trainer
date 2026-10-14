@@ -1,9 +1,8 @@
 "use client";
 
-import { FileText } from "lucide-react";
+import { ChevronRight, FileText } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
 import { HeaderRow } from "@/components/HeaderRow/HeaderRow";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { MaterialTile } from "@/components/MaterialTile/MaterialTile";
@@ -39,7 +38,12 @@ function MaterialRow({
           <span className="type-body-strong break-words">{material.name}</span>
           <span className="type-small text-text-secondary">{metaLine(material)}</span>
         </span>
-        <ArrowCircle />
+        <span
+          aria-hidden="true"
+          className="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center text-primary"
+        >
+          <ChevronRight size={20} strokeWidth={2} />
+        </span>
       </Link>
       <div className="flex flex-wrap items-center gap-2">
         <StatusChip status={material.status} />
