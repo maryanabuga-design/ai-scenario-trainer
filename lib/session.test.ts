@@ -4,17 +4,17 @@ import {
   answerFor,
   finishSession,
   firstUnanswered,
-  markFinishedCorrect,
-  sessionItems,
-  useHistory,
+  isValidSession,
+  saveSession,
+  startSession,
   withAnswer,
 } from "@/lib/session";
-import type { Answer, QuizSession, ScenarioSession } from "@/lib/session";
+import type { FinishedSession, Session } from "@/lib/session";
 import { createStore } from "@/lib/store";
 
 /** A browser storage in memory, so the tests read back what the stores really saved. */
+const saved = new Map<string, string>();
 beforeAll(() => {
-  const saved = new Map<string, string>();
   vi.stubGlobal("window", {
     localStorage: {
       getItem: (key: string) => saved.get(key) ?? null,
@@ -25,145 +25,116 @@ beforeAll(() => {
 });
 afterAll(() => vi.unstubAllGlobals());
 
-/** What is saved under a key right now. */
-const saved = <T>(key: string) => createStore<T>(key).read();
+/** What is saved under a key right now, read by a fresh store. */
+const read = <T>(key: string) => createStore<T>(key).read();
 
-const step = (stepId: string, optionId: string, confidence: 1 | 2 | 3 = 3): Answer => ({
-  stepId,
-  optionId,
-  confidence,
-  explanation: "",
-  skipped: true,
-  answerSource: "dont_know",
-  explanationCheck: "skipped",
-});
-
-const scenario: ScenarioSession = {
-  mode: "short",
-  stepIds: ["s1", "s2", "s3"],
-  index: 0,
+const base: Session = {
+  kind: "scenario",
+  itemIds: ["s1", "s2", "s3"],
   answers: [],
+  index: 0,
   finished: false,
 };
 
-describe("answers are kept per step and can be changed", () => {
-  const first = { type: "step", id: "s1" } as const;
-  const second = { type: "step", id: "s2" } as const;
-
-  it("lists the items in order and finds the saved answer of each", () => {
-    expect(sessionItems(scenario).map((item) => item.id)).toEqual(["s1", "s2", "s3"]);
-    const answered = withAnswer(scenario, second, step("s2", "c"));
-    expect(answerFor(answered, second)).toMatchObject({ optionId: "c" });
-    expect(answerFor(answered, first)).toBeUndefined();
+describe("answers are kept per question and can be changed", () => {
+  it("saves the chosen option and finds it again", () => {
+    const answered = withAnswer(base, "s2", "c");
+    expect(answerFor(answered, "s2")).toEqual({ itemId: "s2", optionId: "c" });
+    expect(answerFor(answered, "s1")).toBeUndefined();
   });
 
-  it("replaces an earlier answer instead of adding a second one", () => {
-    let session = withAnswer(scenario, first, step("s1", "a"));
-    session = withAnswer(session, first, step("s1", "b"));
-    expect((session as ScenarioSession).answers).toHaveLength(1);
-    expect(answerFor(session, first)).toMatchObject({ optionId: "b" });
+  it("replaces an earlier choice instead of adding a second one", () => {
+    const session = withAnswer(withAnswer(base, "s1", "a"), "s1", "b");
+    expect(session.answers).toEqual([{ itemId: "s1", optionId: "b" }]);
   });
 
-  it("removes an answer when the draft is no longer complete", () => {
-    const session = withAnswer(withAnswer(scenario, first, step("s1", "a")), first, null);
-    expect(answerFor(session, first)).toBeUndefined();
-  });
-
-  it("finds the first item without an answer", () => {
-    expect(firstUnanswered(scenario)).toBe(0);
-    const some = withAnswer(withAnswer(scenario, first, step("s1", "b")), second, step("s2", "c"));
+  it("finds the first question without an answer", () => {
+    expect(firstUnanswered(base)).toBe(0);
+    const some = withAnswer(withAnswer(base, "s1", "b"), "s2", "c");
     expect(firstUnanswered(some)).toBe(2);
-    expect(firstUnanswered(withAnswer(some, { type: "step", id: "s3" }, step("s3", "b")))).toBe(-1);
+    expect(firstUnanswered(withAnswer(some, "s3", "a"))).toBe(-1);
   });
 
-  it("changing an answer changes the final results, nothing is scored before", () => {
-    let session = scenario;
-    session = withAnswer(session, first, step("s1", "d"));
-    session = withAnswer(session, second, step("s2", "c"));
-    session = withAnswer(session, { type: "step", id: "s3" }, step("s3", "b"));
+  it("changing an answer changes the final result; nothing is scored before Finish", () => {
+    let session = withAnswer(withAnswer(withAnswer(base, "s1", "d"), "s2", "c"), "s3", "a");
     const before = scoreSession(session);
-    // Back to step 1 and choose the better option: the final results use the new answer.
-    session = withAnswer(session, first, step("s1", "b"));
+    session = withAnswer(session, "s1", "b"); // Back to question 1 and choose the right option
     const after = scoreSession(session);
     expect(before.find((item) => item.id === "s1")?.correct).toBe(false);
     expect(after.find((item) => item.id === "s1")?.correct).toBe(true);
-    expect(after.filter((item) => item.correct).length).toBe(
+    expect(after.filter((item) => item.correct)).toHaveLength(
       before.filter((item) => item.correct).length + 1,
     );
   });
-
-  it("tags the answers of a repeat round", () => {
-    const repeat = withAnswer(
-      {
-        kind: "repeat",
-        topics: ["S1"],
-        items: [{ type: "step", id: "s1" }],
-        index: 0,
-        answers: [],
-        finished: false,
-      },
-      first,
-      step("s1", "b"),
-    );
-    expect(repeat.answers[0]).toMatchObject({ type: "step", stepId: "s1" });
-  });
 });
 
-describe("finishing", () => {
-  it("puts the answers in the order of the steps, however they were given", () => {
-    let session: ScenarioSession = scenario;
+describe("starting and finishing", () => {
+  it("starts a session of any kind from a list of questions", () => {
+    startSession("quiz", ["q-s1-1", "q-s1-2"]);
+    const quiz = read<Session>("ast.session.v1");
+    expect(quiz).toMatchObject({ kind: "quiz", itemIds: ["q-s1-1", "q-s1-2"], index: 0 });
+    expect(quiz?.finished).toBe(false);
+    startSession("scenario", ["s1"], "building-evacuation-001");
+    expect(read<Session>("ast.session.v1")?.scenarioId).toBe("building-evacuation-001");
+  });
+
+  it("puts the answers in the order of the questions and saves the finished session", () => {
+    let session = base;
     for (const [id, option] of [
-      ["s3", "b"],
+      ["s3", "a"],
       ["s1", "b"],
       ["s2", "c"],
     ]) {
-      session = withAnswer(session, { type: "step", id }, step(id, option)) as ScenarioSession;
+      session = withAnswer(session, id, option);
     }
     finishSession(session);
-    const history = saved<{ answers: Answer[] }[]>("ast.history.v1");
-    expect(history?.at(-1)?.answers.map((answer) => answer.stepId)).toEqual(["s1", "s2", "s3"]);
+    const done = read<Session>("ast.session.v1");
+    expect(done?.finished).toBe(true);
+    expect(done?.finishedAt).toBeTypeOf("number");
+    expect(done?.answers.map((answer) => answer.itemId)).toEqual(["s1", "s2", "s3"]);
+    const history = read<FinishedSession[]>("ast.history.v1");
+    expect(history?.at(-1)?.answers.map((answer) => answer.itemId)).toEqual(["s1", "s2", "s3"]);
   });
 
-  it("saves 'My explanation is still correct' with the session and its history entry", () => {
-    const typed: Answer = {
-      stepId: "s1",
-      optionId: "b",
-      confidence: 3,
-      explanation: "лбтдлюью",
-      answerSource: "typed",
-      explanationCheck: "not_matched",
-    };
-    let session: ScenarioSession = scenario;
-    session = withAnswer(session, { type: "step", id: "s1" }, typed) as ScenarioSession;
-    session = withAnswer(session, { type: "step", id: "s2" }, step("s2", "c")) as ScenarioSession;
-    session = withAnswer(session, { type: "step", id: "s3" }, step("s3", "b")) as ScenarioSession;
-    finishSession(session);
-    const finished = saved<ScenarioSession>("ast.session.v1") as ScenarioSession;
-    expect(finished.finished).toBe(true);
-    expect(finished.finishedAt).toBeTypeOf("number");
+  it("saves an unfinished session with its answers and the question on screen", () => {
+    saveSession({ ...withAnswer(base, "s1", "b"), index: 1 });
+    expect(read<Session>("ast.session.v1")).toMatchObject({
+      index: 1,
+      finished: false,
+      answers: [{ itemId: "s1", optionId: "b" }],
+    });
+  });
+});
 
-    markFinishedCorrect(finished, "s1", true);
-    expect(saved<ScenarioSession>("ast.session.v1")?.answers[0].markedCorrect).toBe(true);
-    const history = saved<{ answers: Answer[] }[]>("ast.history.v1");
-    expect(history?.at(-1)?.answers[0].markedCorrect).toBe(true);
-
-    markFinishedCorrect(saved<ScenarioSession>("ast.session.v1") as ScenarioSession, "s1", false);
-    expect(saved<ScenarioSession>("ast.session.v1")?.answers[0].markedCorrect).toBeUndefined();
-    const undone = saved<{ answers: Answer[] }[]>("ast.history.v1");
-    expect(undone?.at(-1)?.answers[0].markedCorrect).toBeUndefined();
+describe("the saved schema is versioned", () => {
+  it("saves the value with the schema version", () => {
+    saveSession(base);
+    expect(JSON.parse(saved.get("ast.session.v1")!)).toMatchObject({ schema: 2, value: base });
   });
 
-  it("works for a quiz session too", () => {
-    const quiz: QuizSession = {
-      kind: "quiz",
-      mode: "quiz",
-      sections: ["S1"],
-      questionIds: ["q-s1-1"],
+  it("ignores a session saved by an older version, without crashing", () => {
+    const old = {
+      mode: "full",
+      stepIds: ["s1"],
       index: 0,
-      answers: [],
+      phase: "decide",
+      answers: [{ stepId: "s1", optionId: "b", confidence: 3, explanation: "" }],
       finished: false,
     };
-    expect(sessionItems(quiz)).toEqual([{ type: "question", id: "q-s1-1" }]);
-    expect(typeof useHistory).toBe("function");
+    saved.set("ast.session.v1", JSON.stringify(old));
+    expect(read<Session>("ast.session.v1")).toBeNull();
+    saved.set("ast.session.v1", JSON.stringify({ schema: 1, value: base }));
+    expect(read<Session>("ast.session.v1")).toBeNull();
+    saved.set("ast.session.v1", "not json at all {");
+    expect(read<Session>("ast.session.v1")).toBeNull();
+    saved.set("ast.history.v1", JSON.stringify([{ kind: "quiz", mode: "quiz", answers: [] }]));
+    expect(read<FinishedSession[]>("ast.history.v1")).toBeNull();
+  });
+
+  it("does not use a saved session of the right version but the wrong shape", () => {
+    expect(isValidSession(null)).toBe(false);
+    expect(isValidSession({ kind: "quiz" })).toBe(false);
+    expect(isValidSession({ ...base, itemIds: ["gone-question"] })).toBe(false);
+    expect(isValidSession(base)).toBe(true);
   });
 });

@@ -3,25 +3,28 @@
 import { useRouter } from "next/navigation";
 import { NoResults } from "@/components/NoResults/NoResults";
 import { ResultsView } from "@/components/ResultsView/ResultsView";
-import { scoreSession } from "@/lib/progress";
-import { resultsKind, startRepeat } from "@/lib/repeat";
-import { useSession } from "@/lib/session";
+import { scoreSession, weakItemsFromHistory } from "@/lib/progress";
+import { startRepeat } from "@/lib/repeat";
+import { isValidSession, useHistory, useSession } from "@/lib/session";
+import { weakTopics } from "@/lib/weak-topics";
 
 export default function ResultsPage() {
   const router = useRouter();
   const session = useSession();
+  const history = useHistory();
 
-  if (session === "loading") return null;
-  if (!session || !session.finished) return <NoResults />;
+  if (session === "loading" || history === "loading") return null;
+  if (!session || !session.finished || !isValidSession(session)) return <NoResults />;
 
-  const items = scoreSession(session);
+  const topics = weakTopics(weakItemsFromHistory(history));
 
   return (
     <ResultsView
-      results={resultsKind(session)}
-      items={items}
-      onRepeat={(ids) => {
-        startRepeat(session, items, ids);
+      kind={session.kind}
+      items={scoreSession(session)}
+      topics={topics}
+      onRepeat={() => {
+        startRepeat(topics);
         window.scrollTo(0, 0);
         router.push("/session");
       }}

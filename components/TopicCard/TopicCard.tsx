@@ -2,7 +2,6 @@
 
 import { ARROW_CLEARANCE, ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
-import { StatusChip } from "@/components/StatusChip/StatusChip";
 import { TopicTile } from "@/components/TopicTile/TopicTile";
 import type { WeakTopic } from "@/lib/weak-topics";
 import { materialForSection } from "@/lib/weak-topics";
@@ -33,9 +32,6 @@ export function TopicCard({ topic, onRepeat }: { topic: WeakTopic; onRepeat: () 
         <span className="type-item-title">{name}</span>
         <span className="type-small text-text-secondary">
           {materialForSection(topic.sectionId)} · {topic.sectionId}
-        </span>
-        <span className="mt-auto pt-1">
-          <StatusChip status={topic.errorType} />
         </span>
       </span>
     </button>

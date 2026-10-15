@@ -1,199 +1,54 @@
-import type { ExplanationCheck } from "@/lib/feedback";
-import type { Confidence, ContentImage, Effects, Step } from "@/lib/scenario";
+import type { ContentImage, Item } from "@/lib/items";
 
-export type ErrorType = "secure" | "guess" | "knowledge_gap" | "misconception";
-
-/** The fixed order everywhere: Secure, Guess, Knowledge gap, Misconception. */
-export const errorTypes: ErrorType[] = ["secure", "guess", "knowledge_gap", "misconception"];
-
-export const errorTypeText: Record<ErrorType, { label: string; description: string }> = {
-  secure: { label: "Secure", description: "Right answer, high confidence" },
-  guess: { label: "Guess", description: "Right answer, but not sure" },
-  knowledge_gap: { label: "Knowledge gap", description: "Wrong answer, not sure" },
-  misconception: { label: "Misconception", description: "Wrong answer, high confidence" },
-};
-
-/** The plain labels used in the Error types details instead of the chip names. */
-export const plainErrorLabel: Record<ErrorType, string> = {
-  misconception: "Sure, but wrong",
-  knowledge_gap: "Not sure, and wrong",
-  guess: "Right, but not sure",
-  secure: "Sure and right",
-};
-
-export type TypeSummaryRow = {
-  type: ErrorType;
-  label: string;
-  description: string;
-  count: number;
-  /** For example "Secure, right answer, high confidence: 2". */
-  accessibleName: string;
-};
-
-/** The four rows of the Error types card, always all four, in the fixed order. */
-export function errorTypeSummary(counts: Record<ErrorType, number>): TypeSummaryRow[] {
-  return errorTypes.map((type) => {
-    const { label, description } = errorTypeText[type];
-    const count = counts[type] ?? 0;
-    return {
-      type,
-      label,
-      description,
-      count,
-      accessibleName: `${label}, ${description.charAt(0).toLowerCase()}${description.slice(1)}: ${count}`,
-    };
-  });
-}
-
-/** The Error analysis screen starts with the most serious type. */
-export const analysisOrder: ErrorType[] = ["misconception", "knowledge_gap", "guess", "secure"];
-
-/** Answers grouped by error type, in the given order, leaving out empty groups. */
-export function groupByErrorType(
-  items: ScoredItem[],
-  order: ErrorType[] = errorTypes,
-): { type: ErrorType; items: ScoredItem[] }[] {
-  return order
-    .map((type) => ({ type, items: items.filter((item) => item.errorType === type) }))
-    .filter((group) => group.items.length > 0);
-}
-
-/**
- * From the scenario's errorTypeRule: high confidence means level 3.
- * Confidence is optional in a quiz: without it, a right answer counts as secure and a wrong
- * or partly right one as a knowledge gap (a misconception needs stated high confidence).
- */
-export function errorType(correct: boolean, confidence: Confidence | null): ErrorType {
-  if (confidence === null) return correct ? "secure" : "knowledge_gap";
-  const high = confidence === 3;
-  if (correct) return high ? "secure" : "guess";
-  return high ? "misconception" : "knowledge_gap";
-}
-
-/** One answered scenario step or quiz question, ready for results, weak topics and history. */
+/** One answered step or question, ready for results, weak topics and history. Only right or wrong. */
 export type ScoredItem = {
   kind: "step" | "question";
   id: string;
+  /** A short name: the step's title, or the question itself. */
   title: string;
-  /** The situation or question text, in full, for the answer review and the details. */
+  /** The situation (steps) and the question, in full. */
   prompt: string;
   image?: ContentImage;
-  sources: string[];
-  /** 0 to 1. Multiple choice and ordering can be partly right. */
-  score: number;
+  section: string;
+  guideRef: string[];
   correct: boolean;
-  errorType: ErrorType;
-  /** False for a quiz answer given without a confidence rating: then only the result is shown. */
-  hasConfidence: boolean;
-  effects: Effects;
-  yourAnswer: string;
-  correctAnswer: string;
-  /** The full why for the final analysis: for a wrong step, why the choice fails and why the better one works. */
-  why: string[];
-  /** What happened after a scenario step. */
-  consequence?: string;
-  /** An answer or explanation the user marked correct ("My … is still correct"). */
-  markedByYou?: boolean;
-  /** Why a right answer still counts as weak, for the Error analysis. */
-  reason?: string;
-  /** A neutral note, for a wrong choice whose explanation the user marked correct. */
-  note?: string;
+  chosenOptionId: string;
+  correctOptionId: string;
 };
 
-/** Shown in the Error analysis for a right choice whose explanation missed the guide. */
-export const explanationMissedReason = "Right choice, but your explanation didn't match the guide.";
-
-/** Shown on Results and in the Error analysis for a wrong choice whose explanation was marked. */
-export const explanationMarkedNote = "Explanation marked correct by you";
-
-/**
- * The score depends only on the chosen option. A right choice whose typed explanation did not
- * match the guide counts as a Guess, unless the person marked the explanation correct.
- */
-export function scoreStep(
-  step: Step,
-  optionId: string,
-  confidence: Confidence,
-  {
-    explanation,
-    markedCorrect = false,
-  }: { explanation?: ExplanationCheck; markedCorrect?: boolean } = {},
-): ScoredItem {
-  const option = step.options.find((candidate) => candidate.id === optionId);
-  const best = step.options.find((candidate) => candidate.correct);
-  if (!option || !best) throw new Error(`Step ${step.id} has no option ${optionId}`);
-  const correct = option.correct;
-  /** "My explanation is still correct" on a typed explanation that missed the guide. */
-  const marked = explanation === "not_matched" && markedCorrect;
-  /** With a right choice the explanation counts as matched; with a wrong one only the label changes. */
-  const markedByYou = correct && marked;
-  const explanationMissed = correct && explanation === "not_matched" && !markedCorrect;
+/** Binary grading: the chosen option is the correct one, or it is not. */
+export function scoreItem(item: Item, optionId: string): ScoredItem {
   return {
-    kind: "step",
-    id: step.id,
-    title: step.title,
-    prompt: `${step.narrative} ${step.question}`,
-    ...(step.image && { image: step.image }),
-    sources: step.sources,
-    score: correct ? 1 : 0,
-    correct,
-    errorType: explanationMissed ? "guess" : errorType(correct, confidence),
-    hasConfidence: true,
-    effects: option.effects ?? {},
-    yourAnswer: option.text,
-    correctAnswer: best.text,
-    why: option.correct ? [option.why] : [option.why, best.why],
-    consequence: option.consequence,
-    ...(markedByYou && { markedByYou }),
-    ...(explanationMissed && { reason: explanationMissedReason }),
-    ...(marked && !correct && { note: explanationMarkedNote }),
+    kind: item.kind,
+    id: item.id,
+    title: item.title ?? item.question,
+    prompt: item.situation ? `${item.situation} ${item.question}` : item.question,
+    ...(item.image && { image: item.image }),
+    section: item.section,
+    guideRef: item.guideRef,
+    correct: optionId === item.correctOptionId,
+    chosenOptionId: optionId,
+    correctOptionId: item.correctOptionId,
   };
 }
 
-/** Adds every chosen option's effects to the scenario's starting state, key by key. */
-export function sumEffects(initial: Effects, items: ScoredItem[]): Effects {
-  return items.reduce(
-    (total, item) =>
-      Object.fromEntries(
-        Object.entries(total).map(([key, value]) => [key, value + (item.effects[key] ?? 0)]),
-      ),
-    initial,
-  );
+export function correctCount(items: ScoredItem[]) {
+  return items.filter((item) => item.correct).length;
 }
 
-export function totalScore(items: ScoredItem[]) {
-  return items.reduce((total, item) => total + item.score, 0);
-}
-
-export function countErrorTypes(items: ScoredItem[]): Record<ErrorType, number> {
-  const counts: Record<ErrorType, number> = {
-    secure: 0,
-    guess: 0,
-    knowledge_gap: 0,
-    misconception: 0,
-  };
-  items.forEach((item) => counts[item.errorType]++);
-  return counts;
-}
-
-/**
- * Items to repeat: every answer that was wrong, partly right or guessed. A short-text answer the
- * user marked correct is not repeated; a scenario step leaves the list only once it is no longer a Guess.
- */
+/** Items to repeat: every answer that was wrong. */
 export function weakItems(items: ScoredItem[]): ScoredItem[] {
-  return items.filter(
-    (item) => item.errorType !== "secure" && !(item.markedByYou && item.kind === "question"),
-  );
+  return items.filter((item) => !item.correct);
 }
 
-/** Guide sections behind the weak items, without duplicates, in order of appearance. */
+/** Guide sections with at least one wrong answer, without duplicates, in order of appearance. */
 export function weakSections(items: ScoredItem[]): string[] {
-  return [...new Set(weakItems(items).flatMap((item) => item.sources))];
+  return [...new Set(weakItems(items).map((item) => item.section))];
 }
 
 /**
  * Weak items across the whole history: for each step or question the most recent answer counts,
- * so a later right-and-sure answer clears it. Items must be in the order they were answered.
+ * so a later right answer clears it. Items must be in the order they were answered.
  */
 export function currentWeakItems(items: ScoredItem[]): ScoredItem[] {
   const latest = new Map<string, ScoredItem>();

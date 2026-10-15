@@ -3,19 +3,19 @@ import Link from "next/link";
 
 const circle =
   "flex shrink-0 items-center justify-center rounded-full bg-surface text-text shadow-(--card-shadow) active:bg-surface-muted";
-const sizes = { regular: "h-11 w-11", large: "h-12 w-12" } as const;
+const sizes = { small: "h-10 w-10", regular: "h-11 w-11" } as const;
 
 /**
- * The one back button: a 44px white circle (48px with `large`, for the session's bottom bar) with a dark arrow, top left, no visible text. Its
+ * The one back button: a 44px white circle (40px with `size="small"`, for the session's top row) with a dark arrow, top left, no visible text. Its
  * accessible name names the destination ("Back to materials"). A link, or a button for a back
  * step that runs code (Generating cancels).
  */
 export function CircleBackButton(
-  props: { label: string; large?: boolean } & (
+  props: { label: string; size?: keyof typeof sizes } & (
     { href: string; onClick?: () => void } | { onClick: () => void }
   ),
 ) {
-  const look = `${circle} ${props.large ? sizes.large : sizes.regular}`;
+  const look = `${circle} ${sizes[props.size ?? "regular"]}`;
   const icon = <ArrowLeft size={20} strokeWidth={2} aria-hidden="true" />;
   if ("href" in props) {
     return (

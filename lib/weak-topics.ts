@@ -1,7 +1,5 @@
-import type { ErrorType, ScoredItem } from "@/lib/scoring";
-
-/** Weak error types, most serious first. Secure answers are never weak. */
-export const weakPriority: ErrorType[] = ["misconception", "knowledge_gap", "guess"];
+import { sectionOrder } from "@/lib/items";
+import type { ScoredItem } from "@/lib/scoring";
 
 /** Names of the Lucide icons a topic can show. The component maps each name to its icon. */
 export type TopicIcon =
@@ -41,8 +39,8 @@ export type TopicTint = "yellow" | "blue" | "lilac" | "green" | "peach";
 export const topicTints: TopicTint[] = ["yellow", "blue", "lilac", "green", "peach"];
 
 /**
- * The tile colour comes from the guide section, never from the error type or the material:
- * the section number picks the next tint of the cycle (S1 and F1 yellow, S2 blue, S6 yellow).
+ * The tile colour comes from the guide section: the section number picks the next tint of the
+ * cycle (S1 and F1 yellow, S2 blue, S6 yellow).
  */
 export function topicTint(sectionId: string): TopicTint {
   const number = Number.parseInt(sectionId.slice(1), 10);
@@ -55,83 +53,40 @@ export type WeakTopic = {
   sectionId: string;
   /** The topic's icon name, from its guide section. */
   icon: TopicIcon;
-  /** The most serious error type among the topic's weak answers. */
-  errorType: ErrorType;
-  /** The weak steps and questions behind this topic. */
+  /** The wrong answers behind this topic. */
   items: ScoredItem[];
 };
 
-export type RepeatItem = { type: "step" | "question"; id: string };
-
-const sectionOrder = (id: string) => [id[0] === "S" ? 0 : 1, Number(id.slice(1))] as const;
-
 /**
- * Groups weak answers into topics (one per guide section). Ordered by error type priority,
- * then by how many answers are weak, then by guide order.
+ * Groups wrong answers into topics, one per guide section. Ordered by how many answers are wrong,
+ * then by guide order.
  */
 export function weakTopics(weakItems: ScoredItem[]): WeakTopic[] {
   const bySection = new Map<string, ScoredItem[]>();
   weakItems
-    .filter((item) => item.errorType !== "secure")
-    .forEach((item) =>
-      item.sources.forEach((sectionId) =>
-        bySection.set(sectionId, [...(bySection.get(sectionId) ?? []), item]),
-      ),
-    );
+    .filter((item) => !item.correct)
+    .forEach((item) => bySection.set(item.section, [...(bySection.get(item.section) ?? []), item]));
   return [...bySection.entries()]
-    .map(([sectionId, items]) => ({
-      sectionId,
-      icon: topicIcon(sectionId),
-      items,
-      errorType:
-        weakPriority.find((type) => items.some((item) => item.errorType === type)) ?? "guess",
-    }))
-    .sort((a, b) => {
-      const byType = weakPriority.indexOf(a.errorType) - weakPriority.indexOf(b.errorType);
-      if (byType !== 0) return byType;
-      if (a.items.length !== b.items.length) return b.items.length - a.items.length;
-      const [ag, an] = sectionOrder(a.sectionId);
-      const [bg, bn] = sectionOrder(b.sectionId);
-      return ag - bg || an - bn;
-    });
+    .map(([sectionId, items]) => ({ sectionId, icon: topicIcon(sectionId), items }))
+    .sort(
+      (a, b) =>
+        b.items.length - a.items.length || sectionOrder(a.sectionId) - sectionOrder(b.sectionId),
+    );
 }
 
-export function countTopics(topics: WeakTopic[]): Record<ErrorType, number> {
-  const counts: Record<ErrorType, number> = {
-    secure: 0,
-    guess: 0,
-    knowledge_gap: 0,
-    misconception: 0,
-  };
-  topics.forEach((topic) => counts[topic.errorType]++);
-  return counts;
+/** "3 topics to repeat" or "1 topic to repeat". */
+export function topicsToRepeat(count: number): string {
+  return `${count} ${count === 1 ? "topic" : "topics"} to repeat`;
 }
 
-const countWords: Record<ErrorType, [string, string]> = {
-  misconception: ["misconception", "misconceptions"],
-  knowledge_gap: ["knowledge gap", "knowledge gaps"],
-  guess: ["guess", "guesses"],
-  secure: ["secure answer", "secure answers"],
-};
-
-/** "1 misconception, 2 knowledge gaps", in priority order, leaving out zero counts. */
-export function describeCounts(counts: Record<ErrorType, number>): string {
-  return weakPriority
-    .filter((type) => counts[type] > 0)
-    .map((type) => `${counts[type]} ${countWords[type][counts[type] === 1 ? 0 : 1]}`)
-    .join(", ");
+/** "2 to repeat": the number of wrong answers in one topic. */
+export function toRepeatLabel(topic: WeakTopic): string {
+  return `${topic.items.length} to repeat`;
 }
 
-/** The steps and questions to repeat for some topics, each once, in topic order. */
-export function repeatItems(topics: WeakTopic[]): RepeatItem[] {
-  const seen = new Set<string>();
-  return topics.flatMap((topic) =>
-    topic.items.flatMap((item) => {
-      if (seen.has(item.id)) return [];
-      seen.add(item.id);
-      return [{ type: item.kind, id: item.id }];
-    }),
-  );
+/** The questions to repeat for some topics, each once, in topic order. */
+export function repeatItemIds(topics: WeakTopic[]): string[] {
+  return [...new Set(topics.flatMap((topic) => topic.items.map((item) => item.id)))];
 }
 
 /** Short name of the material a section belongs to, for the topic's source line. */

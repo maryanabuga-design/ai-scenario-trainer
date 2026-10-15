@@ -2,10 +2,9 @@ import sampleFileData from "@/content/sample-files.json";
 import type { Material } from "@/lib/materials";
 import { materialFromUpload, simulateUpload } from "@/lib/materials";
 import { questionsFor } from "@/lib/quiz";
-import { availableQuestions, fitAmount, quizAmount } from "@/lib/quiz-setup";
 import { keepOneHint } from "@/lib/sections";
-import type { QuizAmount } from "@/lib/quiz-setup";
-import { defaultStory, getScenario } from "@/lib/scenario";
+import { inGuideOrder } from "@/lib/items";
+import { getScenario } from "@/lib/scenario";
 import type { ScenarioDef } from "@/lib/scenario";
 
 export type SampleFile = {
@@ -21,10 +20,7 @@ export const sampleFiles = sampleFileData as SampleFile[];
 
 /** The guide sections a scenario's default story relies on, in guide order. */
 export function scenarioSections(def: ScenarioDef): string[] {
-  const sources = defaultStory(def).flatMap((step) => step.sources);
-  return [...new Set(sources)].sort(
-    (a, b) => a[0].localeCompare(b[0]) || Number(a.slice(1)) - Number(b.slice(1)),
-  );
+  return inGuideOrder([...new Set(def.steps.flatMap((step) => step.guideRef))]);
 }
 
 export type TrainingPlan = {
@@ -45,7 +41,7 @@ export function planTraining(material: Pick<Material, "sectionIds" | "scenarioId
       material.scenarioId !== undefined &&
       scenarioSections(def).every((section) => sections.includes(section)),
     scenarioId: def.id,
-    scenarioDecisions: defaultStory(def).length,
+    scenarioDecisions: def.steps.length,
   };
 }
 
@@ -54,8 +50,6 @@ export type Training = {
   scenario: boolean;
   quiz: boolean;
   sections: string[];
-  /** How many questions the quiz has; trainings saved before it existed use every question. */
-  quizSize?: number;
   createdAt: number;
 };
 
@@ -63,23 +57,7 @@ export type TrainingChoice = {
   scenario: boolean;
   quiz: boolean;
   sections: string[];
-  /** The quiz size chosen on Create training (missing in choices saved before it existed). */
-  amount?: QuizAmount;
 };
-
-/** The quiz size Create training starts with: the smaller of 10 and the questions available. */
-export function defaultCreateAmount(sections: string[]): QuizAmount {
-  return fitAmount({ countChoice: 5, customCount: 5 }, availableQuestions(sections));
-}
-
-/** The number of questions a choice makes. */
-export function chosenQuizSize(choice: TrainingChoice): number {
-  const available = availableQuestions(choice.sections);
-  return quizAmount(
-    fitAmount(choice.amount ?? defaultCreateAmount(choice.sections), available),
-    available,
-  );
-}
 
 /**
  * Checks a choice made on Create training. Returns the reason it cannot be generated, or null.
@@ -108,7 +86,6 @@ export function createTraining(
     scenario: choice.scenario,
     quiz: choice.quiz,
     sections: plan.sections.filter((section) => choice.sections.includes(section)),
-    ...(choice.quiz && { quizSize: chosenQuizSize(choice) }),
     createdAt: now,
   };
 }

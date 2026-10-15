@@ -6,7 +6,9 @@ import { GuideChip } from "@/components/GuideChip/GuideChip";
 import { Chip } from "@/components/Chip/Chip";
 import { FileText, History, ListChecks, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { DecisionStep } from "@/components/DecisionStep/DecisionStep";
+import { QuestionScreen } from "@/components/QuestionScreen/QuestionScreen";
+import { Media3D } from "@/components/Media3D/Media3D";
+import { Toggle } from "@/components/Toggle/Toggle";
 import { AnswerReview } from "@/components/AnswerReview/AnswerReview";
 import { SessionBar } from "@/components/SessionBar/SessionBar";
 import { SessionTopBar } from "@/components/SessionTopBar/SessionTopBar";
@@ -14,11 +16,10 @@ import { stripStates } from "@/components/StepStrip/StepStrip";
 import { AskAiProvider } from "@/components/AskAi/AskAi";
 import type { ChatMessage } from "@/components/AskAi/AskAi";
 import { ButtonPreview } from "@/components/Button/Button";
-import { AnalysisView } from "@/components/AnalysisView/AnalysisView";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
-import { ErrorTypesCard } from "@/components/ErrorTypesCard/ErrorTypesCard";
 import { HomeView } from "@/components/HomeView/HomeView";
 import { TopicCard } from "@/components/TopicCard/TopicCard";
+import { TopicTile } from "@/components/TopicTile/TopicTile";
 import { WeakTopicsView } from "@/components/WeakTopicsView/WeakTopicsView";
 import { initialChoice, TrainingCreate } from "@/components/TrainingCreate/TrainingCreate";
 import {
@@ -26,14 +27,6 @@ import {
   TrainingGenerating,
 } from "@/components/TrainingGenerating/TrainingGenerating";
 import { TrainingReview } from "@/components/TrainingReview/TrainingReview";
-import { QuizQuestion } from "@/components/QuizQuestion/QuizQuestion";
-import {
-  emptyQuizDraft,
-  emptyStepDraft,
-  isQuizComplete,
-  isStepComplete,
-} from "@/lib/session-draft";
-import type { QuizDraft, StepDraft } from "@/lib/session-draft";
 import { MaterialView } from "@/components/MaterialView/MaterialView";
 import type { Material } from "@/lib/materials";
 import { MaterialsList } from "@/components/MaterialsList/MaterialsList";
@@ -49,79 +42,89 @@ import { SessionSetup } from "@/components/SessionSetup/SessionSetup";
 import { defaultSetup } from "@/components/SessionSetup/SessionSetup";
 import type { SetupValue } from "@/components/SessionSetup/SessionSetup";
 import { notCoveredId, replyToChip } from "@/lib/chat";
-import { getQuestion, scoreQuestion } from "@/lib/quiz";
-import type { Response } from "@/lib/quiz";
-import type { Answer } from "@/lib/session";
-import { questionReview, stepReview } from "@/lib/answer-review";
-import { getScenario, getStep, sessionLengths } from "@/lib/scenario";
-import type { Confidence } from "@/lib/scenario";
+import { getItem } from "@/lib/items";
+import { getScenario } from "@/lib/scenario";
 import { defaultDirection } from "@/lib/directions";
 import { sampleMaterials } from "@/lib/materials";
 import { materialFromSample, sampleFiles } from "@/lib/training";
-import { currentWeakItems, scoreStep } from "@/lib/scoring";
+import { currentWeakItems, scoreItem } from "@/lib/scoring";
+import type { FinishedSession, Session } from "@/lib/session";
 import { topicIcon, weakTopics } from "@/lib/weak-topics";
 import { scenarioLine } from "@/lib/home";
 
-/** Interactive sample screens for the /screens review page. They never touch the saved session. */
+/** Session setup for a guide: the main view, with its saved answers and weak topics. */
 export function SetupSample({
   start = defaultSetup,
   scenarioId,
+  withHistory = true,
+  weakSectionIds = ["S3", "S6"],
 }: {
   start?: SetupValue;
   scenarioId?: string;
+  withHistory?: boolean;
+  weakSectionIds?: string[];
 }) {
   const [value, setValue] = useState<SetupValue>(start);
   const def = getScenario(scenarioId);
+  const flood = def.id !== getScenario(undefined).id;
+  const sections = flood
+    ? ["F1", "F2", "F3", "F4", "F5", "F6", "F7"]
+    : ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10"];
   return (
     <SessionSetup
-      value={value}
+      value={{ ...value, sections: value.sections.length > 0 ? value.sections : sections }}
       onChange={setValue}
       onStart={() => undefined}
-      scenarioDef={def}
-      materialName={scenarioId ? "Flood preparedness guide.pdf" : undefined}
+      materialName={flood ? "Flood preparedness guide.pdf" : "Sample evacuation guide.pdf"}
+      scenarioId={def.id}
+      guideSectionIds={sections}
+      stats={
+        withHistory
+          ? { questions: 24, correct: 17, incorrect: 7 }
+          : { questions: 0, correct: 0, incorrect: 0 }
+      }
+      practised={withHistory ? 32 : 0}
+      weakSectionIds={flood ? [] : weakSectionIds}
     />
   );
 }
 
-/** A scenario step with the top bar, the step strip and the bottom bar. */
-export function SessionStepSample({
-  stepId = "s1",
+/** One question screen with the top row, the step strip and the Next bar. */
+export function SessionSample({
+  itemId = "s1",
   index = 0,
-  total = 6,
+  total = 10,
   answered = [],
-  start = emptyStepDraft,
+  choice = null,
+  kind = "scenario",
 }: {
-  stepId?: string;
+  itemId?: string;
   index?: number;
   total?: number;
   /** Positions already answered, for the strip. */
   answered?: number[];
-  start?: StepDraft;
+  choice?: string | null;
+  kind?: "scenario" | "quiz";
 }) {
-  const [draft, setDraft] = useState<StepDraft>(start);
-  const endRef = useScrollFrameToEnd(isStepComplete(start));
+  const [picked, setPicked] = useState<string | null>(choice);
+  const endRef = useScrollFrameToEnd(choice !== null);
   const flags = Array.from({ length: total }, (_, position) => answered.includes(position));
   return (
     <>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         <SessionTopBar
           index={index}
           total={total}
-          unit="Step"
+          unit={kind === "scenario" ? "Step" : "Question"}
           states={stripStates(flags, index)}
           onJump={() => undefined}
+          onBack={() => undefined}
           onLeave={() => undefined}
         />
-        <DecisionStep step={getStep(stepId)} draft={draft} onDraftChange={setDraft} />
+        <QuestionScreen item={getItem(itemId)} choice={picked} onChoose={setPicked} />
       </div>
       <div ref={endRef} />
-      <SessionBar
-        backLabel={index > 0 ? "Previous step" : null}
-        onBack={() => undefined}
-        last={index === total - 1}
-        disabled={!isStepComplete(draft)}
-        onNext={() => undefined}
-      />
+      <SessionBar last={index === total - 1} disabled={picked === null} onNext={() => undefined} />
     </>
   );
 }
@@ -140,61 +143,46 @@ function useScrollFrameToEnd(enabled: boolean) {
   return endRef;
 }
 
-/** The Answer review of one step, with the "still correct" button working. */
-export function StepReviewSample({
-  stepId,
-  optionId,
-  explanation = "",
-  position,
-  marked = false,
+/** The Answer review of one question, with the person's choice (a wrong or the right option). */
+export function AnswerReviewSample({
+  itemId,
+  choice,
+  position = 1,
+  total = 10,
 }: {
-  stepId: string;
-  optionId: string;
-  explanation?: string;
-  position: number;
-  marked?: boolean;
+  itemId: string;
+  choice: string;
+  position?: number;
+  total?: number;
 }) {
-  const step = getStep(stepId);
-  const [markedCorrect, setMarkedCorrect] = useState(marked);
-  const answer: Answer = {
-    stepId,
-    optionId,
-    confidence: 3,
-    explanation,
-    skipped: !explanation,
-    markedCorrect,
-  };
   return (
     <AnswerReview
-      data={{
-        position,
-        total: 6,
-        title: step.title,
-        narrative: step.narrative,
-        question: step.question,
-        content: stepReview(step, answer),
-        step,
-      }}
-      noun="step"
+      item={getItem(itemId)}
+      choice={choice}
+      position={position}
+      total={total}
       backHref="#results"
       backLabel="Back to results"
       hrefFor={() => "#review"}
-      onMarkCorrect={setMarkedCorrect}
     />
   );
 }
 
-/** A full session with one answer of each kind of result. */
+const pick = (id: string, optionId: string) => scoreItem(getItem(id), optionId);
+
+/** Six answers in one session: three wrong, so the result is "Not passed yet". */
 const sampleAnswers = [
-  scoreStep(getStep("s1"), "b", 3),
-  scoreStep(getStep("s2"), "c", 2),
-  scoreStep(getStep("s3"), "b", 3),
-  scoreStep(getStep("s4"), "d", 3),
-  scoreStep(getStep("s5"), "a", 1),
-  scoreStep(getStep("s6"), "c", 3),
+  pick("s1", "d"),
+  pick("s2", "c"),
+  pick("s3", "a"),
+  pick("s4", "a"),
+  pick("s5", "a"),
+  pick("s6", "c"),
 ];
 
-/** Results for the sample session; fewer weak answers give the passed variant. */
+const floodAnswers = [pick("flood-s1", "c"), pick("flood-s2", "a"), pick("flood-s3", "b")];
+
+/** Results for the sample session; the passed variant has a single wrong answer (83%). */
 export function ResultsSample({
   scrolled = false,
   passed = false,
@@ -203,11 +191,13 @@ export function ResultsSample({
   passed?: boolean;
 }) {
   const endRef = useScrollFrameToEnd(scrolled);
+  const items = passed ? passedAnswers : sampleAnswers;
   return (
     <>
       <ResultsView
-        results={{ kind: "scenario", mode: "full" }}
-        items={passed ? passedAnswers : sampleAnswers}
+        kind="scenario"
+        items={items}
+        topics={weakTopics(currentWeakItems(items))}
         onRepeat={() => undefined}
       />
       <div ref={endRef} />
@@ -215,14 +205,13 @@ export function ResultsSample({
   );
 }
 
-/** Five of six right: 83%, above the pass mark. */
 const passedAnswers = [
-  scoreStep(getStep("s1"), "b", 3),
-  scoreStep(getStep("s2"), "c", 3),
-  scoreStep(getStep("s3"), "b", 3),
-  scoreStep(getStep("s4"), "d", 3),
-  scoreStep(getStep("s5"), "b", 3),
-  scoreStep(getStep("s6"), "c", 3),
+  pick("s1", "b"),
+  pick("s2", "c"),
+  pick("s3", "a"),
+  pick("s4", "d"),
+  pick("s5", "a"),
+  pick("s6", "c"),
 ];
 
 /** Home in each Next up state: first visit, weak topics, an unfinished session, all repeated. */
@@ -237,13 +226,13 @@ export function HomeSample({
       directionTitle={defaultDirection.title}
       unfinished={
         state === "continue"
-          ? {
-              mode: "full",
-              stepIds: [...sessionLengths.full.stepIds],
+          ? ({
+              kind: "scenario",
+              itemIds: ["s1", "s2", "s3", "s4", "s5", "s6"],
               index: 2,
               answers: [],
               finished: false,
-            }
+            } satisfies Session)
           : null
       }
       weakItems={state === "repeat" || state === "continue" ? currentWeakItems(sampleAnswers) : []}
@@ -271,31 +260,34 @@ export function ProgressSample({
   /** Many short sessions, to show the history pages and See more. */
   sessions?: number;
 }) {
-  const answer = (stepId: string, optionId: string, confidence: 1 | 2 | 3) => ({
-    stepId,
-    optionId,
-    confidence,
-    explanation: "",
-  });
-  const history = withHistory
+  const answers = (picks: [string, string][]) =>
+    picks.map(([itemId, optionId]) => ({ itemId, optionId }));
+  const short: FinishedSession = {
+    kind: "scenario",
+    itemIds: ["s1", "s2", "s3"],
+    answers: answers([
+      ["s1", "d"],
+      ["s2", "c"],
+      ["s3", "a"],
+    ]),
+    finishedAt: Date.UTC(2026, 9, 7, 9, 20),
+  };
+  const history: FinishedSession[] = withHistory
     ? [
+        short,
         {
-          mode: "short" as const,
-          finishedAt: Date.UTC(2026, 9, 7, 9, 20),
-          answers: [answer("s1", "d", 1), answer("s2", "c", 3), answer("s3", "a", 3)],
-        },
-        {
-          mode: "full" as const,
+          kind: "scenario",
+          itemIds: sampleAnswers.map((item) => item.id),
+          answers: sampleAnswers.map((item) => ({
+            itemId: item.id,
+            optionId: item.chosenOptionId,
+          })),
           finishedAt: Date.UTC(2026, 9, 8, 12, 5),
-          answers: sampleAnswers.map((scored, index) =>
-            answer(scored.id, ["b", "c", "b", "d", "a", "c"][index], 2),
-          ),
         },
       ]
     : Array.from({ length: sessions ?? 0 }, (_, index) => ({
-        mode: "short" as const,
+        ...short,
         finishedAt: Date.UTC(2026, 9, 1 + index, 9, 20),
-        answers: [answer("s1", "d", 1), answer("s2", "c", 3), answer("s3", "a", 3)],
       }));
   return <ProgressView history={history} />;
 }
@@ -331,26 +323,21 @@ export function ProfileSample({ confirming = false }: { confirming?: boolean }) 
 
 /** The Ask AI sheet over the smoke step's Answer review: a "why not" answer, the not-covered answer, typing. */
 export function ChatFeedbackSample() {
-  const step = getStep("s3");
+  const step = getItem("s3");
   const messages: ChatMessage[] = [
     { role: "trainee", text: "Why not run upright?", chipId: "s3-upright" },
-    { role: "ai", reply: replyToChip(step, "s3-upright", "feedback") },
+    { role: "ai", reply: replyToChip(step, "s3-upright") },
     {
       role: "trainee",
       text: "Which type of cloth filters smoke best?",
       chipId: notCoveredId(step),
     },
-    { role: "ai", reply: replyToChip(step, notCoveredId(step), "feedback") },
+    { role: "ai", reply: replyToChip(step, notCoveredId(step)) },
     { role: "trainee", text: "Why not break a window?", chipId: "s3-window" },
   ];
   return (
-    <AskAiProvider inline initial={{ chat: { step, phase: "feedback" }, messages, typing: true }}>
-      <StepReviewSample
-        stepId="s3"
-        optionId="a"
-        explanation="Smoke rises, so we stay low."
-        position={3}
-      />
+    <AskAiProvider inline initial={{ chat: { step }, messages, typing: true }}>
+      <AnswerReviewSample itemId="s3" choice="a" position={3} />
     </AskAiProvider>
   );
 }
@@ -416,98 +403,6 @@ export function NotesMaterialSample() {
   );
 }
 
-/** One quiz question of each type with the top bar, strip and bottom bar, optionally answered. */
-export function QuizSample({
-  questionId,
-  index,
-  response,
-  dontKnow = false,
-}: {
-  questionId: string;
-  index: number;
-  response?: Response;
-  dontKnow?: boolean;
-}) {
-  const question = getQuestion(questionId);
-  const [draft, setDraft] = useState<QuizDraft>(
-    response ? { response, confidence: null, dontKnow } : emptyQuizDraft(question),
-  );
-  const flags = Array.from({ length: 5 }, (_, position) => position < index);
-  return (
-    <>
-      <div className="flex flex-col gap-6">
-        <SessionTopBar
-          index={index}
-          total={5}
-          unit="Question"
-          states={stripStates(flags, index)}
-          onJump={() => undefined}
-          onLeave={() => undefined}
-        />
-        <QuizQuestion question={question} draft={draft} onDraftChange={setDraft} />
-      </div>
-      <SessionBar
-        backLabel={index > 0 ? "Previous question" : null}
-        onBack={() => undefined}
-        last={index === 4}
-        disabled={!isQuizComplete(draft)}
-        onNext={() => undefined}
-      />
-    </>
-  );
-}
-
-/** The Answer review of one quiz question, for every question type. */
-export function QuestionReviewSample({
-  questionId,
-  response,
-  marked = false,
-  dontKnow = false,
-  confidence = null,
-}: {
-  questionId: string;
-  response: Response;
-  marked?: boolean;
-  dontKnow?: boolean;
-  confidence?: Confidence | null;
-}) {
-  const question = getQuestion(questionId);
-  const [markedCorrect, setMarkedCorrect] = useState(marked);
-  const answer = { questionId, response, confidence, markedCorrect, dontKnow };
-  return (
-    <AnswerReview
-      data={{
-        position: 2,
-        total: 5,
-        question: question.question,
-        content: questionReview(question, answer),
-      }}
-      noun="question"
-      backHref="#results"
-      backLabel="Back to results"
-      hrefFor={() => "#review"}
-      onMarkCorrect={setMarkedCorrect}
-    />
-  );
-}
-
-export function QuizResultsSample() {
-  const items = [
-    scoreQuestion(getQuestion("q-s1-1"), { type: "single", optionId: "b" }, 3),
-    scoreQuestion(getQuestion("q-s1-3"), { type: "multiple", optionIds: ["a", "b", "c"] }, 2),
-    scoreQuestion(getQuestion("q-s2-3"), { type: "ordering", order: ["a", "b", "d", "c"] }, null),
-    scoreQuestion(getQuestion("q-s2-1"), { type: "text", text: "with my knuckles" }, 3, true),
-    scoreQuestion(getQuestion("q-s1-2"), { type: "truefalse", value: true }, 3),
-  ];
-  return (
-    <ResultsView
-      results={{ kind: "quiz", mode: "quiz" }}
-      items={items}
-      onRepeat={() => undefined}
-    />
-  );
-}
-
 const guideMaterial = sampleMaterials[0];
 const quickCard = {
   ...materialFromSample(sampleFiles[2], new Date("2026-10-08")),
@@ -557,28 +452,25 @@ export function ReviewSample() {
 
 const FLOOD = "flood-preparedness-001";
 
-/** The flood scenario's first step: F-section chips. */
+/** The flood scenario's first step. */
 export function FloodStepSample() {
-  return <SessionStepSample stepId="flood-s1" total={3} />;
+  return <SessionSample itemId="flood-s1" index={0} total={3} />;
 }
 
-/** Flood results: time lost and water level only. */
+/** Flood results. */
 export function FloodResultsSample() {
   return (
     <ResultsView
-      results={{ kind: "scenario", mode: "short", scenarioId: FLOOD }}
-      items={[
-        scoreStep(getStep("flood-s1"), "c", 3),
-        scoreStep(getStep("flood-s2"), "a", 3),
-        scoreStep(getStep("flood-s3"), "a", 2),
-      ]}
+      kind="scenario"
+      items={floodAnswers}
+      topics={weakTopics(currentWeakItems(floodAnswers))}
       onRepeat={() => undefined}
     />
   );
 }
 
 export function FloodSetupSample() {
-  return <SetupSample start={{ ...defaultSetup, length: "short" }} scenarioId={FLOOD} />;
+  return <SetupSample start={{ ...defaultSetup, mode: "scenario" }} scenarioId={FLOOD} />;
 }
 
 /** The Weak topics page with the sample answers, or empty. */
@@ -589,6 +481,8 @@ export function WeakTopicsSample({ empty = false }: { empty?: boolean }) {
     <WeakTopicsView
       topics={topics}
       selected={selected}
+      backHref="#home"
+      backLabel="Back to Home"
       onToggle={(id) =>
         setSelected((current) =>
           current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
@@ -610,7 +504,7 @@ export function TopicIconsSample() {
         {sections.map((sectionId) => (
           <li key={sectionId}>
             <TopicCard
-              topic={{ sectionId, icon: topicIcon(sectionId), errorType: "guess", items: [item] }}
+              topic={{ sectionId, icon: topicIcon(sectionId), items: [item] }}
               onRepeat={() => undefined}
             />
           </li>
@@ -635,31 +529,6 @@ export function EmptyStatesSample() {
         text="No sessions yet. Finished sessions are saved here, in this browser only."
       />
     </div>
-  );
-}
-
-/** The Error types card on its own: counts with a zero row, and an empty one. */
-export function ErrorTypesSample() {
-  return (
-    <div className="flex flex-col gap-6">
-      <ErrorTypesCard
-        counts={{ secure: 2, guess: 1, knowledge_gap: 0, misconception: 1 }}
-        detailsHref="#error-analysis"
-      />
-      <ErrorTypesCard counts={{ secure: 0, guess: 0, knowledge_gap: 0, misconception: 0 }} />
-    </div>
-  );
-}
-
-/** The Error analysis screen for the sample session. */
-export function AnalysisSample() {
-  return (
-    <AnalysisView
-      items={sampleAnswers}
-      quiz={false}
-      backHref="#results"
-      onRepeat={() => undefined}
-    />
   );
 }
 
@@ -717,18 +586,7 @@ export function ButtonsSample() {
 /** Every chip tone and status, on the page and on a card, without strokes. */
 export function ChipTonesSample() {
   const tones = ["yellow", "peach", "blue", "lilac", "green", "rose", "sand", "primary"] as const;
-  const statuses = [
-    "ready",
-    "processing",
-    "failed",
-    "secure",
-    "guess",
-    "knowledge_gap",
-    "misconception",
-    "correct",
-    "wrong",
-    "partial",
-  ] as const;
+  const statuses = ["ready", "processing", "failed"] as const;
   const group = (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap gap-2">
@@ -813,6 +671,40 @@ export function PaletteSample() {
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+/** Every Media3D variant and the Toggle in each state. */
+export function Media3DSample() {
+  const [on, setOn] = useState(true);
+  return (
+    <div className="flex flex-col gap-6">
+      <h1 className="type-page-title">3D placeholders</h1>
+      <section className="flex flex-col items-start gap-2">
+        <h2 className="type-label text-text-secondary">hero</h2>
+        <Media3D variant="hero" />
+      </section>
+      <section className="flex flex-col gap-2">
+        <h2 className="type-label text-text-secondary">step</h2>
+        <Media3D variant="step" />
+      </section>
+      <section className="flex flex-col items-start gap-2">
+        <h2 className="type-label text-text-secondary">icon (the flat icon is the fallback)</h2>
+        <Media3D variant="icon" fallback={<TopicTile sectionId="S2" icon={topicIcon("S2")} />} />
+      </section>
+      <section className="flex flex-col gap-2 rounded-card bg-card p-4 shadow-(--card-shadow)">
+        <h2 className="type-label text-text-secondary">toggle</h2>
+        <Toggle label="Shuffle questions" checked={on} onChange={setOn} />
+        <Toggle label="Off" checked={false} onChange={() => undefined} />
+        <Toggle
+          label="Only topics to repeat"
+          checked={false}
+          disabled
+          hint="Nothing to repeat yet."
+          onChange={() => undefined}
+        />
+      </section>
     </div>
   );
 }

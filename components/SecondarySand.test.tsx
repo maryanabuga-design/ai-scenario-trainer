@@ -1,25 +1,19 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
-import { AnswerReview } from "@/components/AnswerReview/AnswerReview";
-import { AskAiProvider } from "@/components/AskAi/AskAi";
 import { Button } from "@/components/Button/Button";
 import { GuideChip } from "@/components/GuideChip/GuideChip";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
 import { StepStrip, stripStates } from "@/components/StepStrip/StepStrip";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
-import { StatusChip } from "@/components/StatusChip/StatusChip";
 import { Tag } from "@/components/Tag/Tag";
 import { TopicTile } from "@/components/TopicTile/TopicTile";
 import { MaterialTile } from "@/components/MaterialTile/MaterialTile";
 import { TopicRow } from "@/components/TopicRow/TopicRow";
-import { stepReview } from "@/lib/answer-review";
 import { loadAllSections } from "@/lib/guide";
 import { getStep } from "@/lib/scenario";
-import { scoreStep } from "@/lib/scoring";
+import { scoreItem } from "@/lib/scoring";
 import { weakTopics } from "@/lib/weak-topics";
-
-const wrong = { stepId: "s1", optionId: "d", confidence: 2 as const, explanation: "x" };
 
 function withSheet(node: React.ReactNode) {
   return renderToStaticMarkup(
@@ -59,30 +53,6 @@ describe("secondary sand for inactive states and tonal backgrounds", () => {
     expect(chip).not.toMatch(/border|secondary-sand/);
   });
 
-  it("is the Your choice block in the answer review", () => {
-    const step = getStep("s1");
-    const review = withSheet(
-      <AskAiProvider>
-        <AnswerReview
-          data={{
-            position: 1,
-            total: 3,
-            question: step.question,
-            content: stepReview(step, wrong),
-          }}
-          noun="step"
-          backHref="/session/results"
-          backLabel="Back to results"
-          hrefFor={() => "#"}
-          onMarkCorrect={() => undefined}
-        />
-      </AskAiProvider>,
-    );
-    expect(classWith(review, "border-l-[3px]")).toMatch(
-      /border border-l-\[3px\] border-secondary-sand-pressed border-l-primary bg-secondary-sand/,
-    );
-  });
-
   it("is the background of disabled buttons, with a lower-contrast label", () => {
     const html = renderToStaticMarkup(<Button disabled>Continue</Button>);
     expect(html).toContain("disabled:bg-secondary-sand");
@@ -99,7 +69,7 @@ describe("secondary sand for inactive states and tonal backgrounds", () => {
       />,
     );
     expect(strip.match(/border-\[1.5px\] border-secondary-sand-pressed/g)).toHaveLength(2);
-    const topics = weakTopics([scoreStep(getStep("s2"), "c", 2), scoreStep(getStep("s5"), "a", 1)]);
+    const topics = weakTopics([scoreItem(getStep("s3"), "b"), scoreItem(getStep("s5"), "a")]);
     const row = withSheet(<TopicRow topics={topics} labelledBy="t" onRepeat={() => undefined} />);
     expect(row.match(/h-2 w-2 rounded-full bg-secondary-sand-pressed/g)).toHaveLength(1);
   });
@@ -127,12 +97,6 @@ describe("coloured chips and icon backgrounds stay as they are", () => {
     expect(tile("S1")).toContain("bg-pastel-yellow");
     expect(tile("S2")).toContain("bg-pastel-blue");
     expect(renderToStaticMarkup(<MaterialTile type="PDF" />)).toContain("bg-olive-tint");
-  });
-
-  it("keeps the neutral status chip (Marked correct by you) on the chip sand", () => {
-    const marked = renderToStaticMarkup(<StatusChip status="marked" />);
-    expect(marked).toContain("bg-pastel-sand");
-    expect(marked).not.toContain("secondary-sand");
   });
 });
 

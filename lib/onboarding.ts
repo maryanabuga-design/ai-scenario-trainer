@@ -8,12 +8,12 @@ export const onboardingSteps = [
     body: "You get a realistic situation and choose what to do.",
   },
   {
-    title: "Explain it, then check it",
-    body: "Say how confident you are and explain your choice in your own words. Every answer is checked against your source guide.",
+    title: "Answer, then check it",
+    body: "Choose an answer for each question. At the end you check every answer against your source guide.",
   },
   {
     title: "See what to repeat",
-    body: "You see which mistakes were guesses, gaps or misconceptions, and repeat only those topics.",
+    body: "You see which topics had wrong answers, and repeat only those.",
   },
 ] as const;
 

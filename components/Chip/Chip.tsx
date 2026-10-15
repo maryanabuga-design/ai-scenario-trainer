@@ -11,7 +11,7 @@ export type ChipTone =
   "yellow" | "peach" | "blue" | "lilac" | "green" | "rose" | "sand" | "primary";
 
 /** The text or icon colour on a tone, when it is not the plain dark text. */
-export type ChipInk = "green" | "red" | "pink" | "sage" | "amber" | "taupe" | "grey";
+export type ChipInk = "green" | "red" | "amber" | "grey";
 
 const tones: Record<ChipTone, string> = {
   yellow: "bg-pastel-yellow",
@@ -27,10 +27,7 @@ const tones: Record<ChipTone, string> = {
 const inks: Record<ChipInk, string> = {
   green: "text-chip-ink-green",
   red: "text-wrong",
-  pink: "text-misconception",
-  sage: "text-secure",
   amber: "text-caution",
-  taupe: "text-guess-ink",
   grey: "text-text-secondary",
 };
 

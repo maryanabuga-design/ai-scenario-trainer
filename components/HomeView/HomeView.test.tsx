@@ -7,7 +7,7 @@ import type { HomeScenario } from "@/components/HomeView/HomeView";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { loadAllSections } from "@/lib/guide";
 import { getStep } from "@/lib/scenario";
-import { scoreStep } from "@/lib/scoring";
+import { scoreItem } from "@/lib/scoring";
 import type { ScoredItem } from "@/lib/scoring";
 
 const DIRECTION = "Building evacuation and first aid";
@@ -61,8 +61,8 @@ describe("Next up card", () => {
 });
 
 // s2 c unsure: a guess on S2; s5 a unsure: a knowledge gap on S5.
-const twoTopics = [scoreStep(getStep("s2"), "c", 2), scoreStep(getStep("s5"), "a", 1)];
-const oneTopic = [scoreStep(getStep("s2"), "c", 2)];
+const twoTopics = [scoreItem(getStep("s3"), "b"), scoreItem(getStep("s5"), "a")];
+const oneTopic = [scoreItem(getStep("s3"), "b")];
 
 /** The markup of the topic row: the list and the dots after it. */
 function topicRow(html: string) {

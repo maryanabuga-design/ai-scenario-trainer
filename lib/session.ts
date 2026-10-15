@@ -1,97 +1,30 @@
-import type { Response } from "@/lib/quiz";
-import type { ExplanationCheck } from "@/lib/feedback";
-import type { Confidence, SessionMode } from "@/lib/scenario";
+import { findItem } from "@/lib/items";
 import { createStore } from "@/lib/store";
-import type { RepeatItem } from "@/lib/weak-topics";
 import { clearTrainings } from "@/lib/trainings";
 
-/** How an answer was given: typed text, "I don't know", or only a choice. */
-export type AnswerSource = "typed" | "dont_know" | "choice";
+export type SessionKind = "scenario" | "quiz" | "repeat";
 
-export type Answer = {
-  stepId: string;
-  optionId: string;
-  confidence: Confidence;
-  /** The user's own sentence, a reflection that is never checked. Empty after "I don't know". */
-  explanation: string;
-  skipped?: boolean;
-  /** A wrong choice the user marked correct ("My answer is still correct"). */
-  markedCorrect?: boolean;
-  answerSource?: AnswerSource;
-  /** The simulated check of the typed explanation; worked out again for older answers. */
-  explanationCheck?: ExplanationCheck;
-};
+/** The option chosen for one step or question. */
+export type Answer = { itemId: string; optionId: string };
 
-export type QuizAnswer = {
-  questionId: string;
-  response: Response;
-  confidence: Confidence | null;
-  /** A wrong, partly right or rejected answer the user marked correct. */
-  markedCorrect?: boolean;
-  /** "I don't know" on a short text question: an empty answer, no confidence. */
-  dontKnow?: boolean;
-  answerSource?: AnswerSource;
-};
-
-type Progress = {
-  /** The step or question on screen. Answers are saved as soon as they are complete. */
+/** A session: scenario, quiz and repeat round are all a list of questions with one chosen option each. */
+export type Session = {
+  kind: SessionKind;
+  /** Set for a scenario session. */
+  scenarioId?: string;
+  /** The steps or questions in the order they are practised. */
+  itemIds: string[];
+  answers: Answer[];
+  /** The question on screen. Answers are saved as they are given. */
   index: number;
   finished: boolean;
   /** Set on Finish; ties the session to its entry in the history. */
   finishedAt?: number;
 };
 
-/** Sessions saved before quizzes existed have no kind; they are scenario sessions. */
-export type ScenarioSession = Progress & {
-  kind?: "scenario";
-  /** Missing in sessions saved before there were two scenarios: the evacuation one. */
-  scenarioId?: string;
-  mode: SessionMode;
-  stepIds: string[];
-  answers: Answer[];
+export type FinishedSession = Pick<Session, "kind" | "scenarioId" | "itemIds" | "answers"> & {
+  finishedAt: number;
 };
-
-export type QuizSession = Progress & {
-  kind: "quiz";
-  mode: "quiz" | "repeat";
-  sections: string[];
-  questionIds: string[];
-  answers: QuizAnswer[];
-};
-
-/** One answer in a repeat round: a scenario step or a quiz question. */
-export type MixedAnswer = ({ type: "step" } & Answer) | ({ type: "question" } & QuizAnswer);
-
-/** A repeat round mixes the weak steps and questions of the chosen topics. */
-export type RepeatSession = Progress & {
-  kind: "repeat";
-  topics: string[];
-  items: RepeatItem[];
-  answers: MixedAnswer[];
-};
-
-export type Session = ScenarioSession | QuizSession | RepeatSession;
-
-export type FinishedSession =
-  | {
-      kind?: "scenario";
-      scenarioId?: string;
-      mode: SessionMode;
-      answers: Answer[];
-      finishedAt: number;
-    }
-  | {
-      kind: "quiz";
-      mode: "quiz" | "repeat";
-      answers: QuizAnswer[];
-      finishedAt: number;
-    }
-  | {
-      kind: "repeat";
-      topics: string[];
-      answers: MixedAnswer[];
-      finishedAt: number;
-    };
 
 export type Profile = {
   direction: string;
@@ -100,146 +33,78 @@ export type Profile = {
 
 const sessionStore = createStore<Session>("ast.session.v1");
 const historyStore = createStore<FinishedSession[]>("ast.history.v1");
-const profileStore = createStore<Profile>("ast.profile.v1");
+const profileStore = createStore<Profile>("ast.profile.v1", { versioned: false });
 
 export const useSession = sessionStore.useValue;
 export const useHistory = historyStore.useValue;
 export const useProfile = profileStore.useValue;
 
-export function isQuiz(session: Session | FinishedSession): session is QuizSession {
-  return session.kind === "quiz";
+/** A saved session that has the shape this version expects; anything else is not used. */
+export function isValidSession(value: unknown): value is Session {
+  const session = value as Session | null;
+  return (
+    !!session &&
+    typeof session === "object" &&
+    Array.isArray(session.itemIds) &&
+    Array.isArray(session.answers) &&
+    typeof session.index === "number" &&
+    typeof session.finished === "boolean" &&
+    session.itemIds.every((id) => findItem(id) !== undefined)
+  );
 }
 
-export function isRepeatRound(session: Session): session is RepeatSession {
-  return session.kind === "repeat";
-}
-
-export function itemCount(session: Session) {
-  if (isRepeatRound(session)) return session.items.length;
-  return isQuiz(session) ? session.questionIds.length : session.stepIds.length;
+export function sessionLabel(session: Pick<Session, "kind">) {
+  return { scenario: "Scenario", quiz: "Quiz", repeat: "Repeat round" }[session.kind];
 }
 
 export function saveSession(session: Session) {
   sessionStore.write(session);
 }
 
-/** The steps or questions of a session, in the order they are practised. */
-export function sessionItems(session: Session): RepeatItem[] {
-  if (isRepeatRound(session)) return session.items;
-  if (isQuiz(session)) return session.questionIds.map((id) => ({ type: "question", id }));
-  return session.stepIds.map((id) => ({ type: "step", id }));
-}
-
-function answerId(answer: Answer | QuizAnswer) {
-  return "stepId" in answer ? answer.stepId : answer.questionId;
+export function startSession(kind: SessionKind, itemIds: string[], scenarioId?: string) {
+  saveSession({
+    kind,
+    ...(scenarioId && { scenarioId }),
+    itemIds,
+    answers: [],
+    index: 0,
+    finished: false,
+  });
 }
 
 /** The saved answer to one step or question, if it has one. */
-export function answerFor(session: Session, item: RepeatItem): Answer | QuizAnswer | undefined {
-  return (session.answers as (Answer | QuizAnswer)[]).find(
-    (answer) => answerId(answer) === item.id,
-  );
+export function answerFor(session: Pick<Session, "answers">, itemId: string): Answer | undefined {
+  return session.answers.find((answer) => answer.itemId === itemId);
 }
 
-/** Saves the answer to one item, replacing an earlier one. A null answer removes it. */
-export function withAnswer<T extends Session>(
+/** Saves the chosen option for one item, replacing an earlier choice. */
+export function withAnswer<T extends Pick<Session, "answers">>(
   session: T,
-  item: RepeatItem,
-  answer: Answer | QuizAnswer | null,
+  itemId: string,
+  optionId: string,
 ): T {
-  const others = (session.answers as (Answer | QuizAnswer)[]).filter(
-    (saved) => answerId(saved) !== item.id,
-  );
-  const next = answer === null ? others : [...others, answer];
-  if (isRepeatRound(session)) {
-    return {
-      ...session,
-      answers: next.map((saved) =>
-        "stepId" in saved
-          ? { type: "step" as const, ...saved }
-          : { type: "question" as const, ...saved },
-      ),
-    };
-  }
-  return { ...session, answers: next };
+  const others = session.answers.filter((answer) => answer.itemId !== itemId);
+  return { ...session, answers: [...others, { itemId, optionId }] };
 }
 
 /** Position of the first item without an answer, or -1 when every item is answered. */
-export function firstUnanswered(session: Session): number {
-  return sessionItems(session).findIndex((item) => !answerFor(session, item));
-}
-
-export function startSession(mode: SessionMode, stepIds: string[], scenarioId?: string) {
-  saveSession({
-    scenarioId,
-    mode,
-    stepIds,
-    index: 0,
-    answers: [],
-    finished: false,
-  });
-}
-
-export function startQuiz(questionIds: string[], sections: string[], repeat = false) {
-  saveSession({
-    kind: "quiz",
-    mode: repeat ? "repeat" : "quiz",
-    sections,
-    questionIds,
-    index: 0,
-    answers: [],
-    finished: false,
-  });
-}
-
-export function startRepeatRound(items: RepeatItem[], topics: string[]) {
-  saveSession({
-    kind: "repeat",
-    topics,
-    items,
-    index: 0,
-    answers: [],
-    finished: false,
-  });
+export function firstUnanswered(session: Pick<Session, "itemIds" | "answers">): number {
+  return session.itemIds.findIndex((id) => !answerFor(session, id));
 }
 
 /** Marks the session finished and adds it to the history used by Home and Progress. */
 export function finishSession(session: Session) {
   const finishedAt = Date.now();
-  const ordered = sessionItems(session)
-    .map((item) => answerFor(session, item))
-    .filter((answer): answer is Answer | QuizAnswer => answer !== undefined);
-  const done = {
-    ...session,
+  const ordered = session.itemIds.flatMap((id) => answerFor(session, id) ?? []);
+  saveSession({ ...session, answers: ordered, finished: true, finishedAt });
+  const entry: FinishedSession = {
+    kind: session.kind,
+    ...(session.scenarioId && { scenarioId: session.scenarioId }),
+    itemIds: session.itemIds,
     answers: ordered,
-    finished: true,
     finishedAt,
-  } as Session;
-  saveSession(done);
-  historyStore.write([...(historyStore.read() ?? []), historyEntry(done, finishedAt)]);
-}
-
-function historyEntry(session: Session, finishedAt: number): FinishedSession {
-  return isRepeatRound(session)
-    ? {
-        kind: "repeat",
-        topics: session.topics,
-        answers: session.answers,
-        finishedAt,
-      }
-    : isQuiz(session)
-      ? {
-          kind: "quiz",
-          mode: session.mode,
-          answers: session.answers,
-          finishedAt,
-        }
-      : {
-          scenarioId: session.scenarioId,
-          mode: session.mode,
-          answers: session.answers,
-          finishedAt,
-        };
+  };
+  historyStore.write([...(historyStore.read() ?? []), entry]);
 }
 
 export function saveProfile(profile: Profile) {
@@ -251,64 +116,4 @@ export function resetProgress() {
   sessionStore.write(null);
   historyStore.write(null);
   clearTrainings();
-}
-
-/**
- * "My answer is still correct" (marked true) and its Undo (false), on the answer to one step or
- * question. Saved with the session, so it survives a reload.
- */
-export function setMarkedCorrect<T extends Session>(
-  session: T,
-  itemId: string,
-  marked: boolean,
-): T {
-  const mark = <A extends Answer | QuizAnswer>(answer: A): A => {
-    const next = { ...answer };
-    delete next.markedCorrect;
-    return marked ? { ...next, markedCorrect: true } : next;
-  };
-  const matches = (answer: Answer | QuizAnswer) =>
-    "stepId" in answer ? answer.stepId === itemId : answer.questionId === itemId;
-  if (isRepeatRound(session)) {
-    return {
-      ...session,
-      answers: session.answers.map((answer) => (matches(answer) ? mark(answer) : answer)),
-    };
-  }
-  if (isQuiz(session)) {
-    return {
-      ...session,
-      answers: session.answers.map((answer) => (matches(answer) ? mark(answer) : answer)),
-    };
-  }
-  return {
-    ...session,
-    answers: (session as ScenarioSession).answers.map((answer) =>
-      matches(answer) ? mark(answer) : answer,
-    ),
-  };
-}
-
-/** "My answer is still correct" on a finished session: saved with the session and its history entry. */
-export function markFinishedCorrect(session: Session, itemId: string, marked: boolean) {
-  const next = setMarkedCorrect(session, itemId, marked);
-  saveSession(next);
-  const history = historyStore.read();
-  if (!history || next.finishedAt === undefined) return;
-  historyStore.write(
-    history.map((entry) =>
-      entry.finishedAt === next.finishedAt ? historyEntry(next, next.finishedAt) : entry,
-    ),
-  );
-}
-
-/** The saved source, or for answers saved before it existed, worked out from the answer. */
-export function answerSource(answer: Answer | QuizAnswer): AnswerSource {
-  if (answer.answerSource) return answer.answerSource;
-  if ("stepId" in answer) {
-    if (answer.skipped) return "dont_know";
-    return answer.explanation.trim() ? "typed" : "choice";
-  }
-  if (answer.dontKnow) return "dont_know";
-  return answer.response.type === "text" && answer.response.text.trim() ? "typed" : "choice";
 }

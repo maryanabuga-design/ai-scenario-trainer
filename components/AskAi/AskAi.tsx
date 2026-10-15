@@ -6,26 +6,20 @@ import type { FormEvent, ReactNode } from "react";
 import { HeaderRow } from "@/components/HeaderRow/HeaderRow";
 import { Button } from "@/components/Button/Button";
 import { GuideChip } from "@/components/GuideChip/GuideChip";
-import {
-  deferredText,
-  matchQuestion,
-  notCoveredText,
-  replyToChip,
-  suggestedChips,
-} from "@/lib/chat";
-import type { ChatChip, ChatPhase, ChatReply } from "@/lib/chat";
-import type { Step } from "@/lib/scenario";
+import { matchQuestion, notCoveredText, replyToChip, suggestedChips } from "@/lib/chat";
+import type { ChatChip, ChatReply } from "@/lib/chat";
+import type { Item as Step } from "@/lib/items";
 
 export type ChatMessage =
   { role: "trainee"; text: string; chipId?: string } | { role: "ai"; reply: ChatReply };
 
 type Conversations = Record<string, ChatMessage[]>;
-type OpenChat = { step: Step; phase: ChatPhase };
+type OpenChat = { step: Step };
 
 const TYPING_MS = 700;
 
 const AskAiContext = createContext<{
-  open: (step: Step, phase: ChatPhase) => void;
+  open: (step: Step) => void;
 } | null>(null);
 
 export function useAskAi() {
@@ -35,18 +29,8 @@ export function useAskAi() {
 }
 
 function AiMessage({ reply }: { reply: ChatReply }) {
-  const lead =
-    reply.kind === "answer"
-      ? reply.text
-      : reply.kind === "notCovered"
-        ? notCoveredText
-        : deferredText;
-  const sourcesLabel =
-    reply.kind === "notCovered"
-      ? "Closest sections in the guide:"
-      : reply.kind === "deferred"
-        ? "For now, these guide sections belong to this step:"
-        : null;
+  const lead = reply.kind === "answer" ? reply.text : notCoveredText;
+  const sourcesLabel = reply.kind === "notCovered" ? "Closest sections in the guide:" : null;
 
   return (
     <div className="flex flex-col gap-2">
@@ -119,7 +103,7 @@ function ChatPanel({
   const askedIds = messages.flatMap((message) =>
     message.role === "trainee" && message.chipId ? [message.chipId] : [],
   );
-  const chips = suggestedChips(chat.step, chat.phase, askedIds);
+  const chips = suggestedChips(chat.step, askedIds);
 
   useEffect(() => {
     const list = listRef.current;
@@ -167,9 +151,7 @@ function ChatPanel({
         {messages.length === 0 && (
           <div className="flex flex-col gap-3">
             <p className="type-small text-text-secondary">
-              {chat.phase === "decide"
-                ? "Ask about the situation or the guide. Until you check your answer, I explain the material but do not say which action is right."
-                : "Ask about this step, including why the other actions are worse."}
+              Ask about this step, including why the other actions are worse.
             </p>
             <p className="type-small">Suggested questions</p>
             <div className="flex flex-col items-start gap-2">
@@ -285,16 +267,16 @@ export function AskAiProvider({
     }));
   }
 
-  function open(step: Step, phase: ChatPhase) {
-    setChat({ step, phase });
+  function open(step: Step) {
+    setChat({ step });
   }
 
   function ask(question: { text: string; chipId?: string }) {
     if (!chat || typing) return;
-    const { step, phase } = chat;
+    const { step } = chat;
     const reply = question.chipId
-      ? replyToChip(step, question.chipId, phase)
-      : matchQuestion(step, question.text, phase);
+      ? replyToChip(step, question.chipId)
+      : matchQuestion(step, question.text);
     add(step.id, { role: "trainee", text: question.text, chipId: question.chipId });
     setTyping(true);
     timer.current = setTimeout(() => {
@@ -348,15 +330,15 @@ export function AskAiProvider({
 
 /**
  * The AI text button: the Text button with the sparkle before its label. Opens the Ask AI sheet for a step that
- * has prepared answers (on the decision step and in the Error analysis cards).
+ * has prepared answers (in the Answer review).
  */
-export function AskAiButton({ step, phase }: { step: Step; phase: ChatPhase }) {
+export function AskAiButton({ step }: { step: Step }) {
   const { open } = useAskAi();
   // Only steps with prepared answers offer the chat (the flood scenario has none).
-  if (step.chat.length === 0 && !step.suggestedQuestion) return null;
+  if ((step.chat ?? []).length === 0 && !step.suggestedQuestion) return null;
   return (
     <div className="-ml-3 self-start">
-      <Button variant="tertiary" icon={Sparkles} onClick={() => open(step, phase)}>
+      <Button variant="tertiary" icon={Sparkles} onClick={() => open(step)}>
         Ask AI about this step
       </Button>
     </div>

@@ -1,59 +1,54 @@
 import { describe, expect, it } from "vitest";
-import { getQuestion, scoreQuestion } from "@/lib/quiz";
-import { conclusion } from "@/lib/results";
-import { getStep } from "@/lib/scenario";
-import { analysisOrder, groupByErrorType, scoreStep } from "@/lib/scoring";
+import { PASS_MARK } from "@/lib/config";
+import { conclusion, isPassed, resultPercent } from "@/lib/results";
+import { getItem } from "@/lib/items";
+import { scoreItem } from "@/lib/scoring";
+import type { ScoredItem } from "@/lib/scoring";
 
-// s1 b sure: secure; s2 c unsure: guess; s3 b sure: misconception; s5 a unsure: knowledge gap.
-const secure = scoreStep(getStep("s1"), "b", 3);
-const guess = scoreStep(getStep("s2"), "c", 2);
-const misconception = scoreStep(getStep("s3"), "b", 3);
-const gap = scoreStep(getStep("s5"), "a", 1);
+const right = (id: string) => scoreItem(getItem(id), getItem(id).correctOptionId);
+const wrong = (id: string) =>
+  scoreItem(getItem(id), getItem(id).options.find((o) => o.id !== getItem(id).correctOptionId)!.id);
+
+/** `rightCount` right answers out of `total`, using the quiz questions. */
+function session(rightCount: number, total: number): ScoredItem[] {
+  const ids = ["q-s1-1", "q-s1-2", "q-s2-1", "q-s2-2", "q-s3-1"].slice(0, total);
+  return ids.map((id, index) => (index < rightCount ? right(id) : wrong(id)));
+}
 
 describe("conclusion sentence", () => {
-  it("names misconceptions first", () => {
-    expect(conclusion([secure, guess, gap, misconception])).toBe(
-      "You were sure, but 1 answer did not match the guide.",
-    );
-    expect(conclusion([misconception, scoreStep(getStep("s2"), "b", 3)])).toBe(
-      "You were sure, but 2 answers did not match the guide.",
-    );
+  it("says every answer was right", () => {
+    expect(conclusion(session(5, 5))).toBe("Every answer was right.");
   });
 
-  it("then knowledge gaps", () => {
-    expect(conclusion([secure, guess, gap])).toBe("1 answer needs another look in the guide.");
-    expect(conclusion([gap, scoreStep(getStep("s2"), "b", 1)])).toBe(
-      "2 answers need another look in the guide.",
-    );
-  });
-
-  it("then guesses", () => {
-    expect(conclusion([secure, guess])).toBe("1 right answer was a guess. Repeat it to be sure.");
-    expect(conclusion([guess, scoreStep(getStep("s1"), "b", 1)])).toBe(
-      "2 right answers were guesses. Repeat them to be sure.",
-    );
-  });
-
-  it("and otherwise says every answer was right and confident", () => {
-    expect(conclusion([secure])).toBe("Every answer was right and confident.");
+  it("counts the answers that need another look", () => {
+    expect(conclusion(session(4, 5))).toBe("1 answer needs another look in the guide.");
+    expect(conclusion(session(2, 5))).toBe("3 answers need another look in the guide.");
   });
 });
 
-describe("the Error analysis screen", () => {
-  const partly = scoreQuestion(
-    getQuestion("q-s1-3"),
-    { type: "multiple", optionIds: ["a", "b", "c"] },
-    2,
-  );
-  const items = [secure, guess, misconception, gap, partly];
+describe("the pass mark", () => {
+  it("is one constant, 80", () => {
+    expect(PASS_MARK).toBe(80);
+  });
 
-  it("groups the analysis from the most serious type, hiding empty groups", () => {
-    expect(analysisOrder).toEqual(["misconception", "knowledge_gap", "guess", "secure"]);
-    expect(groupByErrorType(items, analysisOrder).map((group) => group.type)).toEqual([
-      "misconception",
-      "knowledge_gap",
-      "guess",
-      "secure",
-    ]);
+  it("is a share of correct answers, rounded down", () => {
+    expect(resultPercent(session(4, 5))).toBe(80);
+    expect(resultPercent(session(3, 5))).toBe(60);
+    expect(resultPercent([])).toBe(0);
+    const third = [right("q-s1-1"), wrong("q-s1-2"), wrong("q-s2-1")];
+    expect(resultPercent(third)).toBe(33);
+  });
+
+  it("passes at 80% and not at 79%", () => {
+    expect(isPassed(session(4, 5))).toBe(true);
+    expect(isPassed(session(3, 5))).toBe(false);
+    // 79 right answers out of 100 is 79%, 80 out of 100 is 80%.
+    const hundred = (rightCount: number) =>
+      Array.from({ length: 100 }, (_, index) =>
+        index < rightCount ? right("q-s1-1") : wrong("q-s1-1"),
+      );
+    expect(resultPercent(hundred(79))).toBe(79);
+    expect(isPassed(hundred(79))).toBe(false);
+    expect(isPassed(hundred(80))).toBe(true);
   });
 });

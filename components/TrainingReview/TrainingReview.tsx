@@ -10,18 +10,9 @@ import { GuideChip } from "@/components/GuideChip/GuideChip";
 import { Tag } from "@/components/Tag/Tag";
 import type { Material } from "@/lib/materials";
 import { questionsFor } from "@/lib/quiz";
-import { questionCountLabel } from "@/lib/quiz-setup";
-import type { Question } from "@/lib/quiz";
-import { defaultStory, getScenario } from "@/lib/scenario";
+import { questionCountLabel } from "@/lib/setup";
+import { getScenario } from "@/lib/scenario";
 import type { Training } from "@/lib/training";
-
-const typeLabels: Record<Question["type"], string> = {
-  single: "Single choice",
-  multiple: "Multiple choice",
-  ordering: "Ordering",
-  text: "Short text",
-  truefalse: "True or false",
-};
 
 function Expandable({
   title,
@@ -72,12 +63,8 @@ export function TrainingReview({
   expanded?: boolean;
 }) {
   const scenarioDef = getScenario(material.scenarioId);
-  const steps = defaultStory(scenarioDef);
-  const others = (["short", "extended"] as const)
-    .filter((length) => length !== scenarioDef.defaultLength && scenarioDef.lengths[length])
-    .map((length) => `${length} session of ${scenarioDef.lengths[length]?.stepIds.length}`);
+  const steps = scenarioDef.steps;
   const questions = questionsFor(training.sections);
-  const quizSize = Math.min(training.quizSize ?? questions.length, questions.length);
 
   return (
     <div className="flex flex-col gap-6">
@@ -96,14 +83,9 @@ export function TrainingReview({
             <div className="flex flex-col items-start gap-2">
               <Tag tone="yellow">Scenario</Tag>
               <h2 className="type-item-title">
-                Scenario: <span className="tabular-nums">{steps.length}</span> decisions
+                Scenario: <span className="tabular-nums">{steps.length}</span> situations
               </h2>
-              <p className="type-small text-text-secondary">
-                {scenarioDef.title}.{" "}
-                {others.length > 0
-                  ? `Also as a ${others.join(" or an ")}.`
-                  : "This material has one length."}
-              </p>
+              <p className="type-small text-text-secondary">{scenarioDef.title}.</p>
             </div>
           }
         >
@@ -116,7 +98,7 @@ export function TrainingReview({
                 </p>
                 <p className="type-small text-text-secondary">{step.question}</p>
                 <div className="flex flex-wrap gap-2">
-                  {step.sources.map((sectionId) => (
+                  {step.guideRef.map((sectionId) => (
                     <GuideChip key={sectionId} sectionId={sectionId} />
                   ))}
                 </div>
@@ -135,12 +117,10 @@ export function TrainingReview({
             <div className="flex flex-col items-start gap-2">
               <Tag tone="blue">Quiz</Tag>
               <h2 className="type-item-title">
-                Quiz: <span className="tabular-nums">{questionCountLabel(quizSize)}</span>
+                Quiz: <span className="tabular-nums">{questionCountLabel(questions.length)}</span>
               </h2>
               <p className="type-small text-text-secondary">
-                Drawn from{" "}
-                <span className="tabular-nums">{questionCountLabel(questions.length)}</span> in{" "}
-                {training.sections.join(", ")}. Session setup offers up to {quizSize}.
+                From {training.sections.join(", ")}. Session setup offers 10, 20 or 30 of them.
               </p>
             </div>
           }
@@ -148,10 +128,10 @@ export function TrainingReview({
           <ol className="flex flex-col divide-y divide-border">
             {questions.map((question, index) => (
               <li key={question.id} className="flex flex-col gap-2 py-3">
-                <span className="type-label text-text-secondary">
-                  {index + 1}. {typeLabels[question.type]}
-                </span>
-                <p>{question.question}</p>
+                <p>
+                  <span className="text-text-secondary tabular-nums">{index + 1}. </span>
+                  {question.question}
+                </p>
                 <div>
                   <GuideChip sectionId={question.section} />
                 </div>

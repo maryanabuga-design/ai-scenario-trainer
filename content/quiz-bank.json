@@ -3,7 +3,6 @@
     {
       "id": "q-s1-1",
       "section": "S1",
-      "type": "single",
       "question": "An alarm sounds and nobody knows whether it is a drill. How should you treat it?",
       "options": [
         {
@@ -19,87 +18,115 @@
           "text": "As real only if you can smell smoke"
         }
       ],
-      "answer": "b",
+      "correctOptionId": "b",
       "why": "The guide says to treat every alarm as real until it is officially confirmed otherwise.",
-      "misconception": "assumes_drill"
+      "guideRef": [
+        "S1"
+      ]
     },
     {
       "id": "q-s1-2",
       "section": "S1",
-      "type": "truefalse",
       "question": "During a fire, the elevator is a safe way to move people who walk slowly.",
-      "answer": false,
+      "options": [
+        {
+          "id": "a",
+          "text": "True"
+        },
+        {
+          "id": "b",
+          "text": "False"
+        }
+      ],
+      "correctOptionId": "b",
       "why": "Elevators can stop or fill with smoke. The guide says not to use them during a fire; use the stairs.",
-      "misconception": "elevator_use"
+      "guideRef": [
+        "S1"
+      ]
     },
     {
       "id": "q-s1-3",
       "section": "S1",
-      "type": "multiple",
-      "question": "Which of these belong to the guide's advice when an alarm sounds? Select all that apply.",
+      "question": "Which of these is part of the guide's advice when an alarm sounds?",
       "options": [
         {
           "id": "a",
-          "text": "Stop non-essential tasks"
-        },
-        {
-          "id": "b",
           "text": "Collect documents from your desk first"
         },
         {
-          "id": "c",
+          "id": "b",
           "text": "Use the stairs, not the elevator"
         },
         {
+          "id": "c",
+          "text": "Finish the task you are working on"
+        },
+        {
           "id": "d",
-          "text": "Take only what you can carry in a few seconds"
+          "text": "Wait for a colleague to confirm the alarm"
         }
       ],
-      "answer": [
-        "a",
-        "c",
-        "d"
-      ],
+      "correctOptionId": "b",
       "why": "The guide asks you to stop non-essential tasks, use the stairs and take only what you can carry in seconds. Collecting documents delays the exit.",
-      "misconception": "delays_exit"
+      "guideRef": [
+        "S1"
+      ]
     },
     {
       "id": "q-s1-4",
       "section": "S1",
-      "type": "text",
       "question": "Someone needs help to leave, but helping them is not safe. What should you report to responders?",
-      "accepted": [
-        "their location",
-        "where they are",
-        "location",
-        "last known location",
-        "where the person is"
+      "options": [
+        {
+          "id": "a",
+          "text": "Who started the alarm"
+        },
+        {
+          "id": "b",
+          "text": "Where the person is (their location)"
+        },
+        {
+          "id": "c",
+          "text": "How many people have already left"
+        },
+        {
+          "id": "d",
+          "text": "How the fire began"
+        }
       ],
-      "answerText": "Where the person is (their location)",
-      "placeholder": "A few words",
+      "correctOptionId": "b",
       "why": "The guide says to help only if it is safe; otherwise report the person's location so responders can reach them.",
-      "misconception": "abandons_without_report"
+      "guideRef": [
+        "S1"
+      ]
     },
     {
       "id": "q-s2-1",
       "section": "S2",
-      "type": "text",
       "question": "What part of your hand do you use to check whether a closed door is hot?",
-      "accepted": [
-        "back of your hand",
-        "back of the hand",
-        "back of hand",
-        "the back"
+      "options": [
+        {
+          "id": "a",
+          "text": "Your palm"
+        },
+        {
+          "id": "b",
+          "text": "The back of your hand"
+        },
+        {
+          "id": "c",
+          "text": "Your fingertips"
+        }
       ],
-      "answerText": "The back of your hand",
-      "placeholder": "A few words",
+      "correctOptionId": "b",
       "why": "The guide says to feel a closed door with the back of your hand before opening it.",
-      "misconception": "checks_with_palm"
+      "guideRef": [
+        "S2"
+      ]
     },
     {
       "id": "q-s2-2",
       "section": "S2",
-      "type": "single",
       "question": "A door on your route feels hot. What does the guide tell you to do?",
       "options": [
         {
@@ -115,46 +142,43 @@
           "text": "Open it fully to let the heat out"
         }
       ],
-      "answer": "b",
+      "correctOptionId": "b",
       "why": "A hot door suggests fire behind it. Do not open it; use another route.",
-      "misconception": "opens_hot_door"
+      "guideRef": [
+        "S2"
+      ]
     },
     {
       "id": "q-s2-3",
       "section": "S2",
-      "type": "ordering",
-      "question": "Put the steps for going through a closed door in the guide's order.",
-      "items": [
-        {
-          "id": "c",
-          "text": "Open it slowly, ready to close it at once"
-        },
+      "question": "What does the guide say to do first when you reach a closed door?",
+      "options": [
         {
           "id": "a",
-          "text": "Feel the door with the back of your hand"
-        },
-        {
-          "id": "d",
-          "text": "Close it behind you once you are through"
+          "text": "Open it slowly"
         },
         {
           "id": "b",
-          "text": "If it is cool, go on to open it"
+          "text": "Open it quickly and keep moving"
+        },
+        {
+          "id": "c",
+          "text": "Feel it with the back of your hand"
+        },
+        {
+          "id": "d",
+          "text": "Close it behind you"
         }
       ],
-      "answer": [
-        "a",
-        "b",
-        "c",
-        "d"
-      ],
+      "correctOptionId": "c",
       "why": "Check the door first, open a cool door slowly so you can shut it again, and close doors behind you to slow fire and smoke.",
-      "misconception": "skips_door_check"
+      "guideRef": [
+        "S2"
+      ]
     },
     {
       "id": "q-s3-1",
       "section": "S3",
-      "type": "single",
       "question": "Why does the guide tell you to stay low in smoke?",
       "options": [
         {
@@ -170,70 +194,91 @@
           "text": "Smoke is heavier than air"
         }
       ],
-      "answer": "a",
+      "correctOptionId": "a",
       "why": "Smoke and hot gases rise, so the cleaner air is near the floor.",
-      "misconception": "stays_upright"
+      "guideRef": [
+        "S3"
+      ]
     },
     {
       "id": "q-s3-2",
       "section": "S3",
-      "type": "truefalse",
       "question": "Breaking a window helps clear smoke from a corridor.",
-      "answer": false,
+      "options": [
+        {
+          "id": "a",
+          "text": "True"
+        },
+        {
+          "id": "b",
+          "text": "False"
+        }
+      ],
+      "correctOptionId": "b",
       "why": "Extra air can make a fire grow, and it will not clear your route. The guide says not to break windows to clear smoke.",
-      "misconception": "breaks_window"
+      "guideRef": [
+        "S3"
+      ]
     },
     {
       "id": "q-s3-3",
       "section": "S3",
-      "type": "multiple",
-      "question": "Your route is blocked by smoke. Which actions does the guide list? Select all that apply.",
+      "question": "Your route is blocked by smoke. What does the guide list?",
       "options": [
         {
           "id": "a",
-          "text": "Go to a room with a window"
-        },
-        {
-          "id": "b",
-          "text": "Close the door and seal gaps if you can"
-        },
-        {
-          "id": "c",
           "text": "Run through the smoke quickly"
         },
         {
+          "id": "b",
+          "text": "Go to a room with a window, close the door and seal gaps if you can"
+        },
+        {
+          "id": "c",
+          "text": "Wait in the corridor for the smoke to clear"
+        },
+        {
           "id": "d",
-          "text": "Signal your position and call the emergency number"
+          "text": "Open every door to let the smoke out"
         }
       ],
-      "answer": [
-        "a",
-        "b",
-        "d"
-      ],
+      "correctOptionId": "b",
       "why": "If your route is blocked, go to a room with a window, close the door, seal gaps, signal and call. Running through smoke exposes you to the worst air.",
-      "misconception": "runs_through_smoke"
+      "guideRef": [
+        "S3"
+      ]
     },
     {
       "id": "q-s3-4",
       "section": "S3",
-      "type": "text",
       "question": "While moving through smoke, what does the guide suggest you keep on the wall?",
-      "accepted": [
-        "one hand",
-        "a hand",
-        "hand",
-        "your hand"
+      "options": [
+        {
+          "id": "a",
+          "text": "Your back"
+        },
+        {
+          "id": "b",
+          "text": "One hand"
+        },
+        {
+          "id": "c",
+          "text": "Your shoulder"
+        },
+        {
+          "id": "d",
+          "text": "Your bag"
+        }
       ],
-      "answerText": "One hand",
-      "placeholder": "A few words",
+      "correctOptionId": "b",
       "why": "Keeping one hand on the wall helps you hold your direction when you cannot see well.",
-      "misconception": "loses_direction"
+      "guideRef": [
+        "S3"
+      ]
     },
     {
       "id": "q-s4-1",
       "section": "S4",
-      "type": "single",
       "question": "Where should the assembly point be?",
       "options": [
         {
@@ -249,40 +294,63 @@
           "text": "In the car park next to the doors"
         }
       ],
-      "answer": "b",
+      "correctOptionId": "b",
       "why": "Away from the building and its entrances, so responders have access.",
-      "misconception": "blocks_access"
+      "guideRef": [
+        "S4"
+      ]
     },
     {
       "id": "q-s4-2",
       "section": "S4",
-      "type": "truefalse",
       "question": "Once you are out, you may go back in to fetch a colleague if the smoke looks light.",
-      "answer": false,
+      "options": [
+        {
+          "id": "a",
+          "text": "True"
+        },
+        {
+          "id": "b",
+          "text": "False"
+        }
+      ],
+      "correctOptionId": "b",
       "why": "The guide says not to re-enter the building until responders declare it safe.",
-      "misconception": "re_enters_building"
+      "guideRef": [
+        "S4"
+      ]
     },
     {
       "id": "q-s4-3",
       "section": "S4",
-      "type": "text",
-      "question": "At the assembly point, what two things do you report about someone who is missing?",
-      "accepted": [
-        "name and last known location",
-        "name and location",
-        "their name and where they were last seen",
-        "name and where last seen",
-        "name and last location"
+      "question": "At the assembly point, what do you report about someone who is missing?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Only that they are missing"
+        },
+        {
+          "id": "b",
+          "text": "Their name and last known location"
+        },
+        {
+          "id": "c",
+          "text": "Their phone number and address"
+        },
+        {
+          "id": "d",
+          "text": "Who they were working with"
+        }
       ],
-      "answerText": "Their name and last known location",
-      "placeholder": "Two things",
+      "correctOptionId": "b",
       "why": "Report anyone missing and their last known location to the person responsible for the headcount.",
-      "misconception": "incomplete_report"
+      "guideRef": [
+        "S4"
+      ]
     },
     {
       "id": "q-s5-1",
       "section": "S5",
-      "type": "single",
       "question": "Several people stand around you. What is the guide's way to make sure the emergency call happens?",
       "options": [
         {
@@ -298,86 +366,91 @@
           "text": "Wait to see whether anyone has called"
         }
       ],
-      "answer": "b",
+      "correctOptionId": "b",
       "why": "A general request makes people assume someone else has called. Assign one specific person.",
-      "misconception": "diffuse_responsibility"
+      "guideRef": [
+        "S5"
+      ]
     },
     {
       "id": "q-s5-2",
       "section": "S5",
-      "type": "multiple",
-      "question": "What should the caller give on an emergency call? Select all that apply.",
+      "question": "What should the caller give on an emergency call?",
       "options": [
         {
           "id": "a",
-          "text": "The location"
-        },
-        {
-          "id": "b",
-          "text": "What happened"
-        },
-        {
-          "id": "c",
-          "text": "The number of injured people"
-        },
-        {
-          "id": "d",
           "text": "Their date of birth"
         },
         {
-          "id": "e",
-          "text": "Any hazards"
+          "id": "b",
+          "text": "Their opinion of the cause"
+        },
+        {
+          "id": "c",
+          "text": "The location, what happened, the number of injured people and any hazards"
+        },
+        {
+          "id": "d",
+          "text": "Only their own name"
         }
       ],
-      "answer": [
-        "a",
-        "b",
-        "c",
-        "e"
-      ],
+      "correctOptionId": "c",
       "why": "Give the location, what happened, the number of injured people and any hazards.",
-      "misconception": "incomplete_report"
+      "guideRef": [
+        "S5"
+      ]
     },
     {
       "id": "q-s5-3",
       "section": "S5",
-      "type": "truefalse",
       "question": "The caller should hang up as soon as they have given the address.",
-      "answer": false,
+      "options": [
+        {
+          "id": "a",
+          "text": "True"
+        },
+        {
+          "id": "b",
+          "text": "False"
+        }
+      ],
+      "correctOptionId": "b",
       "why": "Stay on the line until you are told to hang up.",
-      "misconception": "ends_call_early"
+      "guideRef": [
+        "S5"
+      ]
     },
     {
       "id": "q-s6-1",
       "section": "S6",
-      "type": "ordering",
-      "question": "Put the guide's first checks of an injured person in order.",
-      "items": [
+      "question": "What is the first of the guide's checks of an injured person?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Check breathing"
+        },
         {
           "id": "b",
           "text": "Check responsiveness"
         },
         {
           "id": "c",
-          "text": "Check breathing"
+          "text": "Check that the scene is safe"
         },
         {
-          "id": "a",
-          "text": "Check that the scene is safe"
+          "id": "d",
+          "text": "Move the person to a better place"
         }
       ],
-      "answer": [
-        "a",
-        "b",
-        "c"
-      ],
+      "correctOptionId": "c",
       "why": "First make sure the scene is safe so you do not become a second casualty, then check responsiveness, then breathing.",
-      "misconception": "skips_scene_check"
+      "guideRef": [
+        "S6"
+      ]
     },
     {
       "id": "q-s6-2",
       "section": "S6",
-      "type": "single",
       "question": "For how long do you look, listen and feel for breathing?",
       "options": [
         {
@@ -393,23 +466,24 @@
           "text": "Until help arrives"
         }
       ],
-      "answer": "a",
+      "correctOptionId": "a",
       "why": "The guide says to check breathing for up to 10 seconds.",
-      "misconception": "delays_assessment"
+      "guideRef": [
+        "S6"
+      ]
     },
     {
       "id": "q-s6-3",
       "section": "S6",
-      "type": "multiple",
-      "question": "Which problems are life-threatening and come first? Select all that apply.",
+      "question": "Which problem is life-threatening and comes first?",
       "options": [
         {
           "id": "a",
-          "text": "Not breathing"
+          "text": "A small burn"
         },
         {
           "id": "b",
-          "text": "A small burn"
+          "text": "A sprained ankle"
         },
         {
           "id": "c",
@@ -417,20 +491,18 @@
         },
         {
           "id": "d",
-          "text": "A sprained ankle"
+          "text": "A bruise"
         }
       ],
-      "answer": [
-        "a",
-        "c"
-      ],
+      "correctOptionId": "c",
       "why": "Deal with life-threatening problems first: not breathing and severe bleeding.",
-      "misconception": "wrong_priority"
+      "guideRef": [
+        "S6"
+      ]
     },
     {
       "id": "q-s7-1",
       "section": "S7",
-      "type": "single",
       "question": "What is the first step to control severe bleeding?",
       "options": [
         {
@@ -446,73 +518,91 @@
           "text": "Wash the wound under running water"
         }
       ],
-      "answer": "b",
+      "correctOptionId": "b",
       "why": "Firm, direct pressure with a clean cloth or dressing is the first step.",
-      "misconception": "wrong_first_aid"
+      "guideRef": [
+        "S7"
+      ]
     },
     {
       "id": "q-s7-2",
       "section": "S7",
-      "type": "truefalse",
       "question": "If the cloth soaks through, you should lift it off and replace it with a fresh one.",
-      "answer": false,
+      "options": [
+        {
+          "id": "a",
+          "text": "True"
+        },
+        {
+          "id": "b",
+          "text": "False"
+        }
+      ],
+      "correctOptionId": "b",
       "why": "Lifting the cloth releases pressure and can restart bleeding. Add more layers on top instead.",
-      "misconception": "releases_pressure"
+      "guideRef": [
+        "S7"
+      ]
     },
     {
       "id": "q-s7-3",
       "section": "S7",
-      "type": "text",
       "question": "The cloth on a bleeding wound has soaked through. What do you do?",
-      "accepted": [
-        "add more layers",
-        "add layers",
-        "more layers on top",
-        "put more cloth on top",
-        "add another layer",
-        "layers on top"
+      "options": [
+        {
+          "id": "a",
+          "text": "Remove it and press with a new cloth"
+        },
+        {
+          "id": "b",
+          "text": "Add more layers on top and keep the pressure on"
+        },
+        {
+          "id": "c",
+          "text": "Lift the cloth to check the wound"
+        },
+        {
+          "id": "d",
+          "text": "Stop pressing and wait for help"
+        }
       ],
-      "answerText": "Add more layers on top",
-      "placeholder": "A few words",
+      "correctOptionId": "b",
       "why": "Do not remove the soaked cloth; add more layers on top and keep the pressure on.",
-      "misconception": "releases_pressure"
+      "guideRef": [
+        "S7"
+      ]
     },
     {
       "id": "q-s7-4",
       "section": "S7",
-      "type": "ordering",
-      "question": "Put these bleeding care steps in a sensible order.",
-      "items": [
+      "question": "What is the first step of bleeding care in the guide?",
+      "options": [
         {
-          "id": "c",
+          "id": "a",
           "text": "Keep the person lying down and warm"
         },
         {
-          "id": "a",
+          "id": "b",
           "text": "Press firmly on the wound with a clean cloth"
         },
         {
-          "id": "d",
+          "id": "c",
           "text": "Monitor them until help arrives"
         },
         {
-          "id": "b",
-          "text": "Add layers if the cloth soaks through"
+          "id": "d",
+          "text": "Add layers before pressing"
         }
       ],
-      "answer": [
-        "a",
-        "b",
-        "c",
-        "d"
-      ],
+      "correctOptionId": "b",
       "why": "Pressure first, add layers rather than lifting, then keep the person lying down and warm and monitor them until help arrives.",
-      "misconception": "wrong_priority"
+      "guideRef": [
+        "S7"
+      ]
     },
     {
       "id": "q-s8-1",
       "section": "S8",
-      "type": "single",
       "question": "How long should a burn be cooled under cool running water?",
       "options": [
         {
@@ -528,15 +618,16 @@
           "text": "Until the skin feels numb"
         }
       ],
-      "answer": "b",
+      "correctOptionId": "b",
       "why": "Cool the burn under cool running water for 10 to 20 minutes.",
-      "misconception": "short_cooling"
+      "guideRef": [
+        "S8"
+      ]
     },
     {
       "id": "q-s8-2",
       "section": "S8",
-      "type": "multiple",
-      "question": "Which of these should you not put on a burn? Select all that apply.",
+      "question": "Which of these is the right treatment for a burn?",
       "options": [
         {
           "id": "a",
@@ -555,27 +646,35 @@
           "text": "Toothpaste"
         }
       ],
-      "answer": [
-        "a",
-        "b",
-        "d"
-      ],
+      "correctOptionId": "c",
       "why": "Do not use ice, butter, oils or toothpaste. Cool running water is the right treatment.",
-      "misconception": "home_remedy"
+      "guideRef": [
+        "S8"
+      ]
     },
     {
       "id": "q-s8-3",
       "section": "S8",
-      "type": "truefalse",
       "question": "A burn on the hand is a reason to seek medical help.",
-      "answer": true,
+      "options": [
+        {
+          "id": "a",
+          "text": "True"
+        },
+        {
+          "id": "b",
+          "text": "False"
+        }
+      ],
+      "correctOptionId": "a",
       "why": "The guide lists burns on the face, hands or genitals, large or deep burns, or any doubt, as reasons to seek medical help.",
-      "misconception": "underestimates_burn"
+      "guideRef": [
+        "S8"
+      ]
     },
     {
       "id": "q-s9-1",
       "section": "S9",
-      "type": "single",
       "question": "A person does not respond but is breathing normally. What does the guide say?",
       "options": [
         {
@@ -591,29 +690,43 @@
           "text": "Sit them up and give them water"
         }
       ],
-      "answer": "b",
+      "correctOptionId": "b",
       "why": "If the person is breathing normally, place them in the recovery position, keep the airway open and monitor breathing.",
-      "misconception": "wrong_first_aid"
+      "guideRef": [
+        "S9"
+      ]
     },
     {
       "id": "q-s9-2",
       "section": "S9",
-      "type": "text",
       "question": "What device can you use, if one is available, when a person is not breathing normally?",
-      "accepted": [
-        "aed",
-        "defibrillator",
-        "automated external defibrillator"
+      "options": [
+        {
+          "id": "a",
+          "text": "A thermometer"
+        },
+        {
+          "id": "b",
+          "text": "An AED (defibrillator)"
+        },
+        {
+          "id": "c",
+          "text": "A blood pressure monitor"
+        },
+        {
+          "id": "d",
+          "text": "A fire extinguisher"
+        }
       ],
-      "answerText": "An AED (defibrillator)",
-      "placeholder": "A few words",
+      "correctOptionId": "b",
       "why": "Use an AED if one is available and follow its prompts.",
-      "misconception": "misses_aed"
+      "guideRef": [
+        "S9"
+      ]
     },
     {
       "id": "q-s9-3",
       "section": "S9",
-      "type": "single",
       "question": "About how fast are chest compressions given?",
       "options": [
         {
@@ -629,81 +742,87 @@
           "text": "About 100 to 120 per minute"
         }
       ],
-      "answer": "c",
+      "correctOptionId": "c",
       "why": "The guide says hard and fast, about 100 to 120 per minute, in the centre of the chest.",
-      "misconception": "slow_compressions"
+      "guideRef": [
+        "S9"
+      ]
     },
     {
       "id": "q-s10-1",
       "section": "S10",
-      "type": "ordering",
-      "question": "Put the parts of a handover to responders in the guide's order.",
-      "items": [
+      "question": "Which part of a handover to responders comes first?",
+      "options": [
         {
-          "id": "b",
+          "id": "a",
           "text": "What you found"
         },
         {
-          "id": "d",
-          "text": "Any changes since"
-        },
-        {
-          "id": "a",
+          "id": "b",
           "text": "What happened"
         },
         {
           "id": "c",
           "text": "What you did and when"
+        },
+        {
+          "id": "d",
+          "text": "Any changes since"
         }
       ],
-      "answer": [
-        "a",
-        "b",
-        "c",
-        "d"
-      ],
+      "correctOptionId": "b",
       "why": "A short, ordered handover: what happened, what you found, what you did and when, and any changes since.",
-      "misconception": "disordered_handover"
+      "guideRef": [
+        "S10"
+      ]
     },
     {
       "id": "q-s10-2",
       "section": "S10",
-      "type": "truefalse",
       "question": "A good handover includes the name of any missing person and where they were last seen.",
-      "answer": true,
+      "options": [
+        {
+          "id": "a",
+          "text": "True"
+        },
+        {
+          "id": "b",
+          "text": "False"
+        }
+      ],
+      "correctOptionId": "a",
       "why": "The guide says to name any missing person and the last place they were seen.",
-      "misconception": "incomplete_report"
+      "guideRef": [
+        "S10"
+      ]
     },
     {
       "id": "q-s10-3",
       "section": "S10",
-      "type": "multiple",
-      "question": "Which details belong in a handover? Select all that apply.",
+      "question": "Which detail belongs in a handover?",
       "options": [
         {
           "id": "a",
-          "text": "What you did and when"
-        },
-        {
-          "id": "b",
           "text": "Your opinion of how the alarm system was installed"
         },
         {
+          "id": "b",
+          "text": "What you did and when"
+        },
+        {
           "id": "c",
-          "text": "Any changes since you started helping"
+          "text": "Your view of who caused the incident"
         },
         {
           "id": "d",
-          "text": "What you found"
+          "text": "The names of everyone in the building"
         }
       ],
-      "answer": [
-        "a",
-        "c",
-        "d"
-      ],
+      "correctOptionId": "b",
       "why": "A handover covers what happened, what you found, what you did and when, and any changes since.",
-      "misconception": "incomplete_report"
+      "guideRef": [
+        "S10"
+      ]
     }
   ]
 }

@@ -22,7 +22,7 @@ describe("first visit", () => {
   it("has three steps and a final screen", () => {
     expect(onboardingSteps.map((step) => step.title)).toEqual([
       "Practise a decision",
-      "Explain it, then check it",
+      "Answer, then check it",
       "See what to repeat",
     ]);
     expect(FINAL_STEP).toBe(3);

@@ -141,8 +141,8 @@ describe("a secondary always comes with a primary above it", () => {
       )
       .sort();
     expect(withSecondary).toEqual([
-      // The answer sheet's "still correct" button, rendered below Continue (see AnswerSheet tests).
-      "components/MarkCorrect/MarkCorrect.tsx",
+      // Results: Review answers, below the primary Repeat weak topics.
+      "components/ResultsView/ResultsView.tsx",
       // Review: Start training above Back to material.
       "components/TrainingReview/TrainingReview.tsx",
       // The page-header "Upload a file" on Materials: the one documented exception.

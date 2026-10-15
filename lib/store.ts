@@ -2,11 +2,15 @@ import { useMemo, useSyncExternalStore } from "react";
 
 const SERVER = "server";
 
+/** The version of everything saved in this browser. A saved value of another version is ignored. */
+export const SCHEMA_VERSION = 2;
+
 /**
- * A value saved in localStorage under one key, readable with a hook.
+ * A value saved in localStorage under one key, readable with a hook. It is saved with the schema
+ * version (DESIGN.md: Storage) and read as nothing when the version differs.
  * Keeps an in-memory copy so the app still works for this visit when storage is blocked.
  */
-export function createStore<T>(key: string) {
+export function createStore<T>(key: string, { versioned = true }: { versioned?: boolean } = {}) {
   const listeners = new Set<() => void>();
   let memory: string | null | undefined;
 
@@ -42,7 +46,14 @@ export function createStore<T>(key: string) {
   function parse(raw: string | null): T | null {
     if (!raw) return null;
     try {
-      return JSON.parse(raw) as T;
+      const saved = JSON.parse(raw) as unknown;
+      if (!versioned) return saved as T;
+      // Values saved before versioning, or by another version, are not read.
+      if (saved && typeof saved === "object" && "schema" in saved && "value" in saved) {
+        const { schema, value } = saved as { schema: unknown; value: T };
+        return schema === SCHEMA_VERSION ? value : null;
+      }
+      return null;
     } catch {
       return null;
     }
@@ -53,7 +64,10 @@ export function createStore<T>(key: string) {
       return parse(readRaw());
     },
     write(value: T | null) {
-      memory = value === null ? null : JSON.stringify(value);
+      memory =
+        value === null
+          ? null
+          : JSON.stringify(versioned ? { schema: SCHEMA_VERSION, value } : value);
       try {
         if (memory === null) window.localStorage.removeItem(key);
         else window.localStorage.setItem(key, memory);

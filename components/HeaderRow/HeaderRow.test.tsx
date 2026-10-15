@@ -31,7 +31,9 @@ describe("header with an action", () => {
   });
 
   it("never lets the button wrap or shrink; the title takes the rest and may wrap", () => {
-    expect(html).toContain('<div class="min-w-0 flex-1 break-words hyphens-auto"><h1>Materials</h1></div>');
+    expect(html).toContain(
+      '<div class="min-w-0 flex-1 break-words hyphens-auto"><h1>Materials</h1></div>',
+    );
     expect(html).toContain(
       '<div class="shrink-0 [&amp;&gt;a]:whitespace-nowrap [&amp;&gt;button]:whitespace-nowrap [&amp;&gt;div&gt;button]:whitespace-nowrap"><button',
     );

@@ -4,46 +4,58 @@ import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { WeakTopicsView } from "@/components/WeakTopicsView/WeakTopicsView";
 import { loadAllSections } from "@/lib/guide";
+import { getItem } from "@/lib/items";
+import { scoreItem } from "@/lib/scoring";
 import type { WeakTopic } from "@/lib/weak-topics";
 
-const topic = (sectionId: string, errorType: WeakTopic["errorType"]): WeakTopic => ({
+const topic = (sectionId: string, wrongAnswers: number): WeakTopic => ({
   sectionId,
   icon: "DoorOpen",
-  errorType,
-  items: [],
+  items: Array.from({ length: wrongAnswers }, () => scoreItem(getItem("s1"), "d")),
 });
 
-const html = renderToStaticMarkup(
-  <SourceSheetProvider sections={loadAllSections()}>
-    <ActionBarProvider>
-      <WeakTopicsView
-        topics={[topic("S1", "misconception"), topic("S2", "knowledge_gap")]}
-        selected={["S1"]}
-        onToggle={() => undefined}
-        onRepeat={() => undefined}
-      />
-    </ActionBarProvider>
-  </SourceSheetProvider>,
-);
+function render(topics: WeakTopic[], selected: string[]) {
+  return renderToStaticMarkup(
+    <SourceSheetProvider sections={loadAllSections()}>
+      <ActionBarProvider>
+        <WeakTopicsView
+          topics={topics}
+          selected={selected}
+          backHref="/session/results"
+          backLabel="Back to results"
+          onToggle={() => undefined}
+          onRepeat={() => undefined}
+        />
+      </ActionBarProvider>
+    </SourceSheetProvider>,
+  );
+}
 
-describe("Weak topics rows", () => {
-  it("use the compact icon tile: 36px circle, 18px icon, 1.75 stroke", () => {
+describe("Weak topics page", () => {
+  const html = render([topic("S1", 2), topic("S2", 1)], ["S1"]);
+
+  it("is one flat list with no groups or headings by error type", () => {
+    expect(html).not.toMatch(/Misconception|Knowledge gap|Guesses|<legend[^>]*>(?!Weak topics)/);
+    expect(html.match(/<fieldset/g)).toHaveLength(1);
+    expect(html.match(/type="checkbox"/g)).toHaveLength(2);
+  });
+
+  it("shows each section with its number of answers to repeat, and the 3D-icon slot fallback", () => {
+    expect(html).toContain("Evacuation guide · S1");
+    expect(html).toContain("2 to repeat");
+    expect(html).toContain("1 to repeat");
     expect(html.match(/h-9 w-9/g)).toHaveLength(2);
-    expect(html).not.toContain("h-12 w-12");
-    expect(html.match(/width="18"/g)?.length).toBeGreaterThanOrEqual(2);
     expect(html).toContain('stroke-width="1.75"');
   });
 
-  it("keep a 12px gap between tile and text and a tighter row", () => {
-    expect(html).toContain('class="flex items-center gap-3"');
-    expect(html).toContain("py-1");
-    expect(html).not.toContain("px-4 py-2");
+  it("has the back button where the person came from", () => {
+    expect(html).toContain('aria-label="Back to results"');
+    expect(html).toContain('href="/session/results"');
   });
 
-  it("keep titles, meta line, check boxes and group headers", () => {
-    expect(html).toContain("Misconceptions");
-    expect(html).toContain("Knowledge gaps");
-    expect(html).toContain("Evacuation guide · S1");
-    expect(html.match(/type="checkbox"/g)).toHaveLength(2);
+  it("says nothing to repeat when no section is weak", () => {
+    const empty = render([], []);
+    expect(empty).toContain("Nothing to repeat.");
+    expect(empty).not.toContain("Repeat selected");
   });
 });

@@ -12,10 +12,11 @@ vi.mock("next/navigation", () => ({
 
 /** s1 is wrong, s2 is right: 1 of 2 correct. */
 const session = (index: number): FinishedSession => ({
-  mode: "short",
+  kind: "scenario",
+  itemIds: ["s1", "s2"],
   answers: [
-    { stepId: "s1", optionId: "d", confidence: 2, explanation: "" },
-    { stepId: "s2", optionId: "c", confidence: 3, explanation: "" },
+    { itemId: "s1", optionId: "d" },
+    { itemId: "s2", optionId: "c" },
   ],
   finishedAt: Date.UTC(2026, 9, 1 + index, 9),
 });
@@ -50,16 +51,17 @@ describe("Progress", () => {
     const html = render(3);
     expect(html).toContain("Sessions");
     expect(html).toContain("Average result");
-    expect(html).toContain("Secure answers");
+    expect(html).toContain("Correct answers");
+    expect(html).not.toMatch(/Secure|Guess|Misconception|Knowledge gap|Error types/);
     expect(html.indexOf("Sessions")).toBeLessThan(html.indexOf("Result by session"));
   });
 
-  it("orders the cards: summary, result by session, error types, guide sections, history", () => {
+  it("orders the cards: summary, result by session, weak topics, guide sections, history", () => {
     const html = render(3);
     const order = [
       "Average result",
       "Result by session",
-      "Error types",
+      "Weak topics",
       "Guide sections",
       "Session history",
     ].map((title) => html.indexOf(title));
@@ -84,17 +86,6 @@ describe("Progress", () => {
     const html = render(1);
     expect(html).toContain("Complete two sessions to see your trend.");
     expect(html).not.toContain('<table class="sr-only">');
-    expect(html).not.toContain("in your first session");
-  });
-
-  it("shows one stacked error-type bar and all four legend items with counts", () => {
-    const html = render(2);
-    expect(html).toContain('role="img"');
-    for (const label of ["Secure", "Guess", "Knowledge gap", "Misconception"]) {
-      expect(html, label).toContain(label);
-    }
-    expect(html).toContain("in your first session");
-    expect(html).toContain("in your latest.");
   });
 
   it("links to the Weak topics page with a tertiary link, not a primary button", () => {
@@ -119,7 +110,7 @@ describe("Progress", () => {
 
   it("shows the 5 newest sessions with See more, and no button with 5 or fewer", () => {
     const rows = (html: string) =>
-      html.slice(html.indexOf("Session history")).match(/of 2 correct/g);
+      html.slice(html.indexOf("Session history")).match(/1 of 2 correct/g);
     const many = render(12);
     expect(rows(many)).toHaveLength(5);
     expect(many).toContain(">See more</span></button>");

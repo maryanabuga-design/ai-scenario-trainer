@@ -16,12 +16,15 @@ const SWIPE = 50;
 /** The first-run introduction: three short steps, then "Ready to start?". */
 export function OnboardingView({
   step,
+  replay = false,
   onNext,
   onBack,
   onSkip,
   onFinish,
 }: {
   step: OnboardingStep;
+  /** A replay from Home: the first step has a Back button to Home too. */
+  replay?: boolean;
   onNext: () => void;
   onBack: () => void;
   onSkip: () => void;
@@ -58,7 +61,14 @@ export function OnboardingView({
       }}
     >
       <div className="flex min-h-11 items-center justify-between">
-        <div>{step > 0 && <CircleBackButton label="Previous step" onClick={onBack} />}</div>
+        <div>
+          {(step > 0 || replay) && (
+            <CircleBackButton
+              label={step > 0 ? "Previous step" : "Back to Home"}
+              onClick={onBack}
+            />
+          )}
+        </div>
         {!final && (
           <div className="-mr-3">
             <Button variant="tertiary" onClick={onSkip}>

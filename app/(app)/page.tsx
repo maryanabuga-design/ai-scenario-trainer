@@ -10,10 +10,10 @@ import { needsOnboarding, onboardingHref } from "@/lib/onboarding";
 import { sampleMaterials } from "@/lib/materials";
 import { weakItemsFromHistory } from "@/lib/progress";
 import { getScenario } from "@/lib/scenario";
-import { startRepeatRound, useHistory, useProfile, useSession } from "@/lib/session";
+import { startRepeat } from "@/lib/repeat";
+import { useHistory, useProfile, useSession } from "@/lib/session";
 import { startTraining, useTrainings } from "@/lib/trainings";
 import { useUploads } from "@/lib/uploads";
-import { repeatItems } from "@/lib/weak-topics";
 
 export default function Home() {
   const router = useRouter();
@@ -69,10 +69,7 @@ export default function Home() {
       onRepeat={(topics) => {
         // A card for the topic whose repeat round is under way resumes it.
         if (!(topics.length === 1 && repeatUnderWay(topics[0], unfinished))) {
-          startRepeatRound(
-            repeatItems(topics),
-            topics.map((topic) => topic.sectionId),
-          );
+          startRepeat(topics);
         }
         router.push("/session");
       }}

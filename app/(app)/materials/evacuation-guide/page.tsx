@@ -3,7 +3,7 @@ import { MaterialView } from "@/components/MaterialView/MaterialView";
 import { Tag } from "@/components/Tag/Tag";
 import { loadGuide } from "@/lib/guide";
 import { sampleMaterials } from "@/lib/materials";
-import { audienceLabel, scenario, sessionLengths } from "@/lib/scenario";
+import { audienceLabel, scenario } from "@/lib/scenario";
 
 export default function MaterialPage() {
   const guide = loadGuide();
@@ -26,12 +26,8 @@ export default function MaterialPage() {
           </div>
           <h2 className="type-card-title">{scenario.title}</h2>
           <p className="type-small text-text-secondary">
-            Short: <span className="tabular-nums">{sessionLengths.short.stepIds.length}</span>{" "}
-            decisions, about <span className="tabular-nums">{sessionLengths.short.minutes}</span>{" "}
-            min. Full: <span className="tabular-nums">{sessionLengths.full.stepIds.length}</span>,
-            about <span className="tabular-nums">{sessionLengths.full.minutes}</span> min. Extended:{" "}
-            <span className="tabular-nums">{sessionLengths.extended.stepIds.length}</span>, about{" "}
-            <span className="tabular-nums">{sessionLengths.extended.minutes}</span> min.
+            <span className="tabular-nums">{scenario.steps.length}</span> situations from the guide,
+            in story order.
           </p>
           <p className="type-small text-text-secondary">
             For a {audienceLabel}. A quiz on the guide is also available.

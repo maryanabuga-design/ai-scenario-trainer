@@ -1,12 +1,11 @@
-import { sessionLabel } from "@/lib/progress";
 import type { Material } from "@/lib/materials";
-import { getScenario, sessionLengths } from "@/lib/scenario";
+import { getScenario } from "@/lib/scenario";
 import type { ScenarioDef } from "@/lib/scenario";
 import { planTraining } from "@/lib/training";
 import type { Session } from "@/lib/session";
-import { isQuiz, isRepeatRound, itemCount } from "@/lib/session";
+import { sessionLabel } from "@/lib/session";
 import type { WeakTopic } from "@/lib/weak-topics";
-import { countTopics, describeCounts } from "@/lib/weak-topics";
+import { topicsToRepeat } from "@/lib/weak-topics";
 
 /** The topic row on Home shows at most this many cards (and as many dots). */
 export const TOPIC_ROW_LIMIT = 5;
@@ -31,11 +30,10 @@ export function nextUp({
   hasHistory: boolean;
 }): NextUp {
   if (unfinished) {
-    const unit = isRepeatRound(unfinished) ? "Item" : isQuiz(unfinished) ? "Question" : "Step";
     return {
       kind: "continue",
       title: `Continue your ${sessionLabel(unfinished).toLowerCase()}`,
-      detail: `${unit} ${unfinished.index + 1} of ${itemCount(unfinished)}`,
+      detail: `Question ${unfinished.index + 1} of ${unfinished.itemIds.length}`,
       action: "Continue",
       linksToTopics: false,
     };
@@ -43,8 +41,8 @@ export function nextUp({
   if (topics.length > 0) {
     return {
       kind: "repeat",
-      title: `${topics.length} ${topics.length === 1 ? "topic" : "topics"} to repeat`,
-      detail: describeCounts(countTopics(topics)),
+      title: topicsToRepeat(topics.length),
+      detail: `Wrong answers in ${topics.length} guide ${topics.length === 1 ? "section" : "sections"}.`,
       action: "Repeat weak topics",
       linksToTopics: true,
     };
@@ -53,7 +51,7 @@ export function nextUp({
     return {
       kind: "first",
       title: "Start your first scenario",
-      detail: `A short scenario takes about ${sessionLengths.short.minutes} minutes.`,
+      detail: "Answer questions about the guide, then check them.",
       action: "Start a scenario",
       linksToTopics: false,
     };
@@ -81,9 +79,9 @@ export function dotCount(topics: WeakTopic[]): number {
 export function repeatUnderWay(topic: WeakTopic, unfinished: Session | null): boolean {
   return (
     unfinished !== null &&
-    isRepeatRound(unfinished) &&
-    unfinished.topics.length === 1 &&
-    unfinished.topics[0] === topic.sectionId
+    unfinished.kind === "repeat" &&
+    unfinished.itemIds.length === topic.items.length &&
+    topic.items.every((item) => unfinished.itemIds.includes(item.id))
   );
 }
 
@@ -119,12 +117,9 @@ export function homeScenarios(materials: Material[]): Material[] {
   });
 }
 
-/** The New scenario card line, from the Short length: "Short: 3 decisions, about 5 min." */
+/** The New scenario card line: "10 situations from the guide." */
 export function scenarioLine(def: ScenarioDef): string {
-  const length = def.lengths.short ? "short" : def.defaultLength;
-  const option = def.lengths[length];
-  const name = length === "short" ? "Short" : length === "full" ? "Full" : "Extended";
-  return `${name}: ${option?.stepIds.length ?? 0} decisions, about ${option?.minutes ?? 0} min.`;
+  return `${def.steps.length} situations from the guide.`;
 }
 
 export function scenarioTitle(material: Material): string {

@@ -4,196 +4,99 @@
   "audience": "Volunteer coordinator or junior responder on duty",
   "context": "Educational, non-combat civil-protection scenario. No weapons, harm or combat content.",
   "source": "content/sample-flood-guide.md",
-  "initialState": {
-    "waterLevel": 1,
-    "timeLostSeconds": 0
-  },
-  "stateLabels": {
-    "waterLevel": { "1": "Low", "2": "Rising", "3": "High" }
-  },
-  "confidenceScale": {
-    "1": "Not very confident",
-    "2": "Somewhat confident",
-    "3": "Very confident"
-  },
-  "errorTypeRule": {
-    "description": "Derived from correctness and confidence. High confidence means level 3.",
-    "wrong_and_high_confidence": "misconception",
-    "wrong_and_not_high_confidence": "knowledge_gap",
-    "correct_and_not_high_confidence": "guess",
-    "correct_and_high_confidence": "secure"
-  },
-  "feedbackStructure": [
-    "verdict",
-    "your_answer_vs_correct",
-    "why",
-    "error_type",
-    "source_link"
-  ],
-  "aiRules": [
-    "Use only the source guide. If it does not cover a question, say so.",
-    "Quote the section id (for example F3) with every explanation.",
-    "After each decision ask the follow-up question and compare the answer with explanationKeyBeats.",
-    "Stay inside the educational, non-combat context."
-  ],
   "steps": [
     {
-      "id": "s1",
+      "id": "flood-s1",
+      "section": "F1",
       "title": "A flood warning",
-      "sources": ["F1", "F3"],
-      "narrative": "16:10. An official flood warning is issued for the river next to the community centre where you are the volunteer coordinator on duty. Water is expected in the street within about two hours. Eight people are in the building, and two of them need help to walk.",
+      "situation": "16:10. An official flood warning is issued for the river next to the community centre where you are the volunteer coordinator on duty. Water is expected in the street within about two hours. Eight people are in the building, and two of them need help to walk.",
       "question": "What is your first instruction?",
       "options": [
         {
           "id": "a",
-          "text": "Wait and watch the river to see whether the water really rises.",
-          "correct": false,
-          "why": "A warning is treated as real. Waiting uses up the time you have to move safely.",
-          "consequence": "Time passes and the water in the street begins to rise.",
-          "misconception": "waits_for_proof",
-          "effects": { "timeLostSeconds": 120, "waterLevel": 1 }
+          "text": "Wait and watch the river to see whether the water really rises."
         },
         {
           "id": "b",
-          "text": "Tell everyone to go home on their own by whichever route they prefer.",
-          "correct": false,
-          "why": "An uncoordinated exit can send people through water, and nobody checks on those who need help.",
-          "consequence": "People leave in different directions and two need help to be found again.",
-          "misconception": "disperses_group",
-          "effects": { "timeLostSeconds": 60, "waterLevel": 1 }
+          "text": "Tell everyone to go home on their own by whichever route they prefer."
         },
         {
           "id": "c",
-          "text": "Gather the group and the grab bag, check first on the two people who need help, and start moving to the meeting point on higher ground.",
-          "correct": true,
-          "why": "Acting on the warning, helping those who need support and moving before the water arrives keeps the group safe.",
-          "consequence": "The group sets off together and the two people are supported."
+          "text": "Gather the group and the grab bag, check first on the two people who need help, and start moving to the meeting point on higher ground."
         },
         {
           "id": "d",
-          "text": "Spend the time moving furniture and equipment to the upper floor first.",
-          "correct": false,
-          "why": "People come first. Moving property is only for time left over after everyone is safe.",
-          "consequence": "Valuable time is lost and the water gets closer.",
-          "misconception": "puts_property_first",
-          "effects": { "timeLostSeconds": 90, "waterLevel": 1 }
+          "text": "Spend the time moving furniture and equipment to the upper floor first."
         }
       ],
-      "explanationKeyBeats": [
-        "treat the warning as real",
-        "help people who need support first",
-        "move before the water arrives"
-      ],
-      "explanationKeywords": [
-        { "beat": "treat the warning as real", "keywords": ["real", "act", "warning", "do not wait", "serious"] },
-        { "beat": "help people who need support first", "keywords": ["help", "support", "need", "mobility", "check on"] },
-        { "beat": "move before the water arrives", "keywords": ["before", "higher ground", "move", "early", "in time"] }
-      ],
-      "referenceExplanation": "Gather the group, check first on the two people who need help and start moving to the meeting point on higher ground, because the warning is real and you must move before the water arrives."
+      "correctOptionId": "c",
+      "why": "Acting on the warning, helping those who need support and moving before the water arrives keeps the group safe.",
+      "guideRef": [
+        "F1",
+        "F3"
+      ]
     },
     {
-      "id": "s2",
+      "id": "flood-s2",
+      "section": "F4",
       "title": "The street is under water",
-      "sources": ["F4", "F5"],
-      "narrative": "At the end of the street the road is covered by brown water about knee-deep, and you can see it moving. The meeting point is 200 metres away across the water. A path over the hill is dry but adds about ten minutes.",
+      "situation": "At the end of the street the road is covered by brown water about knee-deep, and you can see it moving. The meeting point is 200 metres away across the water. A path over the hill is dry but adds about ten minutes.",
       "question": "How do you get the group to the meeting point?",
       "options": [
         {
           "id": "a",
-          "text": "Cross in a line, holding hands, because the water looks shallow.",
-          "correct": false,
-          "why": "You cannot judge depth or current by looking. Moving water can knock adults off their feet, and it hides holes and debris.",
-          "consequence": "The current pushes the line sideways and you have to turn back.",
-          "misconception": "trusts_appearance",
-          "effects": { "timeLostSeconds": 60, "waterLevel": 2 }
+          "text": "Cross in a line, holding hands, because the water looks shallow."
         },
         {
           "id": "b",
-          "text": "Load everyone into the minibus and drive through the water.",
-          "correct": false,
-          "why": "A small depth of moving water can float a vehicle, and engines stall in water. Never drive through floodwater.",
-          "consequence": "The minibus stalls and the group has to leave it.",
-          "misconception": "drives_through_water",
-          "effects": { "timeLostSeconds": 120, "waterLevel": 2 }
+          "text": "Load everyone into the minibus and drive through the water."
         },
         {
           "id": "c",
-          "text": "Send the strongest person ahead to test the depth.",
-          "correct": false,
-          "why": "Testing the water puts one person at risk. Choose a route that avoids the water instead.",
-          "consequence": "The volunteer is swept off balance and has to be helped back.",
-          "misconception": "tests_the_water",
-          "effects": { "timeLostSeconds": 90, "waterLevel": 2 }
+          "text": "Send the strongest person ahead to test the depth."
         },
         {
           "id": "d",
-          "text": "Take the longer path over the hill that stays above the water.",
-          "correct": true,
-          "why": "A longer route that stays dry is safer than a shorter one through floodwater.",
-          "consequence": "The group arrives ten minutes later, safe and dry."
+          "text": "Take the longer path over the hill that stays above the water."
         }
       ],
-      "explanationKeyBeats": [
-        "cannot judge depth or current",
-        "a longer dry route is safer"
-      ],
-      "explanationKeywords": [
-        { "beat": "cannot judge depth or current", "keywords": ["depth", "current", "hidden", "deep", "flow", "cannot see"] },
-        { "beat": "a longer dry route is safer", "keywords": ["longer", "dry", "above the water", "safer", "avoid"] }
-      ],
-      "referenceExplanation": "Take the longer path over the hill that stays above the water, because you cannot judge the depth or current of floodwater."
+      "correctOptionId": "d",
+      "why": "A longer route that stays dry is safer than a shorter one through floodwater.",
+      "guideRef": [
+        "F4",
+        "F5"
+      ]
     },
     {
-      "id": "s3",
+      "id": "flood-s3",
+      "section": "F5",
       "title": "Back at the building",
-      "sources": ["F5", "F7"],
-      "narrative": "The next morning the water has dropped. The group wants to return to collect belongings. The ground floor is wet, the lights flicker, and the authorities have not yet said the area is safe.",
+      "situation": "The next morning the water has dropped. The group wants to return to collect belongings. The ground floor is wet, the lights flicker, and the authorities have not yet said the area is safe.",
       "question": "What do you do?",
       "options": [
         {
           "id": "a",
-          "text": "Do not go in. Wait for the official all-clear, keep away from electrical equipment, and report the building so the electrics can be checked.",
-          "correct": true,
-          "why": "Entering before the area is declared safe, or touching wet electrics, is dangerous. The electrics must be checked first.",
-          "consequence": "The group waits and the building is inspected before anyone enters."
+          "text": "Do not go in. Wait for the official all-clear, keep away from electrical equipment, and report the building so the electrics can be checked."
         },
         {
           "id": "b",
-          "text": "Go in and switch on the lights to see how bad the damage is.",
-          "correct": false,
-          "why": "Switching on electrics in a wet building risks electric shock. Have the electrics checked first.",
-          "consequence": "A volunteer receives a shock from a wet switch and the building has to be closed off.",
-          "misconception": "switches_on_wet_electrics",
-          "effects": { "timeLostSeconds": 120, "waterLevel": 2 }
+          "text": "Go in and switch on the lights to see how bad the damage is."
         },
         {
           "id": "c",
-          "text": "Start pumping out the flooded basement as fast as possible.",
-          "correct": false,
-          "why": "Rapid pumping can damage walls and floors. Water should be removed gradually, and only when it is safe to do so.",
-          "consequence": "A basement wall cracks and the work stops.",
-          "misconception": "pumps_too_fast",
-          "effects": { "timeLostSeconds": 90, "waterLevel": 2 }
+          "text": "Start pumping out the flooded basement as fast as possible."
         },
         {
           "id": "d",
-          "text": "Fill the water bottles from the tap and drink as usual.",
-          "correct": false,
-          "why": "Tap water may be contaminated until it is officially announced as safe.",
-          "consequence": "Several people feel unwell and need to rest.",
-          "misconception": "drinks_tap_water",
-          "effects": { "timeLostSeconds": 60, "waterLevel": 2 }
+          "text": "Fill the water bottles from the tap and drink as usual."
         }
       ],
-      "explanationKeyBeats": [
-        "structures and electrics may be unsafe",
-        "wait for authorities to confirm it is safe"
-      ],
-      "explanationKeywords": [
-        { "beat": "structures and electrics may be unsafe", "keywords": ["electric", "shock", "unsafe", "weakened", "danger", "structure"] },
-        { "beat": "wait for authorities to confirm it is safe", "keywords": ["authorities", "all-clear", "official", "safe", "confirm"] }
-      ],
-      "referenceExplanation": "Stay out of the building until the official all-clear and keep away from the electrics, because structures and electrics may be unsafe."
+      "correctOptionId": "a",
+      "why": "Entering before the area is declared safe, or touching wet electrics, is dangerous. The electrics must be checked first.",
+      "guideRef": [
+        "F5",
+        "F7"
+      ]
     }
   ]
 }

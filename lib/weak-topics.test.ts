@@ -1,106 +1,95 @@
 import { describe, expect, it } from "vitest";
-import { scoreSession } from "@/lib/progress";
-import { getQuestion, scoreQuestion } from "@/lib/quiz";
-import { getStep } from "@/lib/scenario";
-import { scoreStep } from "@/lib/scoring";
-import {
-  countTopics,
-  describeCounts,
-  materialForSection,
-  repeatItems,
-  topicIcon,
-  topicTint,
-  weakTopics,
-} from "@/lib/weak-topics";
+import { getItem } from "@/lib/items";
+import { scoreSession, weakItemsFromHistory } from "@/lib/progress";
+import { repeatItemIds, toRepeatLabel, topicsToRepeat, weakTopics } from "@/lib/weak-topics";
+import { materialForSection, topicIcon, topicTint } from "@/lib/weak-topics";
+import { currentWeakItems, scoreItem } from "@/lib/scoring";
+import type { FinishedSession } from "@/lib/session";
 
-// s2 c (correct) with confidence 2 is a guess on S2; s3 b with confidence 3 is a misconception on
-// S2 and S3; s5 a with confidence 1 is a knowledge gap on S5; s1 b with confidence 3 is secure.
+// s1 d wrong (S1), s2 c right, s3 b wrong (S2), s4 a wrong (S6), s5 a wrong (S5), q-s1-1 a wrong (S1).
 const items = [
-  scoreStep(getStep("s1"), "b", 3),
-  scoreStep(getStep("s2"), "c", 2),
-  scoreStep(getStep("s3"), "b", 3),
-  scoreStep(getStep("s5"), "a", 1),
-  scoreQuestion(getQuestion("q-s5-3"), { type: "truefalse", value: true }, 2),
+  scoreItem(getItem("s1"), "d"),
+  scoreItem(getItem("s2"), "c"),
+  scoreItem(getItem("s3"), "b"),
+  scoreItem(getItem("s4"), "a"),
+  scoreItem(getItem("s5"), "a"),
+  scoreItem(getItem("q-s1-1"), "a"),
 ];
 
 describe("weak topics", () => {
-  const topics = weakTopics(items);
-
-  it("makes one topic per guide section behind weak answers", () => {
-    expect(topics.map((topic) => topic.sectionId).sort()).toEqual(["S2", "S3", "S5"]);
+  it("makes one topic per guide section with at least one wrong answer", () => {
+    const topics = weakTopics(items);
+    expect(topics.map((topic) => topic.sectionId).sort()).toEqual(["S1", "S2", "S5", "S6"]);
+    expect(topics.find((topic) => topic.sectionId === "S1")?.items).toHaveLength(2);
   });
 
-  it("gives each topic its most serious error type", () => {
-    const s2 = topics.find((topic) => topic.sectionId === "S2");
-    expect(s2?.errorType).toBe("misconception");
-    expect(s2?.items.map((item) => item.id)).toEqual(["s2", "s3"]);
+  it("leaves out sections where every answer was right", () => {
+    expect(weakTopics([scoreItem(getItem("s2"), "c")])).toEqual([]);
+    expect(weakTopics([])).toEqual([]);
   });
 
-  it("orders topics by priority, then by how many answers are weak", () => {
-    expect(topics.map((topic) => [topic.sectionId, topic.errorType])).toEqual([
-      ["S2", "misconception"],
-      ["S3", "misconception"],
-      ["S5", "knowledge_gap"],
-    ]);
+  it("orders topics by how many answers are wrong, then by guide order", () => {
+    expect(weakTopics(items).map((topic) => topic.sectionId)).toEqual(["S1", "S2", "S5", "S6"]);
   });
 
-  it("counts topics by error type and describes the counts", () => {
-    expect(describeCounts(countTopics(topics))).toBe("2 misconceptions, 1 knowledge gap");
-    expect(describeCounts(countTopics([]))).toBe("");
+  it("counts the wrong answers of a topic and words them plainly, with no error types", () => {
+    const [first] = weakTopics(items);
+    expect(toRepeatLabel(first)).toBe("2 to repeat");
+    expect(topicsToRepeat(6)).toBe("6 topics to repeat");
+    expect(topicsToRepeat(1)).toBe("1 topic to repeat");
+    expect(Object.keys(first).sort()).toEqual(["icon", "items", "sectionId"]);
   });
 
-  it("repeats both steps and questions from the topics, each once", () => {
-    expect(repeatItems(topics)).toEqual([
-      { type: "step", id: "s2" },
-      { type: "step", id: "s3" },
-      { type: "step", id: "s5" },
-      { type: "question", id: "q-s5-3" },
-    ]);
-    expect(repeatItems(topics.filter((topic) => topic.sectionId === "S5"))).toEqual([
-      { type: "step", id: "s5" },
-      { type: "question", id: "q-s5-3" },
-    ]);
+  it("brings back the questions answered wrong in the chosen sections, each once", () => {
+    const topics = weakTopics(items);
+    expect(repeatItemIds(topics)).toEqual(["s1", "q-s1-1", "s3", "s5", "s4"]);
+    const chosen = topics.filter((topic) => ["S2", "S6"].includes(topic.sectionId));
+    expect(repeatItemIds(chosen)).toEqual(["s3", "s4"]);
   });
 
-  it("has no topics when everything is secure", () => {
-    expect(weakTopics([scoreStep(getStep("s1"), "b", 3)])).toEqual([]);
+  it("clears a topic once the latest answer to its questions is right", () => {
+    const later = [...items, scoreItem(getItem("s3"), "a"), scoreItem(getItem("s1"), "b")];
+    const sections = weakTopics(currentWeakItems(later)).map((topic) => topic.sectionId);
+    expect(sections).not.toContain("S2");
+    expect(sections).toContain("S1");
   });
 
   it("names the material behind a section", () => {
-    expect(materialForSection("S2")).toBe("Evacuation guide");
-    expect(materialForSection("F5")).toBe("Flood guide");
+    expect(materialForSection("S3")).toBe("Evacuation guide");
+    expect(materialForSection("F2")).toBe("Flood guide");
   });
 });
 
-describe("repeat round", () => {
-  it("scores a round that mixes steps and questions", () => {
-    const scored = scoreSession({
-      kind: "repeat",
-      topics: ["S5"],
-      finishedAt: 0,
-      answers: [
-        { type: "step", stepId: "s5", optionId: "b", confidence: 3, explanation: "" },
-        {
-          type: "question",
-          questionId: "q-s5-3",
-          response: { type: "truefalse", value: false },
-          confidence: null,
-        },
-      ],
-    });
-    expect(scored.map((item) => [item.kind, item.id, item.correct])).toEqual([
-      ["step", "s5", true],
-      ["question", "q-s5-3", true],
-    ]);
+describe("weak topics from the saved history", () => {
+  const session = (finishedAt: number, picks: [string, string][]): FinishedSession => ({
+    kind: "quiz",
+    itemIds: picks.map(([id]) => id),
+    answers: picks.map(([itemId, optionId]) => ({ itemId, optionId })),
+    finishedAt,
   });
 
+  it("uses the latest answer to each question, oldest session first", () => {
+    const history = [
+      session(2, [["s1", "b"]]),
+      session(1, [
+        ["s1", "d"],
+        ["s4", "a"],
+      ]),
+    ];
+    expect(weakItemsFromHistory(history).map((item) => item.id)).toEqual(["s4"]);
+    expect(scoreSession(history[0])).toHaveLength(1);
+    expect(weakItemsFromHistory(null)).toEqual([]);
+  });
+});
+
+describe("topic look", () => {
   it("picks a topic icon by section, with a default", () => {
     expect(topicIcon("S2")).toBe("DoorOpen");
     expect(topicIcon("S3")).toBe("Wind");
     expect(topicIcon("S8")).toBe("Bandage");
     expect(topicIcon("F4")).toBe("Droplet");
     expect(topicIcon("X9")).toBe("BookOpen");
-    expect(weakTopics(items).find((topic) => topic.sectionId === "S3")?.icon).toBe("Wind");
+    expect(weakTopics(items).find((topic) => topic.sectionId === "S2")?.icon).toBe("DoorOpen");
   });
 
   it("takes the tile colour from the section, cycling yellow, blue, lilac, sage, peach", () => {

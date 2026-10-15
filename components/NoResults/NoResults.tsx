@@ -1,6 +1,6 @@
 import { ButtonLink } from "@/components/Button/Button";
 
-/** Results and Error analysis before any session has finished. */
+/** Results and the Answer review before any session has finished. */
 export function NoResults() {
   return (
     <div className="flex flex-col items-start gap-4">

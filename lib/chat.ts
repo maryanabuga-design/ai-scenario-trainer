@@ -1,27 +1,20 @@
-import type { ChatEntry, Step } from "@/lib/scenario";
-
-/** "decide" before the trainee has checked their answer, "feedback" after. */
-export type ChatPhase = "decide" | "feedback";
+import type { ChatEntry, Item as Step } from "@/lib/items";
 
 export type ChatReply =
-  | { kind: "answer"; text: string; sources: string[] }
-  | { kind: "notCovered"; sources: string[] }
-  | { kind: "deferred"; sources: string[] };
+  { kind: "answer"; text: string; sources: string[] } | { kind: "notCovered"; sources: string[] };
 
 export type ChatChip = { id: string; question: string };
 
 export const notCoveredText = "This is not covered by the material.";
-export const deferredText =
-  "I can explain this after you check your answer, so the choice stays yours.";
 
 const MAX_CHIPS = 4;
 
 /** Every prepared answer for the step, with the step's not-covered question as one more entry. */
 function entries(step: Step): (ChatEntry & { notCovered?: boolean })[] {
   const question = step.suggestedQuestion;
-  if (!question) return step.chat;
+  if (!question) return step.chat ?? [];
   return [
-    ...step.chat,
+    ...(step.chat ?? []),
     {
       id: notCoveredId(step),
       question: question.question,
@@ -39,44 +32,33 @@ export function notCoveredId(step: Step) {
   return `${step.id}-not-covered`;
 }
 
-function isAvailable(entry: ChatEntry, phase: ChatPhase) {
-  return entry.availability === "always" || phase === "feedback";
-}
-
-/** 3 or 4 suggested questions: before feedback only neutral ones, after feedback the "why not" ones first. */
-export function suggestedChips(step: Step, phase: ChatPhase, askedIds: string[]): ChatChip[] {
+/**
+ * 3 or 4 suggested questions: the "why not" questions come first, then the guide's not-covered
+ * question, so the honest "This is not covered by the material." stays one tap away.
+ */
+export function suggestedChips(step: Step, askedIds: string[]): ChatChip[] {
   const suggested = entries(step).filter(
-    (entry) => entry.suggested && isAvailable(entry, phase) && !askedIds.includes(entry.id),
+    (entry) => entry.suggested && !askedIds.includes(entry.id),
   );
-  // After the answer, the "why not" questions come first, then the guide's not-covered question,
-  // so the honest "This is not covered by the material." stays one tap away.
-  const ordered =
-    phase === "feedback"
-      ? [
-          ...suggested.filter((entry) => entry.availability === "afterFeedback").slice(0, 2),
-          ...suggested.filter((entry) => entry.notCovered),
-          ...suggested.filter((entry) => entry.availability === "afterFeedback").slice(2),
-          ...suggested.filter((entry) => entry.availability === "always" && !entry.notCovered),
-        ]
-      : suggested;
+  const ordered = [
+    ...suggested.filter((entry) => entry.availability === "afterFeedback").slice(0, 2),
+    ...suggested.filter((entry) => entry.notCovered),
+    ...suggested.filter((entry) => entry.availability === "afterFeedback").slice(2),
+    ...suggested.filter((entry) => entry.availability === "always" && !entry.notCovered),
+  ];
   return ordered.slice(0, MAX_CHIPS).map(({ id, question }) => ({ id, question }));
 }
 
-function replyFor(
-  step: Step,
-  entry: ChatEntry & { notCovered?: boolean },
-  phase: ChatPhase,
-): ChatReply {
-  if (!isAvailable(entry, phase)) return { kind: "deferred", sources: step.sources };
+function replyFor(step: Step, entry: ChatEntry & { notCovered?: boolean }): ChatReply {
   if (entry.notCovered) return { kind: "notCovered", sources: entry.sources };
   return { kind: "answer", text: entry.answer, sources: entry.sources };
 }
 
 /** The reply to a tapped suggestion chip. */
-export function replyToChip(step: Step, chipId: string, phase: ChatPhase): ChatReply {
+export function replyToChip(step: Step, chipId: string): ChatReply {
   const entry = entries(step).find((candidate) => candidate.id === chipId);
-  if (!entry) return { kind: "notCovered", sources: step.sources };
-  return replyFor(step, entry, phase);
+  if (!entry) return { kind: "notCovered", sources: step.guideRef };
+  return replyFor(step, entry);
 }
 
 function tokens(text: string) {
@@ -95,7 +77,7 @@ function keywordMatches(keyword: string, words: string[], normalised: string) {
  * on a tie the earlier entry wins. No match at all gets the honest not-covered answer
  * with the step's guide sections as the closest ones.
  */
-export function matchQuestion(step: Step, text: string, phase: ChatPhase): ChatReply {
+export function matchQuestion(step: Step, text: string): ChatReply {
   const words = tokens(text);
   const normalised = words.join(" ");
   let best: { entry: ReturnType<typeof entries>[number]; score: number } | null = null;
@@ -107,6 +89,6 @@ export function matchQuestion(step: Step, text: string, phase: ChatPhase): ChatR
     if (score > 0 && (!best || score > best.score)) best = { entry, score };
   }
 
-  if (!best) return { kind: "notCovered", sources: step.sources };
-  return replyFor(step, best.entry, phase);
+  if (!best) return { kind: "notCovered", sources: step.guideRef };
+  return replyFor(step, best.entry);
 }

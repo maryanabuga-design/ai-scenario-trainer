@@ -4,98 +4,35 @@
   "audience": "Trainee: rescuer or junior officer on duty",
   "context": "Educational, non-combat civil-protection scenario. No weapons, harm or combat content.",
   "source": "content/sample-evacuation-guide.md",
-  "initialState": {
-    "smokeLevel": 1,
-    "timeLostSeconds": 0,
-    "casualtyStability": 0
-  },
-  "stateLabels": {
-    "smokeLevel": { "1": "Light", "2": "Moderate", "3": "Heavy" },
-    "casualtyStability": { "-1": "Worsened", "0": "Stable" }
-  },
-  "confidenceScale": {
-    "1": "Not very confident",
-    "2": "Somewhat confident",
-    "3": "Very confident"
-  },
-  "errorTypeRule": {
-    "description": "Derived from correctness and confidence. High confidence means level 3.",
-    "wrong_and_high_confidence": "misconception",
-    "wrong_and_not_high_confidence": "knowledge_gap",
-    "correct_and_not_high_confidence": "guess",
-    "correct_and_high_confidence": "secure"
-  },
-  "feedbackStructure": [
-    "verdict",
-    "your_answer_vs_correct",
-    "why",
-    "error_type",
-    "source_link"
-  ],
-  "aiRules": [
-    "Use only the source guide. If it does not cover a question, say so.",
-    "Quote the section id (for example S2) with every explanation.",
-    "After each decision ask the follow-up question and compare the answer with explanationKeyBeats.",
-    "Stay inside the educational, non-combat context."
-  ],
   "steps": [
     {
       "id": "s1",
+      "section": "S1",
       "title": "The alarm sounds",
-      "sources": [
-        "S1"
-      ],
-      "narrative": "14:20. The fire alarm sounds in a four-storey training centre. You are the duty officer on the second floor with twelve people. There is a faint smell of smoke from the north stairwell, and everyone looks at you for direction.",
+      "situation": "14:20. The fire alarm sounds in a four-storey training centre. You are the duty officer on the second floor with twelve people. There is a faint smell of smoke from the north stairwell, and everyone looks at you for direction.",
       "question": "What is your first instruction?",
       "options": [
         {
           "id": "a",
-          "text": "Stay where you are until the alarm is confirmed as real.",
-          "correct": false,
-          "why": "An alarm is treated as real until it is officially confirmed otherwise. Waiting costs time.",
-          "consequence": "Time passes, and the smell of smoke in the corridor gets stronger.",
-          "misconception": "assumes_drill",
-          "effects": {
-            "timeLostSeconds": 60,
-            "smokeLevel": 1
-          }
+          "text": "Stay where you are until the alarm is confirmed as real."
         },
         {
           "id": "b",
-          "text": "Everyone leaves now by the stairs, taking only what they can carry in a few seconds.",
-          "correct": true,
-          "why": "Treating the alarm as real, using the stairs and not delaying for belongings keeps the group safe.",
-          "consequence": "The group starts moving at once."
+          "text": "Everyone leaves now by the stairs, taking only what they can carry in a few seconds."
         },
         {
           "id": "c",
-          "text": "Take the elevator to get everyone out faster.",
-          "correct": false,
-          "why": "Elevators can stop or fill with smoke during a fire. Stairs are the safe choice.",
-          "consequence": "You have to turn back and lose time.",
-          "misconception": "elevator_use",
-          "effects": {
-            "timeLostSeconds": 45,
-            "smokeLevel": 1
-          }
+          "text": "Take the elevator to get everyone out faster."
         },
         {
           "id": "d",
-          "text": "First collect documents and equipment from the offices.",
-          "correct": false,
-          "why": "Collecting belongings delays your exit. Take only what you can carry in seconds.",
-          "consequence": "Several minutes are lost and smoke spreads along the corridor.",
-          "misconception": "delays_exit",
-          "effects": {
-            "timeLostSeconds": 90,
-            "smokeLevel": 1
-          }
+          "text": "First collect documents and equipment from the offices."
         }
       ],
-      "explanationKeyBeats": [
-        "treat the alarm as real",
-        "stairs, not the elevator",
-        "do not delay for belongings"
+      "correctOptionId": "b",
+      "why": "Treating the alarm as real, using the stairs and not delaying for belongings keeps the group safe.",
+      "guideRef": [
+        "S1"
       ],
       "chat": [
         {
@@ -213,70 +150,36 @@
           "availability": "afterFeedback",
           "suggested": false
         }
-      ],
-      "explanationKeywords": [
-        { "beat": "treat the alarm as real", "keywords": ["real", "genuine", "not a drill", "not drill", "treat it as", "assume", "official"] },
-        { "beat": "stairs, not the elevator", "keywords": ["stair", "staircase", "steps", "elevator", "lift"] },
-        { "beat": "do not delay for belongings", "keywords": ["belonging", "thing", "bag", "document", "equipment", "laptop", "delay", "immediately", "straight away", "right away", "nothing", "now", "quick", "fast"] }
-      ],
-      "referenceExplanation": "Get everyone out now by the stairs, not the elevator, without stopping for belongings, because the alarm must be treated as real."
+      ]
     },
     {
       "id": "s2",
+      "section": "S2",
       "title": "A hot door",
-      "sources": [
-        "S2"
-      ],
-      "narrative": "The nearest exit is the north stairwell. You touch its door with the back of your hand and it feels hot.",
+      "situation": "The nearest exit is the north stairwell. You touch its door with the back of your hand and it feels hot.",
       "question": "What do you do?",
       "options": [
         {
           "id": "a",
-          "text": "Wait next to the door for responders.",
-          "correct": false,
-          "why": "Staying near a hot door is dangerous. Use another route.",
-          "consequence": "Heat and smoke build up around the group.",
-          "misconception": "waits_in_danger",
-          "effects": {
-            "timeLostSeconds": 60,
-            "smokeLevel": 1
-          }
+          "text": "Wait next to the door for responders."
         },
         {
           "id": "b",
-          "text": "Open it slowly to see what is behind it.",
-          "correct": false,
-          "why": "A hot door suggests fire or heat behind it. Opening it can let fire and smoke in.",
-          "consequence": "Smoke pours into the corridor and you shut the door again.",
-          "misconception": "opens_hot_door",
-          "effects": {
-            "timeLostSeconds": 30,
-            "smokeLevel": 1
-          }
+          "text": "Open it slowly to see what is behind it."
         },
         {
           "id": "c",
-          "text": "Keep it closed and lead the group to the south stairwell.",
-          "correct": true,
-          "why": "A hot door means you should not open it. Another route keeps the group away from the fire.",
-          "consequence": "You turn the group towards the south stairwell."
+          "text": "Keep it closed and lead the group to the south stairwell."
         },
         {
           "id": "d",
-          "text": "Open it fully to let the smoke out.",
-          "correct": false,
-          "why": "Opening the door lets in air that feeds the fire and releases smoke into your route.",
-          "consequence": "The corridor fills with smoke.",
-          "misconception": "ventilates_fire",
-          "effects": {
-            "timeLostSeconds": 30,
-            "smokeLevel": 2
-          }
+          "text": "Open it fully to let the smoke out."
         }
       ],
-      "explanationKeyBeats": [
-        "hot door suggests fire behind it",
-        "use another route"
+      "correctOptionId": "c",
+      "why": "A hot door means you should not open it. Another route keeps the group away from the fire.",
+      "guideRef": [
+        "S2"
       ],
       "chat": [
         {
@@ -390,85 +293,38 @@
           "availability": "afterFeedback",
           "suggested": false
         }
-      ],
-      "explanationKeywords": [
-        { "beat": "hot door suggests fire behind it", "keywords": ["hot", "heat", "warm", "fire behind", "fire on the other side", "burning"] },
-        { "beat": "use another route", "keywords": ["another route", "other route", "another way", "other way", "different route", "different way", "another exit", "other exit", "south", "alternative"] }
-      ],
-      "referenceExplanation": "Keep the door closed and lead the group to the south stairwell, because a hot door means fire behind it."
+      ]
     },
     {
       "id": "s3",
+      "section": "S2",
       "title": "Smoke in the corridor",
-      "sources": [
-        "S2",
-        "S3"
-      ],
-      "narrative": "The corridor to the south stairwell has a thin layer of smoke along the ceiling. The group is nervous.",
+      "situation": "The corridor to the south stairwell has a thin layer of smoke along the ceiling. The group is nervous.",
       "question": "How do you move the group?",
       "options": [
         {
           "id": "a",
-          "text": "Move low, cover nose and mouth, keep a hand on the wall and close doors behind you.",
-          "correct": true,
-          "why": "Staying low keeps you in cleaner air, the wall keeps your direction and closed doors slow the spread of smoke.",
-          "consequence": "The group moves steadily towards the south stairwell."
+          "text": "Move low, cover nose and mouth, keep a hand on the wall and close doors behind you."
         },
         {
           "id": "b",
-          "text": "Run upright to get there before the smoke thickens.",
-          "correct": false,
-          "why": "Smoke and hot gases rise, so upright movement exposes you to the worst air.",
-          "consequence": "People start coughing and the group slows down.",
-          "misconception": "stays_upright",
-          "effects": {
-            "timeLostSeconds": 30,
-            "smokeLevel": 1
-          }
+          "text": "Run upright to get there before the smoke thickens."
         },
         {
           "id": "c",
-          "text": "Go back and shelter in an office with the door open.",
-          "correct": false,
-          "why": "Sheltering with an open door lets smoke in, and it moves you away from the exit.",
-          "consequence": "Smoke follows you into the office.",
-          "misconception": "shelters_instead_of_exit",
-          "effects": {
-            "timeLostSeconds": 60,
-            "smokeLevel": 1
-          }
+          "text": "Go back and shelter in an office with the door open."
         },
         {
           "id": "d",
-          "text": "Break a window to clear the smoke.",
-          "correct": false,
-          "why": "Extra air can make a fire grow, and it will not clear your route.",
-          "consequence": "The smoke gets worse.",
-          "misconception": "breaks_window",
-          "effects": {
-            "smokeLevel": 2
-          }
+          "text": "Break a window to clear the smoke."
         }
       ],
-      "explanationKeyBeats": [
-        "smoke and hot gases rise",
-        "cleaner air near the floor"
+      "correctOptionId": "a",
+      "why": "Staying low keeps you in cleaner air, the wall keeps your direction and closed doors slow the spread of smoke.",
+      "guideRef": [
+        "S2",
+        "S3"
       ],
-      "suggestedQuestion": {
-        "question": "Which type of cloth filters smoke best?",
-        "closestSources": [
-          "S3"
-        ],
-        "keywords": [
-          "cloth",
-          "fabric",
-          "filter",
-          "filters",
-          "mask",
-          "towel",
-          "scarf"
-        ]
-      },
       "chat": [
         {
           "id": "s3-situation",
@@ -564,66 +420,51 @@
           "suggested": false
         }
       ],
-      "explanationKeywords": [
-        { "beat": "smoke and hot gases rise", "keywords": ["rise", "rising", "goes up", "go up", "ceiling", "upward", "gas", "hot air"] },
-        { "beat": "cleaner air near the floor", "keywords": ["low", "floor", "crawl", "below", "clean air", "cleaner air", "fresh air", "breathable"] }
-      ],
-      "referenceExplanation": "Move low with nose and mouth covered, a hand on the wall and doors closed behind you, because smoke rises and the cleaner air is near the floor."
+      "suggestedQuestion": {
+        "question": "Which type of cloth filters smoke best?",
+        "closestSources": [
+          "S3"
+        ],
+        "keywords": [
+          "cloth",
+          "fabric",
+          "filter",
+          "filters",
+          "mask",
+          "towel",
+          "scarf"
+        ]
+      }
     },
     {
       "id": "s4",
+      "section": "S6",
       "title": "A colleague is hurt",
-      "sources": [
-        "S6",
-        "S7"
-      ],
-      "narrative": "At the south landing a colleague sits against the wall, conscious and talking. A deep cut on the forearm is bleeding heavily, and there is also a small burn on the hand. The landing is clear of smoke.",
+      "situation": "At the south landing a colleague sits against the wall, conscious and talking. A deep cut on the forearm is bleeding heavily, and there is also a small burn on the hand. The landing is clear of smoke.",
       "question": "What do you do first?",
       "options": [
         {
           "id": "a",
-          "text": "Cool the burn under running water.",
-          "correct": false,
-          "why": "Severe bleeding is life-threatening and comes first. The burn can wait.",
-          "consequence": "The bleeding continues and the colleague grows pale.",
-          "misconception": "wrong_priority",
-          "effects": {
-            "casualtyStability": -1
-          }
+          "text": "Cool the burn under running water."
         },
         {
           "id": "b",
-          "text": "Lift the cloth every minute to check whether the bleeding has stopped.",
-          "correct": false,
-          "why": "Lifting the cloth releases pressure and restarts bleeding. Keep pressing and add layers if it soaks through.",
-          "consequence": "The wound starts bleeding again.",
-          "misconception": "releases_pressure",
-          "effects": {
-            "casualtyStability": -1
-          }
+          "text": "Lift the cloth every minute to check whether the bleeding has stopped."
         },
         {
           "id": "c",
-          "text": "Tell the colleague to wait while you take the rest of the group down.",
-          "correct": false,
-          "why": "Leaving a bleeding person alone lets the bleeding continue. Control it and arrange help.",
-          "consequence": "The colleague is left alone and loses more blood.",
-          "misconception": "abandons_casualty",
-          "effects": {
-            "casualtyStability": -1
-          }
+          "text": "Tell the colleague to wait while you take the rest of the group down."
         },
         {
           "id": "d",
-          "text": "Press firmly on the wound with a clean cloth and keep the pressure on.",
-          "correct": true,
-          "why": "Firm direct pressure is the first step to control severe bleeding.",
-          "consequence": "The bleeding slows and the colleague stays stable."
+          "text": "Press firmly on the wound with a clean cloth and keep the pressure on."
         }
       ],
-      "explanationKeyBeats": [
-        "severe bleeding is life-threatening",
-        "direct pressure"
+      "correctOptionId": "d",
+      "why": "Firm direct pressure is the first step to control severe bleeding.",
+      "guideRef": [
+        "S6",
+        "S7"
       ],
       "chat": [
         {
@@ -739,66 +580,36 @@
           "availability": "afterFeedback",
           "suggested": false
         }
-      ],
-      "explanationKeywords": [
-        { "beat": "severe bleeding is life-threatening", "keywords": ["life-threatening", "life threatening", "bleed", "blood", "dangerous", "serious", "priority", "first", "worse"] },
-        { "beat": "direct pressure", "keywords": ["pressure", "press", "pressing", "compress"] }
-      ],
-      "referenceExplanation": "Press firmly on the wound with a clean cloth and keep the pressure on, because severe bleeding is life-threatening and direct pressure controls it."
+      ]
     },
     {
       "id": "s5",
+      "section": "S5",
       "title": "Calling for help",
-      "sources": [
-        "S5"
-      ],
-      "narrative": "You are holding pressure on the wound. Three people from the group stand nearby, and nobody has called for help yet.",
+      "situation": "You are holding pressure on the wound. Three people from the group stand nearby, and nobody has called for help yet.",
       "question": "How do you get help on the way?",
       "options": [
         {
           "id": "a",
-          "text": "Say loudly: \"Someone call 112.\"",
-          "correct": false,
-          "why": "A general request leads people to assume someone else has called. Assign one person.",
-          "consequence": "Everyone waits, and no call is made for another minute.",
-          "misconception": "diffuse_responsibility",
-          "effects": {
-            "timeLostSeconds": 60
-          }
+          "text": "Say loudly: \"Someone call 112.\""
         },
         {
           "id": "b",
-          "text": "Point at one person: \"You, call 112, report one casualty with severe bleeding and our location, then tell me what they said.\"",
-          "correct": true,
-          "why": "A named person with clear details and a report-back makes sure the call happens.",
-          "consequence": "The call is made and responders are on their way."
+          "text": "Point at one person: \"You, call 112, report one casualty with severe bleeding and our location, then tell me what they said.\""
         },
         {
           "id": "c",
-          "text": "Release the pressure and call yourself.",
-          "correct": false,
-          "why": "Do not stop pressure on a severe bleed. Delegate the call.",
-          "consequence": "The wound bleeds again while you dial.",
-          "misconception": "stops_treatment_to_call",
-          "effects": {
-            "casualtyStability": -1
-          }
+          "text": "Release the pressure and call yourself."
         },
         {
           "id": "d",
-          "text": "Wait until you reach the assembly point, then call.",
-          "correct": false,
-          "why": "Waiting delays help for a casualty with severe bleeding.",
-          "consequence": "Help arrives later than it should.",
-          "misconception": "delays_call",
-          "effects": {
-            "timeLostSeconds": 120
-          }
+          "text": "Wait until you reach the assembly point, then call."
         }
       ],
-      "explanationKeyBeats": [
-        "avoid assuming someone else called",
-        "clear details: location, injury"
+      "correctOptionId": "b",
+      "why": "A named person with clear details and a report-back makes sure the call happens.",
+      "guideRef": [
+        "S5"
       ],
       "chat": [
         {
@@ -913,67 +724,37 @@
           "availability": "afterFeedback",
           "suggested": false
         }
-      ],
-      "explanationKeywords": [
-        { "beat": "avoid assuming someone else called", "keywords": ["someone else", "somebody else", "assume", "everyone thinks", "nobody", "no one", "bystander", "responsib", "one person", "specific", "name"] },
-        { "beat": "clear details: location, injury", "keywords": ["location", "address", "where", "injur", "bleeding", "detail", "what happened", "wound"] }
-      ],
-      "referenceExplanation": "Name one person to call 112 with the location and the injury and to report back, because otherwise everyone assumes someone else has called."
+      ]
     },
     {
       "id": "s6",
+      "section": "S4",
       "title": "Assembly point",
-      "sources": [
-        "S4",
-        "S10"
-      ],
-      "narrative": "You and your colleague, with pressure still applied, reach the assembly point. The headcount shows that one person from your group is missing. Paramedics arrive.",
+      "situation": "You and your colleague, with pressure still applied, reach the assembly point. The headcount shows that one person from your group is missing. Paramedics arrive.",
       "question": "What do you do?",
       "options": [
         {
           "id": "a",
-          "text": "Go back inside to look for the missing person.",
-          "correct": false,
-          "why": "Do not re-enter the building. Give the information to responders.",
-          "consequence": "You are stopped at the entrance and valuable time is lost.",
-          "misconception": "re_enters_building",
-          "effects": {
-            "timeLostSeconds": 60
-          }
+          "text": "Go back inside to look for the missing person."
         },
         {
           "id": "b",
-          "text": "Wait quietly until someone asks you.",
-          "correct": false,
-          "why": "Responders need the missing person's details and the casualty handover immediately.",
-          "consequence": "Responders start without key information.",
-          "misconception": "waits_to_be_asked",
-          "effects": {
-            "timeLostSeconds": 60
-          }
+          "text": "Wait quietly until someone asks you."
         },
         {
           "id": "c",
-          "text": "Tell responders the missing person's name and last known location, then hand over the casualty: what happened, what you did and when.",
-          "correct": true,
-          "why": "Clear information to responders is the fastest way to help the missing person and the casualty.",
-          "consequence": "Responders send a team to the last known location and take over care."
+          "text": "Tell responders the missing person's name and last known location, then hand over the casualty: what happened, what you did and when."
         },
         {
           "id": "d",
-          "text": "Send a colleague back inside to search quickly.",
-          "correct": false,
-          "why": "Sending someone back in puts another person at risk. Leave the search to responders.",
-          "consequence": "Responders have to deal with a second person in danger.",
-          "misconception": "sends_others_in",
-          "effects": {
-            "timeLostSeconds": 60
-          }
+          "text": "Send a colleague back inside to search quickly."
         }
       ],
-      "explanationKeyBeats": [
-        "name and last known location",
-        "what happened, what you did, when"
+      "correctOptionId": "c",
+      "why": "Clear information to responders is the fastest way to help the missing person and the casualty.",
+      "guideRef": [
+        "S4",
+        "S10"
       ],
       "chat": [
         {
@@ -1085,68 +866,37 @@
           "availability": "afterFeedback",
           "suggested": false
         }
-      ],
-      "explanationKeywords": [
-        { "beat": "name and last known location", "keywords": ["name", "last known", "last seen", "where they were", "location", "missing"] },
-        { "beat": "what happened, what you did, when", "keywords": ["what happened", "what i did", "what we did", "what was done", "when", "time", "handover", "hand over"] }
-      ],
-      "referenceExplanation": "Give responders the missing person's name and last known location, then hand over what happened, what you did and when, because clear information lets them act at once."
+      ]
     },
     {
       "id": "s7",
+      "section": "S1",
       "title": "Someone needs help",
-      "sources": [
-        "S1",
-        "S4"
-      ],
-      "narrative": "As the group heads for the stairs, a visitor who walks with crutches tells you they cannot manage the stairs quickly. The corridor is still clear.",
+      "situation": "As the group heads for the stairs, a visitor who walks with crutches tells you they cannot manage the stairs quickly. The corridor is still clear.",
       "question": "What do you do?",
       "options": [
         {
           "id": "a",
-          "text": "Send the visitor down in the elevator on their own.",
-          "correct": false,
-          "why": "Elevators can stop or fill with smoke during a fire. The guide says not to use them.",
-          "consequence": "The elevator is not an option and the visitor is left waiting.",
-          "misconception": "elevator_use",
-          "effects": {
-            "timeLostSeconds": 30
-          }
+          "text": "Send the visitor down in the elevator on their own."
         },
         {
           "id": "b",
-          "text": "Have a colleague help the visitor down the stairs if it is safe, and if not, make sure their exact location is reported to responders.",
-          "correct": true,
-          "why": "The guide says to help people who need assistance only if it is safe, and otherwise to report where they are so responders can reach them.",
-          "consequence": "A colleague walks down with the visitor while the rest of the group keeps moving."
+          "text": "Have a colleague help the visitor down the stairs if it is safe, and if not, make sure their exact location is reported to responders."
         },
         {
           "id": "c",
-          "text": "Tell the visitor to wait in an office until the alarm stops.",
-          "correct": false,
-          "why": "Leaving someone to wait without telling anyone keeps them in danger and nobody knows where they are.",
-          "consequence": "The visitor is alone and nobody knows where they are.",
-          "misconception": "waits_in_danger",
-          "effects": {
-            "timeLostSeconds": 60
-          }
+          "text": "Tell the visitor to wait in an office until the alarm stops."
         },
         {
           "id": "d",
-          "text": "Stop the whole group until the visitor is ready to go.",
-          "correct": false,
-          "why": "Holding everyone back delays the exit for the whole group. Help the visitor only if it is safe and keep the others moving.",
-          "consequence": "The whole group stands still in the corridor.",
-          "misconception": "delays_exit",
-          "effects": {
-            "timeLostSeconds": 90,
-            "smokeLevel": 1
-          }
+          "text": "Stop the whole group until the visitor is ready to go."
         }
       ],
-      "explanationKeyBeats": [
-        "help only if it is safe",
-        "report their location to responders"
+      "correctOptionId": "b",
+      "why": "The guide says to help people who need assistance only if it is safe, and otherwise to report where they are so responders can reach them.",
+      "guideRef": [
+        "S1",
+        "S4"
       ],
       "chat": [
         {
@@ -1255,67 +1005,36 @@
           "availability": "afterFeedback",
           "suggested": false
         }
-      ],
-      "explanationKeywords": [
-        { "beat": "help only if it is safe", "keywords": ["safe", "safely", "safety", "risk"] },
-        { "beat": "report their location to responders", "keywords": ["report", "location", "where", "responder", "tell", "firefighter"] }
-      ],
-      "referenceExplanation": "Have a colleague help the visitor down the stairs only if it is safe, and otherwise report their exact location to responders, because helpers must not put themselves at risk."
+      ]
     },
     {
       "id": "s8",
+      "section": "S2",
       "title": "A cool door",
-      "sources": [
-        "S2"
-      ],
-      "narrative": "With pressure still applied, you and your colleague reach the bottom of the south stairwell. A shut door leads to the ground-floor lobby and the exit. You check it with the back of your hand: it is cool.",
+      "situation": "With pressure still applied, you and your colleague reach the bottom of the south stairwell. A shut door leads to the ground-floor lobby and the exit. You check it with the back of your hand: it is cool.",
       "question": "What do you do?",
       "options": [
         {
           "id": "a",
-          "text": "Open it slowly, ready to close it at once if you see smoke or feel heat.",
-          "correct": true,
-          "why": "A cool door can be opened, but slowly and with care, so you can shut it again if there is smoke or heat behind it.",
-          "consequence": "The lobby is clear and the group moves towards the exit."
+          "text": "Open it slowly, ready to close it at once if you see smoke or feel heat."
         },
         {
           "id": "b",
-          "text": "Open it wide and send everyone through at a run.",
-          "correct": false,
-          "why": "Even a cool door can hide smoke. Opening it wide with no way to react can let smoke in, and running in a crowd causes falls.",
-          "consequence": "The group surges through and someone stumbles on the step.",
-          "misconception": "rushes_through",
-          "effects": {
-            "timeLostSeconds": 30
-          }
+          "text": "Open it wide and send everyone through at a run."
         },
         {
           "id": "c",
-          "text": "Leave it shut and take the group back upstairs to look for another route.",
-          "correct": false,
-          "why": "A cool door is the guide's signal that the route may be usable. Going back up takes the group away from the exit.",
-          "consequence": "The group climbs back up and loses time.",
-          "misconception": "avoids_safe_route",
-          "effects": {
-            "timeLostSeconds": 90,
-            "smokeLevel": 1
-          }
+          "text": "Leave it shut and take the group back upstairs to look for another route."
         },
         {
           "id": "d",
-          "text": "Wait at the door until someone outside opens it.",
-          "correct": false,
-          "why": "Waiting wastes time when you can check the door yourself and continue.",
-          "consequence": "Nobody comes, and time passes.",
-          "misconception": "waits_in_danger",
-          "effects": {
-            "timeLostSeconds": 60
-          }
+          "text": "Wait at the door until someone outside opens it."
         }
       ],
-      "explanationKeyBeats": [
-        "be ready to close it",
-        "smoke or heat can still be behind it"
+      "correctOptionId": "a",
+      "why": "A cool door can be opened, but slowly and with care, so you can shut it again if there is smoke or heat behind it.",
+      "guideRef": [
+        "S2"
       ],
       "chat": [
         {
@@ -1426,66 +1145,36 @@
           "availability": "afterFeedback",
           "suggested": false
         }
-      ],
-      "explanationKeywords": [
-        { "beat": "be ready to close it", "keywords": ["close", "shut", "ready", "slowly", "careful"] },
-        { "beat": "smoke or heat can still be behind it", "keywords": ["smoke", "heat", "hot", "fire", "behind"] }
-      ],
-      "referenceExplanation": "Open the cool door slowly, ready to close it at once, because smoke or heat can still be behind it."
+      ]
     },
     {
       "id": "s9",
+      "section": "S5",
       "title": "The call taker's questions",
-      "sources": [
-        "S5"
-      ],
-      "narrative": "The colleague you asked to call 112 comes back to you. The call is still connected and the call taker is asking for more information. Your colleague asks whether they can hang up so they can help you.",
+      "situation": "The colleague you asked to call 112 comes back to you. The call is still connected and the call taker is asking for more information. Your colleague asks whether they can hang up so they can help you.",
       "question": "What do you tell them?",
       "options": [
         {
           "id": "a",
-          "text": "Hang up. Help is already on the way.",
-          "correct": false,
-          "why": "The guide says to stay on the line until told to hang up. The call taker may need details or give instructions.",
-          "consequence": "The call ends and the call taker cannot reach you again.",
-          "misconception": "ends_call_early",
-          "effects": {
-            "timeLostSeconds": 60
-          }
+          "text": "Hang up. Help is already on the way."
         },
         {
           "id": "b",
-          "text": "Stay on the line, answer the questions and pass on any instructions until told to hang up.",
-          "correct": true,
-          "why": "Staying on the line lets the call taker get the details they need and give instructions until they say the call can end.",
-          "consequence": "The call taker confirms your location and tells you help is close."
+          "text": "Stay on the line, answer the questions and pass on any instructions until told to hang up."
         },
         {
           "id": "c",
-          "text": "Hand the phone to the injured colleague so they can explain.",
-          "correct": false,
-          "why": "The injured person needs to stay still and keep the wound under pressure. A helper should handle the call.",
-          "consequence": "Your colleague moves and the bleeding starts again.",
-          "misconception": "burdens_casualty",
-          "effects": {
-            "casualtyStability": -1
-          }
+          "text": "Hand the phone to the injured colleague so they can explain."
         },
         {
           "id": "d",
-          "text": "Put the phone down and help carry the colleague instead.",
-          "correct": false,
-          "why": "Leaving the call means losing contact with the call taker. Stay on the line until told to hang up.",
-          "consequence": "The call taker hears nothing and has to call back.",
-          "misconception": "ends_call_early",
-          "effects": {
-            "timeLostSeconds": 60
-          }
+          "text": "Put the phone down and help carry the colleague instead."
         }
       ],
-      "explanationKeyBeats": [
-        "stay on the line",
-        "until told to hang up"
+      "correctOptionId": "b",
+      "why": "Staying on the line lets the call taker get the details they need and give instructions until they say the call can end.",
+      "guideRef": [
+        "S5"
       ],
       "chat": [
         {
@@ -1596,67 +1285,37 @@
           "availability": "afterFeedback",
           "suggested": false
         }
-      ],
-      "explanationKeywords": [
-        { "beat": "stay on the line", "keywords": ["stay on", "on the line", "keep talking", "don't hang up", "do not hang up", "stay connected", "keep the line", "not hang up"] },
-        { "beat": "until told to hang up", "keywords": ["until", "told", "instruction", "they say", "call taker", "dispatcher", "operator"] }
-      ],
-      "referenceExplanation": "Stay on the line and pass on the instructions until the call taker says you can hang up, because they may still need details or have instructions for you."
+      ]
     },
     {
       "id": "s10",
+      "section": "S4",
       "title": "The missing person",
-      "sources": [
-        "S4",
-        "S10"
-      ],
-      "narrative": "A few minutes after your handover, the person who was missing walks up to the assembly point. They left the building by another exit.",
+      "situation": "A few minutes after your handover, the person who was missing walks up to the assembly point. They left the building by another exit.",
       "question": "What do you do?",
       "options": [
         {
           "id": "a",
-          "text": "Tell the responders and the person doing the headcount at once, so the search can stop.",
-          "correct": true,
-          "why": "The guide's handover includes any changes since. Responders may be searching for this person, so the news must reach them straight away.",
-          "consequence": "The responders call off the search and the headcount is complete."
+          "text": "Tell the responders and the person doing the headcount at once, so the search can stop."
         },
         {
           "id": "b",
-          "text": "Wait until someone asks whether the person has turned up.",
-          "correct": false,
-          "why": "Responders may be searching right now. A change like this must be passed on straight away.",
-          "consequence": "A team keeps searching for someone who is already safe.",
-          "misconception": "waits_to_be_asked",
-          "effects": {
-            "timeLostSeconds": 60
-          }
+          "text": "Wait until someone asks whether the person has turned up."
         },
         {
           "id": "c",
-          "text": "Let the person rejoin the group quietly, since they are safe now.",
-          "correct": false,
-          "why": "Nobody in charge would know, so a search could continue and put responders at risk.",
-          "consequence": "Responders keep looking inside the building.",
-          "misconception": "keeps_change_to_self",
-          "effects": {
-            "timeLostSeconds": 60
-          }
+          "text": "Let the person rejoin the group quietly, since they are safe now."
         },
         {
           "id": "d",
-          "text": "Ask the person to go back and find the responders inside.",
-          "correct": false,
-          "why": "The guide says not to re-enter the building until it is declared safe.",
-          "consequence": "The person is stopped at the entrance.",
-          "misconception": "re_enters_building",
-          "effects": {
-            "timeLostSeconds": 30
-          }
+          "text": "Ask the person to go back and find the responders inside."
         }
       ],
-      "explanationKeyBeats": [
-        "changes since the handover",
-        "the search can stop"
+      "correctOptionId": "a",
+      "why": "The guide's handover includes any changes since. Responders may be searching for this person, so the news must reach them straight away.",
+      "guideRef": [
+        "S4",
+        "S10"
       ],
       "chat": [
         {
@@ -1765,12 +1424,7 @@
           "availability": "afterFeedback",
           "suggested": false
         }
-      ],
-      "explanationKeywords": [
-        { "beat": "changes since the handover", "keywords": ["change", "update", "news", "turned up", "found", "arrived", "safe now", "back"] },
-        { "beat": "the search can stop", "keywords": ["search", "stop", "looking", "call off", "risk", "danger"] }
-      ],
-      "referenceExplanation": "Tell the responders and the person doing the headcount at once, because any change since the handover matters and the search can stop."
+      ]
     }
   ]
 }

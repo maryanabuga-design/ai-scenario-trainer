@@ -18,18 +18,11 @@
   --correct: #1f7a4d;
   --wrong: #b3261e;
   --caution: #8a5a00;
-  --secure: #3d5a43;
-  --misconception: #7a3049;
 
   /* Results screen (soft surface), measured from the reference screens */
   --soft-card: var(--card);
   --soft-divider: #eae8e7;
   --soft-shadow: var(--card-shadow);
-  --secure-row: #f3f4ef;
-  --guess-row: #f5f1ee;
-  --guess-ink: #4b433d;
-  --gap-row: #f8f4ee;
-  --misconception-row: #f8f1ef;
 
   /* The one shared pastel palette (DESIGN.md: Pastel palette) */
   --pastel-yellow: #f8f2cc;
@@ -50,6 +43,7 @@
   --selectable-stroke: var(--stroke-neutral);
   --olive-tint: #e0e6d6;
   --olive-tint-pressed: #d6ddcb;
+  --placeholder-stroke: #b9c4ac;
   --card: #faf7f3;
   --arrow-stroke: #e4dfd5;
   --arrow-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
@@ -76,15 +70,8 @@
   --color-correct: var(--correct);
   --color-wrong: var(--wrong);
   --color-caution: var(--caution);
-  --color-secure: var(--secure);
-  --color-misconception: var(--misconception);
   --color-soft-card: var(--soft-card);
   --color-soft-divider: var(--soft-divider);
-  --color-secure-row: var(--secure-row);
-  --color-guess-row: var(--guess-row);
-  --color-guess-ink: var(--guess-ink);
-  --color-gap-row: var(--gap-row);
-  --color-misconception-row: var(--misconception-row);
   --color-chip-ink-green: var(--chip-ink-green);
   --color-pastel-yellow: var(--pastel-yellow);
   --color-pastel-rose: var(--pastel-rose);
@@ -103,6 +90,7 @@
   --color-selectable-stroke: var(--selectable-stroke);
   --color-olive-tint: var(--olive-tint);
   --color-olive-tint-pressed: var(--olive-tint-pressed);
+  --color-placeholder-stroke: var(--placeholder-stroke);
   --color-card: var(--card);
 
   --font-sans: var(--font-dm-sans), system-ui, sans-serif;
@@ -237,6 +225,11 @@ dialog[data-sheet]::backdrop,
 @utility type-button {
   font-size: 16px;
   line-height: 24px;
+  font-weight: 500;
+}
+@utility type-micro {
+  font-size: 11px;
+  line-height: 16px;
   font-weight: 500;
 }
 @utility type-caption {

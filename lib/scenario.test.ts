@@ -1,65 +1,62 @@
 import { describe, expect, it } from "vitest";
-import { defaultStory, getScenario, getStep, scenarios } from "@/lib/scenario";
-import { scoreStep, sumEffects } from "@/lib/scoring";
-
-const flood = getScenario("flood-preparedness-001");
+import scenarioData from "@/content/scenario-building-evacuation.json";
+import floodData from "@/content/scenario-flood-preparedness.json";
+import { getScenario, getStep, scenario, scenarios } from "@/lib/scenario";
 
 describe("scenarios", () => {
   it("has the evacuation and the flood scenario, with unique step ids", () => {
-    expect(scenarios.map((def) => def.id)).toEqual([
-      "building-evacuation-001",
-      "flood-preparedness-001",
-    ]);
+    expect(scenarios.map((def) => def.id)).toEqual([scenarioData.id, "flood-preparedness-001"]);
     const ids = scenarios.flatMap((def) => def.steps.map((step) => step.id));
     expect(new Set(ids).size).toBe(ids.length);
   });
 
   it("falls back to the evacuation scenario for sessions saved without one", () => {
-    expect(getScenario(undefined).id).toBe("building-evacuation-001");
+    expect(getScenario(undefined).id).toBe(scenario.id);
+    expect(getScenario("unknown").id).toBe(scenario.id);
   });
 
-  it("gives the flood scenario 3 namespaced steps and only the 3-decision length", () => {
-    expect(defaultStory(flood).map((step) => step.id)).toEqual([
-      "flood-s1",
-      "flood-s2",
-      "flood-s3",
-    ]);
-    expect(Object.keys(flood.lengths)).toEqual(["short"]);
-    expect(getStep("flood-s1").title).toBe("A flood warning");
-  });
-
-  it("gives the flood steps no prepared Ask AI answers", () => {
-    expect(getStep("flood-s1").chat).toEqual([]);
-  });
-
-  it("shows time lost and water level for the flood scenario, and no casualty", () => {
-    expect(flood.outcome.map((metric) => metric.key)).toEqual(["timeLostSeconds", "waterLevel"]);
-  });
-
-  it("adds up water level like any other effect", () => {
-    const items = [scoreStep(getStep("flood-s1"), "a", 2), scoreStep(getStep("flood-s2"), "b", 3)];
-    expect(sumEffects(flood.initialState, items)).toEqual({ waterLevel: 4, timeLostSeconds: 240 });
+  it("gives the flood scenario 3 prefixed steps and no prepared Ask AI answers", () => {
+    const flood = getScenario("flood-preparedness-001");
+    expect(flood.steps.map((step) => step.id)).toEqual(["flood-s1", "flood-s2", "flood-s3"]);
+    flood.steps.forEach((step) => expect(step.chat ?? []).toEqual([]));
+    expect(getStep("flood-s2").section).toBe("F4");
   });
 });
 
-describe("open-question content", () => {
-  const steps = scenarios.flatMap((def) => def.steps);
+describe("scenario steps use the shared shape", () => {
+  scenarios.forEach((def) =>
+    def.steps.forEach((step) => {
+      it(`${step.id}: a situation, a question, 4 options and one correct answer`, () => {
+        expect(step.kind).toBe("step");
+        expect(step.situation?.length).toBeGreaterThan(0);
+        expect(step.title?.length).toBeGreaterThan(0);
+        expect(step.question).toMatch(/\?$/);
+        expect(step.options).toHaveLength(4);
+        expect(step.options.filter((option) => option.id === step.correctOptionId)).toHaveLength(1);
+        expect(step.section).toBe(step.guideRef[0]);
+        expect(step.why.length).toBeGreaterThan(0);
+      });
+    }),
+  );
 
-  it("gives every step one reference explanation: the action, then the reason", () => {
-    steps.forEach((step) => {
-      const sentence = step.referenceExplanation;
-      expect(sentence, step.id).toMatch(/^[A-Z][^.]*, because [^.]*\.$/);
-      expect(sentence.split(/[.!?] /)).toHaveLength(1);
-    });
-  });
-
-  it("gives every key beat its keywords", () => {
-    steps.forEach((step) => {
-      expect(
-        step.explanationKeywords.map((entry) => entry.beat),
-        step.id,
-      ).toEqual(step.explanationKeyBeats);
-      step.explanationKeywords.forEach((entry) => expect(entry.keywords.length).toBeGreaterThan(0));
-    });
+  it("has none of the removed content fields, in the files or in the steps", () => {
+    const removed = [
+      "explanationKeyBeats",
+      "explanationKeywords",
+      "referenceExplanation",
+      "confidenceScale",
+      "errorTypeRule",
+      "narrative",
+    ];
+    for (const file of [scenarioData, floodData]) {
+      const text = JSON.stringify(file);
+      removed.forEach((field) => expect(text).not.toContain(`"${field}"`));
+      file.steps.forEach((step) => {
+        expect(step).not.toHaveProperty("sources");
+        step.options.forEach((option) =>
+          expect(Object.keys(option).sort()).toEqual(["id", "text"]),
+        );
+      });
+    }
   });
 });

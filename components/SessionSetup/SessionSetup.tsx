@@ -1,65 +1,111 @@
 "use client";
 
+import { useState } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
-import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { Button } from "@/components/Button/Button";
-import { SelectableCard } from "@/components/SelectableCard/SelectableCard";
-import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
-import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
+import { Chevron } from "@/components/Chevron/Chevron";
+import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
+import { Media3D } from "@/components/Media3D/Media3D";
 import { SectionList } from "@/components/SectionList/SectionList";
-import { heroImages, HeroSlot } from "@/components/HeroSlot/HeroSlot";
-import { QuizAmountPicker } from "@/components/QuizAmountPicker/QuizAmountPicker";
-import { Tag } from "@/components/Tag/Tag";
-import { quizCounts } from "@/lib/quiz";
-import {
-  availableLine,
-  availableQuestions,
-  availableWithCap,
-  fitAmount,
-  questionCountLabel,
-  quizAmount,
-} from "@/lib/quiz-setup";
-import { getScenario } from "@/lib/scenario";
+import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
+import { SelectableCard } from "@/components/SelectableCard/SelectableCard";
+import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
+import { Toggle } from "@/components/Toggle/Toggle";
+import type { GuideStats } from "@/lib/progress-stats";
 import { keepOneHint } from "@/lib/sections";
-import type { Length, ScenarioDef } from "@/lib/scenario";
+import {
+  fitLength,
+  lengthOptions,
+  onlyWeakSections,
+  poolFor,
+  questionCountLabel,
+} from "@/lib/setup";
+import type { SetupChoice, SetupMode } from "@/lib/setup";
 import type { Training } from "@/lib/training";
 
-export type { Length };
-
 export type SetupValue = {
-  mode: "scenario" | "quiz";
-  length: Length;
+  mode: SetupMode;
+  length: number;
   sections: string[];
-  countChoice: (typeof quizCounts)[number] | "custom";
-  customCount: number;
+  shuffle: boolean;
+  onlyWeak: boolean;
 };
 
 export const defaultSetup: SetupValue = {
   mode: "scenario",
-  length: "full",
+  length: 10,
   sections: [],
-  countChoice: 5,
-  customCount: 8,
+  shuffle: false,
+  onlyWeak: false,
 };
 
-const lengthCards: { id: Length; tag: string; tone: "peach" | "lilac" | "blue" }[] = [
-  { id: "short", tag: "Short", tone: "peach" },
-  { id: "full", tag: "Full", tone: "lilac" },
-  { id: "extended", tag: "Extended", tone: "blue" },
-];
-
-/**
- * How many questions the quiz will have: the chosen count, never more than the sections hold
- * nor than the quiz size saved with the training (cap).
- */
-export function quizSize(value: SetupValue, cap?: number) {
-  const available = availableWithCap(value.sections, cap);
-  return { available, size: quizAmount(value, available) };
+/** The setup as the choices that build a session: only the weak sections when asked. */
+export function setupChoice(
+  value: SetupValue,
+  scenarioId: string | undefined,
+  weakSectionIds: string[],
+): SetupChoice & { available: number } {
+  const sections = value.onlyWeak
+    ? onlyWeakSections(value.sections, weakSectionIds)
+    : value.sections;
+  const available = poolFor(value.mode, scenarioId, sections).length;
+  return {
+    mode: value.mode,
+    scenarioId,
+    sections,
+    length: fitLength(value.length, available),
+    shuffle: value.mode === "quiz" && value.shuffle,
+    available,
+  };
 }
 
-/** A setup whose amount fits the questions its sections hold and the saved quiz size. */
-export function fitSetup(value: SetupValue, cap?: number): SetupValue {
-  return fitAmount(value, availableWithCap(value.sections, cap));
+/** The share of the guide practised, as a small ring with the percentage. */
+function RingBadge({ percent }: { percent: number }) {
+  const radius = 16;
+  const length = 2 * Math.PI * radius;
+  return (
+    <div
+      role="img"
+      aria-label={`${percent}% of the guide practised`}
+      className="relative h-10 w-10 shrink-0"
+    >
+      <svg viewBox="0 0 40 40" aria-hidden="true" className="h-full w-full -rotate-90">
+        <circle
+          cx="20"
+          cy="20"
+          r={radius}
+          fill="none"
+          strokeWidth="3"
+          className="stroke-secondary-sand-pressed"
+        />
+        <circle
+          cx="20"
+          cy="20"
+          r={radius}
+          fill="none"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeDasharray={`${(percent / 100) * length} ${length}`}
+          className="stroke-primary"
+        />
+      </svg>
+      <span
+        aria-hidden="true"
+        className="type-micro absolute inset-0 flex items-center justify-center tabular-nums"
+      >
+        {percent}%
+      </span>
+    </div>
+  );
+}
+
+function AnswerCount({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="flex flex-1 flex-col items-center gap-1">
+      <dd className="type-numeral order-1 tabular-nums">{value}</dd>
+      <dt className="type-small order-2 text-text-secondary">{label}</dt>
+    </div>
+  );
 }
 
 export function SessionSetup({
@@ -69,42 +115,85 @@ export function SessionSetup({
   replacesUnfinished = false,
   training,
   materialName,
-  scenarioDef = getScenario(undefined),
+  scenarioId,
+  guideSectionIds,
+  stats,
+  practised,
+  weakSectionIds,
 }: {
-  /** The scenario of the material being trained; its lengths are the ones offered. */
-  scenarioDef?: ScenarioDef;
-  /** Shown under the title; the scenario's title when there is no training. */
-  materialName?: string;
-  /** The created training this setup belongs to; limits the modes and the quiz sections. */
-  training?: Pick<Training, "materialId" | "scenario" | "quiz" | "sections" | "quizSize">;
   value: SetupValue;
   onChange: (value: SetupValue) => void;
   onStart: () => void;
   replacesUnfinished?: boolean;
+  /** The created training this setup belongs to; limits the modes. */
+  training?: Pick<Training, "materialId" | "scenario" | "quiz">;
+  /** The guide's name: the title and the subtitle. */
+  materialName: string;
+  scenarioId?: string;
+  /** Every section of the guide, which the Guide sections screen lists. */
+  guideSectionIds: string[];
+  /** Answers given to this guide's questions in the saved sessions. */
+  stats: GuideStats;
+  /** The share of the guide practised, in percent. */
+  practised: number;
+  /** Guide sections with a wrong answer: "Only topics to repeat" limits the questions to them. */
+  weakSectionIds: string[];
 }) {
   const { sections: guideSections } = useSourceSheet();
-  const sections = training
-    ? guideSections.filter((section) => training.sections.includes(section.id))
-    : guideSections;
+  const [view, setView] = useState<"main" | "sections">("main");
   const modes = [
     { value: "scenario" as const, label: "Scenario", allowed: !training || training.scenario },
     { value: "quiz" as const, label: "Quiz", allowed: !training || training.quiz },
   ].filter((mode) => mode.allowed);
-  const cap = training?.quizSize;
-  const { available, size } = quizSize(value, cap);
+  const choice = setupChoice(value, scenarioId, weakSectionIds);
+  const options = lengthOptions(choice.available);
+  const blocked = value.sections.length === 0 || choice.available === 0;
   const quiz = value.mode === "quiz";
-  const blocked = quiz && value.sections.length === 0;
+  const rows = guideSections
+    .filter((section) => guideSectionIds.includes(section.id))
+    .map((section) => ({ id: section.id, title: section.title }));
+
+  if (view === "sections") {
+    return (
+      <div className="flex flex-col gap-6">
+        <CircleBackButton label="Back to Session setup" onClick={() => setView("main")} />
+        <h1 className="type-page-title">Guide sections</h1>
+        <SectionList
+          title="Sections"
+          titleId="setup-sections"
+          sections={rows}
+          selected={value.sections}
+          onChange={(sections) => onChange({ ...value, sections })}
+        />
+        <ActionBar>
+          {value.sections.length === 0 && (
+            <p className="type-small text-center text-text-secondary">{keepOneHint}</p>
+          )}
+          <Button disabled={value.sections.length === 0} onClick={() => setView("main")}>
+            Done
+          </Button>
+        </ActionBar>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
-      <CircleBackButton
-        href={`/materials/${training?.materialId ?? "evacuation-guide"}`}
-        label="Back to material"
-      />
-      <HeroSlot kind="setup" src={heroImages.setup.src} alt={heroImages.setup.alt} />
-      <div className="flex flex-col gap-1">
-        <h1 className="type-page-title">Session setup</h1>
-        <p className="break-words text-text-secondary">{materialName ?? scenarioDef.title}</p>
+      <div className="grid grid-cols-[44px_1fr_40px] items-center gap-2">
+        <CircleBackButton
+          href={`/materials/${training?.materialId ?? "evacuation-guide"}`}
+          label="Back to material"
+        />
+        <div className="flex min-w-0 flex-col items-center">
+          <h1 className="type-item-title">Session setup</h1>
+          <p className="type-small max-w-full truncate text-text-secondary">{materialName}</p>
+        </div>
+        <RingBadge percent={practised} />
+      </div>
+
+      <div className="flex flex-col items-center gap-4">
+        <Media3D variant="hero" />
+        <h2 className="type-page-title break-words text-center">{materialName}</h2>
       </div>
 
       {modes.length > 1 ? (
@@ -116,86 +205,67 @@ export function SessionSetup({
           onChange={(mode) => onChange({ ...value, mode })}
         />
       ) : (
-        <p className="text-text-secondary">
+        <p className="text-center text-text-secondary">
           This training has a {modes[0]?.value === "quiz" ? "quiz" : "scenario"} only.
         </p>
       )}
 
-      {!quiz && (
+      <section aria-labelledby="answers-title" className="flex flex-col gap-3">
+        <h2 id="answers-title" className="type-label text-text-secondary">
+          YOUR ANSWERS
+        </h2>
+        <dl className="flex rounded-card bg-card p-4 shadow-(--card-shadow)">
+          <AnswerCount label="Questions" value={stats.questions} />
+          <AnswerCount label="Correct" value={stats.correct} />
+          <AnswerCount label="Incorrect" value={stats.incorrect} />
+        </dl>
+      </section>
+
+      <section className="flex flex-col gap-4 rounded-card bg-card p-4 shadow-(--card-shadow)">
         <fieldset className="flex flex-col gap-3">
-          <legend className="type-body-strong mb-3">How long do you want to practise?</legend>
-          {lengthCards.map((option) => {
-            const length = scenarioDef.lengths[option.id];
-            return (
+          <legend className="type-body-strong mb-3">Length</legend>
+          {options.length === 0 ? (
+            <p className="type-small text-text-secondary">No questions in the selected sections.</p>
+          ) : (
+            options.map((option) => (
               <SelectableCard
-                key={option.id}
+                key={option.value}
+                size="row"
                 name="length"
-                value={option.id}
-                checked={value.length === option.id}
-                disabled={!length}
-                onChange={(next) => onChange({ ...value, length: next as Length })}
+                value={String(option.value)}
+                checked={choice.length === option.value}
+                onChange={() => onChange({ ...value, length: option.value })}
               >
-                <span className="flex flex-col items-start gap-2">
-                  <Tag tone={option.tone}>{option.tag}</Tag>
-                  {length ? (
-                    <>
-                      <span className="type-item-title">
-                        <span className="tabular-nums">{length.stepIds.length}</span> decisions
-                      </span>
-                      <span className="type-small text-text-secondary">
-                        About <span className="tabular-nums">{length.minutes}</span> min (estimate).{" "}
-                        {length.summary}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="type-small">Not available for this material</span>
-                  )}
-                </span>
+                <span className="tabular-nums">{option.label}</span>
               </SelectableCard>
-            );
-          })}
-        </fieldset>
-      )}
-
-      {quiz && (
-        <>
-          <SectionList
-            title="Guide sections"
-            titleId="setup-sections"
-            sections={sections.map((section) => ({
-              id: section.id,
-              title: section.title,
-              detail: questionCountLabel(availableQuestions([section.id])),
-            }))}
-            selected={value.sections}
-            onChange={(selected) => onChange(fitSetup({ ...value, sections: selected }, cap))}
-          />
-          <p aria-live="polite" className="type-small -mt-3 text-text-secondary tabular-nums">
-            {availableLine(value.sections)}
-          </p>
-
-          <QuizAmountPicker
-            name="count"
-            amount={value}
-            available={available}
-            hasSections={value.sections.length > 0}
-            onChange={(amount) => onChange({ ...value, ...amount })}
-          />
-          {value.sections.length > 0 && (
-            <p className="type-small text-text-secondary">
-              Your quiz has <span className="tabular-nums">{questionCountLabel(size)}</span>.
-              Answering how sure you are is optional.
-            </p>
+            ))
           )}
-        </>
-      )}
-
-      {!quiz && (
-        <p className="type-small text-text-secondary">
-          At each step you choose an action, say how sure you are and, if you like, explain your
-          choice in your own words. At the end you compare your answers with the guide.
-        </p>
-      )}
+        </fieldset>
+        {quiz && (
+          <Toggle
+            label="Shuffle questions"
+            checked={value.shuffle}
+            onChange={(shuffle) => onChange({ ...value, shuffle })}
+          />
+        )}
+        <Toggle
+          label="Only topics to repeat"
+          checked={value.onlyWeak && weakSectionIds.length > 0}
+          disabled={weakSectionIds.length === 0}
+          hint={weakSectionIds.length === 0 ? "Nothing to repeat yet." : undefined}
+          onChange={(onlyWeak) => onChange({ ...value, onlyWeak })}
+        />
+        <button
+          type="button"
+          onClick={() => setView("sections")}
+          className="flex min-h-11 items-center justify-between gap-3 text-left"
+        >
+          <span className="type-body">
+            Guide sections · <span className="tabular-nums">{value.sections.length} selected</span>
+          </span>
+          <Chevron />
+        </button>
+      </section>
 
       <ActionBar>
         {replacesUnfinished && (
@@ -203,9 +273,16 @@ export function SessionSetup({
             Starting replaces your unfinished session.
           </p>
         )}
-        {blocked && <p className="type-small text-center text-text-secondary">{keepOneHint}</p>}
+        {value.sections.length === 0 && (
+          <p className="type-small text-center text-text-secondary">{keepOneHint}</p>
+        )}
+        {value.sections.length > 0 && choice.available === 0 && (
+          <p className="type-small text-center text-text-secondary">
+            {questionCountLabel(0)} in the selected sections.
+          </p>
+        )}
         <Button disabled={blocked} onClick={onStart}>
-          {quiz ? "Start quiz" : "Start session"}
+          Start session
         </Button>
       </ActionBar>
     </div>

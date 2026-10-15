@@ -8,7 +8,7 @@ import { TopicCard } from "@/components/TopicCard/TopicCard";
 import { loadAllSections } from "@/lib/guide";
 import { sampleMaterials } from "@/lib/materials";
 import { getStep } from "@/lib/scenario";
-import { scoreStep } from "@/lib/scoring";
+import { scoreItem } from "@/lib/scoring";
 import { weakTopics } from "@/lib/weak-topics";
 
 vi.mock("next/navigation", () => ({
@@ -30,7 +30,7 @@ function clearedBlock(html: string, text: string) {
 }
 
 describe("long titles never run under the corner circle (360px)", () => {
-  const topic = weakTopics([scoreStep(getStep("s4"), "a", 3)])[0];
+  const topic = weakTopics([scoreItem(getStep("s4"), "a")])[0];
 
   it("Home topic card", () => {
     const html = withSheet(<TopicCard topic={topic} onRepeat={() => undefined} />);

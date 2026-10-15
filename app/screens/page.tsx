@@ -14,13 +14,11 @@ import { Tag } from "@/components/Tag/Tag";
 import { loadAllSections } from "@/lib/guide";
 import {
   ChatFeedbackSample,
-  SessionStepSample,
-  AnalysisSample,
+  SessionSample,
   ButtonsSample,
   ChipTonesSample,
   PaletteSample,
   EmptyStatesSample,
-  ErrorTypesSample,
   CreateTrainingSample,
   GeneratingSample,
   FloodResultsSample,
@@ -31,10 +29,8 @@ import {
   TopicIconsSample,
   WeakTopicsSample,
   ReviewSample,
-  QuestionReviewSample,
-  StepReviewSample,
-  QuizResultsSample,
-  QuizSample,
+  AnswerReviewSample,
+  Media3DSample,
   NotesMaterialSample,
   UploadSample,
   OnboardingSample,
@@ -230,286 +226,89 @@ export default function Screens() {
             </Screen>
           </PhoneFrame>
         </Group>
-        <Group title="Scenario session">
-          <PhoneFrame label="Session setup">
+        <Group title="Session setup">
+          <PhoneFrame label="Session setup: scenario">
             <Screen>
               <SetupSample />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Session setup: quiz">
+          <PhoneFrame label="Session setup: quiz (shuffle)">
             <Screen>
-              <SetupSample
-                start={{
-                  ...defaultSetup,
-                  mode: "quiz",
-                  sections: ["S1", "S2", "S3"],
-                  countChoice: 5,
-                  customCount: 5,
-                }}
-              />
+              <SetupSample start={{ ...defaultSetup, mode: "quiz", length: 20 }} />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Step 1: nothing chosen (strip, Exit, no Back)">
+          <PhoneFrame label="Session setup: first visit, nothing to repeat">
             <Screen>
-              <SessionStepSample />
+              <SetupSample withHistory={false} weakSectionIds={[]} />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Step 1: option chosen, confidence next">
-            <Screen>
-              <SessionStepSample start={{ optionId: "b", confidence: null, explanation: "" }} />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Step 3: ready for Next (steps 1 and 2 answered)">
-            <Screen>
-              <SessionStepSample
-                stepId="s3"
-                index={2}
-                answered={[0, 1]}
-                start={{ optionId: "b", confidence: 2, explanation: "" }}
-              />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Back to step 2: answer, confidence and explanation pre-filled">
-            <Screen>
-              <SessionStepSample
-                stepId="s2"
-                index={1}
-                answered={[0, 1, 2]}
-                start={{
-                  optionId: "c",
-                  confidence: 3,
-                  explanation: "Help the injured colleague only if the route stays safe.",
-                }}
-              />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Last step: Finish">
-            <Screen>
-              <SessionStepSample
-                stepId="s6"
-                index={5}
-                answered={[0, 1, 2, 3, 4]}
-                start={{ optionId: "c", confidence: 3, explanation: "" }}
-              />
-            </Screen>
-          </PhoneFrame>
-        </Group>
-        <Group title="Answer review: scenario">
-          <PhoneFrame label="Review: Right choice + matching explanation">
-            <Screen>
-              <StepReviewSample
-                stepId="s1"
-                optionId="b"
-                explanation="The alarm is real, so we take the stairs now."
-                position={1}
-              />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Review: Right choice + gibberish (My explanation is still correct)">
-            <Screen>
-              <StepReviewSample stepId="s1" optionId="b" explanation="лбтдлюью" position={1} />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Review: Right choice + gibberish, marked correct by you, with Undo">
-            <Screen>
-              <StepReviewSample
-                stepId="s1"
-                optionId="b"
-                explanation="лбтдлюью"
-                position={1}
-                marked
-              />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Review: Right choice + I don't know">
-            <Screen>
-              <StepReviewSample stepId="s1" optionId="b" explanation="" position={1} />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Review: Wrong choice + matching explanation">
-            <Screen>
-              <StepReviewSample
-                stepId="s1"
-                optionId="d"
-                explanation="The alarm is real, so we take the stairs now."
-                position={1}
-              />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Review: Wrong choice + gibberish (My explanation is still correct)">
-            <Screen>
-              <StepReviewSample stepId="s1" optionId="d" explanation="лбтдлюью" position={1} />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Review: Wrong choice + gibberish, explanation marked correct, with Undo">
-            <Screen>
-              <StepReviewSample
-                stepId="s1"
-                optionId="d"
-                explanation="лбтдлюью"
-                position={1}
-                marked
-              />
-            </Screen>
-          </PhoneFrame>
-        </Group>
-        <Group title="Quiz questions">
-          <PhoneFrame label="Quiz: single choice">
-            <Screen>
-              <QuizSample questionId="q-s1-1" index={0} />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Quiz: multiple choice">
-            <Screen>
-              <QuizSample
-                questionId="q-s1-3"
-                index={1}
-                response={{ type: "multiple", optionIds: ["a", "c"] }}
-              />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Quiz: ordering">
-            <Screen>
-              <QuizSample questionId="q-s2-3" index={2} />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Quiz: short text">
-            <Screen>
-              <QuizSample
-                questionId="q-s2-1"
-                index={3}
-                response={{ type: "text", text: "back of my hand" }}
-              />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Quiz: true or false">
-            <Screen>
-              <QuizSample
-                questionId="q-s1-2"
-                index={4}
-                response={{ type: "truefalse", value: false }}
-              />
-            </Screen>
-          </PhoneFrame>
-        </Group>
-        <Group title="Answer sheet: quiz">
-          <PhoneFrame label="Single choice: correct">
-            <Screen>
-              <QuestionReviewSample
-                questionId="q-s1-1"
-                response={{ type: "single", optionId: "b" }}
-              />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Single choice: incorrect, no confidence">
-            <Screen>
-              <QuestionReviewSample
-                questionId="q-s1-1"
-                response={{ type: "single", optionId: "a" }}
-              />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Single choice: incorrect, very confident">
-            <Screen>
-              <QuestionReviewSample
-                questionId="q-s1-1"
-                response={{ type: "single", optionId: "a" }}
-                confidence={3}
-              />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Multiple choice: partly right">
-            <Screen>
-              <QuestionReviewSample
-                questionId="q-s1-3"
-                response={{ type: "multiple", optionIds: ["a", "b", "c"] }}
-              />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Ordering: partly right">
-            <Screen>
-              <QuestionReviewSample
-                questionId="q-s2-3"
-                response={{ type: "ordering", order: ["a", "b", "d", "c"] }}
-              />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="True or false: incorrect">
-            <Screen>
-              <QuestionReviewSample
-                questionId="q-s1-2"
-                response={{ type: "truefalse", value: true }}
-              />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Short text: correct">
-            <Screen>
-              <QuestionReviewSample
-                questionId="q-s2-1"
-                response={{ type: "text", text: "The back of my hand" }}
-              />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Short text: doesn't match">
-            <Screen>
-              <QuestionReviewSample
-                questionId="q-s2-1"
-                response={{ type: "text", text: "With my knuckles" }}
-              />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Short text: marked correct by you">
-            <Screen>
-              <QuestionReviewSample
-                questionId="q-s2-1"
-                response={{ type: "text", text: "With my knuckles" }}
-                marked
-              />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Short text: I don't know">
-            <Screen>
-              <QuestionReviewSample
-                questionId="q-s2-1"
-                response={{ type: "text", text: "" }}
-                dontKnow
-              />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Quiz results">
-            <Screen>
-              <QuizResultsSample />
-            </Screen>
-          </PhoneFrame>
-        </Group>
-        <Group title="Flood material">
-          <PhoneFrame label="Flood: session setup">
+          <PhoneFrame label="Session setup: flood guide (all 3)">
             <Screen>
               <FloodSetupSample />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Flood: decision step">
+        </Group>
+        <Group title="Question session">
+          <PhoneFrame label="Question 1: nothing chosen (Back leaves, strip, Next only)">
+            <Screen>
+              <SessionSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Question 3: chosen, ready for Next">
+            <Screen>
+              <SessionSample itemId="s3" index={2} answered={[0, 1]} choice="a" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Back to question 2: the stored choice is filled in">
+            <Screen>
+              <SessionSample itemId="s2" index={1} answered={[0, 1, 2]} choice="c" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Quiz question 4 of 10">
+            <Screen>
+              <SessionSample
+                itemId="q-s3-3"
+                kind="quiz"
+                index={3}
+                answered={[0, 1, 2]}
+                choice="b"
+              />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Last question: Finish">
+            <Screen>
+              <SessionSample
+                itemId="s6"
+                index={9}
+                answered={[0, 1, 2, 3, 4, 5, 6, 7, 8]}
+                choice="c"
+              />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Flood: question 1 of 3">
             <Screen>
               <FloodStepSample />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Flood: results">
+        </Group>
+        <Group title="Answer review">
+          <PhoneFrame label="Review: the person was right">
             <Screen>
-              <FloodResultsSample />
+              <AnswerReviewSample itemId="s1" choice="b" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Review: the person was wrong">
+            <Screen>
+              <AnswerReviewSample itemId="s1" choice="d" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Review: a quiz question, wrong">
+            <Screen>
+              <AnswerReviewSample itemId="q-s3-3" choice="a" position={4} />
             </Screen>
           </PhoneFrame>
         </Group>
         <Group title="Results">
-          <PhoneFrame label="Error types: details">
-            <Screen>
-              <AnalysisSample />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Error types card">
-            <Screen>
-              <ErrorTypesSample />
-            </Screen>
-          </PhoneFrame>
           <PhoneFrame label="Results: Not passed yet">
             <Screen>
               <ResultsSample />
@@ -523,6 +322,18 @@ export default function Screens() {
           <PhoneFrame label="Results: end of the page">
             <Screen>
               <ResultsSample scrolled />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Flood: results">
+            <Screen>
+              <FloodResultsSample />
+            </Screen>
+          </PhoneFrame>
+        </Group>
+        <Group title="3D placeholders">
+          <PhoneFrame label="Media3D: hero, step and icon; Toggle">
+            <Screen>
+              <Media3DSample />
             </Screen>
           </PhoneFrame>
         </Group>

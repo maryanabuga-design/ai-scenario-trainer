@@ -4,25 +4,17 @@ import { History } from "lucide-react";
 import { useState } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
-import { Chip } from "@/components/Chip/Chip";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { HeaderRow } from "@/components/HeaderRow/HeaderRow";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
-import { StatusIcon, statuses } from "@/components/StatusChip/StatusChip";
 import { Tag } from "@/components/Tag/Tag";
 import type { FinishedSession } from "@/lib/session";
+import { sessionLabel } from "@/lib/session";
 import { HISTORY_PAGE, seeMore, visibleHistory } from "@/lib/history";
-import { formatPoints, scoreSession, sessionLabel, weakItemsFromHistory } from "@/lib/progress";
-import {
-  errorTypeShare,
-  firstVsLatest,
-  progressSummary,
-  sectionStats,
-  trendSessions,
-} from "@/lib/progress-stats";
-import { totalScore, weakItems } from "@/lib/scoring";
-import type { ErrorType } from "@/lib/scoring";
-import { weakTopics } from "@/lib/weak-topics";
+import { scoreSession, weakItemsFromHistory } from "@/lib/progress";
+import { progressSummary, sectionStats, trendSessions } from "@/lib/progress-stats";
+import { correctCount, weakItems } from "@/lib/scoring";
+import { topicsToRepeat, weakTopics } from "@/lib/weak-topics";
 
 const dateFormat = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",
@@ -33,26 +25,16 @@ const dateFormat = new Intl.DateTimeFormat("en-GB", {
 
 const shortDate = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short" });
 
-/** Stacked bar order: the good news first. */
-const ERROR_ORDER: ErrorType[] = ["secure", "guess", "knowledge_gap", "misconception"];
-
-/** Chart fills: the chip tone tokens (checked against the card), set as inline token colours. */
-const SEGMENT: Record<ErrorType, string> = {
-  secure: "var(--pastel-green)",
-  guess: "var(--pastel-sand)",
-  knowledge_gap: "var(--pastel-yellow)",
-  misconception: "var(--pastel-rose)",
-};
 const BAR_OLDER = "var(--pastel-green)";
 
 const CHART_HEIGHT = 120;
 
 function SummaryCard({ history }: { history: FinishedSession[] }) {
-  const { sessions, averagePercent, securePercent } = progressSummary(history);
+  const { sessions, averagePercent, correctPercent } = progressSummary(history);
   const numbers = [
     { label: "Sessions", value: String(sessions) },
     { label: "Average result", value: `${averagePercent ?? 0}%` },
-    { label: "Secure answers", value: `${securePercent ?? 0}%` },
+    { label: "Correct answers", value: `${correctPercent ?? 0}%` },
   ];
   return (
     <Card>
@@ -128,50 +110,17 @@ function TrendCard({ history }: { history: FinishedSession[] }) {
   );
 }
 
-function ErrorTypesCard({ history }: { history: FinishedSession[] }) {
-  const { counts, total } = errorTypeShare(history);
-  const comparison = firstVsLatest(history);
+function TopicsCard({ history }: { history: FinishedSession[] }) {
   const topics = weakTopics(weakItemsFromHistory(history)).length;
   return (
-    <Card className="flex flex-col gap-4">
-      <h2 className="type-item-title">Error types</h2>
-      <div
-        role="img"
-        aria-label={`Answers by error type: ${ERROR_ORDER.map((type) => `${counts[type]} ${statuses[type].label}`).join(", ")}`}
-        className="flex h-3 gap-0.5 overflow-hidden rounded-full"
-      >
-        {ERROR_ORDER.filter((type) => counts[type] > 0).map((type) => (
-          <span
-            key={type}
-            className="h-full"
-            style={{ flexGrow: counts[type] / total, backgroundColor: SEGMENT[type] }}
-          />
-        ))}
-      </div>
-      <ul className="flex flex-wrap gap-2">
-        {ERROR_ORDER.map((type) => (
-          <li key={type}>
-            <Chip tone={statuses[type].tone} ink={statuses[type].ink} size="caption">
-              <StatusIcon status={type} />
-              {statuses[type].label}
-              <span className="tabular-nums">{counts[type]}</span>
-            </Chip>
-          </li>
-        ))}
-      </ul>
-      {comparison && (
-        <p className="type-small text-text-secondary">
-          Misconceptions and knowledge gaps:{" "}
-          <span className="tabular-nums">{comparison.first}</span> in your first session,{" "}
-          <span className="tabular-nums">{comparison.latest}</span> in your latest.
-        </p>
-      )}
+    <Card className="flex flex-col gap-2">
+      <h2 className="type-item-title">Weak topics</h2>
       {topics === 0 ? (
         <p className="type-small text-text-secondary">Nothing to repeat right now.</p>
       ) : (
         <div className="-ml-3 self-start">
           <ButtonLink variant="tertiary" href="/weak-topics">
-            {topics} {topics === 1 ? "topic" : "topics"} to repeat · Weak topics
+            {topicsToRepeat(topics)} · Weak topics
           </ButtonLink>
         </div>
       )}
@@ -238,23 +187,13 @@ function SectionsCard({ history }: { history: FinishedSession[] }) {
 
 function HistoryRow({ session }: { session: FinishedSession }) {
   const scored = scoreSession(session);
-  const correct = scored.filter((item) => item.correct).length;
-  const weak = weakItems(scored).length;
-  const quiz = session.kind === "quiz";
+  const wrong = weakItems(scored).length;
 
   return (
     <Card className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-3">
         <Tag
-          tone={
-            session.kind === "repeat"
-              ? "yellow"
-              : quiz
-                ? "blue"
-                : session.mode === "short"
-                  ? "peach"
-                  : "lilac"
-          }
+          tone={session.kind === "repeat" ? "yellow" : session.kind === "quiz" ? "blue" : "peach"}
         >
           {sessionLabel(session)}
         </Tag>
@@ -263,28 +202,15 @@ function HistoryRow({ session }: { session: FinishedSession }) {
         </span>
       </div>
       <p className="type-item-title tabular-nums">
-        {quiz
-          ? `${formatPoints(totalScore(scored))} of ${scored.length} points`
-          : `${correct} of ${scored.length} correct`}
+        {correctCount(scored)} of {scored.length} correct
       </p>
       <p className="type-small text-text-secondary">
-        {weak === 0 ? (
+        {wrong === 0 ? (
           "Nothing to repeat."
         ) : (
           <>
-            <span className="tabular-nums">{weak}</span>{" "}
-            {session.kind === "repeat"
-              ? weak === 1
-                ? "item"
-                : "items"
-              : quiz
-                ? weak === 1
-                  ? "question"
-                  : "questions"
-                : weak === 1
-                  ? "step"
-                  : "steps"}{" "}
-            wrong, partly right or guessed.
+            <span className="tabular-nums">{wrong}</span> {wrong === 1 ? "answer" : "answers"}{" "}
+            wrong.
           </>
         )}
       </p>
@@ -313,7 +239,7 @@ export function ProgressView({ history }: { history: FinishedSession[] }) {
         <>
           <SummaryCard history={history} />
           <TrendCard history={history} />
-          <ErrorTypesCard history={history} />
+          <TopicsCard history={history} />
           <SectionsCard history={history} />
           <section aria-labelledby="history-title" className="flex flex-col gap-3">
             <h2 id="history-title" className="type-item-title">

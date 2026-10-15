@@ -24,11 +24,14 @@ export default function Onboarding() {
     router.replace("/");
   }
 
+  const replay = profile !== "loading" && profile?.onboarded === true;
+
   return (
     <OnboardingView
       step={step}
+      replay={replay}
       onNext={() => go(nextStep(step))}
-      onBack={() => go(previousStep(step))}
+      onBack={() => (step === 0 ? router.push("/") : go(previousStep(step)))}
       onSkip={finish}
       onFinish={finish}
     />

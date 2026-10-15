@@ -42,7 +42,7 @@ export function HomeView({
         <h1 className="flex flex-col gap-3">
           <span className="type-display text-text">
             <span className="block">Practise a decision.</span>
-            <span className="block">Explain it, then check it against the guide.</span>
+            <span className="block">Check it against the guide.</span>
           </span>
           <span className="type-small text-text-secondary">Small steps. Real progress.</span>
         </h1>

@@ -7,13 +7,13 @@ import type { ReactNode } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button } from "@/components/Button/Button";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
-import { QuizAmountPicker } from "@/components/QuizAmountPicker/QuizAmountPicker";
 import { SectionList } from "@/components/SectionList/SectionList";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { Tag } from "@/components/Tag/Tag";
 import type { Material } from "@/lib/materials";
-import { availableLine, availableQuestions, fitAmount, questionCountLabel } from "@/lib/quiz-setup";
-import { choiceProblem, defaultCreateAmount, planTraining } from "@/lib/training";
+import { questionsFor } from "@/lib/quiz";
+import { questionCountLabel } from "@/lib/setup";
+import { choiceProblem, planTraining } from "@/lib/training";
 import type { TrainingChoice } from "@/lib/training";
 
 export function initialChoice(material: Material): TrainingChoice {
@@ -22,7 +22,6 @@ export function initialChoice(material: Material): TrainingChoice {
     scenario: plan.canScenario,
     quiz: true,
     sections: plan.sections,
-    amount: defaultCreateAmount(plan.sections),
   };
 }
 
@@ -80,8 +79,7 @@ export function TrainingCreate({
   const { sections: guideSections } = useSourceSheet();
   const plan = planTraining(material);
   const problem = choiceProblem(plan, choice);
-  const available = availableQuestions(choice.sections);
-  const amount = choice.amount ?? defaultCreateAmount(choice.sections);
+  const available = questionsFor(choice.sections).length;
   const onlyOne = [choice.scenario, choice.quiz].filter(Boolean).length === 1;
 
   /** At least one of Scenario and Quiz must stay selected. */
@@ -143,24 +141,13 @@ export function TrainingCreate({
           title: guideSections.find((section) => section.id === id)?.title ?? id,
         }))}
         selected={choice.sections}
-        onChange={(sections) =>
-          onChange({ ...choice, sections, amount: fitAmount(amount, availableQuestions(sections)) })
-        }
+        onChange={(sections) => onChange({ ...choice, sections })}
       />
 
       {choice.quiz && (
-        <section className="flex flex-col gap-2">
-          <QuizAmountPicker
-            name="create-count"
-            amount={amount}
-            available={available}
-            hasSections={choice.sections.length > 0}
-            onChange={(next) => onChange({ ...choice, amount: next })}
-          />
-          <p aria-live="polite" className="type-small text-text-secondary tabular-nums">
-            {availableLine(choice.sections)}
-          </p>
-        </section>
+        <p aria-live="polite" className="type-small text-text-secondary tabular-nums">
+          {questionCountLabel(available)} available in the selected sections
+        </p>
       )}
 
       <ActionBar>

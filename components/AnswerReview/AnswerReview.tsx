@@ -1,210 +1,157 @@
 "use client";
 
-import { Check, Contrast, Minus, X } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import type { ReactNode } from "react";
+import { Check, X } from "lucide-react";
 import { AskAiButton } from "@/components/AskAi/AskAi";
 import { ButtonLink } from "@/components/Button/Button";
+import { Chip } from "@/components/Chip/Chip";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
-import { ContentImage } from "@/components/ContentImage/ContentImage";
 import { GuideChip } from "@/components/GuideChip/GuideChip";
-import { MarkCorrect } from "@/components/MarkCorrect/MarkCorrect";
-import type { AnswerBox, BoxTone, OpenAnswer, OpenVerdict, ReviewData } from "@/lib/answer-review";
+import { Media3D } from "@/components/Media3D/Media3D";
+import { optionLetters } from "@/components/QuestionScreen/QuestionScreen";
+import type { Item } from "@/lib/items";
 
-/** Your own answer is always the Your choice block; the tone only picks its icon. */
-const yoursBlock =
-  "border border-l-[3px] border-secondary-sand-pressed border-l-primary bg-secondary-sand";
+/** How an option looks in the review: the right one, the person's wrong one, or neither. */
+export type OptionState = "correct" | "chosenWrong" | "plain";
 
-const boxStyles: Record<BoxTone, { className: string; icon?: [LucideIcon, string] }> = {
-  right: { className: yoursBlock, icon: [Check, "text-correct"] },
-  wrong: { className: yoursBlock, icon: [X, "text-wrong"] },
-  better: {
-    className: "border border-dashed border-correct",
-    icon: [Check, "text-correct"],
-  },
-  partial: { className: yoursBlock, icon: [Contrast, "text-text-secondary"] },
-  neutral: { className: "border border-border" },
+export function optionState(item: Item, optionId: string, choice: string | null): OptionState {
+  if (optionId === item.correctOptionId) return "correct";
+  return optionId === choice ? "chosenWrong" : "plain";
+}
+
+const rowLook: Record<OptionState, string> = {
+  correct: "border border-correct bg-correct-bg",
+  chosenWrong: "border border-wrong bg-wrong-bg",
+  plain: "border border-selectable-stroke bg-card",
 };
-
-/** A section label; dark on the Your choice block, grey everywhere else. */
-function Label({ children, dark = false }: { children: ReactNode; dark?: boolean }) {
-  return <h2 className={`type-label ${dark ? "text-text" : "text-text-secondary"}`}>{children}</h2>;
-}
-
-/** The verdict line under typed text: icon and words, never colour alone. */
-const openVerdicts: Record<OpenVerdict, { icon: LucideIcon; color: string; text: string }> = {
-  matched: { icon: Check, color: "text-correct", text: "Matches the guide" },
-  not_matched: {
-    icon: Minus,
-    color: "text-caution",
-    text: "Doesn't match the guide yet",
-  },
-  marked: { icon: Check, color: "text-text", text: "Marked correct by you" },
-};
-
-/** "Your explanation" or "Your answer": the typed text with its verdict, or "I don't know". */
-function Open({ open }: { open: OpenAnswer }) {
-  const verdict = open.verdict ? openVerdicts[open.verdict] : null;
-  const Icon = verdict?.icon;
-  return (
-    <section className="flex flex-col gap-1">
-      <Label>{open.label}</Label>
-      {open.text === null ? (
-        <p className="text-text-secondary">You pressed I don&apos;t know.</p>
-      ) : (
-        <>
-          <p>{open.text}</p>
-          {verdict && Icon && (
-            <p className="type-small flex items-center gap-1.5 text-text">
-              <Icon size={16} strokeWidth={2} aria-hidden="true" className={verdict.color} />
-              {verdict.text}
-            </p>
-          )}
-        </>
-      )}
-    </section>
-  );
-}
-
-function Box({ box }: { box: AnswerBox }) {
-  const style = boxStyles[box.tone];
-  const [Icon, color] = style.icon ?? [null, ""];
-  const List = box.ordered ? "ol" : "ul";
-  return (
-    <div
-      className={`flex items-start gap-3 rounded-panel p-4 ${box.yours ? yoursBlock : style.className}`}
-    >
-      {Icon && (
-        <Icon size={20} strokeWidth={2} aria-hidden="true" className={`mt-0.5 shrink-0 ${color}`} />
-      )}
-      <div className="flex min-w-0 flex-col gap-1">
-        <Label dark={box.yours}>{box.label}</Label>
-        {box.lines.length === 1 ? (
-          <p>{box.lines[0]}</p>
-        ) : (
-          <List className="flex flex-col gap-1">
-            {box.lines.map((line, index) => (
-              <li key={line}>
-                {box.ordered && (
-                  <span
-                    className={`tabular-nums ${box.yours ? "text-text" : "text-text-secondary"}`}
-                  >
-                    {index + 1}.{" "}
-                  </span>
-                )}
-                {line}
-              </li>
-            ))}
-          </List>
-        )}
-      </div>
-    </div>
-  );
-}
 
 /**
- * The Answer review of one step or question after Finish: the situation, your choice, your
- * explanation with its verdict, the better explanation, the why with guide chips and what
- * happened. The page ends with Back to results, the "still correct" button and Previous and Next.
+ * The Answer review of one question after Finish: the situation and question, every option with
+ * the right one marked and the person's choice marked, then Why and the Guide chips. No verdict
+ * line. The page ends with Back to results and Previous and Next question.
  */
 export function AnswerReview({
-  data,
-  noun,
+  item,
+  choice,
+  position,
+  total,
   backHref,
   backLabel,
   hrefFor,
-  onMarkCorrect,
 }: {
-  data: ReviewData;
-  /** "question", "step" or "item", for the Previous and Next buttons. */
-  noun: string;
+  item: Item;
+  /** The option the person chose. */
+  choice: string | null;
+  /** 1-based position in the session, and the number of questions. */
+  position: number;
+  total: number;
   backHref: string;
   backLabel: string;
-  /** The review page of another position, keeping where the person came from. */
+  /** The review page of another position. */
   hrefFor: (position: number) => string;
-  onMarkCorrect: (marked: boolean) => void;
 }) {
-  const { content, position, total } = data;
-  const heading = data.title ?? data.question;
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-4">
+      <div className="grid grid-cols-[44px_1fr_44px] items-center">
         <CircleBackButton href={backHref} label={backLabel} />
-        <span className="type-small text-text-secondary tabular-nums">
-          {noun.charAt(0).toUpperCase() + noun.slice(1)} {position} of {total}
+        <span className="type-small text-center text-text-secondary tabular-nums">
+          Question {position} of {total}
         </span>
       </div>
 
-      <ContentImage image={data.image} />
-
-      <section className="flex flex-col gap-3">
-        <h1 className={data.title ? "type-page-title" : "type-item-title"}>{heading}</h1>
-        {data.narrative && <p className="type-body">{data.narrative}</p>}
-        {data.title && <p className="type-item-title">{data.question}</p>}
+      <section className="flex flex-col gap-4">
+        {item.image && <Media3D variant="step" src={item.image.src} alt={item.image.alt} />}
+        {item.situation && <p className="type-body">{item.situation}</p>}
+        <h1 className="type-item-title">{item.question}</h1>
       </section>
 
-      {content.kind === "question" && content.detail && (
-        <p className="type-small -mb-3 text-text-secondary">{content.detail}</p>
-      )}
-      {content.boxes.length > 0 && (
-        <div className="flex flex-col gap-3">
-          {content.boxes.map((box) => (
-            <Box key={box.label} box={box} />
-          ))}
-        </div>
-      )}
-
-      {content.open && <Open open={content.open} />}
-      {content.better && <Box box={content.better} />}
+      <ul className="flex flex-col gap-3">
+        {item.options.map((option, index) => {
+          const state = optionState(item, option.id, choice);
+          const chosen = option.id === choice;
+          return (
+            <li
+              key={option.id}
+              data-state={state}
+              className={`flex items-center gap-3 rounded-[20px] px-4 py-3 ${rowLook[state]}`}
+            >
+              <span
+                aria-hidden="true"
+                className="type-caption flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-olive-tint text-text"
+              >
+                {optionLetters[index]}
+              </span>
+              <span className="flex min-w-0 flex-1 flex-col items-start gap-2">
+                <span>{option.text}</span>
+                {(state === "correct" || chosen) && (
+                  <span className="flex flex-wrap gap-2">
+                    {state === "correct" && (
+                      <Chip tone="green" ink="green" size="caption">
+                        Correct answer
+                      </Chip>
+                    )}
+                    {chosen && (
+                      <Chip
+                        tone={state === "correct" ? "green" : "rose"}
+                        ink={state === "correct" ? "green" : "red"}
+                        size="caption"
+                      >
+                        Your answer
+                        {state === "correct" && (
+                          <Check size={14} strokeWidth={2} aria-hidden="true" />
+                        )}
+                      </Chip>
+                    )}
+                  </span>
+                )}
+              </span>
+              {state === "correct" && (
+                <Check
+                  size={20}
+                  strokeWidth={2}
+                  role="img"
+                  aria-label="Correct"
+                  className="shrink-0 text-correct"
+                />
+              )}
+              {state === "chosenWrong" && (
+                <X
+                  size={20}
+                  strokeWidth={2}
+                  role="img"
+                  aria-label="Not correct"
+                  className="shrink-0 text-wrong"
+                />
+              )}
+            </li>
+          );
+        })}
+      </ul>
 
       <section className="flex flex-col gap-2">
-        <Label>Why</Label>
-        {content.why.map((line) => (
-          <p key={line}>{line}</p>
-        ))}
+        <h2 className="type-label text-text-secondary">Why</h2>
+        <p>{item.why}</p>
         <div className="flex flex-wrap gap-2">
-          {content.sources.map((sectionId) => (
+          {item.guideRef.map((sectionId) => (
             <GuideChip key={sectionId} sectionId={sectionId} />
           ))}
         </div>
       </section>
 
-      {content.kind === "step" && (
-        <section className="flex flex-col gap-1">
-          <Label>What happened</Label>
-          <p>{content.whatHappened}</p>
-          {content.stateChange.length > 0 && (
-            <p className="type-small text-text-secondary">{content.stateChange.join(" · ")}</p>
-          )}
-        </section>
-      )}
-
-      {data.step && <AskAiButton step={data.step} phase="feedback" />}
+      {item.kind === "step" && <AskAiButton step={item} />}
 
       <div className="flex flex-col gap-3 pb-6">
         <ButtonLink href="/session/results">Back to results</ButtonLink>
-        {content.override !== "none" && (
-          <MarkCorrect
-            label={
-              content.kind === "step"
-                ? "My explanation is still correct"
-                : "My answer is still correct"
-            }
-            marked={content.override === "marked"}
-            onChange={onMarkCorrect}
-          />
-        )}
         <div className="flex items-center justify-between">
           {position > 1 ? (
             <ButtonLink href={hrefFor(position - 1)} variant="tertiary">
-              Previous {noun}
+              Previous question
             </ButtonLink>
           ) : (
             <span />
           )}
           {position < total && (
             <ButtonLink href={hrefFor(position + 1)} variant="tertiary">
-              Next {noun}
+              Next question
             </ButtonLink>
           )}
         </div>

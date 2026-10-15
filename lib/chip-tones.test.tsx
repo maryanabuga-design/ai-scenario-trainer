@@ -60,9 +60,9 @@ const inks: Record<(typeof pastel)[number], string[]> = {
   peach: ["text"],
   blue: ["text"],
   lilac: ["text"],
-  green: ["chip-ink-green", "secure"],
-  rose: ["wrong", "misconception"],
-  sand: ["text", "text-secondary", "guess-ink"],
+  green: ["chip-ink-green"],
+  rose: ["wrong"],
+  sand: ["text", "text-secondary"],
 };
 
 describe("chip tones", () => {
@@ -188,10 +188,6 @@ describe("the chip colours of the statuses", () => {
     expect(tone("ready")).toContain("bg-pastel-green");
     expect(tone("failed")).toContain("bg-pastel-rose");
     expect(tone("processing")).toContain("bg-pastel-sand");
-    expect(tone("secure")).toContain("bg-pastel-green");
-    expect(tone("guess")).toContain("bg-pastel-sand");
-    expect(tone("knowledge_gap")).toContain("bg-pastel-yellow");
-    expect(tone("misconception")).toContain("bg-pastel-rose");
   });
 
   it("Ready has the check, Failed the alert, Processing the clock", () => {

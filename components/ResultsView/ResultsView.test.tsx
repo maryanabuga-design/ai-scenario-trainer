@@ -5,38 +5,32 @@ import { ResultsView } from "@/components/ResultsView/ResultsView";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { PASS_MARK } from "@/lib/config";
 import { loadAllSections } from "@/lib/guide";
-import { scoreSession } from "@/lib/progress";
+import { getItem } from "@/lib/items";
 import { isPassed, resultPercent } from "@/lib/results";
-import { getStep } from "@/lib/scenario";
-import { scoreStep } from "@/lib/scoring";
+import { scoreItem } from "@/lib/scoring";
 import type { ScoredItem } from "@/lib/scoring";
-import { setMarkedCorrect } from "@/lib/session";
-import type { ScenarioSession } from "@/lib/session";
+import { weakTopics } from "@/lib/weak-topics";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: () => undefined, replace: () => undefined }),
   usePathname: () => "/session/results",
 }));
 
-const session: ScenarioSession = {
-  mode: "short",
-  stepIds: ["s1", "s2", "s3"],
-  index: 2,
-  finished: true,
-  answers: [
-    { stepId: "s1", optionId: "b", confidence: 3, explanation: "лбтдлюью" },
-    { stepId: "s2", optionId: "c", confidence: 3, explanation: "x" },
-    { stepId: "s3", optionId: "b", confidence: 3, explanation: "x" },
-  ],
-};
+// s1 wrong, s2 right, s3 wrong: 1 of 3.
+const items = [
+  scoreItem(getItem("s1"), "d"),
+  scoreItem(getItem("s2"), "c"),
+  scoreItem(getItem("s3"), "b"),
+];
 
-function render(items: ScoredItem[]) {
+function render(list: ScoredItem[]) {
   return renderToStaticMarkup(
     <SourceSheetProvider sections={loadAllSections()}>
       <ActionBarProvider>
         <ResultsView
-          results={{ kind: "scenario", mode: "short" }}
-          items={items}
+          kind="scenario"
+          items={list}
+          topics={weakTopics(list)}
           onRepeat={() => undefined}
         />
       </ActionBarProvider>
@@ -44,87 +38,87 @@ function render(items: ScoredItem[]) {
   );
 }
 
-/** One item scoring a given share, so the percentage can be set exactly. */
-function scoring(score: number): ScoredItem[] {
-  return [{ ...scoreStep(getStep("s1"), "b", 3), score, correct: score === 1 }];
+/** A result of exactly `right` correct answers out of `total`. */
+function result(right: number, total: number): ScoredItem[] {
+  return Array.from({ length: total }, (_, index) =>
+    index < right ? scoreItem(getItem("s2"), "c") : scoreItem(getItem("s1"), "d"),
+  );
 }
 
 describe("Results", () => {
-  const html = render(scoreSession(session));
+  const html = render(items);
 
-  it("has no Outcome card, no ring and no Step by step card any more", () => {
-    expect(html).not.toContain("Outcome");
-    expect(html).not.toContain("Step by step");
-    expect(html).not.toMatch(/stroke-ring|correct<\/h2>/);
+  it("has no Outcome card, no Error types card and no error types anywhere", () => {
+    expect(html).not.toMatch(/Outcome|Error types|Step by step|Misconception|Knowledge gap|Guess/);
     expect(html).not.toContain("Time lost");
   });
 
-  it("starts with the hero slot, then the headline, then the percentage and the pass mark", () => {
-    const hero = html.indexOf("data-hero-fallback");
-    const headline = html.indexOf("Not passed yet");
-    expect(headline).toBeGreaterThan(-1);
-    const percent = html.indexOf('role="meter"');
-    const mark = html.indexOf(`Pass mark ${PASS_MARK}%`);
-    expect(hero).toBeGreaterThan(-1);
-    expect(hero).toBeLessThan(headline);
-    expect(headline).toBeLessThan(percent);
-    expect(percent).toBeLessThan(mark);
+  it("starts with Back and the title Results, then the hero, headline, percentage and pass mark", () => {
+    const order = [
+      'aria-label="Back to Home"',
+      ">Results<",
+      "data-media3d",
+      "Not passed yet",
+      "33%",
+      'role="meter"',
+      "PASS MARK: 80%",
+    ].map((text) => html.indexOf(text));
+    expect(order.every((position) => position >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+    expect(html).toContain(">0<");
+    expect(html).toContain(">100<");
   });
 
-  it("follows with the Error types card and Your answers, then the actions", () => {
-    const types = html.indexOf("Error types");
-    const answers = html.indexOf("Your answers");
-    expect(types).toBeGreaterThan(html.indexOf('role="meter"'));
-    expect(answers).toBeGreaterThan(types);
+  it("follows with one conclusion, the Weak topics card and Your answers", () => {
+    expect(html).toContain("2 answers need another look in the guide.");
+    const card = html.indexOf("Weak topics");
+    expect(card).toBeGreaterThan(html.indexOf("PASS MARK"));
+    expect(html.indexOf("Your answers")).toBeGreaterThan(card);
   });
 
-  it("lists every answer, in order, each linking to its own review", () => {
-    const items = scoreSession(session);
+  it("makes the Weak topics card a link with an ArrowCircle and the section tags", () => {
+    const start = html.lastIndexOf("<a ", html.indexOf("Weak topics"));
+    const card = html.slice(start, html.indexOf("</a>", start));
+    expect(card).toContain('href="/weak-topics?from=results"');
+    expect(card).toContain("2 topics to repeat");
+    expect(card).toContain(">S1<");
+    expect(card).toContain(">S2<");
+    expect(card).toContain("border-arrow-stroke");
+  });
+
+  it("lists every answer in order, each with a check or a cross and a link to its review", () => {
     items.forEach((item, index) => {
       expect(html).toContain(`href="/session/results/review/${index + 1}"`);
       expect(html).toContain(item.title);
     });
-    expect(html.match(/\/session\/results\/review\//g)).toHaveLength(items.length);
-    expect(html).toContain('aria-label="Right"');
-    expect(html).toContain('aria-label="Not right"');
+    expect(html.match(/aria-label="Not right"/g)).toHaveLength(2);
+    expect(html.match(/aria-label="Right"/g)).toHaveLength(1);
+    expect(html.match(/\/session\/results\/review\//g)).toHaveLength(3);
+  });
+
+  it("shows no Weak topics card when nothing is wrong", () => {
+    const clean = render(result(3, 3));
+    expect(clean).not.toContain("/weak-topics");
+    expect(clean).toContain("Every answer was right.");
   });
 });
 
 describe("the pass mark", () => {
-  it("is one constant, 80 by default", () => {
+  it("is one constant, 80", () => {
     expect(PASS_MARK).toBe(80);
   });
 
-  it("makes 79% Not passed yet and 80% Passed, in the headline and the marker", () => {
-    const below = render(scoring(0.79));
-    expect(resultPercent(scoring(0.79))).toBe(79);
-    expect(isPassed(scoring(0.79))).toBe(false);
+  it("makes 79% Not passed yet and 80% Passed, in the headline and the bar", () => {
+    const below = render(result(79, 100));
+    expect(resultPercent(result(79, 100))).toBe(79);
+    expect(isPassed(result(79, 100))).toBe(false);
     expect(below).toContain("Not passed yet");
-    expect(below).toContain("79%");
     expect(below).toContain('aria-valuenow="79"');
-
-    const at = render(scoring(0.8));
-    expect(isPassed(scoring(0.8))).toBe(true);
+    const at = render(result(80, 100));
+    expect(isPassed(result(80, 100))).toBe(true);
     expect(at).toContain(">Passed<");
-    expect(at).toContain("80%");
     expect(at).not.toContain("Not passed yet");
+    expect(at).toContain('aria-valuenow="80"');
     expect(at).toContain('style="left:80%"');
-  });
-
-  it("rounds the percentage down, so 79.6% is never a pass", () => {
-    expect(resultPercent(scoring(0.796))).toBe(79);
-    expect(isPassed(scoring(0.796))).toBe(false);
-  });
-});
-
-describe("Marked correct by you", () => {
-  it("labels the answer on Results and leaves the score alone", () => {
-    const before = render(scoreSession(session));
-    const after = render(scoreSession(setMarkedCorrect(session, "s1", true)));
-    expect(before).not.toContain("Marked correct by you");
-    expect(after).toContain("Marked correct by you");
-    expect(resultPercent(scoreSession(setMarkedCorrect(session, "s1", true)))).toBe(
-      resultPercent(scoreSession(session)),
-    );
   });
 });

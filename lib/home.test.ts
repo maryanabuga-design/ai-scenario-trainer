@@ -1,69 +1,55 @@
 import { describe, expect, it } from "vitest";
 import { currentCard, dotCount, homeScenarios, nextUp, scenarioLine, topicRow } from "@/lib/home";
+import { getItem } from "@/lib/items";
 import { sampleMaterials } from "@/lib/materials";
 import { getScenario } from "@/lib/scenario";
+import { scoreItem } from "@/lib/scoring";
+import type { Session } from "@/lib/session";
 import { materialFromSample, sampleFiles } from "@/lib/training";
-import { getStep } from "@/lib/scenario";
-import { scoreStep } from "@/lib/scoring";
-import type { RepeatSession, ScenarioSession } from "@/lib/session";
 import { weakTopics } from "@/lib/weak-topics";
 import type { WeakTopic } from "@/lib/weak-topics";
 
-// s2 c unsure: guess on S2; s5 a unsure: knowledge gap on S5.
-const topics = weakTopics([scoreStep(getStep("s2"), "c", 2), scoreStep(getStep("s5"), "a", 1)]);
+// s3 b wrong on S2; s5 a wrong on S5.
+const topics = weakTopics([scoreItem(getItem("s3"), "b"), scoreItem(getItem("s5"), "a")]);
 const s2 = topics.find((topic) => topic.sectionId === "S2")!;
 
-const repeatRound = (sectionIds: string[], answered: number): RepeatSession => ({
-  kind: "repeat",
-  topics: sectionIds,
-  items: [
-    { type: "step", id: "s2" },
-    { type: "question", id: "q-s2-1" },
-  ],
-  index: answered,
-  answers: Array.from({ length: answered }, () => ({
-    type: "step" as const,
-    stepId: "s2",
-    optionId: "c",
-    confidence: 3 as const,
-    explanation: "",
-  })),
+const session = (kind: Session["kind"], index: number): Session => ({
+  kind,
+  itemIds: ["s1", "s2", "s3", "s4", "s5", "s6"],
+  index,
+  answers: [],
   finished: false,
 });
 
-const scenarioSession: ScenarioSession = {
-  mode: "full",
-  stepIds: ["s1", "s2", "s3", "s4", "s5", "s6"],
-  index: 2,
-  answers: [],
-  finished: false,
-};
-
 describe("Next up", () => {
-  it("continues an unfinished session first", () => {
-    expect(nextUp({ unfinished: scenarioSession, topics, hasHistory: true })).toEqual({
+  it("continues an unfinished session first, with the question it is on", () => {
+    expect(nextUp({ unfinished: session("scenario", 2), topics, hasHistory: true })).toEqual({
       kind: "continue",
-      title: "Continue your full session",
-      detail: "Step 3 of 6",
+      title: "Continue your scenario",
+      detail: "Question 3 of 6",
       action: "Continue",
       linksToTopics: false,
     });
-    const round = nextUp({ unfinished: repeatRound(["S2"], 0), topics, hasHistory: true });
+    const round = nextUp({ unfinished: session("repeat", 0), topics, hasHistory: true });
     expect(round.title).toBe("Continue your repeat round");
-    expect(round.detail).toBe("Item 1 of 2");
+    expect(round.detail).toBe("Question 1 of 6");
+    expect(nextUp({ unfinished: session("quiz", 1), topics, hasHistory: true }).title).toBe(
+      "Continue your quiz",
+    );
   });
 
-  it("then offers the weak topics with a breakdown, linking to the Weak topics page", () => {
+  it("then offers the weak topics in plain words, linking to the Weak topics page", () => {
     expect(nextUp({ unfinished: null, topics, hasHistory: true })).toEqual({
       kind: "repeat",
       title: "2 topics to repeat",
-      detail: "1 knowledge gap, 1 guess",
+      detail: "Wrong answers in 2 guide sections.",
       action: "Repeat weak topics",
       linksToTopics: true,
     });
-    expect(nextUp({ unfinished: null, topics: [s2], hasHistory: true }).title).toBe(
-      "1 topic to repeat",
-    );
+    const one = nextUp({ unfinished: null, topics: [s2], hasHistory: true });
+    expect(one.title).toBe("1 topic to repeat");
+    expect(one.detail).toBe("Wrong answers in 1 guide section.");
+    expect(JSON.stringify(one)).not.toMatch(/misconception|knowledge gap|guess/i);
   });
 
   it("starts the first scenario when there are no sessions yet", () => {
@@ -128,15 +114,11 @@ describe("New scenario cards", () => {
     expect(homeScenarios([...sampleMaterials, copy, quickCard, processing])).toHaveLength(1);
   });
 
-  it("describes only the Short length, from the scenario data", () => {
+  it("describes how many situations the scenario has, from the scenario data", () => {
     const evacuation = getScenario("building-evacuation-001");
-    const short = evacuation.lengths.short!;
-    expect(scenarioLine(evacuation)).toBe(
-      `Short: ${short.stepIds.length} decisions, about ${short.minutes} min.`,
-    );
-    expect(scenarioLine(evacuation)).toBe("Short: 3 decisions, about 5 min.");
+    expect(scenarioLine(evacuation)).toBe(`${evacuation.steps.length} situations from the guide.`);
     expect(scenarioLine(getScenario("flood-preparedness-001"))).toBe(
-      "Short: 3 decisions, about 5 min.",
+      "3 situations from the guide.",
     );
   });
 });
