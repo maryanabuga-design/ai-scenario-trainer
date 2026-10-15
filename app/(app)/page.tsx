@@ -5,10 +5,10 @@ import { useEffect } from "react";
 import { HomeView } from "@/components/HomeView/HomeView";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { directionTitle } from "@/lib/directions";
-import { homeCounts, miniSessionIds, readiness } from "@/lib/home";
+import { homeCounts, readiness } from "@/lib/home";
 import { needsOnboarding, onboardingHref } from "@/lib/onboarding";
 import { useSaved } from "@/lib/saved";
-import { startSession, useHistory, useProfile, useSession } from "@/lib/session";
+import { useHistory, useProfile, useSession } from "@/lib/session";
 
 export default function Home() {
   const router = useRouter();
@@ -41,10 +41,6 @@ export default function Home() {
       unfinished={unfinished}
       readiness={readiness(history)}
       counts={homeCounts({ history, saved, guideSections: sections.length })}
-      onMiniSession={() => {
-        startSession("quiz", miniSessionIds());
-        router.push("/session");
-      }}
     />
   );
 }

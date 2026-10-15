@@ -1,12 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  continueCard,
-  homeCounts,
-  homeTiles,
-  MINI_SESSION_LENGTH,
-  miniSessionIds,
-  readiness,
-} from "@/lib/home";
+import { continueCard, homeCounts, homeTiles, readiness } from "@/lib/home";
 import { getItem } from "@/lib/items";
 import { modeStats } from "@/lib/part-progress";
 import { modeItems } from "@/lib/parts";
@@ -187,22 +180,5 @@ describe("the tiles", () => {
     const tones = homeTiles(counts).map((tile) => tile.tone);
     expect(new Set(tones).size).toBe(6);
     expect(tones).not.toContain("rose");
-  });
-});
-
-describe("the Mini-session", () => {
-  it("is exactly 5 random quiz questions, all different, from the bank", () => {
-    expect(MINI_SESSION_LENGTH).toBe(5);
-    for (let run = 0; run < 20; run++) {
-      const ids = miniSessionIds();
-      expect(ids).toHaveLength(5);
-      expect(new Set(ids).size).toBe(5);
-      ids.forEach((id) => expect(questions.map((question) => question.id)).toContain(id));
-    }
-  });
-
-  it("is random: different draws differ", () => {
-    const draws = new Set(Array.from({ length: 12 }, () => miniSessionIds().join()));
-    expect(draws.size).toBeGreaterThan(1);
   });
 });

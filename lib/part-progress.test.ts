@@ -231,3 +231,27 @@ describe("readiness", () => {
     expect(getPart("scenario:S1:1")).toBeDefined();
   });
 });
+
+describe("a finished mini-quiz", () => {
+  it("counts toward the stats and the readiness but not toward any part ring", () => {
+    const records = () => createStore<PartRecords>("ast.parts.v1").read();
+    const historyNow = () => createStore<FinishedSession[]>("ast.history.v1").read();
+    const before = records();
+    const statsBefore = modeStats(historyNow(), "quiz");
+    const readyBefore = readinessOf(historyNow());
+    // a mini-quiz: a quiz session with no part, three questions of S5-S7, all right
+    const ids = ["q-s5-1", "q-s6-1", "q-s7-1"];
+    startSession("quiz", ids, { returnTo: "/" });
+    let session = createStore<Session>("ast.session.v1").read() as Session;
+    ids.forEach((id) => {
+      session = withAnswer(session, id, rightOf(id));
+    });
+    finishSession(session);
+    expect(records()).toEqual(before);
+    const statsAfter = modeStats(historyNow(), "quiz");
+    expect(statsAfter.answered).toBe(statsBefore.answered + 3);
+    expect(statsAfter.correct).toBe(statsBefore.correct + 3);
+    expect(readinessOf(historyNow())).toBeGreaterThan(readyBefore);
+    expect(createStore<Session>("ast.session.v1").read()?.returnTo).toBe("/");
+  });
+});

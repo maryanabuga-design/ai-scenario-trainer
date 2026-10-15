@@ -41,6 +41,7 @@ import {
   ResultsSample,
   ResultsButtonsSample,
   TrainingSample,
+  MiniQuizSample,
 } from "./samples";
 
 function Group({ title, children }: { title: string; children: ReactNode }) {
@@ -243,6 +244,28 @@ export default function Screens() {
           <PhoneFrame label="Training: Quiz, with the Mini-quiz card">
             <Screen nav="/">
               <TrainingSample mode="quiz" progress />
+            </Screen>
+          </PhoneFrame>
+        </Group>
+        <Group title="Mini-quiz">
+          <PhoneFrame label="Mini-quiz: default, every topic selected">
+            <Screen>
+              <MiniQuizSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Mini-quiz: two topics selected (7 questions, only 5)">
+            <Screen>
+              <MiniQuizSample selected={["S1", "S2"]} />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Mini-quiz: one topic (All 4)">
+            <Screen>
+              <MiniQuizSample selected={["S1"]} />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Mini-quiz: no topic, Start disabled">
+            <Screen>
+              <MiniQuizSample selected={[]} />
             </Screen>
           </PhoneFrame>
         </Group>

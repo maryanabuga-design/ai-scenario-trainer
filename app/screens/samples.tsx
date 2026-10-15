@@ -41,6 +41,8 @@ import { ProgressView } from "@/components/ProgressView/ProgressView";
 import { ResultsActions, ResultsView } from "@/components/ResultsView/ResultsView";
 import { notCoveredId, replyToChip } from "@/lib/chat";
 import { getItem, hintFor } from "@/lib/items";
+import { MiniQuizView } from "@/components/MiniQuizView/MiniQuizView";
+import { fitAmount, miniQuizPool, miniQuizSections } from "@/lib/mini-quiz";
 import { TrainingView } from "@/components/TrainingView/TrainingView";
 import type { TrainingTopic } from "@/components/TrainingView/TrainingView";
 import {
@@ -324,7 +326,6 @@ export function HomeSample({ state = "first" }: { state?: "first" | "continue" |
         saved: state === "first" ? [] : ["s3", "q-s2-1", "q-s7-3", "s5"],
         guideSections: 17,
       })}
-      onMiniSession={() => undefined}
     />
   );
 }
@@ -814,5 +815,30 @@ export function SavedQuestionSample() {
         onToggleSaved={() => undefined}
       />
     </div>
+  );
+}
+
+/** The Mini-quiz screen: all topics (default), two topics, or none selected. */
+export function MiniQuizSample({ selected }: { selected?: string[] }) {
+  const { sections } = useSourceSheet();
+  const [topics, setTopics] = useState<string[]>(selected ?? miniQuizSections);
+  const [chosen, setChosen] = useState<number | null>(null);
+  const pool = miniQuizPool(topics).length;
+  return (
+    <MiniQuizView
+      backHref="#training"
+      backLabel="Back to Training"
+      topics={miniQuizSections.map((id) => ({
+        id,
+        title: sections.find((section) => section.id === id)?.title ?? id,
+        detail: `${miniQuizPool([id]).length} questions`,
+      }))}
+      selected={topics}
+      onSelectedChange={setTopics}
+      pool={pool}
+      amount={fitAmount(chosen, pool)}
+      onAmountChange={setChosen}
+      onStart={() => undefined}
+    />
   );
 }

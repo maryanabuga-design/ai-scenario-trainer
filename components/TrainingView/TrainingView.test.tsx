@@ -123,7 +123,7 @@ describe("the switch and the Mini-quiz card", () => {
     const quiz = render("quiz");
     expect(quiz).toContain(">Mini-quiz<");
     expect(quiz).toContain("Choose topics and 5, 10 or 15 questions");
-    expect(quiz).toContain('href="/mini-quiz"');
+    expect(quiz).toContain('href="/mini-quiz?from=training"');
     expect(quiz.indexOf("Mini-quiz")).toBeGreaterThan(quiz.indexOf('name="training-mode'));
     expect(quiz.indexOf("Mini-quiz")).toBeLessThan(quiz.indexOf("Title of S1"));
     const scenario = render("scenario");

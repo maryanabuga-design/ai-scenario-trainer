@@ -162,7 +162,7 @@ test.describe("a running session", () => {
     await expect(page.getByText("Question 1 of 2")).toBeVisible();
     await option(page, S1_RIGHT).click();
     await next(page).click();
-    await page.locator("fieldset label").first().click();
+    await page.locator("fieldset[aria-labelledby^=question-] label:visible").first().click();
     await finish(page).click();
     await expect(page).toHaveURL(/\/session\/results$/);
     await expect(page.getByText("Repeat round", { exact: true })).toBeVisible();
@@ -460,7 +460,7 @@ test.describe("Home", () => {
     await page.getByRole("link", { name: /Scenarios/ }).click();
     await expect(page).toHaveURL(/\/training\?mode=scenario/);
     await expect(page.getByRole("radio", { name: "Scenario" })).toBeChecked();
-    await expect(page.getByText("Mini-quiz")).toHaveCount(0);
+    await expect(page.getByText("Mini-quiz").filter({ visible: true })).toHaveCount(0);
     await page.goBack();
     await page.getByRole("link", { name: /^Quiz/ }).click();
     await expect(page).toHaveURL(/mode=quiz/);
@@ -474,15 +474,13 @@ test.describe("Home", () => {
     await expect(page).toHaveURL(/\/materials$/);
   });
 
-  test("starts a Mini-session of exactly 5 questions", async ({ page }) => {
+  test("opens the Mini-quiz screen from the Home row", async ({ page }) => {
     await home(page, null);
-    await page.getByRole("button", { name: /Mini-session/ }).click();
-    await expect(page).toHaveURL(/\/session$/);
-    await expect(page.getByText("Question 1 of 5").first()).toBeVisible();
-    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.session.v1")!));
-    expect(saved.value.itemIds).toHaveLength(5);
-    expect(new Set(saved.value.itemIds).size).toBe(5);
-    expect(saved.value.kind).toBe("quiz");
+    await page.getByRole("link", { name: /Mini-quiz/ }).click();
+    await expect(page).toHaveURL(/\/mini-quiz\?from=home$/);
+    await expect(page.getByRole("heading", { name: "Mini-quiz" })).toBeVisible();
+    await page.getByRole("link", { name: "Back to Home" }).click();
+    await expect(page).toHaveURL(/\/$/);
   });
 
   test("opens the Quick checklists, a checklist, and goes back step by step", async ({ page }) => {
@@ -540,10 +538,10 @@ test.describe("Training", () => {
     await expect(page.getByRole("link", { name: /Mini-quiz/ })).toHaveCount(0);
   });
 
-  test("opens the Mini-quiz placeholder from the Quiz card", async ({ page }) => {
+  test("opens the Mini-quiz screen from the Quiz card", async ({ page }) => {
     await open(page, "/training?mode=quiz");
     await page.getByRole("link", { name: /Mini-quiz/ }).click();
-    await expect(page).toHaveURL(/\/mini-quiz$/);
+    await expect(page).toHaveURL(/\/mini-quiz\?from=training$/);
     await expect(page.getByRole("heading", { name: "Mini-quiz" })).toBeVisible();
   });
 
@@ -574,7 +572,7 @@ test.describe("Training", () => {
 
     // Finish the part: answer every question (the first option) and finish.
     for (let n = 0; n < 4; n++) {
-      await page.locator("fieldset label").first().click();
+      await page.locator("fieldset[aria-labelledby^=question-] label:visible").first().click();
       await (n < 3 ? next(page) : finish(page)).click();
     }
     await expect(page).toHaveURL(/\/session\/results$/);
@@ -617,5 +615,101 @@ test.describe("Training", () => {
     await page.getByRole("link", { name: /Continue/ }).click();
     await expect(page).toHaveURL(/\/session$/);
     await expect(page.getByText("Question 2 of 4").first()).toBeVisible();
+  });
+});
+
+test.describe("Mini-quiz", () => {
+  async function open(page: Page, path: string, past?: object[]) {
+    await page.addInitScript(
+      ([p, h]) => {
+        if (localStorage.getItem("ast.profile.v1")) return;
+        localStorage.setItem("ast.profile.v1", JSON.stringify(p));
+        if (h) localStorage.setItem("ast.history.v1", JSON.stringify({ schema: 4, value: h }));
+      },
+      [profile, past ?? null],
+    );
+    await page.goto(path);
+  }
+  const amounts = (page: Page) => page.locator("fieldset input[type=radio]");
+
+  test("selects every topic and the largest amount by default", async ({ page }) => {
+    await open(page, "/mini-quiz?from=training");
+    await expect(page.getByText("Pick topics and how many questions")).toBeVisible();
+    await expect(page.locator("input[name=mini-topics]:checked")).toHaveCount(10);
+    await expect(amounts(page)).toHaveCount(3);
+    await expect(page.getByLabel("15", { exact: true })).toBeChecked();
+    await expect(page.getByText("33 questions available in your selected topics")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Start mini-quiz" })).toBeEnabled();
+  });
+
+  test("follows the topics: options and the line change, none disables Start", async ({ page }) => {
+    await open(page, "/mini-quiz?from=training");
+    await page.getByRole("button", { name: "Deselect all" }).click();
+    await expect(page.getByRole("button", { name: "Start mini-quiz" })).toBeDisabled();
+    await expect(page.getByText("Select at least one topic").first()).toBeVisible();
+    await expect(amounts(page)).toHaveCount(0);
+    await expect(page.getByText("0 questions available in your selected topics")).toBeVisible();
+    await page.getByText("Responding to an alarm").click();
+    await expect(page.getByText("4 questions available in your selected topics")).toBeVisible();
+    await expect(amounts(page)).toHaveCount(1);
+    await expect(page.getByText("All 4")).toBeVisible();
+    await page.getByText("Checking the route").click();
+    await expect(page.getByText("7 questions available in your selected topics")).toBeVisible();
+    await expect(amounts(page)).toHaveCount(1);
+    await expect(page.getByText("5", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Select all" }).click();
+    await expect(amounts(page)).toHaveCount(3);
+    await expect(page.getByLabel("15", { exact: true })).toBeChecked();
+  });
+
+  test("starts the chosen number of distinct questions from the selected topics only", async ({
+    page,
+  }) => {
+    await open(page, "/mini-quiz?from=training");
+    await page.getByRole("button", { name: "Deselect all" }).click();
+    await page.getByText("Responding to an alarm").click();
+    await page.getByText("Checking the route").click();
+    await page.getByText("Moving through smoke").click();
+    await page.getByLabel("10", { exact: true }).check({ force: true });
+    await page.getByRole("button", { name: "Start mini-quiz" }).click();
+    await expect(page).toHaveURL(/\/session$/);
+    await expect(page.getByText("Question 1 of 10").first()).toBeVisible();
+    const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.session.v1")!));
+    const ids: string[] = stored.value.itemIds;
+    expect(ids).toHaveLength(10);
+    expect(new Set(ids).size).toBe(10);
+    ids.forEach((id) => expect(id).toMatch(/^q-s[123]-/));
+    expect(stored.value.partId).toBeUndefined();
+    expect(stored.value.returnTo).toBe("/training?mode=quiz");
+  });
+
+  test("counts toward the stats but not the part rings, and Back goes to where it started", async ({
+    page,
+  }) => {
+    await open(page, "/mini-quiz?from=training");
+    await page.getByRole("button", { name: "Start mini-quiz" }).click();
+    for (let n = 0; n < 15; n++) {
+      await page.locator("fieldset[aria-labelledby^=question-] label:visible").first().click();
+      await (n < 14 ? next(page) : finish(page)).click();
+    }
+    await expect(page).toHaveURL(/\/session\/results$/);
+    await page.getByRole("link", { name: "Back to Training" }).click();
+    await expect(page).toHaveURL(/\/training\?mode=quiz$/);
+    await expect(page.getByText("15/33")).toBeVisible();
+    await expect(page.getByRole("img", { name: /Part \d: last result/ })).toHaveCount(0);
+    await expect(page.locator("[data-pill]")).toHaveCount(10);
+  });
+
+  test("goes back to Home from Results when it was started from Home", async ({ page }) => {
+    await open(page, "/mini-quiz?from=home");
+    await page.getByLabel("5", { exact: true }).check({ force: true });
+    await page.getByRole("button", { name: "Start mini-quiz" }).click();
+    for (let n = 0; n < 5; n++) {
+      await page.locator("fieldset[aria-labelledby^=question-] label:visible").first().click();
+      await (n < 4 ? next(page) : finish(page)).click();
+    }
+    await page.getByRole("link", { name: "Back to Home" }).click();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByRole("img", { name: /Readiness \d+%/ })).toBeVisible();
   });
 });

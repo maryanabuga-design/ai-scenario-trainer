@@ -4,17 +4,7 @@ import { scenarios } from "@/lib/scenario";
 import { weakItemsFromHistory } from "@/lib/progress";
 import type { FinishedSession, Session } from "@/lib/session";
 import { sessionLabel } from "@/lib/session";
-import { pickQuizItems } from "@/lib/quiz-draw";
 import { checklists } from "@/lib/checklists";
-
-/** The Mini-session row on Home: 5 random quiz questions (the mini-quiz screen offers 5, 10 or 15). */
-export const MINI_SESSION_LENGTH = 5;
-
-/** 5 random quiz questions, spread over the guide sections. */
-export function miniSessionIds(random: () => number = Math.random): string[] {
-  const sections = [...new Set(questions.map((question) => question.section))];
-  return pickQuizItems(sections, MINI_SESSION_LENGTH, random);
-}
 
 export { readinessOf as readiness } from "@/lib/part-progress";
 

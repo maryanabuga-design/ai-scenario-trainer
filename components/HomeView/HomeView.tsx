@@ -17,9 +17,11 @@ import { Chevron } from "@/components/Chevron/Chevron";
 import { Media3D } from "@/components/Media3D/Media3D";
 import { Ring } from "@/components/Ring/Ring";
 import { TileIcon } from "@/components/TileIcon/TileIcon";
-import { continueCard, homeTiles, MINI_SESSION_LENGTH } from "@/lib/home";
+import { continueCard, homeTiles } from "@/lib/home";
 import type { HomeCounts, HomeTileId } from "@/lib/home";
 import { onboardingHref } from "@/lib/onboarding";
+
+const miniQuizPath = "/mini-quiz?from=home";
 import type { Session } from "@/lib/session";
 
 const tileIcons: Record<HomeTileId, LucideIcon> = {
@@ -33,21 +35,19 @@ const tileIcons: Record<HomeTileId, LucideIcon> = {
 
 /**
  * Home, the learner view: a small title and the profile button, the big Continue training card
- * with the readiness ring, six tiles and the Mini-session. Nothing from Progress is repeated here.
+ * with the readiness ring, six tiles and the Mini-quiz. Nothing from Progress is repeated here.
  */
 export function HomeView({
   directionTitle,
   unfinished,
   readiness,
   counts,
-  onMiniSession,
 }: {
   directionTitle: string;
   unfinished: Session | null;
   /** The readiness percentage: 0 when nothing is done. */
   readiness: number;
   counts: HomeCounts;
-  onMiniSession: () => void;
 }) {
   const card = continueCard(unfinished);
   const tiles = homeTiles(counts);
@@ -102,16 +102,18 @@ export function HomeView({
         ))}
       </ul>
 
-      <button
-        type="button"
-        onClick={onMiniSession}
-        className="flex min-h-16 items-center gap-3 rounded-card bg-card p-4 text-left shadow-(--card-shadow) active:bg-surface-muted"
+      <Link
+        href={miniQuizPath}
+        className="flex min-h-16 items-center gap-3 rounded-card bg-card p-4 shadow-(--card-shadow) has-focus-visible:outline-2"
       >
-        <span className="type-body-strong flex-1">
-          Mini-session · <span className="tabular-nums">{MINI_SESSION_LENGTH}</span> quick questions
+        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className="type-body-strong">Mini-quiz</span>
+          <span className="type-small text-text-secondary">
+            Choose topics and 5, 10 or 15 questions
+          </span>
         </span>
         <Chevron />
-      </button>
+      </Link>
 
       <div className="-ml-3 self-start">
         <ButtonLink href={onboardingHref} variant="tertiary">

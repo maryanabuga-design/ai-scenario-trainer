@@ -14,7 +14,7 @@ import { partRing } from "@/lib/part-progress";
 import type { Part, TrainingMode } from "@/lib/parts";
 import { questionCountLabel } from "@/lib/quiz-draw";
 
-export const miniQuizPath = "/mini-quiz";
+export const miniQuizPath = "/mini-quiz?from=training";
 
 export type TrainingTopic = {
   sectionId: string;

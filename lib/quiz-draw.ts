@@ -1,30 +1,24 @@
 import type { Item } from "@/lib/items";
-import { inGuideOrder } from "@/lib/items";
-import { questionsFor } from "@/lib/quiz";
 
-/** A quiz draws at random: shuffled within each section, then taken in turns from each section. */
-export function pickQuizItems(
-  sections: string[],
-  length: number,
+/** A fair shuffle (Fisher-Yates): every order is possible, none repeats an item. */
+export function shuffled<T>(list: T[], random: () => number = Math.random): T[] {
+  const copy = [...list];
+  for (let index = copy.length - 1; index > 0; index--) {
+    const swap = Math.floor(random() * (index + 1));
+    [copy[index], copy[swap]] = [copy[swap], copy[index]];
+  }
+  return copy;
+}
+
+/** Draws `count` different questions at random from the pool, in a random order. */
+export function drawQuestions(
+  pool: Item[],
+  count: number,
   random: () => number = Math.random,
 ): string[] {
-  const shuffle = <T>(list: T[]) =>
-    list
-      .map((item) => ({ item, key: random() }))
-      .sort((a, b) => a.key - b.key)
-      .map(({ item }) => item);
-  const bySection = inGuideOrder(sections).map((section) => shuffle(questionsFor([section])));
-  const picked: Item[] = [];
-  for (
-    let round = 0;
-    picked.length < length && bySection.some((list) => list.length > round);
-    round++
-  ) {
-    for (const list of bySection) {
-      if (list[round] && picked.length < length) picked.push(list[round]);
-    }
-  }
-  return picked.map((question) => question.id);
+  return shuffled(pool, random)
+    .slice(0, count)
+    .map((question) => question.id);
 }
 
 /** "N questions", or "1 question". */

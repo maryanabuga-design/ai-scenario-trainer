@@ -4,7 +4,6 @@ import { HomeView } from "@/components/HomeView/HomeView";
 import { homeCounts } from "@/lib/home";
 import type { Session } from "@/lib/session";
 
-const noop = () => undefined;
 const counts = homeCounts({ history: [], saved: [], guideSections: 17 });
 
 function render(unfinished: Session | null = null, readiness = 0) {
@@ -14,7 +13,6 @@ function render(unfinished: Session | null = null, readiness = 0) {
       unfinished={unfinished}
       readiness={readiness}
       counts={counts}
-      onMiniSession={noop}
     />,
   );
 }
@@ -36,13 +34,13 @@ describe("Home layout", () => {
     expect(html).toContain('href="/profile"');
   });
 
-  it("goes top row, big card, six tiles, Mini-session, How it works", () => {
+  it("goes top row, big card, six tiles, Mini-quiz, How it works", () => {
     const order = [
       'aria-label="Profile"',
       "Start training",
       ">Scenarios<",
       ">Quick checklists<",
-      "Mini-session",
+      "Mini-quiz",
       "How it works",
     ].map((text) => html.indexOf(text));
     expect(order.every((position) => position >= 0)).toBe(true);
@@ -98,7 +96,7 @@ describe("the tiles", () => {
 
   it("are six cards in a two-column grid, each with its own pastel circle and a count line", () => {
     expect(html).toContain("grid grid-cols-2 gap-3");
-    const grid = html.slice(html.indexOf("grid-cols-2"), html.indexOf("<button"));
+    const grid = html.slice(html.indexOf("grid-cols-2"), html.indexOf("</ul>"));
     expect(grid.match(/<a /g)).toHaveLength(6);
     for (const tone of ["yellow", "blue", "peach", "lilac", "green", "sand"]) {
       expect(grid).toContain(`bg-pastel-${tone}`);
@@ -125,16 +123,21 @@ describe("the tiles", () => {
   });
 });
 
-describe("the Mini-session row", () => {
+describe("the Mini-quiz row", () => {
   const html = render();
 
-  it("is a full-width card with a chevron that starts 5 quick questions", () => {
-    const start = html.indexOf("<button");
-    const row = html.slice(start, html.indexOf("</button>", start));
-    expect(row).toContain("Mini-session");
-    expect(row).toContain(">5<");
-    expect(row).toContain("quick questions");
+  it("is a full-width card with a chevron that opens the Mini-quiz screen from Home", () => {
+    const start = html.lastIndexOf("<a ", html.indexOf(">Mini-quiz<"));
+    const row = html.slice(start, html.indexOf("</a>", start));
+    expect(row).toContain('href="/mini-quiz?from=home"');
+    expect(row).toContain("Choose topics and 5, 10 or 15 questions");
     expect(row).toContain("lucide-chevron-right");
     expect(row).toContain("rounded-card bg-card");
+  });
+
+  it("no longer starts an instant session of 5 questions", () => {
+    expect(html).not.toMatch(
+      /Mini-session|quick questions|<button type="button" class="flex min-h-16/,
+    );
   });
 });
