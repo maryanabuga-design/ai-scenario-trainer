@@ -181,7 +181,7 @@ export function UploadButton({
 
   return (
     <>
-      <Button variant={variant} wide={false} onClick={open}>
+      <Button variant={variant} wide={false} compact={variant === "secondary"} onClick={open}>
         {label}
       </Button>
       <dialog

@@ -48,7 +48,8 @@
   --selected-stroke: var(--stroke-sage);
   --selected-pressed: var(--secondary-pressed);
   --selectable-stroke: var(--stroke-neutral);
-  --olive-tint: #d6dec9;
+  --olive-tint: #e0e6d6;
+  --olive-tint-pressed: #d6ddcb;
   --card: #faf7f3;
   --arrow-stroke: #e4dfd5;
   --arrow-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
@@ -101,6 +102,7 @@
   --color-selected-pressed: var(--selected-pressed);
   --color-selectable-stroke: var(--selectable-stroke);
   --color-olive-tint: var(--olive-tint);
+  --color-olive-tint-pressed: var(--olive-tint-pressed);
   --color-card: var(--card);
 
   --font-sans: var(--font-dm-sans), system-ui, sans-serif;
@@ -116,6 +118,7 @@
   --text-2xl: 28px;
   --text-3xl: 34px;
 
+  --radius-button: 14px;
   --radius-panel: 16px;
   --radius-card: 24px;
 

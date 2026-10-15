@@ -53,7 +53,7 @@ describe("coloured chips and icon backgrounds keep their tokens", () => {
     expect(Object.fromEntries(names.map((name) => [name, token(name)]))).toMatchInlineSnapshot(`
       {
         "next-card": "#f2f3ee",
-        "olive-tint": "#d6dec9",
+        "olive-tint": "#e0e6d6",
         "secondary-pressed": "#e3e8dc",
         "stroke-sage": "#a9b5a0",
       }
@@ -103,5 +103,37 @@ describe("no leftover grey-beige for inactive states", () => {
       expect(code, file).toMatch(/secondary-sand/);
       expect(code, file).not.toMatch(/surface-muted|bg-border\b/);
     }
+  });
+});
+
+describe("the secondary button fill", () => {
+  /** CIE76 colour difference between two hex colours. */
+  function lab(hex: string): [number, number, number] {
+    const [r, g, b] = [1, 3, 5].map((start) => {
+      const c = parseInt(hex.slice(start, start + 2), 16) / 255;
+      return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    });
+    const x = (0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047;
+    const y = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    const z = (0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883;
+    const f = (v: number) => (v > 0.008856 ? Math.cbrt(v) : 7.787 * v + 16 / 116);
+    return [116 * f(y) - 16, 500 * (f(x) - f(y)), 200 * (f(y) - f(z))];
+  }
+  const deltaE = (a: string, b: string) =>
+    Math.hypot(...lab(a).map((value, index) => value - lab(b)[index]));
+
+  it("is #E0E6D6, with the pressed #D6DDCB", () => {
+    expect(token("olive-tint")).toBe("#e0e6d6");
+    expect(token("olive-tint-pressed")).toBe("#d6ddcb");
+  });
+
+  it("stands out from the page, the card and the selected card by a ΔE of at least 6", () => {
+    for (const background of ["#f2eeea", "#faf7f4", "#f2f3ef"]) {
+      expect(deltaE("#e0e6d6", background)).toBeGreaterThanOrEqual(6);
+    }
+  });
+
+  it("has a label with a contrast of at least 4.5:1", () => {
+    expect(contrast(token("primary"), "#e0e6d6")).toBeGreaterThanOrEqual(4.5);
   });
 });

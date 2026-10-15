@@ -18,21 +18,58 @@ describe("the three locked button types", () => {
   it("primary: deep green fill, white label, darker green when pressed, sand when disabled", () => {
     const primary = classes(renderToStaticMarkup(<Button>Continue</Button>));
     expect(primary).toContain("bg-primary text-primary-text");
-    expect(primary).toContain("min-h-12");
+    expect(primary).toContain("h-[52px]");
     expect(primary).toContain("w-full");
     expect(primary).toContain("active:bg-primary-pressed");
     expect(primary).toContain("disabled:bg-secondary-sand");
     expect(primary).toContain("disabled:text-text-secondary");
   });
 
-  it("secondary: transparent with a 1.5px stroke, the primary's size; muted stroke when disabled", () => {
+  it("secondary: filled with the olive tint, no stroke, the dark green label, the primary's size", () => {
     const secondary = classes(renderToStaticMarkup(<Button variant="secondary">Back</Button>));
-    expect(secondary).toContain("border-[1.5px] border-primary bg-transparent text-primary");
-    expect(secondary).toContain("min-h-12");
+    expect(secondary).toContain("bg-olive-tint text-primary");
+    expect(secondary).toContain("active:bg-olive-tint-pressed");
+    expect(secondary).toContain("h-[52px]");
     expect(secondary).toContain("w-full");
-    expect(secondary).toContain("disabled:border-secondary-sand-pressed");
-    expect(secondary).toContain("disabled:text-text-secondary");
-    expect(secondary).not.toMatch(/(^| )bg-(?!transparent)/);
+    expect(secondary).toContain("disabled:bg-secondary-sand disabled:text-text-secondary");
+    expect(secondary).not.toMatch(/(^| )(border|outline)/);
+  });
+
+  it("primary and secondary share the 14px radius, the 52px height and the width", () => {
+    const [primary, secondary] = (["primary", "secondary"] as const).map((variant) =>
+      classes(renderToStaticMarkup(<Button variant={variant}>Go</Button>)),
+    );
+    for (const own of [primary, secondary]) {
+      expect(own).toContain("rounded-button");
+      expect(own).toContain("h-[52px]");
+      expect(own).toContain("w-full");
+    }
+    expect(/--radius-button:\s*14px/.test(readFileSync("app/globals.css", "utf8"))).toBe(true);
+  });
+
+  it("is never fully rounded, in any variant", () => {
+    for (const variant of ["primary", "secondary", "tertiary"] as const) {
+      expect(classes(renderToStaticMarkup(<Button variant={variant}>Go</Button>))).not.toContain(
+        "rounded-full",
+      );
+    }
+  });
+
+  it("has an outline variant nowhere: no button style has a stroke except the disabled primary", () => {
+    expect(buttonVariants.secondary).not.toMatch(/border|bg-transparent/);
+    expect(buttonVariants.tertiary).not.toMatch(/border/);
+  });
+
+  it("makes the header action 44px high", () => {
+    const compact = classes(
+      renderToStaticMarkup(
+        <Button variant="secondary" compact wide={false}>
+          Upload a file
+        </Button>,
+      ),
+    );
+    expect(compact).toContain("h-11!");
+    expect(compact).toContain("rounded-button");
   });
 
   it("tertiary: small underlined text, no background, no border, 44px tap area", () => {
@@ -126,5 +163,13 @@ describe("a secondary always comes with a primary above it", () => {
     const view = readFileSync("components/MaterialView/MaterialView.tsx", "utf8");
     expect(list).toMatch(/label="Try another file"\s+variant="tertiary"/);
     expect(view).toMatch(/label="Try another file"\s+variant="tertiary"/);
+  });
+});
+
+describe("the /screens buttons section", () => {
+  it("shows the three types in default, pressed, disabled and focus states", () => {
+    const samples = readFileSync("app/screens/samples.tsx", "utf8");
+    expect(samples).toContain('["default", "pressed", "disabled", "focus"]');
+    expect(samples).toContain('(["primary", "secondary", "tertiary"] as const)');
   });
 });

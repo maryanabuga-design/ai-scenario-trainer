@@ -48,7 +48,7 @@ describe("secondary sand for inactive states and tonal backgrounds", () => {
         onChange={() => undefined}
       />,
     );
-    const track = classWith(html, "rounded-full") ?? "";
+    const track = classWith(html, "rounded-[14px]") ?? "";
     expect(track).toContain("bg-secondary-sand");
     expect(track).toContain("border border-secondary-sand-pressed");
   });

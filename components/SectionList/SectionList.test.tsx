@@ -22,7 +22,7 @@ const contrast = (a: string, b: string) => {
 
 describe("one olive tint", () => {
   it("is a single token, not the sand", () => {
-    expect(tint.toLowerCase()).toBe("#d6dec9");
+    expect(tint.toLowerCase()).toBe("#e0e6d6");
     expect(tint.toLowerCase()).not.toBe("#f0ece6");
     expect(css.match(/--olive-tint:/g)).toHaveLength(1);
     expect(css).not.toMatch(/--(code-|material-tile|section-tint)/);
@@ -64,7 +64,7 @@ describe("one olive tint", () => {
   });
 
   it("is a step darker than both row backgrounds, by the recorded amounts", () => {
-    expect(contrast(tint, "#faf7f3")).toBeCloseTo(1.3, 1);
-    expect(contrast(tint, "#f2f3ee")).toBeCloseTo(1.24, 1);
+    expect(contrast(tint, "#faf7f3")).toBeCloseTo(1.19, 1);
+    expect(contrast(tint, "#f2f3ee")).toBeCloseTo(1.14, 1);
   });
 });
