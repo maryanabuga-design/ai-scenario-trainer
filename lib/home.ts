@@ -2,6 +2,7 @@ import { findItem } from "@/lib/items";
 import { weakItemsFromHistory } from "@/lib/progress";
 import type { FinishedSession, Session } from "@/lib/session";
 import { checklists } from "@/lib/checklists";
+import { examResults } from "@/lib/exam";
 import { DAILY_GOAL, questionsToday } from "@/lib/daily-goal";
 import { PASS_MARK } from "@/lib/config";
 import type { PartRecords } from "@/lib/part-progress";
@@ -96,15 +97,14 @@ export const heroCounts = {
 };
 
 export type HomeCounts = {
-  scenarios: number;
-  questions: number;
+  /** The best exam result in percent, or null when no exam was taken. */
+  bestExam: number | null;
   weakSections: number;
   saved: number;
-  guideSections: number;
   checklists: number;
 };
 
-export type HomeTileId = "scenarios" | "quiz" | "weak" | "saved" | "guide" | "checklists";
+export type HomeTileId = "exam" | "steps" | "weak" | "saved";
 
 export type HomeTile = {
   id: HomeTileId;
@@ -112,24 +112,24 @@ export type HomeTile = {
   /** The small count line under the title. */
   count: string;
   href: string;
-  tone: "yellow" | "blue" | "peach" | "lilac" | "green" | "sand";
+  tone: "yellow" | "blue" | "peach" | "lilac";
 };
 
-/** The six tiles, each with its own pastel, its count line and where it goes. */
+/** The four tiles, each with its own pastel, its count line and where it goes. */
 export function homeTiles(counts: HomeCounts): HomeTile[] {
   return [
     {
-      id: "scenarios",
-      title: "Scenarios",
-      count: plural(counts.scenarios, "scenario", "scenarios"),
-      href: "/training?mode=scenario",
+      id: "exam",
+      title: "Exam",
+      count: counts.bestExam === null ? "Not taken yet" : `Best: ${counts.bestExam}%`,
+      href: "/exam",
       tone: "yellow",
     },
     {
-      id: "quiz",
-      title: "Quiz",
-      count: plural(counts.questions, "question", "questions"),
-      href: "/training?mode=quiz",
+      id: "steps",
+      title: "Steps",
+      count: plural(counts.checklists, "checklist", "checklists"),
+      href: "/checklists",
       tone: "blue",
     },
     {
@@ -149,20 +149,6 @@ export function homeTiles(counts: HomeCounts): HomeTile[] {
       href: "/saved",
       tone: "lilac",
     },
-    {
-      id: "guide",
-      title: "Guide",
-      count: plural(counts.guideSections, "section", "sections"),
-      href: "/materials",
-      tone: "green",
-    },
-    {
-      id: "checklists",
-      title: "Quick checklists",
-      count: plural(counts.checklists, "checklist", "checklists"),
-      href: "/checklists",
-      tone: "sand",
-    },
   ];
 }
 
@@ -170,19 +156,15 @@ export function homeTiles(counts: HomeCounts): HomeTile[] {
 export function homeCounts({
   history,
   saved,
-  guideSections,
 }: {
   history: FinishedSession[] | null;
   saved: string[] | null;
-  guideSections: number;
 }): HomeCounts {
   const weak = weakItemsFromHistory(history);
   return {
-    scenarios: heroCounts.scenarios,
-    questions: heroCounts.questions,
+    bestExam: examResults(history).best?.percent ?? null,
     weakSections: new Set(weak.map((item) => item.section)).size,
     saved: (saved ?? []).filter((id) => findItem(id) !== undefined).length,
-    guideSections,
     checklists: checklists.length,
   };
 }

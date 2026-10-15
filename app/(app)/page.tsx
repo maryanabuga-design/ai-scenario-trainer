@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { HomeView } from "@/components/HomeView/HomeView";
-import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { systemClock } from "@/lib/daily-goal";
 import { homeCounts, homeSummary, readiness } from "@/lib/home";
 import { needsOnboarding, onboardingHref } from "@/lib/onboarding";
@@ -23,7 +22,6 @@ export default function Home() {
   const history = useHistory();
   const saved = useSaved();
   const records = usePartRecords();
-  const { sections } = useSourceSheet();
   const showOnboarding = profile !== "loading" && needsOnboarding(profile);
 
   useEffect(() => {
@@ -53,7 +51,7 @@ export default function Home() {
         now: systemClock(),
       })}
       readiness={readiness(history)}
-      counts={homeCounts({ history, saved, guideSections: sections.length })}
+      counts={homeCounts({ history, saved })}
       guideName={guideName}
     />
   );

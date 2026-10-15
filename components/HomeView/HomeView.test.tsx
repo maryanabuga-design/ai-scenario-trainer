@@ -7,7 +7,7 @@ import type { PartRecords } from "@/lib/part-progress";
 import type { FinishedSession, Session } from "@/lib/session";
 import { DEMO_USER } from "@/lib/user";
 
-const counts = homeCounts({ history: [], saved: [], guideSections: 17 });
+const counts = homeCounts({ history: [], saved: [] });
 const NOW = new Date(2026, 9, 17, 15, 0);
 const guideName = "Sample evacuation guide.pdf";
 
@@ -94,12 +94,12 @@ describe("Home layout", () => {
     expect(html).not.toContain(">Learn<");
   });
 
-  it("goes greeting, big card, six tiles, Mini-quiz, How it works", () => {
+  it("goes greeting, hero card, four tiles, Mini-quiz, How it works", () => {
     const order = [
       'aria-label="Profile"',
       "Your training",
-      ">Scenarios<",
-      ">Quick checklists<",
+      ">Exam<",
+      ">Saved questions<",
       "Mini-quiz",
       "How it works",
     ].map((text) => html.indexOf(text));
@@ -227,32 +227,55 @@ describe("the tiles", () => {
     expect(grid).not.toContain("data-media3d");
   });
 
-  it("are six cards in a two-column grid, each with its own pastel circle and a count line", () => {
+  it("are four cards in a two-column grid, each with its own pastel circle and a count line", () => {
     expect(html).toContain("grid grid-cols-2 gap-3");
     const grid = html.slice(html.indexOf("grid-cols-2"), html.lastIndexOf("</ul>"));
-    expect(grid.match(/<a /g)).toHaveLength(6);
-    for (const tone of ["yellow", "blue", "peach", "lilac", "green", "sand"]) {
+    expect(grid.match(/<a /g)).toHaveLength(4);
+    for (const tone of ["yellow", "blue", "peach", "lilac"]) {
       expect(grid).toContain(`bg-pastel-${tone}`);
     }
-    expect(grid.match(/h-9 w-9/g)).toHaveLength(6);
-    expect(grid.match(/width="18"/g)).toHaveLength(6);
-    expect(grid.match(/rounded-card bg-card/g)).toHaveLength(6);
+    expect(grid.match(/h-9 w-9/g)).toHaveLength(4);
+    expect(grid.match(/width="18"/g)).toHaveLength(4);
+    expect(grid.match(/rounded-card bg-card/g)).toHaveLength(4);
+  });
+
+  it("are Exam, Steps, Weak topics and Saved questions, and there is no Materials tile", () => {
+    const order = [">Exam<", ">Steps<", ">Weak topics<", ">Saved questions<"].map((text) =>
+      html.indexOf(text),
+    );
+    expect(order.every((position) => position >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+    const grid = html.slice(html.indexOf("grid-cols-2"), html.lastIndexOf("</ul>"));
+    expect(grid).not.toMatch(/Materials|Guide|Scenarios|>Quiz<|Quick checklists/);
+    expect(grid).not.toContain('href="/materials"');
   });
 
   it("show the counts and go to the right screen", () => {
     for (const [title, count, href] of [
-      ["Scenarios", "1 scenario", "/training?mode=scenario"],
-      ["Quiz", "33 questions", "/training?mode=quiz"],
+      ["Exam", "Not taken yet", "/exam"],
+      ["Steps", "3 checklists", "/checklists"],
       ["Weak topics", "Nothing to repeat", "/weak-topics"],
       ["Saved questions", "0 saved", "/saved"],
-      ["Guide", "17 sections", "/materials"],
-      ["Quick checklists", "3 checklists", "/checklists"],
     ]) {
       const start = html.lastIndexOf("<a ", html.indexOf(`>${title}<`));
       const tile = html.slice(start, html.indexOf("</a>", start));
-      expect(tile, title).toContain(`href="${href.replace(/&/g, "&amp;")}"`);
+      expect(tile, title).toContain(`href="${href}"`);
       expect(tile, title).toContain(count);
     }
+  });
+
+  it("shows the best exam result on the Exam tile", () => {
+    const withExam = renderToStaticMarkup(
+      <HomeView
+        name={DEMO_USER.name}
+        summary={homeSummary({ unfinished: null, history: [], records: null, now: NOW })}
+        readiness={0}
+        counts={{ ...counts, bestExam: 85 }}
+        guideName={guideName}
+      />,
+    );
+    expect(withExam).toContain("Best: 85%");
+    expect(withExam).not.toContain("Not taken yet");
   });
 });
 

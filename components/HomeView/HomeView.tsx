@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Bookmark,
-  BookOpen,
-  CircleHelp,
-  ClipboardCheck,
-  ListChecks,
-  Route,
-  User,
-} from "lucide-react";
+import { Bookmark, ClipboardCheck, ListChecks, ListOrdered, User } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { ButtonLink, buttonClasses } from "@/components/Button/Button";
@@ -24,12 +16,10 @@ import { onboardingHref } from "@/lib/onboarding";
 const miniQuizPath = "/mini-quiz?from=home";
 
 const tileIcons: Record<HomeTileId, LucideIcon> = {
-  scenarios: Route,
-  quiz: CircleHelp,
+  exam: ClipboardCheck,
+  steps: ListOrdered,
   weak: ListChecks,
   saved: Bookmark,
-  guide: BookOpen,
-  checklists: ClipboardCheck,
 };
 
 const segmentTones: Record<SegmentState, string> = {

@@ -254,21 +254,15 @@ describe("readiness", () => {
 });
 
 describe("the tiles", () => {
-  const counts = homeCounts({
-    history: [],
-    saved: ["s1", "q-s2-1", "gone"],
-    guideSections: 17,
+  const counts = homeCounts({ history: [], saved: ["s1", "q-s2-1", "gone"] });
+  const exam = (at: number, percent: number): FinishedSession => ({
+    ...finished(at, [["q-s1-1", true]]),
+    kind: "exam",
+    exam: { percent, questions: 20, timeUsedSeconds: 600 },
   });
 
-  it("counts scenarios, questions, saved questions, sections and checklists", () => {
-    expect(counts).toMatchObject({
-      scenarios: 1,
-      questions: 33,
-      weakSections: 0,
-      saved: 2,
-      guideSections: 17,
-      checklists: 3,
-    });
+  it("counts exam, saved questions, weak sections and checklists", () => {
+    expect(counts).toEqual({ bestExam: null, weakSections: 0, saved: 2, checklists: 3 });
   });
 
   it("counts the sections to repeat from the latest wrong answers", () => {
@@ -280,7 +274,7 @@ describe("the tiles", () => {
         ["s2", true],
       ]),
     ];
-    expect(homeCounts({ history, saved: null, guideSections: 17 }).weakSections).toBe(2);
+    expect(homeCounts({ history, saved: null }).weakSections).toBe(2);
     const cleared = [
       ...history,
       finished(2, [
@@ -288,19 +282,24 @@ describe("the tiles", () => {
         ["q-s1-1", true],
       ]),
     ];
-    expect(homeCounts({ history: cleared, saved: null, guideSections: 17 }).weakSections).toBe(1);
+    expect(homeCounts({ history: cleared, saved: null }).weakSections).toBe(1);
   });
 
-  it("words each count line and sends each tile to its screen", () => {
+  it("are exactly four: Exam, Steps, Weak topics and Saved questions, and no Materials tile", () => {
     const tiles = homeTiles(counts);
     expect(tiles.map((tile) => [tile.title, tile.count, tile.href])).toEqual([
-      ["Scenarios", "1 scenario", "/training?mode=scenario"],
-      ["Quiz", "33 questions", "/training?mode=quiz"],
+      ["Exam", "Not taken yet", "/exam"],
+      ["Steps", "3 checklists", "/checklists"],
       ["Weak topics", "Nothing to repeat", "/weak-topics"],
       ["Saved questions", "2 saved", "/saved"],
-      ["Guide", "17 sections", "/materials"],
-      ["Quick checklists", "3 checklists", "/checklists"],
     ]);
+    expect(tiles.some((tile) => /materials|guide/i.test(tile.title + tile.href))).toBe(false);
+  });
+
+  it("shows the best exam result once an exam was taken", () => {
+    const history = [exam(1, 70), exam(2, 85), exam(3, 60)];
+    expect(homeCounts({ history, saved: null }).bestExam).toBe(85);
+    expect(homeTiles(homeCounts({ history, saved: null }))[0].count).toBe("Best: 85%");
   });
 
   it("says how many sections are to repeat, in the singular too", () => {
@@ -311,7 +310,7 @@ describe("the tiles", () => {
 
   it("gives every tile its own pastel from the shared palette", () => {
     const tones = homeTiles(counts).map((tile) => tile.tone);
-    expect(new Set(tones).size).toBe(6);
+    expect(new Set(tones).size).toBe(4);
     expect(tones).not.toContain("rose");
   });
 });
