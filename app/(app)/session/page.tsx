@@ -1,13 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { ButtonLink } from "@/components/Button/Button";
 import { QuestionScreen } from "@/components/QuestionScreen/QuestionScreen";
 import { SessionBar } from "@/components/SessionBar/SessionBar";
 import { SessionTopBar } from "@/components/SessionTopBar/SessionTopBar";
 import type { Unit } from "@/components/SessionTopBar/SessionTopBar";
+import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { stripStates } from "@/components/StepStrip/StepStrip";
-import { getItem } from "@/lib/items";
+import { getItem, hintFor } from "@/lib/items";
+import { isSaved, toggleSaved, useSaved } from "@/lib/saved";
 import type { Session } from "@/lib/session";
 import {
   answerFor,
@@ -16,6 +19,7 @@ import {
   saveSession,
   useSession,
   withAnswer,
+  withHintUsed,
 } from "@/lib/session";
 
 function NoSession() {
@@ -34,11 +38,26 @@ function NoSession() {
  */
 function Runner({ session }: { session: Session }) {
   const router = useRouter();
+  const { sections } = useSourceSheet();
+  const saved = useSaved();
+  /** The question whose hint is open: it closes by itself when the person moves to another. */
+  const [hintOpenFor, setHintFor] = useState<string | null>(null);
   const total = session.itemIds.length;
   const index = Math.min(session.index, total - 1);
   const item = getItem(session.itemIds[index]);
   const unit: Unit = session.kind === "scenario" ? "Step" : "Question";
   const choice = answerFor(session, item.id)?.optionId ?? null;
+  const hint = hintFor(item, (id) => sections.find((section) => section.id === id)?.title);
+  const hintOpen = hint !== null && hintOpenFor === item.id;
+
+  function toggleHint() {
+    if (hintOpen) {
+      setHintFor(null);
+      return;
+    }
+    setHintFor(item.id);
+    saveSession(withHintUsed(session, item.id));
+  }
 
   function jump(position: number) {
     saveSession({ ...session, index: position });
@@ -57,11 +76,11 @@ function Runner({ session }: { session: Session }) {
   const answered = session.itemIds.map((id) => answerFor(session, id) !== undefined);
   const unanswered = answered.indexOf(false);
   const last = index === total - 1;
-  const hint =
+  const note =
     last && unanswered !== -1 ? `Answer ${unit.toLowerCase()} ${unanswered + 1} to finish.` : null;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 pb-4">
       <SessionTopBar
         index={index}
         total={total}
@@ -76,11 +95,15 @@ function Runner({ session }: { session: Session }) {
         item={item}
         choice={choice}
         onChoose={(optionId) => saveSession(withAnswer(session, item.id, optionId))}
+        saved={isSaved(saved, item.id)}
+        onToggleSaved={() => toggleSaved(item.id)}
+        hint={hintOpen ? hint : null}
       />
       <SessionBar
         last={last}
         disabled={choice === null || (last && unanswered !== -1)}
-        hint={hint}
+        note={note}
+        hint={hint ? { open: hintOpen, onToggle: toggleHint } : undefined}
         onNext={next}
       />
     </div>

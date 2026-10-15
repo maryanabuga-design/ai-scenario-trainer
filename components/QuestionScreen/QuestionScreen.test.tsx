@@ -12,6 +12,9 @@ import { questions } from "@/lib/quiz";
 import { scenarios } from "@/lib/scenario";
 
 const noop = () => undefined;
+
+/** The extra props the screen needs: saved state and an optional open hint. */
+const extras = { saved: false, onToggleSaved: noop, hint: null };
 const items = [...scenarios.flatMap((def) => def.steps), ...questions];
 
 function withSources(node: React.ReactNode) {
@@ -28,7 +31,9 @@ const visibleText = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/\s+
 describe("one screen for steps and questions", () => {
   it("shows a scenario step with its situation, the question and lettered options", () => {
     const step = scenarios[0].steps[0];
-    const html = withSources(<QuestionScreen item={step} choice={null} onChoose={noop} />);
+    const html = withSources(
+      <QuestionScreen item={step} choice={null} onChoose={noop} {...extras} />,
+    );
     expect(html).toContain(step.situation);
     expect(html).toContain(step.question);
     expect(html).toContain("Choose one answer");
@@ -41,7 +46,9 @@ describe("one screen for steps and questions", () => {
 
   it("shows a quiz question the same way, without a situation", () => {
     const question = questions[0];
-    const html = withSources(<QuestionScreen item={question} choice="a" onChoose={noop} />);
+    const html = withSources(
+      <QuestionScreen item={question} choice="a" onChoose={noop} {...extras} />,
+    );
     expect(html).toContain(question.question);
     expect(html.match(/type="radio"/g)).toHaveLength(question.options.length);
     expect(html).toContain("checked");
@@ -60,35 +67,161 @@ describe("one screen for steps and questions", () => {
   });
 
   it("is a card on the page with the radius and shadow of cards", () => {
-    const html = withSources(<QuestionScreen item={items[0]} choice={null} onChoose={noop} />);
+    const html = withSources(
+      <QuestionScreen item={items[0]} choice={null} onChoose={noop} {...extras} />,
+    );
     expect(html).toContain("rounded-card bg-card");
   });
 
-  it("draws the media slot only when the item has an image, with a placeholder when src is empty", () => {
+  it("draws a scenario's step picture first, a placeholder when it has no image, then the situation card", () => {
     const step = scenarios[0].steps[0];
-    expect(withSources(<QuestionScreen item={step} choice={null} onChoose={noop} />)).not.toContain(
-      "data-media3d",
+    const html = withSources(
+      <QuestionScreen item={step} choice={null} onChoose={noop} {...extras} />,
     );
-    const empty = withSources(
-      <QuestionScreen
-        item={{ ...step, image: { src: "", alt: "A corridor" } }}
-        choice={null}
-        onChoose={noop}
-      />,
-    );
-    expect(empty).toContain('data-media3d="placeholder"');
-    expect(empty).toContain("aspect-[4/3]");
-    expect(empty.indexOf("data-media3d")).toBeLessThan(empty.indexOf(step.situation!));
+    expect(html).toContain('data-media3d="placeholder"');
+    expect(html).toContain("aspect-[4/3]");
+    expect(html.indexOf("data-media3d")).toBeLessThan(html.indexOf(step.situation!));
+    const card = html.slice(html.lastIndexOf("<section", html.indexOf(step.situation!)));
+    expect(card).toContain("rounded-card bg-card");
+    expect(html.indexOf(step.situation!)).toBeLessThan(html.indexOf(step.question));
     const withPicture = withSources(
       <QuestionScreen
         item={{ ...step, image: { src: "/scenarios/s01-alarm.webp", alt: "A corridor" } }}
         choice={null}
         onChoose={noop}
+        {...extras}
       />,
     );
     expect(withPicture).toContain('alt="A corridor"');
     expect(withPicture).not.toContain("data-media3d");
     expect(withPicture).toContain("object-cover");
+  });
+
+  it("draws a quiz question's picture only when it has one, with no empty gap otherwise", () => {
+    const question = questions[0];
+    const plain = withSources(
+      <QuestionScreen item={question} choice={null} onChoose={noop} {...extras} />,
+    );
+    expect(plain).not.toContain("data-media3d");
+    expect(plain).not.toContain("aspect-[4/3]");
+    expect(plain.startsWith('<div class="flex flex-col gap-4"><div class="flex items-start')).toBe(
+      true,
+    );
+    const placeholder = withSources(
+      <QuestionScreen
+        item={{ ...question, image: { src: "", alt: "A sign" } }}
+        choice={null}
+        onChoose={noop}
+        {...extras}
+      />,
+    );
+    expect(placeholder).toContain('data-media3d="placeholder"');
+    expect(placeholder.indexOf("data-media3d")).toBeLessThan(
+      placeholder.indexOf(question.question),
+    );
+  });
+});
+
+describe("options", () => {
+  it("gives a scenario question 3 options, A to C", () => {
+    const step = scenarios[0].steps[0];
+    const html = withSources(
+      <QuestionScreen item={step} choice={null} onChoose={noop} {...extras} />,
+    );
+    expect(html.match(/type="radio"/g)).toHaveLength(3);
+    for (const letter of "ABC") expect(html).toContain(`>${letter}</span>`);
+    expect(html).not.toContain(">D</span>");
+  });
+
+  it("gives a quiz question 3 or 4 options and a true-false question 2, A and B", () => {
+    const four = questions.find((question) => question.options.length === 4)!;
+    expect(
+      withSources(<QuestionScreen item={four} choice={null} onChoose={noop} {...extras} />).match(
+        /type="radio"/g,
+      ),
+    ).toHaveLength(4);
+    const tf = questions.find((question) => question.type === "true-false")!;
+    const html = withSources(
+      <QuestionScreen item={tf} choice={null} onChoose={noop} {...extras} />,
+    );
+    expect(html.match(/type="radio"/g)).toHaveLength(2);
+    expect(html).toContain(">True<");
+    expect(html).toContain(">False<");
+    expect(html).toContain(">A</span>");
+    expect(html).toContain(">B</span>");
+    expect(html).not.toContain(">C</span>");
+  });
+
+  it("turns the letter badge of the selected row primary, and leaves the others olive", () => {
+    const step = scenarios[0].steps[0];
+    const html = withSources(
+      <QuestionScreen item={step} choice={step.options[1].id} onChoose={noop} {...extras} />,
+    );
+    expect(html.match(/bg-primary text-primary-text/g)).toHaveLength(1);
+    expect(html.match(/bg-olive-tint text-text/g)).toHaveLength(2);
+    const selected = html.slice(html.indexOf("bg-primary text-primary-text"));
+    expect(selected.indexOf(">B<")).toBeGreaterThan(-1);
+  });
+
+  it("shows no red or green and no verdict during the session", () => {
+    const html = withSources(
+      <QuestionScreen item={items[0]} choice="a" onChoose={noop} {...extras} />,
+    );
+    expect(html).not.toMatch(/correct-bg|wrong-bg|text-correct|text-wrong|Correct answer/);
+  });
+});
+
+describe("the bookmark", () => {
+  const step = scenarios[0].steps[0];
+  const render = (saved: boolean) =>
+    withSources(
+      <QuestionScreen item={step} choice={null} onChoose={noop} {...extras} saved={saved} />,
+    );
+
+  it("sits on the right of the question: a 40px white circle with a 1px stroke", () => {
+    const html = render(false);
+    const button = html.slice(html.indexOf("<button"), html.indexOf("</button>"));
+    expect(html.indexOf(step.question)).toBeLessThan(html.indexOf('aria-label="Save question"'));
+    expect(button).toContain("h-10 w-10");
+    expect(button).toContain("rounded-full border border-arrow-stroke bg-surface");
+    expect(button).toContain('aria-pressed="false"');
+  });
+
+  it("is outlined when the question is not saved and filled when it is", () => {
+    expect(render(false)).toContain('fill="none"');
+    const saved = render(true);
+    expect(saved).toContain('aria-label="Remove from saved"');
+    expect(saved).toContain('aria-pressed="true"');
+    expect(saved).toContain('fill="currentColor"');
+  });
+});
+
+describe("the hint card", () => {
+  const step = scenarios[0].steps[0];
+  const hint = { text: step.hint!, section: "S1" };
+
+  it("is absent while closed", () => {
+    const html = withSources(
+      <QuestionScreen item={step} choice={null} onChoose={noop} {...extras} />,
+    );
+    expect(html).not.toContain(step.hint);
+    expect(html).not.toContain('aria-label="Hint"');
+  });
+
+  it("opens inside the page under the options, with the label, the text and a Guide chip", () => {
+    const html = withSources(
+      <QuestionScreen item={step} choice={null} onChoose={noop} {...extras} hint={hint} />,
+    );
+    const lastOption = html.lastIndexOf(step.options[2].text);
+    const card = html.slice(html.indexOf('aria-label="Hint"') - 40);
+    expect(html.indexOf('aria-label="Hint"')).toBeGreaterThan(lastOption);
+    expect(card).toContain("lucide-lightbulb");
+    expect(card).toContain(">Hint<");
+    expect(card).toContain(step.hint);
+    expect(card).toContain("Guide · S1");
+    expect(
+      card.slice(0, card.indexOf("<dialog") === -1 ? undefined : card.indexOf("<dialog")),
+    ).not.toMatch(/aria-modal|role="dialog"/);
   });
 });
 
@@ -133,7 +266,7 @@ describe("no AI or bot wording in a session", () => {
   it("is absent from every step and every question", () => {
     items.forEach((item) => {
       const html = withSources(
-        <QuestionScreen item={item} choice={item.options[0].id} onChoose={noop} />,
+        <QuestionScreen item={item} choice={item.options[0].id} onChoose={noop} {...extras} />,
       );
       expect(visibleText(html), item.id).not.toMatch(banned);
     });

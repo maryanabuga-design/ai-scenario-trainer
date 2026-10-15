@@ -42,7 +42,8 @@ import { SessionSetup } from "@/components/SessionSetup/SessionSetup";
 import { defaultSetup } from "@/components/SessionSetup/SessionSetup";
 import type { SetupValue } from "@/components/SessionSetup/SessionSetup";
 import { notCoveredId, replyToChip } from "@/lib/chat";
-import { getItem } from "@/lib/items";
+import { getItem, hintFor } from "@/lib/items";
+import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { getScenario } from "@/lib/scenario";
 import { defaultDirection } from "@/lib/directions";
 import { sampleMaterials } from "@/lib/materials";
@@ -97,6 +98,8 @@ export function SessionSample({
   answered = [],
   choice = null,
   kind = "scenario",
+  hintOpen = false,
+  startSaved = false,
 }: {
   itemId?: string;
   index?: number;
@@ -105,9 +108,17 @@ export function SessionSample({
   answered?: number[];
   choice?: string | null;
   kind?: "scenario" | "quiz";
+  /** Start with the hint card open. */
+  hintOpen?: boolean;
+  startSaved?: boolean;
 }) {
+  const { sections } = useSourceSheet();
+  const item = getItem(itemId);
+  const hint = hintFor(item, (id) => sections.find((section) => section.id === id)?.title);
+  const [open, setOpen] = useState(hintOpen);
+  const [saved, setSaved] = useState(startSaved);
   const [picked, setPicked] = useState<string | null>(choice);
-  const endRef = useScrollFrameToEnd(choice !== null);
+  const endRef = useScrollFrameToEnd(choice !== null || hintOpen);
   const flags = Array.from({ length: total }, (_, position) => answered.includes(position));
   return (
     <>
@@ -121,10 +132,22 @@ export function SessionSample({
           onBack={() => undefined}
           onLeave={() => undefined}
         />
-        <QuestionScreen item={getItem(itemId)} choice={picked} onChoose={setPicked} />
+        <QuestionScreen
+          item={item}
+          choice={picked}
+          onChoose={setPicked}
+          saved={saved}
+          onToggleSaved={() => setSaved(!saved)}
+          hint={open ? hint : null}
+        />
       </div>
       <div ref={endRef} />
-      <SessionBar last={index === total - 1} disabled={picked === null} onNext={() => undefined} />
+      <SessionBar
+        last={index === total - 1}
+        disabled={picked === null}
+        hint={hint ? { open, onToggle: () => setOpen(!open) } : undefined}
+        onNext={() => undefined}
+      />
     </>
   );
 }

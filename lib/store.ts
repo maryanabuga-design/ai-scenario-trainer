@@ -3,7 +3,13 @@ import { useMemo, useSyncExternalStore } from "react";
 const SERVER = "server";
 
 /** The version of everything saved in this browser. A saved value of another version is ignored. */
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
+
+/**
+ * Versions whose saved values this version can read as they are. Version 3 only adds fields
+ * (hintUsed, the saved questions), so version 2 values migrate by being read and written back as 3.
+ */
+const READABLE = [2, 3];
 
 /**
  * A value saved in localStorage under one key, readable with a hook. It is saved with the schema
@@ -51,7 +57,7 @@ export function createStore<T>(key: string, { versioned = true }: { versioned?: 
       // Values saved before versioning, or by another version, are not read.
       if (saved && typeof saved === "object" && "schema" in saved && "value" in saved) {
         const { schema, value } = saved as { schema: unknown; value: T };
-        return schema === SCHEMA_VERSION ? value : null;
+        return typeof schema === "number" && READABLE.includes(schema) ? value : null;
       }
       return null;
     } catch {

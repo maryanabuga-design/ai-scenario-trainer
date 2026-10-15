@@ -8,6 +8,7 @@ import {
   saveSession,
   startSession,
   withAnswer,
+  withHintUsed,
 } from "@/lib/session";
 import type { FinishedSession, Session } from "@/lib/session";
 import { createStore } from "@/lib/store";
@@ -106,10 +107,48 @@ describe("starting and finishing", () => {
   });
 });
 
+describe("hints are recorded on the answer", () => {
+  it("records hintUsed on an answer that exists when the hint is opened", () => {
+    const answered = withHintUsed(withAnswer(base, "s1", "a"), "s1");
+    expect(answerFor(answered, "s1")).toEqual({ itemId: "s1", optionId: "a", hintUsed: true });
+  });
+
+  it("keeps it for an answer given after the hint, and when the answer is changed", () => {
+    const opened = withHintUsed(base, "s2");
+    expect(answerFor(opened, "s2")).toBeUndefined();
+    const answered = withAnswer(opened, "s2", "a");
+    expect(answerFor(answered, "s2")?.hintUsed).toBe(true);
+    expect(answerFor(withAnswer(answered, "s2", "c"), "s2")).toEqual({
+      itemId: "s2",
+      optionId: "c",
+      hintUsed: true,
+    });
+  });
+
+  it("leaves other questions without hintUsed, and saves it in the finished session", () => {
+    let session = withHintUsed(withAnswer(base, "s1", "b"), "s1");
+    session = withAnswer(withAnswer(session, "s2", "c"), "s3", "a");
+    expect(answerFor(session, "s2")).toEqual({ itemId: "s2", optionId: "c" });
+    finishSession(session);
+    const done = read<Session>("ast.session.v1");
+    expect(done?.answers.find((answer) => answer.itemId === "s1")?.hintUsed).toBe(true);
+    expect(done?.answers.find((answer) => answer.itemId === "s2")?.hintUsed).toBeUndefined();
+    const history = read<FinishedSession[]>("ast.history.v1");
+    expect(history?.at(-1)?.answers.find((answer) => answer.itemId === "s1")?.hintUsed).toBe(true);
+  });
+});
+
 describe("the saved schema is versioned", () => {
+  it("reads a value saved with schema 2 as it is (version 3 only adds fields) and writes it back as 3", () => {
+    saved.set("ast.session.v1", JSON.stringify({ schema: 2, value: base }));
+    expect(read<Session>("ast.session.v1")).toEqual(base);
+    saveSession(base);
+    expect(JSON.parse(saved.get("ast.session.v1")!).schema).toBe(3);
+  });
+
   it("saves the value with the schema version", () => {
     saveSession(base);
-    expect(JSON.parse(saved.get("ast.session.v1")!)).toMatchObject({ schema: 2, value: base });
+    expect(JSON.parse(saved.get("ast.session.v1")!)).toMatchObject({ schema: 3, value: base });
   });
 
   it("ignores a session saved by an older version, without crashing", () => {
@@ -124,6 +163,8 @@ describe("the saved schema is versioned", () => {
     saved.set("ast.session.v1", JSON.stringify(old));
     expect(read<Session>("ast.session.v1")).toBeNull();
     saved.set("ast.session.v1", JSON.stringify({ schema: 1, value: base }));
+    expect(read<Session>("ast.session.v1")).toBeNull();
+    saved.set("ast.session.v1", JSON.stringify({ schema: 4, value: base }));
     expect(read<Session>("ast.session.v1")).toBeNull();
     saved.set("ast.session.v1", "not json at all {");
     expect(read<Session>("ast.session.v1")).toBeNull();

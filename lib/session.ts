@@ -5,7 +5,12 @@ import { clearTrainings } from "@/lib/trainings";
 export type SessionKind = "scenario" | "quiz" | "repeat";
 
 /** The option chosen for one step or question. */
-export type Answer = { itemId: string; optionId: string };
+export type Answer = {
+  itemId: string;
+  optionId: string;
+  /** The hint of this question was opened (for the admin progress later). */
+  hintUsed?: boolean;
+};
 
 /** A session: scenario, quiz and repeat round are all a list of questions with one chosen option each. */
 export type Session = {
@@ -17,6 +22,8 @@ export type Session = {
   answers: Answer[];
   /** The question on screen. Answers are saved as they are given. */
   index: number;
+  /** Questions whose hint was opened; it moves onto the answer once there is one. */
+  hintsOpened?: string[];
   finished: boolean;
   /** Set on Finish; ties the session to its entry in the history. */
   finishedAt?: number;
@@ -77,14 +84,31 @@ export function answerFor(session: Pick<Session, "answers">, itemId: string): An
   return session.answers.find((answer) => answer.itemId === itemId);
 }
 
-/** Saves the chosen option for one item, replacing an earlier choice. */
-export function withAnswer<T extends Pick<Session, "answers">>(
+/** Saves the chosen option for one item, replacing an earlier choice and keeping hintUsed. */
+export function withAnswer<T extends Pick<Session, "answers" | "hintsOpened">>(
   session: T,
   itemId: string,
   optionId: string,
 ): T {
+  const before = answerFor(session, itemId);
+  const hintUsed = before?.hintUsed || session.hintsOpened?.includes(itemId);
   const others = session.answers.filter((answer) => answer.itemId !== itemId);
-  return { ...session, answers: [...others, { itemId, optionId }] };
+  return { ...session, answers: [...others, { itemId, optionId, ...(hintUsed && { hintUsed }) }] };
+}
+
+/** Records that the hint of a question was opened, on its answer now or when it gets one. */
+export function withHintUsed<T extends Pick<Session, "answers" | "hintsOpened">>(
+  session: T,
+  itemId: string,
+): T {
+  const opened = [...new Set([...(session.hintsOpened ?? []), itemId])];
+  return {
+    ...session,
+    hintsOpened: opened,
+    answers: session.answers.map((answer) =>
+      answer.itemId === itemId ? { ...answer, hintUsed: true } : answer,
+    ),
+  };
 }
 
 /** Position of the first item without an answer, or -1 when every item is answered. */

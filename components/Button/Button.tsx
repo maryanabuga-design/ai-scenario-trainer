@@ -143,3 +143,34 @@ export function ButtonPreview({
     </button>
   );
 }
+
+/**
+ * The square icon button of the question screen's bottom bar (the hint button): the secondary's
+ * olive-tint fill with no stroke, 52 by 52px, the 14px radius, an icon and no text. The one
+ * allowed exception to "only a primary in the bottom bar" (DESIGN.md: Buttons).
+ */
+export function SquareButton({
+  icon: Icon,
+  label,
+  expanded,
+  onClick,
+}: {
+  icon: LucideIcon;
+  /** The accessible name: the button has no visible text. */
+  label: string;
+  /** Whether the thing it opens is open. */
+  expanded?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      aria-expanded={expanded}
+      onClick={onClick}
+      className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-button bg-olive-tint text-primary active:bg-olive-tint-pressed"
+    >
+      <Icon size={24} strokeWidth={2} aria-hidden="true" />
+    </button>
+  );
+}

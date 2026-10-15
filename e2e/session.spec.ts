@@ -77,7 +77,7 @@ test.describe("a running session", () => {
     await expect(page.getByLabel(S1_RIGHT)).toBeChecked();
     await option(page, S1_WRONG).click();
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.session.v1")!));
-    expect(saved.schema).toBe(2);
+    expect(saved.schema).toBe(3);
     expect(saved.value.answers).toEqual([{ itemId: "s1", optionId: "a" }]);
   });
 
@@ -195,6 +195,114 @@ test.describe("a running session", () => {
     await expect(page.getByText("No sessions yet.")).toBeVisible();
     await page.goto("/session/results");
     await expect(page.getByRole("heading", { name: "No results yet" })).toBeVisible();
+  });
+});
+
+test.describe("the question screen: hint and bookmark", () => {
+  const quizSession = {
+    kind: "quiz",
+    itemIds: ["q-s1-2", "q-s1-1"],
+    answers: [],
+    index: 0,
+    finished: false,
+  };
+
+  test("opens the hint card under the options, closes it, and closes it on the next question", async ({
+    page,
+  }) => {
+    await start(page, scenario);
+    await expect(page.getByRole("region", { name: "Hint" })).toHaveCount(0);
+    const lightbulb = page.getByRole("button", { name: "Hint", exact: true });
+    await expect(lightbulb).toHaveAttribute("aria-expanded", "false");
+    await lightbulb.click();
+    const card = page.getByRole("region", { name: "Hint" });
+    await expect(card).toBeVisible();
+    await expect(card).toContainText("Think about what an alarm means");
+    await expect(card.getByRole("button", { name: /Guide · S1/ })).toBeVisible();
+    // under the options, in the page, not a sheet
+    const optionBox = await page.locator("fieldset label").last().boundingBox();
+    const cardBox = await card.boundingBox();
+    expect(cardBox!.y).toBeGreaterThan(optionBox!.y + optionBox!.height - 1);
+    await expect(page.locator("dialog[open]")).toHaveCount(0);
+    await lightbulb.click();
+    await expect(card).toBeHidden();
+    await lightbulb.click();
+    await expect(card).toBeVisible();
+    await option(page, S1_RIGHT).click();
+    await next(page).click();
+    await expect(page.getByText("Step 2 of 3")).toBeVisible();
+    await expect(page.getByRole("region", { name: "Hint" })).toHaveCount(0);
+  });
+
+  test("records that a hint was used on the answer", async ({ page }) => {
+    await start(page, scenario);
+    await page.getByRole("button", { name: "Hint", exact: true }).click();
+    await option(page, S1_RIGHT).click();
+    await next(page).click();
+    await option(page, /Keep it closed/).click();
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.session.v1")!));
+    expect(saved.schema).toBe(3);
+    const [first, second] = saved.value.answers;
+    expect(first).toEqual({ itemId: "s1", optionId: "b", hintUsed: true });
+    expect(second.hintUsed).toBeUndefined();
+  });
+
+  test("has the hint button left of Next, and Next fills the rest", async ({ page }) => {
+    await start(page, scenario);
+    const hintBox = await page.getByRole("button", { name: "Hint", exact: true }).boundingBox();
+    const nextBox = await next(page).boundingBox();
+    expect(Math.round(hintBox!.width)).toBe(52);
+    expect(Math.round(hintBox!.height)).toBe(52);
+    expect(hintBox!.x + hintBox!.width).toBeLessThan(nextBox!.x);
+    expect(Math.round(nextBox!.height)).toBe(52);
+    await expect(next(page)).toBeDisabled();
+  });
+
+  test("shows a hint (the fallback) on a quiz question too, as Review: the section", async ({
+    page,
+  }) => {
+    await start(page, quizSession);
+    await page.getByRole("button", { name: "Hint", exact: true }).click();
+    await expect(page.getByRole("region", { name: "Hint" })).toContainText("Review:");
+  });
+
+  test("renders a True/False question with 2 options, and a scenario question with 3", async ({
+    page,
+  }) => {
+    await start(page, quizSession);
+    await expect(page.locator("fieldset input[type=radio]")).toHaveCount(2);
+    await expect(page.getByText("True", { exact: true })).toBeVisible();
+    await expect(page.getByText("False", { exact: true })).toBeVisible();
+    await expect(next(page)).toBeDisabled();
+    await page.getByText("False", { exact: true }).click();
+    await expect(next(page)).toBeEnabled();
+    await next(page).click();
+    await expect(finish(page)).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Next", exact: true })).toHaveCount(0);
+  });
+
+  test("renders a scenario question with 3 options", async ({ page }) => {
+    await start(page, scenario);
+    await expect(page.locator("fieldset input[type=radio]")).toHaveCount(3);
+  });
+
+  test("toggles the bookmark and keeps it after a reload", async ({ page }) => {
+    await start(page, scenario);
+    const save = page.getByRole("button", { name: "Save question" });
+    await expect(save).toHaveAttribute("aria-pressed", "false");
+    await save.click();
+    await expect(page.getByRole("button", { name: "Remove from saved" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await page.reload();
+    await expect(page.getByRole("button", { name: "Remove from saved" })).toBeVisible();
+    const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.saved.v1")!));
+    expect(stored).toEqual({ schema: 3, value: ["s1"] });
+    await page.getByRole("button", { name: "Remove from saved" }).click();
+    await expect(page.getByRole("button", { name: "Save question" })).toBeVisible();
+    await page.reload();
+    await expect(page.getByRole("button", { name: "Save question" })).toBeVisible();
   });
 });
 

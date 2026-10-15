@@ -59,7 +59,9 @@ export function SelectableCard({
       {letter && (
         <span
           aria-hidden="true"
-          className="type-caption flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-olive-tint text-text"
+          className={`type-caption flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
+            checked && !disabled ? "bg-primary text-primary-text" : "bg-olive-tint text-text"
+          }`}
         >
           {letter}
         </span>

@@ -260,6 +260,21 @@ export default function Screens() {
               <SessionSample itemId="s3" index={2} answered={[0, 1]} choice="a" />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Question 3: the hint card open under the options">
+            <Screen>
+              <SessionSample itemId="s3" index={2} answered={[0, 1]} choice="a" hintOpen />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Question 3: saved (filled bookmark)">
+            <Screen>
+              <SessionSample itemId="s3" index={2} answered={[0, 1]} startSaved />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Quiz: True / False (2 options, no picture, no gap)">
+            <Screen>
+              <SessionSample itemId="q-s1-2" kind="quiz" index={1} answered={[0]} />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Back to question 2: the stored choice is filled in">
             <Screen>
               <SessionSample itemId="s2" index={1} answered={[0, 1, 2]} choice="c" />
