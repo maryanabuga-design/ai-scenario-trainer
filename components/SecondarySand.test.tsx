@@ -1,19 +1,19 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
-import { AnswerSheet } from "@/components/AnswerSheet/AnswerSheet";
+import { AnswerReview } from "@/components/AnswerReview/AnswerReview";
+import { AskAiProvider } from "@/components/AskAi/AskAi";
 import { Button } from "@/components/Button/Button";
-import { ExplainStep } from "@/components/ExplainStep/ExplainStep";
 import { GuideChip } from "@/components/GuideChip/GuideChip";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
-import { SessionTopBar } from "@/components/SessionTopBar/SessionTopBar";
+import { StepStrip, stripStates } from "@/components/StepStrip/StepStrip";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { StatusChip } from "@/components/StatusChip/StatusChip";
 import { Tag } from "@/components/Tag/Tag";
 import { TopicTile } from "@/components/TopicTile/TopicTile";
 import { MaterialTile } from "@/components/MaterialTile/MaterialTile";
 import { TopicRow } from "@/components/TopicRow/TopicRow";
-import { stepSheet } from "@/lib/answer-sheet";
+import { stepReview } from "@/lib/answer-review";
 import { loadAllSections } from "@/lib/guide";
 import { getStep } from "@/lib/scenario";
 import { scoreStep } from "@/lib/scoring";
@@ -59,24 +59,26 @@ describe("secondary sand for inactive states and tonal backgrounds", () => {
     expect(chip).not.toMatch(/border|secondary-sand/);
   });
 
-  it("is the Your choice block on the Explain screen and in the answer sheet", () => {
-    const explain = withSheet(
-      <ExplainStep
-        step={getStep("s1")}
-        answer={wrong}
-        index={0}
-        total={3}
-        onSend={() => undefined}
-        onDontKnow={() => undefined}
-      />,
+  it("is the Your choice block in the answer review", () => {
+    const step = getStep("s1");
+    const review = withSheet(
+      <AskAiProvider>
+        <AnswerReview
+          data={{
+            position: 1,
+            total: 3,
+            question: step.question,
+            content: stepReview(step, wrong),
+          }}
+          noun="step"
+          backHref="/session/results"
+          backLabel="Back to results"
+          hrefFor={() => "#"}
+          onMarkCorrect={() => undefined}
+        />
+      </AskAiProvider>,
     );
-    expect(classWith(explain, "border-l-[3px]")).toMatch(
-      /border border-l-\[3px\] border-secondary-sand-pressed border-l-primary bg-secondary-sand/,
-    );
-    const sheet = withSheet(
-      <AnswerSheet inline content={stepSheet(getStep("s1"), wrong)} onContinue={() => undefined} />,
-    );
-    expect(classWith(sheet, "border-l-[3px]")).toMatch(
+    expect(classWith(review, "border-l-[3px]")).toMatch(
       /border border-l-\[3px\] border-secondary-sand-pressed border-l-primary bg-secondary-sand/,
     );
   });
@@ -89,8 +91,14 @@ describe("secondary sand for inactive states and tonal backgrounds", () => {
   });
 
   it("is every inactive step segment and carousel dot", () => {
-    const bar = renderToStaticMarkup(<SessionTopBar index={0} total={3} unit="Step" />);
-    expect(bar.match(/h-1.5 w-4 rounded-full bg-secondary-sand-pressed/g)).toHaveLength(2);
+    const strip = renderToStaticMarkup(
+      <StepStrip
+        unit="Step"
+        states={stripStates([false, false, false], 0)}
+        onSelect={() => undefined}
+      />,
+    );
+    expect(strip.match(/border-\[1.5px\] border-secondary-sand-pressed/g)).toHaveLength(2);
     const topics = weakTopics([scoreStep(getStep("s2"), "c", 2), scoreStep(getStep("s5"), "a", 1)]);
     const row = withSheet(<TopicRow topics={topics} labelledBy="t" onRepeat={() => undefined} />);
     expect(row.match(/h-2 w-2 rounded-full bg-secondary-sand-pressed/g)).toHaveLength(1);

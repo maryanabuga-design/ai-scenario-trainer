@@ -7,6 +7,7 @@ import { SelectableCard } from "@/components/SelectableCard/SelectableCard";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { SectionList } from "@/components/SectionList/SectionList";
+import { heroImages, HeroSlot } from "@/components/HeroSlot/HeroSlot";
 import { QuizAmountPicker } from "@/components/QuizAmountPicker/QuizAmountPicker";
 import { Tag } from "@/components/Tag/Tag";
 import { quizCounts } from "@/lib/quiz";
@@ -100,6 +101,7 @@ export function SessionSetup({
         href={`/materials/${training?.materialId ?? "evacuation-guide"}`}
         label="Back to material"
       />
+      <HeroSlot kind="setup" src={heroImages.setup.src} alt={heroImages.setup.alt} />
       <div className="flex flex-col gap-1">
         <h1 className="type-page-title">Session setup</h1>
         <p className="break-words text-text-secondary">{materialName ?? scenarioDef.title}</p>
@@ -190,8 +192,8 @@ export function SessionSetup({
 
       {!quiz && (
         <p className="type-small text-text-secondary">
-          At each step you choose an action, say how sure you are and explain your choice in one
-          sentence.
+          At each step you choose an action, say how sure you are and, if you like, explain your
+          choice in your own words. At the end you compare your answers with the guide.
         </p>
       )}
 

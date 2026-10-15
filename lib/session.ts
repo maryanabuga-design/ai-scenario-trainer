@@ -34,10 +34,11 @@ export type QuizAnswer = {
 };
 
 type Progress = {
+  /** The step or question on screen. Answers are saved as soon as they are complete. */
   index: number;
-  /** Scenario steps go decide → explain → feedback; quiz questions skip explain. */
-  phase: "decide" | "explain" | "feedback";
   finished: boolean;
+  /** Set on Finish; ties the session to its entry in the history. */
+  finishedAt?: number;
 };
 
 /** Sessions saved before quizzes existed have no kind; they are scenario sessions. */
@@ -79,8 +80,18 @@ export type FinishedSession =
       answers: Answer[];
       finishedAt: number;
     }
-  | { kind: "quiz"; mode: "quiz" | "repeat"; answers: QuizAnswer[]; finishedAt: number }
-  | { kind: "repeat"; topics: string[]; answers: MixedAnswer[]; finishedAt: number };
+  | {
+      kind: "quiz";
+      mode: "quiz" | "repeat";
+      answers: QuizAnswer[];
+      finishedAt: number;
+    }
+  | {
+      kind: "repeat";
+      topics: string[];
+      answers: MixedAnswer[];
+      finishedAt: number;
+    };
 
 export type Profile = {
   direction: string;
@@ -112,13 +123,58 @@ export function saveSession(session: Session) {
   sessionStore.write(session);
 }
 
+/** The steps or questions of a session, in the order they are practised. */
+export function sessionItems(session: Session): RepeatItem[] {
+  if (isRepeatRound(session)) return session.items;
+  if (isQuiz(session)) return session.questionIds.map((id) => ({ type: "question", id }));
+  return session.stepIds.map((id) => ({ type: "step", id }));
+}
+
+function answerId(answer: Answer | QuizAnswer) {
+  return "stepId" in answer ? answer.stepId : answer.questionId;
+}
+
+/** The saved answer to one step or question, if it has one. */
+export function answerFor(session: Session, item: RepeatItem): Answer | QuizAnswer | undefined {
+  return (session.answers as (Answer | QuizAnswer)[]).find(
+    (answer) => answerId(answer) === item.id,
+  );
+}
+
+/** Saves the answer to one item, replacing an earlier one. A null answer removes it. */
+export function withAnswer<T extends Session>(
+  session: T,
+  item: RepeatItem,
+  answer: Answer | QuizAnswer | null,
+): T {
+  const others = (session.answers as (Answer | QuizAnswer)[]).filter(
+    (saved) => answerId(saved) !== item.id,
+  );
+  const next = answer === null ? others : [...others, answer];
+  if (isRepeatRound(session)) {
+    return {
+      ...session,
+      answers: next.map((saved) =>
+        "stepId" in saved
+          ? { type: "step" as const, ...saved }
+          : { type: "question" as const, ...saved },
+      ),
+    };
+  }
+  return { ...session, answers: next };
+}
+
+/** Position of the first item without an answer, or -1 when every item is answered. */
+export function firstUnanswered(session: Session): number {
+  return sessionItems(session).findIndex((item) => !answerFor(session, item));
+}
+
 export function startSession(mode: SessionMode, stepIds: string[], scenarioId?: string) {
   saveSession({
     scenarioId,
     mode,
     stepIds,
     index: 0,
-    phase: "decide",
     answers: [],
     finished: false,
   });
@@ -131,7 +187,6 @@ export function startQuiz(questionIds: string[], sections: string[], repeat = fa
     sections,
     questionIds,
     index: 0,
-    phase: "decide",
     answers: [],
     finished: false,
   });
@@ -143,7 +198,6 @@ export function startRepeatRound(items: RepeatItem[], topics: string[]) {
     topics,
     items,
     index: 0,
-    phase: "decide",
     answers: [],
     finished: false,
   });
@@ -151,19 +205,41 @@ export function startRepeatRound(items: RepeatItem[], topics: string[]) {
 
 /** Marks the session finished and adds it to the history used by Home and Progress. */
 export function finishSession(session: Session) {
-  saveSession({ ...session, finished: true });
   const finishedAt = Date.now();
-  const entry: FinishedSession = isRepeatRound(session)
-    ? { kind: "repeat", topics: session.topics, answers: session.answers, finishedAt }
+  const ordered = sessionItems(session)
+    .map((item) => answerFor(session, item))
+    .filter((answer): answer is Answer | QuizAnswer => answer !== undefined);
+  const done = {
+    ...session,
+    answers: ordered,
+    finished: true,
+    finishedAt,
+  } as Session;
+  saveSession(done);
+  historyStore.write([...(historyStore.read() ?? []), historyEntry(done, finishedAt)]);
+}
+
+function historyEntry(session: Session, finishedAt: number): FinishedSession {
+  return isRepeatRound(session)
+    ? {
+        kind: "repeat",
+        topics: session.topics,
+        answers: session.answers,
+        finishedAt,
+      }
     : isQuiz(session)
-      ? { kind: "quiz", mode: session.mode, answers: session.answers, finishedAt }
+      ? {
+          kind: "quiz",
+          mode: session.mode,
+          answers: session.answers,
+          finishedAt,
+        }
       : {
           scenarioId: session.scenarioId,
           mode: session.mode,
           answers: session.answers,
           finishedAt,
         };
-  historyStore.write([...(historyStore.read() ?? []), entry]);
 }
 
 export function saveProfile(profile: Profile) {
@@ -211,6 +287,19 @@ export function setMarkedCorrect<T extends Session>(
       matches(answer) ? mark(answer) : answer,
     ),
   };
+}
+
+/** "My answer is still correct" on a finished session: saved with the session and its history entry. */
+export function markFinishedCorrect(session: Session, itemId: string, marked: boolean) {
+  const next = setMarkedCorrect(session, itemId, marked);
+  saveSession(next);
+  const history = historyStore.read();
+  if (!history || next.finishedAt === undefined) return;
+  historyStore.write(
+    history.map((entry) =>
+      entry.finishedAt === next.finishedAt ? historyEntry(next, next.finishedAt) : entry,
+    ),
+  );
 }
 
 /** The saved source, or for answers saved before it existed, worked out from the answer. */

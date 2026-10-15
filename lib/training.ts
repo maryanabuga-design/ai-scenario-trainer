@@ -69,7 +69,7 @@ export type TrainingChoice = {
 
 /** The quiz size Create training starts with: the smaller of 10 and the questions available. */
 export function defaultCreateAmount(sections: string[]): QuizAmount {
-  return fitAmount({ countChoice: 10, customCount: 10 }, availableQuestions(sections));
+  return fitAmount({ countChoice: 5, customCount: 5 }, availableQuestions(sections));
 }
 
 /** The number of questions a choice makes. */

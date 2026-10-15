@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 /**
- * Phone-sized checks of the bottom sheet (DESIGN.md: answer sheet). Run with `npm run test:e2e`
+ * Phone-sized checks of the session flow (DESIGN.md: Session screens). Run with `npm run test:e2e`
  * while nothing else uses port 3100: it starts the production build itself.
  * The two small viewports stand for a browser with top and bottom toolbars, such as an in-app browser.
  */

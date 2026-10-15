@@ -25,10 +25,6 @@
   --soft-card: var(--card);
   --soft-divider: #eae8e7;
   --soft-shadow: var(--card-shadow);
-  --header-bg: #e8e0d4;
-  --header-overline: #5f5a54;
-  --header-subline: #524c45;
-  --ring: #417851;
   --secure-row: #f3f4ef;
   --guess-row: #f5f1ee;
   --guess-ink: #4b433d;
@@ -83,10 +79,6 @@
   --color-misconception: var(--misconception);
   --color-soft-card: var(--soft-card);
   --color-soft-divider: var(--soft-divider);
-  --color-header-bg: var(--header-bg);
-  --color-header-overline: var(--header-overline);
-  --color-header-subline: var(--header-subline);
-  --color-ring: var(--ring);
   --color-secure-row: var(--secure-row);
   --color-guess-row: var(--guess-row);
   --color-guess-ink: var(--guess-ink);
@@ -157,11 +149,6 @@ dialog:focus-visible,
   outline-color: transparent;
 }
 
-/* The answer dock draws one focus ring around the whole field, so the text area has none. */
-.dock-field:focus-visible {
-  outline: none;
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -177,40 +164,6 @@ dialog:focus-visible,
   from {
     transform: translateY(100%);
   }
-}
-
-/* The answer sheet's size (DESIGN.md: Answer sheet). Height is auto but never below 55% and never
-   above 85% (92% on short viewports) of the visible viewport. The vh line comes first as a
-   fallback for browsers without dvh; dvh follows the visible area when browser toolbars move. */
-.answer-sheet {
-  height: auto;
-  min-height: 55vh;
-  min-height: 55dvh;
-  max-height: 85vh;
-  max-height: 85dvh;
-}
-
-@media (max-height: 640px) {
-  .answer-sheet {
-    max-height: 92vh;
-    max-height: 92dvh;
-  }
-}
-
-/* The scrolling part of a sheet: it takes the space between the handle and the footer. It grows
-   from its content (flex-basis auto), not from zero, which some Safari versions collapse. */
-.sheet-content {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-}
-
-/* The same sheet drawn inside a frame on the screen review page. */
-.answer-sheet-inline {
-  min-height: 55%;
-  max-height: 85%;
 }
 
 dialog[data-sheet] {

@@ -100,7 +100,7 @@ describe("generated state", () => {
       scenario: true,
       quiz: true,
       sections: ["S1", "S5"],
-      quizSize: questionsFor(["S1", "S5"]).length,
+      quizSize: Math.min(5, questionsFor(["S1", "S5"]).length),
       createdAt: 1000,
     });
   });
@@ -145,21 +145,22 @@ describe("sample files", () => {
 });
 
 describe("saved quiz size", () => {
-  it("starts Create training on the smaller of 10 and the questions available", () => {
-    expect(defaultCreateAmount(all)).toEqual({ countChoice: 10, customCount: 10 });
+  it("starts Create training on 5 questions, or every question when fewer are available", () => {
+    expect(defaultCreateAmount(all)).toEqual({ countChoice: 5, customCount: 5 });
     const few = questionsFor(["S1"]).length;
-    expect(few).toBeLessThan(10);
-    expect(defaultCreateAmount(["S1"])).toEqual({ countChoice: "custom", customCount: few });
+    expect(defaultCreateAmount(["S1"])).toEqual(
+      few >= 5 ? { countChoice: 5, customCount: 5 } : { countChoice: "custom", customCount: few },
+    );
   });
 
   it("saves the chosen quiz size with the training", () => {
     const training = createTraining(
       "evacuation-guide",
       guide,
-      { scenario: true, quiz: true, sections: all, amount: { countChoice: 15, customCount: 8 } },
+      { scenario: true, quiz: true, sections: all, amount: { countChoice: 10, customCount: 8 } },
       1,
     );
-    expect(training.quizSize).toBe(15);
+    expect(training.quizSize).toBe(10);
     expect(
       chosenQuizSize({
         scenario: false,
@@ -177,9 +178,9 @@ describe("saved quiz size", () => {
         scenario: false,
         quiz: true,
         sections: ["S1"],
-        amount: { countChoice: 15, customCount: 8 },
+        amount: { countChoice: 10, customCount: 8 },
       }),
-    ).toBe(few);
+    ).toBe(Math.min(10, few));
     const scenarioOnly = createTraining(
       "a",
       guide,
@@ -195,7 +196,6 @@ describe("saved quiz size", () => {
     expect(amountOptions(capped)).toEqual([
       { count: 5, disabled: false },
       { count: 10, disabled: false },
-      { count: 15, disabled: true },
     ]);
     expect(availableWithCap(all)).toBe(questionsFor(all).length);
     expect(amountForSize(10)).toEqual({ countChoice: 10, customCount: 10 });

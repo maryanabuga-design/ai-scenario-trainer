@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { questionSheet, stepSheet } from "@/lib/answer-sheet";
+import { questionReview, stepReview } from "@/lib/answer-review";
 import { scoreSession } from "@/lib/progress";
 import { getQuestion } from "@/lib/quiz";
 import { getStep } from "@/lib/scenario";
@@ -32,12 +32,11 @@ const scenario = (answers: Answer[]): ScenarioSession => ({
   mode: "short",
   stepIds: ["s1", "s2", "s3"],
   index: 0,
-  phase: "feedback",
   answers,
   finished: false,
 });
 
-const sheet = (a: Answer) => stepSheet(getStep("s1"), a);
+const sheet = (a: Answer) => stepReview(getStep("s1"), a);
 
 describe("the scenario answer sheet decision table", () => {
   it("right option + matching explanation: no Better explanation, no button", () => {
@@ -161,11 +160,10 @@ describe("quiz questions", () => {
     sections: ["S1", "S2"],
     questionIds: answers.map((a) => a.questionId),
     index: 0,
-    phase: "feedback",
     answers,
     finished: false,
   });
-  const question = (a: QuizAnswer) => questionSheet(getQuestion(a.questionId), a);
+  const question = (a: QuizAnswer) => questionReview(getQuestion(a.questionId), a);
   const rejected: QuizAnswer = {
     questionId: "q-s2-1",
     response: { type: "text", text: "With my knuckles" },

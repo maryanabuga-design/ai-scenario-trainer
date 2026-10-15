@@ -78,7 +78,6 @@ describe("the stored outcome", () => {
       mode: "short",
       stepIds: ["s1", "s2", "s3"],
       index: 0,
-      phase: "feedback",
       finished: false,
       answers: [{ ...typed, explanationCheck: "not_matched", answerSource: "typed" }],
     };

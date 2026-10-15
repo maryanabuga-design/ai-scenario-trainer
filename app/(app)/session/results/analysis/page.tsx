@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { AnalysisView } from "@/components/AnalysisView/AnalysisView";
-import { AskAiProvider } from "@/components/AskAi/AskAi";
 import { NoResults } from "@/components/NoResults/NoResults";
 import { scoreSession } from "@/lib/progress";
 import { resultsKind, startRepeat } from "@/lib/repeat";
@@ -18,17 +17,15 @@ export default function AnalysisPage() {
 
   const items = scoreSession(session);
   return (
-    <AskAiProvider>
-      <AnalysisView
-        items={items}
-        quiz={resultsKind(session).kind === "quiz"}
-        backHref="/session/results"
-        onRepeat={(ids) => {
-          startRepeat(session, items, ids);
-          window.scrollTo(0, 0);
-          router.push("/session");
-        }}
-      />
-    </AskAiProvider>
+    <AnalysisView
+      items={items}
+      quiz={resultsKind(session).kind === "quiz"}
+      backHref="/session/results"
+      onRepeat={(ids) => {
+        startRepeat(session, items, ids);
+        window.scrollTo(0, 0);
+        router.push("/session");
+      }}
+    />
   );
 }

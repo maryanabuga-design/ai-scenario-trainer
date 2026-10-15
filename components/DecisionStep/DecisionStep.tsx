@@ -1,51 +1,34 @@
 "use client";
 
-import { ActionBar } from "@/components/ActionBar/ActionBar";
-import { AskAiButton } from "@/components/AskAi/AskAi";
-import { Button } from "@/components/Button/Button";
+import { useId } from "react";
+import { ContentImage } from "@/components/ContentImage/ContentImage";
 import { SelectableCard } from "@/components/SelectableCard/SelectableCard";
 import { ConfidenceSelector } from "@/components/ConfidenceSelector/ConfidenceSelector";
-import { SessionTopBar } from "@/components/SessionTopBar/SessionTopBar";
-import type { Unit } from "@/components/SessionTopBar/SessionTopBar";
 import { GuideChip } from "@/components/GuideChip/GuideChip";
-import type { Confidence, Step } from "@/lib/scenario";
+import type { Step } from "@/lib/scenario";
+import type { StepDraft } from "@/lib/session-draft";
 
-export type Draft = {
-  optionId: string | null;
-  confidence: Confidence | null;
-};
+export const explanationLabel = "Explain your choice in your own words (optional)";
 
-export const emptyDraft: Draft = { optionId: null, confidence: null };
+const letters = "ABCDEFGH";
 
-function blockingHint(draft: Draft) {
-  if (!draft.optionId) return "Choose an action to continue.";
-  if (!draft.confidence) return "Say how sure you are to continue.";
-  return null;
-}
-
-/** Situation and decision with progressive reveal: options, then confidence. The explanation follows on its own screen. */
+/**
+ * One scenario step: the situation, the options with letter badges, the confidence and the
+ * optional explanation. It shows no verdict; that comes in the results.
+ */
 export function DecisionStep({
   step,
-  index,
-  total,
-  unit = "Step",
   draft,
   onDraftChange,
-  onSubmit,
 }: {
   step: Step;
-  index: number;
-  total: number;
-  unit?: Unit;
-  draft: Draft;
-  onDraftChange: (draft: Draft) => void;
-  onSubmit: () => void;
+  draft: StepDraft;
+  onDraftChange: (draft: StepDraft) => void;
 }) {
-  const hint = blockingHint(draft);
-
+  const fieldId = useId();
   return (
     <div className="flex flex-col gap-6">
-      <SessionTopBar index={index} total={total} unit={unit} />
+      <ContentImage image={step.image} />
       <section className="flex flex-col gap-3">
         <h1 className="type-page-title">{step.title}</h1>
         <p className="type-body">{step.narrative}</p>
@@ -54,14 +37,16 @@ export function DecisionStep({
             <GuideChip key={sectionId} sectionId={sectionId} />
           ))}
         </div>
-        <AskAiButton step={step} phase="decide" />
       </section>
 
       <fieldset className="flex flex-col gap-3">
-        <legend className="type-item-title mb-3">{step.question}</legend>
-        {step.options.map((option) => (
+        <legend className="type-item-title">{step.question}</legend>
+        <p className="type-small -mt-1 mb-1 text-text-secondary">Choose one answer</p>
+        {step.options.map((option, position) => (
           <SelectableCard
             key={option.id}
+            size="row"
+            letter={letters[position]}
             name={`option-${step.id}`}
             value={option.id}
             checked={draft.optionId === option.id}
@@ -80,12 +65,22 @@ export function DecisionStep({
         />
       )}
 
-      <ActionBar>
-        {hint && <p className="type-small text-center text-text-secondary">{hint}</p>}
-        <Button disabled={hint !== null} onClick={onSubmit}>
-          Continue
-        </Button>
-      </ActionBar>
+      {draft.confidence && (
+        <div className="flex flex-col gap-2">
+          <label htmlFor={fieldId} className="type-body-strong">
+            {explanationLabel}
+          </label>
+          <textarea
+            id={fieldId}
+            rows={3}
+            value={draft.explanation}
+            onChange={(event) => onDraftChange({ ...draft, explanation: event.target.value })}
+            placeholder="Your answer"
+            autoComplete="off"
+            className="type-body min-h-24 w-full resize-y rounded-card border border-border-strong bg-surface p-3 placeholder:text-text-secondary"
+          />
+        </div>
+      )}
     </div>
   );
 }

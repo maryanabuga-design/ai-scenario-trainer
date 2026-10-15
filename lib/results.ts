@@ -1,5 +1,6 @@
+import { PASS_MARK } from "@/lib/config";
 import type { ScoredItem } from "@/lib/scoring";
-import { countErrorTypes } from "@/lib/scoring";
+import { countErrorTypes, totalScore } from "@/lib/scoring";
 
 const plural = (count: number, one: string, many: string) => (count === 1 ? one : many);
 
@@ -19,4 +20,15 @@ export function conclusion(items: ScoredItem[]): string {
       : `${guess} right answers were guesses. Repeat them to be sure.`;
   }
   return "Every answer was right and confident.";
+}
+
+/** The points scored as a whole percent, rounded down so 79.6% is never shown as a pass. */
+export function resultPercent(items: ScoredItem[]): number {
+  if (items.length === 0) return 0;
+  return Math.floor((totalScore(items) / items.length) * 100 + 1e-9);
+}
+
+/** Passed at the pass mark or above. */
+export function isPassed(items: ScoredItem[]): boolean {
+  return resultPercent(items) >= PASS_MARK;
 }

@@ -25,23 +25,22 @@ export function amountOptions(available: number) {
   return quizCounts.map((count) => ({ count, disabled: count > available }));
 }
 
-/** The Custom stepper never goes past the total (and never below 1). */
-export function customCap(available: number): number {
-  return Math.max(1, available);
-}
-
 /**
- * Keeps the chosen amount within the total: the smaller of the chosen amount and the total.
- * A fixed amount that no longer fits becomes a custom amount equal to the total, so the default
- * of 5 becomes the smaller of 5 and the total.
+ * Keeps the chosen amount within the total. A fixed amount that no longer fits drops to the
+ * largest one that does (10 becomes 5); when even 5 does not fit the quiz uses every question
+ * there is, kept as a custom amount equal to the total.
  */
 export function fitAmount<T extends QuizAmount>(value: T, available: number): T {
   if (available === 0) return value;
   if (value.countChoice === "custom") {
     return { ...value, customCount: Math.min(Math.max(1, value.customCount), available) };
   }
-  if (value.countChoice > available)
-    return { ...value, countChoice: "custom", customCount: available };
+  if (value.countChoice > available) {
+    const fits = quizCounts.filter((count) => count <= available).pop();
+    return fits
+      ? { ...value, countChoice: fits }
+      : { ...value, countChoice: "custom", customCount: available };
+  }
   return value;
 }
 

@@ -6,16 +6,17 @@ import { GuideChip } from "@/components/GuideChip/GuideChip";
 import { Chip } from "@/components/Chip/Chip";
 import { FileText, History, ListChecks, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { DecisionStep, emptyDraft } from "@/components/DecisionStep/DecisionStep";
-import type { Draft } from "@/components/DecisionStep/DecisionStep";
+import { DecisionStep } from "@/components/DecisionStep/DecisionStep";
+import { AnswerReview } from "@/components/AnswerReview/AnswerReview";
+import { SessionBar } from "@/components/SessionBar/SessionBar";
+import { SessionTopBar } from "@/components/SessionTopBar/SessionTopBar";
+import { stripStates } from "@/components/StepStrip/StepStrip";
 import { AskAiProvider } from "@/components/AskAi/AskAi";
 import type { ChatMessage } from "@/components/AskAi/AskAi";
 import { ButtonPreview } from "@/components/Button/Button";
-import { AnswerSheet } from "@/components/AnswerSheet/AnswerSheet";
 import { AnalysisView } from "@/components/AnalysisView/AnalysisView";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { ErrorTypesCard } from "@/components/ErrorTypesCard/ErrorTypesCard";
-import { ExplainStep } from "@/components/ExplainStep/ExplainStep";
 import { HomeView } from "@/components/HomeView/HomeView";
 import { TopicCard } from "@/components/TopicCard/TopicCard";
 import { WeakTopicsView } from "@/components/WeakTopicsView/WeakTopicsView";
@@ -25,8 +26,14 @@ import {
   TrainingGenerating,
 } from "@/components/TrainingGenerating/TrainingGenerating";
 import { TrainingReview } from "@/components/TrainingReview/TrainingReview";
-import { emptyQuizDraft, QuizQuestion } from "@/components/QuizQuestion/QuizQuestion";
-import type { QuizDraft } from "@/components/QuizQuestion/QuizQuestion";
+import { QuizQuestion } from "@/components/QuizQuestion/QuizQuestion";
+import {
+  emptyQuizDraft,
+  emptyStepDraft,
+  isQuizComplete,
+  isStepComplete,
+} from "@/lib/session-draft";
+import type { QuizDraft, StepDraft } from "@/lib/session-draft";
 import { MaterialView } from "@/components/MaterialView/MaterialView";
 import type { Material } from "@/lib/materials";
 import { MaterialsList } from "@/components/MaterialsList/MaterialsList";
@@ -41,12 +48,12 @@ import { ResultsView } from "@/components/ResultsView/ResultsView";
 import { SessionSetup } from "@/components/SessionSetup/SessionSetup";
 import { defaultSetup } from "@/components/SessionSetup/SessionSetup";
 import type { SetupValue } from "@/components/SessionSetup/SessionSetup";
-import { matchQuestion, notCoveredId, replyToChip } from "@/lib/chat";
+import { notCoveredId, replyToChip } from "@/lib/chat";
 import { getQuestion, scoreQuestion } from "@/lib/quiz";
 import type { Response } from "@/lib/quiz";
 import type { Answer } from "@/lib/session";
-import { questionSheet, stepSheet } from "@/lib/answer-sheet";
-import { getScenario, getStep, scenario, sessionLengths } from "@/lib/scenario";
+import { questionReview, stepReview } from "@/lib/answer-review";
+import { getScenario, getStep, sessionLengths } from "@/lib/scenario";
 import type { Confidence } from "@/lib/scenario";
 import { defaultDirection } from "@/lib/directions";
 import { sampleMaterials } from "@/lib/materials";
@@ -76,29 +83,45 @@ export function SetupSample({
   );
 }
 
-const sampleStep = scenario.steps[0];
-
-/** The decision step with a starting draft: nothing chosen, an option chosen, or both chosen. */
-export function DecisionSample({ start }: { start: "empty" | "option" | "complete" }) {
-  const drafts: Record<typeof start, Draft> = {
-    empty: emptyDraft,
-    option: { ...emptyDraft, optionId: "b" },
-    complete: { optionId: "b", confidence: 2 },
-  };
-  const [draft, setDraft] = useState<Draft>(drafts[start]);
-  const endRef = useScrollFrameToEnd(start !== "empty");
-
+/** A scenario step with the top bar, the step strip and the bottom bar. */
+export function SessionStepSample({
+  stepId = "s1",
+  index = 0,
+  total = 6,
+  answered = [],
+  start = emptyStepDraft,
+}: {
+  stepId?: string;
+  index?: number;
+  total?: number;
+  /** Positions already answered, for the strip. */
+  answered?: number[];
+  start?: StepDraft;
+}) {
+  const [draft, setDraft] = useState<StepDraft>(start);
+  const endRef = useScrollFrameToEnd(isStepComplete(start));
+  const flags = Array.from({ length: total }, (_, position) => answered.includes(position));
   return (
     <>
-      <DecisionStep
-        step={sampleStep}
-        index={0}
-        total={sessionLengths.full.stepIds.length}
-        draft={draft}
-        onDraftChange={setDraft}
-        onSubmit={() => undefined}
-      />
+      <div className="flex flex-col gap-6">
+        <SessionTopBar
+          index={index}
+          total={total}
+          unit="Step"
+          states={stripStates(flags, index)}
+          onJump={() => undefined}
+          onLeave={() => undefined}
+        />
+        <DecisionStep step={getStep(stepId)} draft={draft} onDraftChange={setDraft} />
+      </div>
       <div ref={endRef} />
+      <SessionBar
+        backLabel={index > 0 ? "Previous step" : null}
+        onBack={() => undefined}
+        last={index === total - 1}
+        disabled={!isStepComplete(draft)}
+        onNext={() => undefined}
+      />
     </>
   );
 }
@@ -117,32 +140,18 @@ function useScrollFrameToEnd(enabled: boolean) {
   return endRef;
 }
 
-/** The Explain screen for step 1, before anything is sent. */
-export function ExplainSample() {
-  return (
-    <ExplainStep
-      step={sampleStep}
-      answer={{ stepId: sampleStep.id, optionId: "b", confidence: 2, explanation: "" }}
-      index={0}
-      total={sessionLengths.full.stepIds.length}
-      onSend={() => undefined}
-      onDontKnow={() => undefined}
-    />
-  );
-}
-
-/** The answer sheet over the Explain screen. */
-export function StepSheetSample({
+/** The Answer review of one step, with the "still correct" button working. */
+export function StepReviewSample({
   stepId,
   optionId,
   explanation = "",
-  index,
+  position,
   marked = false,
 }: {
   stepId: string;
   optionId: string;
   explanation?: string;
-  index: number;
+  position: number;
   marked?: boolean;
 }) {
   const step = getStep(stepId);
@@ -156,23 +165,22 @@ export function StepSheetSample({
     markedCorrect,
   };
   return (
-    <>
-      <ExplainStep
-        step={step}
-        answer={answer}
-        index={index}
-        total={sessionLengths.full.stepIds.length}
-        submitted
-        onSend={() => undefined}
-        onDontKnow={() => undefined}
-      />
-      <AnswerSheet
-        inline
-        content={stepSheet(step, answer)}
-        onContinue={() => undefined}
-        onMarkCorrect={setMarkedCorrect}
-      />
-    </>
+    <AnswerReview
+      data={{
+        position,
+        total: 6,
+        title: step.title,
+        narrative: step.narrative,
+        question: step.question,
+        content: stepReview(step, answer),
+        step,
+      }}
+      noun="step"
+      backHref="#results"
+      backLabel="Back to results"
+      hrefFor={() => "#review"}
+      onMarkCorrect={setMarkedCorrect}
+    />
   );
 }
 
@@ -186,13 +194,20 @@ const sampleAnswers = [
   scoreStep(getStep("s6"), "c", 3),
 ];
 
-export function ResultsSample({ scrolled = false }: { scrolled?: boolean }) {
+/** Results for the sample session; fewer weak answers give the passed variant. */
+export function ResultsSample({
+  scrolled = false,
+  passed = false,
+}: {
+  scrolled?: boolean;
+  passed?: boolean;
+}) {
   const endRef = useScrollFrameToEnd(scrolled);
   return (
     <>
       <ResultsView
         results={{ kind: "scenario", mode: "full" }}
-        items={sampleAnswers}
+        items={passed ? passedAnswers : sampleAnswers}
         onRepeat={() => undefined}
       />
       <div ref={endRef} />
@@ -200,20 +215,15 @@ export function ResultsSample({ scrolled = false }: { scrolled?: boolean }) {
   );
 }
 
-/** A repeat session replays only the weak steps: here the second of three. */
-export function RepeatSample() {
-  const [draft, setDraft] = useState<Draft>(emptyDraft);
-  return (
-    <DecisionStep
-      step={getStep("s3")}
-      index={1}
-      total={3}
-      draft={draft}
-      onDraftChange={setDraft}
-      onSubmit={() => undefined}
-    />
-  );
-}
+/** Five of six right: 83%, above the pass mark. */
+const passedAnswers = [
+  scoreStep(getStep("s1"), "b", 3),
+  scoreStep(getStep("s2"), "c", 3),
+  scoreStep(getStep("s3"), "b", 3),
+  scoreStep(getStep("s4"), "d", 3),
+  scoreStep(getStep("s5"), "b", 3),
+  scoreStep(getStep("s6"), "c", 3),
+];
 
 /** Home in each Next up state: first visit, weak topics, an unfinished session, all repeated. */
 export function HomeSample({
@@ -231,7 +241,6 @@ export function HomeSample({
               mode: "full",
               stepIds: [...sessionLengths.full.stepIds],
               index: 2,
-              phase: "decide",
               answers: [],
               finished: false,
             }
@@ -320,23 +329,7 @@ export function ProfileSample({ confirming = false }: { confirming?: boolean }) 
   );
 }
 
-/** The Ask AI sheet open on the decision step: a neutral answer, then a question it holds back. */
-export function ChatDecideSample() {
-  const step = getStep("s1");
-  const messages: ChatMessage[] = [
-    { role: "trainee", text: "What if someone needs help to move?", chipId: "s1-assistance" },
-    { role: "ai", reply: replyToChip(step, "s1-assistance", "decide") },
-    { role: "trainee", text: "Should we take the elevator?" },
-    { role: "ai", reply: matchQuestion(step, "Should we take the elevator?", "decide") },
-  ];
-  return (
-    <AskAiProvider inline initial={{ chat: { step, phase: "decide" }, messages }}>
-      <DecisionSample start="empty" />
-    </AskAiProvider>
-  );
-}
-
-/** The Ask AI sheet over the smoke step's answer sheet: a "why not" answer, the not-covered answer, typing. */
+/** The Ask AI sheet over the smoke step's Answer review: a "why not" answer, the not-covered answer, typing. */
 export function ChatFeedbackSample() {
   const step = getStep("s3");
   const messages: ChatMessage[] = [
@@ -352,11 +345,11 @@ export function ChatFeedbackSample() {
   ];
   return (
     <AskAiProvider inline initial={{ chat: { step, phase: "feedback" }, messages, typing: true }}>
-      <StepSheetSample
+      <StepReviewSample
         stepId="s3"
         optionId="a"
         explanation="Smoke rises, so we stay low."
-        index={2}
+        position={3}
       />
     </AskAiProvider>
   );
@@ -423,34 +416,49 @@ export function NotesMaterialSample() {
   );
 }
 
-/** One quiz question of each type, optionally already answered. */
+/** One quiz question of each type with the top bar, strip and bottom bar, optionally answered. */
 export function QuizSample({
   questionId,
   index,
   response,
+  dontKnow = false,
 }: {
   questionId: string;
   index: number;
   response?: Response;
+  dontKnow?: boolean;
 }) {
   const question = getQuestion(questionId);
   const [draft, setDraft] = useState<QuizDraft>(
-    response ? { response, confidence: null } : emptyQuizDraft(question),
+    response ? { response, confidence: null, dontKnow } : emptyQuizDraft(question),
   );
+  const flags = Array.from({ length: 5 }, (_, position) => position < index);
   return (
-    <QuizQuestion
-      question={question}
-      index={index}
-      total={5}
-      draft={draft}
-      onDraftChange={setDraft}
-      onSubmit={() => undefined}
-    />
+    <>
+      <div className="flex flex-col gap-6">
+        <SessionTopBar
+          index={index}
+          total={5}
+          unit="Question"
+          states={stripStates(flags, index)}
+          onJump={() => undefined}
+          onLeave={() => undefined}
+        />
+        <QuizQuestion question={question} draft={draft} onDraftChange={setDraft} />
+      </div>
+      <SessionBar
+        backLabel={index > 0 ? "Previous question" : null}
+        onBack={() => undefined}
+        last={index === 4}
+        disabled={!isQuizComplete(draft)}
+        onNext={() => undefined}
+      />
+    </>
   );
 }
 
-/** A quiz question with the answer sheet over it, for every question type. */
-export function QuestionSheetSample({
+/** The Answer review of one quiz question, for every question type. */
+export function QuestionReviewSample({
   questionId,
   response,
   marked = false,
@@ -467,23 +475,19 @@ export function QuestionSheetSample({
   const [markedCorrect, setMarkedCorrect] = useState(marked);
   const answer = { questionId, response, confidence, markedCorrect, dontKnow };
   return (
-    <>
-      <QuizQuestion
-        question={question}
-        index={1}
-        total={5}
-        draft={{ response, confidence: null }}
-        onDraftChange={() => undefined}
-        onSubmit={() => undefined}
-        submitted
-      />
-      <AnswerSheet
-        inline
-        content={questionSheet(question, answer)}
-        onContinue={() => undefined}
-        onMarkCorrect={setMarkedCorrect}
-      />
-    </>
+    <AnswerReview
+      data={{
+        position: 2,
+        total: 5,
+        question: question.question,
+        content: questionReview(question, answer),
+      }}
+      noun="question"
+      backHref="#results"
+      backLabel="Back to results"
+      hrefFor={() => "#review"}
+      onMarkCorrect={setMarkedCorrect}
+    />
   );
 }
 
@@ -553,19 +557,9 @@ export function ReviewSample() {
 
 const FLOOD = "flood-preparedness-001";
 
-/** The flood scenario's first step: no Ask AI, F-section chips. */
+/** The flood scenario's first step: F-section chips. */
 export function FloodStepSample() {
-  const [draft, setDraft] = useState<Draft>(emptyDraft);
-  return (
-    <DecisionStep
-      step={getStep("flood-s1")}
-      index={0}
-      total={3}
-      draft={draft}
-      onDraftChange={setDraft}
-      onSubmit={() => undefined}
-    />
-  );
+  return <SessionStepSample stepId="flood-s1" total={3} />;
 }
 
 /** Flood results: time lost and water level only. */

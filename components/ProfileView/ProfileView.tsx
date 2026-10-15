@@ -3,6 +3,7 @@
 import { Button } from "@/components/Button/Button";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { DirectionPicker } from "@/components/DirectionPicker/DirectionPicker";
+import { FooterNote } from "@/components/Footer/Footer";
 
 export function ProfileView({
   direction,
@@ -53,6 +54,8 @@ export function ProfileView({
           )}
         </div>
       </section>
+
+      <FooterNote />
 
       {(confirming || !dialogInline) && (
         <ConfirmDialog

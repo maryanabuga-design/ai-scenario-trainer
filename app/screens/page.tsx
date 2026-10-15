@@ -13,16 +13,14 @@ import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { Tag } from "@/components/Tag/Tag";
 import { loadAllSections } from "@/lib/guide";
 import {
-  ChatDecideSample,
   ChatFeedbackSample,
-  DecisionSample,
+  SessionStepSample,
   AnalysisSample,
   ButtonsSample,
   ChipTonesSample,
   PaletteSample,
   EmptyStatesSample,
   ErrorTypesSample,
-  ExplainSample,
   CreateTrainingSample,
   GeneratingSample,
   FloodResultsSample,
@@ -33,8 +31,8 @@ import {
   TopicIconsSample,
   WeakTopicsSample,
   ReviewSample,
-  QuestionSheetSample,
-  StepSheetSample,
+  QuestionReviewSample,
+  StepReviewSample,
   QuizResultsSample,
   QuizSample,
   NotesMaterialSample,
@@ -42,7 +40,6 @@ import {
   OnboardingSample,
   ProfileSample,
   ProgressSample,
-  RepeatSample,
   ResultsSample,
   SetupSample,
 } from "./samples";
@@ -246,77 +243,113 @@ export default function Screens() {
                   ...defaultSetup,
                   mode: "quiz",
                   sections: ["S1", "S2", "S3"],
-                  countChoice: "custom",
-                  customCount: 6,
+                  countChoice: 5,
+                  customCount: 5,
                 }}
               />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Situation and decision">
+          <PhoneFrame label="Step 1: nothing chosen (strip, Exit, no Back)">
             <Screen>
-              <DecisionSample start="empty" />
+              <SessionStepSample />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Confidence check">
+          <PhoneFrame label="Step 1: option chosen, confidence next">
             <Screen>
-              <DecisionSample start="option" />
+              <SessionStepSample start={{ optionId: "b", confidence: null, explanation: "" }} />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Decision: ready to continue">
+          <PhoneFrame label="Step 3: ready for Next (steps 1 and 2 answered)">
             <Screen>
-              <DecisionSample start="complete" />
+              <SessionStepSample
+                stepId="s3"
+                index={2}
+                answered={[0, 1]}
+                start={{ optionId: "b", confidence: 2, explanation: "" }}
+              />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Explain: the docked input">
+          <PhoneFrame label="Back to step 2: answer, confidence and explanation pre-filled">
             <Screen>
-              <ExplainSample />
+              <SessionStepSample
+                stepId="s2"
+                index={1}
+                answered={[0, 1, 2]}
+                start={{
+                  optionId: "c",
+                  confidence: 3,
+                  explanation: "Help the injured colleague only if the route stays safe.",
+                }}
+              />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Last step: Finish">
+            <Screen>
+              <SessionStepSample
+                stepId="s6"
+                index={5}
+                answered={[0, 1, 2, 3, 4]}
+                start={{ optionId: "c", confidence: 3, explanation: "" }}
+              />
             </Screen>
           </PhoneFrame>
         </Group>
-        <Group title="Answer sheet: scenario">
-          <PhoneFrame label="Sheet: Right choice + matching explanation">
+        <Group title="Answer review: scenario">
+          <PhoneFrame label="Review: Right choice + matching explanation">
             <Screen>
-              <StepSheetSample
+              <StepReviewSample
                 stepId="s1"
                 optionId="b"
                 explanation="The alarm is real, so we take the stairs now."
-                index={0}
+                position={1}
               />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Sheet: Right choice + gibberish (My explanation is still correct)">
+          <PhoneFrame label="Review: Right choice + gibberish (My explanation is still correct)">
             <Screen>
-              <StepSheetSample stepId="s1" optionId="b" explanation="лбтдлюью" index={0} />
+              <StepReviewSample stepId="s1" optionId="b" explanation="лбтдлюью" position={1} />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Sheet: Right choice + gibberish, marked correct by you, with Undo">
+          <PhoneFrame label="Review: Right choice + gibberish, marked correct by you, with Undo">
             <Screen>
-              <StepSheetSample stepId="s1" optionId="b" explanation="лбтдлюью" index={0} marked />
+              <StepReviewSample
+                stepId="s1"
+                optionId="b"
+                explanation="лбтдлюью"
+                position={1}
+                marked
+              />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Sheet: Right choice + I don't know">
+          <PhoneFrame label="Review: Right choice + I don't know">
             <Screen>
-              <StepSheetSample stepId="s1" optionId="b" explanation="" index={0} />
+              <StepReviewSample stepId="s1" optionId="b" explanation="" position={1} />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Sheet: Wrong choice + matching explanation">
+          <PhoneFrame label="Review: Wrong choice + matching explanation">
             <Screen>
-              <StepSheetSample
+              <StepReviewSample
                 stepId="s1"
                 optionId="d"
                 explanation="The alarm is real, so we take the stairs now."
-                index={0}
+                position={1}
               />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Sheet: Wrong choice + gibberish (My explanation is still correct)">
+          <PhoneFrame label="Review: Wrong choice + gibberish (My explanation is still correct)">
             <Screen>
-              <StepSheetSample stepId="s1" optionId="d" explanation="лбтдлюью" index={0} />
+              <StepReviewSample stepId="s1" optionId="d" explanation="лбтдлюью" position={1} />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Sheet: Wrong choice + gibberish, explanation marked correct, with Undo">
+          <PhoneFrame label="Review: Wrong choice + gibberish, explanation marked correct, with Undo">
             <Screen>
-              <StepSheetSample stepId="s1" optionId="d" explanation="лбтдлюью" index={0} marked />
+              <StepReviewSample
+                stepId="s1"
+                optionId="d"
+                explanation="лбтдлюью"
+                position={1}
+                marked
+              />
             </Screen>
           </PhoneFrame>
         </Group>
@@ -362,7 +395,7 @@ export default function Screens() {
         <Group title="Answer sheet: quiz">
           <PhoneFrame label="Single choice: correct">
             <Screen>
-              <QuestionSheetSample
+              <QuestionReviewSample
                 questionId="q-s1-1"
                 response={{ type: "single", optionId: "b" }}
               />
@@ -370,7 +403,7 @@ export default function Screens() {
           </PhoneFrame>
           <PhoneFrame label="Single choice: incorrect, no confidence">
             <Screen>
-              <QuestionSheetSample
+              <QuestionReviewSample
                 questionId="q-s1-1"
                 response={{ type: "single", optionId: "a" }}
               />
@@ -378,7 +411,7 @@ export default function Screens() {
           </PhoneFrame>
           <PhoneFrame label="Single choice: incorrect, very confident">
             <Screen>
-              <QuestionSheetSample
+              <QuestionReviewSample
                 questionId="q-s1-1"
                 response={{ type: "single", optionId: "a" }}
                 confidence={3}
@@ -387,7 +420,7 @@ export default function Screens() {
           </PhoneFrame>
           <PhoneFrame label="Multiple choice: partly right">
             <Screen>
-              <QuestionSheetSample
+              <QuestionReviewSample
                 questionId="q-s1-3"
                 response={{ type: "multiple", optionIds: ["a", "b", "c"] }}
               />
@@ -395,7 +428,7 @@ export default function Screens() {
           </PhoneFrame>
           <PhoneFrame label="Ordering: partly right">
             <Screen>
-              <QuestionSheetSample
+              <QuestionReviewSample
                 questionId="q-s2-3"
                 response={{ type: "ordering", order: ["a", "b", "d", "c"] }}
               />
@@ -403,7 +436,7 @@ export default function Screens() {
           </PhoneFrame>
           <PhoneFrame label="True or false: incorrect">
             <Screen>
-              <QuestionSheetSample
+              <QuestionReviewSample
                 questionId="q-s1-2"
                 response={{ type: "truefalse", value: true }}
               />
@@ -411,7 +444,7 @@ export default function Screens() {
           </PhoneFrame>
           <PhoneFrame label="Short text: correct">
             <Screen>
-              <QuestionSheetSample
+              <QuestionReviewSample
                 questionId="q-s2-1"
                 response={{ type: "text", text: "The back of my hand" }}
               />
@@ -419,7 +452,7 @@ export default function Screens() {
           </PhoneFrame>
           <PhoneFrame label="Short text: doesn't match">
             <Screen>
-              <QuestionSheetSample
+              <QuestionReviewSample
                 questionId="q-s2-1"
                 response={{ type: "text", text: "With my knuckles" }}
               />
@@ -427,7 +460,7 @@ export default function Screens() {
           </PhoneFrame>
           <PhoneFrame label="Short text: marked correct by you">
             <Screen>
-              <QuestionSheetSample
+              <QuestionReviewSample
                 questionId="q-s2-1"
                 response={{ type: "text", text: "With my knuckles" }}
                 marked
@@ -436,7 +469,7 @@ export default function Screens() {
           </PhoneFrame>
           <PhoneFrame label="Short text: I don't know">
             <Screen>
-              <QuestionSheetSample
+              <QuestionReviewSample
                 questionId="q-s2-1"
                 response={{ type: "text", text: "" }}
                 dontKnow
@@ -467,7 +500,7 @@ export default function Screens() {
           </PhoneFrame>
         </Group>
         <Group title="Results">
-          <PhoneFrame label="Error analysis">
+          <PhoneFrame label="Error types: details">
             <Screen>
               <AnalysisSample />
             </Screen>
@@ -477,9 +510,14 @@ export default function Screens() {
               <ErrorTypesSample />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Results: summary">
+          <PhoneFrame label="Results: Not passed yet">
             <Screen>
               <ResultsSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Results: Passed">
+            <Screen>
+              <ResultsSample passed />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Results: end of the page">
@@ -487,19 +525,9 @@ export default function Screens() {
               <ResultsSample scrolled />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Repeat weak topics">
-            <Screen>
-              <RepeatSample />
-            </Screen>
-          </PhoneFrame>
         </Group>
         <Group title="Ask AI">
-          <PhoneFrame label="Ask AI: decision step">
-            <Screen>
-              <ChatDecideSample />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Ask AI: after feedback">
+          <PhoneFrame label="Ask AI: in the Answer review">
             <Screen>
               <ChatFeedbackSample />
             </Screen>

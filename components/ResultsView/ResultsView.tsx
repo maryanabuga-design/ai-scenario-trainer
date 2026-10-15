@@ -1,23 +1,23 @@
 "use client";
 
+import { Check, X } from "lucide-react";
+import Link from "next/link";
 import { useEffect } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
-import { Button, ButtonLink } from "@/components/Button/Button";
+import { ButtonLink, Button } from "@/components/Button/Button";
+import { Chevron } from "@/components/Chevron/Chevron";
 import { ErrorTypesCard } from "@/components/ErrorTypesCard/ErrorTypesCard";
-import { ProgressCard } from "@/components/ProgressCard/ProgressCard";
-import { ResultsHeader } from "@/components/ResultsHeader/ResultsHeader";
-import { SoftCard } from "@/components/SoftCard/SoftCard";
-import { GuideChip } from "@/components/GuideChip/GuideChip";
+import { heroImages, HeroSlot } from "@/components/HeroSlot/HeroSlot";
 import { StatusChip } from "@/components/StatusChip/StatusChip";
-import { formatOutcome } from "@/lib/outcome";
+import { PASS_MARK } from "@/lib/config";
 import { formatPoints, sessionLabel } from "@/lib/progress";
 import type { ResultsKind } from "@/lib/repeat";
-import { conclusion } from "@/lib/results";
-import { getScenario } from "@/lib/scenario";
+import { conclusion, isPassed, resultPercent } from "@/lib/results";
 import type { ScoredItem } from "@/lib/scoring";
-import { countErrorTypes, sumEffects, totalScore, weakItems, weakSections } from "@/lib/scoring";
+import { countErrorTypes, totalScore, weakItems } from "@/lib/scoring";
 
 export const analysisPath = "/session/results/analysis";
+export const reviewPath = (position: number) => `/session/results/review/${position}`;
 const scrollKey = "ast.results-scroll";
 
 /** Remembers where Results was scrolled to, so Back from the Error analysis returns there. */
@@ -53,23 +53,74 @@ function useRestoredScroll() {
   }, []);
 }
 
-function headline(results: ResultsKind, weakTopicCount: number): [string, string] {
-  const first =
-    results.kind === "repeat"
-      ? "Repeat complete."
-      : results.kind === "quiz"
-        ? results.mode === "repeat"
-          ? "Repeat complete."
-          : "Quiz complete."
-        : results.mode === "short"
-          ? (getScenario(results.scenarioId).shortEnding?.headline ?? "Session complete.")
-          : {
-              full: "Session complete.",
-              extended: "Extended session complete.",
-              repeat: "Repeat complete.",
-            }[results.mode];
-  if (weakTopicCount === 0) return [first, "Nothing to repeat this time."];
-  return [first, `${weakTopicCount} ${weakTopicCount === 1 ? "topic" : "topics"} to repeat.`];
+/** The result as a percentage on a bar with a marker at the pass mark. */
+function ResultBar({ percent }: { percent: number }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="type-numeral text-center tabular-nums">{percent}%</p>
+      <div
+        role="meter"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={percent}
+        aria-label={`Result ${percent}%, pass mark ${PASS_MARK}%`}
+        className="relative h-3 rounded-full bg-secondary-sand-pressed"
+      >
+        <div className="h-full rounded-full bg-primary" style={{ width: `${percent}%` }} />
+        <span
+          aria-hidden="true"
+          className="absolute -top-1 -bottom-1 w-0.5 bg-text"
+          style={{ left: `${PASS_MARK}%` }}
+        />
+      </div>
+      <div className="relative h-5">
+        <p
+          className="type-small absolute -translate-x-1/2 whitespace-nowrap text-text-secondary"
+          style={{ left: `${PASS_MARK}%` }}
+        >
+          Pass mark {PASS_MARK}%
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/** One answer in "Your answers": number, short title, right or not right, error type, chevron. */
+function AnswerRow({ item, position }: { item: ScoredItem; position: number }) {
+  const Icon = item.correct ? Check : X;
+  return (
+    <li>
+      <Link
+        href={reviewPath(position)}
+        onClick={rememberScroll}
+        className="flex min-h-14 items-center gap-3 rounded-[20px] bg-card px-3 py-2 shadow-(--card-shadow) has-focus-visible:outline-2"
+      >
+        <span
+          aria-hidden="true"
+          className="type-small flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary-sand tabular-nums"
+        >
+          {position}
+        </span>
+        <span className="flex min-w-0 flex-1 flex-col gap-1">
+          <span className="type-body-strong line-clamp-1">{item.title}</span>
+          <span className="flex flex-wrap items-center gap-2">
+            {item.hasConfidence && <StatusChip status={item.errorType} />}
+            {item.markedByYou && (
+              <span className="type-small text-text-secondary">Marked correct by you</span>
+            )}
+          </span>
+        </span>
+        <Icon
+          size={20}
+          strokeWidth={2}
+          role="img"
+          aria-label={item.correct ? "Right" : "Not right"}
+          className={`shrink-0 ${item.correct ? "text-correct" : "text-wrong"}`}
+        />
+        <Chevron />
+      </Link>
+    </li>
+  );
 }
 
 export function ResultsView({
@@ -83,35 +134,30 @@ export function ResultsView({
 }) {
   useRestoredScroll();
   const quiz = results.kind === "quiz";
-  const scenarioResults = results.kind === "scenario" && results.mode !== "repeat";
-  const correct = items.filter((item) => item.correct).length;
-  const scenarioDef = getScenario(results.kind === "scenario" ? results.scenarioId : undefined);
-  const state = sumEffects(scenarioDef.initialState, items);
+  const passed = isPassed(items);
   const repeatIds = weakItems(items).map((item) => item.id);
-  const topics = weakSections(items);
-  const [first, second] = headline(results, topics.length);
-  const outcomeRows = scenarioDef.outcome.filter(
-    (metric) =>
-      results.kind === "scenario" &&
-      results.mode !== "repeat" &&
-      (!metric.lengths || metric.lengths.includes(results.mode)),
-  );
-  const steps = items.filter((item) => item.kind === "step" && item.consequence);
-  const hasQuestions = items.some((item) => item.kind === "question");
-  const markedCount = items.filter((item) => item.markedByYou).length;
-  const shortEnding =
-    results.kind === "scenario" && results.mode === "short" ? scenarioDef.shortEnding : undefined;
+  const hero = heroImages[passed ? "passed" : "notPassed"];
 
   return (
-    <div className="flex flex-col gap-4">
-      <ResultsHeader overline={sessionLabel(results)} first={first} second={second} />
+    <div className="flex flex-col gap-6">
+      <section aria-labelledby="result-title" className="flex flex-col items-center gap-3">
+        <HeroSlot kind={passed ? "passed" : "notPassed"} src={hero.src} alt={hero.alt} />
+        <p className="type-label text-text-secondary">{sessionLabel(results)}</p>
+        <h1 id="result-title" className="type-display text-center">
+          {passed ? "Passed" : "Not passed yet"}
+        </h1>
+      </section>
 
-      <ProgressCard
-        correct={correct}
-        total={items.length}
-        sentence={shortEnding?.continues ?? conclusion(items)}
-        points={quiz ? `${formatPoints(totalScore(items))} of ${items.length} points` : undefined}
-      />
+      <ResultBar percent={resultPercent(items)} />
+
+      <div className="flex flex-col items-center gap-1 text-center">
+        <p className="text-text-secondary">{conclusion(items)}</p>
+        {quiz && (
+          <p className="type-small text-text-secondary tabular-nums">
+            {formatPoints(totalScore(items))} of {items.length} points
+          </p>
+        )}
+      </div>
 
       <ErrorTypesCard
         counts={countErrorTypes(items)}
@@ -119,101 +165,28 @@ export function ResultsView({
         onNavigate={rememberScroll}
       />
 
-      {scenarioResults && outcomeRows.length > 0 && (
-        <SoftCard title="Outcome" titleId="outcome-title" className="gap-1">
-          <dl className="flex flex-col divide-y divide-soft-divider">
-            {outcomeRows.map((metric) => (
-              <div
-                key={metric.key}
-                className="flex min-h-12 items-center justify-between gap-4 py-2"
-              >
-                <dt>{metric.label}</dt>
-                <dd className="type-body-strong text-right">
-                  {formatOutcome(
-                    scenarioDef,
-                    metric,
-                    state[metric.key],
-                    scenarioDef.initialState[metric.key],
-                  )}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </SoftCard>
-      )}
-
-      {scenarioResults && steps.length > 0 && (
-        <SoftCard title="Step by step" titleId="steps-title" subtitle="How each choice played out">
-          <ol className="flex flex-col gap-4">
-            {steps.map((item, position) => (
-              <li key={item.id} className="flex items-start gap-3">
-                <span
-                  aria-hidden="true"
-                  className="type-small flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-muted text-text-secondary tabular-nums"
-                >
-                  {position + 1}
-                </span>
-                <div className="flex min-w-0 flex-col gap-0.5 pt-1">
-                  <h3 className="type-body-strong">
-                    <span className="sr-only">Step {position + 1}: </span>
-                    {item.title}
-                  </h3>
-                  {item.markedByYou && (
-                    <span className="py-1">
-                      <StatusChip status="marked" />
-                    </span>
-                  )}
-                  {item.note && <p className="type-small text-text-secondary">{item.note}</p>}
-                  <p className="type-small text-text-secondary">{item.consequence}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </SoftCard>
-      )}
-
-      <SoftCard title="Weak topics" titleId="weak-title">
-        {topics.length === 0 ? (
-          <p className="text-text-secondary">No weak topics. Every answer was right and sure.</p>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            {topics.map((sectionId) => (
-              <GuideChip key={sectionId} sectionId={sectionId} showTitle />
-            ))}
-          </div>
-        )}
-        {(hasQuestions || markedCount > 0) && (
-          <div className="flex min-h-11 items-center justify-between gap-4 border-t border-soft-divider pt-3">
-            <span>Marked correct by you</span>
-            <span className="type-body-strong tabular-nums">{markedCount}</span>
-          </div>
-        )}
-      </SoftCard>
+      <section aria-labelledby="answers-title" className="flex flex-col gap-3">
+        <h2 id="answers-title" className="type-card-title">
+          Your answers
+        </h2>
+        <ol className="flex flex-col gap-3">
+          {items.map((item, index) => (
+            <AnswerRow key={item.id} item={item} position={index + 1} />
+          ))}
+        </ol>
+      </section>
 
       <ActionBar>
         {repeatIds.length > 0 ? (
-          <>
-            <p className="type-small text-center text-text-secondary">
-              Replays <span className="tabular-nums">{repeatIds.length}</span>{" "}
-              {quiz
-                ? repeatIds.length === 1
-                  ? "question"
-                  : "questions"
-                : repeatIds.length === 1
-                  ? "step"
-                  : "steps"}{" "}
-              you got wrong, partly right or guessed.
-            </p>
-            <Button onClick={() => onRepeat(repeatIds)}>
-              {quiz ? "Repeat weak questions" : "Repeat weak topics"}
-            </Button>
-            <ButtonLink href="/" variant="tertiary">
-              Back to Home
-            </ButtonLink>
-          </>
+          <Button onClick={() => onRepeat(repeatIds)}>
+            {quiz ? "Repeat weak questions" : "Repeat weak topics"}
+          </Button>
         ) : (
-          <ButtonLink href="/">Back to Home</ButtonLink>
+          <ButtonLink href="/">Start a new session</ButtonLink>
         )}
+        <ButtonLink href="/" variant="tertiary">
+          Back to Home
+        </ButtonLink>
       </ActionBar>
     </div>
   );

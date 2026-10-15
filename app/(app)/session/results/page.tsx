@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { AskAiProvider } from "@/components/AskAi/AskAi";
 import { NoResults } from "@/components/NoResults/NoResults";
 import { ResultsView } from "@/components/ResultsView/ResultsView";
 import { scoreSession } from "@/lib/progress";
@@ -18,16 +17,14 @@ export default function ResultsPage() {
   const items = scoreSession(session);
 
   return (
-    <AskAiProvider>
-      <ResultsView
-        results={resultsKind(session)}
-        items={items}
-        onRepeat={(ids) => {
-          startRepeat(session, items, ids);
-          window.scrollTo(0, 0);
-          router.push("/session");
-        }}
-      />
-    </AskAiProvider>
+    <ResultsView
+      results={resultsKind(session)}
+      items={items}
+      onRepeat={(ids) => {
+        startRepeat(session, items, ids);
+        window.scrollTo(0, 0);
+        router.push("/session");
+      }}
+    />
   );
 }

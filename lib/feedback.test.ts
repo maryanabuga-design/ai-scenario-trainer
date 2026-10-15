@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { explanationPrompt } from "@/components/ExplainStep/ExplainStep";
+import { explanationLabel } from "@/components/DecisionStep/DecisionStep";
 import { simulatedFeedback } from "@/lib/feedback";
 import { getStep, scenario, scenarios } from "@/lib/scenario";
 
@@ -25,7 +25,7 @@ describe("simulatedFeedback", () => {
 
 describe("explanation prompt", () => {
   it("is neutral and the only question: no step has an AI follow-up question", () => {
-    expect(explanationPrompt).toBe("In one sentence, why did you choose this?");
+    expect(explanationLabel).toBe("Explain your choice in your own words (optional)");
     scenarios
       .flatMap((def) => def.steps)
       .forEach((step) => expect(step).not.toHaveProperty("followUp"));

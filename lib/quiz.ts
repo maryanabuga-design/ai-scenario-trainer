@@ -1,10 +1,17 @@
 import floodBank from "@/content/question-bank-flood.json";
 import bank from "@/content/quiz-bank.json";
-import type { Confidence } from "@/lib/scenario";
+import type { Confidence, ContentImage } from "@/lib/scenario";
 import { errorType } from "@/lib/scoring";
 import type { ScoredItem } from "@/lib/scoring";
 
-type Base = { id: string; section: string; question: string; why: string; misconception: string };
+type Base = {
+  id: string;
+  section: string;
+  question: string;
+  why: string;
+  misconception: string;
+  image?: ContentImage;
+};
 export type Choice = { id: string; text: string };
 
 export type SingleQuestion = Base & { type: "single"; options: Choice[]; answer: string };
@@ -105,7 +112,8 @@ export const questions: Question[] = [
   ...(floodBank.questions as FloodQuestion[]).map(fromFloodBank),
 ];
 
-export const quizCounts = [5, 10, 15] as const;
+/** The two quiz lengths: the default 5 and the extended 10. */
+export const quizCounts = [5, 10] as const;
 
 export function getQuestion(id: string): Question {
   const question = questions.find((candidate) => candidate.id === id);
@@ -253,6 +261,8 @@ export function scoreQuestion(
     kind: "question",
     id: question.id,
     title: question.question,
+    prompt: question.question,
+    ...(question.image && { image: question.image }),
     sources: [question.section],
     score,
     correct,

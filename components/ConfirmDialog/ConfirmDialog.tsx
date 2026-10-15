@@ -8,6 +8,10 @@ type Props = {
   title: string;
   description: string;
   confirmLabel: string;
+  /** The label of the other action (default Cancel). */
+  cancelLabel?: string;
+  /** Which action is the primary button; the other is the underlined text button. */
+  emphasis?: "confirm" | "cancel";
   onConfirm: () => void;
   onCancel: () => void;
   /** Only for the screen review page: draw the dialog over its nearest positioned frame instead of the page. */
@@ -18,6 +22,8 @@ function DialogCard({
   title,
   description,
   confirmLabel,
+  cancelLabel = "Cancel",
+  emphasis = "confirm",
   onConfirm,
   onCancel,
 }: Omit<Props, "open" | "inline">) {
@@ -28,10 +34,21 @@ function DialogCard({
       </h2>
       <p className="text-text-secondary">{description}</p>
       <div className="flex flex-col items-center gap-2">
-        <Button onClick={onConfirm}>{confirmLabel}</Button>
-        <Button variant="tertiary" onClick={onCancel}>
-          Cancel
-        </Button>
+        {emphasis === "confirm" ? (
+          <>
+            <Button onClick={onConfirm}>{confirmLabel}</Button>
+            <Button variant="tertiary" onClick={onCancel}>
+              {cancelLabel}
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button onClick={onCancel}>{cancelLabel}</Button>
+            <Button variant="tertiary" onClick={onConfirm}>
+              {confirmLabel}
+            </Button>
+          </>
+        )}
       </div>
     </div>
   );

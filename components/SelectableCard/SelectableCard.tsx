@@ -12,6 +12,8 @@ type Props = {
   type?: "radio" | "checkbox";
   /** "card" for a title and a description, "row" for compact lists (sections), "compactRow" for the Weak topics rows. */
   size?: "card" | "row" | "compactRow";
+  /** A letter badge before the content (A, B, C), for answer options. */
+  letter?: string;
   children: ReactNode;
 };
 
@@ -33,6 +35,7 @@ export function SelectableCard({
   disabled = false,
   type = "radio",
   size = "card",
+  letter,
   children,
 }: Props) {
   const state = disabled
@@ -53,6 +56,14 @@ export function SelectableCard({
         onChange={() => onChange(value)}
         className="sr-only"
       />
+      {letter && (
+        <span
+          aria-hidden="true"
+          className="type-caption flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-olive-tint text-text"
+        >
+          {letter}
+        </span>
+      )}
       <SelectedProvider value={checked && !disabled}>
         <span className="flex min-w-0 flex-1 items-center gap-3">{children}</span>
       </SelectedProvider>

@@ -86,11 +86,6 @@ export function OnboardingView({
         <p className="text-text-secondary">
           {content ? content.body : "Upload a guide or try the sample materials."}
         </p>
-        {final && (
-          <p className="type-small text-text-secondary">
-            AI behavior is simulated for this prototype. All feedback comes from the source guide.
-          </p>
-        )}
       </div>
 
       <ActionBar>

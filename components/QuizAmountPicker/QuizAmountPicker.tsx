@@ -1,12 +1,13 @@
 import { SelectableCard } from "@/components/SelectableCard/SelectableCard";
-import { Stepper } from "@/components/Stepper/Stepper";
 import type { QuizAmount } from "@/lib/quiz-setup";
-import { amountOptions, customCap } from "@/lib/quiz-setup";
+import { amountOptions } from "@/lib/quiz-setup";
+
+const lengthNames = { 5: "Default", 10: "Extended" } as const;
 
 /**
- * "How many questions?": SelectableCards 5, 10, 15 and Custom (a stepper capped at the total).
- * Amounts larger than the available total are disabled, with a hint. Create training and
- * Session setup share it.
+ * "How many questions?": SelectableCards for 5 (the default) and 10 (Extended). An amount larger
+ * than the available total is disabled, with a hint; when the sections hold fewer than 5 questions
+ * the quiz uses all of them. Create training and Session setup share it.
  */
 export function QuizAmountPicker({
   name,
@@ -27,36 +28,23 @@ export function QuizAmountPicker({
       <fieldset className="flex flex-col gap-3">
         <legend className="type-body-strong mb-3">How many questions?</legend>
         <div className="grid grid-cols-2 gap-2">
-          {[
-            ...options.map((option) => ({
-              value: option.count as QuizAmount["countChoice"],
-              label: String(option.count),
-              disabled: option.disabled,
-            })),
-            { value: "custom" as const, label: "Custom", disabled: false },
-          ].map((option) => (
+          {options.map((option) => (
             <SelectableCard
-              key={String(option.value)}
+              key={option.count}
               name={name}
-              value={String(option.value)}
-              checked={amount.countChoice === option.value}
+              value={String(option.count)}
+              checked={amount.countChoice === option.count}
               disabled={option.disabled}
-              onChange={() => onChange({ ...amount, countChoice: option.value })}
+              onChange={() => onChange({ ...amount, countChoice: option.count })}
             >
-              <span className="type-body-strong tabular-nums">{option.label}</span>
+              <span className="flex flex-col">
+                <span className="type-body-strong tabular-nums">{option.count}</span>
+                <span className="type-small text-text-secondary">{lengthNames[option.count]}</span>
+              </span>
             </SelectableCard>
           ))}
         </div>
       </fieldset>
-      {amount.countChoice === "custom" && (
-        <Stepper
-          label="Number of questions"
-          value={Math.min(amount.customCount, customCap(available))}
-          min={1}
-          max={customCap(available)}
-          onChange={(customCount) => onChange({ ...amount, customCount })}
-        />
-      )}
       {hasSections && options.some((option) => option.disabled) && (
         <p className="type-small text-text-secondary">Not enough questions for these sections</p>
       )}

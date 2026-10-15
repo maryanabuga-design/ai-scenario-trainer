@@ -1,16 +1,23 @@
 import { explanationOutcome, simulatedFeedback } from "@/lib/feedback";
 import { describeEffects } from "@/lib/outcome";
-import { describeAnswer, describeResponse, scoreQuestion, scoreResponse } from "@/lib/quiz";
+import {
+  describeAnswer,
+  describeResponse,
+  getQuestion,
+  scoreQuestion,
+  scoreResponse,
+} from "@/lib/quiz";
 import type { Choice, Question, Response } from "@/lib/quiz";
-import type { Step } from "@/lib/scenario";
+import { getStep } from "@/lib/scenario";
+import type { ContentImage, Step } from "@/lib/scenario";
 import { scoreStep } from "@/lib/scoring";
 import type { ErrorType } from "@/lib/scoring";
-import { answerSource } from "@/lib/session";
-import type { Answer, QuizAnswer } from "@/lib/session";
+import { answerFor, answerSource, sessionItems } from "@/lib/session";
+import type { Answer, QuizAnswer, Session } from "@/lib/session";
 
 /**
- * What the answer sheet shows right after an answer: the result and error type as status rows,
- * the answers, the why and, for a step, what happened. Never a percentage, points or a score.
+ * What the Answer review shows for one answer after Finish: the answers, the verdict on the typed
+ * text, the why and, for a step, what happened.
  */
 
 /** right: a check and a solid green outline; wrong: a cross; better: a check and a dashed outline. */
@@ -26,7 +33,7 @@ export type AnswerBox = {
   yours?: boolean;
 };
 
-export type SheetResult = "correct" | "wrong" | "partial";
+export type ReviewResult = "correct" | "wrong" | "partial";
 
 /**
  * "My explanation is still correct" (scenario) or "My answer is still correct" (short text):
@@ -46,10 +53,10 @@ export type OpenAnswer = {
   verdict: OpenVerdict | null;
 };
 
-export type StepSheet = {
+export type StepReview = {
   kind: "step";
   verdict: "right" | "wrong";
-  result: SheetResult;
+  result: ReviewResult;
   errorType: ErrorType;
   /** "Your choice": the closed question. */
   boxes: AnswerBox[];
@@ -65,10 +72,10 @@ export type StepSheet = {
 
 export type QuestionVerdict = "right" | "partial" | "wrong" | "noMatch" | "marked" | "dontKnow";
 
-export type QuestionSheet = {
+export type QuestionReview = {
   kind: "question";
   verdict: QuestionVerdict;
-  result: SheetResult;
+  result: ReviewResult;
   /** Null without a confidence rating: then only the Result row is shown. */
   errorType: ErrorType | null;
   /** Choice questions: "Your answer" and "Correct answer". Short text uses open and better. */
@@ -84,10 +91,10 @@ export type QuestionSheet = {
   override: Override;
 };
 
-export type SheetContent = StepSheet | QuestionSheet;
+export type ReviewContent = StepReview | QuestionReview;
 
 /** The sheet after a scenario step. */
-export function stepSheet(step: Step, answer: Answer): StepSheet {
+export function stepReview(step: Step, answer: Answer): StepReview {
   const feedback = simulatedFeedback.evaluate(step, answer);
   const outcome = explanationOutcome(step, answer);
   const scored = scoreStep(step, answer.optionId, answer.confidence, {
@@ -120,7 +127,11 @@ export function stepSheet(step: Step, answer: Answer): StepSheet {
     better:
       feedback.correct && outcome === "matched"
         ? null
-        : { tone: "better", label: "Better explanation", lines: [step.referenceExplanation] },
+        : {
+            tone: "better",
+            label: "Better explanation",
+            lines: [step.referenceExplanation],
+          },
     why: feedback.correct ? [feedback.chosen.why] : [feedback.best.why],
     sources: feedback.sources,
     whatHappened: feedback.chosen.consequence,
@@ -163,7 +174,7 @@ function correctLines(question: Question): string[] {
 }
 
 /** The sheet after a quiz question, for every question type. */
-export function questionSheet(question: Question, answer: QuizAnswer): QuestionSheet {
+export function questionReview(question: Question, answer: QuizAnswer): QuestionReview {
   const { response } = answer;
   const text = question.type === "text";
   const dontKnow = text && answer.dontKnow === true;
@@ -187,7 +198,11 @@ export function questionSheet(question: Question, answer: QuizAnswer): QuestionS
     ordered,
     yours: true,
   };
-  const correct = { label: "Correct answer", lines: correctLines(question), ordered };
+  const correct = {
+    label: "Correct answer",
+    lines: correctLines(question),
+    ordered,
+  };
   const boxes: AnswerBox[] = text
     ? []
     : verdict === "right"
@@ -212,7 +227,11 @@ export function questionSheet(question: Question, answer: QuizAnswer): QuestionS
     : null;
   const better: AnswerBox | null =
     text && verdict !== "right"
-      ? { tone: "better", label: "Better answer", lines: correctLines(question) }
+      ? {
+          tone: "better",
+          label: "Better answer",
+          lines: correctLines(question),
+        }
       : null;
   return {
     kind: "question",
@@ -232,5 +251,47 @@ export function questionSheet(question: Question, answer: QuizAnswer): QuestionS
         : verdict === "noMatch" && answerSource(answer) === "typed"
           ? "available"
           : "none",
+  };
+}
+
+/** Everything the Answer review page shows for one step or question of a finished session. */
+export type ReviewData = {
+  /** 1-based position and the number of items. */
+  position: number;
+  total: number;
+  /** A step has a title and a narrative before its question; a quiz question only the question. */
+  title?: string;
+  narrative?: string;
+  question: string;
+  image?: ContentImage;
+  content: ReviewContent;
+  /** Set for a scenario step, for the Ask AI link. */
+  step?: Step;
+};
+
+export function reviewAt(session: Session, position: number): ReviewData | null {
+  const items = sessionItems(session);
+  const item = items[position - 1];
+  const saved = item && answerFor(session, item);
+  if (!saved) return null;
+  const base = { position, total: items.length };
+  if ("stepId" in saved) {
+    const step = getStep(saved.stepId);
+    return {
+      ...base,
+      title: step.title,
+      narrative: step.narrative,
+      question: step.question,
+      image: step.image,
+      content: stepReview(step, saved),
+      step,
+    };
+  }
+  const question = getQuestion(saved.questionId);
+  return {
+    ...base,
+    question: question.question,
+    image: question.image,
+    content: questionReview(question, saved),
   };
 }

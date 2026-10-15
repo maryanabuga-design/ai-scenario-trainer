@@ -1,36 +1,15 @@
 "use client";
 
-import { ActionBar } from "@/components/ActionBar/ActionBar";
-import { AnswerDock } from "@/components/AnswerDock/AnswerDock";
+import { useId } from "react";
 import { Button } from "@/components/Button/Button";
+import { ContentImage } from "@/components/ContentImage/ContentImage";
 import { SelectableCard } from "@/components/SelectableCard/SelectableCard";
 import { ConfidenceSelector } from "@/components/ConfidenceSelector/ConfidenceSelector";
 import { OrderingList } from "@/components/OrderingList/OrderingList";
 import { GuideChip } from "@/components/GuideChip/GuideChip";
-import { SessionTopBar } from "@/components/SessionTopBar/SessionTopBar";
-import type { Unit } from "@/components/SessionTopBar/SessionTopBar";
 import type { Question, Response } from "@/lib/quiz";
-import type { Confidence } from "@/lib/scenario";
-
-export type QuizDraft = { response: Response | null; confidence: Confidence | null };
-
-/** The starting draft: ordering questions start from the order they are listed in. */
-export function emptyQuizDraft(question: Question): QuizDraft {
-  return {
-    response:
-      question.type === "ordering"
-        ? { type: "ordering", order: question.items.map((item) => item.id) }
-        : null,
-    confidence: null,
-  };
-}
-
-function hasAnswer(response: Response | null) {
-  if (!response) return false;
-  if (response.type === "multiple") return response.optionIds.length > 0;
-  if (response.type === "text") return response.text.trim().length > 0;
-  return true;
-}
+import { isQuizComplete } from "@/lib/session-draft";
+import type { QuizDraft } from "@/lib/session-draft";
 
 const hints: Record<Question["type"], string> = {
   single: "Choose one answer.",
@@ -39,6 +18,8 @@ const hints: Record<Question["type"], string> = {
   text: "A few words are enough.",
   truefalse: "Is this true or false?",
 };
+
+const letters = "ABCDEFGH";
 
 function Answer({
   question,
@@ -53,9 +34,11 @@ function Answer({
     case "single":
       return (
         <div className="flex flex-col gap-3">
-          {question.options.map((option) => (
+          {question.options.map((option, position) => (
             <SelectableCard
               key={option.id}
+              size="row"
+              letter={letters[position]}
               name={question.id}
               value={option.id}
               checked={response?.type === "single" && response.optionId === option.id}
@@ -70,9 +53,11 @@ function Answer({
       const selected = response?.type === "multiple" ? response.optionIds : [];
       return (
         <div className="flex flex-col gap-3">
-          {question.options.map((option) => (
+          {question.options.map((option, position) => (
             <SelectableCard
               key={option.id}
+              size="row"
+              letter={letters[position]}
               type="checkbox"
               name={question.id}
               value={option.id}
@@ -103,8 +88,13 @@ function Answer({
         />
       );
     case "text":
-      // Typed in the answer dock at the bottom of the screen.
-      return null;
+      return (
+        <TextAnswer
+          question={question}
+          value={response?.type === "text" ? response.text : ""}
+          onChange={(text) => onChange({ type: "text", text })}
+        />
+      );
     case "truefalse":
       return (
         <div className="grid grid-cols-2 gap-3">
@@ -124,32 +114,49 @@ function Answer({
   }
 }
 
+function TextAnswer({
+  question,
+  value,
+  onChange,
+}: {
+  question: Extract<Question, { type: "text" }>;
+  value: string;
+  onChange: (text: string) => void;
+}) {
+  const id = useId();
+  return (
+    <div className="flex flex-col gap-2">
+      <label htmlFor={id} className="sr-only">
+        {question.question}
+      </label>
+      <textarea
+        id={id}
+        rows={3}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={question.placeholder}
+        autoComplete="off"
+        className="type-body min-h-24 w-full resize-y rounded-card border border-border-strong bg-surface p-3 placeholder:text-text-secondary"
+      />
+    </div>
+  );
+}
+
 /**
- * One quiz question. Confidence is optional; Check needs only an answer. Short text is typed in
- * the answer dock, with "I don't know". Once submitted, the answer sheet rises over it.
+ * One quiz question: the optional image, the section chip, the question, the answer and the
+ * optional confidence. A short text question has "I don't know", which counts as an answer. It
+ * shows no verdict; that comes in the results.
  */
 export function QuizQuestion({
   question,
-  index,
-  total,
-  unit = "Question",
   draft,
   onDraftChange,
-  onSubmit,
-  onDontKnow,
-  submitted = false,
 }: {
   question: Question;
-  index: number;
-  total: number;
-  unit?: Unit;
   draft: QuizDraft;
   onDraftChange: (draft: QuizDraft) => void;
-  onSubmit: (draft: QuizDraft) => void;
-  onDontKnow?: () => void;
-  submitted?: boolean;
 }) {
-  const answered = hasAnswer(draft.response);
+  const answered = isQuizComplete(draft);
   const hint =
     question.type === "multiple"
       ? `Select all that apply (${question.answer.length} are correct).`
@@ -157,7 +164,7 @@ export function QuizQuestion({
 
   return (
     <div className="flex flex-col gap-6">
-      <SessionTopBar index={index} total={total} unit={unit} />
+      <ContentImage image={question.image} />
       <div className="flex flex-col items-start gap-3">
         <GuideChip sectionId={question.section} />
         <h1 className="type-item-title">{question.question}</h1>
@@ -167,47 +174,39 @@ export function QuizQuestion({
       <Answer
         question={question}
         response={draft.response}
-        onChange={(response) => onDraftChange({ ...draft, response })}
+        onChange={(response) => onDraftChange({ ...draft, response, dontKnow: false })}
       />
 
-      {question.type === "text" && submitted && (
-        <p className="max-w-[85%] self-end rounded-panel bg-surface-muted px-4 py-2">
-          {draft.response?.type === "text" && draft.response.text
-            ? draft.response.text
-            : "I don't know"}
+      {question.type === "text" && (
+        <div className="-mt-3 -ml-3">
+          <Button
+            variant="tertiary"
+            onClick={() =>
+              onDraftChange({
+                response: { type: "text", text: "" },
+                confidence: null,
+                dontKnow: true,
+              })
+            }
+          >
+            I don&apos;t know
+          </Button>
+        </div>
+      )}
+
+      {draft.dontKnow && (
+        <p role="status" className="type-small -mt-3 text-text-secondary">
+          Marked as I don&apos;t know. Type an answer to replace it.
         </p>
       )}
 
-      {answered && !submitted && (
+      {answered && !draft.dontKnow && (
         <ConfidenceSelector
           name={`confidence-${question.id}`}
           legend="How sure are you? (optional)"
           value={draft.confidence}
           onChange={(confidence) => onDraftChange({ ...draft, confidence })}
         />
-      )}
-
-      {!submitted && question.type === "text" && (
-        <AnswerDock
-          label={question.question}
-          placeholder={question.placeholder}
-          value={draft.response?.type === "text" ? draft.response.text : ""}
-          onChange={(text) => onDraftChange({ ...draft, response: { type: "text", text } })}
-          onSend={(text) => onSubmit({ ...draft, response: { type: "text", text } })}
-          onDontKnow={() => onDontKnow?.()}
-        />
-      )}
-      {!submitted && question.type !== "text" && (
-        <ActionBar>
-          {!answered && (
-            <p className="type-small text-center text-text-secondary">
-              Answer the question to continue.
-            </p>
-          )}
-          <Button disabled={!answered} onClick={() => onSubmit(draft)}>
-            Check
-          </Button>
-        </ActionBar>
       )}
     </div>
   );

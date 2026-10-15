@@ -21,7 +21,6 @@ const repeatRound = (sectionIds: string[], answered: number): RepeatSession => (
     { type: "question", id: "q-s2-1" },
   ],
   index: answered,
-  phase: "decide",
   answers: Array.from({ length: answered }, () => ({
     type: "step" as const,
     stepId: "s2",
@@ -36,7 +35,6 @@ const scenarioSession: ScenarioSession = {
   mode: "full",
   stepIds: ["s1", "s2", "s3", "s4", "s5", "s6"],
   index: 2,
-  phase: "decide",
   answers: [],
   finished: false,
 };

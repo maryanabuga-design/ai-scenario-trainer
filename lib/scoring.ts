@@ -1,5 +1,5 @@
 import type { ExplanationCheck } from "@/lib/feedback";
-import type { Confidence, Effects, Step } from "@/lib/scenario";
+import type { Confidence, ContentImage, Effects, Step } from "@/lib/scenario";
 
 export type ErrorType = "secure" | "guess" | "knowledge_gap" | "misconception";
 
@@ -11,6 +11,14 @@ export const errorTypeText: Record<ErrorType, { label: string; description: stri
   guess: { label: "Guess", description: "Right answer, but not sure" },
   knowledge_gap: { label: "Knowledge gap", description: "Wrong answer, not sure" },
   misconception: { label: "Misconception", description: "Wrong answer, high confidence" },
+};
+
+/** The plain labels used in the Error types details instead of the chip names. */
+export const plainErrorLabel: Record<ErrorType, string> = {
+  misconception: "Sure, but wrong",
+  knowledge_gap: "Not sure, and wrong",
+  guess: "Right, but not sure",
+  secure: "Sure and right",
 };
 
 export type TypeSummaryRow = {
@@ -67,6 +75,9 @@ export type ScoredItem = {
   kind: "step" | "question";
   id: string;
   title: string;
+  /** The situation or question text, in full, for the answer review and the details. */
+  prompt: string;
+  image?: ContentImage;
   sources: string[];
   /** 0 to 1. Multiple choice and ordering can be partly right. */
   score: number;
@@ -121,6 +132,8 @@ export function scoreStep(
     kind: "step",
     id: step.id,
     title: step.title,
+    prompt: `${step.narrative} ${step.question}`,
+    ...(step.image && { image: step.image }),
     sources: step.sources,
     score: correct ? 1 : 0,
     correct,

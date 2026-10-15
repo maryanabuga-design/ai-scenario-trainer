@@ -33,9 +33,13 @@ export type ChatEntry = {
   suggested: boolean;
 };
 
+/** An optional picture for a situation or question: files live in public/scenarios/. */
+export type ContentImage = { src: string; alt: string };
+
 export type Step = {
   id: string;
   title: string;
+  image?: ContentImage;
   sources: string[];
   narrative: string;
   question: string;

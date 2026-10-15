@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { questionSheet, stepSheet } from "@/lib/answer-sheet";
-import type { SheetContent } from "@/lib/answer-sheet";
+import { questionReview, stepReview } from "@/lib/answer-review";
+import type { ReviewContent } from "@/lib/answer-review";
 import { describeEffects } from "@/lib/outcome";
 import { getQuestion, questions } from "@/lib/quiz";
 import { getStep } from "@/lib/scenario";
@@ -29,13 +29,13 @@ function keys(value: unknown): string[] {
   return [];
 }
 
-function text(sheet: SheetContent) {
+function text(sheet: ReviewContent) {
   return JSON.stringify(sheet);
 }
 
 describe("answer sheet for a scenario step", () => {
   it("right call: one box with your choice, the why, sources and what happened", () => {
-    const sheet = stepSheet(getStep("s1"), step("s1", { explanation: "Use the stairs now." }));
+    const sheet = stepReview(getStep("s1"), step("s1", { explanation: "Use the stairs now." }));
     expect(sheet.verdict).toBe("right");
     expect(sheet.result).toBe("correct");
     expect(sheet.errorType).toBe("secure");
@@ -49,7 +49,7 @@ describe("answer sheet for a scenario step", () => {
   });
 
   it("not the best action: your choice, the better explanation, and the state change", () => {
-    const sheet = stepSheet(getStep("s1"), step("s1", { optionId: "d" }));
+    const sheet = stepReview(getStep("s1"), step("s1", { optionId: "d" }));
     expect(sheet.verdict).toBe("wrong");
     expect(sheet.result).toBe("wrong");
     expect(sheet.errorType).toBe("misconception");
@@ -65,7 +65,7 @@ describe("answer sheet for a scenario step", () => {
 
   it("shows the user's own sentence with its verdict, and never points", () => {
     const sentence = "  We should use the stairs right away.  ";
-    const sheet = stepSheet(getStep("s1"), step("s1", { explanation: sentence }));
+    const sheet = stepReview(getStep("s1"), step("s1", { explanation: sentence }));
     expect(sheet.open).toEqual({
       label: "Your explanation",
       text: "We should use the stairs right away.",
@@ -75,14 +75,14 @@ describe("answer sheet for a scenario step", () => {
   });
 
   it("skip path: after I don't know the text is replaced and there is no verdict", () => {
-    const skipped = stepSheet(getStep("s1"), step("s1", { skipped: true }));
+    const skipped = stepReview(getStep("s1"), step("s1", { skipped: true }));
     expect(skipped.open).toEqual({ label: "Your explanation", text: null, verdict: null });
-    expect(stepSheet(getStep("s1"), step("s1")).open.text).toBeNull();
+    expect(stepReview(getStep("s1"), step("s1")).open.text).toBeNull();
   });
 
   it("has a result and an error type for every option, and never a percentage or a score", () => {
     for (const optionId of ["a", "b", "c", "d"]) {
-      const sheet = stepSheet(
+      const sheet = stepReview(
         getStep("s2"),
         step("s2", { optionId, explanation: "The door is hot, so we use another route." }),
       );
@@ -100,7 +100,7 @@ describe("answer sheet for a quiz question", () => {
   it("single choice: right shows one box, wrong shows yours and the correct answer", () => {
     const question = getQuestion("q-s1-1");
     if (question.type !== "single") throw new Error("expected single choice");
-    const right = questionSheet(
+    const right = questionReview(
       question,
       quiz(question.id, { response: { type: "single", optionId: question.answer } }),
     );
@@ -110,7 +110,7 @@ describe("answer sheet for a quiz question", () => {
     expect(right.open).toBeNull();
     expect(right.boxes).toHaveLength(1);
     const other = question.options.find((option) => option.id !== question.answer)!;
-    const wrong = questionSheet(
+    const wrong = questionReview(
       question,
       quiz(question.id, { response: { type: "single", optionId: other.id } }),
     );
@@ -120,7 +120,7 @@ describe("answer sheet for a quiz question", () => {
   });
 
   it("multiple choice: partly right, with how many are right and the correct answer", () => {
-    const sheet = questionSheet(
+    const sheet = questionReview(
       getQuestion("q-s1-3"),
       quiz("q-s1-3", { response: { type: "multiple", optionIds: ["a", "b", "c"] } }),
     );
@@ -131,7 +131,7 @@ describe("answer sheet for a quiz question", () => {
   });
 
   it("ordering: how many are in the right place, as numbered lists", () => {
-    const sheet = questionSheet(
+    const sheet = questionReview(
       getQuestion("q-s2-3"),
       quiz("q-s2-3", { response: { type: "ordering", order: ["a", "b", "d", "c"] } }),
     );
@@ -143,7 +143,7 @@ describe("answer sheet for a quiz question", () => {
   it("true or false uses the same sheet", () => {
     const question = getQuestion("q-s1-2");
     if (question.type !== "truefalse") throw new Error("expected true or false");
-    const sheet = questionSheet(
+    const sheet = questionReview(
       question,
       quiz(question.id, { response: { type: "truefalse", value: !question.answer } }),
     );
@@ -152,7 +152,7 @@ describe("answer sheet for a quiz question", () => {
   });
 
   it("short text: Your answer with its verdict, and a Better answer when not accepted", () => {
-    const right = questionSheet(
+    const right = questionReview(
       getQuestion("q-s2-1"),
       quiz("q-s2-1", { response: { type: "text", text: "The back of my hand" } }),
     );
@@ -164,7 +164,7 @@ describe("answer sheet for a quiz question", () => {
       verdict: "matched",
     });
     expect(right.better).toBeNull();
-    const rejected = questionSheet(
+    const rejected = questionReview(
       getQuestion("q-s2-1"),
       quiz("q-s2-1", { response: { type: "text", text: "With my knuckles" } }),
     );
@@ -176,7 +176,7 @@ describe("answer sheet for a quiz question", () => {
   });
 
   it("short text marked correct by the user", () => {
-    const sheet = questionSheet(
+    const sheet = questionReview(
       getQuestion("q-s2-1"),
       quiz("q-s2-1", { response: { type: "text", text: "With my knuckles" }, markedCorrect: true }),
     );
@@ -188,7 +188,7 @@ describe("answer sheet for a quiz question", () => {
   });
 
   it("short text skip path: I don't know shows the reference answer and no override", () => {
-    const sheet = questionSheet(getQuestion("q-s2-1"), {
+    const sheet = questionReview(getQuestion("q-s2-1"), {
       ...quiz("q-s2-1", { response: { type: "text", text: "" }, dontKnow: true }),
       confidence: null,
     });
@@ -212,8 +212,8 @@ describe("answer sheet for a quiz question", () => {
               : question.type === "text"
                 ? { type: "text" as const, text: "nothing" }
                 : { type: "truefalse" as const, value: true };
-      const rated = questionSheet(question, quiz(question.id, { response }));
-      const unrated = questionSheet(question, {
+      const rated = questionReview(question, quiz(question.id, { response }));
+      const unrated = questionReview(question, {
         ...quiz(question.id, { response }),
         confidence: null,
       });
