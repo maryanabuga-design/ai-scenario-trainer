@@ -39,11 +39,7 @@ export function ProfileView({
         <span className="type-body-strong">{DEMO_USER.name}</span>
       </div>
 
-      <DirectionPicker
-        value={direction}
-        onChange={onDirectionChange}
-        legend="Direction"
-      />
+      <DirectionPicker value={direction} onChange={onDirectionChange} legend="Direction" />
 
       <section aria-labelledby="settings-title" className="flex flex-col gap-3">
         <h2 id="settings-title" className="type-body-strong">
@@ -53,8 +49,8 @@ export function ProfileView({
           <div className="flex flex-col gap-1">
             <h3 className="type-body-strong">Reset progress</h3>
             <p className="type-small text-text-secondary">
-              Deletes your saved sessions, weak topics and created trainings on
-              this device. Your direction and uploaded files stay.
+              Deletes your saved sessions, weak topics and created trainings on this device. Your
+              direction and uploaded files stay.
             </p>
           </div>
           <div className="-ml-3">
@@ -64,8 +60,7 @@ export function ProfileView({
           </div>
           {resetDone && (
             <p role="status" className="type-small">
-              Progress reset. Your sessions, weak topics and created trainings
-              are deleted.
+              Progress reset. Your sessions, weak topics and created trainings are deleted.
             </p>
           )}
         </div>

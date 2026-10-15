@@ -52,7 +52,6 @@ describe("ArrowCircle position: the top-right corner", () => {
 
   it("is used only on cards that are positioned and give their text the clearance", () => {
     for (const file of [
-      "components/HomeView/HomeView.tsx",
       "components/ResultsView/ResultsView.tsx",
       "components/UploadSheet/UploadSheet.tsx",
     ]) {
@@ -60,6 +59,15 @@ describe("ArrowCircle position: the top-right corner", () => {
       expect(code, file).toContain("ARROW_CLEARANCE");
       expect(code, file).toMatch(/className=\{?[`"][^`"]*\brelative\b/);
     }
+  });
+});
+
+describe("the Home hero card", () => {
+  it("is the one allowed card without an ArrowCircle: its action is a Primary button", () => {
+    expect(readFileSync("components/HomeView/HomeView.tsx", "utf8")).not.toContain("ArrowCircle");
+    expect(readFileSync("DESIGN.md", "utf8")).toContain(
+      "the one allowed card without an ArrowCircle",
+    );
   });
 });
 
@@ -74,7 +82,6 @@ describe("every card arrow goes through ArrowCircle", () => {
 
   it("is used by every card that opens something", () => {
     for (const file of [
-      "components/HomeView/HomeView.tsx",
       "components/ResultsView/ResultsView.tsx",
       "components/UploadSheet/UploadSheet.tsx",
     ]) {

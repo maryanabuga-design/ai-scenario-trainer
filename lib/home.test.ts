@@ -1,18 +1,23 @@
 import { describe, expect, it } from "vitest";
+import { PASS_MARK } from "@/lib/config";
 import { DAILY_GOAL, questionsToday } from "@/lib/daily-goal";
-import { homeCounts, homeSummary, homeTiles, readiness } from "@/lib/home";
+import {
+  heroCounts,
+  heroCountsLine,
+  homeCounts,
+  homeSummary,
+  homeTiles,
+  readiness,
+  topicStrip,
+} from "@/lib/home";
 import { getItem } from "@/lib/items";
 import { modeStats } from "@/lib/part-progress";
 import type { PartRecords } from "@/lib/part-progress";
-import { modeItems } from "@/lib/parts";
+import { modeItems, trainingSections } from "@/lib/parts";
 import { questions } from "@/lib/quiz";
 import type { FinishedSession, Session } from "@/lib/session";
 
-const session = (
-  kind: Session["kind"],
-  index: number,
-  length = 20,
-): Session => ({
+const session = (kind: Session["kind"], index: number, length = 20): Session => ({
   kind,
   itemIds: Array.from({ length }, (_, i) => `s${(i % 10) + 1}`),
   index,
@@ -27,9 +32,7 @@ function finished(at: number, picks: [string, boolean][]): FinishedSession {
     itemIds: picks.map(([id]) => id),
     answers: picks.map(([itemId, right]) => {
       const item = getItem(itemId);
-      const wrong = item.options.find(
-        (option) => option.id !== item.correctOptionId,
-      )!.id;
+      const wrong = item.options.find((option) => option.id !== item.correctOptionId)!.id;
       return { itemId, optionId: right ? item.correctOptionId : wrong };
     }),
     finishedAt: at,
@@ -37,19 +40,15 @@ function finished(at: number, picks: [string, boolean][]): FinishedSession {
 }
 
 const NOW = new Date(2026, 9, 17, 15, 0);
-const sections = [
-  { id: "S1", title: "Responding to an alarm" },
-  { id: "S2", title: "Checking the route" },
-];
 const at = (day: number, hour = 10) => new Date(2026, 9, day, hour).getTime();
 const summary = (
   unfinished: Session | null,
   history: FinishedSession[] | null,
   records: PartRecords | null = null,
   now = NOW,
-) => homeSummary({ unfinished, history, records, sections, now });
+) => homeSummary({ unfinished, history, records, now });
 
-/** A finished session of `count` right answers on S1 quiz questions, ended at `time`. */
+/** A finished session of right answers ended at `time`. */
 const rightAnswers = (time: number, ids: string[]) =>
   finished(
     time,
@@ -57,71 +56,44 @@ const rightAnswers = (time: number, ids: string[]) =>
   );
 const fiveRight = ["q-s1-1", "q-s1-2", "q-s1-3", "q-s1-4", "q-s2-1"];
 
-describe("the big card", () => {
-  it("continues an unfinished session with its mode and position, before anything else", () => {
-    const weak = [finished(at(17), [["q-s1-1", false]])];
-    expect(summary(session("scenario", 6), weak).card).toEqual({
-      kind: "continue",
-      title: "Continue",
-      subtitle: "Scenario · Question 7 of 20",
-      href: "/session",
-    });
-    expect(summary(session("quiz", 0, 10), null).card.subtitle).toBe(
-      "Quiz · Question 1 of 10",
+const record = (lastPercent: number) => ({
+  lastPercent,
+  attempts: 1,
+  answeredIds: [],
+  correctIds: [],
+});
+
+describe("the topic strip", () => {
+  const states = (records: PartRecords | null) => topicStrip(records).map((s) => s.state);
+
+  it("has one segment per guide section, all not started at the start", () => {
+    const strip = topicStrip(null);
+    expect(strip.map((segment) => segment.sectionId)).toEqual(trainingSections);
+    expect(strip).toHaveLength(10);
+    expect(states(null).every((state) => state === "not started")).toBe(true);
+    expect(states({})).toEqual(states(null));
+  });
+
+  it("is in progress once any part of the section has a finished attempt", () => {
+    expect(states({ "quiz:S3:1": record(40) })[2]).toBe("in progress");
+    expect(states({ "quiz:S3:1": record(40) }).filter((s) => s !== "not started")).toHaveLength(1);
+  });
+
+  it("is done only when every part of the section, in both modes, is at or above the pass mark", () => {
+    // S1 has a scenario part and a quiz part.
+    expect(states({ "quiz:S1:1": record(100) })[0]).toBe("in progress");
+    expect(states({ "quiz:S1:1": record(100), "scenario:S1:1": record(PASS_MARK - 1) })[0]).toBe(
+      "in progress",
     );
-    expect(summary(session("repeat", 2, 5), null).card.subtitle).toBe(
-      "Repeat round · Question 3 of 5",
+    expect(states({ "quiz:S1:1": record(100), "scenario:S1:1": record(PASS_MARK) })[0]).toBe(
+      "done",
     );
+    // S3 has no scenario part: its quiz part alone decides.
+    expect(states({ "quiz:S3:1": record(PASS_MARK) })[2]).toBe("done");
   });
 
-  it("starts training when nothing is started", () => {
-    expect(summary(null, []).card).toEqual({
-      kind: "start",
-      title: "Start training",
-      subtitle: "Choose a scenario or a quiz",
-      href: "/training",
-    });
-    expect(summary(null, null).card.kind).toBe("start");
-  });
-
-  it("repeats weak topics, with the count, once something is wrong", () => {
-    const history = [
-      finished(at(17), [
-        ["q-s1-1", false],
-        ["q-s2-1", false],
-        ["q-s2-2", true],
-      ]),
-    ];
-    expect(summary(null, history).card).toEqual({
-      kind: "weak",
-      title: "Repeat weak topics",
-      subtitle: "2 topics to repeat",
-      href: "/weak-topics",
-    });
-    expect(
-      summary(null, [finished(at(17), [["q-s1-1", false]])]).card.subtitle,
-    ).toBe("1 topic to repeat");
-  });
-
-  it("otherwise starts the next recommended part, in guide order", () => {
-    const history = [rightAnswers(at(17), fiveRight)];
-    const next = summary(null, history).card;
-    expect(next).toMatchObject({
-      kind: "next",
-      title: "Next: Responding to an alarm · Part 1",
-      href: "/session",
-    });
-    expect(next.part?.id).toBe("scenario:S1:1");
-    expect(next.subtitle).toMatch(/^Scenario · \d questions?$/);
-    const records = {
-      "scenario:S1:1": {
-        lastPercent: 100,
-        attempts: 1,
-        answeredIds: [],
-        correctIds: [],
-      },
-    };
-    expect(summary(null, history, records).card.part?.id).toBe("scenario:S2:1");
+  it("feeds the summary", () => {
+    expect(summary(null, [], { "quiz:S3:1": record(100) }).strip[2].state).toBe("done");
   });
 });
 
@@ -151,13 +123,9 @@ describe("the sentence under the greeting", () => {
 
   it("4 counts the questions left to the daily goal", () => {
     const three = [rightAnswers(at(17), fiveRight.slice(0, 3))];
-    expect(summary(null, three).subtitle).toBe(
-      "2 more questions to reach today's goal.",
-    );
+    expect(summary(null, three).subtitle).toBe("2 more questions to reach today's goal.");
     const four = [rightAnswers(at(17), fiveRight.slice(0, 4))];
-    expect(summary(null, four).subtitle).toBe(
-      "1 more question to reach today's goal.",
-    );
+    expect(summary(null, four).subtitle).toBe("1 more question to reach today's goal.");
   });
 
   it("5 says ready when the goal is reached and nothing is weak", () => {
@@ -168,12 +136,10 @@ describe("the sentence under the greeting", () => {
 
   it("follows the priority order with fake data and a fake date", () => {
     const old = [rightAnswers(at(16), fiveRight)];
-    expect(summary(null, old).subtitle).toBe(
-      "5 more questions to reach today's goal.",
+    expect(summary(null, old).subtitle).toBe("5 more questions to reach today's goal.");
+    expect(summary(null, old, null, new Date(2026, 9, 16, 23, 0)).subtitle).toBe(
+      "You are ready. Try a mini-quiz to stay sharp.",
     );
-    expect(
-      summary(null, old, null, new Date(2026, 9, 16, 23, 0)).subtitle,
-    ).toBe("You are ready. Try a mini-quiz to stay sharp.");
   });
 });
 
@@ -194,9 +160,7 @@ describe("the daily goal", () => {
   });
 
   it("starts again at local midnight", () => {
-    const history = [
-      rightAnswers(new Date(2026, 9, 17, 23, 59).getTime(), fiveRight),
-    ];
+    const history = [rightAnswers(new Date(2026, 9, 17, 23, 59).getTime(), fiveRight)];
     expect(questionsToday(history, new Date(2026, 9, 17, 23, 59))).toBe(5);
     expect(questionsToday(history, new Date(2026, 9, 18, 0, 1))).toBe(0);
   });
@@ -262,18 +226,13 @@ describe("readiness", () => {
     expect(readiness([right, wrong])).toBe(Math.floor((1 / TOTAL) * 100));
     expect(readiness([right, wrong, again])).toBe(readiness([right]));
     // the order the sessions are stored in does not matter
-    expect(readiness([wrong, again, right])).toBe(
-      readiness([right, wrong, again]),
-    );
+    expect(readiness([wrong, again, right])).toBe(readiness([right, wrong, again]));
   });
 
   it("reaches 100% only when every question of both modes is right", () => {
     const every = finished(1, [
       ...modeItems("quiz").map((item): [string, boolean] => [item.id, true]),
-      ...modeItems("scenario").map((item): [string, boolean] => [
-        item.id,
-        true,
-      ]),
+      ...modeItems("scenario").map((item): [string, boolean] => [item.id, true]),
     ]);
     expect(readiness([every])).toBe(100);
     expect(readiness([finished(1, [["flood-s1", true]])])).toBe(0);
@@ -289,11 +248,7 @@ describe("readiness", () => {
     ];
     const stats = [modeStats(history, "scenario"), modeStats(history, "quiz")];
     expect(readiness(history)).toBe(
-      Math.floor(
-        ((stats[0].correct + stats[1].correct) /
-          (stats[0].total + stats[1].total)) *
-          100,
-      ),
+      Math.floor(((stats[0].correct + stats[1].correct) / (stats[0].total + stats[1].total)) * 100),
     );
   });
 });
@@ -307,8 +262,8 @@ describe("the tiles", () => {
 
   it("counts scenarios, questions, saved questions, sections and checklists", () => {
     expect(counts).toMatchObject({
-      scenarios: 2,
-      questions: questions.length,
+      scenarios: 1,
+      questions: 33,
       weakSections: 0,
       saved: 2,
       guideSections: 17,
@@ -325,9 +280,7 @@ describe("the tiles", () => {
         ["s2", true],
       ]),
     ];
-    expect(
-      homeCounts({ history, saved: null, guideSections: 17 }).weakSections,
-    ).toBe(2);
+    expect(homeCounts({ history, saved: null, guideSections: 17 }).weakSections).toBe(2);
     const cleared = [
       ...history,
       finished(2, [
@@ -335,17 +288,14 @@ describe("the tiles", () => {
         ["q-s1-1", true],
       ]),
     ];
-    expect(
-      homeCounts({ history: cleared, saved: null, guideSections: 17 })
-        .weakSections,
-    ).toBe(1);
+    expect(homeCounts({ history: cleared, saved: null, guideSections: 17 }).weakSections).toBe(1);
   });
 
   it("words each count line and sends each tile to its screen", () => {
     const tiles = homeTiles(counts);
     expect(tiles.map((tile) => [tile.title, tile.count, tile.href])).toEqual([
-      ["Scenarios", "2 scenarios", "/training?mode=scenario"],
-      ["Quiz", `${questions.length} questions`, "/training?mode=quiz"],
+      ["Scenarios", "1 scenario", "/training?mode=scenario"],
+      ["Quiz", "33 questions", "/training?mode=quiz"],
       ["Weak topics", "Nothing to repeat", "/weak-topics"],
       ["Saved questions", "2 saved", "/saved"],
       ["Guide", "17 sections", "/materials"],
@@ -354,12 +304,8 @@ describe("the tiles", () => {
   });
 
   it("says how many sections are to repeat, in the singular too", () => {
-    expect(homeTiles({ ...counts, weakSections: 3 })[2].count).toBe(
-      "3 sections to repeat",
-    );
-    expect(homeTiles({ ...counts, weakSections: 1 })[2].count).toBe(
-      "1 section to repeat",
-    );
+    expect(homeTiles({ ...counts, weakSections: 3 })[2].count).toBe("3 sections to repeat");
+    expect(homeTiles({ ...counts, weakSections: 1 })[2].count).toBe("1 section to repeat");
     expect(homeTiles({ ...counts, saved: 0 })[3].count).toBe("0 saved");
   });
 
@@ -367,5 +313,13 @@ describe("the tiles", () => {
     const tones = homeTiles(counts).map((tile) => tile.tone);
     expect(new Set(tones).size).toBe(6);
     expect(tones).not.toContain("rose");
+  });
+});
+
+describe("the hero card numbers", () => {
+  it("are the real counts of the selected guide", () => {
+    expect(heroCounts).toEqual({ scenarios: 1, questions: modeItems("quiz").length });
+    expect(heroCountsLine(1, 33)).toBe("1 scenario · 33 quiz questions");
+    expect(heroCountsLine(2, 1)).toBe("2 scenarios · 1 quiz question");
   });
 });

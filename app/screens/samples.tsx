@@ -22,10 +22,7 @@ import { TopicTile } from "@/components/TopicTile/TopicTile";
 import { ReviewQuestion } from "@/components/ReviewQuestion/ReviewQuestion";
 import { SavedView } from "@/components/SavedView/SavedView";
 import { WeakTopicsView } from "@/components/WeakTopicsView/WeakTopicsView";
-import {
-  initialChoice,
-  TrainingCreate,
-} from "@/components/TrainingCreate/TrainingCreate";
+import { initialChoice, TrainingCreate } from "@/components/TrainingCreate/TrainingCreate";
 import {
   generationSteps,
   TrainingGenerating,
@@ -41,10 +38,7 @@ import { ProfileView } from "@/components/ProfileView/ProfileView";
 import { nextStep, previousStep } from "@/lib/onboarding";
 import type { OnboardingStep } from "@/lib/onboarding";
 import { ProgressView } from "@/components/ProgressView/ProgressView";
-import {
-  ResultsActions,
-  ResultsView,
-} from "@/components/ResultsView/ResultsView";
+import { ResultsActions, ResultsView } from "@/components/ResultsView/ResultsView";
 import { notCoveredId, replyToChip } from "@/lib/chat";
 import { getItem, hintFor } from "@/lib/items";
 import { MiniQuizView } from "@/components/MiniQuizView/MiniQuizView";
@@ -87,24 +81,20 @@ export function TrainingSample({
   const parts = partsFor(current);
   const done = progress ? sampleDone(current) : { history: [], records: null };
   const unfinished: Session | null = null;
-  const topics: TrainingTopic[] = sectionsWithParts(current).map(
-    (sectionId) => {
-      const own = parts.filter((part) => part.sectionId === sectionId);
-      const next = recommendedPart(own, done.records, unfinished);
-      return {
-        sectionId,
-        title:
-          sections.find((section) => section.id === sectionId)?.title ??
-          sectionId,
-        toRepeat: weakCount(done.history, current, sectionId),
-        parts: own.map((part) => ({
-          part,
-          state: partState(part, done.records, unfinished),
-          recommended: next?.id === part.id,
-        })),
-      };
-    },
-  );
+  const topics: TrainingTopic[] = sectionsWithParts(current).map((sectionId) => {
+    const own = parts.filter((part) => part.sectionId === sectionId);
+    const next = recommendedPart(own, done.records, unfinished);
+    return {
+      sectionId,
+      title: sections.find((section) => section.id === sectionId)?.title ?? sectionId,
+      toRepeat: weakCount(done.history, current, sectionId),
+      parts: own.map((part) => ({
+        part,
+        state: partState(part, done.records, unfinished),
+        recommended: next?.id === part.id,
+      })),
+    };
+  });
   return (
     <TrainingView
       guideName="Sample evacuation guide.pdf"
@@ -123,15 +113,12 @@ function sampleDone(mode: TrainingMode) {
   const parts = partsFor(mode);
   const wrongOf = (id: string) => {
     const item = getItem(id);
-    return item.options.find((option) => option.id !== item.correctOptionId)!
-      .id;
+    return item.options.find((option) => option.id !== item.correctOptionId)!.id;
   };
   const sessions: FinishedSession[] = [];
   let records: PartRecords | null = null;
   parts
-    .filter(
-      (part) => part.n === 1 && ["S1", "S2", "S4"].includes(part.sectionId),
-    )
+    .filter((part) => part.n === 1 && ["S1", "S2", "S4"].includes(part.sectionId))
     .forEach((part, index) => {
       const answers = part.itemIds.map((itemId, position) => ({
         itemId,
@@ -177,17 +164,12 @@ export function SessionSample({
 }) {
   const { sections } = useSourceSheet();
   const item = getItem(itemId);
-  const hint = hintFor(
-    item,
-    (id) => sections.find((section) => section.id === id)?.title,
-  );
+  const hint = hintFor(item, (id) => sections.find((section) => section.id === id)?.title);
   const [open, setOpen] = useState(hintOpen);
   const [saved, setSaved] = useState(startSaved);
   const [picked, setPicked] = useState<string | null>(choice);
   const endRef = useScrollFrameToEnd(choice !== null || hintOpen);
-  const flags = Array.from({ length: total }, (_, position) =>
-    answered.includes(position),
-  );
+  const flags = Array.from({ length: total }, (_, position) => answered.includes(position));
   return (
     <>
       <div className="flex flex-col gap-4">
@@ -255,9 +237,7 @@ export function AnswerReviewSample({
       backHref="#results"
       backLabel="Back to results"
       hrefFor={() => "#review"}
-      marks={sampleAnswers.map((item) =>
-        item.correct ? "correct" : "incorrect",
-      )}
+      marks={sampleAnswers.map((item) => (item.correct ? "correct" : "incorrect"))}
       onJump={() => undefined}
       saved={false}
       onToggleSaved={() => undefined}
@@ -277,11 +257,7 @@ const sampleAnswers = [
   pick("s6", "c"),
 ];
 
-const floodAnswers = [
-  pick("flood-s1", "c"),
-  pick("flood-s2", "a"),
-  pick("flood-s3", "b"),
-];
+const floodAnswers = [pick("flood-s1", "c"), pick("flood-s2", "a"), pick("flood-s3", "b")];
 
 /** Results for the sample session; the passed variant has a single wrong answer (83%). */
 export function ResultsSample({
@@ -324,10 +300,7 @@ export function HomeSample({
   const now = new Date(2026, 9, 17, 15, 0);
   const right = (ids: string[]) =>
     ids.map((id) => ({ itemId: id, optionId: getItem(id).correctOptionId }));
-  const done = (
-    ids: string[],
-    kind: "quiz" | "scenario" = "quiz",
-  ): FinishedSession => ({
+  const done = (ids: string[], kind: "quiz" | "scenario" = "quiz"): FinishedSession => ({
     kind,
     itemIds: ids,
     answers: right(ids),
@@ -346,9 +319,7 @@ export function HomeSample({
               answers: [
                 {
                   itemId: "q-s1-1",
-                  optionId: wrongStep.options.find(
-                    (o) => o.id !== wrongStep.correctOptionId,
-                  )!.id,
+                  optionId: wrongStep.options.find((o) => o.id !== wrongStep.correctOptionId)!.id,
                 },
                 ...right(["q-s2-1", "q-s2-2"]),
               ],
@@ -365,23 +336,37 @@ export function HomeSample({
           finished: false,
         }
       : null;
+  const record = (lastPercent: number) => ({
+    lastPercent,
+    attempts: 1,
+    answeredIds: [],
+    correctIds: [],
+  });
+  // Some topics done and some in progress, so the strip shows its three states.
+  const records: PartRecords | null =
+    state === "first"
+      ? null
+      : state === "goal"
+        ? {
+            "scenario:S1:1": record(100),
+            "quiz:S1:1": record(100),
+            "quiz:S2:1": record(100),
+            "scenario:S2:1": record(100),
+            "quiz:S3:1": record(100),
+            "quiz:S4:1": record(60),
+          }
+        : { "quiz:S1:1": record(60), "quiz:S2:1": record(100) };
   return (
     <HomeView
       name={DEMO_USER.name}
-      summary={homeSummary({
-        unfinished,
-        history,
-        records: null,
-        sections: [{ id: "S1", title: "Responding to an alarm" }],
-        now,
-      })}
+      summary={homeSummary({ unfinished, history, records, now })}
       readiness={readiness(history)}
       counts={homeCounts({
         history,
         saved: state === "first" ? [] : ["s3", "q-s2-1", "q-s7-3", "s5"],
         guideSections: 17,
       })}
-      onStartPart={() => undefined}
+      guideName={sampleMaterials[0].name}
     />
   );
 }
@@ -441,11 +426,7 @@ export function OnboardingSample({ start }: { start: OnboardingStep }) {
 }
 
 /** Profile, or the reset confirmation drawn in place of the overlay. */
-export function ProfileSample({
-  confirming = false,
-}: {
-  confirming?: boolean;
-}) {
+export function ProfileSample({ confirming = false }: { confirming?: boolean }) {
   return (
     <ProfileView
       direction={defaultDirection.id}
@@ -495,19 +476,12 @@ export function MaterialTypesSample() {
   };
   return (
     <MaterialsList
-      samples={[
-        ...sampleMaterials.filter((material) => material.status === "ready"),
-        link,
-      ]}
+      samples={[...sampleMaterials.filter((material) => material.status === "ready"), link]}
     />
   );
 }
 
-export function UploadSample({
-  state,
-}: {
-  state: "choose" | "progress" | "failed";
-}) {
+export function UploadSample({ state }: { state: "choose" | "progress" | "failed" }) {
   const sample = state === "failed" ? sampleFiles[2] : sampleFiles[0];
   const result = materialFromSample(sample, new Date("2026-10-08"));
   const file = { name: sample.name, size: sample.size };
@@ -542,16 +516,10 @@ export function UploadSample({
 
 /** A ready material without a prepared scenario. */
 export function NotesMaterialSample() {
-  const material = sampleMaterials.find(
-    (candidate) => candidate.id === "shift-notes",
-  );
+  const material = sampleMaterials.find((candidate) => candidate.id === "shift-notes");
   if (!material) return null;
   return (
-    <MaterialView
-      material={material}
-      sections={material.sections ?? []}
-      sectionsOpenable={false}
-    />
+    <MaterialView material={material} sections={material.sections ?? []} sectionsOpenable={false} />
   );
 }
 
@@ -622,9 +590,7 @@ export function FloodResultsSample() {
 /** The Weak topics page with the sample answers, or empty. */
 export function WeakTopicsSample({ empty = false }: { empty?: boolean }) {
   const topics = empty ? [] : weakTopics(currentWeakItems(sampleAnswers));
-  const [selected, setSelected] = useState(() =>
-    topics.map((topic) => topic.sectionId),
-  );
+  const [selected, setSelected] = useState(() => topics.map((topic) => topic.sectionId));
   return (
     <WeakTopicsView
       topics={topics}
@@ -633,9 +599,7 @@ export function WeakTopicsSample({ empty = false }: { empty?: boolean }) {
       backLabel="Back to Home"
       onToggle={(id) =>
         setSelected((current) =>
-          current.includes(id)
-            ? current.filter((item) => item !== id)
-            : [...current, id],
+          current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
         )
       }
       onRepeat={() => undefined}
@@ -680,17 +644,11 @@ function ButtonStates() {
           <div className="grid grid-cols-2 gap-3">
             {buttonStates.map((state) => (
               <div key={state} className="flex flex-col items-stretch gap-1">
-                <span className="type-caption text-text-secondary">
-                  {state}
-                </span>
+                <span className="type-caption text-text-secondary">{state}</span>
                 <ButtonPreview
                   variant={variant}
                   state={state}
-                  icon={
-                    variant === "tertiary" && state === "default"
-                      ? Sparkles
-                      : undefined
-                  }
+                  icon={variant === "tertiary" && state === "default" ? Sparkles : undefined}
                 >
                   {variant === "tertiary" ? "Ask AI" : "Continue"}
                 </ButtonPreview>
@@ -709,8 +667,8 @@ export function ButtonsSample() {
     <div className="flex flex-col gap-6">
       <h1 className="type-page-title">Buttons</h1>
       <p className="type-small text-text-secondary">
-        Primary, secondary and tertiary, in the default, pressed, disabled and
-        keyboard focus states.
+        Primary, secondary and tertiary, in the default, pressed, disabled and keyboard focus
+        states.
       </p>
       <section className="flex flex-col gap-3">
         <h2 className="type-item-title">On the page</h2>
@@ -726,16 +684,7 @@ export function ButtonsSample() {
 
 /** Every chip tone and status, on the page and on a card, without strokes. */
 export function ChipTonesSample() {
-  const tones = [
-    "yellow",
-    "peach",
-    "blue",
-    "lilac",
-    "green",
-    "rose",
-    "sand",
-    "primary",
-  ] as const;
+  const tones = ["yellow", "peach", "blue", "lilac", "green", "rose", "sand", "primary"] as const;
   const statuses = ["ready", "processing", "failed"] as const;
   const group = (
     <div className="flex flex-col gap-4">
@@ -798,8 +747,8 @@ export function PaletteSample() {
     <div className="flex flex-col gap-6">
       <h1 className="type-page-title">Pastel palette</h1>
       <p className="type-small text-text-secondary">
-        One palette for chips and icon tiles. ΔE is the CIE76 distance from the
-        page, a card and a selected card (at least 6).
+        One palette for chips and icon tiles. ΔE is the CIE76 distance from the page, a card and a
+        selected card (at least 6).
       </p>
       <ul className="flex flex-col gap-3">
         {tones.map(([tone, hex, delta]) => (
@@ -814,12 +763,9 @@ export function PaletteSample() {
             />
             <span className="flex flex-col">
               <span className="type-body-strong">
-                {tone}{" "}
-                <span className="type-small text-text-secondary">{hex}</span>
+                {tone} <span className="type-small text-text-secondary">{hex}</span>
               </span>
-              <span className="type-small text-text-secondary tabular-nums">
-                ΔE {delta}
-              </span>
+              <span className="type-small text-text-secondary tabular-nums">ΔE {delta}</span>
             </span>
           </li>
         ))}
@@ -843,13 +789,16 @@ export function Media3DSample() {
         <Media3D variant="step" />
       </section>
       <section className="flex flex-col items-start gap-2">
-        <h2 className="type-label text-text-secondary">
-          icon (the flat icon is the fallback)
-        </h2>
-        <Media3D
-          variant="icon"
-          fallback={<TopicTile sectionId="S2" icon={topicIcon("S2")} />}
-        />
+        <h2 className="type-label text-text-secondary">icon (the flat icon is the fallback)</h2>
+        <Media3D variant="icon" fallback={<TopicTile sectionId="S2" icon={topicIcon("S2")} />} />
+      </section>
+      <section className="flex flex-col items-start gap-2">
+        <h2 className="type-label text-text-secondary">tile (80px, Home hero card)</h2>
+        <Media3D variant="tile" />
+      </section>
+      <section className="flex flex-col items-start gap-2">
+        <h2 className="type-label text-text-secondary">row (72px, Mini-quiz row)</h2>
+        <Media3D variant="row" />
       </section>
       <section className="flex flex-col gap-2 rounded-card bg-card p-4 shadow-(--card-shadow)">
         <h2 className="type-label text-text-secondary">toggle</h2>
@@ -878,8 +827,8 @@ export function ResultsButtonsSample() {
     <div className="flex flex-col gap-6">
       <h1 className="type-page-title">Results buttons</h1>
       <p className="type-small text-text-secondary">
-        One row when both labels fit (Review answers left, Repeat weak topics
-        right); otherwise stacked with Repeat weak topics on top.
+        One row when both labels fit (Review answers left, Repeat weak topics right); otherwise
+        stacked with Repeat weak topics on top.
       </p>
       {widths.map(([label, width]) => (
         <section key={label} className="flex flex-col gap-2">

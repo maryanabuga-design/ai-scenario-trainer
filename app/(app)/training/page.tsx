@@ -18,7 +18,7 @@ import {
 import { partsFor, sectionsWithParts } from "@/lib/parts";
 import type { Part, TrainingMode } from "@/lib/parts";
 import { scenario } from "@/lib/scenario";
-import { startSession, useHistory, useSession } from "@/lib/session";
+import { sessionLabel, startSession, useHistory, useSession } from "@/lib/session";
 
 const guideName =
   sampleMaterials.find((material) => material.id === "evacuation-guide")?.name ?? "";
@@ -77,6 +77,11 @@ function Training({ initial }: { initial: TrainingMode }) {
       topics={topics}
       records={records}
       onStartPart={start}
+      resume={
+        unfinished
+          ? `${sessionLabel(unfinished)} · Question ${unfinished.index + 1} of ${unfinished.itemIds.length}`
+          : undefined
+      }
     />
   );
 }

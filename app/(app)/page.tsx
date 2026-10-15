@@ -7,17 +7,14 @@ import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { systemClock } from "@/lib/daily-goal";
 import { homeCounts, homeSummary, readiness } from "@/lib/home";
 import { needsOnboarding, onboardingHref } from "@/lib/onboarding";
+import { sampleMaterials } from "@/lib/materials";
 import { usePartRecords } from "@/lib/part-progress";
-import type { Part } from "@/lib/parts";
 import { useSaved } from "@/lib/saved";
-import { scenario } from "@/lib/scenario";
-import {
-  startSession,
-  useHistory,
-  useProfile,
-  useSession,
-} from "@/lib/session";
+import { useHistory, useProfile, useSession } from "@/lib/session";
 import { DEMO_USER } from "@/lib/user";
+
+const guideName =
+  sampleMaterials.find((material) => material.id === "evacuation-guide")?.name ?? "";
 
 export default function Home() {
   const router = useRouter();
@@ -46,15 +43,6 @@ export default function Home() {
 
   const unfinished = session && !session.finished ? session : null;
 
-  function startPart(part: Part) {
-    startSession(part.mode, part.itemIds, {
-      scenarioId: part.mode === "scenario" ? scenario.id : undefined,
-      partId: part.id,
-      returnTo: "/",
-    });
-    router.push("/session");
-  }
-
   return (
     <HomeView
       name={DEMO_USER.name}
@@ -62,12 +50,11 @@ export default function Home() {
         unfinished,
         history,
         records,
-        sections,
         now: systemClock(),
       })}
       readiness={readiness(history)}
       counts={homeCounts({ history, saved, guideSections: sections.length })}
-      onStartPart={startPart}
+      guideName={guideName}
     />
   );
 }

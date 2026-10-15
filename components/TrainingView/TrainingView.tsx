@@ -61,6 +61,7 @@ export function TrainingView({
   topics,
   records,
   onStartPart,
+  resume,
 }: {
   guideName: string;
   mode: TrainingMode;
@@ -69,6 +70,8 @@ export function TrainingView({
   topics: TrainingTopic[];
   records: PartRecords | null;
   onStartPart: (part: Part) => void;
+  /** An unfinished session: the one place Home sends people to pick it up again. */
+  resume?: string;
 }) {
   return (
     <div className="flex flex-col gap-4 pb-6">
@@ -77,6 +80,19 @@ export function TrainingView({
         <h1 className="type-page-title">Training</h1>
         <p className="type-small text-text-secondary">{guideName}</p>
       </header>
+
+      {resume && (
+        <Link
+          href="/session"
+          className="flex min-h-16 items-center gap-3 rounded-card bg-card p-4 shadow-(--card-shadow) has-focus-visible:outline-2"
+        >
+          <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <span className="type-body-strong">Continue your session</span>
+            <span className="type-small text-text-secondary">{resume}</span>
+          </span>
+          <Chevron />
+        </Link>
+      )}
 
       <section
         aria-label="Your progress"

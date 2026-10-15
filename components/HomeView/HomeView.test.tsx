@@ -3,12 +3,13 @@ import { describe, expect, it } from "vitest";
 import { HomeView } from "@/components/HomeView/HomeView";
 import { getItem } from "@/lib/items";
 import { homeCounts, homeSummary } from "@/lib/home";
+import type { PartRecords } from "@/lib/part-progress";
 import type { FinishedSession, Session } from "@/lib/session";
 import { DEMO_USER } from "@/lib/user";
 
 const counts = homeCounts({ history: [], saved: [], guideSections: 17 });
 const NOW = new Date(2026, 9, 17, 15, 0);
-const sections = [{ id: "S1", title: "Responding to an alarm" }];
+const guideName = "Sample evacuation guide.pdf";
 
 const unfinished: Session = {
   kind: "scenario",
@@ -24,9 +25,7 @@ function finishedAt(time: number, picks: [string, boolean][]): FinishedSession {
     itemIds: picks.map(([id]) => id),
     answers: picks.map(([itemId, right]) => {
       const item = getItem(itemId);
-      const wrong = item.options.find(
-        (option) => option.id !== item.correctOptionId,
-      )!.id;
+      const wrong = item.options.find((option) => option.id !== item.correctOptionId)!.id;
       return { itemId, optionId: right ? item.correctOptionId : wrong };
     }),
     finishedAt: time,
@@ -43,15 +42,27 @@ const states = {
     history: [
       finishedAt(
         today,
-        ["q-s1-1", "q-s1-2", "q-s1-3", "q-s1-4", "q-s2-1"].map(
-          (id): [string, boolean] => [id, true],
-        ),
+        ["q-s1-1", "q-s1-2", "q-s1-3", "q-s1-4", "q-s2-1"].map((id): [string, boolean] => [
+          id,
+          true,
+        ]),
       ),
     ],
   },
 };
 
-function render(state: keyof typeof states = "first", readiness = 0) {
+const done = (percent: number) => ({
+  lastPercent: percent,
+  attempts: 1,
+  answeredIds: [],
+  correctIds: [],
+});
+
+function render(
+  state: keyof typeof states = "first",
+  readiness = 0,
+  records: PartRecords | null = null,
+) {
   const { open, history } = states[state];
   return renderToStaticMarkup(
     <HomeView
@@ -59,13 +70,12 @@ function render(state: keyof typeof states = "first", readiness = 0) {
       summary={homeSummary({
         unfinished: open,
         history,
-        records: null,
-        sections,
+        records,
         now: NOW,
       })}
       readiness={readiness}
       counts={counts}
-      onStartPart={() => undefined}
+      guideName={guideName}
     />,
   );
 }
@@ -76,9 +86,7 @@ describe("Home layout", () => {
   it("has the greeting with the demo name and a sentence on the left, the profile button on the right", () => {
     expect(html).toContain(`>Hi, ${DEMO_USER.name}</h1>`);
     expect(DEMO_USER.name).toBe("Maryana");
-    expect(html.indexOf(">Hi, ")).toBeLessThan(
-      html.indexOf("Start with your first scenario."),
-    );
+    expect(html.indexOf(">Hi, ")).toBeLessThan(html.indexOf("Start with your first scenario."));
     expect(html.indexOf("Start with your first scenario.")).toBeLessThan(
       html.indexOf('aria-label="Profile"'),
     );
@@ -89,7 +97,7 @@ describe("Home layout", () => {
   it("goes greeting, big card, six tiles, Mini-quiz, How it works", () => {
     const order = [
       'aria-label="Profile"',
-      "Start training",
+      "Your training",
       ">Scenarios<",
       ">Quick checklists<",
       "Mini-quiz",
@@ -113,84 +121,115 @@ describe("the sentence under the greeting", () => {
     expect(render("first")).toContain("Start with your first scenario.");
     expect(render("continue")).toContain("You stopped at question 7 of 20.");
     expect(render("weak")).toContain("1 topic needs another look.");
-    expect(render("goal")).toContain(
-      "You are ready. Try a mini-quiz to stay sharp.",
-    );
+    expect(render("goal")).toContain("You are ready. Try a mini-quiz to stay sharp.");
   });
 });
 
-describe("the big card", () => {
-  it("says Start training and opens the Training screen when nothing is started", () => {
-    const html = render();
-    expect(html).toContain("Start training");
-    expect(html).toContain("Choose a scenario or a quiz");
-    expect(html).toContain('href="/training"');
-    expect(html).not.toContain(">Continue<");
+describe("the hero card", () => {
+  /** The hero card: from its section to the end of its markup. */
+  const hero = (html: string) =>
+    html.slice(html.indexOf('<section aria-label="Your training"'), html.indexOf("</section>"));
+
+  it("always says Start training and opens Training, in every progress state", () => {
+    for (const state of Object.keys(states) as (keyof typeof states)[]) {
+      const card = hero(render(state));
+      expect(card, state).toContain("Start training");
+      expect(card, state).toContain('href="/training"');
+      expect(card, state).not.toMatch(/Continue|Repeat weak topics|Next:/);
+      expect(card, state).not.toContain("border-arrow-stroke bg-surface shadow");
+    }
+    // no ArrowCircle on this card
+    expect(hero(render())).not.toContain("arrow-shadow");
   });
 
-  it("says Continue with the mode and position, and resumes the session", () => {
-    const html = render("continue");
-    expect(html).toContain(">Continue<");
-    expect(html).toContain("Scenario · Question 7 of 20");
-    expect(html).toContain('href="/session"');
-    expect(html).not.toContain("Start training");
+  it("has the nested sand panel in the card colour, with 8px and 16px padding", () => {
+    const card = hero(render());
+    expect(card).toContain("rounded-[28px] bg-card p-2");
+    expect(card).toContain("rounded-[22px] bg-secondary-sand p-4");
   });
 
-  it("says Repeat weak topics and opens the Weak topics page when something is wrong", () => {
-    const html = render("weak");
-    const card = html.slice(
-      html.lastIndexOf("<a ", html.indexOf(">Repeat weak topics<")),
-    );
-    expect(card).toContain('href="/weak-topics"');
-    expect(card).toContain("1 topic to repeat");
+  it("has the white pill with Your training and the number of topics", () => {
+    const card = hero(render());
+    expect(card).toContain("h-10");
+    expect(card).toContain("rounded-full bg-surface");
+    expect(card).toContain(">Your training<");
+    expect(card).toContain("10 topics");
   });
 
-  it("names the next part and starts it with a button, not a link, when all is right", () => {
-    const html = render("goal");
-    const start = html.lastIndexOf(
-      "<button",
-      html.indexOf(">Next: Responding to an alarm · Part 1<"),
-    );
-    expect(start).toBeGreaterThan(html.indexOf("</header>"));
-    expect(html.slice(start, start + 200)).toContain('type="button"');
-    expect(html).not.toMatch(/>(Start training|Continue|Repeat weak topics)</);
+  it("shows the guide name, the real counts and the 3D tile placeholder", () => {
+    const card = hero(render());
+    expect(card).toContain(`>${guideName}</h2>`);
+    expect(card).toContain("1 scenario · 33 quiz questions");
+    expect(card).toContain('data-media3d="placeholder"');
+    expect(card).toContain("h-20 w-20");
+    expect(card).toContain(">3D<");
   });
 
-  it("has an ArrowCircle top-right and a large radius", () => {
-    const html = render();
-    const card = html.slice(html.indexOf("<a", html.indexOf("</header>")));
-    expect(card).toContain("border-arrow-stroke");
-    expect(card).toContain("rounded-[28px] bg-card");
-    expect(card).toContain("pr-14");
+  it("has a strip of 10 segments with the right state colours", () => {
+    const records: PartRecords = {
+      "quiz:S3:1": done(100),
+      "quiz:S4:1": done(40),
+    };
+    const card = hero(render("first", 0, records));
+    const segments = card.match(/<li data-state="[^"]+"[^>]*>/g) ?? [];
+    expect(segments).toHaveLength(10);
+    expect(segments.filter((s) => s.includes('data-state="done"'))).toHaveLength(1);
+    expect(segments.filter((s) => s.includes('data-state="in progress"'))).toHaveLength(1);
+    expect(segments.filter((s) => s.includes('data-state="not started"'))).toHaveLength(8);
+    expect(segments[2]).toContain("bg-primary");
+    expect(segments[3]).toContain("bg-olive-tint");
+    expect(segments[0]).toContain("bg-arrow-stroke");
+    segments.forEach((segment) => expect(segment).toContain("h-1.5 flex-1 rounded-[3px]"));
+    expect(card).toContain('<ul aria-label="Topics" class="flex gap-1">');
   });
 
-  it("shows the daily goal as a line and a thin bar", () => {
-    const first = render();
-    expect(first).toContain("Today: 0/5 questions");
-    expect(first).toMatch(/role="progressbar"[^>]*aria-valuenow="0"/);
-    const done = render("goal");
-    expect(done).toContain("Today: 5/5 questions");
-    expect(done).toContain("width:100%");
-    expect(render("weak")).toContain("Today: 1/5 questions");
-    expect(render("weak")).toContain("width:20%");
+  it("shows the captions Topics x/10 and Today x/5", () => {
+    const first = hero(render());
+    expect(first).toContain("Topics 0/10");
+    expect(first).toContain("Today 0/5");
+    const later = hero(render("goal", 11, { "quiz:S3:1": done(100) }));
+    expect(later).toContain("Topics 1/10");
+    expect(later).toContain("Today 5/5");
+    expect(hero(render("weak"))).toContain("Today 1/5");
   });
 
-  it("shows the readiness ring: 0% at the start, the percentage after", () => {
-    const start = render();
-    expect(start).toContain('aria-label="Readiness 0%"');
-    expect(start).toContain(">0%<");
-    const later = render("first", 32);
-    expect(later).toContain('aria-label="Readiness 32%"');
-    expect(later).toContain(">32%<");
+  it("has the divider, a full-width Primary button and the square readiness ring that opens Progress", () => {
+    const card = hero(render("first", 32));
+    expect(card).toContain("<hr");
+    expect(card).toContain("h-[52px]");
+    expect(card).toContain("h-[52px] bg-primary");
+    const square = card.slice(card.lastIndexOf("<a ", card.indexOf('href="/progress"')));
+    expect(square).toContain('aria-label="Readiness 32%, open Progress"');
+    expect(square).toContain("h-[52px] w-[52px]");
+    expect(square).toContain("border border-arrow-stroke bg-surface");
+    expect(square).toContain(">32%<");
+    expect(square).toContain('aria-label="Readiness 32%"');
+  });
+
+  it("makes the empty area of the card open Training through one stretched link", () => {
+    const card = hero(render());
+    expect(card).toContain("after:absolute after:inset-0");
+    expect(card.match(/after:absolute/g)).toHaveLength(1);
+    expect(card).toContain("relative z-10");
+  });
+
+  it("shows 0% readiness at the start and the percentage after", () => {
+    expect(hero(render())).toContain(">0%<");
+    expect(hero(render("goal", 11))).toContain(">11%<");
   });
 });
 
 describe("the tiles", () => {
   const html = render();
 
+  it("show the flat icon fallback, not a 3D placeholder, until pictures exist", () => {
+    const grid = html.slice(html.indexOf("grid-cols-2"), html.lastIndexOf("</ul>"));
+    expect(grid).not.toContain("data-media3d");
+  });
+
   it("are six cards in a two-column grid, each with its own pastel circle and a count line", () => {
     expect(html).toContain("grid grid-cols-2 gap-3");
-    const grid = html.slice(html.indexOf("grid-cols-2"), html.indexOf("</ul>"));
+    const grid = html.slice(html.indexOf("grid-cols-2"), html.lastIndexOf("</ul>"));
     expect(grid.match(/<a /g)).toHaveLength(6);
     for (const tone of ["yellow", "blue", "peach", "lilac", "green", "sand"]) {
       expect(grid).toContain(`bg-pastel-${tone}`);
@@ -202,8 +241,8 @@ describe("the tiles", () => {
 
   it("show the counts and go to the right screen", () => {
     for (const [title, count, href] of [
-      ["Scenarios", "2 scenarios", "/training?mode=scenario"],
-      ["Quiz", `${counts.questions} questions`, "/training?mode=quiz"],
+      ["Scenarios", "1 scenario", "/training?mode=scenario"],
+      ["Quiz", "33 questions", "/training?mode=quiz"],
       ["Weak topics", "Nothing to repeat", "/weak-topics"],
       ["Saved questions", "0 saved", "/saved"],
       ["Guide", "17 sections", "/materials"],
@@ -224,9 +263,23 @@ describe("the Mini-quiz row", () => {
     const start = html.lastIndexOf("<a ", html.indexOf(">Mini-quiz<"));
     const row = html.slice(start, html.indexOf("</a>", start));
     expect(row).toContain('href="/mini-quiz?from=home"');
-    expect(row).toContain("Choose topics and how many questions");
+    expect(row).toContain("Pick topics and how many questions");
     expect(row).toContain("lucide-chevron-right");
+    expect(row).toContain("min-h-[104px]");
     expect(row).toContain("rounded-card bg-card");
+  });
+
+  it("has a 72px 3D row icon placeholder on the left, the title, the description and the chevron on the right", () => {
+    const start = html.lastIndexOf("<a ", html.indexOf(">Mini-quiz<"));
+    const row = html.slice(start, html.indexOf("</a>", start));
+    expect(row).toContain('data-media3d="placeholder"');
+    expect(row).toContain("h-[72px] w-[72px]");
+    expect(row).toContain(">3D<");
+    const order = ["h-[72px] w-[72px]", ">Mini-quiz<", "Pick topics", "lucide-chevron-right"].map(
+      (text) => row.indexOf(text),
+    );
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+    expect(row).toContain("line-clamp-2");
   });
 
   it("no longer starts an instant session of 5 questions", () => {

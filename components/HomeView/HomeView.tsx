@@ -11,19 +11,15 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
-import {
-  ARROW_CLEARANCE,
-  ArrowCircle,
-} from "@/components/ArrowCircle/ArrowCircle";
-import { ButtonLink } from "@/components/Button/Button";
+import { ButtonLink, buttonClasses } from "@/components/Button/Button";
+import { Chip } from "@/components/Chip/Chip";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { Media3D } from "@/components/Media3D/Media3D";
 import { Ring } from "@/components/Ring/Ring";
 import { TileIcon } from "@/components/TileIcon/TileIcon";
-import { homeTiles } from "@/lib/home";
-import type { HomeCounts, HomeSummary, HomeTileId } from "@/lib/home";
+import { heroCounts, heroCountsLine, homeImages, homeTiles } from "@/lib/home";
+import type { HomeCounts, HomeSummary, HomeTileId, SegmentState } from "@/lib/home";
 import { onboardingHref } from "@/lib/onboarding";
-import type { Part } from "@/lib/parts";
 
 const miniQuizPath = "/mini-quiz?from=home";
 
@@ -36,61 +32,34 @@ const tileIcons: Record<HomeTileId, LucideIcon> = {
   checklists: ClipboardCheck,
 };
 
-const cardClass =
-  "flex min-h-36 w-full flex-col justify-between gap-4 rounded-[28px] bg-card p-5 text-left shadow-(--card-shadow) has-focus-visible:outline-2";
+const segmentTones: Record<SegmentState, string> = {
+  done: "bg-primary",
+  "in progress": "bg-olive-tint",
+  "not started": "bg-arrow-stroke",
+};
 
 /**
- * Home, the learner view: a greeting with one sentence and the profile button, the big card with
- * one main action, the daily goal and the readiness ring, six tiles and the Mini-quiz.
- * Nothing from Progress is repeated here.
+ * Home, the learner view: a greeting with one sentence and the profile button, the hero card
+ * "Your training" (it always says Start training and opens Training), six tiles and the Mini-quiz
+ * row. Nothing from Progress is repeated here.
  */
 export function HomeView({
   name,
   summary,
   readiness,
   counts,
-  onStartPart,
+  guideName,
 }: {
   name: string;
   summary: HomeSummary;
   /** The readiness percentage: 0 when nothing is done. */
   readiness: number;
   counts: HomeCounts;
-  /** Starts the part the "Next" card names, then opens the session. */
-  onStartPart: (part: Part) => void;
+  guideName: string;
 }) {
-  const { card, goal } = summary;
+  const { goal, strip } = summary;
   const tiles = homeTiles(counts);
-  const body = (
-    <>
-      <ArrowCircle />
-      <span className={`flex flex-col gap-1 ${ARROW_CLEARANCE.md}`}>
-        <span className="type-card-title">{card.title}</span>
-        <span className="type-small text-text-secondary">{card.subtitle}</span>
-      </span>
-      <span className="flex items-end justify-between gap-4">
-        <span className="flex min-w-0 flex-1 flex-col gap-1.5">
-          <span className="type-small">
-            Today: {goal.done}/{goal.goal} questions
-          </span>
-          <span
-            role="progressbar"
-            aria-label="Daily goal"
-            aria-valuemin={0}
-            aria-valuemax={goal.goal}
-            aria-valuenow={goal.done}
-            className="h-1.5 w-full max-w-40 overflow-hidden rounded-full bg-secondary-sand-pressed"
-          >
-            <span
-              className="block h-full rounded-full bg-primary"
-              style={{ width: `${(goal.done / goal.goal) * 100}%` }}
-            />
-          </span>
-        </span>
-        <Ring percent={readiness} size={56} label={`Readiness ${readiness}%`} />
-      </span>
-    </>
-  );
+  const topicsDone = strip.filter((segment) => segment.state === "done").length;
 
   return (
     <div className="flex flex-col gap-4 pb-4">
@@ -108,19 +77,68 @@ export function HomeView({
         </Link>
       </header>
 
-      {card.part ? (
-        <button
-          type="button"
-          onClick={() => onStartPart(card.part!)}
-          className={`relative ${cardClass}`}
-        >
-          {body}
-        </button>
-      ) : (
-        <Link href={card.href} className={`relative ${cardClass}`}>
-          {body}
-        </Link>
-      )}
+      <section
+        aria-label="Your training"
+        className="relative rounded-[28px] bg-card p-2 shadow-(--card-shadow) has-focus-visible:outline-2"
+      >
+        <div className="flex flex-col gap-4 rounded-[22px] bg-secondary-sand p-4">
+          <div className="flex h-10 items-center justify-between gap-2 rounded-full bg-surface pr-1.5 pl-4">
+            <span className="type-body-strong">Your training</span>
+            <Chip tone="green" size="caption">
+              {strip.length} topics
+            </Chip>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <h2 className="type-card-title">{guideName}</h2>
+              <p className="type-small text-text-secondary">
+                {heroCountsLine(heroCounts.scenarios, heroCounts.questions)}
+              </p>
+            </div>
+            <Media3D variant="tile" src={homeImages.heroTraining} />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <ul aria-label="Topics" className="flex gap-1">
+              {strip.map((segment) => (
+                <li
+                  key={segment.sectionId}
+                  data-state={segment.state}
+                  title={`${segment.sectionId}: ${segment.state}`}
+                  className={`h-1.5 flex-1 rounded-[3px] ${segmentTones[segment.state]}`}
+                />
+              ))}
+            </ul>
+            <p className="type-caption flex justify-between text-text-secondary">
+              <span>
+                Topics {topicsDone}/{strip.length}
+              </span>
+              <span>
+                Today {goal.done}/{goal.goal}
+              </span>
+            </p>
+          </div>
+
+          <hr className="border-t border-arrow-stroke" />
+
+          <div className="flex items-center gap-3">
+            <Link
+              href="/training"
+              className={`${buttonClasses({ variant: "primary" })} after:absolute after:inset-0 after:rounded-[28px]`}
+            >
+              Start training
+            </Link>
+            <Link
+              href="/progress"
+              aria-label={`Readiness ${readiness}%, open Progress`}
+              className="relative z-10 flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-button border border-arrow-stroke bg-surface"
+            >
+              <Ring percent={readiness} size={40} label={`Readiness ${readiness}%`} />
+            </Link>
+          </div>
+        </div>
+      </section>
 
       <ul className="grid grid-cols-2 gap-3">
         {tiles.map((tile) => (
@@ -131,15 +149,11 @@ export function HomeView({
             >
               <Media3D
                 variant="icon"
-                fallback={
-                  <TileIcon icon={tileIcons[tile.id]} tone={tile.tone} />
-                }
+                fallback={<TileIcon icon={tileIcons[tile.id]} tone={tile.tone} />}
               />
               <span className="flex flex-col gap-0.5">
                 <span className="type-body-strong">{tile.title}</span>
-                <span className="type-small text-text-secondary">
-                  {tile.count}
-                </span>
+                <span className="type-small text-text-secondary">{tile.count}</span>
               </span>
             </Link>
           </li>
@@ -148,12 +162,13 @@ export function HomeView({
 
       <Link
         href={miniQuizPath}
-        className="flex min-h-16 items-center gap-3 rounded-card bg-card p-4 shadow-(--card-shadow) has-focus-visible:outline-2"
+        className="flex min-h-[104px] items-center gap-3 rounded-card bg-card p-4 shadow-(--card-shadow) has-focus-visible:outline-2"
       >
+        <Media3D variant="row" src={homeImages.iconMiniQuiz} />
         <span className="flex min-w-0 flex-1 flex-col gap-0.5">
           <span className="type-body-strong">Mini-quiz</span>
-          <span className="type-small text-text-secondary">
-            Choose topics and how many questions
+          <span className="type-small line-clamp-2 text-text-secondary">
+            Pick topics and how many questions
           </span>
         </span>
         <Chevron />

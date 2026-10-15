@@ -18,8 +18,6 @@ describe("Profile", () => {
       />,
     );
     expect(html).toContain(`>${DEMO_USER.name}</span>`);
-    expect(html.indexOf(">Profile</h1>")).toBeLessThan(
-      html.indexOf(DEMO_USER.name),
-    );
+    expect(html.indexOf(">Profile</h1>")).toBeLessThan(html.indexOf(DEMO_USER.name));
   });
 });
