@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/Button/Button";
+import { Button, ButtonLink } from "@/components/Button/Button";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { DirectionPicker } from "@/components/DirectionPicker/DirectionPicker";
 import { FooterNote } from "@/components/Footer/Footer";
@@ -14,6 +14,7 @@ export function ProfileView({
   onReset,
   resetDone,
   dialogInline = false,
+  savedCount = 0,
 }: {
   direction: string;
   onDirectionChange: (id: string) => void;
@@ -23,10 +24,18 @@ export function ProfileView({
   onReset: () => void;
   resetDone: boolean;
   dialogInline?: boolean;
+  /** How many questions are saved: shown on the temporary link to the Saved screen. */
+  savedCount?: number;
 }) {
   return (
     <div className="flex flex-col gap-8">
       <h1 className="type-page-title">Profile</h1>
+
+      <div className="-ml-3 self-start">
+        <ButtonLink href="/saved" variant="tertiary">
+          Saved questions ({savedCount})
+        </ButtonLink>
+      </div>
 
       <DirectionPicker value={direction} onChange={onDirectionChange} legend="Direction" />
 

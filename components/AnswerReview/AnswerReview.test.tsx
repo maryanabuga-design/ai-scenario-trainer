@@ -20,6 +20,8 @@ function render(itemId: string, choice: string | null, position = 2, total = 5) 
           hrefFor={(next) => `/session/results/review/${next}`}
           marks={["correct", "incorrect", "correct", "correct", "incorrect"]}
           onJump={() => undefined}
+          saved={false}
+          onToggleSaved={() => undefined}
         />
       </AskAiProvider>
     </SourceSheetProvider>,
@@ -149,5 +151,9 @@ describe("Answer review", () => {
     expect(squares.match(/lucide-x/g)).toHaveLength(2);
     expect(squares.match(/bg-correct-bg/g)).toHaveLength(3);
     expect(squares.match(/bg-wrong-bg/g)).toHaveLength(2);
+  });
+
+  it("has the bookmark on the question, to save it from the review", () => {
+    expect(render("s1", "d")).toContain('aria-label="Save question"');
   });
 });

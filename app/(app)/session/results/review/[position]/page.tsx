@@ -6,10 +6,12 @@ import { AnswerReview } from "@/components/AnswerReview/AnswerReview";
 import { AskAiProvider } from "@/components/AskAi/AskAi";
 import { NoResults } from "@/components/NoResults/NoResults";
 import { findItem } from "@/lib/items";
+import { isSaved, toggleSaved, useSaved } from "@/lib/saved";
 import { answerFor, isValidSession, useSession } from "@/lib/session";
 
 function Review() {
   const session = useSession();
+  const saved = useSaved();
   const router = useRouter();
   const params = useParams<{ position: string }>();
 
@@ -36,6 +38,8 @@ function Review() {
             ? "correct"
             : "incorrect",
         )}
+        saved={isSaved(saved, item.id)}
+        onToggleSaved={() => toggleSaved(item.id)}
         onJump={(index) => router.push(`/session/results/review/${index + 1}`)}
       />
     </AskAiProvider>

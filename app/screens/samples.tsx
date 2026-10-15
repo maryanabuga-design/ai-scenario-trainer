@@ -20,6 +20,8 @@ import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { HomeView } from "@/components/HomeView/HomeView";
 import { TopicCard } from "@/components/TopicCard/TopicCard";
 import { TopicTile } from "@/components/TopicTile/TopicTile";
+import { ReviewQuestion } from "@/components/ReviewQuestion/ReviewQuestion";
+import { SavedView } from "@/components/SavedView/SavedView";
 import { WeakTopicsView } from "@/components/WeakTopicsView/WeakTopicsView";
 import { initialChoice, TrainingCreate } from "@/components/TrainingCreate/TrainingCreate";
 import {
@@ -189,6 +191,8 @@ export function AnswerReviewSample({
       hrefFor={() => "#review"}
       marks={sampleAnswers.map((item) => (item.correct ? "correct" : "incorrect"))}
       onJump={() => undefined}
+      saved={false}
+      onToggleSaved={() => undefined}
     />
   );
 }
@@ -762,6 +766,31 @@ export function ResultsButtonsSample() {
           <ResultsActions canRepeat={false} onRepeat={() => undefined} />
         </div>
       </section>
+    </div>
+  );
+}
+
+/** The Saved screen, empty or with three saved questions. */
+export function SavedSample({ empty = false }: { empty?: boolean }) {
+  return (
+    <SavedView
+      items={empty ? [] : [getItem("s3"), getItem("q-s2-1"), getItem("q-s7-3")]}
+      backHref="#profile"
+      onRepeat={() => undefined}
+    />
+  );
+}
+
+/** One saved question on its own: no choice, the right answer marked, Why, the bookmark. */
+export function SavedQuestionSample() {
+  return (
+    <div className="flex flex-col gap-6">
+      <ReviewQuestion
+        item={getItem("q-s2-1")}
+        choice={null}
+        saved
+        onToggleSaved={() => undefined}
+      />
     </div>
   );
 }

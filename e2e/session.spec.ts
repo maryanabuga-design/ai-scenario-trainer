@@ -306,6 +306,78 @@ test.describe("the question screen: hint and bookmark", () => {
   });
 });
 
+test.describe("saved questions", () => {
+  test("is reachable from Profile, empty at first, with no Repeat saved", async ({ page }) => {
+    await start(page, null, "/profile");
+    await page.getByRole("link", { name: /Saved questions \(0\)/ }).click();
+    await expect(page).toHaveURL(/\/saved$/);
+    await expect(page.getByRole("heading", { name: "Saved questions" })).toBeVisible();
+    await expect(page.getByText("No saved questions yet.")).toBeVisible();
+    await expect(page.getByRole("button", { name: /Repeat saved/ })).toHaveCount(0);
+  });
+
+  test("lists a saved question, opens it, removes it, and repeats the saved ones", async ({
+    page,
+  }) => {
+    await start(page, scenario);
+    await page.getByRole("button", { name: "Save question" }).click();
+    await option(page, S1_RIGHT).click();
+    await next(page).click();
+    await page.getByRole("button", { name: "Save question" }).click();
+    await page.goto("/saved");
+    await expect(page.getByRole("link", { name: /What is your first instruction/ })).toBeVisible();
+    await expect(page.locator("main li")).toHaveCount(2);
+    await expect(page.getByRole("button", { name: /Repeat saved/ })).toContainText("2");
+
+    // One saved question on its own: all options, the correct one marked, Why, bookmark.
+    await page.getByRole("link", { name: /What is your first instruction/ }).click();
+    await expect(page).toHaveURL(/\/saved\/s1$/);
+    await expect(page.locator("li[data-state=correct]:visible")).toContainText("Correct answer");
+    await expect(page.locator("li[data-state]:visible")).toHaveCount(3);
+    await expect(page.getByText("Why", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Remove from saved" }).click();
+    await expect(page.getByText("Removed from saved")).toBeVisible();
+    await page.getByRole("link", { name: "Back to saved questions" }).click();
+    await expect(page.locator("main li")).toHaveCount(1);
+
+    // Repeat saved starts a session from the saved questions.
+    await page.getByRole("button", { name: /Repeat saved/ }).click();
+    await expect(page).toHaveURL(/\/session$/);
+    await expect(page.getByText("Question 1 of 1")).toBeVisible();
+    await expect(finish(page)).toBeDisabled();
+  });
+
+  test("has the bookmark on the Answer review too", async ({ page }) => {
+    await start(
+      page,
+      {
+        ...scenario,
+        answers: [
+          { itemId: "s1", optionId: "a" },
+          { itemId: "s2", optionId: "c" },
+          { itemId: "s3", optionId: "b" },
+        ],
+        finished: true,
+        finishedAt: 5,
+      },
+      "/session/results/review/1",
+    );
+    await page.getByRole("button", { name: "Save question" }).click();
+    await expect(page.getByRole("button", { name: "Remove from saved" })).toBeVisible();
+    await page.reload();
+    await expect(page.getByRole("button", { name: "Remove from saved" })).toBeVisible();
+  });
+
+  test("keeps the saved questions when progress is reset", async ({ page }) => {
+    await start(page, scenario);
+    await page.getByRole("button", { name: "Save question" }).click();
+    await page.goto("/profile");
+    await page.getByRole("button", { name: "Reset progress" }).first().click();
+    await page.getByRole("button", { name: "Reset progress" }).last().click();
+    await expect(page.getByRole("link", { name: /Saved questions \(1\)/ })).toBeVisible();
+  });
+});
+
 test.describe("session setup", () => {
   test("offers lengths from what the sections hold and starts a session", async ({ page }) => {
     await start(page, null, "/session/setup");

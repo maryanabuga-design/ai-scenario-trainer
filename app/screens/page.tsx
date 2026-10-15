@@ -15,6 +15,8 @@ import { loadAllSections } from "@/lib/guide";
 import {
   ChatFeedbackSample,
   SessionSample,
+  SavedSample,
+  SavedQuestionSample,
   ButtonsSample,
   ChipTonesSample,
   PaletteSample,
@@ -348,6 +350,23 @@ export default function Screens() {
           <PhoneFrame label="Flood: results">
             <Screen>
               <FloodResultsSample />
+            </Screen>
+          </PhoneFrame>
+        </Group>
+        <Group title="Saved questions">
+          <PhoneFrame label="Saved: empty">
+            <Screen>
+              <SavedSample empty />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Saved: three questions, Repeat saved (3)">
+            <Screen>
+              <SavedSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Saved: one question on its own">
+            <Screen>
+              <SavedQuestionSample />
             </Screen>
           </PhoneFrame>
         </Group>
