@@ -26,6 +26,7 @@
     },
     {
       "id": "q-s1-2",
+      "type": "true-false",
       "section": "S1",
       "question": "During a fire, the elevator is a safe way to move people who walk slowly.",
       "options": [
@@ -202,6 +203,7 @@
     },
     {
       "id": "q-s3-2",
+      "type": "true-false",
       "section": "S3",
       "question": "Breaking a window helps clear smoke from a corridor.",
       "options": [
@@ -302,6 +304,7 @@
     },
     {
       "id": "q-s4-2",
+      "type": "true-false",
       "section": "S4",
       "question": "Once you are out, you may go back in to fetch a colleague if the smoke looks light.",
       "options": [
@@ -402,6 +405,7 @@
     },
     {
       "id": "q-s5-3",
+      "type": "true-false",
       "section": "S5",
       "question": "The caller should hang up as soon as they have given the address.",
       "options": [
@@ -526,6 +530,7 @@
     },
     {
       "id": "q-s7-2",
+      "type": "true-false",
       "section": "S7",
       "question": "If the cloth soaks through, you should lift it off and replace it with a fresh one.",
       "options": [
@@ -654,6 +659,7 @@
     },
     {
       "id": "q-s8-3",
+      "type": "true-false",
       "section": "S8",
       "question": "A burn on the hand is a reason to seek medical help.",
       "options": [
@@ -778,6 +784,7 @@
     },
     {
       "id": "q-s10-2",
+      "type": "true-false",
       "section": "S10",
       "question": "A good handover includes the name of any missing person and where they were last seen.",
       "options": [

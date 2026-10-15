@@ -26,12 +26,13 @@ describe("scenarios", () => {
 describe("scenario steps use the shared shape", () => {
   scenarios.forEach((def) =>
     def.steps.forEach((step) => {
-      it(`${step.id}: a situation, a question, 4 options and one correct answer`, () => {
+      it(`${step.id}: a situation, a question, exactly 3 options and one correct answer`, () => {
         expect(step.kind).toBe("step");
         expect(step.situation?.length).toBeGreaterThan(0);
         expect(step.title?.length).toBeGreaterThan(0);
         expect(step.question).toMatch(/\?$/);
-        expect(step.options).toHaveLength(4);
+        expect(step.options).toHaveLength(3);
+        expect(step.type ?? "single").toBe("single");
         expect(step.options.filter((option) => option.id === step.correctOptionId)).toHaveLength(1);
         expect(step.section).toBe(step.guideRef[0]);
         expect(step.why.length).toBeGreaterThan(0);

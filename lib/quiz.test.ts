@@ -28,7 +28,7 @@ describe("the question banks", () => {
       expect(question.situation).toBeUndefined();
     });
     [...bank.questions, ...floodBank.questions].forEach((raw) => {
-      expect(Object.keys(raw)).not.toEqual(expect.arrayContaining(["type"]));
+      expect([undefined, "single", "true-false"]).toContain((raw as { type?: string }).type);
       ["answer", "items", "accepted", "prompt", "correct", "correctOrder", "misconception"].forEach(
         (field) => expect(raw, `${raw.id} ${field}`).not.toHaveProperty(field),
       );

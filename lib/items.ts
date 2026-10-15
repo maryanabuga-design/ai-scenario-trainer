@@ -41,6 +41,10 @@ export type Item = {
   /** The guide sections shown as Guide chips. */
   guideRef: string[];
   image?: ContentImage;
+  /** A reminder of what to think about; never the answer. Without one, a fallback is built from guideRef. */
+  hint?: string;
+  /** "true-false" has two options, True and False; the default is "single". */
+  type?: "single" | "true-false";
   /** Prepared Ask AI answers (scenario steps of the evacuation guide only). */
   chat?: ChatEntry[];
   suggestedQuestion?: SuggestedQuestion;
@@ -71,4 +75,21 @@ export function sectionOrder(sectionId: string): number {
 
 export function inGuideOrder(sections: string[]): string[] {
   return [...sections].sort((a, b) => sectionOrder(a) - sectionOrder(b));
+}
+
+/** The text of a hint and the guide section it points to; null when the question has neither. */
+export type Hint = { text: string; section: string | null };
+
+/**
+ * The hint of a question: its own `hint`, or "Review: <section title>" built from `guideRef`, or
+ * nothing. `titleOf` finds a section's title.
+ */
+export function hintFor(
+  item: Item,
+  titleOf: (sectionId: string) => string | undefined,
+): Hint | null {
+  const section = item.guideRef[0] ?? null;
+  if (item.hint) return { text: item.hint, section };
+  if (!section) return null;
+  return { text: `Review: ${titleOf(section) ?? section}`, section };
 }

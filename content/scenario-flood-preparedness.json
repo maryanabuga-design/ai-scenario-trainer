@@ -23,14 +23,11 @@
         {
           "id": "c",
           "text": "Gather the group and the grab bag, check first on the two people who need help, and start moving to the meeting point on higher ground."
-        },
-        {
-          "id": "d",
-          "text": "Spend the time moving furniture and equipment to the upper floor first."
         }
       ],
       "correctOptionId": "c",
       "why": "Acting on the warning, helping those who need support and moving before the water arrives keeps the group safe.",
+      "hint": "A warning means flooding is expected. Think about the people who need help to move, and the time you have.",
       "guideRef": [
         "F1",
         "F3"
@@ -52,16 +49,13 @@
           "text": "Load everyone into the minibus and drive through the water."
         },
         {
-          "id": "c",
-          "text": "Send the strongest person ahead to test the depth."
-        },
-        {
           "id": "d",
           "text": "Take the longer path over the hill that stays above the water."
         }
       ],
       "correctOptionId": "d",
       "why": "A longer route that stays dry is safer than a shorter one through floodwater.",
+      "hint": "Floodwater hides its depth and its force. Think about which route stays dry, even if it is longer.",
       "guideRef": [
         "F4",
         "F5"
@@ -85,14 +79,11 @@
         {
           "id": "c",
           "text": "Start pumping out the flooded basement as fast as possible."
-        },
-        {
-          "id": "d",
-          "text": "Fill the water bottles from the tap and drink as usual."
         }
       ],
       "correctOptionId": "a",
       "why": "Entering before the area is declared safe, or touching wet electrics, is dangerous. The electrics must be checked first.",
+      "hint": "Think about what may still be unsafe inside after a flood, and who decides when it is safe.",
       "guideRef": [
         "F5",
         "F7"

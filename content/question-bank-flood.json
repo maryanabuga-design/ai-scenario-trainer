@@ -117,6 +117,7 @@
     },
     {
       "id": "flood-q5",
+      "type": "true-false",
       "section": "F5",
       "question": "True or false: it is safe to drive through floodwater if the water looks shallow.",
       "options": [

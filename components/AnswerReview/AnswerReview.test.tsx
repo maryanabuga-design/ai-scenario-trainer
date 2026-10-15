@@ -54,7 +54,7 @@ describe("Answer review", () => {
     expect(html).toContain(step.question);
     step.options.forEach((option) => expect(html).toContain(option.text));
     expect(html.indexOf(step.situation!)).toBeLessThan(html.indexOf(step.options[0].text));
-    expect(html.match(/data-state=/g)).toHaveLength(4);
+    expect(html.match(/data-state=/g)).toHaveLength(3);
   });
 
   it("when wrong: the right option is green with a check and Correct answer; the choice is rose with a cross and Your answer", () => {
@@ -86,7 +86,7 @@ describe("Answer review", () => {
 
   it("leaves the other options neutral, with no tag or icon", () => {
     const html = render("s1", "d");
-    for (const id of ["a", "c"]) {
+    for (const id of ["a"]) {
       const plain = row(html, text(id));
       expect(plain).toContain('data-state="plain"');
       expect(plain).not.toMatch(/Correct answer|Your answer|lucide-check|lucide-x/);

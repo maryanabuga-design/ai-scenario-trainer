@@ -21,16 +21,13 @@
           "text": "Everyone leaves now by the stairs, taking only what they can carry in a few seconds."
         },
         {
-          "id": "c",
-          "text": "Take the elevator to get everyone out faster."
-        },
-        {
           "id": "d",
           "text": "First collect documents and equipment from the offices."
         }
       ],
       "correctOptionId": "b",
       "why": "Treating the alarm as real, using the stairs and not delaying for belongings keeps the group safe.",
+      "hint": "Think about what an alarm means until it is officially confirmed otherwise, and how a group should leave a building.",
       "guideRef": [
         "S1"
       ],
@@ -170,14 +167,11 @@
         {
           "id": "c",
           "text": "Keep it closed and lead the group to the south stairwell."
-        },
-        {
-          "id": "d",
-          "text": "Open it fully to let the smoke out."
         }
       ],
       "correctOptionId": "c",
       "why": "A hot door means you should not open it. Another route keeps the group away from the fire.",
+      "hint": "A closed door can hide a fire on the other side. Think about what you learn before you open anything.",
       "guideRef": [
         "S2"
       ],
@@ -313,14 +307,11 @@
         {
           "id": "c",
           "text": "Go back and shelter in an office with the door open."
-        },
-        {
-          "id": "d",
-          "text": "Break a window to clear the smoke."
         }
       ],
       "correctOptionId": "a",
       "why": "Staying low keeps you in cleaner air, the wall keeps your direction and closed doors slow the spread of smoke.",
+      "hint": "Smoke and hot gases rise. Think about where the cleaner air is and how to keep your direction.",
       "guideRef": [
         "S2",
         "S3"
@@ -452,16 +443,13 @@
           "text": "Lift the cloth every minute to check whether the bleeding has stopped."
         },
         {
-          "id": "c",
-          "text": "Tell the colleague to wait while you take the rest of the group down."
-        },
-        {
           "id": "d",
           "text": "Press firmly on the wound with a clean cloth and keep the pressure on."
         }
       ],
       "correctOptionId": "d",
       "why": "Firm direct pressure is the first step to control severe bleeding.",
+      "hint": "Think about which injury threatens life first, and what stops the loss of blood.",
       "guideRef": [
         "S6",
         "S7"
@@ -600,14 +588,11 @@
         {
           "id": "c",
           "text": "Release the pressure and call yourself."
-        },
-        {
-          "id": "d",
-          "text": "Wait until you reach the assembly point, then call."
         }
       ],
       "correctOptionId": "b",
       "why": "A named person with clear details and a report-back makes sure the call happens.",
+      "hint": "A call for help aimed at everyone often goes unanswered. Think about who is responsible, and what responders need to hear.",
       "guideRef": [
         "S5"
       ],
@@ -744,14 +729,11 @@
         {
           "id": "c",
           "text": "Tell responders the missing person's name and last known location, then hand over the casualty: what happened, what you did and when."
-        },
-        {
-          "id": "d",
-          "text": "Send a colleague back inside to search quickly."
         }
       ],
       "correctOptionId": "c",
       "why": "Clear information to responders is the fastest way to help the missing person and the casualty.",
+      "hint": "Responders need specific facts about anyone missing. Think about what to pass on, and to whom.",
       "guideRef": [
         "S4",
         "S10"
@@ -886,14 +868,11 @@
         {
           "id": "c",
           "text": "Tell the visitor to wait in an office until the alarm stops."
-        },
-        {
-          "id": "d",
-          "text": "Stop the whole group until the visitor is ready to go."
         }
       ],
       "correctOptionId": "b",
       "why": "The guide says to help people who need assistance only if it is safe, and otherwise to report where they are so responders can reach them.",
+      "hint": "Think about how to keep the whole group moving while still looking after the person who needs help.",
       "guideRef": [
         "S1",
         "S4"
@@ -1025,14 +1004,11 @@
         {
           "id": "c",
           "text": "Leave it shut and take the group back upstairs to look for another route."
-        },
-        {
-          "id": "d",
-          "text": "Wait at the door until someone outside opens it."
         }
       ],
       "correctOptionId": "a",
       "why": "A cool door can be opened, but slowly and with care, so you can shut it again if there is smoke or heat behind it.",
+      "hint": "Think about checking what is behind a closed door before the group commits to it.",
       "guideRef": [
         "S2"
       ],
@@ -1165,14 +1141,11 @@
         {
           "id": "c",
           "text": "Hand the phone to the injured colleague so they can explain."
-        },
-        {
-          "id": "d",
-          "text": "Put the phone down and help carry the colleague instead."
         }
       ],
       "correctOptionId": "b",
       "why": "Staying on the line lets the call taker get the details they need and give instructions until they say the call can end.",
+      "hint": "Think about what the call taker still needs from you, and who decides when the call ends.",
       "guideRef": [
         "S5"
       ],
@@ -1305,14 +1278,11 @@
         {
           "id": "c",
           "text": "Let the person rejoin the group quietly, since they are safe now."
-        },
-        {
-          "id": "d",
-          "text": "Ask the person to go back and find the responders inside."
         }
       ],
       "correctOptionId": "a",
       "why": "The guide's handover includes any changes since. Responders may be searching for this person, so the news must reach them straight away.",
+      "hint": "Think about who needs this news first, and how soon.",
       "guideRef": [
         "S4",
         "S10"
