@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { Media3D } from "@/components/Media3D/Media3D";
+import { Ring } from "@/components/Ring/Ring";
 import { SectionList } from "@/components/SectionList/SectionList";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
 import { SelectableCard } from "@/components/SelectableCard/SelectableCard";
@@ -59,46 +60,6 @@ export function setupChoice(
   };
 }
 
-/** The share of the guide practised, as a small ring with the percentage. */
-function RingBadge({ percent }: { percent: number }) {
-  const radius = 16;
-  const length = 2 * Math.PI * radius;
-  return (
-    <div
-      role="img"
-      aria-label={`${percent}% of the guide practised`}
-      className="relative h-10 w-10 shrink-0"
-    >
-      <svg viewBox="0 0 40 40" aria-hidden="true" className="h-full w-full -rotate-90">
-        <circle
-          cx="20"
-          cy="20"
-          r={radius}
-          fill="none"
-          strokeWidth="3"
-          className="stroke-secondary-sand-pressed"
-        />
-        <circle
-          cx="20"
-          cy="20"
-          r={radius}
-          fill="none"
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeDasharray={`${(percent / 100) * length} ${length}`}
-          className="stroke-primary"
-        />
-      </svg>
-      <span
-        aria-hidden="true"
-        className="type-micro absolute inset-0 flex items-center justify-center tabular-nums"
-      >
-        {percent}%
-      </span>
-    </div>
-  );
-}
-
 function AnswerCount({ label, value }: { label: string; value: number }) {
   return (
     <div className="flex flex-1 flex-col items-center gap-1">
@@ -140,6 +101,7 @@ export function SessionSetup({
   weakSectionIds: string[];
 }) {
   const { sections: guideSections } = useSourceSheet();
+  const group = useId();
   const [view, setView] = useState<"main" | "sections">("main");
   const modes = [
     { value: "scenario" as const, label: "Scenario", allowed: !training || training.scenario },
@@ -188,7 +150,7 @@ export function SessionSetup({
           <h1 className="type-item-title">Session setup</h1>
           <p className="type-small max-w-full truncate text-text-secondary">{materialName}</p>
         </div>
-        <RingBadge percent={practised} />
+        <Ring percent={practised} label={`${practised}% of the guide practised`} />
       </div>
 
       <div className="flex flex-col items-center gap-4">
@@ -231,7 +193,7 @@ export function SessionSetup({
               <SelectableCard
                 key={option.value}
                 size="row"
-                name="length"
+                name={`length-${group}`}
                 value={String(option.value)}
                 checked={choice.length === option.value}
                 onChange={() => onChange({ ...value, length: option.value })}

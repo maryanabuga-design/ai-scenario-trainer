@@ -1,82 +1,124 @@
 "use client";
 
+import {
+  Bookmark,
+  BookOpen,
+  CircleHelp,
+  ClipboardCheck,
+  ListChecks,
+  Route,
+  User,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import Link from "next/link";
+import { ARROW_CLEARANCE, ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
 import { ButtonLink } from "@/components/Button/Button";
-import { NextUpCard } from "@/components/NextUpCard/NextUpCard";
-import { ScenarioCard } from "@/components/ScenarioCard/ScenarioCard";
-import { Tag } from "@/components/Tag/Tag";
-import { TopicRow } from "@/components/TopicRow/TopicRow";
-import { nextUp } from "@/lib/home";
+import { Chevron } from "@/components/Chevron/Chevron";
+import { Media3D } from "@/components/Media3D/Media3D";
+import { Ring } from "@/components/Ring/Ring";
+import { TileIcon } from "@/components/TileIcon/TileIcon";
+import { continueCard, homeTiles, MINI_SESSION_LENGTH } from "@/lib/home";
+import type { HomeCounts, HomeTileId } from "@/lib/home";
 import { onboardingHref } from "@/lib/onboarding";
-import type { ScoredItem } from "@/lib/scoring";
 import type { Session } from "@/lib/session";
-import type { WeakTopic } from "@/lib/weak-topics";
-import { weakTopics } from "@/lib/weak-topics";
 
-export type HomeScenario = { id: string; title: string; line: string; onOpen: () => void };
+const tileIcons: Record<HomeTileId, LucideIcon> = {
+  scenarios: Route,
+  quiz: CircleHelp,
+  weak: ListChecks,
+  saved: Bookmark,
+  guide: BookOpen,
+  checklists: ClipboardCheck,
+};
 
-/** Home: the direction, the headline, Next up, the weak topics row and the scenarios. */
+/**
+ * Home, the learner view: a small title and the profile button, the big Continue training card
+ * with the readiness ring, six tiles and the Mini-session. Nothing from Progress is repeated here.
+ */
 export function HomeView({
   directionTitle,
   unfinished,
-  weakItems,
-  hasHistory,
-  scenarios,
-  onRepeat,
-  onStartScenario,
+  readiness,
+  counts,
+  onOpenSetup,
+  onMiniSession,
 }: {
   directionTitle: string;
   unfinished: Session | null;
-  weakItems: ScoredItem[];
-  hasHistory: boolean;
-  scenarios: HomeScenario[];
-  onRepeat: (topics: WeakTopic[]) => void;
-  onStartScenario: () => void;
+  /** The readiness percentage: 0 when nothing is done. */
+  readiness: number;
+  counts: HomeCounts;
+  /** Called before a link to Session setup opens, to point it at the evacuation guide. */
+  onOpenSetup: () => void;
+  onMiniSession: () => void;
 }) {
-  const topics = weakTopics(weakItems);
-  const next = nextUp({ unfinished, topics, hasHistory });
+  const card = continueCard(unfinished);
+  const tiles = homeTiles(counts);
 
   return (
-    <div className="flex flex-col gap-8 pb-4">
-      <header className="flex flex-col items-start gap-3 pt-2">
-        <Tag sentenceCase>{directionTitle}</Tag>
-        <h1 className="flex flex-col gap-3">
-          <span className="type-display text-text">
-            <span className="block">Practise a decision.</span>
-            <span className="block">Check it against the guide.</span>
-          </span>
-          <span className="type-small text-text-secondary">Small steps. Real progress.</span>
-        </h1>
+    <div className="flex flex-col gap-4 pb-4">
+      <header className="flex items-center justify-between gap-3 pt-1">
+        <div className="flex min-w-0 flex-col">
+          <h1 className="type-item-title">Learn</h1>
+          <p className="type-small truncate text-text-secondary">{directionTitle}</p>
+        </div>
+        <Link
+          href="/profile"
+          aria-label="Profile"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface text-text shadow-(--card-shadow) active:bg-surface-muted"
+        >
+          <User size={20} strokeWidth={2} aria-hidden="true" />
+        </Link>
       </header>
 
-      <NextUpCard next={next} onRepeat={() => onRepeat(topics)} onStartScenario={onStartScenario} />
+      <Link
+        href={card.href}
+        onClick={card.kind === "start" ? onOpenSetup : undefined}
+        className="relative flex min-h-36 flex-col justify-between gap-4 rounded-[28px] bg-card p-5 shadow-(--card-shadow) has-focus-visible:outline-2"
+      >
+        <ArrowCircle />
+        <span className={`flex flex-col gap-1 ${ARROW_CLEARANCE.md}`}>
+          <span className="type-card-title">{card.title}</span>
+          <span className="type-small text-text-secondary">{card.subtitle}</span>
+        </span>
+        <span className="flex items-end justify-end">
+          <Ring percent={readiness} size={56} label={`Readiness ${readiness}%`} />
+        </span>
+      </Link>
 
-      {topics.length > 0 && (
-        <section aria-labelledby="topics-title" className="flex flex-col gap-3">
-          <h2 id="topics-title" className="type-item-title">
-            Topics
-          </h2>
-          <TopicRow
-            topics={topics}
-            labelledBy="topics-title"
-            onRepeat={(topic) => onRepeat([topic])}
-          />
-        </section>
-      )}
+      <ul className="grid grid-cols-2 gap-3">
+        {tiles.map((tile) => (
+          <li key={tile.id}>
+            <Link
+              href={tile.href}
+              onClick={tile.id === "scenarios" || tile.id === "quiz" ? onOpenSetup : undefined}
+              className="flex h-full min-h-32 flex-col justify-between gap-4 rounded-card bg-card p-4 shadow-(--card-shadow) has-focus-visible:outline-2"
+            >
+              <Media3D
+                variant="icon"
+                fallback={<TileIcon icon={tileIcons[tile.id]} tone={tile.tone} />}
+              />
+              <span className="flex flex-col gap-0.5">
+                <span className="type-body-strong">{tile.title}</span>
+                <span className="type-small text-text-secondary">{tile.count}</span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
 
-      <section aria-labelledby="new-title" className="flex flex-col gap-3">
-        <h2 id="new-title" className="type-item-title">
-          New scenario
-        </h2>
-        <ul className="flex flex-col gap-3">
-          {scenarios.map((card) => (
-            <li key={card.id}>
-              <ScenarioCard title={card.title} line={card.line} onOpen={card.onOpen} />
-            </li>
-          ))}
-        </ul>
-      </section>
+      <button
+        type="button"
+        onClick={onMiniSession}
+        className="flex min-h-16 items-center gap-3 rounded-card bg-card p-4 text-left shadow-(--card-shadow) active:bg-surface-muted"
+      >
+        <span className="type-body-strong flex-1">
+          Mini-session · <span className="tabular-nums">{MINI_SESSION_LENGTH}</span> quick questions
+        </span>
+        <Chevron />
+      </button>
 
-      <div className="-ml-3">
+      <div className="-ml-3 self-start">
         <ButtonLink href={onboardingHref} variant="tertiary">
           How it works
         </ButtonLink>

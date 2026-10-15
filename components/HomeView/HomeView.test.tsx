@@ -1,134 +1,141 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
 import { HomeView } from "@/components/HomeView/HomeView";
-import { SoftShape } from "@/components/SoftShape/SoftShape";
-import type { HomeScenario } from "@/components/HomeView/HomeView";
-import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
-import { loadAllSections } from "@/lib/guide";
-import { getStep } from "@/lib/scenario";
-import { scoreItem } from "@/lib/scoring";
-import type { ScoredItem } from "@/lib/scoring";
+import { homeCounts } from "@/lib/home";
+import type { Session } from "@/lib/session";
 
-const DIRECTION = "Building evacuation and first aid";
+const noop = () => undefined;
+const counts = homeCounts({ history: [], saved: [], guideSections: 17 });
 
-function renderHome(weakItems: ScoredItem[] = [], scenarios: HomeScenario[] = []) {
+function render(unfinished: Session | null = null, readiness = 0) {
   return renderToStaticMarkup(
-    <SourceSheetProvider sections={loadAllSections()}>
-      <HomeView
-        directionTitle={DIRECTION}
-        unfinished={null}
-        weakItems={weakItems}
-        hasHistory={weakItems.length > 0}
-        scenarios={scenarios}
-        onRepeat={() => undefined}
-        onStartScenario={() => undefined}
-      />
-    </SourceSheetProvider>,
+    <HomeView
+      directionTitle="Building evacuation and first aid"
+      unfinished={unfinished}
+      readiness={readiness}
+      counts={counts}
+      onOpenSetup={noop}
+      onMiniSession={noop}
+    />,
   );
 }
 
-/** The opening tag of the element whose text is exactly `text`. */
-function tagAround(html: string, text: string) {
-  const end = html.indexOf(`>${text}<`);
-  return html.slice(html.lastIndexOf("<", end), end + 1);
-}
+const unfinished: Session = {
+  kind: "scenario",
+  itemIds: Array.from({ length: 20 }, () => "s1"),
+  index: 6,
+  answers: [],
+  finished: false,
+};
 
-describe("Home eyebrow", () => {
-  it("is a chip in the tag style, in sentence case, with no line under it", () => {
-    const html = renderHome();
-    const chip = tagAround(html, DIRECTION);
-    expect(chip).toMatch(/^<span /);
-    expect(chip).toContain("bg-pastel-yellow");
-    expect(chip).toContain("type-label");
-    expect(chip).toContain("normal-case");
-    expect(html).not.toContain("h-px");
+describe("Home layout", () => {
+  const html = render();
+
+  it("has the top row: the title and direction on the left, the profile button on the right", () => {
+    expect(html.indexOf(">Learn<")).toBeLessThan(html.indexOf('aria-label="Profile"'));
+    expect(html).toContain("Building evacuation and first aid");
+    expect(html).toContain('href="/profile"');
   });
 
-  it("is a label, not something to tab to or press", () => {
-    const chip = tagAround(renderHome(), DIRECTION);
-    expect(chip).not.toContain("tabindex");
-    expect(chip).not.toContain("active:");
-  });
-});
-
-describe("Next up card", () => {
-  it("has the strong soft shape behind its content", () => {
-    const html = renderHome();
-    const card = html.slice(html.indexOf('aria-labelledby="next-up-title"'));
-    expect(card.slice(0, card.indexOf("</section>"))).toContain("<svg aria-hidden");
-  });
-});
-
-// s2 c unsure: a guess on S2; s5 a unsure: a knowledge gap on S5.
-const twoTopics = [scoreItem(getStep("s3"), "b"), scoreItem(getStep("s5"), "a")];
-const oneTopic = [scoreItem(getStep("s3"), "b")];
-
-/** The markup of the topic row: the list and the dots after it. */
-function topicRow(html: string) {
-  const start = html.indexOf('aria-labelledby="topics-title"');
-  return html.slice(start, html.indexOf("</section>", start));
-}
-
-describe("Topics on Home", () => {
-  it("has only the heading, no See all", () => {
-    const html = renderHome(twoTopics);
-    expect(html).toContain(">Topics</h2>");
-    expect(html).not.toContain("See all");
+  it("goes top row, big card, six tiles, Mini-session, How it works", () => {
+    const order = [
+      'aria-label="Profile"',
+      "Start training",
+      ">Scenarios<",
+      ">Quick checklists<",
+      "Mini-session",
+      "How it works",
+    ].map((text) => html.indexOf(text));
+    expect(order.every((position) => position >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
   });
 
-  it("keeps the Weak topics page one tap away through the Next up arrow", () => {
-    const html = renderHome(twoTopics);
-    const card = html.slice(html.indexOf('aria-labelledby="next-up-title"'));
-    expect(card.slice(0, card.indexOf("</section>"))).toContain('href="/weak-topics"');
-  });
-
-  it("shows no repeat count or progress on topic cards", () => {
-    const row = topicRow(renderHome(twoTopics));
-    expect(row).not.toMatch(/to repeat|repeated/i);
-    expect(row).toContain("Evacuation guide · S2");
-  });
-
-  it("uses the shared ArrowCircle on topic cards", () => {
-    const arrow = renderToStaticMarkup(<ArrowCircle />);
-    const row = topicRow(renderHome(twoTopics));
-    expect(row.split(arrow)).toHaveLength(3);
-  });
-
-  it("shows one dot per topic with a text alternative, and none for a single topic", () => {
-    const row = topicRow(renderHome(twoTopics));
-    expect(row.match(/h-2 w-2 rounded-full bg-(primary|secondary-sand)/g)).toHaveLength(2);
-    expect(row).toContain("Card 1 of 2");
-    expect(
-      topicRow(renderHome(oneTopic)).match(/h-2 w-2 rounded-full bg-(primary|secondary-sand)/g),
-    ).toBeNull();
+  it("repeats nothing from Progress: no summary numbers, no history", () => {
+    expect(html).not.toMatch(
+      /Sessions|Average result|Correct answers|Session history|Result by session/,
+    );
+    expect(html).not.toMatch(/Next up|New scenario|Topics<|Repeat weak topics/);
+    expect(html).not.toContain("<table");
   });
 });
 
-describe("New scenario card", () => {
-  const scenarios: HomeScenario[] = [
-    {
-      id: "evacuation-guide",
-      title: "Fire alarm in a training centre",
-      line: "Short: 3 decisions, about 5 min.",
-      onOpen: () => undefined,
-    },
-  ];
-  const card = () => {
-    const html = renderHome([], scenarios);
-    const start = html.indexOf('aria-labelledby="new-title"');
-    return html.slice(start, html.indexOf("</section>", start));
-  };
-
-  it("shows only the Short line", () => {
-    expect(card()).toContain("Short: 3 decisions, about 5 min.");
-    expect(card()).not.toContain("Full:");
-    expect(card()).not.toContain("Or take a quiz");
+describe("the Continue training card", () => {
+  it("says Start training and goes to Session setup when nothing is unfinished", () => {
+    const html = render();
+    expect(html).toContain("Start training");
+    expect(html).toContain("Choose a scenario or a quiz");
+    expect(html).toContain('href="/session/setup"');
+    expect(html).not.toContain(">Continue<");
   });
 
-  it("keeps the tag, uses the shared ArrowCircle and the faint soft shape", () => {
-    expect(card()).toContain(">Scenario<");
-    expect(card()).toContain(renderToStaticMarkup(<ArrowCircle />));
-    expect(card()).toContain(renderToStaticMarkup(<SoftShape variant="faint" />));
+  it("says Continue with the mode and position, and resumes the session", () => {
+    const html = render(unfinished);
+    expect(html).toContain(">Continue<");
+    expect(html).toContain("Scenario · Question 7 of 20");
+    expect(html).toContain('href="/session"');
+    expect(html).not.toContain("Start training");
+  });
+
+  it("has an ArrowCircle top-right and a large radius", () => {
+    const html = render();
+    const card = html.slice(html.indexOf("<a", html.indexOf("</header>")));
+    expect(card).toContain("border-arrow-stroke");
+    expect(card).toContain("rounded-[28px] bg-card");
+    expect(card).toContain("pr-14");
+  });
+
+  it("shows the readiness ring: 0% at the start, the percentage after", () => {
+    const start = render();
+    expect(start).toContain('aria-label="Readiness 0%"');
+    expect(start).toContain(">0%<");
+    const later = render(null, 32);
+    expect(later).toContain('aria-label="Readiness 32%"');
+    expect(later).toContain(">32%<");
+  });
+});
+
+describe("the tiles", () => {
+  const html = render();
+
+  it("are six cards in a two-column grid, each with its own pastel circle and a count line", () => {
+    expect(html).toContain("grid grid-cols-2 gap-3");
+    const grid = html.slice(html.indexOf("grid-cols-2"), html.indexOf("<button"));
+    expect(grid.match(/<a /g)).toHaveLength(6);
+    for (const tone of ["yellow", "blue", "peach", "lilac", "green", "sand"]) {
+      expect(grid).toContain(`bg-pastel-${tone}`);
+    }
+    expect(grid.match(/h-9 w-9/g)).toHaveLength(6);
+    expect(grid.match(/width="18"/g)).toHaveLength(6);
+    expect(grid.match(/rounded-card bg-card/g)).toHaveLength(6);
+  });
+
+  it("show the counts and go to the right screen", () => {
+    for (const [title, count, href] of [
+      ["Scenarios", "2 scenarios", "/session/setup?mode=scenario"],
+      ["Quiz", `${counts.questions} questions`, "/session/setup?mode=quiz"],
+      ["Weak topics", "Nothing to repeat", "/weak-topics"],
+      ["Saved questions", "0 saved", "/saved"],
+      ["Guide", "17 sections", "/materials"],
+      ["Quick checklists", "3 checklists", "/checklists"],
+    ]) {
+      const start = html.lastIndexOf("<a ", html.indexOf(`>${title}<`));
+      const tile = html.slice(start, html.indexOf("</a>", start));
+      expect(tile, title).toContain(`href="${href.replace(/&/g, "&amp;")}"`);
+      expect(tile, title).toContain(count);
+    }
+  });
+});
+
+describe("the Mini-session row", () => {
+  const html = render();
+
+  it("is a full-width card with a chevron that starts 5 quick questions", () => {
+    const start = html.indexOf("<button");
+    const row = html.slice(start, html.indexOf("</button>", start));
+    expect(row).toContain("Mini-session");
+    expect(row).toContain(">5<");
+    expect(row).toContain("quick questions");
+    expect(row).toContain("lucide-chevron-right");
+    expect(row).toContain("rounded-card bg-card");
   });
 });

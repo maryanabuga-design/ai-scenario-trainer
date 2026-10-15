@@ -18,7 +18,7 @@ export const savedPath = (id: string) => `/saved/${id}`;
  */
 export function SavedView({
   items,
-  backHref = "/profile",
+  backHref = "/",
   onRepeat,
 }: {
   items: Item[];
@@ -27,7 +27,7 @@ export function SavedView({
 }) {
   return (
     <div className="flex flex-col gap-6">
-      <CircleBackButton href={backHref} label="Back" />
+      <CircleBackButton href={backHref} label="Back to Home" />
       <h1 className="type-page-title">Saved questions</h1>
 
       {items.length === 0 ? (

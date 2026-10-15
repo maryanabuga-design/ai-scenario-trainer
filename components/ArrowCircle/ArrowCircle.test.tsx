@@ -52,9 +52,8 @@ describe("ArrowCircle position: the top-right corner", () => {
 
   it("is used only on cards that are positioned and give their text the clearance", () => {
     for (const file of [
-      "components/NextUpCard/NextUpCard.tsx",
-      "components/TopicCard/TopicCard.tsx",
-      "components/ScenarioCard/ScenarioCard.tsx",
+      "components/HomeView/HomeView.tsx",
+      "components/ResultsView/ResultsView.tsx",
       "components/UploadSheet/UploadSheet.tsx",
     ]) {
       const code = readFileSync(file, "utf8");
@@ -75,9 +74,8 @@ describe("every card arrow goes through ArrowCircle", () => {
 
   it("is used by every card that opens something", () => {
     for (const file of [
-      "components/NextUpCard/NextUpCard.tsx",
-      "components/TopicCard/TopicCard.tsx",
-      "components/ScenarioCard/ScenarioCard.tsx",
+      "components/HomeView/HomeView.tsx",
+      "components/ResultsView/ResultsView.tsx",
       "components/UploadSheet/UploadSheet.tsx",
     ]) {
       expect(readFileSync(file, "utf8"), file).toContain("<ArrowCircle");

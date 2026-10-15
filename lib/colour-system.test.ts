@@ -92,7 +92,6 @@ describe("no leftover grey-beige for inactive states", () => {
   it("uses the olive, never the neutral panel colour, for inactive dots, tracks and disabled fills", () => {
     const inactive = [
       "components/StepStrip/StepStrip.tsx",
-      "components/TopicRow/TopicRow.tsx",
       "components/OnboardingView/OnboardingView.tsx",
       "components/SegmentedControl/SegmentedControl.tsx",
       "components/Button/Button.tsx",

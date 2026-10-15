@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { SessionSetup, defaultSetup, setupChoice } from "@/components/SessionSetup/SessionSetup";
 import type { SetupValue } from "@/components/SessionSetup/SessionSetup";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
@@ -23,11 +23,14 @@ function Setup({
   materialName,
   scenarioId,
   history,
+  initialMode,
 }: {
   training: Training | undefined;
   materialName: string | undefined;
   scenarioId: string | undefined;
   history: FinishedSession[];
+  /** From the Scenarios or Quiz tile on Home, when no training limits the modes. */
+  initialMode?: "scenario" | "quiz";
 }) {
   const router = useRouter();
   const session = useSession();
@@ -43,7 +46,11 @@ function Setup({
   const [value, setValue] = useState<SetupValue>(() => ({
     ...defaultSetup,
     sections: defaultSections(guideSectionIds, training?.sections),
-    ...(training ? { mode: training.scenario ? "scenario" : "quiz" } : {}),
+    ...(training
+      ? { mode: training.scenario ? "scenario" : "quiz" }
+      : initialMode
+        ? { mode: initialMode }
+        : {}),
   }));
 
   return (
@@ -68,7 +75,9 @@ function Setup({
   );
 }
 
-export default function SetupPage() {
+function SetupGate() {
+  const modeParam = useSearchParams().get("mode");
+  const initialMode = modeParam === "quiz" || modeParam === "scenario" ? modeParam : undefined;
   const trainings = useTrainings();
   const active = useActiveTraining();
   const history = useHistory();
@@ -84,11 +93,20 @@ export default function SetupPage() {
   const training = active ? trainings?.[active] : undefined;
   return (
     <Setup
-      key={training?.materialId ?? "none"}
+      key={`${training?.materialId ?? "none"}-${initialMode ?? "any"}`}
       training={training}
       materialName={training && material ? material.name : undefined}
       scenarioId={training && material ? material.scenarioId : undefined}
       history={history ?? []}
+      initialMode={initialMode}
     />
+  );
+}
+
+export default function SetupPage() {
+  return (
+    <Suspense fallback={null}>
+      <SetupGate />
+    </Suspense>
   );
 }

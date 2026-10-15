@@ -20,7 +20,7 @@ const render = (ids: string[]) =>
 describe("the Saved screen", () => {
   it("has the Back circle and the title", () => {
     const html = render(["s1"]);
-    expect(html).toContain('aria-label="Back"');
+    expect(html).toContain('aria-label="Back to Home"');
     expect(html).toContain(">Saved questions</h1>");
   });
 

@@ -3,25 +3,21 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { HomeView } from "@/components/HomeView/HomeView";
+import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { directionTitle } from "@/lib/directions";
-import { homeScenarios, repeatUnderWay, scenarioLine, scenarioTitle } from "@/lib/home";
-import type { Material } from "@/lib/materials";
+import { homeCounts, miniSessionIds, readiness } from "@/lib/home";
 import { needsOnboarding, onboardingHref } from "@/lib/onboarding";
-import { sampleMaterials } from "@/lib/materials";
-import { weakItemsFromHistory } from "@/lib/progress";
-import { getScenario } from "@/lib/scenario";
-import { startRepeat } from "@/lib/repeat";
-import { useHistory, useProfile, useSession } from "@/lib/session";
-import { startTraining, useTrainings } from "@/lib/trainings";
-import { useUploads } from "@/lib/uploads";
+import { useSaved } from "@/lib/saved";
+import { startSession, useHistory, useProfile, useSession } from "@/lib/session";
+import { startTraining } from "@/lib/trainings";
 
 export default function Home() {
   const router = useRouter();
   const profile = useProfile();
   const session = useSession();
   const history = useHistory();
-  const uploads = useUploads();
-  const trainings = useTrainings();
+  const saved = useSaved();
+  const { sections } = useSourceSheet();
   const showOnboarding = profile !== "loading" && needsOnboarding(profile);
 
   useEffect(() => {
@@ -32,48 +28,26 @@ export default function Home() {
     profile === "loading" ||
     session === "loading" ||
     history === "loading" ||
-    uploads === "loading" ||
-    trainings === "loading" ||
+    saved === "loading" ||
     showOnboarding
   ) {
     return null;
   }
 
   const unfinished = session && !session.finished ? session : null;
-  const created = trainings ?? {};
-
-  /** Session setup for a material: the sample guide always, an upload once its training exists. */
-  function openScenario(material: Material) {
-    if (sampleMaterials.some((sample) => sample.id === material.id) || created[material.id]) {
-      startTraining(material.id);
-      router.push("/session/setup");
-    } else {
-      router.push(`/training/${material.id}`);
-    }
-  }
-
-  const materials = homeScenarios([...sampleMaterials, ...(uploads ?? [])]);
 
   return (
     <HomeView
       directionTitle={directionTitle(profile?.direction)}
       unfinished={unfinished}
-      weakItems={weakItemsFromHistory(history)}
-      hasHistory={(history ?? []).length > 0}
-      scenarios={materials.map((material) => ({
-        id: material.id,
-        title: scenarioTitle(material),
-        line: scenarioLine(getScenario(material.scenarioId)),
-        onOpen: () => openScenario(material),
-      }))}
-      onRepeat={(topics) => {
-        // A card for the topic whose repeat round is under way resumes it.
-        if (!(topics.length === 1 && repeatUnderWay(topics[0], unfinished))) {
-          startRepeat(topics);
-        }
+      readiness={readiness(history)}
+      counts={homeCounts({ history, saved, guideSections: sections.length })}
+      // Session setup for the sample evacuation guide, whatever training was opened last.
+      onOpenSetup={() => startTraining("evacuation-guide")}
+      onMiniSession={() => {
+        startSession("quiz", miniSessionIds());
         router.push("/session");
       }}
-      onStartScenario={() => openScenario(materials[0] ?? sampleMaterials[0])}
     />
   );
 }

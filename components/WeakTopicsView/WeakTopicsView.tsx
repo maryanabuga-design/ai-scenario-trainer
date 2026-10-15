@@ -7,7 +7,7 @@ import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { Media3D } from "@/components/Media3D/Media3D";
 import { SelectableCard } from "@/components/SelectableCard/SelectableCard";
-import { useTopicName } from "@/components/TopicCard/TopicCard";
+import { useTopicName } from "@/components/TopicName/useTopicName";
 import { TopicTile } from "@/components/TopicTile/TopicTile";
 import type { WeakTopic } from "@/lib/weak-topics";
 import { materialForSection, toRepeatLabel } from "@/lib/weak-topics";

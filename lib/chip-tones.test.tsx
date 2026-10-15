@@ -135,7 +135,6 @@ describe("no chip has a stroke", () => {
       `Tag ${tone}`,
       renderToStaticMarkup(<Tag tone={tone}>x</Tag>),
     ]),
-    ["Tag direction chip", renderToStaticMarkup(<Tag sentenceCase>x</Tag>)],
     ...(Object.keys(statuses) as Status[]).map((status): [string, string] => [
       `StatusChip ${status}`,
       renderToStaticMarkup(<StatusChip status={status} />),

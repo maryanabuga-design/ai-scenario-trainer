@@ -52,7 +52,7 @@ describe("Session setup", () => {
     const order = [
       "data-media3d",
       "type-page-title break-words",
-      'name="mode"',
+      'name="mode-',
       "YOUR ANSWERS",
       ">Length<",
       "Guide sections ·",

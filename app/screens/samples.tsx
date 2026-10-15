@@ -18,7 +18,6 @@ import type { ChatMessage } from "@/components/AskAi/AskAi";
 import { ButtonPreview } from "@/components/Button/Button";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { HomeView } from "@/components/HomeView/HomeView";
-import { TopicCard } from "@/components/TopicCard/TopicCard";
 import { TopicTile } from "@/components/TopicTile/TopicTile";
 import { ReviewQuestion } from "@/components/ReviewQuestion/ReviewQuestion";
 import { SavedView } from "@/components/SavedView/SavedView";
@@ -53,7 +52,7 @@ import { materialFromSample, sampleFiles } from "@/lib/training";
 import { currentWeakItems, scoreItem } from "@/lib/scoring";
 import type { FinishedSession, Session } from "@/lib/session";
 import { topicIcon, weakTopics } from "@/lib/weak-topics";
-import { scenarioLine } from "@/lib/home";
+import { homeCounts, readiness } from "@/lib/home";
 
 /** Session setup for a guide: the main view, with its saved answers and weak topics. */
 export function SetupSample({
@@ -243,13 +242,22 @@ const passedAnswers = [
   pick("s6", "c"),
 ];
 
-/** Home in each Next up state: first visit, weak topics, an unfinished session, all repeated. */
-export function HomeSample({
-  state = "first",
-}: {
-  state?: "first" | "repeat" | "continue" | "new";
-}) {
-  const scenarioDef = getScenario(undefined);
+/** Home, empty (first visit) or with an unfinished session, history and saved questions. */
+export function HomeSample({ state = "first" }: { state?: "first" | "continue" | "weak" }) {
+  const history: FinishedSession[] =
+    state === "first"
+      ? []
+      : [
+          {
+            kind: "scenario",
+            itemIds: sampleAnswers.map((item) => item.id),
+            answers: sampleAnswers.map((item) => ({
+              itemId: item.id,
+              optionId: item.chosenOptionId,
+            })),
+            finishedAt: Date.UTC(2026, 9, 8, 12, 5),
+          },
+        ];
   return (
     <HomeView
       directionTitle={defaultDirection.title}
@@ -257,25 +265,21 @@ export function HomeSample({
         state === "continue"
           ? ({
               kind: "scenario",
-              itemIds: ["s1", "s2", "s3", "s4", "s5", "s6"],
-              index: 2,
+              itemIds: Array.from({ length: 20 }, () => "s1"),
+              index: 6,
               answers: [],
               finished: false,
             } satisfies Session)
           : null
       }
-      weakItems={state === "repeat" || state === "continue" ? currentWeakItems(sampleAnswers) : []}
-      hasHistory={state !== "first"}
-      scenarios={[
-        {
-          id: "evacuation-guide",
-          title: scenarioDef.title,
-          line: scenarioLine(scenarioDef),
-          onOpen: () => undefined,
-        },
-      ]}
-      onRepeat={() => undefined}
-      onStartScenario={() => undefined}
+      readiness={readiness(history)}
+      counts={homeCounts({
+        history,
+        saved: state === "first" ? [] : ["s3", "q-s2-1", "q-s7-3", "s5"],
+        guideSections: 17,
+      })}
+      onOpenSetup={() => undefined}
+      onMiniSession={() => undefined}
     />
   );
 }
@@ -519,27 +523,6 @@ export function WeakTopicsSample({ empty = false }: { empty?: boolean }) {
       }
       onRepeat={() => undefined}
     />
-  );
-}
-
-/** Every topic icon on its material's tile: the evacuation guide in yellow, the flood guide in blue. */
-export function TopicIconsSample() {
-  const item = currentWeakItems(sampleAnswers)[0];
-  const sections = ["F1", "F4", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10"];
-  return (
-    <div className="flex flex-col gap-4">
-      <h1 className="type-page-title">Topic cards</h1>
-      <ul className="grid grid-cols-2 gap-3">
-        {sections.map((sectionId) => (
-          <li key={sectionId}>
-            <TopicCard
-              topic={{ sectionId, icon: topicIcon(sectionId), items: [item] }}
-              onRepeat={() => undefined}
-            />
-          </li>
-        ))}
-      </ul>
-    </div>
   );
 }
 

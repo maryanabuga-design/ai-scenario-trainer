@@ -4,6 +4,8 @@ import MaterialPage from "@/app/(app)/materials/evacuation-guide/page";
 import Materials from "@/app/(app)/materials/page";
 import { ActionBarProvider, ActionBarSlot } from "@/components/ActionBar/ActionBar";
 import { AskAiProvider } from "@/components/AskAi/AskAi";
+import { ChecklistDetail } from "@/components/ChecklistView/ChecklistDetail";
+import { ChecklistList } from "@/components/ChecklistView/ChecklistList";
 import { defaultSetup } from "@/components/SessionSetup/SessionSetup";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
 import { Button } from "@/components/Button/Button";
@@ -11,6 +13,7 @@ import { Card } from "@/components/Card/Card";
 import { PhoneFrame } from "@/components/PhoneFrame/PhoneFrame";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { Tag } from "@/components/Tag/Tag";
+import { checklists } from "@/lib/checklists";
 import { loadAllSections } from "@/lib/guide";
 import {
   ChatFeedbackSample,
@@ -28,7 +31,6 @@ import {
   FloodStepSample,
   HomeSample,
   MaterialTypesSample,
-  TopicIconsSample,
   WeakTopicsSample,
   ReviewSample,
   AnswerReviewSample,
@@ -385,24 +387,29 @@ export default function Screens() {
           </PhoneFrame>
         </Group>
         <Group title="Home and progress">
-          <PhoneFrame label="Home: first visit">
+          <PhoneFrame label="Home: first visit (0% readiness, Start training)">
             <Screen nav="/">
               <HomeSample state="first" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Home: topics to repeat">
-            <Screen nav="/">
-              <HomeSample state="repeat" />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Home: continue a session">
+          <PhoneFrame label="Home: an unfinished session, Continue">
             <Screen nav="/">
               <HomeSample state="continue" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Home: all repeated">
+          <PhoneFrame label="Home: with history and topics to repeat">
             <Screen nav="/">
-              <HomeSample state="new" />
+              <HomeSample state="weak" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Quick checklists">
+            <Screen>
+              <ChecklistList />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Quick checklist: one checklist">
+            <Screen>
+              <ChecklistDetail checklist={checklists[1]} />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Weak topics">
@@ -437,11 +444,6 @@ export default function Screens() {
           </PhoneFrame>
         </Group>
         <Group title="Cards and icons">
-          <PhoneFrame label="Topic icons and tile colours">
-            <Screen nav="/">
-              <TopicIconsSample />
-            </Screen>
-          </PhoneFrame>
           <PhoneFrame label="Empty states">
             <Screen nav="/">
               <EmptyStatesSample />

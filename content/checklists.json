@@ -1,0 +1,42 @@
+{
+  "checklists": [
+    {
+      "id": "leaving-a-building",
+      "title": "Leaving a building during an alarm",
+      "guideRef": ["S1", "S2", "S3", "S4"],
+      "steps": [
+        "Treat the alarm as real until it is officially confirmed otherwise.",
+        "Stop non-essential tasks and take only what you can carry in a few seconds.",
+        "Use the stairs, not the elevator.",
+        "Feel a closed door with the back of your hand. If it is hot, do not open it and use another route.",
+        "In smoke, stay low, cover your nose and mouth, keep one hand on the wall and close doors behind you.",
+        "Go to the assembly point, report to the person doing the headcount, and do not go back in until responders say it is safe."
+      ]
+    },
+    {
+      "id": "severe-bleeding",
+      "title": "Severe bleeding",
+      "guideRef": ["S6", "S5", "S7", "S10"],
+      "steps": [
+        "Check that the scene is safe first, so you do not become a second casualty.",
+        "Call 112 or the local emergency number. Give the location, what happened, the number of injured people and any hazards.",
+        "Press firmly and directly on the wound with a clean cloth or dressing, and keep the pressure on.",
+        "If the cloth soaks through, add more layers on top instead of removing it.",
+        "Keep the person lying down and warm, and monitor them until help arrives.",
+        "Hand over to responders: what happened, what you found, what you did and when, and any changes since."
+      ]
+    },
+    {
+      "id": "burns",
+      "title": "Burns",
+      "guideRef": ["S6", "S8"],
+      "steps": [
+        "Deal with life-threatening problems first: not breathing and severe bleeding.",
+        "Cool the burn under cool running water for 10 to 20 minutes.",
+        "Do not apply ice, butter, oils or toothpaste, and do not burst blisters.",
+        "Cover the burn loosely with a clean, non-fluffy dressing.",
+        "Seek medical help for large or deep burns, burns on the face, hands or genitals, or if you are unsure."
+      ]
+    }
+  ]
+}

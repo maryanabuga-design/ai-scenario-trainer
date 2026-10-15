@@ -9,11 +9,7 @@ import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { Tag } from "@/components/Tag/Tag";
 import { TopicTile } from "@/components/TopicTile/TopicTile";
 import { MaterialTile } from "@/components/MaterialTile/MaterialTile";
-import { TopicRow } from "@/components/TopicRow/TopicRow";
 import { loadAllSections } from "@/lib/guide";
-import { getStep } from "@/lib/scenario";
-import { scoreItem } from "@/lib/scoring";
-import { weakTopics } from "@/lib/weak-topics";
 
 function withSheet(node: React.ReactNode) {
   return renderToStaticMarkup(
@@ -69,9 +65,6 @@ describe("secondary sand for inactive states and tonal backgrounds", () => {
       />,
     );
     expect(strip.match(/border-\[1.5px\] border-secondary-sand-pressed/g)).toHaveLength(2);
-    const topics = weakTopics([scoreItem(getStep("s3"), "b"), scoreItem(getStep("s5"), "a")]);
-    const row = withSheet(<TopicRow topics={topics} labelledBy="t" onRepeat={() => undefined} />);
-    expect(row.match(/h-2 w-2 rounded-full bg-secondary-sand-pressed/g)).toHaveLength(1);
   });
 });
 

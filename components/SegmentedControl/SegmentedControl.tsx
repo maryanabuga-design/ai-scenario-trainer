@@ -1,3 +1,7 @@
+"use client";
+
+import { useId } from "react";
+
 /**
  * A full-width choice between a few options. Native radio buttons underneath, so arrow keys move
  * the selection and Tab enters and leaves the group. The selected option is a black pill with a
@@ -16,6 +20,8 @@ export function SegmentedControl<T extends string>({
   value: T;
   onChange: (value: T) => void;
 }) {
+  // Pages kept for Back can share a name; a radio group is one per page.
+  const group = useId();
   return (
     <fieldset className="flex flex-col gap-3">
       <legend className="type-body-strong mb-3">{legend}</legend>
@@ -33,7 +39,7 @@ export function SegmentedControl<T extends string>({
             >
               <input
                 type="radio"
-                name={name}
+                name={`${name}-${group}`}
                 value={option.value}
                 checked={checked}
                 onChange={() => onChange(option.value)}

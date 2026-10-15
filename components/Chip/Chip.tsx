@@ -42,8 +42,6 @@ type Props = {
   tone: ChipTone;
   ink?: ChipInk;
   size?: keyof typeof sizes;
-  /** Keeps the text as written (only the direction chip on Home). */
-  sentenceCase?: boolean;
   /** Layout only (height, tap area), never colour. */
   className?: string;
   children: ReactNode;
@@ -51,21 +49,13 @@ type Props = {
   { as?: "span" } | ({ as: "button" } & Omit<ComponentProps<"button">, "className" | "children">)
 );
 
-export function Chip({
-  tone,
-  ink,
-  size = "label",
-  sentenceCase = false,
-  className = "",
-  children,
-  ...rest
-}: Props) {
+export function Chip({ tone, ink, size = "label", className = "", children, ...rest }: Props) {
   // Inside a selected SelectableCard every chip turns primary, with white text.
   const selected = useCardSelected();
   const look = selected
     ? "bg-primary text-primary-text"
     : `${tones[tone]} ${tone === "primary" ? "text-primary-text" : ink ? inks[ink] : "text-text"}`;
-  const classes = `inline-flex w-fit shrink-0 items-center gap-1.5 rounded-full whitespace-nowrap ${sizes[size]} ${look} ${sentenceCase ? "normal-case" : ""} ${className}`;
+  const classes = `inline-flex w-fit shrink-0 items-center gap-1.5 rounded-full whitespace-nowrap ${sizes[size]} ${look} ${className}`;
   if ("as" in rest && rest.as === "button") {
     const { as: _as, ...button } = rest;
     void _as;

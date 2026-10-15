@@ -6,19 +6,10 @@ type Tone = Extract<ChipTone, "yellow" | "peach" | "blue" | "lilac" | "green">;
 
 /**
  * A category label, drawn by the shared Chip; primary while its SelectableCard is selected.
- * `sentenceCase` keeps the text as written (only the direction chip on Home).
  */
-export function Tag({
-  tone = "yellow",
-  sentenceCase = false,
-  children,
-}: {
-  tone?: Tone;
-  sentenceCase?: boolean;
-  children: ReactNode;
-}) {
+export function Tag({ tone = "yellow", children }: { tone?: Tone; children: ReactNode }) {
   return (
-    <Chip tone={tone} size="label" sentenceCase={sentenceCase}>
+    <Chip tone={tone} size="label">
       {children}
     </Chip>
   );
