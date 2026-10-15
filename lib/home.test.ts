@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  availableQuestionCount,
   continueCard,
   homeCounts,
   homeTiles,
@@ -9,6 +8,8 @@ import {
   readiness,
 } from "@/lib/home";
 import { getItem } from "@/lib/items";
+import { modeStats } from "@/lib/part-progress";
+import { modeItems } from "@/lib/parts";
 import { questions } from "@/lib/quiz";
 import type { FinishedSession, Session } from "@/lib/session";
 
@@ -51,20 +52,21 @@ describe("the Continue training card", () => {
       kind: "start",
       title: "Start training",
       subtitle: "Choose a scenario or a quiz",
-      href: "/session/setup",
+      href: "/training",
     });
   });
 });
 
 describe("readiness", () => {
+  /** Questions of the guide's sections S1 to S10: 10 scenario steps and 33 quiz questions. */
+  const TOTAL = 43;
+
   it("is 0% when nothing is done", () => {
     expect(readiness(null)).toBe(0);
     expect(readiness([])).toBe(0);
   });
 
-  it("is the unique questions answered correctly divided by all available questions", () => {
-    const total = availableQuestionCount();
-    expect(total).toBe(questions.length + 13);
+  it("is the unique questions answered correctly divided by all questions of both modes", () => {
     const ids = questions.slice(0, 14).map((question) => question.id);
     const history = [
       finished(
@@ -72,7 +74,7 @@ describe("readiness", () => {
         ids.map((id): [string, boolean] => [id, true]),
       ),
     ];
-    expect(readiness(history)).toBe(Math.floor((14 / total) * 100));
+    expect(readiness(history)).toBe(Math.floor((14 / TOTAL) * 100));
     expect(readiness(history)).toBeGreaterThan(0);
   });
 
@@ -88,32 +90,44 @@ describe("readiness", () => {
       ["q-s1-2", true],
     ]);
     expect(readiness([first, more])).toBeGreaterThan(before);
-    // s1 was answered right twice: 4 different questions are right, not 5.
-    expect(readiness([first, more])).toBe(Math.floor((4 / availableQuestionCount()) * 100));
+    // s1 was right twice: 4 different questions are right, not 5.
+    expect(readiness([first, more])).toBe(Math.floor((4 / TOTAL) * 100));
   });
 
   it("uses only the latest answer: a later wrong answer takes a question away, a right one gives it back", () => {
-    const right = finished(1, [["s1", true]]);
+    const right = finished(1, [
+      ["s1", true],
+      ["q-s1-1", true],
+    ]);
     const wrong = finished(2, [["s1", false]]);
     const again = finished(3, [["s1", true]]);
-    expect(readiness([right, wrong])).toBe(0);
-    expect(readiness([again, right, wrong])).toBeGreaterThanOrEqual(readiness([right, wrong]));
+    expect(readiness([right, wrong])).toBe(Math.floor((1 / TOTAL) * 100));
     expect(readiness([right, wrong, again])).toBe(readiness([right]));
     // the order the sessions are stored in does not matter
     expect(readiness([wrong, again, right])).toBe(readiness([right, wrong, again]));
   });
 
-  it("reaches 100% only when every available question is right", () => {
+  it("reaches 100% only when every question of both modes is right", () => {
     const every = finished(1, [
-      ...questions.map((question): [string, boolean] => [question.id, true]),
-      ...["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10"].map(
-        (id): [string, boolean] => [id, true],
-      ),
-      ["flood-s1", true],
-      ["flood-s2", true],
-      ["flood-s3", true],
+      ...modeItems("quiz").map((item): [string, boolean] => [item.id, true]),
+      ...modeItems("scenario").map((item): [string, boolean] => [item.id, true]),
     ]);
     expect(readiness([every])).toBe(100);
+    expect(readiness([finished(1, [["flood-s1", true]])])).toBe(0);
+  });
+
+  it("is the same number the Training screen's selectors give", () => {
+    const history = [
+      finished(1, [
+        ["s1", true],
+        ["q-s1-1", true],
+        ["q-s2-1", false],
+      ]),
+    ];
+    const stats = [modeStats(history, "scenario"), modeStats(history, "quiz")];
+    expect(readiness(history)).toBe(
+      Math.floor(((stats[0].correct + stats[1].correct) / (stats[0].total + stats[1].total)) * 100),
+    );
   });
 });
 
@@ -154,8 +168,8 @@ describe("the tiles", () => {
   it("words each count line and sends each tile to its screen", () => {
     const tiles = homeTiles(counts);
     expect(tiles.map((tile) => [tile.title, tile.count, tile.href])).toEqual([
-      ["Scenarios", "2 scenarios", "/session/setup?mode=scenario"],
-      ["Quiz", `${questions.length} questions`, "/session/setup?mode=quiz"],
+      ["Scenarios", "2 scenarios", "/training?mode=scenario"],
+      ["Quiz", `${questions.length} questions`, "/training?mode=quiz"],
       ["Weak topics", "Nothing to repeat", "/weak-topics"],
       ["Saved questions", "2 saved", "/saved"],
       ["Guide", "17 sections", "/materials"],

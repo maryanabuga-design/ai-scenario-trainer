@@ -153,12 +153,15 @@ export function ResultsView({
   kind,
   items,
   topics,
+  backHref = "/",
   onRepeat,
 }: {
   kind: SessionKind;
   items: ScoredItem[];
   /** The weak topics from the saved history: they decide what "Repeat weak topics" brings back. */
   topics: WeakTopic[];
+  /** Where Back goes: where the session was started from (Training), Home otherwise. */
+  backHref?: string;
   onRepeat: () => void;
 }) {
   useRestoredScroll();
@@ -167,7 +170,10 @@ export function ResultsView({
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-[44px_1fr_44px] items-center">
-        <CircleBackButton href="/" label="Back to Home" />
+        <CircleBackButton
+          href={backHref}
+          label={backHref === "/" ? "Back to Home" : "Back to Training"}
+        />
         <h1 className="type-item-title text-center">Results</h1>
       </div>
 

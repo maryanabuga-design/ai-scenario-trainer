@@ -39,13 +39,21 @@ import { nextStep, previousStep } from "@/lib/onboarding";
 import type { OnboardingStep } from "@/lib/onboarding";
 import { ProgressView } from "@/components/ProgressView/ProgressView";
 import { ResultsActions, ResultsView } from "@/components/ResultsView/ResultsView";
-import { SessionSetup } from "@/components/SessionSetup/SessionSetup";
-import { defaultSetup } from "@/components/SessionSetup/SessionSetup";
-import type { SetupValue } from "@/components/SessionSetup/SessionSetup";
 import { notCoveredId, replyToChip } from "@/lib/chat";
 import { getItem, hintFor } from "@/lib/items";
+import { TrainingView } from "@/components/TrainingView/TrainingView";
+import type { TrainingTopic } from "@/components/TrainingView/TrainingView";
+import {
+  modeStats,
+  partState,
+  recommendedPart,
+  weakCount,
+  withPartResult,
+} from "@/lib/part-progress";
+import type { PartRecords } from "@/lib/part-progress";
+import { partsFor, sectionsWithParts } from "@/lib/parts";
+import type { TrainingMode } from "@/lib/parts";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
-import { getScenario } from "@/lib/scenario";
 import { defaultDirection } from "@/lib/directions";
 import { sampleMaterials } from "@/lib/materials";
 import { materialFromSample, sampleFiles } from "@/lib/training";
@@ -54,41 +62,79 @@ import type { FinishedSession, Session } from "@/lib/session";
 import { topicIcon, weakTopics } from "@/lib/weak-topics";
 import { homeCounts, readiness } from "@/lib/home";
 
-/** Session setup for a guide: the main view, with its saved answers and weak topics. */
-export function SetupSample({
-  start = defaultSetup,
-  scenarioId,
-  withHistory = true,
-  weakSectionIds = ["S3", "S6"],
+/**
+ * The Training screen: empty, or with some progress (the first part of a topic done, one passed,
+ * and wrong answers in two topics).
+ */
+export function TrainingSample({
+  mode = "scenario",
+  progress = false,
 }: {
-  start?: SetupValue;
-  scenarioId?: string;
-  withHistory?: boolean;
-  weakSectionIds?: string[];
+  mode?: TrainingMode;
+  progress?: boolean;
 }) {
-  const [value, setValue] = useState<SetupValue>(start);
-  const def = getScenario(scenarioId);
-  const flood = def.id !== getScenario(undefined).id;
-  const sections = flood
-    ? ["F1", "F2", "F3", "F4", "F5", "F6", "F7"]
-    : ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10"];
+  const { sections } = useSourceSheet();
+  const [current, setCurrent] = useState<TrainingMode>(mode);
+  const parts = partsFor(current);
+  const done = progress ? sampleDone(current) : { history: [], records: null };
+  const unfinished: Session | null = null;
+  const topics: TrainingTopic[] = sectionsWithParts(current).map((sectionId) => {
+    const own = parts.filter((part) => part.sectionId === sectionId);
+    const next = recommendedPart(own, done.records, unfinished);
+    return {
+      sectionId,
+      title: sections.find((section) => section.id === sectionId)?.title ?? sectionId,
+      toRepeat: weakCount(done.history, current, sectionId),
+      parts: own.map((part) => ({
+        part,
+        state: partState(part, done.records, unfinished),
+        recommended: next?.id === part.id,
+      })),
+    };
+  });
   return (
-    <SessionSetup
-      value={{ ...value, sections: value.sections.length > 0 ? value.sections : sections }}
-      onChange={setValue}
-      onStart={() => undefined}
-      materialName={flood ? "Flood preparedness guide.pdf" : "Sample evacuation guide.pdf"}
-      scenarioId={def.id}
-      guideSectionIds={sections}
-      stats={
-        withHistory
-          ? { questions: 24, correct: 17, incorrect: 7 }
-          : { questions: 0, correct: 0, incorrect: 0 }
-      }
-      practised={withHistory ? 32 : 0}
-      weakSectionIds={flood ? [] : weakSectionIds}
+    <TrainingView
+      guideName="Sample evacuation guide.pdf"
+      mode={current}
+      onModeChange={setCurrent}
+      stats={modeStats(done.history, current)}
+      topics={topics}
+      records={done.records}
+      onStartPart={() => undefined}
     />
   );
+}
+
+/** Finished part sessions for the sample Training screen: the first part of S1 passed, one of S2 not. */
+function sampleDone(mode: TrainingMode) {
+  const parts = partsFor(mode);
+  const wrongOf = (id: string) => {
+    const item = getItem(id);
+    return item.options.find((option) => option.id !== item.correctOptionId)!.id;
+  };
+  const sessions: FinishedSession[] = [];
+  let records: PartRecords | null = null;
+  parts
+    .filter((part) => part.n === 1 && ["S1", "S2", "S4"].includes(part.sectionId))
+    .forEach((part, index) => {
+      const answers = part.itemIds.map((itemId, position) => ({
+        itemId,
+        optionId:
+          part.sectionId === "S1" || position % 2 === 0
+            ? getItem(itemId).correctOptionId
+            : wrongOf(itemId),
+      }));
+      const finished: FinishedSession = {
+        kind: mode,
+        itemIds: part.itemIds,
+        answers,
+        partId: part.id,
+        finishedAt: 1 + index,
+      };
+      sessions.push(finished);
+      records = withPartResult(records, { partId: part.id, answers });
+    });
+  return { history: sessions, records };
 }
 
 /** One question screen with the top row, the step strip and the Next bar. */
@@ -278,7 +324,6 @@ export function HomeSample({ state = "first" }: { state?: "first" | "continue" |
         saved: state === "first" ? [] : ["s3", "q-s2-1", "q-s7-3", "s5"],
         guideSections: 17,
       })}
-      onOpenSetup={() => undefined}
       onMiniSession={() => undefined}
     />
   );
@@ -483,8 +528,6 @@ export function ReviewSample() {
   );
 }
 
-const FLOOD = "flood-preparedness-001";
-
 /** The flood scenario's first step. */
 export function FloodStepSample() {
   return <SessionSample itemId="flood-s1" index={0} total={3} />;
@@ -500,10 +543,6 @@ export function FloodResultsSample() {
       onRepeat={() => undefined}
     />
   );
-}
-
-export function FloodSetupSample() {
-  return <SetupSample start={{ ...defaultSetup, mode: "scenario" }} scenarioId={FLOOD} />;
 }
 
 /** The Weak topics page with the sample answers, or empty. */

@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest";
 import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
 import { QuestionScreen } from "@/components/QuestionScreen/QuestionScreen";
 import { SelectableCard } from "@/components/SelectableCard/SelectableCard";
-import { SessionSetup, defaultSetup } from "@/components/SessionSetup/SessionSetup";
 import { SessionTopBar } from "@/components/SessionTopBar/SessionTopBar";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { stripStates } from "@/components/StepStrip/StepStrip";
@@ -255,6 +254,23 @@ describe("the top row", () => {
     expect(render(0)).not.toContain("Previous question");
   });
 
+  it("shows the section name under the position for a part session", () => {
+    const html = renderToStaticMarkup(
+      <SessionTopBar
+        index={1}
+        total={5}
+        unit="Question"
+        subtitle="Checking the route"
+        states={stripStates(Array(5).fill(false), 1)}
+        onJump={noop}
+        onBack={noop}
+        onLeave={noop}
+      />,
+    );
+    expect(html.indexOf("Question 2 of 5")).toBeLessThan(html.indexOf("Checking the route"));
+    expect(render(1)).not.toContain("type-caption max-w-full");
+  });
+
   it("has the step strip under it with every question", () => {
     expect(render(0).match(/aria-label="Question \d+,/g)).toHaveLength(10);
   });
@@ -272,7 +288,7 @@ describe("no AI or bot wording in a session", () => {
     });
   });
 
-  it("is absent from the top row and from Session setup, in both modes, with no footer note", () => {
+  it("is absent from the top row, with its subtitle", () => {
     const top = renderToStaticMarkup(
       <SessionTopBar
         index={0}
@@ -285,21 +301,5 @@ describe("no AI or bot wording in a session", () => {
       />,
     );
     expect(visibleText(top)).not.toMatch(banned);
-    for (const mode of ["scenario", "quiz"] as const) {
-      const html = withSources(
-        <SessionSetup
-          value={{ ...defaultSetup, mode, sections: ["S1", "S2"] }}
-          onChange={noop}
-          onStart={noop}
-          materialName="Sample evacuation guide.pdf"
-          guideSectionIds={["S1", "S2"]}
-          stats={{ questions: 0, correct: 0, incorrect: 0 }}
-          practised={0}
-          weakSectionIds={[]}
-        />,
-      );
-      expect(visibleText(html)).not.toMatch(banned);
-      expect(html).not.toContain("simulated for this prototype");
-    }
   });
 });

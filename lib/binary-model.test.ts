@@ -88,3 +88,20 @@ describe("the session screens", () => {
     expect(page).not.toMatch(/Correct|Incorrect|correctOptionId|scoreItem|AskAi/);
   });
 });
+
+describe("Session setup is gone", () => {
+  it("has no screen, component or link to it", () => {
+    expect(existsSync("components/SessionSetup")).toBe(false);
+    expect(existsSync("app/(app)/session/setup")).toBe(false);
+    expect(existsSync("lib/setup.ts")).toBe(false);
+    expect(containing(/session\/setup|SessionSetup/)).toEqual([]);
+  });
+
+  it("has none of its settings: lengths 10/20/30, Shuffle, Only topics to repeat, Guide sections row", () => {
+    expect(
+      containing(/Shuffle questions|Only topics to repeat|lengthOptions|fitLength|LENGTHS/),
+    ).toEqual([]);
+    expect(containing(/Guide sections ·/)).toEqual([]);
+    expect(containing(/pickScenarioItems|buildSession|onlyWeakSections/)).toEqual([]);
+  });
+});

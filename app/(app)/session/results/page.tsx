@@ -23,6 +23,7 @@ export default function ResultsPage() {
       kind={session.kind}
       items={scoreSession(session)}
       topics={topics}
+      backHref={session.returnTo ?? "/"}
       onRepeat={() => {
         startRepeat(topics);
         window.scrollTo(0, 0);

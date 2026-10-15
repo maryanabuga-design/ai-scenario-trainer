@@ -1,6 +1,6 @@
 # Build plan
 
-One commit per screen group, in this order. Steps 1 to 72 are built. Steps 2 to 6 were first built as a thin clickable path through the whole cycle. Each commit runs `npm run lint`, `npm run typecheck` and `npm run build`, and saves a screenshot in `docs/screens/`.
+One commit per screen group, in this order. Steps 1 to 75 are built. Steps 2 to 6 were first built as a thin clickable path through the whole cycle. Each commit runs `npm run lint`, `npm run typecheck` and `npm run build`, and saves a screenshot in `docs/screens/`.
 
 1. Foundation refresh: tokens, pill buttons, cards, tags, gradient helper, four-item bottom navigation, storage helper. (A temporary "Coming next" screen stood in for unbuilt sections and is now removed.)
 2. Materials: list, material page, upload sequence.
@@ -69,6 +69,9 @@ One commit per screen group, in this order. Steps 1 to 72 are built. Steps 2 to 
 70. Saved questions: the Saved screen (`/saved`, linked from Profile for now), one saved question on its own (`/saved/[id]`), the bookmark on the Answer review, and "Repeat saved (N)".
 71. Home rebuilt as the learner view (17 Oct 2026): the title and profile button, the big Continue training card with a readiness ring, six pastel tiles (Scenarios, Quiz, Weak topics, Saved questions, Guide, Quick checklists) and the Mini-session of 5 questions; the Next up card, the Topics row, the New scenario cards and the decorative SoftShape are gone, and so is the temporary Saved link on Profile. Session setup takes `?mode=scenario` or `?mode=quiz` from the tiles. Screenshots: `docs/screens/68-*`.
 72. Quick checklists: a list and a numbered checklist screen, three checklists written from the guide (`content/checklists.json`).
+73. Session setup removed (17 Oct 2026): the screen, its lengths 10/20/30, Shuffle, Only topics to repeat, the Guide sections screen and the setup hero are gone; session length is fixed (a part, the wrong questions of a repeat round, a mini-quiz of 5, 10 or 15). The Home card and tiles open the Training screen.
+74. Parts and progress: parts of PART_SIZE = 5 derived per mode and section, part results stored in the versioned schema (now 4, reading 2 and 3), selectors for answered, accuracy, part state, recommended part and weak counts, shared with the readiness ring.
+75. Training screen (`/training`): stats, switch, Mini-quiz card (placeholder route `/mini-quiz`), topic cards with parts, rings, Start and Continue pills, rose chips; a part session shows its section name and Back from Results returns to Training. Screenshots: `docs/screens/69-*`.
 
 ## Screen review page
 `/screens` is a development-only page (404 in production, not linked from the navigation) that shows every planned screen at 390 by 844. Screens that are not built are dashed frames. Each screen commit replaces its frame with the real screen using sample data.

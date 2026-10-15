@@ -10,7 +10,7 @@ import { GuideChip } from "@/components/GuideChip/GuideChip";
 import { Tag } from "@/components/Tag/Tag";
 import type { Material } from "@/lib/materials";
 import { questionsFor } from "@/lib/quiz";
-import { questionCountLabel } from "@/lib/setup";
+import { questionCountLabel } from "@/lib/quiz-draw";
 import { getScenario } from "@/lib/scenario";
 import type { Training } from "@/lib/training";
 

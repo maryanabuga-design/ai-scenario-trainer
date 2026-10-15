@@ -9,7 +9,6 @@ import { homeCounts, miniSessionIds, readiness } from "@/lib/home";
 import { needsOnboarding, onboardingHref } from "@/lib/onboarding";
 import { useSaved } from "@/lib/saved";
 import { startSession, useHistory, useProfile, useSession } from "@/lib/session";
-import { startTraining } from "@/lib/trainings";
 
 export default function Home() {
   const router = useRouter();
@@ -42,8 +41,6 @@ export default function Home() {
       unfinished={unfinished}
       readiness={readiness(history)}
       counts={homeCounts({ history, saved, guideSections: sections.length })}
-      // Session setup for the sample evacuation guide, whatever training was opened last.
-      onOpenSetup={() => startTraining("evacuation-guide")}
       onMiniSession={() => {
         startSession("quiz", miniSessionIds());
         router.push("/session");

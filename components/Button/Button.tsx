@@ -10,6 +10,8 @@ export type ButtonLook = {
   /** Primary and secondary fill the width by default; false for one in a row (Ask AI Send, the
    * Materials header). */
   wide?: boolean;
+  /** The small primary pill of a Training row (Start, Continue): 36px high, 12px radius. */
+  pill?: boolean;
   /** 16px instead of 24px side padding, so the Results pair can fit on one line. */
   snug?: boolean;
   /** 44px high instead of 52px: only the Materials page-header action. */
@@ -40,10 +42,10 @@ export const pressedLook: Record<ButtonVariant, string> = {
 /** The page-header action (Upload a file) is 44px high instead of 52px. */
 const compactHeight = "h-11!";
 
-export function buttonClasses({ variant = "primary", wide, compact, snug }: ButtonLook) {
+export function buttonClasses({ variant = "primary", wide, compact, snug, pill }: ButtonLook) {
   const width = (wide ?? variant !== "tertiary") ? "w-full" : "";
-  const padding = variant === "tertiary" ? "" : snug ? "px-4" : "px-6";
-  return `group inline-flex items-center justify-center gap-2 rounded-button disabled:cursor-not-allowed ${buttonVariants[variant]} ${padding} ${width} ${compact ? compactHeight : ""}`;
+  const padding = variant === "tertiary" ? "" : snug || pill ? "px-4" : "px-6";
+  return `group inline-flex items-center justify-center gap-2 rounded-button disabled:cursor-not-allowed ${buttonVariants[variant]} ${padding} ${width} ${compact ? compactHeight : ""} ${pill ? "h-9! rounded-xl!" : ""}`;
 }
 
 function Content({

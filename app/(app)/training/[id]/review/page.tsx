@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ButtonLink } from "@/components/Button/Button";
 import { TrainingReview } from "@/components/TrainingReview/TrainingReview";
 import { sampleMaterials } from "@/lib/materials";
-import { startTraining, useTrainings } from "@/lib/trainings";
+import { useTrainings } from "@/lib/trainings";
 import { useMaterial } from "@/lib/uploads";
 import { MaterialNotFound } from "@/components/MaterialNotFound/MaterialNotFound";
 
@@ -32,8 +32,7 @@ export default function ReviewTrainingPage() {
       material={material}
       training={training}
       onStart={() => {
-        startTraining(id);
-        router.push("/session/setup");
+        router.push("/training");
       }}
     />
   );

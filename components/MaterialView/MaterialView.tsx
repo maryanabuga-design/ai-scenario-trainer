@@ -11,7 +11,7 @@ import { MaterialTile } from "@/components/MaterialTile/MaterialTile";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { StatusChip } from "@/components/StatusChip/StatusChip";
 import { TrainingTags } from "@/components/TrainingTags/TrainingTags";
-import { startTraining, useTrainings } from "@/lib/trainings";
+import { useTrainings } from "@/lib/trainings";
 import { UploadButton } from "@/components/UploadSheet/UploadSheet";
 import { formatAdded, materialKind } from "@/lib/materials";
 import type { Material, MaterialSection } from "@/lib/materials";
@@ -143,8 +143,7 @@ export function MaterialView({
           <>
             <Button
               onClick={() => {
-                startTraining(material.id);
-                router.push("/session/setup");
+                router.push("/training");
               }}
             >
               Start training

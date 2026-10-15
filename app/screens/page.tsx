@@ -6,7 +6,6 @@ import { ActionBarProvider, ActionBarSlot } from "@/components/ActionBar/ActionB
 import { AskAiProvider } from "@/components/AskAi/AskAi";
 import { ChecklistDetail } from "@/components/ChecklistView/ChecklistDetail";
 import { ChecklistList } from "@/components/ChecklistView/ChecklistList";
-import { defaultSetup } from "@/components/SessionSetup/SessionSetup";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
 import { Button } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
@@ -27,7 +26,6 @@ import {
   CreateTrainingSample,
   GeneratingSample,
   FloodResultsSample,
-  FloodSetupSample,
   FloodStepSample,
   HomeSample,
   MaterialTypesSample,
@@ -42,7 +40,7 @@ import {
   ProgressSample,
   ResultsSample,
   ResultsButtonsSample,
-  SetupSample,
+  TrainingSample,
 } from "./samples";
 
 function Group({ title, children }: { title: string; children: ReactNode }) {
@@ -231,25 +229,20 @@ export default function Screens() {
             </Screen>
           </PhoneFrame>
         </Group>
-        <Group title="Session setup">
-          <PhoneFrame label="Session setup: scenario">
-            <Screen>
-              <SetupSample />
+        <Group title="Training">
+          <PhoneFrame label="Training: Scenario, nothing done yet">
+            <Screen nav="/">
+              <TrainingSample />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Session setup: quiz (shuffle)">
-            <Screen>
-              <SetupSample start={{ ...defaultSetup, mode: "quiz", length: 20 }} />
+          <PhoneFrame label="Training: Scenario, with some progress">
+            <Screen nav="/">
+              <TrainingSample progress />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Session setup: first visit, nothing to repeat">
-            <Screen>
-              <SetupSample withHistory={false} weakSectionIds={[]} />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Session setup: flood guide (all 3)">
-            <Screen>
-              <FloodSetupSample />
+          <PhoneFrame label="Training: Quiz, with the Mini-quiz card">
+            <Screen nav="/">
+              <TrainingSample mode="quiz" progress />
             </Screen>
           </PhoneFrame>
         </Group>

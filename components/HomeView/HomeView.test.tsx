@@ -14,7 +14,6 @@ function render(unfinished: Session | null = null, readiness = 0) {
       unfinished={unfinished}
       readiness={readiness}
       counts={counts}
-      onOpenSetup={noop}
       onMiniSession={noop}
     />,
   );
@@ -60,11 +59,11 @@ describe("Home layout", () => {
 });
 
 describe("the Continue training card", () => {
-  it("says Start training and goes to Session setup when nothing is unfinished", () => {
+  it("says Start training and opens the Training screen when nothing is unfinished", () => {
     const html = render();
     expect(html).toContain("Start training");
     expect(html).toContain("Choose a scenario or a quiz");
-    expect(html).toContain('href="/session/setup"');
+    expect(html).toContain('href="/training"');
     expect(html).not.toContain(">Continue<");
   });
 
@@ -111,8 +110,8 @@ describe("the tiles", () => {
 
   it("show the counts and go to the right screen", () => {
     for (const [title, count, href] of [
-      ["Scenarios", "2 scenarios", "/session/setup?mode=scenario"],
-      ["Quiz", `${counts.questions} questions`, "/session/setup?mode=quiz"],
+      ["Scenarios", "2 scenarios", "/training?mode=scenario"],
+      ["Quiz", `${counts.questions} questions`, "/training?mode=quiz"],
       ["Weak topics", "Nothing to repeat", "/weak-topics"],
       ["Saved questions", "0 saved", "/saved"],
       ["Guide", "17 sections", "/materials"],

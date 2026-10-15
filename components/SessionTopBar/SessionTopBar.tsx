@@ -19,6 +19,7 @@ export function SessionTopBar({
   total,
   unit = "Question",
   states,
+  subtitle,
   onJump,
   onBack,
   onLeave,
@@ -27,6 +28,8 @@ export function SessionTopBar({
   total: number;
   unit?: Unit;
   states: StripState[];
+  /** Under the position: the section name of a Training part. */
+  subtitle?: string;
   onJump: (position: number) => void;
   onBack: () => void;
   onLeave: () => void;
@@ -40,8 +43,13 @@ export function SessionTopBar({
           label={index > 0 ? `Previous ${unit.toLowerCase()}` : "Leave this session"}
           onClick={index > 0 ? onBack : () => setConfirming(true)}
         />
-        <span className="type-small text-center text-text-secondary tabular-nums">
-          {unit} {index + 1} of {total}
+        <span className="flex min-w-0 flex-col items-center text-center">
+          <span className="type-small text-text-secondary tabular-nums">
+            {unit} {index + 1} of {total}
+          </span>
+          {subtitle && (
+            <span className="type-caption max-w-full truncate text-text-secondary">{subtitle}</span>
+          )}
         </span>
         <div className="-mr-3">
           <Button variant="tertiary" onClick={() => setConfirming(true)}>

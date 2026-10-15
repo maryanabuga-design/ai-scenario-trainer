@@ -10,6 +10,7 @@ import type { Unit } from "@/components/SessionTopBar/SessionTopBar";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { stripStates } from "@/components/StepStrip/StepStrip";
 import { getItem, hintFor } from "@/lib/items";
+import { getPart } from "@/lib/parts";
 import { isSaved, toggleSaved, useSaved } from "@/lib/saved";
 import type { Session } from "@/lib/session";
 import {
@@ -47,6 +48,10 @@ function Runner({ session }: { session: Session }) {
   const item = getItem(session.itemIds[index]);
   const unit: Unit = session.kind === "scenario" ? "Step" : "Question";
   const choice = answerFor(session, item.id)?.optionId ?? null;
+  const part = session.partId ? getPart(session.partId) : undefined;
+  const subtitle = part
+    ? sections.find((section) => section.id === part.sectionId)?.title
+    : undefined;
   const hint = hintFor(item, (id) => sections.find((section) => section.id === id)?.title);
   const hintOpen = hint !== null && hintOpenFor === item.id;
 
@@ -85,6 +90,7 @@ function Runner({ session }: { session: Session }) {
         index={index}
         total={total}
         unit={unit}
+        subtitle={subtitle}
         states={stripStates(answered, index)}
         onJump={jump}
         onBack={() => jump(index - 1)}

@@ -12,7 +12,7 @@ import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { Tag } from "@/components/Tag/Tag";
 import type { Material } from "@/lib/materials";
 import { questionsFor } from "@/lib/quiz";
-import { questionCountLabel } from "@/lib/setup";
+import { questionCountLabel } from "@/lib/quiz-draw";
 import { choiceProblem, planTraining } from "@/lib/training";
 import type { TrainingChoice } from "@/lib/training";
 

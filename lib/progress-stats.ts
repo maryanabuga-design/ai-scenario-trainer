@@ -1,6 +1,4 @@
 import { scoreSession } from "@/lib/progress";
-import { questions } from "@/lib/quiz";
-import { scenarios } from "@/lib/scenario";
 import { correctCount } from "@/lib/scoring";
 import type { FinishedSession } from "@/lib/session";
 
@@ -66,23 +64,4 @@ export function sectionStats(history: FinishedSession[], ids: string[]): Section
     const touching = items.filter((item) => item.guideRef.includes(id));
     return { id, correct: touching.filter((item) => item.correct).length, total: touching.length };
   });
-}
-
-export type GuideStats = { questions: number; correct: number; incorrect: number };
-
-/** The answers given to a guide's questions in all saved sessions (the "Your answers" counts). */
-export function guideStats(history: FinishedSession[], sectionIds: string[]): GuideStats {
-  const items = history.flatMap(scoreSession).filter((item) => sectionIds.includes(item.section));
-  const correct = correctCount(items);
-  return { questions: items.length, correct, incorrect: items.length - correct };
-}
-
-/** The share of a guide's questions and situations answered at least once, as a whole percent. */
-export function guidePracticed(history: FinishedSession[], sectionIds: string[]): number {
-  const all = [...questions, ...scenarios.flatMap((def) => def.steps)].filter((item) =>
-    sectionIds.includes(item.section),
-  );
-  if (all.length === 0) return 0;
-  const answered = new Set(history.flatMap(scoreSession).map((item) => item.id));
-  return percentOf(all.filter((item) => answered.has(item.id)).length, all.length);
 }

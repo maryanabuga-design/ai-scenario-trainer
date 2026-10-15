@@ -1,4 +1,5 @@
 import { findItem } from "@/lib/items";
+import { clearPartRecords, recordPartResult } from "@/lib/part-progress";
 import { createStore } from "@/lib/store";
 import { clearTrainings } from "@/lib/trainings";
 
@@ -22,6 +23,10 @@ export type Session = {
   answers: Answer[];
   /** The question on screen. Answers are saved as they are given. */
   index: number;
+  /** The Training part this session plays (`<mode>:<section>:<n>`); absent for other sessions. */
+  partId?: string;
+  /** Where Back on Results goes: where the session was started from. Home when absent. */
+  returnTo?: string;
   /** Questions whose hint was opened; it moves onto the answer once there is one. */
   hintsOpened?: string[];
   finished: boolean;
@@ -29,7 +34,10 @@ export type Session = {
   finishedAt?: number;
 };
 
-export type FinishedSession = Pick<Session, "kind" | "scenarioId" | "itemIds" | "answers"> & {
+export type FinishedSession = Pick<
+  Session,
+  "kind" | "scenarioId" | "itemIds" | "answers" | "partId"
+> & {
   finishedAt: number;
 };
 
@@ -68,10 +76,16 @@ export function saveSession(session: Session) {
   sessionStore.write(session);
 }
 
-export function startSession(kind: SessionKind, itemIds: string[], scenarioId?: string) {
+export function startSession(
+  kind: SessionKind,
+  itemIds: string[],
+  options: { scenarioId?: string; partId?: string; returnTo?: string } = {},
+) {
   saveSession({
     kind,
-    ...(scenarioId && { scenarioId }),
+    ...(options.scenarioId && { scenarioId: options.scenarioId }),
+    ...(options.partId && { partId: options.partId }),
+    ...(options.returnTo && { returnTo: options.returnTo }),
     itemIds,
     answers: [],
     index: 0,
@@ -124,11 +138,13 @@ export function finishSession(session: Session) {
   const entry: FinishedSession = {
     kind: session.kind,
     ...(session.scenarioId && { scenarioId: session.scenarioId }),
+    ...(session.partId && { partId: session.partId }),
     itemIds: session.itemIds,
     answers: ordered,
     finishedAt,
   };
   historyStore.write([...(historyStore.read() ?? []), entry]);
+  recordPartResult({ partId: session.partId, answers: ordered });
 }
 
 export function saveProfile(profile: Profile) {
@@ -139,5 +155,6 @@ export function saveProfile(profile: Profile) {
 export function resetProgress() {
   sessionStore.write(null);
   historyStore.write(null);
+  clearPartRecords();
   clearTrainings();
 }

@@ -1,13 +1,13 @@
-import { getItem } from "@/lib/items";
+import { findItem } from "@/lib/items";
 import { questions } from "@/lib/quiz";
 import { scenarios } from "@/lib/scenario";
-import { scoreSession, weakItemsFromHistory } from "@/lib/progress";
+import { weakItemsFromHistory } from "@/lib/progress";
 import type { FinishedSession, Session } from "@/lib/session";
 import { sessionLabel } from "@/lib/session";
-import { pickQuizItems } from "@/lib/setup";
+import { pickQuizItems } from "@/lib/quiz-draw";
 import { checklists } from "@/lib/checklists";
 
-/** The Mini-session: the only session with 5 questions (Session setup offers 10, 20 and 30). */
+/** The Mini-session row on Home: 5 random quiz questions (the mini-quiz screen offers 5, 10 or 15). */
 export const MINI_SESSION_LENGTH = 5;
 
 /** 5 random quiz questions, spread over the guide sections. */
@@ -16,35 +16,7 @@ export function miniSessionIds(random: () => number = Math.random): string[] {
   return pickQuizItems(sections, MINI_SESSION_LENGTH, random);
 }
 
-/** Every step and question the person can be asked. */
-export const availableQuestionCount = () =>
-  questions.length + scenarios.reduce((sum, def) => sum + def.steps.length, 0);
-
-/**
- * Readiness: the unique questions answered correctly in the latest attempt, divided by all
- * available questions, as a whole percent rounded down. Only the most recent answer to a question
- * counts; 0 when nothing is done.
- */
-export function readiness(history: FinishedSession[] | null): number {
-  const latest = new Map<string, boolean>();
-  [...(history ?? [])]
-    .sort((a, b) => a.finishedAt - b.finishedAt)
-    .flatMap((session) => scoreSession(session))
-    .forEach((item) => latest.set(item.id, item.correct));
-  const total = availableQuestionCount();
-  if (total === 0) return 0;
-  const right = [...latest.entries()].filter(([id, correct]) => correct && itemExists(id)).length;
-  return Math.floor((right / total) * 100 + 1e-9);
-}
-
-function itemExists(id: string) {
-  try {
-    getItem(id);
-    return true;
-  } catch {
-    return false;
-  }
-}
+export { readinessOf as readiness } from "@/lib/part-progress";
 
 export type ContinueCard = {
   kind: "continue" | "start";
@@ -68,7 +40,7 @@ export function continueCard(unfinished: Session | null): ContinueCard {
     kind: "start",
     title: "Start training",
     subtitle: "Choose a scenario or a quiz",
-    href: "/session/setup",
+    href: "/training",
   };
 }
 
@@ -101,14 +73,14 @@ export function homeTiles(counts: HomeCounts): HomeTile[] {
       id: "scenarios",
       title: "Scenarios",
       count: plural(counts.scenarios, "scenario", "scenarios"),
-      href: "/session/setup?mode=scenario",
+      href: "/training?mode=scenario",
       tone: "yellow",
     },
     {
       id: "quiz",
       title: "Quiz",
       count: plural(counts.questions, "question", "questions"),
-      href: "/session/setup?mode=quiz",
+      href: "/training?mode=quiz",
       tone: "blue",
     },
     {
@@ -160,7 +132,7 @@ export function homeCounts({
     scenarios: scenarios.length,
     questions: questions.length,
     weakSections: new Set(weak.map((item) => item.section)).size,
-    saved: (saved ?? []).filter(itemExists).length,
+    saved: (saved ?? []).filter((id) => findItem(id) !== undefined).length,
     guideSections,
     checklists: checklists.length,
   };

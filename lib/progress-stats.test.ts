@@ -1,12 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  guidePracticed,
-  guideStats,
-  progressSummary,
-  sectionStats,
-  sessionStats,
-  trendSessions,
-} from "@/lib/progress-stats";
+import { progressSummary, sectionStats, sessionStats, trendSessions } from "@/lib/progress-stats";
 import type { FinishedSession } from "@/lib/session";
 
 const day = (n: number) => Date.UTC(2026, 9, n, 9);
@@ -85,29 +78,5 @@ describe("guide sections", () => {
   it("leaves a section nobody practised at zero", () => {
     expect(sectionStats([good], ["S9"])).toEqual([{ id: "S9", correct: 0, total: 0 }]);
     expect(sectionStats([], ["S1", "S2"]).every((entry) => entry.total === 0)).toBe(true);
-  });
-});
-
-describe("a guide's answers and how much of it is practised", () => {
-  const evacuation = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10"];
-
-  it("counts all answers to the guide's questions in the saved sessions", () => {
-    expect(guideStats([bad, good], evacuation)).toEqual({
-      questions: 6,
-      correct: 3,
-      incorrect: 3,
-    });
-  });
-
-  it("is zero without sessions, and ignores another guide's questions", () => {
-    expect(guideStats([], evacuation)).toEqual({ questions: 0, correct: 0, incorrect: 0 });
-    expect(guideStats([good], ["F1", "F2"])).toEqual({ questions: 0, correct: 0, incorrect: 0 });
-  });
-
-  it("shares the guide's questions and situations answered at least once", () => {
-    expect(guidePracticed([], evacuation)).toBe(0);
-    expect(guidePracticed([good], evacuation)).toBeGreaterThan(0);
-    expect(guidePracticed([good, bad], evacuation)).toBe(guidePracticed([good], evacuation));
-    expect(guidePracticed([good], [])).toBe(0);
   });
 });

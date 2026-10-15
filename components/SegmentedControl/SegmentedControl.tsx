@@ -10,12 +10,15 @@ import { useId } from "react";
 export function SegmentedControl<T extends string>({
   name,
   legend,
+  hideLegend = false,
   options,
   value,
   onChange,
 }: {
   name: string;
   legend: string;
+  /** Keep the legend for screen readers only. */
+  hideLegend?: boolean;
   options: { value: T; label: string }[];
   value: T;
   onChange: (value: T) => void;
@@ -24,7 +27,7 @@ export function SegmentedControl<T extends string>({
   const group = useId();
   return (
     <fieldset className="flex flex-col gap-3">
-      <legend className="type-body-strong mb-3">{legend}</legend>
+      <legend className={hideLegend ? "sr-only" : "type-body-strong mb-3"}>{legend}</legend>
       <div className="flex gap-1 rounded-[14px] border border-secondary-sand-pressed bg-secondary-sand p-1">
         {options.map((option) => {
           const checked = option.value === value;

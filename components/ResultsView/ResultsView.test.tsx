@@ -163,3 +163,32 @@ describe("the Results buttons", () => {
     expect(alone).toContain("w-full");
   });
 });
+
+describe("Back on Results", () => {
+  const items = [scoreItem(getItem("s1"), "d")];
+  const back = (backHref?: string) =>
+    renderToStaticMarkup(
+      <SourceSheetProvider sections={loadAllSections()}>
+        <ActionBarProvider>
+          <ResultsView
+            kind="scenario"
+            items={items}
+            topics={weakTopics(items)}
+            backHref={backHref}
+            onRepeat={() => undefined}
+          />
+        </ActionBarProvider>
+      </SourceSheetProvider>,
+    );
+
+  it("goes Home by default", () => {
+    expect(back()).toContain('aria-label="Back to Home"');
+  });
+
+  it("goes back to the Training screen with the same mode for a part session", () => {
+    const html = back("/training?mode=quiz");
+    expect(html).toContain('aria-label="Back to Training"');
+    expect(html).toContain('href="/training?mode=quiz"');
+    expect(html).not.toContain('aria-label="Back to Home"');
+  });
+});

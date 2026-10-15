@@ -77,7 +77,7 @@ test.describe("a running session", () => {
     await expect(page.getByLabel(S1_RIGHT)).toBeChecked();
     await option(page, S1_WRONG).click();
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.session.v1")!));
-    expect(saved.schema).toBe(3);
+    expect(saved.schema).toBe(4);
     expect(saved.value.answers).toEqual([{ itemId: "s1", optionId: "a" }]);
   });
 
@@ -241,7 +241,7 @@ test.describe("the question screen: hint and bookmark", () => {
     await next(page).click();
     await option(page, /Keep it closed/).click();
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.session.v1")!));
-    expect(saved.schema).toBe(3);
+    expect(saved.schema).toBe(4);
     const [first, second] = saved.value.answers;
     expect(first).toEqual({ itemId: "s1", optionId: "b", hintUsed: true });
     expect(second.hintUsed).toBeUndefined();
@@ -298,7 +298,7 @@ test.describe("the question screen: hint and bookmark", () => {
     await page.reload();
     await expect(page.getByRole("button", { name: "Remove from saved" })).toBeVisible();
     const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.saved.v1")!));
-    expect(stored).toEqual({ schema: 3, value: ["s1"] });
+    expect(stored).toEqual({ schema: 4, value: ["s1"] });
     await page.getByRole("button", { name: "Remove from saved" }).click();
     await expect(page.getByRole("button", { name: "Save question" })).toBeVisible();
     await page.reload();
@@ -417,6 +417,9 @@ test.describe("Home", () => {
       await expect(page.getByText(text)).toBeVisible();
     }
     await expect(page.getByText(/Average result|Session history|Sessions/)).toHaveCount(0);
+    await page.getByRole("link", { name: /Start training/ }).click();
+    await expect(page).toHaveURL(/\/training$/);
+    await expect(page.getByRole("heading", { name: "Training" })).toBeVisible();
     await expect(page.getByRole("link", { name: /Saved questions \(/ })).toHaveCount(0);
   });
 
@@ -439,8 +442,8 @@ test.describe("Home", () => {
         { itemId: "q-s1-1", optionId: "b" },
       ]),
     );
-    // 3 right of 56 available questions: 5%.
-    await expect(page.getByRole("img", { name: "Readiness 5%" })).toBeVisible();
+    // 3 right of 43 questions in the guide's sections: 6%.
+    await expect(page.getByRole("img", { name: "Readiness 6%" })).toBeVisible();
   });
 
   test("shows the sections to repeat after a wrong answer, and opens Weak topics", async ({
@@ -452,16 +455,17 @@ test.describe("Home", () => {
     await expect(page).toHaveURL(/\/weak-topics$/);
   });
 
-  test("sends each tile to its screen", async ({ page }) => {
+  test("sends each tile to its screen (Training in the right mode)", async ({ page }) => {
     await home(page, null);
     await page.getByRole("link", { name: /Scenarios/ }).click();
-    await expect(page).toHaveURL(/\/session\/setup\?mode=scenario/);
+    await expect(page).toHaveURL(/\/training\?mode=scenario/);
     await expect(page.getByRole("radio", { name: "Scenario" })).toBeChecked();
+    await expect(page.getByText("Mini-quiz")).toHaveCount(0);
     await page.goBack();
     await page.getByRole("link", { name: /^Quiz/ }).click();
     await expect(page).toHaveURL(/mode=quiz/);
     await expect(page.getByRole("radio", { name: "Quiz" })).toBeChecked();
-    await expect(page.getByLabel("Shuffle questions")).toBeVisible();
+    await expect(page.getByRole("link", { name: /Mini-quiz/ })).toBeVisible();
     await page.goto("/");
     await page.getByRole("link", { name: /Saved questions/ }).click();
     await expect(page).toHaveURL(/\/saved$/);
@@ -497,123 +501,121 @@ test.describe("Home", () => {
   });
 });
 
-test.describe("session setup", () => {
-  test("offers lengths from what the sections hold and starts a session", async ({ page }) => {
-    await start(page, null, "/session/setup");
-    await expect(page.getByText("YOUR ANSWERS")).toBeVisible();
-    await page.getByText("Quiz", { exact: true }).click();
-    await expect(page.getByText("30 questions")).toBeVisible();
-    await expect(page.getByLabel("Shuffle questions")).toBeVisible();
-    await page.getByRole("button", { name: /Guide sections/ }).click();
-    await expect(page.getByRole("heading", { name: "Guide sections" })).toBeVisible();
-    await page.getByRole("button", { name: "Deselect all" }).click();
-    await expect(page.getByRole("button", { name: "Done" })).toBeDisabled();
-    await page.getByRole("checkbox", { name: /^S1 / }).check({ force: true });
-    await page.getByRole("button", { name: "Done" }).click();
-    await expect(page.getByText("All 4")).toBeVisible();
-    await page.getByRole("button", { name: "Start session" }).click();
-    await expect(page).toHaveURL(/\/session$/);
-    await expect(page.getByText("Question 1 of 4")).toBeVisible();
-  });
-});
-
-test.describe("the Results buttons", () => {
-  const done = {
-    kind: "scenario",
-    itemIds: ["s1", "s2", "s3"],
-    answers: [
-      { itemId: "s1", optionId: "a" },
-      { itemId: "s2", optionId: "c" },
-      { itemId: "s3", optionId: "a" },
-    ],
-    index: 2,
-    finished: true,
-    finishedAt: 5,
-  };
-  const history = [
-    { kind: "scenario", itemIds: done.itemIds, answers: done.answers, finishedAt: 5 },
-  ];
-
-  async function results(page: Page, session: object, past: object[], width: number) {
-    await page.setViewportSize({ width, height: 800 });
+test.describe("Training", () => {
+  async function open(page: Page, path = "/training", past?: object[], session?: object | null) {
     await page.addInitScript(
-      ([p, s, h]) => {
+      ([p, h, s]) => {
+        if (localStorage.getItem("ast.profile.v1")) return;
         localStorage.setItem("ast.profile.v1", JSON.stringify(p));
-        localStorage.setItem("ast.session.v1", JSON.stringify({ schema: 2, value: s }));
-        localStorage.setItem("ast.history.v1", JSON.stringify({ schema: 2, value: h }));
+        if (h) localStorage.setItem("ast.history.v1", JSON.stringify({ schema: 4, value: h }));
+        if (s) localStorage.setItem("ast.session.v1", JSON.stringify({ schema: 4, value: s }));
       },
-      [profile, session, past],
+      [profile, past ?? null, session ?? null],
     );
-    await page.goto("/session/results");
+    await page.goto(path);
   }
 
-  const review = (page: Page) => page.getByRole("link", { name: "Review answers" });
-  const repeat = (page: Page) => page.getByRole("button", { name: "Repeat weak topics" });
-
-  test("stack at 360px: Repeat on top, Review below, both full width, labels on one line", async ({
-    browser,
-  }) => {
-    const context = await browser.newContext({ viewport: { width: 360, height: 800 } });
-    const page = await context.newPage();
-    await results(page, done, history, 360);
-    const [r, v] = [await repeat(page).boundingBox(), await review(page).boundingBox()];
-    expect(r && v).toBeTruthy();
-    expect(r!.y).toBeLessThan(v!.y);
-    expect(Math.round(r!.width)).toBe(Math.round(v!.width));
-    expect(Math.round(r!.width)).toBeGreaterThanOrEqual(326);
-    expect(Math.round(r!.height)).toBe(52);
-    expect(Math.round(v!.height)).toBe(52);
-    expect(Math.round(v!.y - (r!.y + r!.height))).toBe(12);
-    await context.close();
-  });
-
-  test("sit in one row at 430px: Review on the left, Repeat on the right, equal, one line", async ({
-    browser,
-  }) => {
-    const context = await browser.newContext({ viewport: { width: 430, height: 800 } });
-    const page = await context.newPage();
-    await results(page, done, history, 430);
-    const [r, v] = [await repeat(page).boundingBox(), await review(page).boundingBox()];
-    expect(r && v).toBeTruthy();
-    expect(v!.x).toBeLessThan(r!.x);
-    expect(Math.abs(v!.y - r!.y)).toBeLessThan(2);
-    expect(Math.abs(v!.width - r!.width)).toBeLessThan(2);
-    expect(Math.round(r!.height)).toBe(52);
-    expect(Math.round(r!.x - (v!.x + v!.width))).toBe(12);
-    await context.close();
-  });
-
-  test("show Review answers alone, full width, when the person passed", async ({ browser }) => {
-    const context = await browser.newContext({ viewport: { width: 360, height: 800 } });
-    const page = await context.newPage();
-    const right = {
-      ...done,
-      answers: [
-        { itemId: "s1", optionId: "b" },
-        { itemId: "s2", optionId: "c" },
-        { itemId: "s3", optionId: "a" },
-      ],
-    };
-    await results(page, right, [{ ...history[0], answers: right.answers }], 360);
-    await expect(page.getByRole("heading", { name: "Passed" })).toBeVisible();
-    await expect(repeat(page)).toHaveCount(0);
-    const v = await review(page).boundingBox();
-    expect(Math.round(v!.width)).toBeGreaterThanOrEqual(326);
-    await review(page).click();
-    await expect(page).toHaveURL(/\/review\/1$/);
-    await expect(page.getByRole("button", { name: "Question 1, correct" })).toHaveAttribute(
-      "aria-current",
-      "step",
-    );
-    await context.close();
-  });
-
-  test("have a Back arrow that goes Home", async ({ browser }) => {
-    const context = await browser.newContext({ viewport: { width: 360, height: 800 } });
-    const page = await context.newPage();
-    await results(page, done, history, 360);
+  test("shows the stats, the switch, the topic cards and no settings", async ({ page }) => {
+    await open(page);
+    await expect(page.getByText("0/10")).toBeVisible();
+    await expect(page.getByText("0%", { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("radio", { name: "Scenario" })).toBeChecked();
+    await expect(page.locator("section[aria-labelledby^=topic-]")).toHaveCount(5);
+    await expect(page.getByRole("button", { name: "Start" })).toHaveCount(5);
+    await expect(page.getByText(/Shuffle|Only topics|Guide sections/)).toHaveCount(0);
     await page.getByRole("link", { name: "Back to Home" }).click();
     await expect(page).toHaveURL(/\/$/);
-    await context.close();
+  });
+
+  test("switches the mode, updates the whole list and remembers the mode", async ({ page }) => {
+    await open(page);
+    await page.getByText("Quiz", { exact: true }).click();
+    await expect(page.getByText("0/33")).toBeVisible();
+    await expect(page.locator("section[aria-labelledby^=topic-]")).toHaveCount(10);
+    await expect(page.getByRole("link", { name: /Mini-quiz/ })).toBeVisible();
+    await page.goto("/");
+    await page.goto("/training");
+    await expect(page.getByRole("radio", { name: "Quiz" })).toBeChecked();
+    await page.getByText("Scenario", { exact: true }).click();
+    await expect(page.getByRole("link", { name: /Mini-quiz/ })).toHaveCount(0);
+  });
+
+  test("opens the Mini-quiz placeholder from the Quiz card", async ({ page }) => {
+    await open(page, "/training?mode=quiz");
+    await page.getByRole("link", { name: /Mini-quiz/ }).click();
+    await expect(page).toHaveURL(/\/mini-quiz$/);
+    await expect(page.getByRole("heading", { name: "Mini-quiz" })).toBeVisible();
+  });
+
+  test("starts a part at once, with no setup, and returns to Training from Results", async ({
+    page,
+  }) => {
+    await open(page, "/training?mode=quiz");
+    await page
+      .getByRole("button", { name: /Part 1/ })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/session$/);
+    await expect(page.getByText("Question 1 of 4").first()).toBeVisible();
+    await expect(page.getByText("Responding to an alarm").first()).toBeVisible();
+    const started = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.session.v1")!));
+    expect(started.value.partId).toBe("quiz:S1:1");
+    expect(started.value.itemIds).toEqual(["q-s1-1", "q-s1-2", "q-s1-3", "q-s1-4"]);
+
+    // Leaving midway changes nothing in the stats: only a finished session counts.
+    await option(page, /As real until/).click();
+    await page.getByRole("button", { name: "Exit" }).click();
+    await page.getByRole("button", { name: "Leave", exact: true }).click();
+    await page.goto("/training?mode=quiz");
+    await expect(page.getByText("0/33")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Continue" })).toHaveCount(1);
+    await page.getByRole("button", { name: "Continue" }).click();
+    await expect(page.getByText("Question 1 of 4").first()).toBeVisible();
+
+    // Finish the part: answer every question (the first option) and finish.
+    for (let n = 0; n < 4; n++) {
+      await page.locator("fieldset label").first().click();
+      await (n < 3 ? next(page) : finish(page)).click();
+    }
+    await expect(page).toHaveURL(/\/session\/results$/);
+    await page.getByRole("link", { name: "Back to Training" }).click();
+    await expect(page).toHaveURL(/\/training\?mode=quiz$/);
+    await expect(page.getByRole("radio", { name: "Quiz" })).toBeChecked();
+    await expect(page.getByText("4/33")).toBeVisible();
+    await expect(page.getByRole("img", { name: /Part 1: last result \d+%/ }).first()).toBeVisible();
+    await expect(page.locator("section[aria-labelledby=topic-S1] [data-pill]")).toHaveCount(0);
+    await expect(page.getByText(/\d to repeat/).first()).toBeVisible();
+  });
+
+  test("shows the rose chip only after wrong answers", async ({ page }) => {
+    await open(page, "/training?mode=quiz", [
+      {
+        kind: "quiz",
+        itemIds: ["q-s1-1", "q-s2-1"],
+        answers: [
+          { itemId: "q-s1-1", optionId: "a" },
+          { itemId: "q-s2-1", optionId: "b" },
+        ],
+        finishedAt: 1,
+      },
+    ]);
+    await expect(page.getByText("1 to repeat")).toHaveCount(1);
+    await expect(page.locator("section[aria-labelledby=topic-S1]")).toContainText("1 to repeat");
+    await expect(page.locator("section[aria-labelledby=topic-S2]")).not.toContainText("to repeat");
+  });
+
+  test("Home resumes an unfinished part, and Start training opens Training", async ({ page }) => {
+    await open(page, "/", undefined, {
+      kind: "quiz",
+      itemIds: ["q-s1-1", "q-s1-2", "q-s1-3", "q-s1-4"],
+      answers: [{ itemId: "q-s1-1", optionId: "b" }],
+      index: 1,
+      finished: false,
+      partId: "quiz:S1:1",
+    });
+    await expect(page.getByText("Quiz · Question 2 of 4")).toBeVisible();
+    await page.getByRole("link", { name: /Continue/ }).click();
+    await expect(page).toHaveURL(/\/session$/);
+    await expect(page.getByText("Question 2 of 4").first()).toBeVisible();
   });
 });

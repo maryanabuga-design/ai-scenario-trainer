@@ -40,7 +40,6 @@ export function HomeView({
   unfinished,
   readiness,
   counts,
-  onOpenSetup,
   onMiniSession,
 }: {
   directionTitle: string;
@@ -48,8 +47,6 @@ export function HomeView({
   /** The readiness percentage: 0 when nothing is done. */
   readiness: number;
   counts: HomeCounts;
-  /** Called before a link to Session setup opens, to point it at the evacuation guide. */
-  onOpenSetup: () => void;
   onMiniSession: () => void;
 }) {
   const card = continueCard(unfinished);
@@ -73,7 +70,6 @@ export function HomeView({
 
       <Link
         href={card.href}
-        onClick={card.kind === "start" ? onOpenSetup : undefined}
         className="relative flex min-h-36 flex-col justify-between gap-4 rounded-[28px] bg-card p-5 shadow-(--card-shadow) has-focus-visible:outline-2"
       >
         <ArrowCircle />
@@ -91,7 +87,6 @@ export function HomeView({
           <li key={tile.id}>
             <Link
               href={tile.href}
-              onClick={tile.id === "scenarios" || tile.id === "quiz" ? onOpenSetup : undefined}
               className="flex h-full min-h-32 flex-col justify-between gap-4 rounded-card bg-card p-4 shadow-(--card-shadow) has-focus-visible:outline-2"
             >
               <Media3D

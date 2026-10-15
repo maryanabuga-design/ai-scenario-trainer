@@ -12,7 +12,8 @@ const items = [
 ];
 
 function isCurrent(href: string, pathname: string) {
-  return href === "/" ? pathname === "/" : pathname.startsWith(href);
+  // Training is a sub-screen of Home and keeps the Home item active.
+  return href === "/" ? pathname === "/" || pathname === "/training" : pathname.startsWith(href);
 }
 
 export function BottomNav({ activePath }: { activePath?: string }) {
