@@ -1,6 +1,6 @@
 # Build plan
 
-One commit per screen group, in this order. Steps 1 to 76 are built. Steps 2 to 6 were first built as a thin clickable path through the whole cycle. Each commit runs `npm run lint`, `npm run typecheck` and `npm run build`, and saves a screenshot in `docs/screens/`.
+One commit per screen group, in this order. Steps 1 to 77 are built. Steps 2 to 6 were first built as a thin clickable path through the whole cycle. Each commit runs `npm run lint`, `npm run typecheck` and `npm run build`, and saves a screenshot in `docs/screens/`.
 
 1. Foundation refresh: tokens, pill buttons, cards, tags, gradient helper, four-item bottom navigation, storage helper. (A temporary "Coming next" screen stood in for unbuilt sections and is now removed.)
 2. Materials: list, material page, upload sequence.
@@ -73,6 +73,7 @@ One commit per screen group, in this order. Steps 1 to 76 are built. Steps 2 to 
 74. Parts and progress: parts of PART_SIZE = 5 derived per mode and section, part results stored in the versioned schema (now 4, reading 2 and 3), selectors for answered, accuracy, part state, recommended part and weak counts, shared with the readiness ring.
 75. Training screen (`/training`): stats, switch, Mini-quiz card (placeholder route `/mini-quiz`), topic cards with parts, rings, Start and Continue pills, rose chips; a part session shows its section name and Back from Results returns to Training. Screenshots: `docs/screens/69-*`.
 76. Mini-quiz screen (`/mini-quiz`, 17 Oct 2026): topics (all selected at first, Select all / Deselect all), amounts 5, 10 and 15 limited by the pool ("All N" below 5), a random draw without repeats in random order, Start mini-quiz. It opens from the Training card and from the Home row (which no longer starts an instant session of 5); it counts toward the Training stats and the readiness but not part rings, and Back from Results returns to where it started. Screenshots: `docs/screens/70-*`.
+77. Home greeting and daily goal (17 Oct 2026): "Hi, Maryana" (demo user constant, also on Profile) with a one-sentence status, one main action on the big card (Continue, Start training, Repeat weak topics, Next part), the daily goal `DAILY_GOAL = 5` as "Today: N/5 questions" with a thin bar (finished sessions only, local day, testable date), the Mini-quiz row text "Choose topics and how many questions". Screenshots: `docs/screens/71-*`.
 
 ## Screen review page
 `/screens` is a development-only page (404 in production, not linked from the navigation) that shows every planned screen at 390 by 844. Screens that are not built are dashed frames. Each screen commit replaces its frame with the real screen using sample data.

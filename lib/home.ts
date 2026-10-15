@@ -5,33 +5,122 @@ import { weakItemsFromHistory } from "@/lib/progress";
 import type { FinishedSession, Session } from "@/lib/session";
 import { sessionLabel } from "@/lib/session";
 import { checklists } from "@/lib/checklists";
+import { DAILY_GOAL, questionsToday } from "@/lib/daily-goal";
+import { recommendedPart } from "@/lib/part-progress";
+import type { PartRecords } from "@/lib/part-progress";
+import { partsFor } from "@/lib/parts";
+import type { Part } from "@/lib/parts";
 
 export { readinessOf as readiness } from "@/lib/part-progress";
 
-export type ContinueCard = {
-  kind: "continue" | "start";
+export type HomeCard = {
+  kind: "continue" | "start" | "weak" | "next";
   title: string;
   subtitle: string;
-  /** Where it goes: the session, or Session setup. */
+  /** Where the card goes. For "next" the card starts `part` first, then opens the session. */
   href: string;
+  part?: Part;
 };
 
-/** The big card: Continue with the mode and position of an unfinished session, otherwise Start training. */
-export function continueCard(unfinished: Session | null): ContinueCard {
-  if (unfinished) {
-    return {
-      kind: "continue",
-      title: "Continue",
-      subtitle: `${sessionLabel(unfinished)} · Question ${unfinished.index + 1} of ${unfinished.itemIds.length}`,
-      href: "/session",
-    };
+export type HomeSummary = {
+  card: HomeCard;
+  /** The one sentence under the greeting. */
+  subtitle: string;
+  goal: { done: number; goal: number };
+};
+
+const plural = (count: number, one: string, many: string) =>
+  `${count} ${count === 1 ? one : many}`;
+
+/** The next recommended part: the first part not done in Scenario, otherwise in Quiz. */
+export function nextPart(
+  records: PartRecords | null,
+  unfinished: Pick<Session, "partId" | "finished"> | null,
+): Part | null {
+  for (const mode of ["scenario", "quiz"] as const) {
+    const part = recommendedPart(partsFor(mode), records, unfinished);
+    if (part) return part;
   }
-  return {
+  return null;
+}
+
+/**
+ * What Home says, first match wins. The big card: unfinished session, nothing started, weak topics,
+ * otherwise the next part. The sentence under the greeting: unfinished session, nothing started,
+ * weak topics, daily goal not reached, otherwise "ready".
+ */
+export function homeSummary({
+  unfinished,
+  history,
+  records,
+  sections,
+  now,
+}: {
+  unfinished: Session | null;
+  history: FinishedSession[] | null;
+  records: PartRecords | null;
+  sections: { id: string; title: string }[];
+  now: Date;
+}): HomeSummary {
+  const weakSections = new Set(
+    weakItemsFromHistory(history).map((item) => item.section),
+  ).size;
+  const done = questionsToday(history, now);
+  const goal = { done: Math.min(done, DAILY_GOAL), goal: DAILY_GOAL };
+  const nothingStarted = (history ?? []).length === 0;
+  const part = nextPart(records, unfinished);
+
+  const start: HomeCard = {
     kind: "start",
     title: "Start training",
     subtitle: "Choose a scenario or a quiz",
     href: "/training",
   };
+  let card: HomeCard;
+  if (unfinished) {
+    card = {
+      kind: "continue",
+      title: "Continue",
+      subtitle: `${sessionLabel(unfinished)} · Question ${unfinished.index + 1} of ${unfinished.itemIds.length}`,
+      href: "/session",
+    };
+  } else if (nothingStarted) {
+    card = start;
+  } else if (weakSections > 0) {
+    card = {
+      kind: "weak",
+      title: "Repeat weak topics",
+      subtitle: `${plural(weakSections, "topic", "topics")} to repeat`,
+      href: "/weak-topics",
+    };
+  } else if (part) {
+    const title =
+      sections.find((section) => section.id === part.sectionId)?.title ??
+      part.sectionId;
+    card = {
+      kind: "next",
+      title: `Next: ${title} · Part ${part.n}`,
+      subtitle: `${part.mode === "scenario" ? "Scenario" : "Quiz"} · ${plural(part.itemIds.length, "question", "questions")}`,
+      href: "/session",
+      part,
+    };
+  } else {
+    card = start;
+  }
+
+  let subtitle: string;
+  if (unfinished) {
+    subtitle = `You stopped at question ${unfinished.index + 1} of ${unfinished.itemIds.length}.`;
+  } else if (nothingStarted) {
+    subtitle = "Start with your first scenario.";
+  } else if (weakSections > 0) {
+    subtitle = `${plural(weakSections, "topic needs", "topics need")} another look.`;
+  } else if (done < DAILY_GOAL) {
+    subtitle = `${plural(DAILY_GOAL - done, "more question", "more questions")} to reach today's goal.`;
+  } else {
+    subtitle = "You are ready. Try a mini-quiz to stay sharp.";
+  }
+  return { card, subtitle, goal };
 }
 
 export type HomeCounts = {
@@ -43,7 +132,8 @@ export type HomeCounts = {
   checklists: number;
 };
 
-export type HomeTileId = "scenarios" | "quiz" | "weak" | "saved" | "guide" | "checklists";
+export type HomeTileId =
+  "scenarios" | "quiz" | "weak" | "saved" | "guide" | "checklists";
 
 export type HomeTile = {
   id: HomeTileId;
@@ -53,8 +143,6 @@ export type HomeTile = {
   href: string;
   tone: "yellow" | "blue" | "peach" | "lilac" | "green" | "sand";
 };
-
-const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
 
 /** The six tiles, each with its own pastel, its count line and where it goes. */
 export function homeTiles(counts: HomeCounts): HomeTile[] {

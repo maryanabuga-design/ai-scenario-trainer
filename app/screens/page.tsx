@@ -418,6 +418,11 @@ export default function Screens() {
               <HomeSample state="weak" />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Home: daily goal reached, next part">
+            <Screen nav="/">
+              <HomeSample state="goal" />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Quick checklists">
             <Screen>
               <ChecklistList />
