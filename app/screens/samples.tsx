@@ -37,7 +37,7 @@ import { ProfileView } from "@/components/ProfileView/ProfileView";
 import { nextStep, previousStep } from "@/lib/onboarding";
 import type { OnboardingStep } from "@/lib/onboarding";
 import { ProgressView } from "@/components/ProgressView/ProgressView";
-import { ResultsView } from "@/components/ResultsView/ResultsView";
+import { ResultsActions, ResultsView } from "@/components/ResultsView/ResultsView";
 import { SessionSetup } from "@/components/SessionSetup/SessionSetup";
 import { defaultSetup } from "@/components/SessionSetup/SessionSetup";
 import type { SetupValue } from "@/components/SessionSetup/SessionSetup";
@@ -164,6 +164,8 @@ export function AnswerReviewSample({
       backHref="#results"
       backLabel="Back to results"
       hrefFor={() => "#review"}
+      marks={sampleAnswers.map((item) => (item.correct ? "correct" : "incorrect"))}
+      onJump={() => undefined}
     />
   );
 }
@@ -704,6 +706,38 @@ export function Media3DSample() {
           hint="Nothing to repeat yet."
           onChange={() => undefined}
         />
+      </section>
+    </div>
+  );
+}
+
+/** The Results buttons at the content widths of a 360, 390 and 430px phone, and with nothing to repeat. */
+export function ResultsButtonsSample() {
+  const widths = [
+    ["360px phone (326px)", 326],
+    ["390px phone (358px)", 358],
+    ["430px phone (398px)", 398],
+  ] as const;
+  return (
+    <div className="flex flex-col gap-6">
+      <h1 className="type-page-title">Results buttons</h1>
+      <p className="type-small text-text-secondary">
+        One row when both labels fit (Review answers left, Repeat weak topics right); otherwise
+        stacked with Repeat weak topics on top.
+      </p>
+      {widths.map(([label, width]) => (
+        <section key={label} className="flex flex-col gap-2">
+          <h2 className="type-label text-text-secondary">{label}</h2>
+          <div style={{ width }}>
+            <ResultsActions canRepeat onRepeat={() => undefined} />
+          </div>
+        </section>
+      ))}
+      <section className="flex flex-col gap-2">
+        <h2 className="type-label text-text-secondary">Nothing to repeat</h2>
+        <div style={{ width: 358 }}>
+          <ResultsActions canRepeat={false} onRepeat={() => undefined} />
+        </div>
       </section>
     </div>
   );

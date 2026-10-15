@@ -37,6 +37,7 @@ import {
   ProfileSample,
   ProgressSample,
   ResultsSample,
+  ResultsButtonsSample,
   SetupSample,
 } from "./samples";
 
@@ -292,7 +293,7 @@ export default function Screens() {
           </PhoneFrame>
         </Group>
         <Group title="Answer review">
-          <PhoneFrame label="Review: the person was right">
+          <PhoneFrame label="Review: with the right and wrong strip, the person was right">
             <Screen>
               <AnswerReviewSample itemId="s1" choice="b" />
             </Screen>
@@ -322,6 +323,11 @@ export default function Screens() {
           <PhoneFrame label="Results: end of the page">
             <Screen>
               <ResultsSample scrolled />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Results: the button pair at three widths">
+            <Screen>
+              <ResultsButtonsSample />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Flood: results">

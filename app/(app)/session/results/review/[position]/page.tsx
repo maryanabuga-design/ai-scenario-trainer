@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Suspense } from "react";
 import { AnswerReview } from "@/components/AnswerReview/AnswerReview";
 import { AskAiProvider } from "@/components/AskAi/AskAi";
@@ -10,6 +10,7 @@ import { answerFor, isValidSession, useSession } from "@/lib/session";
 
 function Review() {
   const session = useSession();
+  const router = useRouter();
   const params = useParams<{ position: string }>();
 
   if (session === "loading") return null;
@@ -30,6 +31,12 @@ function Review() {
         backHref="/session/results"
         backLabel="Back to results"
         hrefFor={(next) => `/session/results/review/${next}`}
+        marks={session.itemIds.map((id) =>
+          answerFor(session, id)?.optionId === findItem(id)?.correctOptionId
+            ? "correct"
+            : "incorrect",
+        )}
+        onJump={(index) => router.push(`/session/results/review/${index + 1}`)}
       />
     </AskAiProvider>
   );

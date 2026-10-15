@@ -1,12 +1,10 @@
 "use client";
 
-import { Check, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { ARROW_CLEARANCE, ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
 import { Button, ButtonLink } from "@/components/Button/Button";
-import { Chevron } from "@/components/Chevron/Chevron";
 import { Chip } from "@/components/Chip/Chip";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { Media3D } from "@/components/Media3D/Media3D";
@@ -114,39 +112,42 @@ function WeakTopicsCard({ topics }: { topics: WeakTopic[] }) {
   );
 }
 
-/** One answer in "Your answers": number, short title, right or not right, chevron. */
-function AnswerRow({ item, position }: { item: ScoredItem; position: number }) {
-  const Icon = item.correct ? Check : X;
+/**
+ * The Results buttons. In one row the secondary "Review answers" is on the left and the primary
+ * "Repeat weak topics" on the right, equal width. The row wraps by itself when they do not fit
+ * (wrap-reverse puts the primary on top again), with no measuring. With nothing to repeat,
+ * "Review answers" stands alone.
+ */
+export function ResultsActions({
+  canRepeat,
+  onRepeat,
+  onReview,
+}: {
+  canRepeat: boolean;
+  onRepeat: () => void;
+  onReview?: () => void;
+}) {
+  const review = (
+    <ButtonLink href={reviewPath(1)} variant="secondary" snug onClick={onReview}>
+      Review answers
+    </ButtonLink>
+  );
+  if (!canRepeat) return review;
   return (
-    <li>
-      <Link
-        href={reviewPath(position)}
-        onClick={rememberScroll}
-        className="flex min-h-14 items-center gap-3 rounded-[20px] bg-card px-3 py-2 shadow-(--card-shadow) has-focus-visible:outline-2"
-      >
-        <span
-          aria-hidden="true"
-          className="type-small flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary-sand tabular-nums"
-        >
-          {position}
-        </span>
-        <span className="type-body-strong line-clamp-1 min-w-0 flex-1">{item.title}</span>
-        <Icon
-          size={20}
-          strokeWidth={2}
-          role="img"
-          aria-label={item.correct ? "Right" : "Not right"}
-          className={`shrink-0 ${item.correct ? "text-correct" : "text-wrong"}`}
-        />
-        <Chevron />
-      </Link>
-    </li>
+    <div className="flex flex-wrap-reverse gap-3 [&>div]:flex-[1_1_11.5rem] [&>div]:whitespace-nowrap">
+      <div>{review}</div>
+      <div>
+        <Button snug onClick={onRepeat}>
+          Repeat weak topics
+        </Button>
+      </div>
+    </div>
   );
 }
 
 /**
- * Results: hero, Passed or Not passed yet, the percentage against the pass mark, one conclusion,
- * the weak topics and every answer. Repeat or start again at the bottom.
+ * Results: hero, Passed or Not passed yet, the percentage against the pass mark, one conclusion
+ * and the weak topics. Review answers and Repeat weak topics at the bottom.
  */
 export function ResultsView({
   kind,
@@ -184,29 +185,12 @@ export function ResultsView({
 
       {topics.length > 0 && <WeakTopicsCard topics={topics} />}
 
-      <section aria-labelledby="answers-title" className="flex flex-col gap-3">
-        <h2 id="answers-title" className="type-card-title">
-          Your answers
-        </h2>
-        <ol className="flex flex-col gap-3">
-          {items.map((item, index) => (
-            <AnswerRow key={item.id} item={item} position={index + 1} />
-          ))}
-        </ol>
-      </section>
-
       <ActionBar>
-        {topics.length > 0 ? (
-          <Button onClick={onRepeat}>Repeat weak topics</Button>
-        ) : (
-          <ButtonLink href="/">Start a new session</ButtonLink>
-        )}
-        <ButtonLink href={reviewPath(1)} variant="secondary" onClick={rememberScroll}>
-          Review answers
-        </ButtonLink>
-        <ButtonLink href="/" variant="tertiary">
-          Back to Home
-        </ButtonLink>
+        <ResultsActions
+          canRepeat={topics.length > 0}
+          onRepeat={onRepeat}
+          onReview={rememberScroll}
+        />
       </ActionBar>
     </div>
   );

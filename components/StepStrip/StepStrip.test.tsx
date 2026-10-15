@@ -46,3 +46,45 @@ describe("step strip", () => {
     expect(html).not.toMatch(/lucide|<svg|✓|✗/);
   });
 });
+
+describe("step strip in the Answer review", () => {
+  const marks = ["correct", "incorrect", "correct"] as const;
+  const html = renderToStaticMarkup(
+    <StepStrip
+      unit="Question"
+      states={stripStates([true, true, true], 1)}
+      marks={[...marks]}
+      onSelect={() => undefined}
+    />,
+  );
+
+  it("shows a check on a correct square and a cross on an incorrect one", () => {
+    expect(html.match(/lucide-check/g)).toHaveLength(2);
+    expect(html.match(/lucide-x/g)).toHaveLength(1);
+    expect(html).toContain("bg-correct-bg");
+    expect(html).toContain("bg-wrong-bg");
+  });
+
+  it("names each square by its result, and outlines the current one in primary", () => {
+    expect(html).toContain('aria-label="Question 1, correct"');
+    expect(html).toContain('aria-label="Question 2, incorrect"');
+    expect(html).toContain("outline-primary");
+    expect(html).toContain('aria-current="step"');
+  });
+
+  it("uses the 32px, 10px-radius square", () => {
+    expect(html.match(/h-8 w-8/g)).toHaveLength(3);
+    expect(html).toContain("rounded-[10px]");
+  });
+
+  it("shows no check or cross in a session strip", () => {
+    const session = renderToStaticMarkup(
+      <StepStrip
+        unit="Question"
+        states={stripStates([true, false], 0)}
+        onSelect={() => undefined}
+      />,
+    );
+    expect(session).not.toMatch(/lucide-check|lucide-x/);
+  });
+});

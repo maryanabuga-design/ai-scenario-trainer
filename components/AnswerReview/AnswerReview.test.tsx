@@ -18,6 +18,8 @@ function render(itemId: string, choice: string | null, position = 2, total = 5) 
           backHref="/session/results"
           backLabel="Back to results"
           hrefFor={(next) => `/session/results/review/${next}`}
+          marks={["correct", "incorrect", "correct", "correct", "incorrect"]}
+          onJump={() => undefined}
         />
       </AskAiProvider>
     </SourceSheetProvider>,
@@ -52,7 +54,7 @@ describe("Answer review", () => {
     expect(html).toContain(step.question);
     step.options.forEach((option) => expect(html).toContain(option.text));
     expect(html.indexOf(step.situation!)).toBeLessThan(html.indexOf(step.options[0].text));
-    expect(html.match(/<li /g)).toHaveLength(4);
+    expect(html.match(/data-state=/g)).toHaveLength(4);
   });
 
   it("when wrong: the right option is green with a check and Correct answer; the choice is rose with a cross and Your answer", () => {
@@ -77,8 +79,9 @@ describe("Answer review", () => {
     expect(correct).toContain("Correct answer");
     expect(correct).toContain("Your answer");
     expect(html.match(/Your answer/g)).toHaveLength(1);
-    expect(html).not.toContain("lucide-x");
-    expect(html).not.toContain("bg-wrong-bg");
+    const options = html.slice(html.indexOf("data-state="), html.indexOf(">Why<"));
+    expect(options).not.toContain("lucide-x");
+    expect(options).not.toContain("bg-wrong-bg");
   });
 
   it("leaves the other options neutral, with no tag or icon", () => {
@@ -120,10 +123,31 @@ describe("Answer review", () => {
     const question = getItem("q-s3-3");
     expect(html).toContain(question.question);
     expect(html).not.toContain("Ask AI about this step");
-    expect(html.match(/<li /g)).toHaveLength(question.options.length);
+    expect(html.match(/data-state=/g)).toHaveLength(question.options.length);
   });
 
   it("offers Ask AI about this step on a scenario step with prepared answers", () => {
     expect(render("s1", "d")).toContain("Ask AI about this step");
+  });
+
+  it("has the review strip under the top row, one square per question, current marked", () => {
+    const html = render("s1", "d", 2, 5);
+    const strip = html.slice(html.indexOf("<ol"), html.indexOf("</ol>"));
+    expect(html.indexOf("Question 2 of 5")).toBeLessThan(html.indexOf("<ol"));
+    expect(html.indexOf("</ol>")).toBeLessThan(html.indexOf(getItem("s1").question));
+    expect(strip.match(/<button/g)).toHaveLength(5);
+    expect(strip).toContain('aria-label="Question 1, correct"');
+    expect(strip).toContain('aria-label="Question 2, incorrect"');
+    expect(strip).toContain('aria-current="step"');
+    expect(strip.match(/outline-primary/g)).toHaveLength(1);
+  });
+
+  it("shows a check on a correct square and a cross on an incorrect one, in the green and rose tints", () => {
+    const strip = render("s1", "d", 1, 5);
+    const squares = strip.slice(strip.indexOf("<ol"), strip.indexOf("</ol>"));
+    expect(squares.match(/lucide-check/g)).toHaveLength(3);
+    expect(squares.match(/lucide-x/g)).toHaveLength(2);
+    expect(squares.match(/bg-correct-bg/g)).toHaveLength(3);
+    expect(squares.match(/bg-wrong-bg/g)).toHaveLength(2);
   });
 });

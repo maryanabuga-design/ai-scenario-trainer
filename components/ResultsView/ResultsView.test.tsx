@@ -1,7 +1,8 @@
+import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
-import { ResultsView } from "@/components/ResultsView/ResultsView";
+import { ResultsActions, ResultsView } from "@/components/ResultsView/ResultsView";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { PASS_MARK } from "@/lib/config";
 import { loadAllSections } from "@/lib/guide";
@@ -69,11 +70,12 @@ describe("Results", () => {
     expect(html).toContain(">100<");
   });
 
-  it("follows with one conclusion, the Weak topics card and Your answers", () => {
+  it("follows with one conclusion and the Weak topics card, and has no Your answers list", () => {
     expect(html).toContain("2 answers need another look in the guide.");
-    const card = html.indexOf("Weak topics");
-    expect(card).toBeGreaterThan(html.indexOf("PASS MARK"));
-    expect(html.indexOf("Your answers")).toBeGreaterThan(card);
+    expect(html.indexOf("Weak topics")).toBeGreaterThan(html.indexOf("PASS MARK"));
+    expect(html).not.toContain("Your answers");
+    expect(html).not.toContain("/session/results/review/");
+    expect(html).not.toMatch(/aria-label="(Not right|Right)"/);
   });
 
   it("makes the Weak topics card a link with an ArrowCircle and the section tags", () => {
@@ -86,14 +88,13 @@ describe("Results", () => {
     expect(card).toContain("border-arrow-stroke");
   });
 
-  it("lists every answer in order, each with a check or a cross and a link to its review", () => {
-    items.forEach((item, index) => {
-      expect(html).toContain(`href="/session/results/review/${index + 1}"`);
-      expect(html).toContain(item.title);
-    });
-    expect(html.match(/aria-label="Not right"/g)).toHaveLength(2);
-    expect(html.match(/aria-label="Right"/g)).toHaveLength(1);
-    expect(html.match(/\/session\/results\/review\//g)).toHaveLength(3);
+  it("has the Back arrow to Home as the only way out: no Back to Home button", () => {
+    expect(html).toContain('aria-label="Back to Home" class');
+    expect(html).toContain('href="/"');
+    expect(html.match(/Back to Home/g)).toHaveLength(1);
+    const source = readFileSync("components/ResultsView/ResultsView.tsx", "utf8");
+    expect(source).not.toMatch(/>\s*Back to Home\s*</);
+    expect(source).not.toContain("Start a new session");
   });
 
   it("shows no Weak topics card when nothing is wrong", () => {
@@ -120,5 +121,45 @@ describe("the pass mark", () => {
     expect(at).not.toContain("Not passed yet");
     expect(at).toContain('aria-valuenow="80"');
     expect(at).toContain('style="left:80%"');
+  });
+});
+
+describe("the Results buttons", () => {
+  const pair = renderToStaticMarkup(<ResultsActions canRepeat onRepeat={() => undefined} />);
+
+  it("puts Review answers (secondary) first and Repeat weak topics (primary) second, so a row reads left to right", () => {
+    expect(pair.indexOf("Review answers")).toBeLessThan(pair.indexOf("Repeat weak topics"));
+    const review = pair.slice(pair.indexOf("<a "), pair.indexOf("</a>"));
+    expect(review).toContain("bg-olive-tint");
+    expect(review).toContain('href="/session/results/review/1"');
+    expect(pair.slice(pair.indexOf("<button"))).toContain("bg-primary");
+  });
+
+  it("is a row that wraps by itself, with the primary on top when it wraps and no script", () => {
+    expect(pair).toContain("flex flex-wrap-reverse gap-3");
+    expect(pair).toContain("[&amp;&gt;div]:flex-[1_1_11.5rem]");
+    expect(pair).toContain("[&amp;&gt;div]:whitespace-nowrap");
+    expect(pair.match(/<div>/g)).toHaveLength(2);
+    const source = readFileSync("components/ResultsView/ResultsView.tsx", "utf8");
+    expect(source).not.toMatch(/getBoundingClientRect|offsetWidth|ResizeObserver|matchMedia/);
+  });
+
+  it("keeps the labels and the shared button size: 52px, 14px radius, 16px side padding", () => {
+    expect(pair).toContain(">Review answers<");
+    expect(pair).toContain(">Repeat weak topics<");
+    expect(pair.match(/h-\[52px\]/g)).toHaveLength(2);
+    expect(pair.match(/rounded-button/g)).toHaveLength(2);
+    expect(pair.match(/ px-4 /g)).toHaveLength(2);
+    expect(pair).not.toMatch(/truncate|text-ellipsis|type-small/);
+  });
+
+  it("shows Review answers alone, full width, when there is nothing to repeat", () => {
+    const alone = renderToStaticMarkup(
+      <ResultsActions canRepeat={false} onRepeat={() => undefined} />,
+    );
+    expect(alone).toContain("Review answers");
+    expect(alone).not.toContain("Repeat weak topics");
+    expect(alone).not.toContain("flex-wrap-reverse");
+    expect(alone).toContain("w-full");
   });
 });

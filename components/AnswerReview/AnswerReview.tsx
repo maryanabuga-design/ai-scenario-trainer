@@ -8,6 +8,8 @@ import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton
 import { GuideChip } from "@/components/GuideChip/GuideChip";
 import { Media3D } from "@/components/Media3D/Media3D";
 import { optionLetters } from "@/components/QuestionScreen/QuestionScreen";
+import { StepStrip } from "@/components/StepStrip/StepStrip";
+import type { Mark, StripState } from "@/components/StepStrip/StepStrip";
 import type { Item } from "@/lib/items";
 
 /** How an option looks in the review: the right one, the person's wrong one, or neither. */
@@ -37,6 +39,8 @@ export function AnswerReview({
   backHref,
   backLabel,
   hrefFor,
+  marks,
+  onJump,
 }: {
   item: Item;
   /** The option the person chose. */
@@ -48,7 +52,14 @@ export function AnswerReview({
   backLabel: string;
   /** The review page of another position. */
   hrefFor: (position: number) => string;
+  /** Whether each question of the session was answered right, in order: the strip shows it. */
+  marks: Mark[];
+  /** Opens the review of the question at this 0-based position. */
+  onJump: (index: number) => void;
 }) {
+  const states: StripState[] = marks.map((_, index) =>
+    index === position - 1 ? "current" : "answered",
+  );
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-[44px_1fr_44px] items-center">
@@ -57,6 +68,8 @@ export function AnswerReview({
           Question {position} of {total}
         </span>
       </div>
+
+      <StepStrip unit="Question" states={states} marks={marks} onSelect={onJump} />
 
       <section className="flex flex-col gap-4">
         {item.image && <Media3D variant="step" src={item.image.src} alt={item.image.alt} />}

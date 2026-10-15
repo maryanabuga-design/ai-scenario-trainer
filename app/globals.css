@@ -17,6 +17,8 @@
   --accent: #3d3a8c;
   --correct: #1f7a4d;
   --wrong: #b3261e;
+  --correct-bg: #e8f3ec;
+  --wrong-bg: #fbeae8;
   --caution: #8a5a00;
 
   /* Results screen (soft surface), measured from the reference screens */
@@ -68,6 +70,8 @@
   --color-primary-text: var(--primary-text);
   --color-accent: var(--accent);
   --color-correct: var(--correct);
+  --color-correct-bg: var(--correct-bg);
+  --color-wrong-bg: var(--wrong-bg);
   --color-wrong: var(--wrong);
   --color-caution: var(--caution);
   --color-soft-card: var(--soft-card);

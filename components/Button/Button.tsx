@@ -10,6 +10,8 @@ export type ButtonLook = {
   /** Primary and secondary fill the width by default; false for one in a row (Ask AI Send, the
    * Materials header). */
   wide?: boolean;
+  /** 16px instead of 24px side padding, so the Results pair can fit on one line. */
+  snug?: boolean;
   /** 44px high instead of 52px: only the Materials page-header action. */
   compact?: boolean;
   /** A decorative icon before the label (the sparkle for AI actions). */
@@ -20,10 +22,10 @@ export type ButtonLook = {
 
 export const buttonVariants: Record<ButtonVariant, string> = {
   primary:
-    "type-button h-[52px] px-6 bg-primary text-primary-text active:bg-primary-pressed disabled:border disabled:border-secondary-sand-pressed disabled:bg-secondary-sand disabled:text-text-secondary",
+    "type-button h-[52px] bg-primary text-primary-text active:bg-primary-pressed disabled:border disabled:border-secondary-sand-pressed disabled:bg-secondary-sand disabled:text-text-secondary",
   // Filled with the light olive tint and no stroke, so it is exactly as big as the primary.
   secondary:
-    "type-button h-[52px] px-6 bg-olive-tint text-primary active:bg-olive-tint-pressed disabled:bg-secondary-sand disabled:text-text-secondary",
+    "type-button h-[52px] bg-olive-tint text-primary active:bg-olive-tint-pressed disabled:bg-secondary-sand disabled:text-text-secondary",
   // Small underlined text; the 44px tap area is invisible padding, never a visible box.
   tertiary: "type-action text-primary min-h-11 px-3 disabled:text-text-secondary",
 };
@@ -38,9 +40,10 @@ export const pressedLook: Record<ButtonVariant, string> = {
 /** The page-header action (Upload a file) is 44px high instead of 52px. */
 const compactHeight = "h-11!";
 
-export function buttonClasses({ variant = "primary", wide, compact }: ButtonLook) {
+export function buttonClasses({ variant = "primary", wide, compact, snug }: ButtonLook) {
   const width = (wide ?? variant !== "tertiary") ? "w-full" : "";
-  return `group inline-flex items-center justify-center gap-2 rounded-button disabled:cursor-not-allowed ${buttonVariants[variant]} ${width} ${compact ? compactHeight : ""}`;
+  const padding = variant === "tertiary" ? "" : snug ? "px-4" : "px-6";
+  return `group inline-flex items-center justify-center gap-2 rounded-button disabled:cursor-not-allowed ${buttonVariants[variant]} ${padding} ${width} ${compact ? compactHeight : ""}`;
 }
 
 function Content({
@@ -70,13 +73,14 @@ export function Button({
   variant = "primary",
   wide,
   compact,
+  snug,
   icon,
   trailing,
   children,
   ...props
 }: Omit<ComponentProps<"button">, "className"> & ButtonLook) {
   return (
-    <button type="button" className={buttonClasses({ variant, wide, compact })} {...props}>
+    <button type="button" className={buttonClasses({ variant, wide, compact, snug })} {...props}>
       <Content variant={variant} icon={icon} trailing={trailing}>
         {children}
       </Content>
@@ -89,13 +93,14 @@ export function ButtonLink({
   variant = "primary",
   wide,
   compact,
+  snug,
   icon,
   trailing,
   onClick,
   children,
 }: ButtonLook & { href: string; onClick?: () => void; children: ReactNode }) {
   return (
-    <Link href={href} onClick={onClick} className={buttonClasses({ variant, wide, compact })}>
+    <Link href={href} onClick={onClick} className={buttonClasses({ variant, wide, compact, snug })}>
       <Content variant={variant} icon={icon} trailing={trailing}>
         {children}
       </Content>

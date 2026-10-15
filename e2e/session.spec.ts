@@ -116,20 +116,35 @@ test.describe("a running session", () => {
     await expect(page.getByRole("heading", { name: "Not passed yet" })).toBeVisible();
     await expect(page.getByText("PASS MARK: 80%")).toBeVisible();
     await expect(page.getByText("33%")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Your answers" })).toBeVisible();
+    await expect(page.getByText("Your answers")).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Back to Home", exact: true })).toHaveCount(1);
+    await expect(page.getByRole("button", { name: "Back to Home" })).toHaveCount(0);
     await expect(page.getByText(/Error types|Outcome/)).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Repeat weak topics" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Review answers" })).toBeVisible();
 
-    // (B) Your answers → Answer review → Previous / Next → Back to results.
+    // (B) Review answers → Answer review → Previous / Next → Back to results.
     await page.getByRole("link", { name: "Review answers" }).click();
     await expect(page).toHaveURL(/\/review\/1$/);
     await expect(page.getByText("Question 1 of 3")).toBeVisible();
-    await expect(page.locator("li[data-state=correct]")).toContainText("Correct answer");
-    await expect(page.locator("li[data-state=chosenWrong]")).toContainText("Your answer");
+    // The strip marks every question right or wrong and jumps.
+    await expect(page.getByRole("button", { name: "Question 1, incorrect" })).toHaveAttribute(
+      "aria-current",
+      "step",
+    );
+    await expect(page.getByRole("button", { name: "Question 2, correct" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Question 3, incorrect" })).toBeVisible();
+    await page.getByRole("button", { name: "Question 3, incorrect" }).click();
+    await expect(page).toHaveURL(/\/review\/3$/);
+    await expect(page.getByText("Question 3 of 3").first()).toBeVisible();
+    await page.getByRole("button", { name: "Question 1, incorrect" }).click();
+    await expect(page).toHaveURL(/\/review\/1$/);
+    await expect(page.locator("li[data-state=correct]:visible")).toHaveCount(1);
+    await expect(page.locator("li[data-state=correct]:visible")).toContainText("Correct answer");
+    await expect(page.locator("li[data-state=chosenWrong]:visible")).toContainText("Your answer");
     await page.getByRole("link", { name: "Next question" }).click();
     await expect(page).toHaveURL(/\/review\/2$/);
-    await expect(page.locator("li[data-state=chosenWrong]")).toHaveCount(0);
+    await expect(page.locator("li[data-state=chosenWrong]:visible")).toHaveCount(0);
     await page.getByRole("link", { name: "Previous question" }).click();
     await expect(page).toHaveURL(/\/review\/1$/);
     await page.getByRole("link", { name: "Back to results", exact: true }).last().click();
@@ -200,5 +215,106 @@ test.describe("session setup", () => {
     await page.getByRole("button", { name: "Start session" }).click();
     await expect(page).toHaveURL(/\/session$/);
     await expect(page.getByText("Question 1 of 4")).toBeVisible();
+  });
+});
+
+test.describe("the Results buttons", () => {
+  const done = {
+    kind: "scenario",
+    itemIds: ["s1", "s2", "s3"],
+    answers: [
+      { itemId: "s1", optionId: "a" },
+      { itemId: "s2", optionId: "c" },
+      { itemId: "s3", optionId: "a" },
+    ],
+    index: 2,
+    finished: true,
+    finishedAt: 5,
+  };
+  const history = [
+    { kind: "scenario", itemIds: done.itemIds, answers: done.answers, finishedAt: 5 },
+  ];
+
+  async function results(page: Page, session: object, past: object[], width: number) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.addInitScript(
+      ([p, s, h]) => {
+        localStorage.setItem("ast.profile.v1", JSON.stringify(p));
+        localStorage.setItem("ast.session.v1", JSON.stringify({ schema: 2, value: s }));
+        localStorage.setItem("ast.history.v1", JSON.stringify({ schema: 2, value: h }));
+      },
+      [profile, session, past],
+    );
+    await page.goto("/session/results");
+  }
+
+  const review = (page: Page) => page.getByRole("link", { name: "Review answers" });
+  const repeat = (page: Page) => page.getByRole("button", { name: "Repeat weak topics" });
+
+  test("stack at 360px: Repeat on top, Review below, both full width, labels on one line", async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ viewport: { width: 360, height: 800 } });
+    const page = await context.newPage();
+    await results(page, done, history, 360);
+    const [r, v] = [await repeat(page).boundingBox(), await review(page).boundingBox()];
+    expect(r && v).toBeTruthy();
+    expect(r!.y).toBeLessThan(v!.y);
+    expect(Math.round(r!.width)).toBe(Math.round(v!.width));
+    expect(Math.round(r!.width)).toBeGreaterThanOrEqual(326);
+    expect(Math.round(r!.height)).toBe(52);
+    expect(Math.round(v!.height)).toBe(52);
+    expect(Math.round(v!.y - (r!.y + r!.height))).toBe(12);
+    await context.close();
+  });
+
+  test("sit in one row at 430px: Review on the left, Repeat on the right, equal, one line", async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ viewport: { width: 430, height: 800 } });
+    const page = await context.newPage();
+    await results(page, done, history, 430);
+    const [r, v] = [await repeat(page).boundingBox(), await review(page).boundingBox()];
+    expect(r && v).toBeTruthy();
+    expect(v!.x).toBeLessThan(r!.x);
+    expect(Math.abs(v!.y - r!.y)).toBeLessThan(2);
+    expect(Math.abs(v!.width - r!.width)).toBeLessThan(2);
+    expect(Math.round(r!.height)).toBe(52);
+    expect(Math.round(r!.x - (v!.x + v!.width))).toBe(12);
+    await context.close();
+  });
+
+  test("show Review answers alone, full width, when the person passed", async ({ browser }) => {
+    const context = await browser.newContext({ viewport: { width: 360, height: 800 } });
+    const page = await context.newPage();
+    const right = {
+      ...done,
+      answers: [
+        { itemId: "s1", optionId: "b" },
+        { itemId: "s2", optionId: "c" },
+        { itemId: "s3", optionId: "a" },
+      ],
+    };
+    await results(page, right, [{ ...history[0], answers: right.answers }], 360);
+    await expect(page.getByRole("heading", { name: "Passed" })).toBeVisible();
+    await expect(repeat(page)).toHaveCount(0);
+    const v = await review(page).boundingBox();
+    expect(Math.round(v!.width)).toBeGreaterThanOrEqual(326);
+    await review(page).click();
+    await expect(page).toHaveURL(/\/review\/1$/);
+    await expect(page.getByRole("button", { name: "Question 1, correct" })).toHaveAttribute(
+      "aria-current",
+      "step",
+    );
+    await context.close();
+  });
+
+  test("have a Back arrow that goes Home", async ({ browser }) => {
+    const context = await browser.newContext({ viewport: { width: 360, height: 800 } });
+    const page = await context.newPage();
+    await results(page, done, history, 360);
+    await page.getByRole("link", { name: "Back to Home" }).click();
+    await expect(page).toHaveURL(/\/$/);
+    await context.close();
   });
 });
