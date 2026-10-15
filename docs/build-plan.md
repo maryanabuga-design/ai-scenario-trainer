@@ -1,6 +1,6 @@
 # Build plan
 
-One commit per screen group, in this order. Steps 1 to 78 are built. Steps 2 to 6 were first built as a thin clickable path through the whole cycle. Each commit runs `npm run lint`, `npm run typecheck` and `npm run build`, and saves a screenshot in `docs/screens/`.
+One commit per screen group, in this order. Steps 1 to 80 are built. Steps 2 to 6 were first built as a thin clickable path through the whole cycle. Each commit runs `npm run lint`, `npm run typecheck` and `npm run build`, and saves a screenshot in `docs/screens/`.
 
 1. Foundation refresh: tokens, pill buttons, cards, tags, gradient helper, four-item bottom navigation, storage helper. (A temporary "Coming next" screen stood in for unbuilt sections and is now removed.)
 2. Materials: list, material page, upload sequence.
@@ -75,6 +75,8 @@ One commit per screen group, in this order. Steps 1 to 78 are built. Steps 2 to 
 76. Mini-quiz screen (`/mini-quiz`, 17 Oct 2026): topics (all selected at first, Select all / Deselect all), amounts 5, 10 and 15 limited by the pool ("All N" below 5), a random draw without repeats in random order, Start mini-quiz. It opens from the Training card and from the Home row (which no longer starts an instant session of 5); it counts toward the Training stats and the readiness but not part rings, and Back from Results returns to where it started. Screenshots: `docs/screens/70-*`.
 77. Home greeting and daily goal (17 Oct 2026): "Hi, Maryana" (demo user constant, also on Profile) with a one-sentence status, one main action on the big card (Continue, Start training, Repeat weak topics, Next part), the daily goal `DAILY_GOAL = 5` as "Today: N/5 questions" with a thin bar (finished sessions only, local day, testable date), the Mini-quiz row text "Choose topics and how many questions". Screenshots: `docs/screens/71-*`.
 78. Home, the hero card (Batch 2 part 4, 17 Oct 2026): the hero card "Your training" replaces the changing big card: it always says Start training and opens Training (topic strip of 10 sections, Topics x/10, Today x/5, a square readiness ring to Progress); the tiles count the selected guide (1 scenario, 33 questions); the Mini-quiz row has a 72px 3D row icon placeholder; Media3D gets `tile` and `row`; Training shows "Continue your session" for any unfinished session; `docs/scenario-image-prompts.md`. Screenshots: `docs/screens/72-*`.
+79. Home tiles (17 Oct 2026): four tiles in a 2x2 grid (Exam, Steps, Weak topics, Saved questions); the Scenarios, Quiz, Guide and Quick checklists tiles are gone, Materials is reached from the bottom navigation only.
+80. Exam (17 Oct 2026): intro, timed session (shared SessionRunner, ExamTimer, own storage key `ast.exam.v1`), results and review under `/exam`, history entries with the exam result, schema 5. Screenshots: `docs/screens/73-*`.
 
 ## Screen review page
 `/screens` is a development-only page (404 in production, not linked from the navigation) that shows every planned screen at 390 by 844. Screens that are not built are dashed frames. Each screen commit replaces its frame with the real screen using sample data.

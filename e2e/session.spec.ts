@@ -77,7 +77,7 @@ test.describe("a running session", () => {
     await expect(page.getByLabel(S1_RIGHT)).toBeChecked();
     await option(page, S1_WRONG).click();
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.session.v1")!));
-    expect(saved.schema).toBe(4);
+    expect(saved.schema).toBe(5);
     expect(saved.value.answers).toEqual([{ itemId: "s1", optionId: "a" }]);
   });
 
@@ -88,7 +88,7 @@ test.describe("a running session", () => {
     await option(page, S1_RIGHT).click();
     await page.getByRole("button", { name: "Leave this session" }).click();
     await expect(page.getByRole("heading", { name: "Leave this session?" })).toBeVisible();
-    await page.getByRole("button", { name: "Stay" }).click();
+    await page.getByRole("button", { name: "Stay", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Leave this session?" })).toBeHidden();
     await expect(page).toHaveURL(/\/session$/);
     await page.getByRole("button", { name: "Exit" }).click();
@@ -241,7 +241,7 @@ test.describe("the question screen: hint and bookmark", () => {
     await next(page).click();
     await option(page, /Keep it closed/).click();
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.session.v1")!));
-    expect(saved.schema).toBe(4);
+    expect(saved.schema).toBe(5);
     const [first, second] = saved.value.answers;
     expect(first).toEqual({ itemId: "s1", optionId: "b", hintUsed: true });
     expect(second.hintUsed).toBeUndefined();
@@ -298,7 +298,7 @@ test.describe("the question screen: hint and bookmark", () => {
     await page.reload();
     await expect(page.getByRole("button", { name: "Remove from saved" })).toBeVisible();
     const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.saved.v1")!));
-    expect(stored).toEqual({ schema: 4, value: ["s1"] });
+    expect(stored).toEqual({ schema: 5, value: ["s1"] });
     await page.getByRole("button", { name: "Remove from saved" }).click();
     await expect(page.getByRole("button", { name: "Save question" })).toBeVisible();
     await page.reload();
@@ -413,13 +413,7 @@ test.describe("Home", () => {
     await expect(page.getByText("Today 0/5")).toBeVisible();
     await expect(page.getByRole("link", { name: "Start training" })).toBeVisible();
     await expect(page.getByRole("img", { name: "Readiness 0%" })).toBeVisible();
-    for (const text of [
-      "1 scenario",
-      "33 questions",
-      "Nothing to repeat",
-      "0 saved",
-      "3 checklists",
-    ]) {
+    for (const text of ["Not taken yet", "Nothing to repeat", "0 saved", "3 checklists"]) {
       await expect(page.getByText(text, { exact: true })).toBeVisible();
     }
     await expect(page.getByText(/Average result|Session history|Sessions/)).toHaveCount(0);
@@ -497,22 +491,24 @@ test.describe("Home", () => {
     await expect(page).toHaveURL(/\/training$/);
   });
 
-  test("sends each tile to its screen (Training in the right mode)", async ({ page }) => {
+  test("has exactly four tiles and no Materials tile, while the Materials tab still works", async ({
+    page,
+  }) => {
     await home(page, null);
-    await page.getByRole("link", { name: /Scenarios/ }).click();
-    await expect(page).toHaveURL(/\/training\?mode=scenario/);
-    await expect(page.getByRole("radio", { name: "Scenario" })).toBeChecked();
-    await expect(page.getByText("Mini-quiz").filter({ visible: true })).toHaveCount(0);
-    await page.goBack();
-    await page.getByRole("link", { name: /^Quiz/ }).click();
-    await expect(page).toHaveURL(/mode=quiz/);
-    await expect(page.getByRole("radio", { name: "Quiz" })).toBeChecked();
-    await expect(page.getByRole("link", { name: /Mini-quiz/ })).toBeVisible();
-    await page.goto("/");
+    const tiles = page.locator("main ul:visible a");
+    await expect(tiles).toHaveCount(4);
+    await expect(tiles).toContainText(["Exam", "Steps", "Weak topics", "Saved questions"]);
+    await expect(page.locator("main a[href='/materials']:visible")).toHaveCount(0);
     await page.getByRole("link", { name: /Saved questions/ }).click();
     await expect(page).toHaveURL(/\/saved$/);
     await page.getByRole("link", { name: "Back to Home" }).click();
-    await page.getByRole("link", { name: /^Guide/ }).click();
+    await page.getByRole("link", { name: /^Exam/ }).click();
+    await expect(page).toHaveURL(/\/exam$/);
+    await page.goto("/");
+    await page
+      .getByRole("navigation", { name: "Main" })
+      .getByRole("link", { name: "Materials" })
+      .click();
     await expect(page).toHaveURL(/\/materials$/);
   });
 
@@ -527,7 +523,7 @@ test.describe("Home", () => {
 
   test("opens the Quick checklists, a checklist, and goes back step by step", async ({ page }) => {
     await home(page, null);
-    await page.getByRole("link", { name: /Quick checklists/ }).click();
+    await page.getByRole("link", { name: /^Steps/ }).click();
     await expect(page).toHaveURL(/\/checklists$/);
     await expect(page.getByRole("heading", { name: "Quick checklists" })).toBeVisible();
     await expect(page.locator("main li:visible")).toHaveCount(3);
@@ -756,5 +752,158 @@ test.describe("Mini-quiz", () => {
     await page.getByRole("link", { name: "Back to Home" }).click();
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByRole("img", { name: /Readiness \d+%/ })).toBeVisible();
+  });
+});
+
+test.describe("Exam", () => {
+  const exam = (extra: object) => ({
+    itemIds: Array.from({ length: 20 }, (_, i) =>
+      i < 10 ? `q-s${(i % 10) + 1}-1` : `s${(i % 10) + 1}`,
+    ),
+    answers: [],
+    index: 0,
+    startedAt: Date.now() - 1000,
+    finished: false,
+    ...extra,
+  });
+
+  async function open(page: Page, path: string, seeded?: object, session?: object) {
+    await page.addInitScript(
+      ([p, e, s]) => {
+        if (localStorage.getItem("ast.profile.v1")) return;
+        localStorage.setItem("ast.profile.v1", JSON.stringify(p));
+        if (e) localStorage.setItem("ast.exam.v1", JSON.stringify({ schema: 5, value: e }));
+        if (s) localStorage.setItem("ast.session.v1", JSON.stringify({ schema: 5, value: s }));
+      },
+      [profile, seeded ?? null, session ?? null],
+    );
+    await page.goto(path);
+  }
+
+  const visibleOption = (page: Page) =>
+    page.locator("fieldset[aria-labelledby^=question-] label:visible").first();
+
+  async function takeExam(page: Page) {
+    for (let n = 0; n < 20; n++) {
+      await visibleOption(page).click();
+      await (n < 19 ? next(page) : finish(page)).click();
+    }
+  }
+
+  test("shows the rules and no results the first time", async ({ page }) => {
+    await open(page, "/exam");
+    await expect(page.getByRole("heading", { name: "Exam" })).toBeVisible();
+    await expect(page.getByText("A full check of your knowledge")).toBeVisible();
+    for (const rule of [
+      "20 questions from all topics",
+      "20 minutes",
+      "No hints",
+      "Pass mark 80%",
+    ]) {
+      await expect(page.getByText(rule)).toBeVisible();
+    }
+    await expect(page.getByText("You have not taken the exam yet")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Start exam" })).toBeVisible();
+  });
+
+  test("runs a timed exam with no hints, then shows Results, and Back goes to the intro", async ({
+    page,
+  }) => {
+    await open(page, "/exam");
+    await page.getByRole("button", { name: "Start exam" }).click();
+    await expect(page).toHaveURL(/\/exam\/session$/);
+    await expect(page.getByText("Question 1 of 20").first()).toBeVisible();
+    await expect(page.getByRole("timer")).toContainText(/^(20:00|19:5\d)$/);
+    await expect(page.getByRole("button", { name: "Hint" })).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: /^(Save|Saved|Bookmark)/i }).first(),
+    ).toBeVisible();
+    await takeExam(page);
+    await expect(page).toHaveURL(/\/exam\/results$/);
+    await expect(page.getByRole("heading", { name: /Passed|Not passed yet/ })).toBeVisible();
+    await expect(page.getByText("Exam", { exact: true }).first()).toBeVisible();
+    await page.getByRole("link", { name: "Review answers" }).click();
+    await expect(page).toHaveURL(/\/exam\/results\/review\/1$/);
+    await page.getByRole("link", { name: "Back to results" }).first().click();
+    await page.getByRole("link", { name: "Back to Exam" }).click();
+    await expect(page).toHaveURL(/\/exam$/);
+    await expect(page.getByText(/^Last/)).toBeVisible();
+    await expect(page.getByText(/^Best/)).toBeVisible();
+    await page.getByRole("link", { name: "Back to Home" }).click();
+    await expect(page.getByRole("link", { name: /^Exam Best: \d+%/ })).toBeVisible();
+    await expect(page.getByText("Today 0/5")).toBeVisible();
+  });
+
+  test("keeps the timer after a refresh", async ({ page }) => {
+    await open(page, "/exam/session", exam({ endsAt: Date.now() + 5 * 60_000 }));
+    await expect(page.getByRole("timer")).toContainText(/^0?[45]:\d\d$/);
+    await page.reload();
+    await expect(page.getByRole("timer")).toContainText(/^0?[45]:\d\d$/);
+    await expect(page.getByText("Question 1 of 20").first()).toBeVisible();
+  });
+
+  test("turns the timer rose in the last two minutes", async ({ page }) => {
+    await open(page, "/exam/session", exam({ endsAt: Date.now() + 90_000 }));
+    await expect(page.getByRole("timer")).toHaveAttribute("data-warning", "true");
+    await expect(page.getByRole("timer")).toHaveClass(/bg-pastel-rose/);
+  });
+
+  test("finishes by itself at 0:00, counting unanswered as incorrect", async ({ page }) => {
+    await open(page, "/exam/session", exam({ endsAt: Date.now() + 2000 }));
+    await expect(page).toHaveURL(/\/exam\/results$/, { timeout: 10_000 });
+    await expect(page.getByRole("heading", { name: "Not passed yet" })).toBeVisible();
+    await expect(page.getByText("20 answers need another look in the guide.")).toBeVisible();
+    const history = await page.evaluate(
+      () => JSON.parse(localStorage.getItem("ast.history.v1")!).value,
+    );
+    expect(history).toHaveLength(1);
+    expect(history[0].exam).toMatchObject({ percent: 0, questions: 20, timeUsedSeconds: 3 });
+  });
+
+  test("asks before leaving, then saves nothing and leaves no unfinished session", async ({
+    page,
+  }) => {
+    await open(page, "/exam");
+    await page.getByRole("button", { name: "Start exam" }).click();
+    await visibleOption(page).click();
+    await page.getByRole("button", { name: "Exit" }).click();
+    await expect(page.getByText("Leave the exam?")).toBeVisible();
+    await expect(page.getByText("Your progress will be lost.")).toBeVisible();
+    await page.getByRole("button", { name: "Stay", exact: true }).click();
+    await expect(page).toHaveURL(/\/exam\/session$/);
+    await page.getByRole("button", { name: "Exit" }).click();
+    await page.getByRole("button", { name: "Leave", exact: true }).click();
+    await expect(page).toHaveURL(/\/exam$/);
+    const stored = await page.evaluate(() => ({
+      exam: localStorage.getItem("ast.exam.v1"),
+      history: localStorage.getItem("ast.history.v1"),
+      session: localStorage.getItem("ast.session.v1"),
+    }));
+    expect(stored).toEqual({ exam: null, history: null, session: null });
+    await page.goto("/");
+    await expect(page.getByText("Start with your first scenario.")).toBeVisible();
+    await page.goto("/training");
+    await expect(page.getByText("Continue your session")).toHaveCount(0);
+  });
+
+  test("leaves the part rings and the Today goal alone", async ({ page }) => {
+    await open(page, "/exam");
+    await page.getByRole("button", { name: "Start exam" }).click();
+    await takeExam(page);
+    await expect(page).toHaveURL(/\/exam\/results$/);
+    const parts = await page.evaluate(() => localStorage.getItem("ast.parts.v1"));
+    expect(parts).toBeNull();
+    await page.goto("/");
+    await expect(page.getByText("Today 0/5")).toBeVisible();
+  });
+
+  test("does not touch an unfinished normal session", async ({ page }) => {
+    await open(page, "/exam", undefined, { ...scenario, answers: [], index: 1 });
+    await page.getByRole("button", { name: "Start exam" }).click();
+    await page.getByRole("button", { name: "Exit" }).click();
+    await page.getByRole("button", { name: "Leave", exact: true }).click();
+    await expect(page).toHaveURL(/\/exam$/);
+    await page.goto("/");
+    await expect(page.getByText("You stopped at question 2 of 3.")).toBeVisible();
   });
 });

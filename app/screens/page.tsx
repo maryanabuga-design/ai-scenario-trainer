@@ -27,6 +27,9 @@ import {
   GeneratingSample,
   FloodResultsSample,
   FloodStepSample,
+  ExamIntroSample,
+  ExamLeaveSample,
+  ExamResultsSample,
   HomeSample,
   MaterialTypesSample,
   WeakTopicsSample,
@@ -244,6 +247,52 @@ export default function Screens() {
           <PhoneFrame label="Training: Quiz, with the Mini-quiz card">
             <Screen nav="/">
               <TrainingSample mode="quiz" progress />
+            </Screen>
+          </PhoneFrame>
+        </Group>
+        <Group title="Exam">
+          <PhoneFrame label="Exam intro: first time">
+            <Screen>
+              <ExamIntroSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Exam intro: after an attempt (last and best)">
+            <Screen>
+              <ExamIntroSample attempted />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Exam question with the timer (no hint button)">
+            <Screen>
+              <SessionSample
+                kind="quiz"
+                itemId="q-s1-2"
+                index={4}
+                answered={[0, 1, 2, 3]}
+                choice="b"
+                examSeconds={842}
+              />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Exam question, last 2 minutes (rose timer)">
+            <Screen>
+              <SessionSample
+                kind="quiz"
+                itemId="q-s1-2"
+                index={18}
+                total={20}
+                answered={[0, 1, 2]}
+                examSeconds={95}
+              />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Leave the exam confirmation">
+            <Screen>
+              <ExamLeaveSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Exam results">
+            <Screen>
+              <ExamResultsSample />
             </Screen>
           </PhoneFrame>
         </Group>

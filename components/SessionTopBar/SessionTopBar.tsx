@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { Button } from "@/components/Button/Button";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
@@ -23,6 +24,11 @@ export function SessionTopBar({
   onJump,
   onBack,
   onLeave,
+  trailing,
+  leave = {
+    title: "Leave this session?",
+    description: "Your answers are saved. You can continue from Home.",
+  },
 }: {
   index: number;
   total: number;
@@ -33,6 +39,10 @@ export function SessionTopBar({
   onJump: (position: number) => void;
   onBack: () => void;
   onLeave: () => void;
+  /** Right-aligned under the top row: the exam timer. */
+  trailing?: ReactNode;
+  /** The texts of the confirmation that Exit and Back on the first question open. */
+  leave?: { title: string; description: string };
 }) {
   const [confirming, setConfirming] = useState(false);
   return (
@@ -40,7 +50,7 @@ export function SessionTopBar({
       <div className="grid grid-cols-[40px_1fr_auto] items-center gap-2">
         <CircleBackButton
           size="small"
-          label={index > 0 ? `Previous ${unit.toLowerCase()}` : "Leave this session"}
+          label={index > 0 ? `Previous ${unit.toLowerCase()}` : leave.title.replace("?", "")}
           onClick={index > 0 ? onBack : () => setConfirming(true)}
         />
         <span className="flex min-w-0 flex-col items-center text-center">
@@ -57,12 +67,13 @@ export function SessionTopBar({
           </Button>
         </div>
       </div>
+      {trailing && <div className="flex justify-end">{trailing}</div>}
       <StepStrip unit={unit} states={states} onSelect={onJump} />
       <ConfirmDialog
         open={confirming}
         emphasis="cancel"
-        title="Leave this session?"
-        description="Your answers are saved. You can continue from Home."
+        title={leave.title}
+        description={leave.description}
         confirmLabel="Leave"
         cancelLabel="Stay"
         onConfirm={onLeave}

@@ -122,13 +122,15 @@ export function ResultsActions({
   canRepeat,
   onRepeat,
   onReview,
+  reviewHref = reviewPath(1),
 }: {
   canRepeat: boolean;
   onRepeat: () => void;
   onReview?: () => void;
+  reviewHref?: string;
 }) {
   const review = (
-    <ButtonLink href={reviewPath(1)} variant="secondary" snug onClick={onReview}>
+    <ButtonLink href={reviewHref} variant="secondary" snug onClick={onReview}>
       Review answers
     </ButtonLink>
   );
@@ -154,6 +156,8 @@ export function ResultsView({
   items,
   topics,
   backHref = "/",
+  backLabel,
+  reviewHref,
   onRepeat,
 }: {
   kind: SessionKind;
@@ -162,6 +166,10 @@ export function ResultsView({
   topics: WeakTopic[];
   /** Where Back goes: where the session was started from (Training), Home otherwise. */
   backHref?: string;
+  /** The name of the Back destination; Home or Training by default. */
+  backLabel?: string;
+  /** The first Answer review page; the normal session's by default. */
+  reviewHref?: string;
   onRepeat: () => void;
 }) {
   useRestoredScroll();
@@ -172,7 +180,7 @@ export function ResultsView({
       <div className="grid grid-cols-[44px_1fr_44px] items-center">
         <CircleBackButton
           href={backHref}
-          label={backHref === "/" ? "Back to Home" : "Back to Training"}
+          label={backLabel ?? (backHref === "/" ? "Back to Home" : "Back to Training")}
         />
         <h1 className="type-item-title text-center">Results</h1>
       </div>
@@ -196,6 +204,7 @@ export function ResultsView({
           canRepeat={topics.length > 0}
           onRepeat={onRepeat}
           onReview={rememberScroll}
+          reviewHref={reviewHref}
         />
       </ActionBar>
     </div>

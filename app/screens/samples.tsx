@@ -11,6 +11,9 @@ import { Media3D } from "@/components/Media3D/Media3D";
 import { Toggle } from "@/components/Toggle/Toggle";
 import { AnswerReview } from "@/components/AnswerReview/AnswerReview";
 import { SessionBar } from "@/components/SessionBar/SessionBar";
+import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
+import { ExamIntroView } from "@/components/ExamIntroView/ExamIntroView";
+import { ExamTimer } from "@/components/ExamTimer/ExamTimer";
 import { SessionTopBar } from "@/components/SessionTopBar/SessionTopBar";
 import { stripStates } from "@/components/StepStrip/StepStrip";
 import { AskAiProvider } from "@/components/AskAi/AskAi";
@@ -150,6 +153,7 @@ export function SessionSample({
   kind = "scenario",
   hintOpen = false,
   startSaved = false,
+  examSeconds,
 }: {
   itemId?: string;
   index?: number;
@@ -161,10 +165,15 @@ export function SessionSample({
   /** Start with the hint card open. */
   hintOpen?: boolean;
   startSaved?: boolean;
+  /** The exam: seconds left on the timer; no hint button. */
+  examSeconds?: number;
 }) {
   const { sections } = useSourceSheet();
   const item = getItem(itemId);
-  const hint = hintFor(item, (id) => sections.find((section) => section.id === id)?.title);
+  const hint =
+    examSeconds === undefined
+      ? hintFor(item, (id) => sections.find((section) => section.id === id)?.title)
+      : null;
   const [open, setOpen] = useState(hintOpen);
   const [saved, setSaved] = useState(startSaved);
   const [picked, setPicked] = useState<string | null>(choice);
@@ -181,6 +190,7 @@ export function SessionSample({
           onJump={() => undefined}
           onBack={() => undefined}
           onLeave={() => undefined}
+          trailing={examSeconds === undefined ? undefined : <ExamTimer seconds={examSeconds} />}
         />
         <QuestionScreen
           item={item}
@@ -364,7 +374,6 @@ export function HomeSample({
       counts={homeCounts({
         history,
         saved: state === "first" ? [] : ["s3", "q-s2-1", "q-s7-3", "s5"],
-        guideSections: 17,
       })}
       guideName={sampleMaterials[0].name}
     />
@@ -894,6 +903,58 @@ export function MiniQuizSample({ selected }: { selected?: string[] }) {
       amount={fitAmount(chosen, pool)}
       onAmountChange={setChosen}
       onStart={() => undefined}
+    />
+  );
+}
+
+/** The Exam intro: the first time, or after an attempt. */
+export function ExamIntroSample({ attempted = false }: { attempted?: boolean }) {
+  return (
+    <ExamIntroView
+      last={attempted ? { percent: 70, finishedAt: new Date(2026, 9, 14).getTime() } : null}
+      best={attempted ? { percent: 85, finishedAt: new Date(2026, 9, 12).getTime() } : null}
+      onStart={() => undefined}
+    />
+  );
+}
+
+/** The leave confirmation of the exam, drawn in place over a question. */
+export function ExamLeaveSample() {
+  return (
+    <>
+      <SessionSample
+        kind="quiz"
+        itemId="q-s1-2"
+        index={4}
+        answered={[0, 1, 2, 3]}
+        examSeconds={842}
+      />
+      <ConfirmDialog
+        open
+        inline
+        emphasis="cancel"
+        title="Leave the exam?"
+        description="Your progress will be lost."
+        confirmLabel="Leave"
+        cancelLabel="Stay"
+        onConfirm={() => undefined}
+        onCancel={() => undefined}
+      />
+    </>
+  );
+}
+
+/** Results of an exam (one wrong answer short of the pass mark would be 75%; this one passes). */
+export function ExamResultsSample() {
+  return (
+    <ResultsView
+      kind="exam"
+      items={passedAnswers}
+      topics={weakTopics(currentWeakItems(passedAnswers))}
+      backHref="/exam"
+      backLabel="Back to Exam"
+      reviewHref="/exam/results/review/1"
+      onRepeat={() => undefined}
     />
   );
 }

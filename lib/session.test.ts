@@ -143,12 +143,19 @@ describe("the saved schema is versioned", () => {
     saved.set("ast.session.v1", JSON.stringify({ schema: 2, value: base }));
     expect(read<Session>("ast.session.v1")).toEqual(base);
     saveSession(base);
-    expect(JSON.parse(saved.get("ast.session.v1")!).schema).toBe(4);
+    expect(JSON.parse(saved.get("ast.session.v1")!).schema).toBe(5);
+  });
+
+  it("reads a value saved with schema 4 as it is (version 5 only adds the exam fields)", () => {
+    saved.set("ast.session.v1", JSON.stringify({ schema: 4, value: base }));
+    expect(read<Session>("ast.session.v1")).toEqual(base);
+    saved.set("ast.history.v1", JSON.stringify({ schema: 4, value: [] }));
+    expect(read<FinishedSession[]>("ast.history.v1")).toEqual([]);
   });
 
   it("saves the value with the schema version", () => {
     saveSession(base);
-    expect(JSON.parse(saved.get("ast.session.v1")!)).toMatchObject({ schema: 4, value: base });
+    expect(JSON.parse(saved.get("ast.session.v1")!)).toMatchObject({ schema: 5, value: base });
   });
 
   it("ignores a session saved by an older version, without crashing", () => {
@@ -164,7 +171,7 @@ describe("the saved schema is versioned", () => {
     expect(read<Session>("ast.session.v1")).toBeNull();
     saved.set("ast.session.v1", JSON.stringify({ schema: 1, value: base }));
     expect(read<Session>("ast.session.v1")).toBeNull();
-    saved.set("ast.session.v1", JSON.stringify({ schema: 5, value: base }));
+    saved.set("ast.session.v1", JSON.stringify({ schema: 6, value: base }));
     expect(read<Session>("ast.session.v1")).toBeNull();
     saved.set("ast.session.v1", "not json at all {");
     expect(read<Session>("ast.session.v1")).toBeNull();

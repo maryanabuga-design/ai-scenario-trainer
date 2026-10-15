@@ -3,14 +3,14 @@ import { useMemo, useSyncExternalStore } from "react";
 const SERVER = "server";
 
 /** The version of everything saved in this browser. A saved value of another version is ignored. */
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 
 /**
- * Versions whose saved values this version can read as they are. Versions 3 and 4 only add fields
- * (hintUsed, the saved questions, the part results, partId and returnTo), so older values migrate
+ * Versions whose saved values this version can read as they are. Versions 3, 4 and 5 only add fields
+ * (hintUsed, the saved questions, the part results, partId and returnTo, the exam entries of the history), so older values migrate
  * by being read and written back as 4.
  */
-const READABLE = [2, 3, 4];
+const READABLE = [2, 3, 4, 5];
 
 /**
  * A value saved in localStorage under one key, readable with a hook. It is saved with the schema

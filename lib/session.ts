@@ -1,9 +1,10 @@
 import { findItem } from "@/lib/items";
 import { clearPartRecords, recordPartResult } from "@/lib/part-progress";
+import { clearExam } from "@/lib/exam-store";
 import { createStore } from "@/lib/store";
 import { clearTrainings } from "@/lib/trainings";
 
-export type SessionKind = "scenario" | "quiz" | "repeat";
+export type SessionKind = "scenario" | "quiz" | "repeat" | "exam";
 
 /** The option chosen for one step or question. */
 export type Answer = {
@@ -39,6 +40,14 @@ export type FinishedSession = Pick<
   "kind" | "scenarioId" | "itemIds" | "answers" | "partId"
 > & {
   finishedAt: number;
+  /** Only for an exam: its result, the number of questions and the time used. */
+  exam?: ExamResult;
+};
+
+export type ExamResult = {
+  percent: number;
+  questions: number;
+  timeUsedSeconds: number;
 };
 
 export type Profile = {
@@ -69,7 +78,7 @@ export function isValidSession(value: unknown): value is Session {
 }
 
 export function sessionLabel(session: Pick<Session, "kind">) {
-  return { scenario: "Scenario", quiz: "Quiz", repeat: "Repeat round" }[session.kind];
+  return { scenario: "Scenario", quiz: "Quiz", repeat: "Repeat round", exam: "Exam" }[session.kind];
 }
 
 export function saveSession(session: Session) {
@@ -143,8 +152,13 @@ export function finishSession(session: Session) {
     answers: ordered,
     finishedAt,
   };
-  historyStore.write([...(historyStore.read() ?? []), entry]);
+  addToHistory(entry);
   recordPartResult({ partId: session.partId, answers: ordered });
+}
+
+/** Adds a finished session to the history used by Home, Progress and the weak topics. */
+export function addToHistory(entry: FinishedSession) {
+  historyStore.write([...(historyStore.read() ?? []), entry]);
 }
 
 export function saveProfile(profile: Profile) {
@@ -154,6 +168,7 @@ export function saveProfile(profile: Profile) {
 /** Deletes sessions, history, weak topics and created trainings. Direction, onboarding and uploads stay. */
 export function resetProgress() {
   sessionStore.write(null);
+  clearExam();
   historyStore.write(null);
   clearPartRecords();
   clearTrainings();

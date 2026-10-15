@@ -31,7 +31,7 @@ describe("saved questions", () => {
 
   it("is saved with the schema version, under its own key", () => {
     toggleSaved("s2");
-    expect(JSON.parse(saved.get("ast.saved.v1")!)).toEqual({ schema: 4, value: ["s2"] });
+    expect(JSON.parse(saved.get("ast.saved.v1")!)).toEqual({ schema: 5, value: ["s2"] });
   });
 
   it("answers whether a question is saved, also before the browser has been read", () => {
