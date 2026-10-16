@@ -213,37 +213,37 @@ export default function Screens() {
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Reading screen: S1, the first topic (a long text: the block follows it; only Next)">
-            <Screen nav="/materials">
+            <Screen>
               <ReadingExample id="S1" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Reading screen: S2, a short topic (the action block at the bottom, Previous and Next)">
-            <Screen nav="/materials">
+            <Screen>
               <ReadingExample id="S2" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Reading screen: S10, the last topic (only Previous)">
-            <Screen nav="/materials">
+          <PhoneFrame label="Reading screen: S10, the last topic (only Previous; no bottom navigation)">
+            <Screen>
               <ReadingExample id="S10" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Reading: toolbar on a new selection (Highlight, Copy)">
-            <Screen nav="/materials">
+            <Screen>
               <HighlightSample markdown={loadGuides()[0].sections[0].body} state="selection" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Reading: two highlights, toolbar on an existing one (Unhighlight, Copy)">
-            <Screen nav="/materials">
+            <Screen>
               <HighlightSample markdown={loadGuides()[0].sections[0].body} state="highlight" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Reading: the Copied state">
-            <Screen nav="/materials">
+            <Screen>
               <HighlightSample markdown={loadGuides()[0].sections[0].body} state="copied" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Reading screen: a flood topic (no Practise or Steps, only the pager)">
-            <Screen nav="/materials">
+            <Screen>
               <ReadingExample id="F5" />
             </Screen>
           </PhoneFrame>

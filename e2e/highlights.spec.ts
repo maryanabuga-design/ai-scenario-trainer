@@ -225,7 +225,7 @@ test.describe("highlights in the reading screen", () => {
     expect(await page.evaluate(() => window.__copied)).toBe("every alarm");
   });
 
-  test("the toolbar fits between the gutters, on one line, without covering the text or the bottom navigation", async ({
+  test("the toolbar fits between the gutters, on one line, without covering the text, inside the screen", async ({
     page,
   }) => {
     await open(page);
@@ -245,8 +245,10 @@ test.describe("highlights in the reading screen", () => {
     }
     const mark = (await marks(page).first().boundingBox())!;
     expect(bar.y + bar.height <= mark.y || bar.y >= mark.y + mark.height).toBe(true);
-    const nav = (await page.getByRole("navigation", { name: "Main" }).boundingBox())!;
-    expect(bar.y + bar.height).toBeLessThanOrEqual(nav.y);
+    // the reading screen has no bottom navigation; the toolbar stays inside the screen
+    await expect(page.getByRole("navigation", { name: "Main" })).toHaveCount(0);
+    expect(bar.y).toBeGreaterThanOrEqual(0);
+    expect(bar.y + bar.height).toBeLessThanOrEqual(page.viewportSize()!.height);
     expect(await noSidewaysScroll(page)).toBe(true);
     // the page keeps its gutters
     const gutters = await page

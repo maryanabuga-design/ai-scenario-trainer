@@ -11,7 +11,11 @@ const items = [
   { href: "/profile", label: "Profile", Icon: User },
 ];
 
+/** The reading screens of the Materials tab have no bottom navigation (DESIGN.md: Reading screen). */
+const READING_PREFIX = "/materials/read/";
+
 function isCurrent(href: string, pathname: string) {
+  if (pathname.startsWith(READING_PREFIX)) return false;
   // Training is a sub-screen of Home and keeps the Home item active.
   return href === "/" ? pathname === "/" || pathname === "/training" : pathname.startsWith(href);
 }

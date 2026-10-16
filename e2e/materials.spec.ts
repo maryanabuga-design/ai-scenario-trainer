@@ -196,9 +196,8 @@ test.describe("Materials", () => {
     await expect(page.getByRole("button", { name: "Practise this topic" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Steps for this topic" })).toBeVisible();
     await expect(page.getByRole("link", { name: /^Next\s*Checking the route$/ })).toBeVisible();
-    await expect(
-      page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Materials" }),
-    ).toHaveAttribute("aria-current", "page");
+    // the bottom navigation is not on a reading screen
+    await expect(page.getByRole("navigation", { name: "Main" })).toHaveCount(0);
     expect(await noSidewaysScroll(page)).toBe(true);
   });
 
@@ -280,27 +279,67 @@ test.describe("Materials", () => {
     await expect(page.getByRole("heading", { name: "Materials", level: 1 })).toBeVisible();
   });
 
-  test("a short topic keeps the action block at the bottom of the screen, above the navigation", async ({
+  test("a short topic keeps the action block at the very bottom of the screen, no navigation", async ({
     page,
   }) => {
     // the shortest topic (S10) on a 360 by 844 screen
     await page.setViewportSize({ width: 360, height: 844 });
     await open(page, "/materials/read/S10");
-    const nav = (await page.getByRole("navigation", { name: "Main" }).boundingBox())!;
+    await expect(page.getByRole("navigation", { name: "Main" })).toHaveCount(0);
     const block = (await page.getByRole("region", { name: "What next" }).boundingBox())!;
     const practise = (await page
       .getByRole("button", { name: "Practise this topic" })
       .boundingBox())!;
     const lastText = (await page.locator("main [data-reading-body]").boundingBox())!;
+    const height = await page.evaluate(() => window.innerHeight);
     expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(
-      await page.evaluate(() => window.innerHeight),
+      height,
     );
-    // the block ends just above the navigation (the padding below it is at most 24px) ...
-    expect(nav.y - (block.y + block.height)).toBeGreaterThanOrEqual(0);
-    expect(nav.y - (block.y + block.height)).toBeLessThanOrEqual(32);
+    // the block's bottom edge is the screen bottom minus the 16px gutter (no safe-area in a test browser)
+    expect(Math.abs(height - 16 - (block.y + block.height))).toBeLessThanOrEqual(1);
     // ... and the primary button is far under the text, not directly below it
     expect(practise.y - (lastText.y + lastText.height)).toBeGreaterThan(100);
     expect(practise.height).toBe(52);
+  });
+
+  test("Practise, Steps and the pager are fully visible and tappable, not covered by anything", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 360, height: 844 });
+    await open(page, "/materials/read/S2");
+    const targets = [
+      page.getByRole("button", { name: "Practise this topic" }),
+      page.getByRole("link", { name: "Steps for this topic" }),
+      page.getByRole("link", { name: /^Previous\s/ }),
+      page.getByRole("link", { name: /^Next\s/ }),
+    ];
+    for (const target of targets) {
+      const box = (await target.boundingBox())!;
+      expect(box.y + box.height).toBeLessThanOrEqual(844);
+      // the element at the centre of the target is the target itself (nothing sits on top of it)
+      const covered = await target.evaluate((el) => {
+        const rect = el.getBoundingClientRect();
+        const top = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+        return !el.contains(top);
+      });
+      expect(covered).toBe(false);
+    }
+  });
+
+  test("Back returns to the Materials list with its navigation and the scroll position kept", async ({
+    page,
+  }) => {
+    await open(page, "/materials");
+    await page.evaluate(() => window.scrollTo(0, 500));
+    const before = await page.evaluate(() => window.scrollY);
+    expect(before).toBeGreaterThan(300);
+    await page.getByRole("link", { name: /^Calling for help/ }).click();
+    await expect(page).toHaveURL(/\/materials\/read\/S5$/);
+    await expect(page.getByRole("navigation", { name: "Main" })).toHaveCount(0);
+    await page.getByRole("button", { name: "Back" }).click();
+    await expect(page).toHaveURL(/\/materials$/);
+    await expect(page.getByRole("navigation", { name: "Main" })).toBeVisible();
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(before - 60);
   });
 
   test("a long topic lets the block follow the text and scroll with the page", async ({ page }) => {

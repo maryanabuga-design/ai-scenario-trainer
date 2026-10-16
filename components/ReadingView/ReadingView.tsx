@@ -71,7 +71,7 @@ export function ReadingView({ topic }: { topic: ReadingTopic }) {
   }
 
   return (
-    <div className="flex flex-1 flex-col pb-6">
+    <div className="flex flex-1 flex-col pb-[var(--gutter,1rem)]">
       <div className="flex flex-col gap-6">
         <CircleBackButton
           size="small"

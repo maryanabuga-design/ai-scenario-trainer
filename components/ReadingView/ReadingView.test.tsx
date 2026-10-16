@@ -31,7 +31,7 @@ describe("the reading screen", () => {
   });
 
   it("is a sticky-footer column: the block is pushed to the end, with no fixed or sticky panel", () => {
-    expect(source).toContain('className="flex flex-1 flex-col pb-6"');
+    expect(source).toContain('className="flex flex-1 flex-col pb-[var(--gutter,1rem)]"');
     expect(source).toContain('className="mt-auto flex flex-col pt-6"');
     expect(code).not.toMatch(/ActionBar|\b(sticky|fixed)\b|shadow|bg-/);
   });
