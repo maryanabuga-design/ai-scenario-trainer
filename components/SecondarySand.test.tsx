@@ -75,7 +75,7 @@ describe("coloured chips and icon backgrounds stay as they are", () => {
       blue: "bg-pastel-blue",
       peach: "bg-pastel-peach",
       lilac: "bg-pastel-lilac",
-      green: "bg-pastel-green",
+      olive: "bg-olive-tint",
     } as const;
     for (const [tone, fill] of Object.entries(tones)) {
       const html = renderToStaticMarkup(<Tag tone={tone as keyof typeof tones}>Scenario</Tag>);

@@ -6,10 +6,11 @@ const chip = (status: "ready" | "processing" | "failed") =>
   renderToStaticMarkup(<StatusChip status={status} />);
 
 describe("material status chips", () => {
-  it("Ready: a green chip with the check icon, no stroke", () => {
+  it("Ready: an olive chip with the check icon, no stroke (green means a correct answer only)", () => {
     const cls = /class="([^"]*)"/.exec(chip("ready"))?.[1] ?? "";
-    expect(cls).toContain("bg-pastel-green");
-    expect(cls).toContain("text-chip-ink-green");
+    expect(cls).toContain("bg-olive-tint");
+    expect(cls).toContain("text-text");
+    expect(cls).not.toMatch(/green|correct/);
     expect(cls).toContain("rounded-full");
     expect(chip("ready")).toContain("lucide-check");
     expect(chip("ready")).toContain(">Ready</span>");
@@ -22,9 +23,10 @@ describe("material status chips", () => {
     expect(chip("processing")).toContain(">Processing</span>");
   });
 
-  it("Failed: a rose chip with red text and the alert icon", () => {
-    expect(chip("failed")).toContain("bg-pastel-rose");
-    expect(chip("failed")).toContain("text-wrong");
+  it("Failed: a stone chip with dark text and the alert icon (red means a wrong answer only)", () => {
+    expect(chip("failed")).toContain("bg-secondary-sand-pressed");
+    expect(chip("failed")).toContain("text-text");
+    expect(chip("failed")).not.toMatch(/rose|wrong/);
     expect(chip("failed")).toContain("lucide-circle-alert");
     expect(chip("failed")).toContain(">Failed</span>");
   });
@@ -32,7 +34,7 @@ describe("material status chips", () => {
   it("Ready, Processing and Failed are all chips with a fill and no stroke", () => {
     for (const status of ["ready", "processing", "failed"] as const) {
       const cls = /class="([^"]*)"/.exec(chip(status))?.[1] ?? "";
-      expect(cls).toMatch(/bg-pastel-/);
+      expect(cls).toMatch(/bg-(pastel-|olive-tint|secondary-sand-pressed)/);
       expect(cls).not.toMatch(/(^| )border/);
       expect(cls).toContain("rounded-full");
     }

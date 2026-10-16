@@ -54,7 +54,7 @@ export function Ring({
           size === 56 ? "type-caption" : "type-micro"
         } ${muted ? "text-text-secondary" : ""}`}
       >
-        {check && <Check size={9} strokeWidth={3} className="absolute top-[5px] text-correct" />}
+        {check && <Check size={9} strokeWidth={3} className="absolute top-[5px] text-primary" />}
         {percent}%
       </span>
     </div>

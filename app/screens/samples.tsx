@@ -154,6 +154,7 @@ export function SessionSample({
   hintOpen = false,
   startSaved = false,
   examSeconds,
+  checked = false,
 }: {
   itemId?: string;
   index?: number;
@@ -167,6 +168,8 @@ export function SessionSample({
   startSaved?: boolean;
   /** The exam: seconds left on the timer; no hint button. */
   examSeconds?: number;
+  /** A training question that was checked: its feedback and Why show. */
+  checked?: boolean;
 }) {
   const { sections } = useSourceSheet();
   const item = getItem(itemId);
@@ -177,6 +180,8 @@ export function SessionSample({
   const [open, setOpen] = useState(hintOpen);
   const [saved, setSaved] = useState(startSaved);
   const [picked, setPicked] = useState<string | null>(choice);
+  const [done, setDone] = useState(checked);
+  const exam = examSeconds !== undefined;
   const endRef = useScrollFrameToEnd(choice !== null || hintOpen);
   const flags = Array.from({ length: total }, (_, position) => answered.includes(position));
   return (
@@ -196,6 +201,8 @@ export function SessionSample({
           item={item}
           choice={picked}
           onChoose={setPicked}
+          mode={exam ? "exam" : "training"}
+          checked={done}
           saved={saved}
           onToggleSaved={() => setSaved(!saved)}
           hint={open ? hint : null}
@@ -203,10 +210,13 @@ export function SessionSample({
       </div>
       <div ref={endRef} />
       <SessionBar
+        label={exam || done ? (index === total - 1 ? "Finish" : "Next") : "Check"}
         last={index === total - 1}
         disabled={picked === null}
-        hint={hint ? { open, onToggle: () => setOpen(!open) } : undefined}
-        onNext={() => undefined}
+        hint={
+          hint ? { open: open && !done, onToggle: () => setOpen(!open), disabled: done } : undefined
+        }
+        onNext={() => setDone(true)}
       />
     </>
   );
@@ -691,7 +701,7 @@ export function ButtonsSample() {
 
 /** Every chip tone and status, on the page and on a card, without strokes. */
 export function ChipTonesSample() {
-  const tones = ["yellow", "peach", "blue", "lilac", "green", "rose", "sand", "primary"] as const;
+  const tones = ["yellow", "peach", "blue", "lilac", "olive", "sand", "primary"] as const;
   const statuses = ["ready", "processing", "failed"] as const;
   const group = (
     <div className="flex flex-col gap-4">
@@ -712,7 +722,7 @@ export function ChipTonesSample() {
         <Tag tone="blue">Quiz</Tag>
         <Tag tone="peach">Short</Tag>
         <Tag tone="lilac">Full</Tag>
-        <Tag tone="green">Training</Tag>
+        <Tag tone="olive">Training</Tag>
         <GuideChip sectionId="S1" />
       </div>
     </div>
@@ -721,7 +731,8 @@ export function ChipTonesSample() {
     <div className="flex flex-col gap-6">
       <h1 className="type-page-title">Chips</h1>
       <p className="type-small text-text-secondary">
-        Soft pastel fills, no strokes. The last tone is the selected-card chip.
+        Soft pastel fills, no strokes. Green and rose are not chip tones: they mean answer
+        correctness only.
       </p>
       <section className="flex flex-col gap-3">
         <h2 className="type-item-title">On the page</h2>

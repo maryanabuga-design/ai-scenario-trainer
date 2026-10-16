@@ -14,9 +14,9 @@ export const statuses: Record<
   Status,
   { label: string; icon: keyof typeof icons; tone: ChipTone; ink?: ChipInk }
 > = {
-  ready: { label: "Ready", icon: "check", tone: "green", ink: "green" },
+  ready: { label: "Ready", icon: "check", tone: "olive" },
   processing: { label: "Processing", icon: "clock", tone: "sand" },
-  failed: { label: "Failed", icon: "alert", tone: "rose", ink: "red" },
+  failed: { label: "Failed", icon: "alert", tone: "stone" },
 };
 
 export function StatusIcon({ status, size = 14 }: { status: Status; size?: number }) {

@@ -2,7 +2,7 @@
 
 /* Tokens from DESIGN.md. Change DESIGN.md first, then this file. */
 :root {
-  --bg: #f3eee9;
+  --bg: #f6f4f0;
   --surface: #ffffff;
   --secondary-sand: #f0ece6;
   --secondary-sand-pressed: #e2ded5;
@@ -15,10 +15,12 @@
   --primary-pressed: color-mix(in srgb, var(--primary) 70%, var(--text));
   --primary-text: #ffffff;
   --accent: #3d3a8c;
-  --correct: #1f7a4d;
-  --wrong: #b3261e;
-  --correct-bg: #e8f3ec;
-  --wrong-bg: #fbeae8;
+  --correct: #2e7d4f;
+  --correct-text: #1f6b3f;
+  --wrong: #c0392b;
+  --wrong-text: #9b2c1f;
+  --correct-bg: #e3f2e8;
+  --wrong-bg: #fbe4e1;
   --caution: #8a5a00;
 
   /* Results screen (soft surface), measured from the reference screens */
@@ -34,7 +36,6 @@
   --pastel-green: #ddebe3;
   --pastel-peach: #f7e1d8;
   --pastel-sand: #e5dfd4;
-  --chip-ink-green: #1c7249;
   --gutter: 1rem;
   --secondary-pressed: #e3e8dc;
   --next-card: #f2f3ee;
@@ -42,7 +43,7 @@
   --olive-tint: #e0e6d6;
   --olive-tint-pressed: #d6ddcb;
   --placeholder-stroke: #b9c4ac;
-  --card: #faf7f3;
+  --card: #ffffff;
   --arrow-stroke: #e4dfd5;
   --arrow-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
   --card-shadow: 0 1px 2px rgb(60 45 30 / 0.04), 0 8px 24px rgb(60 45 30 / 0.05);
@@ -64,13 +65,14 @@
   --color-primary-text: var(--primary-text);
   --color-accent: var(--accent);
   --color-correct: var(--correct);
+  --color-correct-text: var(--correct-text);
+  --color-wrong-text: var(--wrong-text);
   --color-correct-bg: var(--correct-bg);
   --color-wrong-bg: var(--wrong-bg);
   --color-wrong: var(--wrong);
   --color-caution: var(--caution);
   --color-soft-card: var(--soft-card);
   --color-soft-divider: var(--soft-divider);
-  --color-chip-ink-green: var(--chip-ink-green);
   --color-pastel-yellow: var(--pastel-yellow);
   --color-pastel-rose: var(--pastel-rose);
   --color-pastel-blue: var(--pastel-blue);

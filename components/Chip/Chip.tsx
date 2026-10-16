@@ -7,25 +7,23 @@ import type { ComponentProps, ReactNode } from "react";
  * status chips and Guide chips only choose a tone and a size; nothing else draws a chip.
  */
 export type ChipTone =
-  "yellow" | "peach" | "blue" | "lilac" | "green" | "rose" | "sand" | "primary";
+  "yellow" | "peach" | "blue" | "lilac" | "olive" | "sand" | "stone" | "primary";
 
 /** The text or icon colour on a tone, when it is not the plain dark text. */
-export type ChipInk = "green" | "red" | "amber" | "grey";
+export type ChipInk = "amber" | "grey";
 
 const tones: Record<ChipTone, string> = {
   yellow: "bg-pastel-yellow",
   peach: "bg-pastel-peach",
   blue: "bg-pastel-blue",
   lilac: "bg-pastel-lilac",
-  green: "bg-pastel-green",
-  rose: "bg-pastel-rose",
+  olive: "bg-olive-tint",
+  stone: "bg-secondary-sand-pressed",
   sand: "bg-pastel-sand",
   primary: "bg-primary",
 };
 
 const inks: Record<ChipInk, string> = {
-  green: "text-chip-ink-green",
-  red: "text-wrong",
   amber: "text-caution",
   grey: "text-text-secondary",
 };

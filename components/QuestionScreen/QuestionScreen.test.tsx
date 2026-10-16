@@ -2,7 +2,6 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
 import { QuestionScreen } from "@/components/QuestionScreen/QuestionScreen";
-import { SelectableRow } from "@/components/SelectableRow/SelectableRow";
 import { SessionTopBar } from "@/components/SessionTopBar/SessionTopBar";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { stripStates } from "@/components/StepStrip/StepStrip";
@@ -28,7 +27,7 @@ function withSources(node: React.ReactNode) {
 const visibleText = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ");
 
 describe("one screen for steps and questions", () => {
-  it("shows a scenario step with its situation, the question and lettered options", () => {
+  it("shows a scenario step with its situation, the question and the options", () => {
     const step = scenarios[0].steps[0];
     const html = withSources(
       <QuestionScreen item={step} choice={null} onChoose={noop} {...extras} />,
@@ -36,9 +35,8 @@ describe("one screen for steps and questions", () => {
     expect(html).toContain(step.situation);
     expect(html).toContain(step.question);
     expect(html).toContain("Choose one answer");
-    step.options.forEach((option, index) => {
+    step.options.forEach((option) => {
       expect(html).toContain(option.text);
-      expect(html).toContain(`>${"ABCD"[index]}</span>`);
     });
     expect(html.indexOf(step.situation!)).toBeLessThan(html.indexOf(step.question));
   });
@@ -53,16 +51,17 @@ describe("one screen for steps and questions", () => {
     expect(html).toContain("checked");
   });
 
-  it("puts the letter badge on the left: a 24px olive-tint circle with a dark letter", () => {
-    const html = renderToStaticMarkup(
-      <SelectableRow letter="B" name="n" value="v" checked={false} onChange={noop}>
-        Option text
-      </SelectableRow>,
+  it("has no letters on the options: the radio is on the left of the text", () => {
+    const step = scenarios[0].steps[0];
+    const html = withSources(
+      <QuestionScreen item={step} choice={null} onChoose={noop} {...extras} />,
     );
-    expect(html).toContain("h-6 w-6");
-    expect(html).toContain("bg-olive-tint");
-    expect(html).toContain("text-text");
-    expect(html.indexOf(">B<")).toBeLessThan(html.indexOf("Option text"));
+    expect(html).not.toMatch(/>[ABCD]<\/span>/);
+    const card = html.slice(html.indexOf("<label"), html.indexOf("</label>"));
+    expect(card.indexOf('type="radio"')).toBeLessThan(card.indexOf(step.options[0].text));
+    expect(card.indexOf("rounded-full border-2 border-primary")).toBeLessThan(
+      card.indexOf(step.options[0].text),
+    );
   });
 
   it("is a card on the page with the radius and shadow of cards", () => {
@@ -122,50 +121,130 @@ describe("one screen for steps and questions", () => {
 });
 
 describe("options", () => {
-  it("gives a scenario question 3 options, A to C", () => {
+  const radios = (html: string) => html.match(/type="radio"/g);
+  const cards = (html: string) => html.match(/<label data-state="[^"]*" class="[^"]*"/g) ?? [];
+
+  it("gives a scenario question 3 options and no letters", () => {
     const step = scenarios[0].steps[0];
     const html = withSources(
       <QuestionScreen item={step} choice={null} onChoose={noop} {...extras} />,
     );
-    expect(html.match(/type="radio"/g)).toHaveLength(3);
-    for (const letter of "ABC") expect(html).toContain(`>${letter}</span>`);
-    expect(html).not.toContain(">D</span>");
+    expect(radios(html)).toHaveLength(3);
+    expect(html).not.toMatch(/>[ABCD]<\/span>/);
   });
 
-  it("gives a quiz question 3 or 4 options and a true-false question 2, A and B", () => {
+  it("gives a quiz question 3 or 4 options and a true-false question 2", () => {
     const four = questions.find((question) => question.options.length === 4)!;
     expect(
-      withSources(<QuestionScreen item={four} choice={null} onChoose={noop} {...extras} />).match(
-        /type="radio"/g,
-      ),
+      radios(withSources(<QuestionScreen item={four} choice={null} onChoose={noop} {...extras} />)),
     ).toHaveLength(4);
     const tf = questions.find((question) => question.type === "true-false")!;
     const html = withSources(
       <QuestionScreen item={tf} choice={null} onChoose={noop} {...extras} />,
     );
-    expect(html.match(/type="radio"/g)).toHaveLength(2);
+    expect(radios(html)).toHaveLength(2);
     expect(html).toContain(">True<");
     expect(html).toContain(">False<");
-    expect(html).toContain(">A</span>");
-    expect(html).toContain(">B</span>");
-    expect(html).not.toContain(">C</span>");
+    expect(html).not.toMatch(/>[ABCD]<\/span>/);
   });
 
-  it("keeps every letter badge olive: a selected row looks like the others, only its radio is filled", () => {
+  it("is a radio group of white cards with a 2px border, the card radius and the gutter padding", () => {
+    const step = scenarios[0].steps[0];
+    const html = withSources(
+      <QuestionScreen item={step} choice={null} onChoose={noop} {...extras} />,
+    );
+    expect(html).toContain('role="radiogroup"');
+    for (const card of cards(html)) {
+      expect(card).toContain("border-2");
+      expect(card).toContain("rounded-card");
+      expect(card).toContain("p-[var(--gutter,1rem)]");
+      expect(card).toContain("min-h-11");
+      expect(card).toContain("bg-card");
+    }
+  });
+
+  it("selected, before Check: only the chosen card gets the olive border and a filled radio, and the size does not change", () => {
     const step = scenarios[0].steps[0];
     const html = withSources(
       <QuestionScreen item={step} choice={step.options[1].id} onChoose={noop} {...extras} />,
     );
-    expect(html.match(/bg-primary text-primary-text/g)).toBeNull();
-    expect(html.match(/bg-olive-tint text-text/g)).toHaveLength(3);
-    const rows = html.match(/<label class="[^"]*"/g) ?? [];
-    expect(rows).toHaveLength(3);
-    expect(new Set(rows).size).toBe(1);
-    // only the radio of the chosen option is filled
-    expect(html.match(/h-2\.5 w-2\.5 rounded-full bg-primary/g)).toHaveLength(1);
+    const all = cards(html);
+    expect(all).toHaveLength(3);
+    expect(all.filter((card) => card.includes('data-state="selected"'))).toHaveLength(1);
+    expect(all[1]).toContain("border-primary bg-card");
+    expect(all[0]).toContain("border-selectable-stroke bg-card");
+    // the same classes apart from the colour: the width of the border is 2px in every state
+    const shape = (card: string) =>
+      card.replace(/data-state="[^"]*"/, "").replace(/border-(primary|selectable-stroke)/, "");
+    expect(new Set(all.map(shape)).size).toBe(1);
+    expect(html.match(/h-2 w-2 rounded-full bg-primary-text/g)).toHaveLength(1);
+    // nothing is revealed before Check
+    expect(html).not.toMatch(/correct-bg|wrong-bg|Correct|Not quite|>Why</);
   });
 
-  it("shows no red or green and no verdict during the session", () => {
+  it("checked and right: the green card with a check, Correct and the Why card", () => {
+    const step = scenarios[0].steps[0];
+    const html = withSources(
+      <QuestionScreen
+        item={step}
+        choice={step.correctOptionId}
+        checked
+        onChoose={noop}
+        {...extras}
+      />,
+    );
+    expect(html.match(/data-state="correct"/g)).toHaveLength(1);
+    expect(html).toContain("border-correct bg-correct-bg");
+    expect(html).toContain(">Correct<");
+    expect(html).toContain("lucide-check");
+    expect(html).not.toMatch(/lucide-x|Not quite|wrong-bg/);
+    expect(html).toContain(">Why<");
+    expect(html).toContain(step.why);
+    expect(html).toContain('role="status"');
+    expect(html).toContain(">Correct</p>");
+    // locked: the radios are disabled
+    expect(html.match(/disabled=""/g)).toHaveLength(3);
+  });
+
+  it("checked and wrong: the red card with a cross and Not quite, the right one revealed, and Why", () => {
+    const step = scenarios[0].steps[0];
+    const wrong = step.options.find((option) => option.id !== step.correctOptionId)!;
+    const right = step.options.find((option) => option.id === step.correctOptionId)!;
+    const html = withSources(
+      <QuestionScreen item={step} choice={wrong.id} checked onChoose={noop} {...extras} />,
+    );
+    expect(html.match(/data-state="wrong"/g)).toHaveLength(1);
+    expect(html.match(/data-state="revealed-correct"/g)).toHaveLength(1);
+    expect(html.match(/data-state="idle"/g)).toHaveLength(1);
+    expect(html).toContain("border-wrong bg-wrong-bg");
+    expect(html).toContain(">Not quite<");
+    expect(html).toContain(">Correct answer<");
+    expect(html).toContain("lucide-x");
+    expect(html).toContain(step.why);
+    expect(html).toContain(`Not quite. The correct answer is: ${right.text}`);
+  });
+
+  it("in the exam: only the selected style, never colours, labels or Why, checked or not", () => {
+    const step = scenarios[0].steps[0];
+    for (const checked of [false, true]) {
+      const html = withSources(
+        <QuestionScreen
+          item={step}
+          choice={step.options[0].id}
+          checked={checked}
+          mode="exam"
+          onChoose={noop}
+          {...extras}
+        />,
+      );
+      expect(html.match(/data-state="selected"/g)).toHaveLength(1);
+      expect(html).not.toMatch(
+        /correct-bg|wrong-bg|border-correct|border-wrong|Correct|Not quite|>Why<|lucide-x|disabled=""/,
+      );
+    }
+  });
+
+  it("shows no red or green and no verdict while nothing is checked", () => {
     const html = withSources(
       <QuestionScreen item={items[0]} choice="a" onChoose={noop} {...extras} />,
     );

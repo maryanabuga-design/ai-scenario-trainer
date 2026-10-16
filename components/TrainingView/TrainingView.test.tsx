@@ -256,7 +256,7 @@ describe("a topic card and its parts", () => {
   });
 });
 
-describe("the rose chip", () => {
+describe("the N to repeat chip", () => {
   it("shows N to repeat only on a topic with wrong answers", () => {
     const history: FinishedSession[] = [
       {
@@ -277,10 +277,13 @@ describe("the rose chip", () => {
     );
     expect(s1).toContain("2 to repeat");
     const chip = s1.slice(
-      s1.indexOf("<span", s1.indexOf("bg-pastel-rose") - 120),
+      s1.indexOf("<span", s1.indexOf("bg-olive-tint") - 120),
       s1.indexOf("</span>", s1.indexOf("2 to repeat")),
     );
-    expect(chip).toContain("bg-pastel-rose");
+    // the chip is the neutral olive tint with dark text: rose and red mean a wrong answer only
+    expect(chip).toContain("bg-olive-tint");
+    expect(chip).toContain("text-text");
+    expect(html).not.toMatch(/pastel-rose|text-wrong|bg-wrong/);
     expect(chip).not.toContain("border");
     expect(chip).toContain("rounded-full");
     expect(html.match(/to repeat/g)).toHaveLength(1);

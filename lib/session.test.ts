@@ -5,10 +5,12 @@ import {
   answerFor,
   finishSession,
   firstUnanswered,
+  isDone,
   isValidSession,
   saveSession,
   startSession,
   withAnswer,
+  withChecked,
   withHintUsed,
 } from "@/lib/session";
 import type { FinishedSession, Session } from "@/lib/session";
@@ -207,5 +209,64 @@ describe("the saved schema is versioned", () => {
     expect(isValidSession({ kind: "quiz" })).toBe(false);
     expect(isValidSession({ ...base, itemIds: ["gone-question"] })).toBe(false);
     expect(isValidSession(base)).toBe(true);
+  });
+});
+
+describe("a checked answer", () => {
+  const start = (): Session => ({
+    ...base,
+    itemIds: ["q-quiz-s01-001", "q-quiz-s01-002"],
+    answers: [],
+  });
+
+  it("is locked by Check: the choice cannot change afterwards, and other questions are unaffected", () => {
+    let session = withAnswer(start(), "q-quiz-s01-001", "b");
+    session = withAnswer(session, "q-quiz-s01-001", "a");
+    expect(answerFor(session, "q-quiz-s01-001")?.optionId).toBe("a");
+    expect(answerFor(session, "q-quiz-s01-001")?.checked).toBeUndefined();
+    session = withChecked(session, "q-quiz-s01-001");
+    expect(answerFor(session, "q-quiz-s01-001")).toMatchObject({ optionId: "a", checked: true });
+    expect(withAnswer(session, "q-quiz-s01-001", "b")).toBe(session);
+    expect(answerFor(withAnswer(session, "q-quiz-s01-002", "a"), "q-quiz-s01-002")?.checked).toBe(
+      undefined,
+    );
+  });
+
+  it("counts as done when checked in the training modes, and when chosen in the exam", () => {
+    const chosen = { itemId: "q-quiz-s01-001", optionId: "a" };
+    expect(isDone(undefined, "training")).toBe(false);
+    expect(isDone(chosen, "training")).toBe(false);
+    expect(isDone({ ...chosen, checked: true }, "training")).toBe(true);
+    expect(isDone(chosen, "exam")).toBe(true);
+    expect(isDone(undefined, "exam")).toBe(false);
+  });
+
+  it("is saved with the session, so a reload resumes selected or checked exactly", () => {
+    let session = withAnswer(start(), "q-quiz-s01-001", "a");
+    session = withAnswer(session, "q-quiz-s01-002", "b");
+    session = withChecked(session, "q-quiz-s01-001");
+    saveSession(session);
+    const saved = read<Session>("ast.session.v1")!;
+    expect(saved.answers.find((a) => a.itemId === "q-quiz-s01-001")).toMatchObject({
+      optionId: "a",
+      checked: true,
+    });
+    const second = saved.answers.find((a) => a.itemId === "q-quiz-s01-002");
+    expect(second?.optionId).toBe("b");
+    expect(second?.checked).toBeUndefined();
+    expect(isValidSession(saved)).toBe(true);
+  });
+
+  it("reads an older saved answer without the flag as not checked", () => {
+    saved.set(
+      "ast.session.v1",
+      JSON.stringify({
+        schema: 6,
+        content: contentFingerprint,
+        value: { ...start(), answers: [{ itemId: "q-quiz-s01-001", optionId: "a" }] },
+      }),
+    );
+    const old = read<Session>("ast.session.v1")!;
+    expect(isDone(answerFor(old, "q-quiz-s01-001"), "training")).toBe(false);
   });
 });

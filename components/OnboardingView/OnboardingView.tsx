@@ -83,7 +83,7 @@ export function OnboardingView({
           <>
             <span
               aria-hidden="true"
-              className="mb-3 flex h-22 w-22 items-center justify-center rounded-full bg-pastel-green text-text"
+              className="mb-3 flex h-22 w-22 items-center justify-center rounded-full bg-olive-tint text-text"
             >
               <Icon size={40} strokeWidth={1.75} />
             </span>

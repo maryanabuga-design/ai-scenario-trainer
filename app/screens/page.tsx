@@ -349,6 +349,21 @@ export default function Screens() {
               <SessionSample itemId="s2" index={1} answered={[0, 1, 2]} choice="c" />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Checked, correct: green option, check, Correct and Why">
+            <Screen>
+              <SessionSample itemId="s2" index={1} answered={[0]} choice="c" checked />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Checked, wrong: red option, cross, Not quite, the right one revealed and Why">
+            <Screen>
+              <SessionSample itemId="s2" index={1} answered={[0]} choice="a" checked />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Exam question: selected option only, no Check, no colours, no Why">
+            <Screen>
+              <SessionSample itemId="s2" index={1} answered={[0]} choice="a" examSeconds={842} />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Quiz question 4 of 10">
             <Screen>
               <SessionSample

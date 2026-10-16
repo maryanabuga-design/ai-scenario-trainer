@@ -71,9 +71,9 @@ describe("a saved question on its own", () => {
   it("shows all options with the correct one marked, no choice, Why and the guide chips", () => {
     const html = view(true);
     expect(html.match(/data-state=/g)).toHaveLength(3);
-    expect(html.match(/data-state="correct"/g)).toHaveLength(1);
+    expect(html.match(/data-state="revealed-correct"/g)).toHaveLength(1);
     expect(html).toContain("Correct answer");
-    expect(html).not.toContain("Your answer");
+    expect(html).not.toContain("Not quite");
     expect(html).toContain(">Why<");
     expect(html).toContain("Guide · S1");
   });

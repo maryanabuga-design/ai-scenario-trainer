@@ -50,7 +50,7 @@ function contrast(a: string, b: string) {
 }
 
 /** The backgrounds a chip sits on: the three in the brief and the app's own three. */
-const backgrounds = ["#f2eeea", "#faf7f4", "#f2f3ef", "#f3eee9", "#faf7f3", "#f2f3ee"];
+const backgrounds = ["#f6f4f0", "#ffffff", "#f2f3ee"];
 
 const pastel = ["yellow", "peach", "blue", "lilac", "green", "rose", "sand"] as const;
 
@@ -60,8 +60,8 @@ const inks: Record<(typeof pastel)[number], string[]> = {
   peach: ["text"],
   blue: ["text"],
   lilac: ["text"],
-  green: ["chip-ink-green"],
-  rose: ["wrong"],
+  green: ["text"],
+  rose: ["text"],
   sand: ["text", "text-secondary"],
 };
 
@@ -78,7 +78,7 @@ describe("chip tones", () => {
     });
   });
 
-  it.each(pastel)("%s: ΔE of at least 6 from the page, a card and a selected card", (tone) => {
+  it.each(pastel)("%s: ΔE of at least 6 from the page, a card and the sage card", (tone) => {
     for (const background of backgrounds) {
       expect(
         deltaE(token(`pastel-${tone}`), background),
@@ -125,13 +125,13 @@ const chipClass = (html: string) => /class="([^"]*)"/.exec(html)?.[1] ?? "";
 
 describe("no chip has a stroke", () => {
   const everyChip: [string, string][] = [
-    ...(["yellow", "peach", "blue", "lilac", "green", "rose", "sand", "primary"] as ChipTone[]).map(
-      (tone): [string, string] => [
-        `Chip ${tone}`,
-        renderToStaticMarkup(<Chip tone={tone}>x</Chip>),
-      ],
-    ),
-    ...(["yellow", "peach", "blue", "lilac", "green"] as const).map((tone): [string, string] => [
+    ...(
+      ["yellow", "peach", "blue", "lilac", "olive", "sand", "stone", "primary"] as ChipTone[]
+    ).map((tone): [string, string] => [
+      `Chip ${tone}`,
+      renderToStaticMarkup(<Chip tone={tone}>x</Chip>),
+    ]),
+    ...(["yellow", "peach", "blue", "lilac", "olive"] as const).map((tone): [string, string] => [
       `Tag ${tone}`,
       renderToStaticMarkup(<Tag tone={tone}>x</Tag>),
     ]),
@@ -184,9 +184,13 @@ describe("the chip colours of the statuses", () => {
   const tone = (status: Status) => chipClass(renderToStaticMarkup(<StatusChip status={status} />));
 
   it("keeps the meaning of each hue", () => {
-    expect(tone("ready")).toContain("bg-pastel-green");
-    expect(tone("failed")).toContain("bg-pastel-rose");
+    expect(tone("ready")).toContain("bg-olive-tint");
+    expect(tone("failed")).toContain("bg-secondary-sand-pressed");
     expect(tone("processing")).toContain("bg-pastel-sand");
+    // green and rose are not used for status: they mean answer correctness only
+    for (const status of Object.keys(statuses) as Status[]) {
+      expect(tone(status)).not.toMatch(/pastel-(green|rose)|correct|wrong/);
+    }
   });
 
   it("Ready has the check, Failed the alert, Processing the clock", () => {

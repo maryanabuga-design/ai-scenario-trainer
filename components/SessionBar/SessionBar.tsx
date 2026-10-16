@@ -10,18 +10,21 @@ import { Button, SquareButton } from "@/components/Button/Button";
  * Back button here; Back is in the top row.
  */
 export function SessionBar({
+  label,
   last,
   disabled,
   note,
   hint,
   onNext,
 }: {
+  /** The primary button: Check, Next or Finish (the caller decides; `last` is the fallback). */
+  label?: "Check" | "Next" | "Finish";
   last: boolean;
   disabled: boolean;
   /** A line above the buttons, for example which question still needs an answer. */
   note?: string | null;
   /** The hint button: absent when the question has no hint. */
-  hint?: { open: boolean; onToggle: () => void };
+  hint?: { open: boolean; onToggle: () => void; disabled?: boolean };
   onNext: () => void;
 }) {
   return (
@@ -33,12 +36,13 @@ export function SessionBar({
             icon={Lightbulb}
             label="Hint"
             expanded={hint.open}
+            disabled={hint.disabled}
             onClick={hint.onToggle}
           />
         )}
         <div className="min-w-0 flex-1">
           <Button disabled={disabled} onClick={onNext}>
-            {last ? "Finish" : "Next"}
+            {label ?? (last ? "Finish" : "Next")}
           </Button>
         </div>
       </div>

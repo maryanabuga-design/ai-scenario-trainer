@@ -11,13 +11,14 @@ describe("the exam timer", () => {
     expect(html).toContain("rounded-full");
   });
 
-  it("is in the card colour until the last 2 minutes, then rose", () => {
+  it("is in the card colour until the last 2 minutes, then deep olive (never rose)", () => {
     const calm = renderToStaticMarkup(<ExamTimer seconds={121} />);
     expect(calm).toContain("bg-card");
     expect(calm).toContain('data-warning="false"');
-    expect(calm).not.toContain("bg-pastel-rose");
+    expect(calm).not.toContain("bg-primary");
     const warn = renderToStaticMarkup(<ExamTimer seconds={120} />);
-    expect(warn).toContain("bg-pastel-rose");
+    expect(warn).toContain("bg-primary text-primary-text");
+    expect(warn).not.toContain("rose");
     expect(warn).toContain('data-warning="true"');
     expect(renderToStaticMarkup(<ExamTimer seconds={0} />)).toContain(">00:00<");
   });

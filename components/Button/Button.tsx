@@ -155,6 +155,7 @@ export function SquareButton({
   icon: Icon,
   label,
   expanded,
+  disabled,
   onClick,
 }: {
   icon: LucideIcon;
@@ -162,6 +163,7 @@ export function SquareButton({
   label: string;
   /** Whether the thing it opens is open. */
   expanded?: boolean;
+  disabled?: boolean;
   onClick: () => void;
 }) {
   return (
@@ -169,8 +171,9 @@ export function SquareButton({
       type="button"
       aria-label={label}
       aria-expanded={expanded}
+      disabled={disabled}
       onClick={onClick}
-      className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-button bg-olive-tint text-primary active:bg-olive-tint-pressed"
+      className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-button bg-olive-tint text-primary active:bg-olive-tint-pressed disabled:cursor-not-allowed disabled:bg-secondary-sand disabled:text-text-secondary"
     >
       <Icon size={24} strokeWidth={2} aria-hidden="true" />
     </button>

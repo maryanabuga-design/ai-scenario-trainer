@@ -39,6 +39,7 @@ async function start(page: Page, session: object | null, path = "/session") {
 
 const next = (page: Page) => page.getByRole("button", { name: "Next", exact: true });
 const finish = (page: Page) => page.getByRole("button", { name: "Finish", exact: true });
+const check = (page: Page) => page.getByRole("button", { name: "Check", exact: true });
 const option = (page: Page, text: string | RegExp) => page.locator("label", { hasText: text });
 
 // s1: b is right; s2: c; s3: a.
@@ -46,21 +47,27 @@ const S1_RIGHT = "Stop the session, tell everyone to leave now";
 const S1_WRONG = "Tell everyone it is probably a test and carry on while you check.";
 
 test.describe("a running session", () => {
-  test("has the top row, the strip and a single Next button, with no verdict", async ({ page }) => {
+  test("has the top row, the strip and one primary button, with no verdict before Check", async ({
+    page,
+  }) => {
     await start(page, scenario);
     await expect(page.getByText("Step 1 of 3")).toBeVisible();
     await expect(page.getByRole("button", { name: "Exit" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Leave this session" })).toBeVisible();
-    await expect(next(page)).toBeDisabled();
-    // Back is in the top row only: nothing next to Next.
+    await expect(check(page)).toBeDisabled();
+    await expect(next(page)).toHaveCount(0);
+    // Back is in the top row only: nothing next to the primary button.
     await expect(page.getByRole("button", { name: "Previous step" })).toHaveCount(0);
     await option(page, S1_RIGHT).click();
+    await expect(check(page)).toBeEnabled();
+    await expect(page.locator("body")).not.toContainText(/Correct|Not quite/);
+    await check(page).click();
     await expect(next(page)).toBeEnabled();
     await next(page).click();
     await expect(page.getByText("Step 2 of 3")).toBeVisible();
     await expect(page.getByRole("button", { name: "Previous step" })).toHaveCount(1);
     const body = await page.locator("body").innerText();
-    expect(body).not.toMatch(/Correct|Incorrect|Your answer|Why/);
+    expect(body).not.toMatch(/Correct|Not quite|Incorrect|Your answer|Why/);
     expect(body).not.toMatch(/\bAI\b|\bbot\b/i);
     expect(body).not.toMatch(/How sure|confident|Explain your choice/i);
   });
@@ -68,6 +75,9 @@ test.describe("a running session", () => {
   test("has a strip that shows answered, current and unanswered, and jumps", async ({ page }) => {
     await start(page, scenario);
     await option(page, S1_RIGHT).click();
+    // a question counts as answered once it is checked
+    await expect(page.getByRole("button", { name: "Step 1, not answered" })).toHaveCount(0);
+    await check(page).click();
     await next(page).click();
     await expect(page.getByRole("button", { name: "Step 1, answered" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Step 2, current" })).toHaveAttribute(
@@ -80,19 +90,29 @@ test.describe("a running session", () => {
     await expect(page.getByRole("button", { name: "Step 2, not answered" })).toBeVisible();
   });
 
-  test("fills the choice in again after Back, and a changed answer is what counts", async ({
+  test("changes the choice freely until Check, then locks it and shows it again after Back", async ({
     page,
   }) => {
     await start(page, scenario);
     await option(page, S1_RIGHT).click();
+    await option(page, S1_WRONG).click();
+    await expect(page.getByLabel(S1_WRONG)).toBeChecked();
+    let saved = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.session.v1")!));
+    expect(saved.schema).toBe(6);
+    expect(saved.value.answers).toEqual([{ itemId: "q-scn-s01-001", optionId: "a" }]);
+    await check(page).click();
+    saved = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.session.v1")!));
+    expect(saved.value.answers).toEqual([
+      { itemId: "q-scn-s01-001", optionId: "a", checked: true },
+    ]);
     await next(page).click();
     await page.getByRole("button", { name: "Previous step" }).click();
     await expect(page.getByText("Step 1 of 3")).toBeVisible();
-    await expect(page.getByLabel(S1_RIGHT)).toBeChecked();
-    await option(page, S1_WRONG).click();
-    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.session.v1")!));
-    expect(saved.schema).toBe(6);
-    expect(saved.value.answers).toEqual([{ itemId: "q-scn-s01-001", optionId: "a" }]);
+    // back on the locked question: the choice, its result and Why are shown, and nothing can change
+    await expect(page.getByLabel(S1_WRONG)).toBeChecked();
+    await expect(page.getByLabel(S1_WRONG)).toBeDisabled();
+    await expect(page.locator("label[data-state=wrong]")).toContainText("Not quite");
+    await expect(page.getByRole("region", { name: "Why" })).toBeVisible();
   });
 
   test("asks before leaving, from Exit and from Back on the first step, and keeps the answers", async ({
@@ -119,10 +139,14 @@ test.describe("a running session", () => {
     await start(page, scenario);
     // s1 wrong first, then changed to wrong again on purpose: a wrong answer in S1.
     await option(page, S1_WRONG).click();
+    await check(page).click();
     await next(page).click();
     await page.locator("fieldset label").nth(2).click(); // s2: c, right
+    await check(page).click();
     await next(page).click();
     await page.locator("fieldset label").nth(1).click(); // s3: b, wrong
+    await expect(finish(page)).toHaveCount(0); // Check comes first
+    await check(page).click();
     await expect(finish(page)).toBeEnabled();
     await finish(page).click();
 
@@ -153,12 +177,14 @@ test.describe("a running session", () => {
     await expect(page.getByText("Question 3 of 3").first()).toBeVisible();
     await page.getByRole("button", { name: "Question 1, incorrect" }).click();
     await expect(page).toHaveURL(/\/review\/1$/);
-    await expect(page.locator("li[data-state=correct]:visible")).toHaveCount(1);
-    await expect(page.locator("li[data-state=correct]:visible")).toContainText("Correct answer");
-    await expect(page.locator("li[data-state=chosenWrong]:visible")).toContainText("Your answer");
+    await expect(page.locator("li[data-state=revealed-correct]:visible")).toHaveCount(1);
+    await expect(page.locator("li[data-state=revealed-correct]:visible")).toContainText(
+      "Correct answer",
+    );
+    await expect(page.locator("li[data-state=wrong]:visible")).toContainText("Not quite");
     await page.getByRole("link", { name: "Next question" }).click();
     await expect(page).toHaveURL(/\/review\/2$/);
-    await expect(page.locator("li[data-state=chosenWrong]:visible")).toHaveCount(0);
+    await expect(page.locator("li[data-state=wrong]:visible")).toHaveCount(0);
     await page.getByRole("link", { name: "Previous question" }).click();
     await expect(page).toHaveURL(/\/review\/1$/);
     await page.getByRole("link", { name: "Back to results", exact: true }).last().click();
@@ -175,8 +201,10 @@ test.describe("a running session", () => {
     await expect(page).toHaveURL(/\/session$/);
     await expect(page.getByText("Question 1 of 2")).toBeVisible();
     await option(page, S1_RIGHT).click();
+    await check(page).click();
     await next(page).click();
     await page.locator("fieldset[aria-labelledby^=question-] label:visible").first().click();
+    await check(page).click();
     await finish(page).click();
     await expect(page).toHaveURL(/\/session\/results$/);
     await expect(page.getByText("Repeat round", { exact: true })).toBeVisible();
@@ -245,33 +273,44 @@ test.describe("the question screen: hint and bookmark", () => {
     await lightbulb.click();
     await expect(card).toBeVisible();
     await option(page, S1_RIGHT).click();
+    // Check disables the hint button and closes an open hint card
+    await check(page).click();
+    await expect(lightbulb).toBeDisabled();
+    await expect(card).toBeHidden();
     await next(page).click();
     await expect(page.getByText("Step 2 of 3")).toBeVisible();
     await expect(page.getByRole("region", { name: "Hint" })).toHaveCount(0);
+    await expect(lightbulb).toBeEnabled();
   });
 
   test("records that a hint was used on the answer", async ({ page }) => {
     await start(page, scenario);
     await page.getByRole("button", { name: "Hint", exact: true }).click();
     await option(page, S1_RIGHT).click();
+    await check(page).click();
     await next(page).click();
     await option(page, /Keep it closed/).click();
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.session.v1")!));
     expect(saved.schema).toBe(6);
     const [first, second] = saved.value.answers;
-    expect(first).toEqual({ itemId: "q-scn-s01-001", optionId: "b", hintUsed: true });
+    expect(first).toEqual({
+      itemId: "q-scn-s01-001",
+      optionId: "b",
+      hintUsed: true,
+      checked: true,
+    });
     expect(second.hintUsed).toBeUndefined();
   });
 
-  test("has the hint button left of Next, and Next fills the rest", async ({ page }) => {
+  test("has the hint button left of Check, and Check fills the rest", async ({ page }) => {
     await start(page, scenario);
     const hintBox = await page.getByRole("button", { name: "Hint", exact: true }).boundingBox();
-    const nextBox = await next(page).boundingBox();
+    const nextBox = await check(page).boundingBox();
     expect(Math.round(hintBox!.width)).toBe(52);
     expect(Math.round(hintBox!.height)).toBe(52);
     expect(hintBox!.x + hintBox!.width).toBeLessThan(nextBox!.x);
     expect(Math.round(nextBox!.height)).toBe(52);
-    await expect(next(page)).toBeDisabled();
+    await expect(check(page)).toBeDisabled();
   });
 
   test("shows a hint (the fallback) on a quiz question too, as Review: the section", async ({
@@ -290,12 +329,29 @@ test.describe("the question screen: hint and bookmark", () => {
     await expect(page.locator("fieldset input[type=radio]")).toHaveCount(2);
     await expect(page.getByText("True", { exact: true })).toBeVisible();
     await expect(page.getByText("False", { exact: true })).toBeVisible();
-    await expect(next(page)).toBeDisabled();
+    await expect(check(page)).toBeDisabled();
     await page.getByText("False", { exact: true }).click();
-    await expect(next(page)).toBeEnabled();
+    await expect(check(page)).toBeEnabled();
+    await check(page).click();
     await next(page).click();
-    await expect(finish(page)).toBeDisabled();
-    await expect(page.getByRole("button", { name: "Next", exact: true })).toHaveCount(0);
+    // the last question: Check first, no Next or Finish yet
+    await expect(check(page)).toBeDisabled();
+    await expect(next(page)).toHaveCount(0);
+    await expect(finish(page)).toHaveCount(0);
+  });
+
+  test("true or false: a wrong answer shows Not quite and reveals the right option", async ({
+    page,
+  }) => {
+    await start(page, quizSession);
+    await page.getByText("True", { exact: true }).click();
+    await check(page).click();
+    await expect(page.locator("label[data-state=wrong]")).toContainText("Not quite");
+    await expect(page.locator("label[data-state=revealed-correct]")).toContainText("False");
+    await expect(page.locator("label[data-state=revealed-correct]")).toContainText(
+      "Correct answer",
+    );
+    await expect(page.getByRole("region", { name: "Why" })).toBeVisible();
   });
 
   test("renders a scenario question with 3 options", async ({ page }) => {
@@ -341,6 +397,7 @@ test.describe("saved questions", () => {
     await start(page, scenario);
     await page.getByRole("button", { name: "Save question" }).click();
     await option(page, S1_RIGHT).click();
+    await check(page).click();
     await next(page).click();
     await page.getByRole("button", { name: "Save question" }).click();
     await page.goto("/saved");
@@ -351,7 +408,9 @@ test.describe("saved questions", () => {
     // One saved question on its own: all options, the correct one marked, Why, bookmark.
     await page.getByRole("link", { name: /What do you do first/ }).click();
     await expect(page).toHaveURL(/\/saved\/q-scn-s01-001$/);
-    await expect(page.locator("li[data-state=correct]:visible")).toContainText("Correct answer");
+    await expect(page.locator("li[data-state=revealed-correct]:visible")).toContainText(
+      "Correct answer",
+    );
     await expect(page.locator("li[data-state]:visible")).toHaveCount(3);
     await expect(page.getByText("Why", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Remove from saved" }).click();
@@ -363,7 +422,7 @@ test.describe("saved questions", () => {
     await page.getByRole("button", { name: /Repeat saved/ }).click();
     await expect(page).toHaveURL(/\/session$/);
     await expect(page.getByText("Question 1 of 1")).toBeVisible();
-    await expect(finish(page)).toBeDisabled();
+    await expect(check(page)).toBeDisabled();
   });
 
   test("has the bookmark on the Answer review too", async ({ page }) => {
@@ -635,6 +694,7 @@ test.describe("Training", () => {
     // Finish the part: answer every question (the first option) and finish.
     for (let n = 0; n < s1Quiz.length; n++) {
       await page.locator("fieldset[aria-labelledby^=question-] label:visible").first().click();
+      await check(page).click();
       await (n < s1Quiz.length - 1 ? next(page) : finish(page)).click();
     }
     await expect(page).toHaveURL(/\/session\/results$/);
@@ -765,6 +825,7 @@ test.describe("Mini-quiz", () => {
     await page.getByRole("button", { name: "Start mini-quiz" }).click();
     for (let n = 0; n < 15; n++) {
       await page.locator("fieldset[aria-labelledby^=question-] label:visible").first().click();
+      await check(page).click();
       await (n < 14 ? next(page) : finish(page)).click();
     }
     await expect(page).toHaveURL(/\/session\/results$/);
@@ -781,6 +842,7 @@ test.describe("Mini-quiz", () => {
     await page.getByRole("button", { name: "Start mini-quiz" }).click();
     for (let n = 0; n < 5; n++) {
       await page.locator("fieldset[aria-labelledby^=question-] label:visible").first().click();
+      await check(page).click();
       await (n < 4 ? next(page) : finish(page)).click();
     }
     await page.getByRole("link", { name: "Back to Home" }).click();
@@ -877,7 +939,7 @@ test.describe("Exam", () => {
   test("turns the timer rose in the last two minutes", async ({ page }) => {
     await open(page, "/exam/session", exam({ endsAt: Date.now() + 90_000 }));
     await expect(page.getByRole("timer")).toHaveAttribute("data-warning", "true");
-    await expect(page.getByRole("timer")).toHaveClass(/bg-pastel-rose/);
+    await expect(page.getByRole("timer")).toHaveClass(/bg-primary/);
   });
 
   test("finishes by itself at 0:00, counting unanswered as incorrect", async ({ page }) => {
@@ -1216,37 +1278,214 @@ test.describe("selectable rows", () => {
     // the amounts stay a segmented control
     await expect(page.locator("fieldset:visible input[type=radio]")).toHaveCount(3);
   });
+});
 
-  test("Answer options: the chosen option looks like the others, only its radio is filled", async ({
+test.describe("answer options and instant feedback", () => {
+  test.use({ viewport: { width: 360, height: 800 } });
+
+  const OLIVE = "rgb(63, 70, 56)";
+  const IDLE = "rgb(228, 223, 213)";
+  const GREEN = "rgb(46, 125, 79)";
+  const RED = "rgb(192, 57, 43)";
+
+  async function open(page: Page, session: object, path = "/session") {
+    await page.addInitScript(
+      ([p, s]) => {
+        if (localStorage.getItem("ast.profile.v1")) return;
+        localStorage.setItem("ast.profile.v1", JSON.stringify(p));
+        localStorage.setItem("ast.session.v1", JSON.stringify({ schema: 6, value: s }));
+      },
+      [profile, session],
+    );
+    await page.goto(path);
+  }
+
+  const cards = (page: Page) => page.locator("label[data-state]:visible");
+  const border = (card: ReturnType<Page["locator"]>) =>
+    card.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        color: style.borderTopColor,
+        width: style.borderTopWidth,
+        background: style.backgroundColor,
+        radius: style.borderTopLeftRadius,
+        box: [element.getBoundingClientRect().width, element.getBoundingClientRect().height],
+      };
+    });
+
+  test("Check is disabled until an option is selected, and only that option is highlighted", async ({
     page,
   }) => {
-    await open(page, "/session", undefined, scenario);
-    const rows = page.locator("fieldset label:visible");
-    await expect(rows).toHaveCount(3);
-    const before = await look(rows.nth(0));
-    await rows
-      .nth(1)
-      .getByText(/Stop the session/)
-      .click();
-    await expect(rows.nth(1).locator("input")).toBeChecked();
-    for (const index of [0, 1, 2]) expect(await look(rows.nth(index))).toEqual(before);
-    const space = await gutter(page);
-    expect(before.padding).toEqual([space, space, space, space]);
-    // the letter badge is olive on every row, chosen or not
-    const badges = await rows
-      .locator("span.rounded-full")
-      .evaluateAll((list) =>
-        list
-          .filter((element) => element.textContent?.length === 1)
-          .map((element) => getComputedStyle(element).backgroundColor),
-      );
-    expect(new Set(badges)).toEqual(new Set(["rgb(224, 230, 214)"]));
-    // the radio of the chosen row is filled, the others are empty
-    await expect(rows.nth(1).locator("span.bg-primary")).toHaveCount(1);
-    await expect(rows.nth(0).locator("span.bg-primary")).toHaveCount(0);
-    // after Next the choice is kept when coming back, with the same look
+    await open(page, scenario);
+    await expect(check(page)).toBeDisabled();
+    await expect(cards(page)).toHaveCount(3);
+    // no letters anywhere on the options
+    await expect(page.locator("fieldset")).not.toContainText(/^[ABCD]$/);
+    const before = await border(cards(page).nth(0));
+    expect(before).toMatchObject({ color: IDLE, width: "2px", radius: "24px" });
+    await cards(page).nth(1).click();
+    await expect(check(page)).toBeEnabled();
+    await expect(cards(page).nth(1)).toHaveAttribute("data-state", "selected");
+    await expect(cards(page).nth(0)).toHaveAttribute("data-state", "idle");
+    const selected = await border(cards(page).nth(1));
+    expect(selected).toMatchObject({
+      color: OLIVE,
+      width: "2px",
+      background: "rgb(255, 255, 255)",
+    });
+    // the size does not change when the state does
+    expect(selected.box).toEqual(
+      (await border(cards(page).nth(0))).box.map((n, i) => (i === 1 ? selected.box[1] : n)),
+    );
+    // nothing is revealed and nothing shifts sideways
+    await expect(page.locator("main")).not.toContainText(/Correct|Not quite|Why/);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      ),
+    ).toBe(true);
+  });
+
+  test("the choice can be changed freely until Check", async ({ page }) => {
+    await open(page, scenario);
+    await cards(page).nth(0).click();
+    await cards(page).nth(2).click();
+    await expect(cards(page).nth(2)).toHaveAttribute("data-state", "selected");
+    await expect(cards(page).nth(0)).toHaveAttribute("data-state", "idle");
+    await cards(page).nth(1).click();
+    await expect(cards(page).nth(1)).toHaveAttribute("data-state", "selected");
+  });
+
+  test("a right answer: green card, check icon, Correct, Why, and Next", async ({ page }) => {
+    await open(page, scenario);
+    await option(page, S1_RIGHT).click();
+    await check(page).click();
+    const right = page.locator("label[data-state=correct]");
+    await expect(right).toHaveCount(1);
+    await expect(right).toContainText("Correct");
+    await expect(right.locator("svg.lucide-check")).toBeVisible();
+    expect(await border(right)).toMatchObject({ color: GREEN, background: "rgb(227, 242, 232)" });
+    await expect(page.locator("label[data-state=wrong]")).toHaveCount(0);
+    const why = page.getByRole("region", { name: "Why" });
+    await expect(why).toBeVisible();
+    await expect(why).toContainText("treat every alarm as real");
+    await expect(page.getByRole("status")).toContainText("Correct");
+    await expect(check(page)).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Hint", exact: true })).toBeDisabled();
+    // locked: the radios cannot change
+    await expect(cards(page).nth(0).locator("input")).toBeDisabled();
     await next(page).click();
-    await page.getByRole("button", { name: "Previous step" }).click();
-    await expect(rows.nth(1).locator("input")).toBeChecked();
+    await expect(page.getByText("Step 2 of 3")).toBeVisible();
+    await expect(check(page)).toBeVisible();
+  });
+
+  test("a wrong answer: red card, cross, Not quite, the right one revealed, and Why", async ({
+    page,
+  }) => {
+    await open(page, scenario);
+    await option(page, S1_WRONG).click();
+    await check(page).click();
+    const wrong = page.locator("label[data-state=wrong]");
+    await expect(wrong).toHaveCount(1);
+    await expect(wrong).toContainText("Not quite");
+    await expect(wrong.locator("svg.lucide-x")).toBeVisible();
+    expect(await border(wrong)).toMatchObject({ color: RED, background: "rgb(251, 228, 225)" });
+    const revealed = page.locator("label[data-state=revealed-correct]");
+    await expect(revealed).toContainText("Stop the session");
+    await expect(revealed).toContainText("Correct answer");
+    expect(await border(revealed)).toMatchObject({ color: GREEN });
+    await expect(page.locator("label[data-state=idle]")).toHaveCount(1);
+    await expect(page.getByRole("region", { name: "Why" })).toBeVisible();
+    await expect(page.getByRole("status")).toContainText(
+      "Not quite. The correct answer is: Stop the session",
+    );
+    // an idle option stays white with its empty radio
+    expect(await border(page.locator("label[data-state=idle]"))).toMatchObject({ color: IDLE });
+  });
+
+  test("the last question says Finish only after Check, and the page keeps its gutter", async ({
+    page,
+  }) => {
+    await open(page, { ...scenario, itemIds: ["q-scn-s01-001"] });
+    await expect(finish(page)).toHaveCount(0);
+    await option(page, S1_RIGHT).click();
+    await check(page).click();
+    await expect(finish(page)).toBeEnabled();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      ),
+    ).toBe(true);
+    const box = await cards(page).first().boundingBox();
+    expect(box!.x).toBeGreaterThanOrEqual(16);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(344);
+  });
+
+  test("a reload restores the selected state and the checked state exactly", async ({ page }) => {
+    await open(page, scenario);
+    await option(page, S1_RIGHT).click();
+    await page.reload();
+    await expect(cards(page).nth(1)).toHaveAttribute("data-state", "selected");
+    await expect(check(page)).toBeEnabled();
+    await check(page).click();
+    await page.reload();
+    await expect(page.locator("label[data-state=correct]")).toHaveCount(1);
+    await expect(page.getByRole("region", { name: "Why" })).toBeVisible();
+    await expect(next(page)).toBeVisible();
+    await expect(page.getByRole("button", { name: "Hint", exact: true })).toBeDisabled();
+  });
+
+  test("Answer review shows the same colours, icons and labels, without a Check button", async ({
+    page,
+  }) => {
+    await open(
+      page,
+      {
+        ...scenario,
+        answers: [{ itemId: "q-scn-s01-001", optionId: "a", checked: true }],
+        finished: true,
+        finishedAt: 1,
+      },
+      "/session/results/review/1",
+    );
+    await expect(page.locator("li[data-state=wrong]")).toContainText("Not quite");
+    await expect(page.locator("li[data-state=wrong] svg.lucide-x")).toBeVisible();
+    await expect(page.locator("li[data-state=revealed-correct]")).toContainText("Correct answer");
+    await expect(page.locator("li[data-state=revealed-correct] svg.lucide-check")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Check" })).toHaveCount(0);
+    await expect(page.getByText("Why", { exact: true })).toBeVisible();
+    await expect(page.locator("main")).not.toContainText(/^[ABCD]$/);
+  });
+
+  test("the Exam has no Check, no colours and no Why, and the choice can change until Next", async ({
+    page,
+  }) => {
+    await page.addInitScript(
+      ([p]) => {
+        if (!localStorage.getItem("ast.profile.v1")) {
+          localStorage.setItem("ast.profile.v1", JSON.stringify(p));
+        }
+      },
+      [profile],
+    );
+    await page.goto("/exam");
+    await page.getByRole("button", { name: "Start exam" }).click();
+    await expect(check(page)).toHaveCount(0);
+    await expect(next(page)).toBeDisabled();
+    await cards(page).nth(0).click();
+    await cards(page).nth(1).click();
+    await expect(cards(page).nth(1)).toHaveAttribute("data-state", "selected");
+    await expect(cards(page).nth(0)).toHaveAttribute("data-state", "idle");
+    expect(await border(cards(page).nth(1))).toMatchObject({ color: OLIVE });
+    await expect(page.locator("main")).not.toContainText(/Correct|Not quite|Why/);
+    await expect(next(page)).toBeEnabled();
+    await next(page).click();
+    // going back: still selected and still changeable, nothing revealed
+    await page.getByRole("button", { name: "Previous question" }).click();
+    await expect(cards(page).nth(1)).toHaveAttribute("data-state", "selected");
+    await expect(cards(page).nth(1).locator("input")).toBeEnabled();
+    await cards(page).nth(0).click();
+    await expect(cards(page).nth(0)).toHaveAttribute("data-state", "selected");
+    await expect(page.locator("label[data-state=correct], label[data-state=wrong]")).toHaveCount(0);
   });
 });

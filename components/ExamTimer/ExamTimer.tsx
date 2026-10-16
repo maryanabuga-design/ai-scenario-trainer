@@ -21,8 +21,8 @@ export function ExamTimer({ seconds }: { seconds: number }) {
         role="timer"
         aria-label={`Time left ${formatClock(seconds)}`}
         data-warning={warning}
-        className={`type-small inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-text tabular-nums ${
-          warning ? "bg-pastel-rose" : "bg-card shadow-(--card-shadow)"
+        className={`type-small inline-flex h-8 items-center gap-1.5 rounded-full px-3 tabular-nums ${
+          warning ? "bg-primary text-primary-text" : "bg-card text-text shadow-(--card-shadow)"
         }`}
       >
         <Clock size={16} strokeWidth={2} aria-hidden="true" />

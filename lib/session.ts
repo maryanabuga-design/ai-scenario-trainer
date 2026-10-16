@@ -13,6 +13,8 @@ export type Answer = {
   optionId: string;
   /** The hint of this question was opened (for the admin progress later). */
   hintUsed?: boolean;
+  /** Training modes: the answer was checked, so it is locked and its feedback shows. */
+  checked?: boolean;
 };
 
 /** A session: scenario, quiz and repeat round are all a list of questions with one chosen option each. */
@@ -121,9 +123,27 @@ export function withAnswer<T extends Pick<Session, "answers" | "hintsOpened">>(
   optionId: string,
 ): T {
   const before = answerFor(session, itemId);
+  // A checked answer is locked.
+  if (before?.checked) return session;
   const hintUsed = before?.hintUsed || session.hintsOpened?.includes(itemId);
   const others = session.answers.filter((answer) => answer.itemId !== itemId);
   return { ...session, answers: [...others, { itemId, optionId, ...(hintUsed && { hintUsed }) }] };
+}
+
+/** Locks the chosen answer of a question: it was checked, and its feedback shows from now on. */
+export function withChecked<T extends Pick<Session, "answers">>(session: T, itemId: string): T {
+  return {
+    ...session,
+    answers: session.answers.map((answer) =>
+      answer.itemId === itemId ? { ...answer, checked: true } : answer,
+    ),
+  };
+}
+
+/** Whether a question counts as done: checked in the training modes, chosen in the exam. */
+export function isDone(answer: Answer | undefined, mode: "training" | "exam"): boolean {
+  if (!answer) return false;
+  return mode === "exam" || answer.checked === true;
 }
 
 /** Records that the hint of a question was opened, on its answer now or when it gets one. */

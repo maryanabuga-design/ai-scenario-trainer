@@ -80,7 +80,7 @@ export function TrainingGenerating({
               </span>
               <span
                 className={`inline-flex shrink-0 items-center gap-1.5 type-small ${
-                  state === "done" ? "text-correct" : "text-text-secondary"
+                  state === "done" ? "text-primary" : "text-text-secondary"
                 }`}
               >
                 {state === "done" && <StatusIcon status="ready" size={14} />}

@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { AnswerReview, optionState } from "@/components/AnswerReview/AnswerReview";
+import { AnswerReview } from "@/components/AnswerReview/AnswerReview";
 import { AskAiProvider } from "@/components/AskAi/AskAi";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { loadAllSections } from "@/lib/guide";
@@ -35,17 +35,6 @@ function row(html: string, text: string) {
   return html.slice(start, html.indexOf("</li>", end));
 }
 
-describe("option states", () => {
-  const step = getItem("q-scn-s01-001"); // b is right
-  it("marks the right option, the person's wrong option, and the rest as plain", () => {
-    expect(optionState(step, "b", "a")).toBe("correct");
-    expect(optionState(step, "a", "a")).toBe("chosenWrong");
-    expect(optionState(step, "c", "a")).toBe("plain");
-    expect(optionState(step, "b", "b")).toBe("correct");
-    expect(optionState(step, "c", null)).toBe("plain");
-  });
-});
-
 describe("Answer review", () => {
   const step = getItem("q-scn-s01-001");
   const text = (id: string) => step.options.find((option) => option.id === id)!.text;
@@ -59,40 +48,46 @@ describe("Answer review", () => {
     expect(html.match(/data-state=/g)).toHaveLength(3);
   });
 
-  it("when wrong: the right option is green with a check and Correct answer; the choice is rose with a cross and Your answer", () => {
+  it("when wrong: the chosen option is red with a cross and Not quite; the right one is green with a check and Correct answer", () => {
     const html = render("q-scn-s01-001", "a");
     const correct = row(html, text("b"));
-    expect(correct).toContain('data-state="correct"');
-    expect(correct).toContain("bg-correct-bg");
+    expect(correct).toContain('data-state="revealed-correct"');
+    expect(correct).toContain("border-correct bg-correct-bg");
     expect(correct).toContain("lucide-check");
-    expect(correct).toContain("Correct answer");
-    expect(correct).not.toContain("Your answer");
+    expect(correct).toContain(">Correct answer<");
+    expect(correct).toContain("text-correct-text");
     const chosen = row(html, text("a"));
-    expect(chosen).toContain('data-state="chosenWrong"');
-    expect(chosen).toContain("bg-wrong-bg");
+    expect(chosen).toContain('data-state="wrong"');
+    expect(chosen).toContain("border-wrong bg-wrong-bg");
     expect(chosen).toContain("lucide-x");
-    expect(chosen).toContain("Your answer");
-    expect(chosen).not.toContain("Correct answer");
+    expect(chosen).toContain(">Not quite<");
+    expect(chosen).toContain("text-wrong-text");
   });
 
-  it("when right: the right option shows Correct answer and Your answer with a check", () => {
+  it("when right: the chosen option is green with a check and Correct, and nothing is red", () => {
     const html = render("q-scn-s01-001", "b");
     const correct = row(html, text("b"));
-    expect(correct).toContain("Correct answer");
-    expect(correct).toContain("Your answer");
-    expect(html.match(/Your answer/g)).toHaveLength(1);
+    expect(correct).toContain('data-state="correct"');
+    expect(correct).toContain(">Correct<");
+    expect(correct).toContain("lucide-check");
     const options = html.slice(html.indexOf("data-state="), html.indexOf(">Why<"));
     expect(options).not.toContain("lucide-x");
     expect(options).not.toContain("bg-wrong-bg");
+    expect(options).not.toContain("Not quite");
   });
 
-  it("leaves the other options neutral, with no tag or icon", () => {
+  it("leaves the other options white with an empty radio, no label and no icon", () => {
     const html = render("q-scn-s01-001", "a");
-    for (const id of ["c"]) {
-      const plain = row(html, text(id));
-      expect(plain).toContain('data-state="plain"');
-      expect(plain).not.toMatch(/Correct answer|Your answer|lucide-check|lucide-x/);
-    }
+    const plain = row(html, text("c"));
+    expect(plain).toContain('data-state="idle"');
+    expect(plain).toContain("bg-card");
+    expect(plain).not.toMatch(/Correct|Not quite|lucide-check|lucide-x/);
+  });
+
+  it("has no letters on the options and no Check button", () => {
+    const html = render("q-scn-s01-001", "a");
+    expect(html).not.toMatch(/>[ABCD]<\/span>/);
+    expect(html).not.toMatch(/>Check</);
   });
 
   it("shows Why and the Guide chips, with no verdict line and no explanation", () => {

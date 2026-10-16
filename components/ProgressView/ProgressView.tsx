@@ -25,7 +25,7 @@ const dateFormat = new Intl.DateTimeFormat("en-GB", {
 
 const shortDate = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short" });
 
-const BAR_OLDER = "var(--pastel-green)";
+const BAR_OLDER = "var(--olive-tint)";
 
 const CHART_HEIGHT = 120;
 

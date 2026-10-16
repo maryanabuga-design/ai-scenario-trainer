@@ -168,8 +168,8 @@ describe("every choice uses SelectableRow", () => {
   }
 
   it("draws no other radio or check box rows", () => {
-    // Allowed: the shared row itself and the segmented control.
-    const allowed = ["SelectableRow", "SegmentedControl"];
+    // Allowed: the shared row itself, the answer option card and the segmented control.
+    const allowed = ["SelectableRow", "SegmentedControl", "OptionCard"];
     const own = [...files("components"), ...files("app")].filter((file) => {
       if (allowed.some((name) => file.includes(name))) return false;
       const code = readFileSync(file, "utf8");
@@ -178,9 +178,11 @@ describe("every choice uses SelectableRow", () => {
     expect(own).toEqual([]);
   });
 
-  it("is used by the answer options, Weak topics, the section list and Create training", () => {
+  it("is used by Weak topics, the section list, Create training and the directions; answers use OptionCard", () => {
+    expect(readFileSync("components/QuestionScreen/QuestionScreen.tsx", "utf8")).toContain(
+      "<OptionCard",
+    );
     for (const file of [
-      "components/QuestionScreen/QuestionScreen.tsx",
       "components/WeakTopicsView/WeakTopicsView.tsx",
       "components/SectionList/SectionList.tsx",
       "components/TrainingCreate/TrainingCreate.tsx",

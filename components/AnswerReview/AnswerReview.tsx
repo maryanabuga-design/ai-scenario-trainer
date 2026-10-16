@@ -7,9 +7,6 @@ import { StepStrip } from "@/components/StepStrip/StepStrip";
 import type { Mark, StripState } from "@/components/StepStrip/StepStrip";
 import type { Item } from "@/lib/items";
 
-export { optionState } from "@/components/ReviewQuestion/ReviewQuestion";
-export type { OptionState } from "@/components/ReviewQuestion/ReviewQuestion";
-
 /**
  * The Answer review of one question after Finish: the situation and question, every option with
  * the right one marked and the person's choice marked, then Why and the Guide chips. No verdict

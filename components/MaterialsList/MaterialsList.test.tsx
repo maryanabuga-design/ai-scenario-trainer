@@ -57,7 +57,7 @@ describe("Materials cards", () => {
     expect(card).toContain("has-focus-visible:outline-accent");
   });
 
-  it("keep the Ready chip with its fill and stroke", () => {
-    expect(renderList()).toContain("bg-pastel-green text-chip-ink-green");
+  it("keep the Ready chip, olive with a check", () => {
+    expect(renderList()).toContain("bg-olive-tint text-text");
   });
 });

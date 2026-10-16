@@ -151,7 +151,7 @@ export function TrainingView({
               {topic.title}
             </h2>
             {topic.toRepeat > 0 && (
-              <Chip tone="rose" ink="red" size="caption">
+              <Chip tone="olive" size="caption">
                 {topic.toRepeat} to repeat
               </Chip>
             )}

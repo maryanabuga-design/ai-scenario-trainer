@@ -58,6 +58,7 @@ function Runner({ exam }: { exam: ExamSession }) {
       session={exam}
       unit="Question"
       hints={false}
+      mode="exam"
       timer={<ExamTimer seconds={left} />}
       leave={{ title: "Leave the exam?", description: "Your progress will be lost." }}
       onChange={saveExam}
