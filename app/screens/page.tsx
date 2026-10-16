@@ -14,7 +14,8 @@ import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { Tag } from "@/components/Tag/Tag";
 import { checklists } from "@/lib/checklists";
 import { loadAllSections, loadGuides } from "@/lib/guide";
-import { practiseHref, stepsFor, topicFor } from "@/lib/materials-topics";
+import { stepsFor, topicFor } from "@/lib/materials-topics";
+import { canPractise } from "@/lib/parts";
 import {
   ChatFeedbackSample,
   SessionSample,
@@ -61,8 +62,9 @@ function ReadingExample({ id }: { id: string }) {
         guideTitle: topic.guideTitle,
         minutes: topic.minutes,
         body: topic.section.body,
-        practiseHref: practiseHref(id),
+        canPractise: canPractise(id),
         stepsHref: steps ? `/checklists/${steps.id}` : null,
+        previous: topic.previous ? { id: topic.previous.id, title: topic.previous.title } : null,
         next: topic.next ? { id: topic.next.id, title: topic.next.title } : null,
       }}
     />
@@ -86,7 +88,10 @@ function Screen({ nav, children }: { nav?: string; children: ReactNode }) {
   return (
     <ActionBarProvider>
       <AskAiProvider inline>
-        <div data-frame-scroll className="min-h-0 flex-1 overflow-y-auto px-4 pt-6 pb-6">
+        <div
+          data-frame-scroll
+          className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-6 pb-6"
+        >
           {children}
         </div>
         <div className="bg-bg">
@@ -207,9 +212,19 @@ export default function Screens() {
               <MaterialTypesSample />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Reading screen: S1 (title, meta line, subsections, the three actions)">
+          <PhoneFrame label="Reading screen: S1, the first topic (a long text: the block follows it; only Next)">
             <Screen nav="/materials">
               <ReadingExample id="S1" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Reading screen: S2, a short topic (the action block at the bottom, Previous and Next)">
+            <Screen nav="/materials">
+              <ReadingExample id="S2" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Reading screen: S10, the last topic (only Previous)">
+            <Screen nav="/materials">
+              <ReadingExample id="S10" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Reading: toolbar on a new selection (Highlight, Copy)">
@@ -227,7 +242,7 @@ export default function Screens() {
               <HighlightSample markdown={loadGuides()[0].sections[0].body} state="copied" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Reading screen: a flood topic (no Practise or Steps, a Next link)">
+          <PhoneFrame label="Reading screen: a flood topic (no Practise or Steps, only the pager)">
             <Screen nav="/materials">
               <ReadingExample id="F5" />
             </Screen>

@@ -88,4 +88,4 @@ Progress lives in the browser. Each saved value carries a schema version and a c
 
 ## Materials
 
-The Materials tab lists every topic of the training guides (10 evacuation topics and 7 flood topics) with a reading time. A topic opens its reading screen, which ends with Practise this topic, Steps for this topic and a link to the next topic. Reading changes no progress. The earlier upload flow is no longer reachable from the tab.
+The Materials tab lists every topic of the training guides (10 evacuation topics and 7 flood topics) with a reading time. A topic opens its reading screen, which ends with an action block (at the bottom of the screen when the text is short, after the text when it is long): Practise this topic (starts or resumes a practice session of the topic), Steps for this topic and a Previous / Next pager. Reading changes no progress. The earlier upload flow is no longer reachable from the tab.

@@ -61,10 +61,20 @@ const doneS1: PartRecords = {
       .filter((part) => part.sectionId === "S1")
       .map((part) => [
         part.id,
-        { lastPercent: 100, attempts: 1, answeredIds: part.itemIds, correctIds: part.itemIds },
+        {
+          lastPercent: 100,
+          attempts: 1,
+          answeredIds: part.itemIds,
+          correctIds: part.itemIds,
+        },
       ]),
   ),
-  "quiz:S2:1": { lastPercent: 60, attempts: 2, answeredIds: [], correctIds: [] },
+  "quiz:S2:1": {
+    lastPercent: 60,
+    attempts: 2,
+    answeredIds: [],
+    correctIds: [],
+  },
 };
 
 describe("Training layout", () => {
@@ -200,7 +210,11 @@ describe("a topic card and its parts", () => {
       title: "Title of S1",
       toRepeat: 0,
       parts: [
-        { part: { ...partsFor("quiz")[0], n: 1 }, state: "done", recommended: false },
+        {
+          part: { ...partsFor("quiz")[0], n: 1 },
+          state: "done",
+          recommended: false,
+        },
         {
           part: { ...partsFor("quiz")[0], n: 2, id: "quiz:S1:2" },
           state: "not started",
@@ -319,6 +333,7 @@ describe("the Training screen source", () => {
     const page = readFileSync("app/(app)/training/page.tsx", "utf8");
     expect(page).toContain("saveTrainingMode");
     expect(page).toContain('params.get("mode")');
-    expect(page).toContain('params.get("topic")');
+    // a topic is no longer passed in: Practise this topic on the reading screen starts the part
+    expect(page).not.toContain('params.get("topic")');
   });
 });

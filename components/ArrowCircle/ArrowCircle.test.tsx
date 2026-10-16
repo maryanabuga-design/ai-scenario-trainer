@@ -96,6 +96,8 @@ describe("every card arrow goes through ArrowCircle", () => {
       "ArrowCircle/ArrowCircle.tsx",
       "TrainingCreate/TrainingCreate.tsx",
       "Chevron/Chevron.tsx",
+      // the small arrows of the Previous / Next captions
+      "TopicPager/TopicPager.tsx",
       "ErrorTypesCard/ErrorTypesCard.tsx",
     ];
     const own = [...files("components"), ...files("app")].filter((file) => {

@@ -90,6 +90,11 @@ export function sessionLabel(session: Pick<Session, "kind">) {
   return { scenario: "Scenario", quiz: "Quiz", repeat: "Repeat round", exam: "Exam" }[session.kind];
 }
 
+/** Where Leave on the Exit dialog goes: the reading screen the session was started from, else Home. */
+export function leaveHref(session: Pick<Session, "returnTo">): string {
+  return session.returnTo?.startsWith("/materials/read/") ? session.returnTo : "/";
+}
+
 export function saveSession(session: Session) {
   sessionStore.write(session);
 }

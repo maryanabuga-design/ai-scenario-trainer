@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { loadGuides } from "@/lib/guide";
-import { allTopics, practiseHref, stepsFor, topicFor } from "@/lib/materials-topics";
+import { allTopics, stepsFor, topicFor } from "@/lib/materials-topics";
 import { readingMinutes } from "@/lib/reading";
 
 describe("the reading topics", () => {
@@ -21,10 +21,14 @@ describe("the reading topics", () => {
     expect(topicFor("nope")).toBeUndefined();
   });
 
-  it("opens Training at the topic: Scenario mode when the topic has scenario parts, otherwise Quiz", () => {
-    expect(practiseHref("S1")).toBe("/training?mode=scenario&topic=S1");
-    expect(practiseHref("S3")).toBe("/training?mode=quiz&topic=S3");
-    expect(practiseHref("F1")).toBeNull();
+  it("knows the previous and the next topic inside one guide", () => {
+    expect(topicFor("S1")?.previous).toBeNull();
+    expect(topicFor("S2")?.previous?.id).toBe("S1");
+    expect(topicFor("S10")?.next).toBeNull();
+    expect(topicFor("S10")?.previous?.id).toBe("S9");
+    // the guides do not run into each other
+    expect(topicFor("F1")?.previous).toBeNull();
+    expect(topicFor("F7")?.next).toBeNull();
   });
 
   it("opens the Steps for a topic, and nothing when no checklist covers it", () => {

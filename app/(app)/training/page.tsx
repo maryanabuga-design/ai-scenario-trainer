@@ -23,7 +23,7 @@ import { sessionLabel, startSession, useHistory, useSession } from "@/lib/sessio
 const guideName =
   sampleMaterials.find((material) => material.id === "evacuation-guide")?.name ?? "";
 
-function Training({ initial, topic }: { initial: TrainingMode; topic: string | null }) {
+function Training({ initial }: { initial: TrainingMode }) {
   const router = useRouter();
   const { sections } = useSourceSheet();
   const history = useHistory();
@@ -35,12 +35,6 @@ function Training({ initial, topic }: { initial: TrainingMode; topic: string | n
   useEffect(() => saveTrainingMode(initial), [initial]);
 
   const ready = history !== "loading" && records !== "loading" && session !== "loading";
-
-  // "Practise this topic" from Materials arrives with ?topic=S1: bring that topic's card into view.
-  useEffect(() => {
-    if (!ready || !topic) return;
-    document.getElementById(`topic-${topic}`)?.scrollIntoView({ block: "start" });
-  }, [ready, topic]);
 
   if (!ready) return null;
   const unfinished = session && !session.finished ? session : null;
@@ -97,12 +91,11 @@ function Training({ initial, topic }: { initial: TrainingMode; topic: string | n
 function TrainingGate() {
   const params = useSearchParams();
   const param = params.get("mode");
-  const topic = params.get("topic");
   const remembered = useTrainingMode();
   if (remembered === "loading") return null;
   const initial: TrainingMode =
     param === "scenario" || param === "quiz" ? param : (remembered ?? "scenario");
-  return <Training key={initial} initial={initial} topic={topic} />;
+  return <Training key={initial} initial={initial} />;
 }
 
 export default function TrainingPage() {

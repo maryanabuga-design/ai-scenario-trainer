@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { contentFingerprint } from "@/lib/content-version";
 import { scoreSession } from "@/lib/progress";
 import {
+  leaveHref,
   answerFor,
   finishSession,
   firstUnanswered,
@@ -86,7 +87,9 @@ describe("starting and finishing", () => {
       index: 0,
     });
     expect(quiz?.finished).toBe(false);
-    startSession("scenario", ["q-scn-s01-001"], { scenarioId: "building-evacuation-001" });
+    startSession("scenario", ["q-scn-s01-001"], {
+      scenarioId: "building-evacuation-001",
+    });
     expect(read<Session>("ast.session.v1")?.scenarioId).toBe("building-evacuation-001");
   });
 
@@ -189,7 +192,14 @@ describe("the saved schema is versioned", () => {
       stepIds: ["q-scn-s01-001"],
       index: 0,
       phase: "decide",
-      answers: [{ stepId: "q-scn-s01-001", optionId: "b", confidence: 3, explanation: "" }],
+      answers: [
+        {
+          stepId: "q-scn-s01-001",
+          optionId: "b",
+          confidence: 3,
+          explanation: "",
+        },
+      ],
       finished: false,
     };
     saved.set("ast.session.v1", JSON.stringify(old));
@@ -225,7 +235,10 @@ describe("a checked answer", () => {
     expect(answerFor(session, "q-quiz-s01-001")?.optionId).toBe("a");
     expect(answerFor(session, "q-quiz-s01-001")?.checked).toBeUndefined();
     session = withChecked(session, "q-quiz-s01-001");
-    expect(answerFor(session, "q-quiz-s01-001")).toMatchObject({ optionId: "a", checked: true });
+    expect(answerFor(session, "q-quiz-s01-001")).toMatchObject({
+      optionId: "a",
+      checked: true,
+    });
     expect(withAnswer(session, "q-quiz-s01-001", "b")).toBe(session);
     expect(answerFor(withAnswer(session, "q-quiz-s01-002", "a"), "q-quiz-s01-002")?.checked).toBe(
       undefined,
@@ -263,10 +276,21 @@ describe("a checked answer", () => {
       JSON.stringify({
         schema: 6,
         content: contentFingerprint,
-        value: { ...start(), answers: [{ itemId: "q-quiz-s01-001", optionId: "a" }] },
+        value: {
+          ...start(),
+          answers: [{ itemId: "q-quiz-s01-001", optionId: "a" }],
+        },
       }),
     );
     const old = read<Session>("ast.session.v1")!;
     expect(isDone(answerFor(old, "q-quiz-s01-001"), "training")).toBe(false);
+  });
+});
+
+describe("where Leave goes", () => {
+  it("returns to the reading screen the session started from, and to Home otherwise", () => {
+    expect(leaveHref({ returnTo: "/materials/read/S1" })).toBe("/materials/read/S1");
+    expect(leaveHref({ returnTo: "/training?mode=scenario" })).toBe("/");
+    expect(leaveHref({})).toBe("/");
   });
 });

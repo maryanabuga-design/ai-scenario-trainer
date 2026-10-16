@@ -6,7 +6,7 @@ import { SessionRunner } from "@/components/SessionRunner/SessionRunner";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { getPart } from "@/lib/parts";
 import type { Session } from "@/lib/session";
-import { finishSession, isValidSession, saveSession, useSession } from "@/lib/session";
+import { finishSession, isValidSession, leaveHref, saveSession, useSession } from "@/lib/session";
 
 function NoSession() {
   return (
@@ -33,7 +33,7 @@ function Runner({ session }: { session: Session }) {
         finishSession(session);
         router.push("/session/results");
       }}
-      onLeave={() => router.push("/")}
+      onLeave={() => router.push(leaveHref(session))}
     />
   );
 }

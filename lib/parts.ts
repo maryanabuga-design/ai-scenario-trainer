@@ -66,3 +66,14 @@ export function getPart(id: string): Part | undefined {
 export function sectionsWithParts(mode: TrainingMode): string[] {
   return [...new Set(partsFor(mode).map((part) => part.sectionId))];
 }
+
+/** The parts of a topic that "Practise this topic" can play: its Scenario parts, else its Quiz parts. */
+export function practiceParts(topicId: string): Part[] {
+  const own = (mode: "scenario" | "quiz") =>
+    partsFor(mode).filter((part) => part.sectionId === topicId);
+  const scenario = own("scenario");
+  return scenario.length > 0 ? scenario : own("quiz");
+}
+
+/** Whether a topic has anything to practise (the flood topics have not). */
+export const canPractise = (topicId: string) => practiceParts(topicId).length > 0;

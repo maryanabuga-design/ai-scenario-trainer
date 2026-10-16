@@ -193,27 +193,65 @@ test.describe("Materials", () => {
     await expect(page.locator("main h2:visible")).toHaveCount(7);
     await expect(page.getByRole("heading", { name: "Stairs, not elevators" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Responding to an alarm" })).toHaveCount(1);
-    await expect(page.getByRole("link", { name: "Practise this topic" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Practise this topic" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Steps for this topic" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Next: Checking the route" })).toBeVisible();
+    await expect(page.getByRole("link", { name: /^Next\s*Checking the route$/ })).toBeVisible();
     await expect(
       page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Materials" }),
     ).toHaveAttribute("aria-current", "page");
     expect(await noSidewaysScroll(page)).toBe(true);
   });
 
-  test("Practise this topic opens Training at the topic", async ({ page }) => {
+  test("Practise this topic starts the first scenario question of S1, not the Training list", async ({
+    page,
+  }) => {
     await open(page, "/materials/read/S1");
-    await page.getByRole("link", { name: "Practise this topic" }).click();
-    await expect(page).toHaveURL(/\/training\?mode=scenario&topic=S1$/);
-    await expect(page.getByRole("heading", { name: "Training" })).toBeVisible();
-    await expect(page.getByRole("radio", { name: "Scenario" })).toBeChecked();
-    await expect(page.getByText("Responding to an alarm").first()).toBeInViewport();
-    // a topic with no scenario parts opens in Quiz mode
+    await page.getByRole("button", { name: "Practise this topic" }).click();
+    await expect(page).toHaveURL(/\/session$/);
+    await expect(page.getByText(/^Step 1 of \d+$/)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Training" })).toHaveCount(0);
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.session.v1")!));
+    expect(saved.value.partId).toBe("scenario:S1:1");
+    expect(saved.value.returnTo).toBe("/materials/read/S1");
+  });
+
+  test("a topic without scenario steps opens its quiz", async ({ page }) => {
     await open(page, "/materials/read/S3");
-    await page.getByRole("link", { name: "Practise this topic" }).click();
-    await expect(page).toHaveURL(/\/training\?mode=quiz&topic=S3$/);
-    await expect(page.getByRole("radio", { name: "Quiz" })).toBeChecked();
+    await page.getByRole("button", { name: "Practise this topic" }).click();
+    await expect(page).toHaveURL(/\/session$/);
+    await expect(page.getByText(/^Question 1 of \d+$/)).toBeVisible();
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.session.v1")!));
+    expect(saved.value.partId).toBe("quiz:S3:1");
+  });
+
+  test("an unfinished session of the topic is resumed, with its answer and place", async ({
+    page,
+  }) => {
+    await open(page, "/materials/read/S1");
+    await page.getByRole("button", { name: "Practise this topic" }).click();
+    await page
+      .locator("label")
+      .filter({ has: page.getByRole("radio") })
+      .first()
+      .click();
+    await page.getByRole("button", { name: "Check", exact: true }).click();
+    await page.getByRole("button", { name: "Next", exact: true }).click();
+    await expect(page.getByText(/^Step 2 of \d+$/)).toBeVisible();
+    await page.goto("/materials/read/S1");
+    await page.getByRole("button", { name: "Practise this topic" }).click();
+    await expect(page.getByText(/^Step 2 of \d+$/)).toBeVisible();
+  });
+
+  test("Exit from that session returns to the reading screen, and so does Back on Results", async ({
+    page,
+  }) => {
+    await open(page, "/materials/read/S2");
+    await page.getByRole("button", { name: "Practise this topic" }).click();
+    await expect(page).toHaveURL(/\/session$/);
+    await page.getByRole("button", { name: "Exit" }).click();
+    await page.getByRole("button", { name: "Leave", exact: true }).click();
+    await expect(page).toHaveURL(/\/materials\/read\/S2$/);
+    await expect(page.getByRole("heading", { name: "Checking the route", level: 1 })).toBeVisible();
   });
 
   test("Steps for this topic opens the Steps, and a topic without steps has no such button", async ({
@@ -224,7 +262,7 @@ test.describe("Materials", () => {
     await expect(page).toHaveURL(/\/checklists\/severe-bleeding$/);
     await open(page, "/materials/read/S9");
     await expect(page.getByRole("link", { name: "Steps for this topic" })).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "Practise this topic" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Practise this topic" })).toBeVisible();
   });
 
   test("Next opens the next topic of the same guide, and Back returns to the Materials list", async ({
@@ -232,7 +270,7 @@ test.describe("Materials", () => {
   }) => {
     await open(page, "/materials");
     await page.getByRole("link", { name: /^Responding to an alarm/ }).click();
-    await page.getByRole("link", { name: "Next: Checking the route" }).click();
+    await page.getByRole("link", { name: /^Next\s*Checking the route$/ }).click();
     await expect(page).toHaveURL(/\/materials\/read\/S2$/);
     await expect(page.getByRole("heading", { name: "Checking the route", level: 1 })).toBeVisible();
     await page.getByRole("button", { name: "Back" }).click();
@@ -242,15 +280,160 @@ test.describe("Materials", () => {
     await expect(page.getByRole("heading", { name: "Materials", level: 1 })).toBeVisible();
   });
 
+  test("a short topic keeps the action block at the bottom of the screen, above the navigation", async ({
+    page,
+  }) => {
+    // the shortest topic (S10) on a 360 by 844 screen
+    await page.setViewportSize({ width: 360, height: 844 });
+    await open(page, "/materials/read/S10");
+    const nav = (await page.getByRole("navigation", { name: "Main" }).boundingBox())!;
+    const block = (await page.getByRole("region", { name: "What next" }).boundingBox())!;
+    const practise = (await page
+      .getByRole("button", { name: "Practise this topic" })
+      .boundingBox())!;
+    const lastText = (await page.locator("main [data-reading-body]").boundingBox())!;
+    expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(
+      await page.evaluate(() => window.innerHeight),
+    );
+    // the block ends just above the navigation (the padding below it is at most 24px) ...
+    expect(nav.y - (block.y + block.height)).toBeGreaterThanOrEqual(0);
+    expect(nav.y - (block.y + block.height)).toBeLessThanOrEqual(32);
+    // ... and the primary button is far under the text, not directly below it
+    expect(practise.y - (lastText.y + lastText.height)).toBeGreaterThan(100);
+    expect(practise.height).toBe(52);
+  });
+
+  test("a long topic lets the block follow the text and scroll with the page", async ({ page }) => {
+    await open(page, "/materials/read/S1");
+    const gap = await page.evaluate(() => {
+      const text = document.querySelector("[data-reading-body]")!.getBoundingClientRect();
+      const button = [...document.querySelectorAll("button")].find((b) =>
+        b.textContent?.includes("Practise this topic"),
+      )!;
+      const top = button.getBoundingClientRect().top;
+      return { gap: top - text.bottom, below: top > window.innerHeight };
+    });
+    // 24px of space at least between the text and the block, and the block is off the first screen
+    expect(gap.gap).toBeGreaterThanOrEqual(24);
+    expect(gap.gap).toBeLessThan(40);
+    expect(gap.below).toBe(true);
+    const before = (await page.getByRole("button", { name: "Practise this topic" }).boundingBox())!
+      .y;
+    await page.evaluate(() => window.scrollBy(0, 300));
+    await expect
+      .poll(
+        async () =>
+          (await page.getByRole("button", { name: "Practise this topic" }).boundingBox())!.y,
+      )
+      .toBeLessThan(before - 100);
+  });
+
+  test("the action block is in the page flow: nothing fixed or sticky, no background, shadow or border around it", async ({
+    page,
+  }) => {
+    await open(page, "/materials/read/S2");
+    const result = await page.evaluate(() => {
+      const block = document.querySelector("section[aria-label='What next']")!;
+      const chain: Element[] = [];
+      for (
+        let el: Element | null = block;
+        el && el !== document.querySelector("main");
+        el = el.parentElement
+      )
+        chain.push(el);
+      const look = (el: Element) => {
+        const style = getComputedStyle(el);
+        return {
+          position: style.position,
+          background: style.backgroundColor,
+          shadow: style.boxShadow,
+          top: style.borderTopWidth,
+          bottom: style.borderBottomWidth,
+        };
+      };
+      return { block: look(block), parents: chain.map(look) };
+    });
+    for (const own of [result.block, ...result.parents]) {
+      expect(own.position).not.toBe("fixed");
+      expect(own.position).not.toBe("sticky");
+      expect(own.background).toBe("rgba(0, 0, 0, 0)");
+      expect(own.shadow).toBe("none");
+    }
+    expect(result.block.top).toBe("0px");
+    expect(result.block.bottom).toBe("0px");
+  });
+
+  test("the pager: Previous and Next on a middle topic, only Next on the first, only Previous on the last", async ({
+    page,
+  }) => {
+    await open(page, "/materials/read/S2");
+    const previous = page.getByRole("link", { name: /^Previous\s*Responding to an alarm$/ });
+    const next = page.getByRole("link", { name: /^Next\s*Moving through smoke$/ });
+    await expect(previous).toBeVisible();
+    await expect(next).toBeVisible();
+    // two equal columns: the previous title on the left, the next one right-aligned
+    const [a, b] = [(await previous.boundingBox())!, (await next.boundingBox())!];
+    expect(Math.abs(a.width - b.width)).toBeLessThan(2);
+    expect(a.x).toBeLessThan(b.x);
+    expect(a.height).toBeGreaterThanOrEqual(44);
+    expect(await next.evaluate((el) => getComputedStyle(el).textAlign)).toBe("right");
+    expect(await previous.evaluate((el) => getComputedStyle(el).textAlign)).toBe("left");
+    // a divider above the pager, none around it
+    const divider = await page.getByRole("navigation", { name: "Topics" }).evaluate((nav) => {
+      const parent = getComputedStyle(nav.parentElement!);
+      const own = getComputedStyle(nav);
+      return {
+        top: parent.borderTopWidth,
+        color: parent.borderTopColor,
+        ownBorder: own.borderTopWidth,
+      };
+    });
+    expect(divider).toEqual({ top: "1px", color: "rgb(228, 223, 213)", ownBorder: "0px" });
+    await next.click();
+    await expect(page).toHaveURL(/\/materials\/read\/S3$/);
+    // the first topic of a guide: no Previous, and Next stays on the right
+    await open(page, "/materials/read/S1");
+    await expect(page.getByRole("link", { name: /^Previous\s/ })).toHaveCount(0);
+    const only = (await page
+      .getByRole("link", { name: /^Next\s*Checking the route$/ })
+      .boundingBox())!;
+    expect(only.x).toBeGreaterThan(170);
+    // the last topic: no Next, and Previous stays on the left
+    await open(page, "/materials/read/S10");
+    await expect(page.getByRole("link", { name: /^Next\s/ })).toHaveCount(0);
+    const left = (await page
+      .getByRole("link", { name: /^Previous\s*Unresponsive person$/ })
+      .boundingBox())!;
+    expect(left.x).toBeLessThan(40);
+    // the first topic of the flood guide has no Previous either: the guides do not run together
+    await open(page, "/materials/read/F1");
+    await expect(page.getByRole("link", { name: /^Previous\s/ })).toHaveCount(0);
+  });
+
+  test("the reading screen has no sideways scroll and keeps its gutters", async ({ page }) => {
+    for (const id of ["S2", "S1", "S10", "F3"]) {
+      await open(page, `/materials/read/${id}`);
+      expect(await noSidewaysScroll(page)).toBe(true);
+      const sides = await page.evaluate(() => {
+        const rect = (selector: string) =>
+          document.querySelector(selector)!.getBoundingClientRect();
+        const block = rect("section[aria-label='What next']");
+        return { left: block.left, right: document.documentElement.clientWidth - block.right };
+      });
+      expect(sides.left).toBeGreaterThanOrEqual(16);
+      expect(sides.right).toBeGreaterThanOrEqual(16);
+    }
+  });
+
   test("the last topic of a guide has no Next link", async ({ page }) => {
     await open(page, "/materials/read/S10");
-    await expect(page.getByRole("link", { name: /^Next:/ })).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "Practise this topic" })).toBeVisible();
+    await expect(page.getByRole("link", { name: /^Next\s/ })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Practise this topic" })).toBeVisible();
     await open(page, "/materials/read/F7");
-    await expect(page.getByRole("link", { name: /^Next:/ })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /^Next\s/ })).toHaveCount(0);
     await open(page, "/materials/read/F1");
     await expect(
-      page.getByRole("link", { name: "Next: Prepare a plan and a grab bag" }),
+      page.getByRole("link", { name: /^Next\s*Prepare a plan and a grab bag$/ }),
     ).toBeVisible();
   });
 
@@ -263,17 +446,17 @@ test.describe("Materials", () => {
     ).toBeVisible();
     await expect(page.locator("main strong", { hasText: "Depth and current." })).toBeVisible();
     await expect(page.locator("main li:visible")).toHaveCount(4);
-    await expect(page.getByRole("link", { name: "Practise this topic" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Practise this topic" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Steps for this topic" })).toHaveCount(0);
     await expect(
-      page.getByRole("link", { name: "Next: Getting help and helping others" }),
+      page.getByRole("link", { name: /^Next\s*Getting help and helping others$/ }),
     ).toBeVisible();
     expect(await noSidewaysScroll(page)).toBe(true);
   });
 
   test("reading changes no progress and no Today counter", async ({ page }) => {
     await open(page, "/materials/read/S1");
-    await page.getByRole("link", { name: "Next: Checking the route" }).click();
+    await page.getByRole("link", { name: /^Next\s*Checking the route$/ }).click();
     await expect(page).toHaveURL(/\/materials\/read\/S2$/);
     const stored = await page.evaluate(() => ({
       history: localStorage.getItem("ast.history.v1"),

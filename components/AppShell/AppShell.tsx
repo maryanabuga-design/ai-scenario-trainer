@@ -10,7 +10,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col border-x border-border bg-bg pt-[env(safe-area-inset-top)]">
       <SourceSheetProvider sections={loadAllSections()}>
         <ActionBarProvider>
-          <main className="flex-1 px-[var(--gutter,1rem)] pt-6">{children}</main>
+          <main className="flex flex-1 flex-col px-[var(--gutter,1rem)] pt-6">{children}</main>
           <div
             data-full-bleed
             className="sticky bottom-0 z-10 bg-bg pb-[env(safe-area-inset-bottom)]"
