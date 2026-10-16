@@ -23,7 +23,7 @@ export function OnboardingView({
   onFinish,
 }: {
   step: OnboardingStep;
-  /** A replay from Home: the first step has a Back button to Home too. */
+  /** A replay from Profile: the first step has a Back button to Profile too. */
   replay?: boolean;
   onNext: () => void;
   onBack: () => void;
@@ -64,7 +64,7 @@ export function OnboardingView({
         <div>
           {(step > 0 || replay) && (
             <CircleBackButton
-              label={step > 0 ? "Previous step" : "Back to Home"}
+              label={step > 0 ? "Previous step" : "Back to Profile"}
               onClick={onBack}
             />
           )}

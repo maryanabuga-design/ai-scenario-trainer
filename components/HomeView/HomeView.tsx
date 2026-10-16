@@ -3,15 +3,12 @@
 import { Bookmark, ClipboardCheck, ListChecks, ListOrdered, User } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
-import { ButtonLink, buttonClasses } from "@/components/Button/Button";
-import { Chip } from "@/components/Chip/Chip";
+import { buttonClasses } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { Media3D } from "@/components/Media3D/Media3D";
-import { Ring } from "@/components/Ring/Ring";
 import { TileIcon } from "@/components/TileIcon/TileIcon";
-import { heroCounts, heroCountsLine, homeImages, homeTiles } from "@/lib/home";
+import { HERO_BUTTON_LABEL, HERO_SUBTITLE, HERO_TITLE, homeImages, homeTiles } from "@/lib/home";
 import type { HomeCounts, HomeSummary, HomeTileId, SegmentState } from "@/lib/home";
-import { onboardingHref } from "@/lib/onboarding";
 
 const miniQuizPath = "/mini-quiz?from=home";
 
@@ -29,23 +26,18 @@ const segmentTones: Record<SegmentState, string> = {
 };
 
 /**
- * Home, the learner view: a greeting with one sentence and the profile button, the hero card
- * "Your training" (it always says Start training and opens Training), six tiles and the Mini-quiz
- * row. Nothing from Progress is repeated here.
+ * Home, the learner view: a greeting with one sentence and the profile button, the hero card (its
+ * one Primary button opens Training), four tiles and the Mini-quiz row. Nothing from Progress is
+ * repeated here, and no readiness percentage.
  */
 export function HomeView({
   name,
   summary,
-  readiness,
   counts,
-  guideName,
 }: {
   name: string;
   summary: HomeSummary;
-  /** The readiness percentage: 0 when nothing is done. */
-  readiness: number;
   counts: HomeCounts;
-  guideName: string;
 }) {
   const { goal, strip } = summary;
   const tiles = homeTiles(counts);
@@ -68,23 +60,14 @@ export function HomeView({
       </header>
 
       <section
-        aria-label="Your training"
+        aria-label={HERO_TITLE}
         className="relative rounded-[28px] bg-card p-2 shadow-(--card-shadow) has-focus-visible:outline-2"
       >
         <div className="flex flex-col gap-4 rounded-[22px] bg-secondary-sand p-4">
-          <div className="flex h-10 items-center justify-between gap-2 rounded-full bg-surface pr-1.5 pl-4">
-            <span className="type-body-strong">Your training</span>
-            <Chip tone="green" size="caption">
-              {strip.length} topics
-            </Chip>
-          </div>
-
           <div className="flex items-center gap-3">
             <div className="flex min-w-0 flex-1 flex-col gap-1">
-              <h2 className="type-card-title">{guideName}</h2>
-              <p className="type-small text-text-secondary">
-                {heroCountsLine(heroCounts.scenarios, heroCounts.questions)}
-              </p>
+              <h2 className="type-card-title">{HERO_TITLE}</h2>
+              <p className="type-small text-text-secondary">{HERO_SUBTITLE}</p>
             </div>
             <Media3D variant="tile" src={homeImages.heroTraining} />
           </div>
@@ -112,21 +95,12 @@ export function HomeView({
 
           <hr className="border-t border-arrow-stroke" />
 
-          <div className="flex items-center gap-3">
-            <Link
-              href="/training"
-              className={`${buttonClasses({ variant: "primary" })} after:absolute after:inset-0 after:rounded-[28px]`}
-            >
-              Start training
-            </Link>
-            <Link
-              href="/progress"
-              aria-label={`Readiness ${readiness}%, open Progress`}
-              className="relative z-10 flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-button border border-arrow-stroke bg-surface"
-            >
-              <Ring percent={readiness} size={40} label={`Readiness ${readiness}%`} />
-            </Link>
-          </div>
+          <Link
+            href="/training"
+            className={`${buttonClasses({ variant: "primary" })} after:absolute after:inset-0 after:rounded-[28px]`}
+          >
+            {HERO_BUTTON_LABEL}
+          </Link>
         </div>
       </section>
 
@@ -163,12 +137,6 @@ export function HomeView({
         </span>
         <Chevron />
       </Link>
-
-      <div className="-ml-3 self-start">
-        <ButtonLink href={onboardingHref} variant="tertiary">
-          How it works
-        </ButtonLink>
-      </div>
     </div>
   );
 }

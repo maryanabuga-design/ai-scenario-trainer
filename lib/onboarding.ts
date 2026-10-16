@@ -22,8 +22,11 @@ export type OnboardingStep = 0 | 1 | 2 | 3;
 
 export const FINAL_STEP: OnboardingStep = 3;
 
-/** Where "How it works" on Home replays the introduction. */
+/** Where the introduction lives: Home sends a first visit here, and "How the app works" in Profile replays it. */
 export const onboardingHref = "/onboarding";
+
+/** Where a replay returns to (Back, Skip and Get started): the Profile screen it was opened from. */
+export const replayReturnHref = "/profile";
 
 export function nextStep(step: OnboardingStep): OnboardingStep {
   return Math.min(step + 1, FINAL_STEP) as OnboardingStep;

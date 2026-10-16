@@ -1,15 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { PASS_MARK } from "@/lib/config";
 import { DAILY_GOAL, questionsToday } from "@/lib/daily-goal";
-import {
-  heroCounts,
-  heroCountsLine,
-  homeCounts,
-  homeSummary,
-  homeTiles,
-  readiness,
-  topicStrip,
-} from "@/lib/home";
+import { homeCounts, homeSummary, homeTiles, readiness, topicStrip } from "@/lib/home";
 import { getItem } from "@/lib/items";
 import { modeStats } from "@/lib/part-progress";
 import type { PartRecords } from "@/lib/part-progress";
@@ -317,13 +309,5 @@ describe("the tiles", () => {
     const tones = homeTiles(counts).map((tile) => tile.tone);
     expect(new Set(tones).size).toBe(4);
     expect(tones).not.toContain("rose");
-  });
-});
-
-describe("the hero card numbers", () => {
-  it("are the real counts of the selected guide", () => {
-    expect(heroCounts).toEqual({ scenarios: 1, questions: modeItems("quiz").length });
-    expect(heroCountsLine(1, 33)).toBe("1 scenario · 33 quiz questions");
-    expect(heroCountsLine(2, 1)).toBe("2 scenarios · 1 quiz question");
   });
 });

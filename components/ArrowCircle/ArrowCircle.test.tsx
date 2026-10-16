@@ -63,10 +63,10 @@ describe("ArrowCircle position: the top-right corner", () => {
 });
 
 describe("the Home hero card", () => {
-  it("is the one allowed card without an ArrowCircle: its action is a Primary button", () => {
+  it("has no ArrowCircle: its action is an explicit Primary button", () => {
     expect(readFileSync("components/HomeView/HomeView.tsx", "utf8")).not.toContain("ArrowCircle");
     expect(readFileSync("DESIGN.md", "utf8")).toContain(
-      "the one allowed card without an ArrowCircle",
+      "has no ArrowCircle because its action is an explicit Primary button",
     );
   });
 });

@@ -65,7 +65,7 @@ import { materialFromSample, sampleFiles } from "@/lib/training";
 import { currentWeakItems, scoreItem } from "@/lib/scoring";
 import type { FinishedSession, Session } from "@/lib/session";
 import { topicIcon, weakTopics } from "@/lib/weak-topics";
-import { homeCounts, homeSummary, readiness } from "@/lib/home";
+import { homeCounts, homeSummary } from "@/lib/home";
 import { DEMO_USER } from "@/lib/user";
 
 /**
@@ -370,12 +370,10 @@ export function HomeSample({
     <HomeView
       name={DEMO_USER.name}
       summary={homeSummary({ unfinished, history, records, now })}
-      readiness={readiness(history)}
       counts={homeCounts({
         history,
         saved: state === "first" ? [] : ["s3", "q-s2-1", "q-s7-3", "s5"],
       })}
-      guideName={sampleMaterials[0].name}
     />
   );
 }

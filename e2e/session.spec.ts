@@ -421,20 +421,23 @@ test.describe("Home", () => {
     await page.goto("/");
   }
 
-  test("starts training on a first visit, with 0% readiness, the tiles and no Progress numbers", async ({
+  test("opens Training from the hero card on a first visit, with the tiles and no Progress numbers", async ({
     page,
   }) => {
     await home(page, null);
     await expect(page.getByRole("heading", { name: "Hi, Maryana" })).toBeVisible();
     await expect(page.getByText("Start with your first scenario.")).toBeVisible();
     await expect(page.getByText("Today 0/5")).toBeVisible();
-    await expect(page.getByRole("link", { name: "Start training" })).toBeVisible();
-    await expect(page.getByRole("img", { name: "Readiness 0%" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Choose a topic" })).toBeVisible();
+    await expect(page.getByText("Training materials")).toBeVisible();
+    await expect(page.getByText("Practical scenarios and theory quizzes, by topic")).toBeVisible();
+    await expect(page.getByRole("img")).toHaveCount(0);
+    await expect(page.getByText(/Readiness|How it works|How the app works/)).toHaveCount(0);
     for (const text of ["Not taken yet", "Nothing to repeat", "0 saved", "3 checklists"]) {
       await expect(page.getByText(text, { exact: true })).toBeVisible();
     }
     await expect(page.getByText(/Average result|Session history|Sessions/)).toHaveCount(0);
-    await page.getByRole("link", { name: /Start training/ }).click();
+    await page.getByRole("link", { name: "Choose a topic" }).click();
     await expect(page).toHaveURL(/\/training$/);
     await expect(page.getByRole("heading", { name: "Training" })).toBeVisible();
     await expect(page.getByRole("link", { name: /Saved questions \(/ })).toHaveCount(0);
@@ -447,8 +450,10 @@ test.describe("Home", () => {
       index: 1,
     });
     await expect(page.getByText("You stopped at question 2 of 3.")).toBeVisible();
-    await expect(page.getByRole("region", { name: "Your training" })).not.toContainText("Continue");
-    await page.getByRole("link", { name: "Start training" }).click();
+    await expect(page.getByRole("region", { name: "Training materials" })).not.toContainText(
+      "Continue",
+    );
+    await page.getByRole("link", { name: "Choose a topic" }).click();
     await expect(page).toHaveURL(/\/training$/);
     await expect(page.getByText("Scenario · Question 2 of 3")).toBeVisible();
     await page.getByRole("link", { name: /Continue your session/ }).click();
@@ -456,7 +461,7 @@ test.describe("Home", () => {
     await expect(page.getByText("Step 2 of 3")).toBeVisible();
   });
 
-  test("updates readiness after a finished session", async ({ page }) => {
+  test("shows no readiness percentage on Home, even after finished sessions", async ({ page }) => {
     await home(
       page,
       null,
@@ -466,9 +471,9 @@ test.describe("Home", () => {
         { itemId: "q-quiz-s01-001", optionId: "a" },
       ]),
     );
-    // 3 right of all the questions in the guide's sections.
-    const percent = Math.floor((3 / (QUIZ_TOTAL + SCENARIO_TOTAL)) * 100);
-    await expect(page.getByRole("img", { name: `Readiness ${percent}%` })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Hi, Maryana" })).toBeVisible();
+    await expect(page.getByRole("img")).toHaveCount(0);
+    await expect(page.getByText(/Readiness|\d+%/)).toHaveCount(0);
   });
 
   test("shows the sections to repeat after a wrong answer, and opens Weak topics", async ({
@@ -480,29 +485,30 @@ test.describe("Home", () => {
     await expect(page).toHaveURL(/\/weak-topics$/);
   });
 
-  test("always says Start training on the hero card, whatever the progress, and opens Training", async ({
+  test("shows the same hero card whatever the progress, with one full-width button to Training", async ({
     page,
   }) => {
     await home(page, null, history([{ itemId: "q-scn-s01-001", optionId: "a" }]));
     await expect(page.getByText("1 topic needs another look.")).toBeVisible();
-    const hero = page.getByRole("region", { name: "Your training" });
-    await expect(hero.getByRole("link", { name: "Start training" })).toBeVisible();
-    await expect(hero).not.toContainText(/Continue|Repeat weak topics/);
-    await hero.getByRole("link", { name: "Start training" }).click();
+    const hero = page.getByRole("region", { name: "Training materials" });
+    await expect(hero.getByRole("heading", { name: "Training materials" })).toBeVisible();
+    await expect(hero.getByText("Practical scenarios and theory quizzes, by topic")).toBeVisible();
+    await expect(hero).not.toContainText(/Your training|10 topics|Continue|Repeat weak topics/);
+    await expect(hero.getByRole("link")).toHaveCount(1);
+    const button = hero.getByRole("link", { name: "Choose a topic" });
+    const heroBox = await hero.boundingBox();
+    const buttonBox = await button.boundingBox();
+    // full width of the card: only the 8px card padding and the 16px panel padding are left at the sides
+    expect(buttonBox!.width).toBeGreaterThan(heroBox!.width - 2 * (8 + 16) - 2);
+    await button.click();
     await expect(page).toHaveURL(/\/training$/);
   });
 
-  test("opens Training from an empty area of the hero card and Progress from the ring", async ({
-    page,
-  }) => {
+  test("opens Training from an empty area of the hero card", async ({ page }) => {
     await home(page, null);
-    const hero = page.getByRole("region", { name: "Your training" });
+    const hero = page.getByRole("region", { name: "Training materials" });
     await expect(hero.getByText("Topics 0/10")).toBeVisible();
     await expect(hero.getByText("Today 0/5")).toBeVisible();
-    await expect(hero.getByText(`1 scenario · ${QUIZ_TOTAL} quiz questions`)).toBeVisible();
-    await hero.getByRole("link", { name: /Readiness 0%, open Progress/ }).click();
-    await expect(page).toHaveURL(/\/progress$/);
-    await page.goBack();
     await page.evaluate(() => window.scrollTo(0, 0));
     const box = await hero.boundingBox();
     await page.mouse.click(box!.x + box!.width / 2, box!.y + 4);
@@ -669,7 +675,7 @@ test.describe("Training", () => {
       partId: "quiz:S1:1",
     });
     await expect(page.getByText("You stopped at question 2 of 4.")).toBeVisible();
-    await page.getByRole("link", { name: "Start training" }).click();
+    await page.getByRole("link", { name: "Choose a topic" }).click();
     await expect(page).toHaveURL(/\/training$/);
     await page.getByRole("radio", { name: "Quiz" }).check({ force: true });
     await page.getByRole("button", { name: "Continue" }).click();
@@ -779,7 +785,7 @@ test.describe("Mini-quiz", () => {
     }
     await page.getByRole("link", { name: "Back to Home" }).click();
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.getByRole("img", { name: /Readiness \d+%/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Hi, Maryana" })).toBeVisible();
   });
 });
 
@@ -1070,5 +1076,44 @@ test.describe("old saved data", () => {
     await page.goto("/exam");
     await expect(page.getByText("You have not taken the exam yet")).toBeVisible();
     expect(errors, errors.join(" / ")).toEqual([]);
+  });
+});
+
+test.describe("the onboarding entry", () => {
+  test("is not on Home, and a new visitor still sees the introduction first", async ({ page }) => {
+    await page.goto("/");
+    await expect(page).toHaveURL(/\/onboarding$/);
+    await expect(page.getByRole("heading", { name: "Practise a decision" })).toBeVisible();
+    await page.getByRole("button", { name: "Skip" }).click();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByRole("heading", { name: "Hi, Maryana" })).toBeVisible();
+    await expect(page.getByText(/How it works|How the app works/)).toHaveCount(0);
+  });
+
+  test("is a row in Profile that opens the introduction, and Back returns to Profile", async ({
+    page,
+  }) => {
+    await page.addInitScript(
+      ([p]) => {
+        if (!localStorage.getItem("ast.profile.v1")) {
+          localStorage.setItem("ast.profile.v1", JSON.stringify(p));
+        }
+      },
+      [profile],
+    );
+    await page.goto("/profile");
+    await expect(page.getByRole("heading", { name: "Help" })).toBeVisible();
+    await page.getByRole("link", { name: "How the app works" }).click();
+    await expect(page).toHaveURL(/\/onboarding$/);
+    await expect(page.getByRole("heading", { name: "Practise a decision" })).toBeVisible();
+    await page.getByRole("button", { name: "Back to Profile" }).click();
+    await expect(page).toHaveURL(/\/profile$/);
+    // Skip on a later step also returns to Profile and changes nothing saved
+    await page.getByRole("link", { name: "How the app works" }).click();
+    await page.getByRole("button", { name: "Next" }).click();
+    await page.getByRole("button", { name: "Skip" }).click();
+    await expect(page).toHaveURL(/\/profile$/);
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.profile.v1")!));
+    expect(saved).toEqual(profile);
   });
 });

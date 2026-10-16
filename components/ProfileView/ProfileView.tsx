@@ -1,9 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { Button } from "@/components/Button/Button";
+import { Chevron } from "@/components/Chevron/Chevron";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { DirectionPicker } from "@/components/DirectionPicker/DirectionPicker";
 import { FooterNote } from "@/components/Footer/Footer";
+import { onboardingHref } from "@/lib/onboarding";
 import { DEMO_USER } from "@/lib/user";
 
 export function ProfileView({
@@ -40,6 +43,19 @@ export function ProfileView({
       </div>
 
       <DirectionPicker value={direction} onChange={onDirectionChange} legend="Direction" />
+
+      <section aria-labelledby="help-title" className="flex flex-col gap-3">
+        <h2 id="help-title" className="type-body-strong">
+          Help
+        </h2>
+        <Link
+          href={onboardingHref}
+          className="flex min-h-16 items-center gap-3 rounded-card bg-card p-4 shadow-(--card-shadow) has-focus-visible:outline-2"
+        >
+          <span className="type-body-strong min-w-0 flex-1">How the app works</span>
+          <Chevron />
+        </Link>
+      </section>
 
       <section aria-labelledby="settings-title" className="flex flex-col gap-3">
         <h2 id="settings-title" className="type-body-strong">

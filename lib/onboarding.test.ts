@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   FINAL_STEP,
@@ -7,6 +8,7 @@ import {
   onboardingHref,
   onboardingSteps,
   previousStep,
+  replayReturnHref,
   stepLabel,
 } from "@/lib/onboarding";
 import type { OnboardingStep } from "@/lib/onboarding";
@@ -95,5 +97,24 @@ describe("when localStorage throws", () => {
     });
     const next = createStore<Profile>("ast.profile.test");
     expect(needsOnboarding(next.read())).toBe(true);
+  });
+});
+
+describe("replaying the introduction from Profile", () => {
+  it("returns to Profile, and the first visit still goes to Home", () => {
+    expect(onboardingHref).toBe("/onboarding");
+    expect(replayReturnHref).toBe("/profile");
+    // a first visit (not onboarded) still needs the introduction; a replay saves nothing
+    expect(needsOnboarding(null)).toBe(true);
+    expect(needsOnboarding({ direction: "building-evacuation", onboarded: true })).toBe(false);
+    expect(finishOnboarding({ direction: "building-evacuation", onboarded: true })).toBeNull();
+  });
+
+  it("shows Back on the first step of a replay and names Profile", () => {
+    const source = readFileSync("components/OnboardingView/OnboardingView.tsx", "utf8");
+    expect(source).toContain('"Back to Profile"');
+    const page = readFileSync("app/(app)/onboarding/page.tsx", "utf8");
+    expect(page).toContain('router.replace(replay ? replayReturnHref : "/")');
+    expect(page).toContain("router.push(replayReturnHref)");
   });
 });

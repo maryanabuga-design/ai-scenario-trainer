@@ -2,14 +2,13 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { HomeView } from "@/components/HomeView/HomeView";
 import { getItem } from "@/lib/items";
-import { heroCounts, heroCountsLine, homeCounts, homeSummary } from "@/lib/home";
+import { HERO_BUTTON_LABEL, HERO_SUBTITLE, HERO_TITLE, homeCounts, homeSummary } from "@/lib/home";
 import type { PartRecords } from "@/lib/part-progress";
 import type { FinishedSession, Session } from "@/lib/session";
 import { DEMO_USER } from "@/lib/user";
 
 const counts = homeCounts({ history: [], saved: [] });
 const NOW = new Date(2026, 9, 17, 15, 0);
-const guideName = "Sample evacuation guide.pdf";
 
 const unfinished: Session = {
   kind: "scenario",
@@ -57,11 +56,7 @@ const done = (percent: number) => ({
   correctIds: [],
 });
 
-function render(
-  state: keyof typeof states = "first",
-  readiness = 0,
-  records: PartRecords | null = null,
-) {
+function render(state: keyof typeof states = "first", records: PartRecords | null = null) {
   const { open, history } = states[state];
   return renderToStaticMarkup(
     <HomeView
@@ -72,9 +67,7 @@ function render(
         records,
         now: NOW,
       })}
-      readiness={readiness}
       counts={counts}
-      guideName={guideName}
     />,
   );
 }
@@ -93,17 +86,26 @@ describe("Home layout", () => {
     expect(html).not.toContain(">Learn<");
   });
 
-  it("goes greeting, hero card, four tiles, Mini-quiz, How it works", () => {
+  it("goes greeting, hero card, four tiles, Mini-quiz", () => {
     const order = [
       'aria-label="Profile"',
-      "Your training",
+      "Training materials",
       ">Exam<",
       ">Saved questions<",
       "Mini-quiz",
-      "How it works",
     ].map((text) => html.indexOf(text));
     expect(order.every((position) => position >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
+  });
+
+  it("has no onboarding button and no readiness percentage", () => {
+    for (const state of Object.keys(states) as (keyof typeof states)[]) {
+      const page = render(state);
+      expect(page, state).not.toMatch(/How it works|How the app works|onboarding/i);
+      expect(page, state).not.toMatch(/Readiness|role="img"/);
+      expect(page, state).not.toContain('href="/onboarding"');
+      expect(page, state).not.toContain('href="/progress"');
+    }
   });
 
   it("repeats nothing from Progress: no summary numbers, no history", () => {
@@ -127,18 +129,28 @@ describe("the sentence under the greeting", () => {
 describe("the hero card", () => {
   /** The hero card: from its section to the end of its markup. */
   const hero = (html: string) =>
-    html.slice(html.indexOf('<section aria-label="Your training"'), html.indexOf("</section>"));
+    html.slice(html.indexOf(`<section aria-label="${HERO_TITLE}"`), html.indexOf("</section>"));
 
-  it("always says Start training and opens Training, in every progress state", () => {
+  it("says Training materials and the new line, in the named constants", () => {
+    expect(HERO_TITLE).toBe("Training materials");
+    expect(HERO_SUBTITLE).toBe("Practical scenarios and theory quizzes, by topic");
+    expect(HERO_BUTTON_LABEL).toBe("Choose a topic");
     for (const state of Object.keys(states) as (keyof typeof states)[]) {
       const card = hero(render(state));
-      expect(card, state).toContain("Start training");
-      expect(card, state).toContain('href="/training"');
-      expect(card, state).not.toMatch(/Continue|Repeat weak topics|Next:/);
-      expect(card, state).not.toContain("border-arrow-stroke bg-surface shadow");
+      expect(card, state).toContain(">Training materials</h2>");
+      expect(card, state).toContain(">Practical scenarios and theory quizzes, by topic<");
+      expect(card, state).not.toMatch(/Sample evacuation guide|quiz questions|\d+ scenarios?/);
     }
-    // no ArrowCircle on this card
-    expect(hero(render())).not.toContain("arrow-shadow");
+  });
+
+  it("has no pill at the top: the panel starts with the title row", () => {
+    const card = hero(render());
+    expect(card).not.toContain("Your training");
+    expect(card).not.toContain("10 topics");
+    expect(card).not.toContain("rounded-full bg-surface");
+    const panel = card.slice(card.indexOf("rounded-[22px]"));
+    expect(panel.indexOf("<h2")).toBeLessThan(panel.indexOf("<ul"));
+    expect(panel.slice(panel.indexOf(">") + 1, panel.indexOf("<h2"))).not.toContain("<span");
   });
 
   it("has the nested sand panel in the card colour, with 8px and 16px padding", () => {
@@ -147,21 +159,12 @@ describe("the hero card", () => {
     expect(card).toContain("rounded-[22px] bg-secondary-sand p-4");
   });
 
-  it("has the white pill with Your training and the number of topics", () => {
+  it("keeps the 3D tile placeholder next to the title", () => {
     const card = hero(render());
-    expect(card).toContain("h-10");
-    expect(card).toContain("rounded-full bg-surface");
-    expect(card).toContain(">Your training<");
-    expect(card).toContain("10 topics");
-  });
-
-  it("shows the guide name, the real counts and the 3D tile placeholder", () => {
-    const card = hero(render());
-    expect(card).toContain(`>${guideName}</h2>`);
-    expect(card).toContain(heroCountsLine(heroCounts.scenarios, heroCounts.questions));
     expect(card).toContain('data-media3d="placeholder"');
     expect(card).toContain("h-20 w-20");
     expect(card).toContain(">3D<");
+    expect(card.indexOf("<h2")).toBeLessThan(card.indexOf("h-20 w-20"));
   });
 
   it("has a strip of 10 segments with the right state colours", () => {
@@ -169,7 +172,7 @@ describe("the hero card", () => {
       "quiz:S3:1": done(100),
       "quiz:S4:1": done(40),
     };
-    const card = hero(render("first", 0, records));
+    const card = hero(render("first", records));
     const segments = card.match(/<li data-state="[^"]+"[^>]*>/g) ?? [];
     expect(segments).toHaveLength(10);
     expect(segments.filter((s) => s.includes('data-state="done"'))).toHaveLength(1);
@@ -186,35 +189,39 @@ describe("the hero card", () => {
     const first = hero(render());
     expect(first).toContain("Topics 0/10");
     expect(first).toContain("Today 0/5");
-    const later = hero(render("goal", 11, { "quiz:S3:1": done(100) }));
+    const later = hero(render("goal", { "quiz:S3:1": done(100) }));
     expect(later).toContain("Topics 1/10");
     expect(later).toContain("Today 5/5");
     expect(hero(render("weak"))).toContain("Today 1/5");
   });
 
-  it("has the divider, a full-width Primary button and the square readiness ring that opens Progress", () => {
-    const card = hero(render("first", 32));
-    expect(card).toContain("<hr");
-    expect(card).toContain("h-[52px]");
-    expect(card).toContain("h-[52px] bg-primary");
-    const square = card.slice(card.lastIndexOf("<a ", card.indexOf('href="/progress"')));
-    expect(square).toContain('aria-label="Readiness 32%, open Progress"');
-    expect(square).toContain("h-[52px] w-[52px]");
-    expect(square).toContain("border border-arrow-stroke bg-surface");
-    expect(square).toContain(">32%<");
-    expect(square).toContain('aria-label="Readiness 32%"');
+  it("has no readiness ring and no square button", () => {
+    for (const state of Object.keys(states) as (keyof typeof states)[]) {
+      const card = hero(render(state));
+      expect(card, state).not.toMatch(/Readiness|role="img"|h-\[52px\] w-\[52px\]/);
+      expect(card, state).not.toContain('href="/progress"');
+      expect(card, state).not.toContain("%<");
+    }
   });
 
-  it("makes the empty area of the card open Training through one stretched link", () => {
+  it("has the divider and one full-width Primary button, Choose a topic, that opens Training in every state", () => {
+    for (const state of Object.keys(states) as (keyof typeof states)[]) {
+      const card = hero(render(state));
+      expect(card, state).toContain("<hr");
+      expect(card.match(/<a /g), state).toHaveLength(1);
+      expect(card, state).toContain('href="/training"');
+      expect(card, state).toContain(`>${HERO_BUTTON_LABEL}</a>`);
+      expect(card, state).toMatch(/class="[^"]*h-\[52px\][^"]*bg-primary[^"]*w-full/);
+      expect(card, state).not.toMatch(/Start training|Continue|Repeat weak topics|Next:/);
+    }
+  });
+
+  it("makes the empty area of the card open Training through one stretched link, with no ArrowCircle", () => {
     const card = hero(render());
     expect(card).toContain("after:absolute after:inset-0");
     expect(card.match(/after:absolute/g)).toHaveLength(1);
-    expect(card).toContain("relative z-10");
-  });
-
-  it("shows 0% readiness at the start and the percentage after", () => {
-    expect(hero(render())).toContain(">0%<");
-    expect(hero(render("goal", 11))).toContain(">11%<");
+    expect(card).not.toContain("arrow-shadow");
+    expect(card).not.toContain("relative z-10");
   });
 });
 
@@ -268,9 +275,7 @@ describe("the tiles", () => {
       <HomeView
         name={DEMO_USER.name}
         summary={homeSummary({ unfinished: null, history: [], records: null, now: NOW })}
-        readiness={0}
         counts={{ ...counts, bestExam: 85 }}
-        guideName={guideName}
       />,
     );
     expect(withExam).toContain("Best: 85%");

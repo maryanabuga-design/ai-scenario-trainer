@@ -452,7 +452,7 @@ export default function Screens() {
           </PhoneFrame>
         </Group>
         <Group title="Home and progress">
-          <PhoneFrame label="Home: first visit (0% readiness, Start training)">
+          <PhoneFrame label="Home: first visit (hero card with Choose a topic)">
             <Screen nav="/">
               <HomeSample state="first" />
             </Screen>

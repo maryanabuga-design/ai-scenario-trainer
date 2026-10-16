@@ -6,7 +6,7 @@ import { examResults } from "@/lib/exam";
 import { DAILY_GOAL, questionsToday } from "@/lib/daily-goal";
 import { PASS_MARK } from "@/lib/config";
 import type { PartRecords } from "@/lib/part-progress";
-import { modeItems, partsFor, trainingSections } from "@/lib/parts";
+import { partsFor, trainingSections } from "@/lib/parts";
 
 export { readinessOf as readiness } from "@/lib/part-progress";
 
@@ -79,22 +79,16 @@ export function homeSummary({
   };
 }
 
-/** "1 scenario · 33 quiz questions". */
-export function heroCountsLine(scenarios: number, questions: number): string {
-  return `${plural(scenarios, "scenario", "scenarios")} · ${plural(questions, "quiz question", "quiz questions")}`;
-}
+/** The hero card's texts: the title, the line under it and the label of its one button. */
+export const HERO_TITLE = "Training materials";
+export const HERO_SUBTITLE = "Practical scenarios and theory quizzes, by topic";
+export const HERO_BUTTON_LABEL = "Choose a topic";
 
 /**
  * The pictures of Home's hero tile and Mini-quiz row icon. Until a file is added to `public/heroes/`
  * (`hero-training.webp`, `icon-miniquiz.webp`) the placeholders show.
  */
 export const homeImages: { heroTraining?: string; iconMiniQuiz?: string } = {};
-
-/** The numbers on the hero card: the scenario count and quiz questions of the selected guide. */
-export const heroCounts = {
-  scenarios: 1,
-  questions: modeItems("quiz").length,
-};
 
 export type HomeCounts = {
   /** The best exam result in percent, or null when no exam was taken. */

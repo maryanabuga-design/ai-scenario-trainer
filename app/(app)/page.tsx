@@ -4,16 +4,12 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { HomeView } from "@/components/HomeView/HomeView";
 import { systemClock } from "@/lib/daily-goal";
-import { homeCounts, homeSummary, readiness } from "@/lib/home";
+import { homeCounts, homeSummary } from "@/lib/home";
 import { needsOnboarding, onboardingHref } from "@/lib/onboarding";
-import { sampleMaterials } from "@/lib/materials";
 import { usePartRecords } from "@/lib/part-progress";
 import { useSaved } from "@/lib/saved";
 import { useHistory, useProfile, useSession } from "@/lib/session";
 import { DEMO_USER } from "@/lib/user";
-
-const guideName =
-  sampleMaterials.find((material) => material.id === "evacuation-guide")?.name ?? "";
 
 export default function Home() {
   const router = useRouter();
@@ -50,9 +46,7 @@ export default function Home() {
         records,
         now: systemClock(),
       })}
-      readiness={readiness(history)}
       counts={homeCounts({ history, saved })}
-      guideName={guideName}
     />
   );
 }

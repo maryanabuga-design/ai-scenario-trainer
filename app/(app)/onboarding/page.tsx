@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { OnboardingView } from "@/components/OnboardingView/OnboardingView";
-import { finishOnboarding, nextStep, previousStep } from "@/lib/onboarding";
+import { finishOnboarding, nextStep, previousStep, replayReturnHref } from "@/lib/onboarding";
 import type { OnboardingStep } from "@/lib/onboarding";
 import { saveProfile, useProfile } from "@/lib/session";
 
@@ -17,21 +17,21 @@ export default function Onboarding() {
     window.scrollTo(0, 0);
   }
 
-  // Skip and Get started mark it done and open Home; a replay saves nothing.
+  const replay = profile !== "loading" && profile?.onboarded === true;
+
+  // Skip and Get started mark it done and open Home; a replay saves nothing and returns to Profile.
   function finish() {
     const saved = finishOnboarding(profile === "loading" ? null : profile);
     if (saved) saveProfile(saved);
-    router.replace("/");
+    router.replace(replay ? replayReturnHref : "/");
   }
-
-  const replay = profile !== "loading" && profile?.onboarded === true;
 
   return (
     <OnboardingView
       step={step}
       replay={replay}
       onNext={() => go(nextStep(step))}
-      onBack={() => (step === 0 ? router.push("/") : go(previousStep(step)))}
+      onBack={() => (step === 0 ? router.push(replayReturnHref) : go(previousStep(step)))}
       onSkip={finish}
       onFinish={finish}
     />
