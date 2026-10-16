@@ -141,6 +141,8 @@ describe("a secondary always comes with a primary above it", () => {
       )
       .sort();
     expect(withSecondary).toEqual([
+      // The reading screen: Steps for this topic, below the primary Practise this topic.
+      "components/ReadingView/ReadingView.tsx",
       // Results: Review answers, below the primary Repeat weak topics.
       "components/ResultsView/ResultsView.tsx",
       // Review: Start training above Back to material.

@@ -45,3 +45,36 @@ describe("the evacuation guide", () => {
     }
   });
 });
+
+describe("the guides as reading topics", () => {
+  it("lists the evacuation guide with 10 topics and the flood guide with 7, with their titles", async () => {
+    const { loadGuides } = await import("@/lib/guide");
+    const guides = loadGuides();
+    expect(guides.map((guide) => guide.title)).toEqual([
+      "Building Evacuation and Basic First Aid: Training Guide",
+      "Flood Preparedness for Community Volunteers: Training Guide",
+    ]);
+    expect(guides[0].sections.map((section) => section.id)).toEqual(
+      Array.from({ length: 10 }, (_, index) => `S${index + 1}`),
+    );
+    expect(guides[1].sections.map((section) => section.id)).toEqual(
+      Array.from({ length: 7 }, (_, index) => `F${index + 1}`),
+    );
+    expect(guides[0].sections[0].title).toBe("Responding to an alarm");
+    expect(guides[1].sections[4].title).toBe("The dangers of floodwater");
+    for (const guide of guides) {
+      for (const section of guide.sections) {
+        expect(section.body.trim().length, section.id).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("keeps the raw markdown of a topic, with its subsections and without its own heading", async () => {
+    const { loadGuides } = await import("@/lib/guide");
+    const s1 = loadGuides()[0].sections[0];
+    expect(s1.body).toContain("### Why every alarm is treated as real");
+    expect(s1.body).not.toContain("## S1.");
+    const f5 = loadGuides()[1].sections[4];
+    expect(f5.body).toContain("**Depth and current.**");
+  });
+});

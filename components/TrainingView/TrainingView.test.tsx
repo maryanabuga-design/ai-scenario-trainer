@@ -318,6 +318,7 @@ describe("the Training screen source", () => {
   it("remembers the last mode and accepts a preselected one", () => {
     const page = readFileSync("app/(app)/training/page.tsx", "utf8");
     expect(page).toContain("saveTrainingMode");
-    expect(page).toContain('useSearchParams().get("mode")');
+    expect(page).toContain('params.get("mode")');
+    expect(page).toContain('params.get("topic")');
   });
 });

@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
-import MaterialPage from "@/app/(app)/materials/evacuation-guide/page";
 import Materials from "@/app/(app)/materials/page";
 import { ActionBarProvider, ActionBarSlot } from "@/components/ActionBar/ActionBar";
 import { AskAiProvider } from "@/components/AskAi/AskAi";
@@ -9,11 +8,13 @@ import { ChecklistList } from "@/components/ChecklistView/ChecklistList";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
 import { Button } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
+import { ReadingView } from "@/components/ReadingView/ReadingView";
 import { PhoneFrame } from "@/components/PhoneFrame/PhoneFrame";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { Tag } from "@/components/Tag/Tag";
 import { checklists } from "@/lib/checklists";
 import { loadAllSections } from "@/lib/guide";
+import { practiseHref, stepsFor, topicFor } from "@/lib/materials-topics";
 import {
   ChatFeedbackSample,
   SessionSample,
@@ -46,6 +47,26 @@ import {
   TrainingSample,
   MiniQuizSample,
 } from "./samples";
+
+/** A reading screen built from the real guide, as the route builds it. */
+function ReadingExample({ id }: { id: string }) {
+  const topic = topicFor(id)!;
+  const steps = stepsFor(id);
+  return (
+    <ReadingView
+      topic={{
+        id: topic.id,
+        title: topic.title,
+        guideTitle: topic.guideTitle,
+        minutes: topic.minutes,
+        body: topic.section.body,
+        practiseHref: practiseHref(id),
+        stepsHref: steps ? `/checklists/${steps.id}` : null,
+        next: topic.next ? { id: topic.next.id, title: topic.next.title } : null,
+      }}
+    />
+  );
+}
 
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -185,9 +206,14 @@ export default function Screens() {
               <MaterialTypesSample />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Material page">
+          <PhoneFrame label="Reading screen: S1 (title, meta line, subsections, the three actions)">
             <Screen nav="/materials">
-              <MaterialPage />
+              <ReadingExample id="S1" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Reading screen: a flood topic (no Practise or Steps, a Next link)">
+            <Screen nav="/materials">
+              <ReadingExample id="F5" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Material without a scenario">

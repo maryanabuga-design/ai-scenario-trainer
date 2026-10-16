@@ -84,3 +84,7 @@ Build order and decisions: `docs/build-plan.md`.
 ## Saved data and content changes
 
 Progress lives in the browser. Each saved value carries a schema version and a content fingerprint; when the content changes, ids of removed questions are dropped silently when the data is read, valid answers stay, and corrupted data reads as an empty state. See `docs/content-and-saved-data.md`.
+
+## Materials
+
+The Materials tab lists every topic of the training guides (10 evacuation topics and 7 flood topics) with a reading time. A topic opens its reading screen, which ends with Practise this topic, Steps for this topic and a link to the next topic. Reading changes no progress. The earlier upload flow is no longer reachable from the tab.

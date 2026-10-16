@@ -92,7 +92,7 @@ describe("topic look", () => {
     expect(topicIcon("S3")).toBe("Wind");
     expect(topicIcon("S8")).toBe("Bandage");
     expect(topicIcon("F4")).toBe("Droplet");
-    expect(topicIcon("X9")).toBe("BookOpen");
+    expect(topicIcon("X9")).toBe("FileText");
     expect(weakTopics(items).find((topic) => topic.sectionId === "S2")?.icon).toBe("DoorOpen");
   });
 

@@ -2,6 +2,7 @@ import {
   Bandage,
   BellRing,
   BookOpen,
+  FileText,
   ClipboardList,
   DoorOpen,
   Droplet,
@@ -26,6 +27,7 @@ const icons: Record<TopicIcon, LucideIcon> = {
   ClipboardList,
   Droplet,
   BookOpen,
+  FileText,
 };
 
 const tints: Record<TopicTint, string> = {

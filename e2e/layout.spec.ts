@@ -37,6 +37,8 @@ const screens: { name: string; path: string; session?: object; saved?: string[] 
   { name: "Question with options", path: "/session", session: running },
   { name: "Results", path: "/session/results", session: finished },
   { name: "Materials", path: "/materials" },
+  { name: "Reading screen", path: "/materials/read/S1" },
+  { name: "Reading screen (flood)", path: "/materials/read/F5" },
   { name: "Steps", path: "/checklists" },
   { name: "Profile", path: "/profile" },
   { name: "Saved questions", path: "/saved", saved: ["q-scn-s01-001", "s2"] },

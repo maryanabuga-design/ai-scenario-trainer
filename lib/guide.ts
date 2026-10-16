@@ -14,6 +14,8 @@ export type GuideSection = {
   lines: string[];
   /** The `###` subsections, in order; empty when the section has none. */
   subsections: GuideSubsection[];
+  /** The raw markdown under the `##` heading (the heading itself is not part of it), for reading. */
+  body: string;
 };
 
 export type Guide = {
@@ -47,13 +49,29 @@ function readGuide(file: string): Guide {
         const text = line.replace(/^(- |\d+\. )/, "").replaceAll("**", "");
         (subsections.at(-1)?.lines ?? lines).push(text);
       }
-      return { id: match?.[1] ?? heading, title: match?.[2] ?? heading, lines, subsections };
+      return {
+        id: match?.[1] ?? heading,
+        title: match?.[2] ?? heading,
+        lines,
+        subsections,
+        body: rest.join("\n").trim(),
+      };
     });
   return { title, sections };
 }
 
 export function loadGuide(): Guide {
   return readGuide("sample-evacuation-guide.md");
+}
+
+export type GuideId = "evacuation" | "flood";
+
+/** Every guide of the content, in the order they are listed in Materials. */
+export function loadGuides(): (Guide & { id: GuideId })[] {
+  return [
+    { id: "evacuation", ...loadGuide() },
+    { id: "flood", ...loadFloodGuide() },
+  ];
 }
 
 export function loadFloodGuide(): Guide {

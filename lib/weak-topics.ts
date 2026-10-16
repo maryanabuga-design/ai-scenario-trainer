@@ -12,7 +12,8 @@ export type TopicIcon =
   | "Bandage"
   | "ClipboardList"
   | "Droplet"
-  | "BookOpen";
+  | "BookOpen"
+  | "FileText";
 
 const sectionIcons: Record<string, TopicIcon> = {
   S1: "BellRing",
@@ -27,10 +28,10 @@ const sectionIcons: Record<string, TopicIcon> = {
   S10: "ClipboardList",
 };
 
-/** The icon for a guide section: every flood section is a water drop; unknown ones a book. */
+/** The icon for a guide section: every flood section is a water drop; unknown ones a neutral document. */
 export function topicIcon(sectionId: string): TopicIcon {
   if (sectionId.startsWith("F")) return "Droplet";
-  return sectionIcons[sectionId] ?? "BookOpen";
+  return sectionIcons[sectionId] ?? "FileText";
 }
 
 export type TopicTint = "yellow" | "blue" | "lilac" | "green" | "peach";

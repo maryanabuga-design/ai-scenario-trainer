@@ -161,8 +161,8 @@ export function MaterialView({
               only.
             </p>
             <Button disabled>Create training</Button>
-            <ButtonLink href="/materials/evacuation-guide" variant="tertiary">
-              Open the sample guide
+            <ButtonLink href="/materials/read/S1" variant="tertiary">
+              Read the sample guide
             </ButtonLink>
           </>
         )}
