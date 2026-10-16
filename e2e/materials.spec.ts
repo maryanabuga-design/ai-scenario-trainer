@@ -53,6 +53,128 @@ test.describe("Materials", () => {
     expect(await noSidewaysScroll(page)).toBe(true);
   });
 
+  test("is a flat list: no cards, 1px dividers between rows and none after the last of a group", async ({
+    page,
+  }) => {
+    await open(page, "/materials");
+    const rows = page.locator("main li:visible", {
+      has: page.locator("a[href^='/materials/read/']"),
+    });
+    await expect(rows).toHaveCount(17);
+    const style = (index: number) =>
+      rows.nth(index).evaluate((li) => {
+        const link = li.querySelector("a")!;
+        const tile = link.querySelector("span[aria-hidden]")!;
+        const own = getComputedStyle(li);
+        const inner = getComputedStyle(link);
+        const box = tile.getBoundingClientRect();
+        return {
+          liBackground: own.backgroundColor,
+          liRadius: own.borderTopLeftRadius,
+          liShadow: own.boxShadow,
+          liBorderBottom: own.borderBottomWidth,
+          liBorderColor: own.borderBottomColor,
+          liBorderTop: own.borderTopWidth,
+          linkBackground: inner.backgroundColor,
+          linkBorder: inner.borderTopWidth,
+          linkRadius: inner.borderTopLeftRadius,
+          linkShadow: inner.boxShadow,
+          padding: [inner.paddingTop, inner.paddingBottom],
+          tile: [box.width, box.height],
+          tileRadius: getComputedStyle(tile).borderTopLeftRadius,
+          tileBackground: getComputedStyle(tile).backgroundColor,
+          width: li.getBoundingClientRect().width,
+          left: li.getBoundingClientRect().left,
+          height: link.getBoundingClientRect().height,
+        };
+      });
+    for (const index of [0, 3, 9, 10, 16]) {
+      const row = await style(index);
+      // nothing around a row: it sits on the page
+      expect(row.liBackground).toBe("rgba(0, 0, 0, 0)");
+      expect(row.linkBackground).toBe("rgba(0, 0, 0, 0)");
+      expect(row.liRadius).toBe("0px");
+      expect(row.linkRadius).toBe("0px");
+      expect(row.liShadow).toBe("none");
+      expect(row.linkShadow).toBe("none");
+      expect(row.linkBorder).toBe("0px");
+      expect(row.liBorderTop).toBe("0px");
+      // 16px above and below, at least 44px high
+      expect(row.padding).toEqual(["16px", "16px"]);
+      expect(row.height).toBeGreaterThanOrEqual(44);
+      // a 44px rounded square in the olive tint
+      expect(row.tile).toEqual([44, 44]);
+      expect(row.tileRadius).toBe("12px");
+      expect(row.tileBackground).toBe("rgb(224, 230, 214)");
+      // the divider runs from the left gutter to the right gutter
+      // (the app frame has a 1px side border, so the gutter measures 17px)
+      expect(row.left).toBeGreaterThanOrEqual(16);
+      expect(row.left).toBeLessThanOrEqual(17);
+      expect(row.left * 2 + row.width).toBe(
+        await page.evaluate(() => document.documentElement.clientWidth),
+      );
+    }
+    // a divider after every row except the last of each group (S10 is the 10th, F7 the 17th)
+    for (let index = 0; index < 17; index++) {
+      const { liBorderBottom, liBorderColor } = await style(index);
+      const last = index === 9 || index === 16;
+      expect(liBorderBottom, `row ${index + 1}`).toBe(last ? "0px" : "1px");
+      if (!last) expect(liBorderColor).toBe("rgb(228, 223, 213)");
+    }
+  });
+
+  test("group headings are clear, with a count chip, and spaced 32px apart", async ({ page }) => {
+    await open(page, "/materials");
+    const headings = page.locator("main h2:visible");
+    await expect(headings).toHaveCount(2);
+    const look = (index: number) =>
+      headings.nth(index).evaluate((h) => {
+        const style = getComputedStyle(h);
+        return {
+          size: style.fontSize,
+          weight: style.fontWeight,
+          color: style.color,
+          top: h.getBoundingClientRect().top,
+          sectionTop: h.closest("section")!.getBoundingClientRect().top,
+        };
+      });
+    const first = await look(0);
+    expect(first).toMatchObject({ size: "18px", weight: "600", color: "rgb(26, 26, 26)" });
+    await expect(page.getByText("10 topics", { exact: true })).toBeVisible();
+    await expect(page.getByText("7 topics", { exact: true })).toBeVisible();
+    // 12px between a heading and its first row; 32px between the groups
+    const gaps = await page.evaluate(() => {
+      const sections = [...document.querySelectorAll("main section")].filter(
+        (s) => (s as HTMLElement).offsetParent !== null,
+      );
+      const rect = (el: Element) => el.getBoundingClientRect();
+      const firstList = sections[0].querySelector("ul")!;
+      const headingRow = sections[0].firstElementChild!;
+      return {
+        headingToList: Math.round(rect(firstList).top - rect(headingRow).bottom),
+        betweenGroups: Math.round(rect(sections[1]).top - rect(sections[0]).bottom),
+      };
+    });
+    expect(gaps).toEqual({ headingToList: 12, betweenGroups: 32 });
+    // the subtitle is regular body text, clearly smaller than the group heading's weight
+    const subtitle = await page
+      .getByText("Read the training guides, then practise what you read.")
+      .evaluate((p) => ({
+        size: getComputedStyle(p).fontSize,
+        weight: getComputedStyle(p).fontWeight,
+      }));
+    expect(subtitle).toEqual({ size: "16px", weight: "400" });
+  });
+
+  test("leaves room under the last row, before the bottom navigation", async ({ page }) => {
+    await open(page, "/materials");
+    const room = await page.evaluate(() => {
+      const last = document.querySelector("a[href='/materials/read/F7']")!.getBoundingClientRect();
+      return document.querySelector("main")!.getBoundingClientRect().bottom - last.bottom;
+    });
+    expect(room).toBeGreaterThanOrEqual(24);
+  });
+
   test("opens the reading screen of S1 with its title, meta line, subsections and three actions", async ({
     page,
   }) => {

@@ -42,6 +42,8 @@ const tints: Record<TopicTint, string> = {
 const sizes = {
   default: { tile: "h-12 w-12", icon: 24, stroke: 2 },
   compact: { tile: "h-9 w-9", icon: 18, stroke: 1.75 },
+  /** The 44px rounded square of the Materials rows (12px radius, not a circle). */
+  tile: { tile: "h-11 w-11 rounded-[12px]", icon: 22, stroke: 2 },
 } as const;
 
 /** A topic's icon on a pastel tile coloured by its guide section (or the olive tint in a selectable row). Decorative: the name sits next to it. */
@@ -62,7 +64,7 @@ export function TopicTile({
   return (
     <span
       aria-hidden="true"
-      className={`flex ${look.tile} shrink-0 items-center justify-center rounded-full text-text ${tone === "olive" ? "bg-olive-tint" : tints[topicTint(sectionId)]}`}
+      className={`flex ${look.tile} shrink-0 items-center justify-center ${size === "tile" ? "" : "rounded-full"} text-text ${tone === "olive" ? "bg-olive-tint" : tints[topicTint(sectionId)]}`}
     >
       <Icon size={look.icon} strokeWidth={look.stroke} />
     </span>
