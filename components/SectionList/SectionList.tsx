@@ -1,6 +1,6 @@
 "use client";
 
-import { SelectableCard } from "@/components/SelectableCard/SelectableCard";
+import { SelectableRow } from "@/components/SelectableRow/SelectableRow";
 import { Button } from "@/components/Button/Button";
 import { selectionToggle, toggleSection } from "@/lib/sections";
 
@@ -46,9 +46,8 @@ export function SectionList({
           const checked = selected.includes(section.id);
           return (
             <li key={section.id}>
-              <SelectableCard
+              <SelectableRow
                 type="checkbox"
-                size="row"
                 name={titleId}
                 value={section.id}
                 checked={checked}
@@ -69,7 +68,7 @@ export function SectionList({
                     {section.detail}
                   </span>
                 )}
-              </SelectableCard>
+              </SelectableRow>
             </li>
           );
         })}

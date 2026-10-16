@@ -1,6 +1,6 @@
 "use client";
 
-import { SelectableCard } from "@/components/SelectableCard/SelectableCard";
+import { SelectableRow } from "@/components/SelectableRow/SelectableRow";
 import { ArrowRight, FileQuestionMark, FileText } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
@@ -25,7 +25,7 @@ export function initialChoice(material: Material): TrainingChoice {
   };
 }
 
-/** One "What to create" card: a SelectableCard with the sage icon tile, title and grey text. */
+/** One "What to create" card: a SelectableRow with the olive icon circle, title and grey text. */
 function CreateOption({
   icon: Icon,
   title,
@@ -42,7 +42,7 @@ function CreateOption({
   children: ReactNode;
 }) {
   return (
-    <SelectableCard
+    <SelectableRow
       type="checkbox"
       name="create"
       value={title}
@@ -52,15 +52,15 @@ function CreateOption({
     >
       <span
         aria-hidden="true"
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-pastel-green text-text"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-olive-tint text-text"
       >
-        <Icon size={20} strokeWidth={2} />
+        <Icon size={18} strokeWidth={1.75} />
       </span>
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="type-body-strong">{title}</span>
         <span className="type-small text-text-secondary">{children}</span>
       </span>
-    </SelectableCard>
+    </SelectableRow>
   );
 }
 

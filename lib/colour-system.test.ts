@@ -49,13 +49,12 @@ describe("colour system: primary deep green, secondary sand", () => {
 
 describe("coloured chips and icon backgrounds keep their tokens", () => {
   it("has the same tag, code circle and tile colours as before", () => {
-    const names = ["olive-tint", "next-card", "stroke-sage", "secondary-pressed"];
+    const names = ["olive-tint", "next-card", "secondary-pressed"];
     expect(Object.fromEntries(names.map((name) => [name, token(name)]))).toMatchInlineSnapshot(`
       {
         "next-card": "#f2f3ee",
         "olive-tint": "#e0e6d6",
         "secondary-pressed": "#e3e8dc",
-        "stroke-sage": "#a9b5a0",
       }
     `);
   });

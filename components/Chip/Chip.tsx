@@ -1,7 +1,6 @@
 "use client";
 
 import type { ComponentProps, ReactNode } from "react";
-import { useCardSelected } from "@/components/SelectableCard/SelectedContext";
 
 /**
  * The one chip (DESIGN.md: Chip tones): a soft pastel fill, dark text or icon, no stroke. Tags,
@@ -50,11 +49,7 @@ type Props = {
 );
 
 export function Chip({ tone, ink, size = "label", className = "", children, ...rest }: Props) {
-  // Inside a selected SelectableCard every chip turns primary, with white text.
-  const selected = useCardSelected();
-  const look = selected
-    ? "bg-primary text-primary-text"
-    : `${tones[tone]} ${tone === "primary" ? "text-primary-text" : ink ? inks[ink] : "text-text"}`;
+  const look = `${tones[tone]} ${tone === "primary" ? "text-primary-text" : ink ? inks[ink] : "text-text"}`;
   const classes = `inline-flex w-fit shrink-0 items-center gap-1.5 rounded-full whitespace-nowrap ${sizes[size]} ${look} ${className}`;
   if ("as" in rest && rest.as === "button") {
     const { as: _as, ...button } = rest;

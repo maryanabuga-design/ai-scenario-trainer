@@ -1,6 +1,5 @@
 import { Check } from "lucide-react";
 import type { ReactNode } from "react";
-import { SelectedProvider } from "@/components/SelectableCard/SelectedContext";
 
 type Props = {
   name: string;
@@ -10,42 +9,33 @@ type Props = {
   disabled?: boolean;
   /** A radio for a single choice, a check box for several. */
   type?: "radio" | "checkbox";
-  /** "card" for a title and a description, "row" for compact lists (sections), "compactRow" for the Weak topics rows. */
-  size?: "card" | "row" | "compactRow";
   /** A letter badge before the content (A, B, C), for answer options. */
   letter?: string;
   children: ReactNode;
 };
 
-const sizes = {
-  card: "min-h-14 gap-3 rounded-card p-4",
-  row: "min-h-12 gap-2.5 rounded-[20px] px-4 py-2",
-  compactRow: "min-h-12 gap-2.5 rounded-[20px] px-4 py-1",
-} as const;
-
 /**
- * The one selectable card (DESIGN.md: SelectableCard): unselected card, selected sage tint with a
- * darker stroke, pressed stronger tint, and the radio or check box on the right.
+ * The one selectable row (DESIGN.md: SelectableRow). Selecting changes only the indicator: the
+ * selected and the unselected row have the same fill, border and text, so the classes below do not
+ * depend on `checked`. The padding is the page gutter on all four sides, and the whole row is the
+ * label of the native input, so a tap anywhere toggles it.
  */
-export function SelectableCard({
+export function SelectableRow({
   name,
   value,
   checked,
   onChange,
   disabled = false,
   type = "radio",
-  size = "card",
   letter,
   children,
 }: Props) {
   const state = disabled
     ? "cursor-not-allowed border border-secondary-sand-pressed bg-secondary-sand text-text-secondary"
-    : checked
-      ? "cursor-pointer border-[1.5px] border-selected-stroke bg-selected-tint active:bg-selected-pressed"
-      : "cursor-pointer border border-selectable-stroke bg-card active:bg-selected-pressed";
+    : "cursor-pointer border border-selectable-stroke bg-card active:bg-secondary-sand";
   return (
     <label
-      className={`flex items-center has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${sizes[size]} ${state}`}
+      className={`flex min-h-11 items-center gap-3 rounded-card p-(--gutter) has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${state}`}
     >
       <input
         type={type}
@@ -59,16 +49,12 @@ export function SelectableCard({
       {letter && (
         <span
           aria-hidden="true"
-          className={`type-caption flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
-            checked && !disabled ? "bg-primary text-primary-text" : "bg-olive-tint text-text"
-          }`}
+          className="type-caption flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-olive-tint text-text"
         >
           {letter}
         </span>
       )}
-      <SelectedProvider value={checked && !disabled}>
-        <span className="flex min-w-0 flex-1 items-center gap-3">{children}</span>
-      </SelectedProvider>
+      <span className="flex min-w-0 flex-1 items-center gap-3">{children}</span>
       <span
         aria-hidden="true"
         className={`flex h-5 w-5 shrink-0 items-center justify-center border ${

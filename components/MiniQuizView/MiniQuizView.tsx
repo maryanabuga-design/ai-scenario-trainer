@@ -1,12 +1,11 @@
 "use client";
 
-import { useId } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button } from "@/components/Button/Button";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { SectionList } from "@/components/SectionList/SectionList";
 import type { SectionRow } from "@/components/SectionList/SectionList";
-import { SelectableCard } from "@/components/SelectableCard/SelectableCard";
+import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
 import { amountOptions } from "@/lib/mini-quiz";
 import { questionCountLabel } from "@/lib/quiz-draw";
 
@@ -41,7 +40,6 @@ export function MiniQuizView({
   onAmountChange: (amount: number) => void;
   onStart: () => void;
 }) {
-  const group = useId();
   const options = amountOptions(pool);
   const none = selected.length === 0;
 
@@ -66,27 +64,23 @@ export function MiniQuizView({
       </section>
 
       <section className="flex flex-col gap-3 rounded-card bg-card p-4 shadow-(--card-shadow)">
-        <fieldset className="flex flex-col gap-3">
-          <legend className="type-item-title mb-3">Questions</legend>
-          {options.length === 0 ? (
+        {options.length === 0 ? (
+          <fieldset className="flex flex-col gap-3">
+            <legend className="type-item-title mb-3">Questions</legend>
             <p className="type-small text-text-secondary">{noTopicHint}</p>
-          ) : (
-            <div className="flex gap-2 [&>label]:flex-1">
-              {options.map((option) => (
-                <SelectableCard
-                  key={option.value}
-                  size="row"
-                  name={`amount-${group}`}
-                  value={String(option.value)}
-                  checked={amount === option.value}
-                  onChange={() => onAmountChange(option.value)}
-                >
-                  <span className="type-body-strong tabular-nums">{option.label}</span>
-                </SelectableCard>
-              ))}
-            </div>
-          )}
-        </fieldset>
+          </fieldset>
+        ) : (
+          <SegmentedControl
+            name="amount"
+            legend="Questions"
+            options={options.map((option) => ({
+              value: String(option.value),
+              label: option.label,
+            }))}
+            value={String(amount)}
+            onChange={(value) => onAmountChange(Number(value))}
+          />
+        )}
       </section>
 
       <p aria-live="polite" className="type-small text-text-secondary tabular-nums">

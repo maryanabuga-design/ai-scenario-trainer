@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
 import { QuestionScreen } from "@/components/QuestionScreen/QuestionScreen";
-import { SelectableCard } from "@/components/SelectableCard/SelectableCard";
+import { SelectableRow } from "@/components/SelectableRow/SelectableRow";
 import { SessionTopBar } from "@/components/SessionTopBar/SessionTopBar";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { stripStates } from "@/components/StepStrip/StepStrip";
@@ -55,9 +55,9 @@ describe("one screen for steps and questions", () => {
 
   it("puts the letter badge on the left: a 24px olive-tint circle with a dark letter", () => {
     const html = renderToStaticMarkup(
-      <SelectableCard size="row" letter="B" name="n" value="v" checked={false} onChange={noop}>
+      <SelectableRow letter="B" name="n" value="v" checked={false} onChange={noop}>
         Option text
-      </SelectableCard>,
+      </SelectableRow>,
     );
     expect(html).toContain("h-6 w-6");
     expect(html).toContain("bg-olive-tint");
@@ -151,15 +151,18 @@ describe("options", () => {
     expect(html).not.toContain(">C</span>");
   });
 
-  it("turns the letter badge of the selected row primary, and leaves the others olive", () => {
+  it("keeps every letter badge olive: a selected row looks like the others, only its radio is filled", () => {
     const step = scenarios[0].steps[0];
     const html = withSources(
       <QuestionScreen item={step} choice={step.options[1].id} onChoose={noop} {...extras} />,
     );
-    expect(html.match(/bg-primary text-primary-text/g)).toHaveLength(1);
-    expect(html.match(/bg-olive-tint text-text/g)).toHaveLength(2);
-    const selected = html.slice(html.indexOf("bg-primary text-primary-text"));
-    expect(selected.indexOf(">B<")).toBeGreaterThan(-1);
+    expect(html.match(/bg-primary text-primary-text/g)).toBeNull();
+    expect(html.match(/bg-olive-tint text-text/g)).toHaveLength(3);
+    const rows = html.match(/<label class="[^"]*"/g) ?? [];
+    expect(rows).toHaveLength(3);
+    expect(new Set(rows).size).toBe(1);
+    // only the radio of the chosen option is filled
+    expect(html.match(/h-2\.5 w-2\.5 rounded-full bg-primary/g)).toHaveLength(1);
   });
 
   it("shows no red or green and no verdict during the session", () => {

@@ -86,7 +86,9 @@ describe("the Questions card", () => {
     const html = render();
     expect(html.match(/type="radio"/g)).toHaveLength(3);
     for (const label of [">5<", ">10<", ">15<"]) expect(html).toContain(label);
-    expect(html).toContain("flex gap-2");
+    // a segmented control: one row of three radios, one filled pill
+    expect(html).toContain("rounded-[14px]");
+    expect(html).toContain("bg-primary text-primary-text");
     const radios = html.match(/<input type="radio"[^>]*>/g) ?? [];
     const checked = radios.filter((radio) => radio.includes('checked=""'));
     expect(checked).toHaveLength(1);

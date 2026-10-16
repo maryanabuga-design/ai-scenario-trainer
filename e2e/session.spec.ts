@@ -1117,3 +1117,136 @@ test.describe("the onboarding entry", () => {
     expect(saved).toEqual(profile);
   });
 });
+
+test.describe("selectable rows", () => {
+  const wrong = [
+    { itemId: "q-scn-s01-001", optionId: "a" },
+    { itemId: "s2", optionId: "a" },
+  ];
+
+  async function open(page: Page, path: string, past?: object[], session?: object) {
+    await page.addInitScript(
+      ([p, h, s]) => {
+        if (localStorage.getItem("ast.profile.v1")) return;
+        localStorage.setItem("ast.profile.v1", JSON.stringify(p));
+        if (h) localStorage.setItem("ast.history.v1", JSON.stringify({ schema: 6, value: h }));
+        if (s) localStorage.setItem("ast.session.v1", JSON.stringify({ schema: 6, value: s }));
+      },
+      [profile, past ?? null, session ?? null],
+    );
+    await page.goto(path);
+  }
+
+  /** What the person sees of a row: fill, border and the padding on its four sides. */
+  const look = (row: ReturnType<Page["locator"]>) =>
+    row.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        background: style.backgroundColor,
+        borderColor: style.borderTopColor,
+        borderWidth: style.borderTopWidth,
+        radius: style.borderTopLeftRadius,
+        color: style.color,
+        padding: [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft],
+      };
+    });
+
+  const gutter = (page: Page) =>
+    page
+      .locator("main:visible")
+      .first()
+      .evaluate((main) => getComputedStyle(main).paddingLeft);
+
+  test("Weak topics: a selected row looks like an unselected one and the padding is the page gutter", async ({
+    page,
+  }) => {
+    await open(page, "/weak-topics", [
+      { kind: "scenario", itemIds: wrong.map((a) => a.itemId), answers: wrong, finishedAt: 1 },
+    ]);
+    const rows = page.locator("fieldset label:visible");
+    await expect(rows).toHaveCount(2);
+    // all rows start selected; clear the second one by tapping the text in the middle of it
+    await rows
+      .nth(1)
+      .getByText(/to repeat/)
+      .click();
+    await expect(rows.nth(0).locator("input")).toBeChecked();
+    await expect(rows.nth(1).locator("input")).not.toBeChecked();
+    const [selected, unselected] = [await look(rows.nth(0)), await look(rows.nth(1))];
+    expect(selected).toEqual(unselected);
+    expect(selected.borderWidth).toBe("1px");
+    expect(selected.borderColor).toBe("rgb(228, 223, 213)");
+    const space = await gutter(page);
+    expect(selected.padding).toEqual([space, space, space, space]);
+    // the icon circle is the one olive tint
+    const circle = await rows
+      .nth(0)
+      .locator("span[aria-hidden=true]")
+      .first()
+      .evaluate((element) => getComputedStyle(element).backgroundColor);
+    expect(circle).toBe("rgb(224, 230, 214)");
+    // a tap on the very edge of the row (the padding) toggles it too
+    await rows.nth(1).click({ position: { x: 6, y: 30 } });
+    await expect(rows.nth(1).locator("input")).toBeChecked();
+    await page.mouse.move(0, 0);
+  });
+
+  test("Mini-quiz topics: the same look selected and unselected", async ({ page }) => {
+    await open(page, "/mini-quiz?from=training");
+    const rows = page.locator("[role=group]:visible label");
+    await expect(rows).toHaveCount(10);
+    await rows
+      .nth(2)
+      .getByText(/Moving through smoke/)
+      .click();
+    await expect(rows.nth(2).locator("input")).not.toBeChecked();
+    await expect(rows.nth(3).locator("input")).toBeChecked();
+    expect(await look(rows.nth(3))).toEqual(await look(rows.nth(2)));
+    const space = await gutter(page);
+    expect((await look(rows.nth(2))).padding).toEqual([space, space, space, space]);
+    // every icon circle is the same olive tint
+    const circles = await rows
+      .locator("span[aria-hidden=true]")
+      .evaluateAll((list) =>
+        list
+          .filter((element) => element.className.includes("rounded-full") && element.textContent)
+          .map((element) => getComputedStyle(element).backgroundColor),
+      );
+    expect(new Set(circles)).toEqual(new Set(["rgb(224, 230, 214)"]));
+    // the amounts stay a segmented control
+    await expect(page.locator("fieldset:visible input[type=radio]")).toHaveCount(3);
+  });
+
+  test("Answer options: the chosen option looks like the others, only its radio is filled", async ({
+    page,
+  }) => {
+    await open(page, "/session", undefined, scenario);
+    const rows = page.locator("fieldset label:visible");
+    await expect(rows).toHaveCount(3);
+    const before = await look(rows.nth(0));
+    await rows
+      .nth(1)
+      .getByText(/Stop the session/)
+      .click();
+    await expect(rows.nth(1).locator("input")).toBeChecked();
+    for (const index of [0, 1, 2]) expect(await look(rows.nth(index))).toEqual(before);
+    const space = await gutter(page);
+    expect(before.padding).toEqual([space, space, space, space]);
+    // the letter badge is olive on every row, chosen or not
+    const badges = await rows
+      .locator("span.rounded-full")
+      .evaluateAll((list) =>
+        list
+          .filter((element) => element.textContent?.length === 1)
+          .map((element) => getComputedStyle(element).backgroundColor),
+      );
+    expect(new Set(badges)).toEqual(new Set(["rgb(224, 230, 214)"]));
+    // the radio of the chosen row is filled, the others are empty
+    await expect(rows.nth(1).locator("span.bg-primary")).toHaveCount(1);
+    await expect(rows.nth(0).locator("span.bg-primary")).toHaveCount(0);
+    // after Next the choice is kept when coming back, with the same look
+    await next(page).click();
+    await page.getByRole("button", { name: "Previous step" }).click();
+    await expect(rows.nth(1).locator("input")).toBeChecked();
+  });
+});

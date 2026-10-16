@@ -3,7 +3,7 @@
 import { BookmarkButton } from "@/components/BookmarkButton/BookmarkButton";
 import { HintCard } from "@/components/HintCard/HintCard";
 import { Media3D } from "@/components/Media3D/Media3D";
-import { SelectableCard } from "@/components/SelectableCard/SelectableCard";
+import { SelectableRow } from "@/components/SelectableRow/SelectableRow";
 import type { Hint, Item } from "@/lib/items";
 
 export const optionLetters = "ABCD";
@@ -50,9 +50,8 @@ export function QuestionScreen({
         <legend className="sr-only">{item.question}</legend>
         <p className="type-small -mt-2 text-text-secondary">Choose one answer</p>
         {item.options.map((option, position) => (
-          <SelectableCard
+          <SelectableRow
             key={option.id}
-            size="row"
             letter={optionLetters[position]}
             name={`option-${item.id}`}
             value={option.id}
@@ -60,7 +59,7 @@ export function QuestionScreen({
             onChange={onChoose}
           >
             {option.text}
-          </SelectableCard>
+          </SelectableRow>
         ))}
       </fieldset>
       {hint && <HintCard hint={hint} />}

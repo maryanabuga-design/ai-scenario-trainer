@@ -42,22 +42,25 @@ const sizes = {
   compact: { tile: "h-9 w-9", icon: 18, stroke: 1.75 },
 } as const;
 
-/** A topic's icon on a pastel tile coloured by its guide section. Decorative: the name sits next to it. */
+/** A topic's icon on a pastel tile coloured by its guide section (or the olive tint in a selectable row). Decorative: the name sits next to it. */
 export function TopicTile({
   sectionId,
   icon,
   size = "default",
+  tone = "pastel",
 }: {
   sectionId: string;
   icon: TopicIcon;
   size?: keyof typeof sizes;
+  /** "olive" is the one light olive tint of every selectable row; "pastel" is the topic's own colour. */
+  tone?: "pastel" | "olive";
 }) {
   const Icon = icons[icon];
   const look = sizes[size];
   return (
     <span
       aria-hidden="true"
-      className={`flex ${look.tile} shrink-0 items-center justify-center rounded-full text-text ${tints[topicTint(sectionId)]}`}
+      className={`flex ${look.tile} shrink-0 items-center justify-center rounded-full text-text ${tone === "olive" ? "bg-olive-tint" : tints[topicTint(sectionId)]}`}
     >
       <Icon size={look.icon} strokeWidth={look.stroke} />
     </span>

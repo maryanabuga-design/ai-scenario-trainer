@@ -6,7 +6,7 @@ import { Button, ButtonLink } from "@/components/Button/Button";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { Media3D } from "@/components/Media3D/Media3D";
-import { SelectableCard } from "@/components/SelectableCard/SelectableCard";
+import { SelectableRow } from "@/components/SelectableRow/SelectableRow";
 import { useTopicName } from "@/components/TopicName/useTopicName";
 import { TopicTile } from "@/components/TopicTile/TopicTile";
 import type { WeakTopic } from "@/lib/weak-topics";
@@ -23,9 +23,8 @@ function TopicOption({
 }) {
   const name = useTopicName(topic.sectionId);
   return (
-    <SelectableCard
+    <SelectableRow
       type="checkbox"
-      size="compactRow"
       name="topics"
       value={topic.sectionId}
       checked={checked}
@@ -34,7 +33,9 @@ function TopicOption({
       <span className="flex items-center gap-3">
         <Media3D
           variant="icon"
-          fallback={<TopicTile sectionId={topic.sectionId} icon={topic.icon} size="compact" />}
+          fallback={
+            <TopicTile sectionId={topic.sectionId} icon={topic.icon} size="compact" tone="olive" />
+          }
         />
         <span className="flex flex-col gap-0.5">
           <span className="type-body-strong">{name}</span>
@@ -44,7 +45,7 @@ function TopicOption({
           </span>
         </span>
       </span>
-    </SelectableCard>
+    </SelectableRow>
   );
 }
 

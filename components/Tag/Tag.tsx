@@ -5,7 +5,7 @@ import type { ChipTone } from "@/components/Chip/Chip";
 type Tone = Extract<ChipTone, "yellow" | "peach" | "blue" | "lilac" | "green">;
 
 /**
- * A category label, drawn by the shared Chip; primary while its SelectableCard is selected.
+ * A category label, drawn by the shared Chip.
  */
 export function Tag({ tone = "yellow", children }: { tone?: Tone; children: ReactNode }) {
   return (
