@@ -11,7 +11,12 @@ describe("the guide text for reading", () => {
     const html = render("- One\n- Two\n\n### Sub\n\n- Three");
     expect(html).toContain('<h2 class="type-card-title mt-3 first:mt-0">Sub</h2>');
     expect(html.match(/<ul /g)).toHaveLength(2);
-    expect(html.match(/<li>/g)).toHaveLength(3);
+    expect(html.match(/<li /g)).toHaveLength(3);
+    expect(html.match(/data-block="\d"/g)).toEqual([
+      'data-block="0"',
+      'data-block="1"',
+      'data-block="2"',
+    ]);
     expect(html).not.toContain("###");
   });
 
@@ -51,5 +56,52 @@ describe("the guide text for reading", () => {
   it("does not repeat the topic heading in the body", () => {
     const section = loadGuides()[0].sections[0];
     expect(render(section.body)).not.toContain(">Responding to an alarm<");
+  });
+});
+
+describe("highlights in the guide text", () => {
+  const highlight = {
+    id: "h1",
+    block: 1,
+    start: 2,
+    end: 9,
+    quote: "",
+    before: "",
+    after: "",
+  };
+
+  it("draws a highlight as a mark inside its block, without changing the text", () => {
+    const markdown = "First block.\n\nA **warning** means flooding";
+    const plain = render(markdown);
+    const marked = renderToStaticMarkup(<GuideText markdown={markdown} highlights={[highlight]} />);
+    expect(marked.match(/<mark /g)).toHaveLength(1);
+    expect(marked).toContain('data-highlight="h1"');
+    expect(marked).toContain("rounded-[3px] bg-highlight text-text");
+    expect(marked).toContain("[box-decoration-break:clone]");
+    // the words are the same with and without marks
+    const words = (html: string) => html.replace(/<[^>]*>/g, "");
+    expect(words(marked)).toBe(words(plain));
+    // the marked text is inside the second block only
+    const second = marked.slice(marked.indexOf('data-block="1"'));
+    expect(second).toContain("<mark");
+    expect(marked.slice(0, marked.indexOf('data-block="1"'))).not.toContain("<mark");
+  });
+
+  it("marks text inside bold without losing the bold", () => {
+    const html = renderToStaticMarkup(
+      <GuideText
+        markdown={"A **warning** means flooding"}
+        highlights={[{ ...highlight, block: 0 }]}
+      />,
+    );
+    expect(html).toContain("<strong>");
+    expect(html).toMatch(/<mark[^>]*><strong>/);
+  });
+
+  it("ignores a highlight on a block that does not exist", () => {
+    const html = renderToStaticMarkup(
+      <GuideText markdown="Only one." highlights={[{ ...highlight, block: 7 }]} />,
+    );
+    expect(html).not.toContain("<mark");
   });
 });

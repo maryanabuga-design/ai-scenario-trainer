@@ -3,8 +3,10 @@
 import { useRouter } from "next/navigation";
 import { ButtonLink } from "@/components/Button/Button";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
-import { GuideText } from "@/components/GuideText/GuideText";
+import { HighlightableText } from "@/components/HighlightableText/HighlightableText";
+import { dismissTip, useTipSeen } from "@/lib/highlight-store";
 import { readingLabel, readingPath } from "@/lib/reading";
+import { TIP_TEXT } from "@/lib/selection-actions";
 
 export type ReadingTopic = {
   id: string;
@@ -18,6 +20,21 @@ export type ReadingTopic = {
   stepsHref: string | null;
   next: { id: string; title: string } | null;
 };
+
+/** The one-time tip under the meta line; it goes after the first highlight or when it is tapped. */
+function ReadingTip() {
+  const seen = useTipSeen();
+  if (seen !== null) return null;
+  return (
+    <button
+      type="button"
+      onClick={dismissTip}
+      className="type-small self-start text-left text-text-secondary"
+    >
+      {TIP_TEXT}
+    </button>
+  );
+}
 
 /**
  * The reading screen of one topic: Back, the title, one meta line, the text, and at the end (not
@@ -38,9 +55,10 @@ export function ReadingView({ topic }: { topic: ReadingTopic }) {
         <p className="type-small text-text-secondary tabular-nums">
           {topic.guideTitle} · {topic.id} · {readingLabel(topic.minutes)}
         </p>
+        <ReadingTip />
       </header>
 
-      <GuideText markdown={topic.body} />
+      <HighlightableText topicId={topic.id} markdown={topic.body} />
 
       <section aria-label="What next" className="mt-4 flex flex-col items-center gap-3">
         {topic.practiseHref && (

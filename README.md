@@ -71,6 +71,7 @@ Build order and decisions: `docs/build-plan.md`.
 - Short text answers are checked by matching accepted words and phrases, so an unusual but correct wording can be marked wrong. The trainee can then mark it correct, which the prototype trusts.
 - Progress lives in one browser on one device. There are no accounts.
 - Ordering questions are reordered by dragging the handles (mouse, touch, or the keyboard drag mode with screen reader announcements). There is no tap-to-move alternative to dragging yet, so WCAG 2.2 success criterion 2.5.7 (Dragging Movements) is not met.
+- Ask AI uses prepared answers, no live model. Highlights in the reading screen are stored only in this browser.
 
 ## Project files
 

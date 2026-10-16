@@ -13,7 +13,7 @@ import { PhoneFrame } from "@/components/PhoneFrame/PhoneFrame";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { Tag } from "@/components/Tag/Tag";
 import { checklists } from "@/lib/checklists";
-import { loadAllSections } from "@/lib/guide";
+import { loadAllSections, loadGuides } from "@/lib/guide";
 import { practiseHref, stepsFor, topicFor } from "@/lib/materials-topics";
 import {
   ChatFeedbackSample,
@@ -31,6 +31,7 @@ import {
   ExamIntroSample,
   ExamLeaveSample,
   ExamResultsSample,
+  HighlightSample,
   HomeSample,
   MaterialTypesSample,
   WeakTopicsSample,
@@ -209,6 +210,21 @@ export default function Screens() {
           <PhoneFrame label="Reading screen: S1 (title, meta line, subsections, the three actions)">
             <Screen nav="/materials">
               <ReadingExample id="S1" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Reading: toolbar on a new selection (Highlight, Copy)">
+            <Screen nav="/materials">
+              <HighlightSample markdown={loadGuides()[0].sections[0].body} state="selection" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Reading: two highlights, toolbar on an existing one (Unhighlight, Copy)">
+            <Screen nav="/materials">
+              <HighlightSample markdown={loadGuides()[0].sections[0].body} state="highlight" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Reading: the Copied state">
+            <Screen nav="/materials">
+              <HighlightSample markdown={loadGuides()[0].sections[0].body} state="copied" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Reading screen: a flood topic (no Practise or Steps, a Next link)">

@@ -95,6 +95,18 @@ const pairs: Pair[] = [
     min: GRAPHIC_CONTRAST,
   },
   {
+    what: "body text on the highlight marker",
+    front: token("text"),
+    back: token("highlight"),
+    min: TEXT_CONTRAST,
+  },
+  {
+    what: "toolbar text on the toolbar (primary-text on primary)",
+    front: token("primary-text"),
+    back: token("primary"),
+    min: TEXT_CONTRAST,
+  },
+  {
     what: "primary label on the olive tint (secondary button)",
     front: token("primary"),
     back: token("olive-tint"),
@@ -114,6 +126,11 @@ describe("WCAG contrast of the colour tokens", () => {
     expect(token("card")).toBe("#ffffff");
     expect(token("selectable-stroke")).toBe("#e4dfd5");
     expect(token("olive-tint")).toBe("#e0e6d6");
+  });
+
+  it("has the highlight marker token, apart from the semantic colours", () => {
+    expect(token("highlight")).toBe("#ffe9a0");
+    expect([token("correct-bg"), token("wrong-bg")]).not.toContain(token("highlight"));
   });
 
   it("has the semantic answer colours", () => {

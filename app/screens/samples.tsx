@@ -65,6 +65,10 @@ import { materialFromSample, sampleFiles } from "@/lib/training";
 import { currentWeakItems, scoreItem } from "@/lib/scoring";
 import type { FinishedSession, Session } from "@/lib/session";
 import { topicIcon, weakTopics } from "@/lib/weak-topics";
+import { GuideText } from "@/components/GuideText/GuideText";
+import { SelectionToolbar } from "@/components/SelectionToolbar/SelectionToolbar";
+import { addHighlights, blockTexts } from "@/lib/highlights";
+import { toolbarActions } from "@/lib/selection-actions";
 import { homeCounts, homeSummary } from "@/lib/home";
 import { DEMO_USER } from "@/lib/user";
 
@@ -965,5 +969,32 @@ export function ExamResultsSample() {
       reviewHref="/exam/results/review/1"
       onRepeat={() => undefined}
     />
+  );
+}
+
+/** The reading text with highlights and the floating toolbar, drawn in place (not positioned). */
+export function HighlightSample({
+  markdown,
+  state,
+}: {
+  markdown: string;
+  state: "selection" | "highlight" | "copied";
+}) {
+  const texts = blockTexts(markdown);
+  let list = addHighlights([], [{ block: 0, start: 6, end: 17 }], texts, () => "a").list;
+  list = addHighlights(list, [{ block: 3, start: 0, end: 29 }], texts, () => "b").list;
+  const selected = state === "selection" ? list.slice(0, 0) : list;
+  return (
+    <div className="flex flex-col gap-4">
+      <h1 className="type-page-title">Responding to an alarm</h1>
+      <GuideText markdown={markdown.split("\n").slice(0, 4).join("\n")} highlights={selected} />
+      <div className="flex justify-center">
+        <SelectionToolbar
+          inline
+          copied={state === "copied"}
+          actions={toolbarActions({ onHighlight: state !== "selection" })}
+        />
+      </div>
+    </div>
   );
 }

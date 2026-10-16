@@ -124,7 +124,9 @@ describe("every button goes through the Button component", () => {
     const own = sources().filter((file) =>
       /type-button|type-action|\bunderline\b|hover:/.test(readFileSync(file, "utf8")),
     );
-    expect(own).toEqual([]);
+    // The floating text toolbar of the reading screen has its own white-on-olive buttons (DESIGN.md:
+    // Highlights in the reading screen); they use the small action text style.
+    expect(own).toEqual(["components/SelectionToolbar/SelectionToolbar.tsx"]);
   });
 
   it("uses no other variant names", () => {
