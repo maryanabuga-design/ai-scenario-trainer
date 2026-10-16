@@ -91,7 +91,7 @@ test.describe("a running session", () => {
     await expect(page.getByLabel(S1_RIGHT)).toBeChecked();
     await option(page, S1_WRONG).click();
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.session.v1")!));
-    expect(saved.schema).toBe(5);
+    expect(saved.schema).toBe(6);
     expect(saved.value.answers).toEqual([{ itemId: "q-scn-s01-001", optionId: "a" }]);
   });
 
@@ -257,7 +257,7 @@ test.describe("the question screen: hint and bookmark", () => {
     await next(page).click();
     await option(page, /Keep it closed/).click();
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.session.v1")!));
-    expect(saved.schema).toBe(5);
+    expect(saved.schema).toBe(6);
     const [first, second] = saved.value.answers;
     expect(first).toEqual({ itemId: "q-scn-s01-001", optionId: "b", hintUsed: true });
     expect(second.hintUsed).toBeUndefined();
@@ -315,7 +315,7 @@ test.describe("the question screen: hint and bookmark", () => {
     await page.reload();
     await expect(page.getByRole("button", { name: "Remove from saved" })).toBeVisible();
     const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.saved.v1")!));
-    expect(stored).toEqual({ schema: 5, value: ["q-scn-s01-001"] });
+    expect(stored).toMatchObject({ schema: 6, value: ["q-scn-s01-001"] });
     await page.getByRole("button", { name: "Remove from saved" }).click();
     await expect(page.getByRole("button", { name: "Save question" })).toBeVisible();
     await page.reload();
@@ -931,5 +931,144 @@ test.describe("Exam", () => {
     await expect(page).toHaveURL(/\/exam$/);
     await page.goto("/");
     await expect(page.getByText("You stopped at question 2 of 3.")).toBeVisible();
+  });
+});
+
+test.describe("old saved data", () => {
+  /** What a browser holds from before the content was replaced: ids that no longer exist. */
+  async function seed(page: Page) {
+    await page.addInitScript(
+      ([p]) => {
+        if (localStorage.getItem("ast.profile.v1")) return;
+        const old = (value: unknown) => JSON.stringify({ schema: 5, value });
+        localStorage.setItem("ast.profile.v1", JSON.stringify(p));
+        localStorage.setItem(
+          "ast.session.v1",
+          old({
+            kind: "scenario",
+            itemIds: ["s1", "s7", "s2"],
+            answers: [{ itemId: "s1", optionId: "b" }],
+            index: 1,
+            finished: false,
+          }),
+        );
+        localStorage.setItem(
+          "ast.history.v1",
+          old([
+            {
+              kind: "quiz",
+              itemIds: ["q-s1-1", "q-s1-2", "q-s2-1"],
+              answers: [
+                { itemId: "q-s1-1", optionId: "b" },
+                { itemId: "q-s1-2", optionId: "b" },
+                { itemId: "q-s2-1", optionId: "b" },
+              ],
+              finishedAt: Date.now(),
+            },
+            {
+              kind: "exam",
+              itemIds: ["s1", "q-s1-4"],
+              answers: [{ itemId: "s1", optionId: "b" }],
+              finishedAt: 5,
+              exam: { percent: 90, questions: 20, timeUsedSeconds: 600 },
+            },
+          ]),
+        );
+        localStorage.setItem(
+          "ast.parts.v1",
+          old({
+            "quiz:S1:1": {
+              lastPercent: 100,
+              attempts: 1,
+              answeredIds: ["q-s1-1"],
+              correctIds: ["q-s1-1"],
+            },
+            "scenario:S1:1": {
+              lastPercent: 100,
+              attempts: 1,
+              answeredIds: ["s1"],
+              correctIds: ["s1"],
+            },
+          }),
+        );
+        localStorage.setItem("ast.saved.v1", old(["s1", "q-s1-3", "q-s2-1"]));
+        localStorage.setItem(
+          "ast.exam.v1",
+          old({
+            itemIds: ["s1", "q-s1-1"],
+            answers: [],
+            index: 0,
+            startedAt: 1,
+            endsAt: 2,
+            finished: true,
+          }),
+        );
+      },
+      [profile],
+    );
+  }
+
+  test("opens Home, Training, the Exam and the other screens without errors, keeping only what is valid", async ({
+    page,
+  }) => {
+    const errors: string[] = [];
+    // WebKit reports the router's interrupted prefetches (_rsc) as page errors; they are not app errors.
+    page.on("pageerror", (error) => {
+      if (!error.message.includes("_rsc")) errors.push(error.message);
+    });
+    await seed(page);
+
+    await page.goto("/");
+    await expect(page.getByRole("heading", { name: "Hi, Maryana" })).toBeVisible();
+    // the broken unfinished session is gone, so Home does not offer to continue it
+    await expect(page.getByText(/You stopped at/)).toHaveCount(0);
+    // the one valid answer (q-s2-1) is still there: 1 right is not 0%
+    await expect(page.getByText("Not taken yet")).toBeVisible();
+    await expect(page.getByText("1 saved")).toBeVisible();
+
+    await page.goto("/training");
+    await expect(page.getByRole("heading", { name: "Training" })).toBeVisible();
+    await expect(page.getByText("Continue your session")).toHaveCount(0);
+    await page.goto("/training?mode=quiz");
+    await expect(page.getByRole("radio", { name: "Quiz" })).toBeChecked();
+    await expect(page.getByText(`1/${QUIZ_TOTAL}`)).toBeVisible();
+    await expect(page.locator("section[aria-labelledby=topic-S1] [data-pill]")).toHaveCount(1);
+
+    await page.goto("/exam");
+    await expect(page.getByRole("heading", { name: "Exam" })).toBeVisible();
+    await expect(page.getByText("You have not taken the exam yet")).toBeVisible();
+    await page.getByRole("button", { name: "Start exam" }).click();
+    await expect(page.getByText("Question 1 of 20").first()).toBeVisible();
+
+    for (const path of ["/progress", "/saved", "/weak-topics", "/session/results", "/session"]) {
+      await page.goto(path);
+      await expect(page.locator("main")).toBeVisible();
+    }
+    expect(errors, errors.join(" / ")).toEqual([]);
+  });
+
+  test("starts empty and keeps working when the saved data is corrupted", async ({ page }) => {
+    const errors: string[] = [];
+    // WebKit reports the router's interrupted prefetches (_rsc) as page errors; they are not app errors.
+    page.on("pageerror", (error) => {
+      if (!error.message.includes("_rsc")) errors.push(error.message);
+    });
+    await page.addInitScript(
+      ([p]) => {
+        if (localStorage.getItem("ast.profile.v1")) return;
+        localStorage.setItem("ast.profile.v1", JSON.stringify(p));
+        for (const key of ["session", "history", "parts", "saved", "exam"]) {
+          localStorage.setItem(`ast.${key}.v1`, "{this is not json");
+        }
+      },
+      [profile],
+    );
+    await page.goto("/");
+    await expect(page.getByText("Start with your first scenario.")).toBeVisible();
+    await page.goto("/training");
+    await expect(page.getByRole("heading", { name: "Training" })).toBeVisible();
+    await page.goto("/exam");
+    await expect(page.getByText("You have not taken the exam yet")).toBeVisible();
+    expect(errors, errors.join(" / ")).toEqual([]);
   });
 });

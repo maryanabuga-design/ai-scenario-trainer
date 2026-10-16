@@ -15,7 +15,7 @@ const modes: TrainingMode[] = ["scenario", "quiz"];
 /** Topics the guide cannot support (limited) or that are not expanded yet (pending), from docs/content-gaps.md. */
 const gaps = [
   ...readFileSync("docs/content-gaps.md", "utf8").matchAll(
-    /^- (limited|pending) (S\d+) (scenario|quiz): (\d+)$/gm,
+    /^- (limited|pending|accepted) (S\d+) (scenario|quiz): (\d+)$/gm,
   ),
 ].map(([, status, topic, mode, count]) => ({
   status,
@@ -25,6 +25,9 @@ const gaps = [
 }));
 const listed = (topic: string, mode: TrainingMode) =>
   gaps.find((gap) => gap.topic === topic && gap.mode === mode);
+/** An accepted topic has 20 as its target: it is not warned about, and 30 is an optional stretch. */
+const targetOf = (topic: string, mode: TrainingMode) =>
+  listed(topic, mode)?.status === "accepted" ? MINIMUM : TARGET;
 
 const countOf = (topic: string, mode: TrainingMode) =>
   modeItems(mode).filter((item) => item.section === topic).length;
@@ -43,11 +46,11 @@ describe("the amount of content per topic and mode", () => {
     modes.map((mode) => ({ topic, mode, count: countOf(topic, mode) })),
   );
 
-  it("warns where a topic has fewer than 30 questions, and fails below 20 unless the guide limits it", () => {
-    const short = rows.filter((row) => row.count < TARGET);
+  it("warns where a topic is below its target (30, or 20 when accepted), and fails below 20 unless the guide limits it", () => {
+    const short = rows.filter((row) => row.count < targetOf(row.topic, row.mode));
     if (short.length > 0) {
       console.warn(
-        `Content below the target of ${TARGET}: ` +
+        `Content below its target (30, or 20 when accepted in docs/content-gaps.md): ` +
           short.map((row) => `${row.topic} ${row.mode} ${row.count}`).join(", "),
       );
     }
@@ -60,13 +63,20 @@ describe("the amount of content per topic and mode", () => {
     expect(failing).toEqual([]);
   });
 
-  it("keeps docs/content-gaps.md true: a listed topic is below 20 and its count matches", () => {
+  it("keeps docs/content-gaps.md true: a limited or pending topic is below 20, an accepted one has 20 or more, and the counts match", () => {
     for (const gap of gaps) {
       const real = countOf(gap.topic, gap.mode);
       expect(real, `${gap.topic} ${gap.mode} in docs/content-gaps.md`).toBe(gap.count);
-      expect(real, `${gap.topic} ${gap.mode} is listed but has ${MINIMUM}+ questions`).toBeLessThan(
-        MINIMUM,
-      );
+      if (gap.status === "accepted") {
+        expect(real, `${gap.topic} ${gap.mode} is accepted at ${MINIMUM}`).toBeGreaterThanOrEqual(
+          MINIMUM,
+        );
+      } else {
+        expect(
+          real,
+          `${gap.topic} ${gap.mode} is listed but has ${MINIMUM}+ questions`,
+        ).toBeLessThan(MINIMUM);
+      }
     }
   });
 

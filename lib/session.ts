@@ -1,6 +1,7 @@
 import { findItem } from "@/lib/items";
 import { clearPartRecords, recordPartResult } from "@/lib/part-progress";
 import { clearExam } from "@/lib/exam-store";
+import { cleanHistory, cleanSession } from "@/lib/saved-data";
 import { createStore } from "@/lib/store";
 import { clearTrainings } from "@/lib/trainings";
 
@@ -55,11 +56,17 @@ export type Profile = {
   onboarded: boolean;
 };
 
-const sessionStore = createStore<Session>("ast.session.v1");
-const historyStore = createStore<FinishedSession[]>("ast.history.v1");
+const sessionStore = createStore<Session>("ast.session.v1", { sanitize: cleanSession });
+const historyStore = createStore<FinishedSession[]>("ast.history.v1", {
+  sanitize: cleanHistory,
+});
 const profileStore = createStore<Profile>("ast.profile.v1", { versioned: false });
 
 export const useSession = sessionStore.useValue;
+
+/** The saved session and history, read from the browser (cleaned of removed questions). */
+export const readSession = () => sessionStore.read();
+export const readHistory = () => historyStore.read();
 export const useHistory = historyStore.useValue;
 export const useProfile = profileStore.useValue;
 

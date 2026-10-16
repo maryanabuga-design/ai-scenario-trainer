@@ -80,3 +80,7 @@ Build order and decisions: `docs/build-plan.md`.
 ## Phone-size checks
 
 `npm run test:e2e` runs Playwright against a production build (WebKit as iPhone 13, iPhone SE and two small in-app-browser sizes, and Chromium as Pixel 7) and checks the session flow: Next waits for an answer, the step strip, Back and jump with the choice filled in, the Exit confirmation, Finish into Results, the Answer review, Weak topics and the repeat round, an old saved session being ignored, and the Training screen. Install the browsers once with `npx playwright install webkit chromium`.
+
+## Saved data and content changes
+
+Progress lives in the browser. Each saved value carries a schema version and a content fingerprint; when the content changes, ids of removed questions are dropped silently when the data is read, valid answers stay, and corrupted data reads as an empty state. See `docs/content-and-saved-data.md`.

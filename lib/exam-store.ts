@@ -1,5 +1,6 @@
 import { findItem } from "@/lib/items";
 import type { Answer } from "@/lib/session";
+import { cleanExam } from "@/lib/saved-data";
 import { createStore } from "@/lib/store";
 
 /**
@@ -19,7 +20,7 @@ export type ExamSession = {
   timeUsedSeconds?: number;
 };
 
-const examStore = createStore<ExamSession>("ast.exam.v1");
+const examStore = createStore<ExamSession>("ast.exam.v1", { sanitize: cleanExam });
 
 export const useExam = examStore.useValue;
 

@@ -4,6 +4,7 @@ import type { Part, TrainingMode } from "@/lib/parts";
 import { scoreSession } from "@/lib/progress";
 import { resultPercent } from "@/lib/results";
 import type { FinishedSession, Session } from "@/lib/session";
+import { cleanPartRecords } from "@/lib/saved-data";
 import { createStore } from "@/lib/store";
 
 /** What is kept for one part: the latest finished attempt and how many there were. */
@@ -17,10 +18,11 @@ export type PartRecord = {
 
 export type PartRecords = Record<string, PartRecord>;
 
-const partStore = createStore<PartRecords>("ast.parts.v1");
+const partStore = createStore<PartRecords>("ast.parts.v1", { sanitize: cleanPartRecords });
 const modeStore = createStore<TrainingMode>("ast.training-mode.v1");
 
 export const usePartRecords = partStore.useValue;
+export const readPartRecords = () => partStore.read();
 export const useTrainingMode = modeStore.useValue;
 
 export function saveTrainingMode(mode: TrainingMode) {

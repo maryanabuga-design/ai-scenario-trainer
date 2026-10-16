@@ -1,23 +1,39 @@
 import { useMemo, useSyncExternalStore } from "react";
+import { contentFingerprint } from "@/lib/content-version";
 
 const SERVER = "server";
 
 /** The version of everything saved in this browser. A saved value of another version is ignored. */
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;
 
 /**
- * Versions whose saved values this version can read as they are. Versions 3, 4 and 5 only add fields
- * (hintUsed, the saved questions, the part results, partId and returnTo, the exam entries of the history), so older values migrate
+ * Versions whose saved values this version can read as they are. Versions 3 to 6 only add fields
+ * (hintUsed, the saved questions, the part results, partId and returnTo, the exam entries of the history,
+ * the content fingerprint), so older values migrate
  * by being read and written back as 4.
  */
-const READABLE = [2, 3, 4, 5];
+const READABLE = [2, 3, 4, 5, 6];
 
 /**
  * A value saved in localStorage under one key, readable with a hook. It is saved with the schema
  * version (DESIGN.md: Storage) and read as nothing when the version differs.
  * Keeps an in-memory copy so the app still works for this visit when storage is blocked.
  */
-export function createStore<T>(key: string, { versioned = true }: { versioned?: boolean } = {}) {
+export function createStore<T>(
+  key: string,
+  {
+    versioned = true,
+    sanitize,
+  }: {
+    versioned?: boolean;
+    /**
+     * Cleans a value that was saved for other content (its fingerprint differs or is missing):
+     * unknown ids are dropped. It returns null for an empty state and never has to be called when
+     * the fingerprint matches.
+     */
+    sanitize?: (value: unknown) => T | null;
+  } = {},
+) {
   const listeners = new Set<() => void>();
   let memory: string | null | undefined;
 
@@ -57,11 +73,19 @@ export function createStore<T>(key: string, { versioned = true }: { versioned?: 
       if (!versioned) return saved as T;
       // Values saved before versioning, or by another version, are not read.
       if (saved && typeof saved === "object" && "schema" in saved && "value" in saved) {
-        const { schema, value } = saved as { schema: unknown; value: T };
-        return typeof schema === "number" && READABLE.includes(schema) ? value : null;
+        const { schema, value, content } = saved as {
+          schema: unknown;
+          value: unknown;
+          content?: unknown;
+        };
+        if (typeof schema !== "number" || !READABLE.includes(schema)) return null;
+        if (!sanitize) return value as T;
+        // Data saved for the same content is used as it is; anything else is cleaned first.
+        return content === contentFingerprint ? (value as T) : sanitize(value);
       }
       return null;
     } catch {
+      // Corrupted or incompatible data reads as an empty state instead of crashing the app.
       return null;
     }
   }
@@ -74,7 +98,9 @@ export function createStore<T>(key: string, { versioned = true }: { versioned?: 
       memory =
         value === null
           ? null
-          : JSON.stringify(versioned ? { schema: SCHEMA_VERSION, value } : value);
+          : JSON.stringify(
+              versioned ? { schema: SCHEMA_VERSION, content: contentFingerprint, value } : value,
+            );
       try {
         if (memory === null) window.localStorage.removeItem(key);
         else window.localStorage.setItem(key, memory);

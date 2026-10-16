@@ -7,8 +7,9 @@ only a few facts cannot reach 20 distinct questions without padding. This file l
 fewer than 20 questions; any other topic fails the test below 20, and a `limited` count must match
 the real count.
 
-Line format: `- limited <topic> <mode>: <number of questions written>` (the guide cannot support 20)
-or `- pending <topic> <mode>: <number>` (not expanded yet).
+Line format: `- limited <topic> <mode>: <number of questions written>` (the guide cannot support 20),
+`- pending <topic> <mode>: <number>` (not expanded yet) or `- accepted <topic> <mode>: <number>`
+(20 or more written, and 20 is accepted as the size for now; the test does not warn about it).
 
 ## Source of the limit
 
@@ -23,7 +24,11 @@ S1 is no longer limited by the guide: the original section has 4 bullets, and th
 (`s01-guide-extension.md`, see `docs/content-notes.md`) adds 7 subsections of general public
 safety practice under it. S1 now has 20 scenario steps and 20 quiz questions (two parts of 10 in
 each mode), above the minimum of 20 and below the target of 30. It is therefore not listed as
-limited. The extension is demo material, not an official procedure.
+limited. 20 per mode is accepted as the size for S1 for now; 30 stays an optional stretch and is not
+warned about. The extension is demo material, not an official procedure.
+
+- accepted S1 scenario: 20
+- accepted S1 quiz: 20
 
 ## Not expanded yet
 
