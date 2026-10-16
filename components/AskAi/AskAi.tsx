@@ -184,7 +184,8 @@ function ChatPanel({
           <div
             role="group"
             aria-label="More suggested questions"
-            className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1"
+            data-full-bleed
+            className="-mx-[var(--gutter,1rem)] flex gap-2 overflow-x-auto px-[var(--gutter,1rem)] pb-1"
           >
             {chips.map((chip) => (
               <ChipButton key={chip.id} chip={chip} disabled={typing} onAsk={onAsk} />

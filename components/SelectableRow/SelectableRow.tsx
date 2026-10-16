@@ -35,7 +35,7 @@ export function SelectableRow({
     : "cursor-pointer border border-selectable-stroke bg-card active:bg-secondary-sand";
   return (
     <label
-      className={`flex min-h-11 items-center gap-3 rounded-card p-(--gutter) has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${state}`}
+      className={`flex min-h-11 items-center gap-3 rounded-card p-[var(--gutter,1rem)] has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${state}`}
     >
       <input
         type={type}

@@ -25,7 +25,7 @@ export function BottomNav({ activePath }: { activePath?: string }) {
   return (
     <nav
       aria-label="Main"
-      className="mx-4 mt-2 mb-3 rounded-full border border-border bg-surface p-1.5 shadow-[0_2px_12px_color-mix(in_srgb,var(--text)_8%,transparent)]"
+      className="mx-[var(--gutter,1rem)] mt-2 mb-3 rounded-full border border-border bg-surface p-1.5 shadow-[0_2px_12px_color-mix(in_srgb,var(--text)_8%,transparent)]"
     >
       <ul className="flex gap-1">
         {items.map((item) => {

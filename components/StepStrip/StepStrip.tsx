@@ -63,7 +63,8 @@ export function StepStrip({
     <ol
       ref={listRef}
       aria-label={`${unit}s`}
-      className="-mx-4 flex overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      data-full-bleed
+      className="-mx-[var(--gutter,1rem)] flex overflow-x-auto px-[var(--gutter,1rem)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {states.map((state, position) => (
         <li key={position} className="shrink-0">

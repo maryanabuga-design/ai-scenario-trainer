@@ -74,19 +74,24 @@ describe("SelectableRow: selecting changes only the indicator", () => {
 describe("SelectableRow: padding, size and touch", () => {
   it("pads all four sides with the page gutter token and nothing else", () => {
     const classes = labelClass(row());
-    expect(classes).toContain("p-(--gutter)");
+    expect(classes).toContain("p-[var(--gutter,1rem)]");
     expect(classes).not.toMatch(/(^| )(px|py|pt|pb|pl|pr)-/);
     expect(token("gutter") ?? /--gutter:\s*1rem;/.exec(css)?.[0]).toBeTruthy();
     expect(css).toMatch(/--gutter:\s*1rem;/);
   });
 
   it("uses the same gutter for the side margin of the page", () => {
-    expect(readFileSync("components/AppShell/AppShell.tsx", "utf8")).toContain("px-(--gutter)");
+    expect(readFileSync("components/AppShell/AppShell.tsx", "utf8")).toContain(
+      "px-[var(--gutter,1rem)]",
+    );
   });
 
-  it("has the same radius as the other list cards and is at least 44px high", () => {
+  it("has the list-card radius token, the same as the Card component, and is at least 44px high", () => {
     const classes = labelClass(row());
     expect(classes).toContain("rounded-card");
+    expect(classes.match(/rounded-[^ ]+/g)).toEqual(["rounded-card"]);
+    expect(readFileSync("components/Card/Card.tsx", "utf8")).toContain("rounded-card");
+    expect(css).toMatch(/--radius-card:\s*24px;/);
     expect(classes).toContain("min-h-11");
   });
 
@@ -107,6 +112,31 @@ describe("SelectableRow: padding, size and touch", () => {
     expect(row()).toContain('type="radio"');
     expect(row({ type: "checkbox" })).toContain('type="checkbox"');
     expect(row({ checked: true })).toContain('checked=""');
+  });
+});
+
+describe("the page gutter is never a bare variable", () => {
+  function files(dir: string): string[] {
+    return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const path = join(dir, entry.name);
+      if (entry.isDirectory()) return files(path);
+      return /\.tsx$/.test(path) && !path.endsWith(".test.tsx") ? [path] : [];
+    });
+  }
+
+  it("is always written with its 1rem fallback, so a stale style sheet cannot collapse the layout", () => {
+    const bare = [...files("components"), ...files("app")].filter((file) =>
+      /-\(--gutter\)|var\(--gutter\)/.test(readFileSync(file, "utf8")),
+    );
+    expect(bare).toEqual([]);
+    for (const file of [
+      "components/AppShell/AppShell.tsx",
+      "components/SelectableRow/SelectableRow.tsx",
+      "components/BottomNav/BottomNav.tsx",
+      "components/ActionBar/ActionBar.tsx",
+    ]) {
+      expect(readFileSync(file, "utf8"), file).toContain("var(--gutter,1rem)");
+    }
   });
 });
 
