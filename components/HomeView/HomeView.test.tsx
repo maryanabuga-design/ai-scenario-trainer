@@ -13,7 +13,7 @@ const guideName = "Sample evacuation guide.pdf";
 
 const unfinished: Session = {
   kind: "scenario",
-  itemIds: Array.from({ length: 20 }, () => "s1"),
+  itemIds: Array.from({ length: 20 }, () => "q-scn-s01-001"),
   index: 6,
   answers: [],
   finished: false,
@@ -36,16 +36,15 @@ const today = NOW.getTime();
 const states = {
   first: { open: null, history: [] as FinishedSession[] },
   continue: { open: unfinished, history: [] as FinishedSession[] },
-  weak: { open: null, history: [finishedAt(today, [["q-s1-1", false]])] },
+  weak: { open: null, history: [finishedAt(today, [["q-quiz-s01-001", false]])] },
   goal: {
     open: null,
     history: [
       finishedAt(
         today,
-        ["q-s1-1", "q-s1-2", "q-s1-3", "q-s1-4", "q-s2-1"].map((id): [string, boolean] => [
-          id,
-          true,
-        ]),
+        ["q-quiz-s01-001", "q-quiz-s01-002", "q-quiz-s01-003", "q-quiz-s01-004", "q-s2-1"].map(
+          (id): [string, boolean] => [id, true],
+        ),
       ),
     ],
   },

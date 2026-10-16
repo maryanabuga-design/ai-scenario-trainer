@@ -54,10 +54,10 @@ const scenarioS2 = partsFor("scenario").find((part) => part.sectionId === "S2")!
 describe("stats follow the mode", () => {
   const history = [
     finished(1, [
-      ["s1", true],
+      ["q-scn-s01-001", true],
       ["s2", false],
-      ["q-s1-1", true],
-      ["q-s1-2", true],
+      ["q-quiz-s01-001", true],
+      ["q-quiz-s01-002", true],
       ["q-s2-1", false],
     ]),
   ];
@@ -90,7 +90,7 @@ describe("stats follow the mode", () => {
   it("counts a question once, by its latest finished answer, whatever the order stored", () => {
     const later = finished(2, [
       ["s2", true],
-      ["q-s1-1", false],
+      ["q-quiz-s01-001", false],
     ]);
     const stats = modeStats([later, ...history], "quiz");
     expect(stats.answered).toBe(3);
@@ -106,8 +106,8 @@ describe("stats follow the mode", () => {
 describe("weak counts", () => {
   const history = [
     finished(1, [
-      ["q-s1-1", false],
-      ["q-s1-2", false],
+      ["q-quiz-s01-001", false],
+      ["q-quiz-s01-002", false],
       ["q-s2-1", true],
     ]),
   ];
@@ -123,8 +123,8 @@ describe("weak counts", () => {
     const cleared = [
       ...history,
       finished(2, [
-        ["q-s1-1", true],
-        ["q-s1-2", true],
+        ["q-quiz-s01-001", true],
+        ["q-quiz-s01-002", true],
       ]),
     ];
     expect(weakSectionsOf(cleared, "quiz")).toEqual([]);
@@ -152,9 +152,11 @@ describe("part states and the recommended part", () => {
   it("recommends the first part that is not done, one per topic", () => {
     const parts = partsFor("quiz").filter((part) => part.sectionId === "S1");
     expect(recommendedPart(parts, null, null)?.id).toBe(parts[0].id);
-    expect(recommendedPart(parts, records, null)).toBeNull();
-    const two = [quizS1, { ...quizS1, id: "quiz:S1:2", n: 2 }];
-    expect(recommendedPart(two, records, null)?.id).toBe("quiz:S1:2");
+    // S1 has two quiz parts: with part 1 done the next one is part 2, and with both done none is left.
+    expect(parts).toHaveLength(2);
+    expect(recommendedPart(parts, records, null)?.id).toBe(parts[1].id);
+    const bothDone = { ...records, [parts[1].id]: records[parts[0].id] };
+    expect(recommendedPart(parts, bothDone, null)).toBeNull();
   });
 
   it("shows a grey empty ring when not started, the last result when done, a pass at the mark", () => {
@@ -229,8 +231,8 @@ describe("readiness", () => {
   it("is the same selectors over both modes", () => {
     const history = [
       finished(1, [
-        ["s1", true],
-        ["q-s1-1", true],
+        ["q-scn-s01-001", true],
+        ["q-quiz-s01-001", true],
       ]),
     ];
     expect(readinessOf(history)).toBe(

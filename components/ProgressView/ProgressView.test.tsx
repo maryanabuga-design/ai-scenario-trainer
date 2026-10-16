@@ -13,9 +13,9 @@ vi.mock("next/navigation", () => ({
 /** s1 is wrong, s2 is right: 1 of 2 correct. */
 const session = (index: number): FinishedSession => ({
   kind: "scenario",
-  itemIds: ["s1", "s2"],
+  itemIds: ["q-scn-s01-001", "s2"],
   answers: [
-    { itemId: "s1", optionId: "d" },
+    { itemId: "q-scn-s01-001", optionId: "d" },
     { itemId: "s2", optionId: "c" },
   ],
   finishedAt: Date.UTC(2026, 9, 1 + index, 9),

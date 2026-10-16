@@ -40,8 +40,8 @@ describe("the question banks", () => {
     expect(new Set(questions.map((question) => question.id)).size).toBe(questions.length);
     expect(bank.questions.length).toBe(modeItems("quiz").length);
     expect(floodBank.questions.length).toBe(10);
-    ["q-s1-3", "q-s2-3", "q-s5-2", "q-s7-4", "q-s10-1", "flood-q4", "flood-q6"].forEach((id) =>
-      expect(getQuestion(id).options.length).toBeGreaterThanOrEqual(3),
+    ["q-quiz-s01-003", "q-s2-3", "q-s5-2", "q-s7-4", "q-s10-1", "flood-q4", "flood-q6"].forEach(
+      (id) => expect(getQuestion(id).options.length).toBeGreaterThanOrEqual(3),
     );
     for (let n = 1; n <= 10; n++) expect(questionsFor([`S${n}`]).length).toBeGreaterThan(0);
   });

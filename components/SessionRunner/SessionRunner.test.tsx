@@ -7,7 +7,7 @@ import { ExamTimer } from "@/components/ExamTimer/ExamTimer";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { loadAllSections } from "@/lib/guide";
 
-const session = { itemIds: ["q-s1-1", "q-s1-2"], answers: [], index: 0 };
+const session = { itemIds: ["q-quiz-s01-001", "q-quiz-s01-002"], answers: [], index: 0 };
 
 function render(exam: boolean) {
   return renderToStaticMarkup(

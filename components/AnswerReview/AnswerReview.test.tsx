@@ -36,22 +36,22 @@ function row(html: string, text: string) {
 }
 
 describe("option states", () => {
-  const step = getItem("s1"); // b is right
+  const step = getItem("q-scn-s01-001"); // b is right
   it("marks the right option, the person's wrong option, and the rest as plain", () => {
-    expect(optionState(step, "b", "d")).toBe("correct");
-    expect(optionState(step, "d", "d")).toBe("chosenWrong");
-    expect(optionState(step, "a", "d")).toBe("plain");
+    expect(optionState(step, "b", "a")).toBe("correct");
+    expect(optionState(step, "a", "a")).toBe("chosenWrong");
+    expect(optionState(step, "c", "a")).toBe("plain");
     expect(optionState(step, "b", "b")).toBe("correct");
-    expect(optionState(step, "a", null)).toBe("plain");
+    expect(optionState(step, "c", null)).toBe("plain");
   });
 });
 
 describe("Answer review", () => {
-  const step = getItem("s1");
+  const step = getItem("q-scn-s01-001");
   const text = (id: string) => step.options.find((option) => option.id === id)!.text;
 
   it("shows the situation and the question, then every option", () => {
-    const html = render("s1", "d");
+    const html = render("q-scn-s01-001", "a");
     expect(html).toContain(step.situation);
     expect(html).toContain(step.question);
     step.options.forEach((option) => expect(html).toContain(option.text));
@@ -60,14 +60,14 @@ describe("Answer review", () => {
   });
 
   it("when wrong: the right option is green with a check and Correct answer; the choice is rose with a cross and Your answer", () => {
-    const html = render("s1", "d");
+    const html = render("q-scn-s01-001", "a");
     const correct = row(html, text("b"));
     expect(correct).toContain('data-state="correct"');
     expect(correct).toContain("bg-correct-bg");
     expect(correct).toContain("lucide-check");
     expect(correct).toContain("Correct answer");
     expect(correct).not.toContain("Your answer");
-    const chosen = row(html, text("d"));
+    const chosen = row(html, text("a"));
     expect(chosen).toContain('data-state="chosenWrong"');
     expect(chosen).toContain("bg-wrong-bg");
     expect(chosen).toContain("lucide-x");
@@ -76,7 +76,7 @@ describe("Answer review", () => {
   });
 
   it("when right: the right option shows Correct answer and Your answer with a check", () => {
-    const html = render("s1", "b");
+    const html = render("q-scn-s01-001", "b");
     const correct = row(html, text("b"));
     expect(correct).toContain("Correct answer");
     expect(correct).toContain("Your answer");
@@ -87,8 +87,8 @@ describe("Answer review", () => {
   });
 
   it("leaves the other options neutral, with no tag or icon", () => {
-    const html = render("s1", "d");
-    for (const id of ["a"]) {
+    const html = render("q-scn-s01-001", "a");
+    for (const id of ["c"]) {
       const plain = row(html, text(id));
       expect(plain).toContain('data-state="plain"');
       expect(plain).not.toMatch(/Correct answer|Your answer|lucide-check|lucide-x/);
@@ -96,7 +96,7 @@ describe("Answer review", () => {
   });
 
   it("shows Why and the Guide chips, with no verdict line and no explanation", () => {
-    const html = render("s1", "d");
+    const html = render("q-scn-s01-001", "a");
     expect(html.indexOf(">Why<")).toBeGreaterThan(html.indexOf(text("a")));
     expect(html).toContain(step.why);
     expect(html).toContain("Guide · S1");
@@ -104,7 +104,7 @@ describe("Answer review", () => {
   });
 
   it("ends with Back to results first, then Previous and Next question", () => {
-    const html = render("s1", "d", 2, 5);
+    const html = render("q-scn-s01-001", "a", 2, 5);
     const order = [">Back to results<", ">Previous question<", ">Next question<"].map((part) =>
       html.indexOf(part),
     );
@@ -115,9 +115,9 @@ describe("Answer review", () => {
   });
 
   it("hides Previous on the first question and Next on the last", () => {
-    expect(render("s1", "d", 1, 5)).not.toContain("Previous question");
-    expect(render("s1", "d", 5, 5)).not.toContain("Next question");
-    expect(render("s1", "d", 1, 5)).toContain("Question 1 of 5");
+    expect(render("q-scn-s01-001", "a", 1, 5)).not.toContain("Previous question");
+    expect(render("q-scn-s01-001", "a", 5, 5)).not.toContain("Next question");
+    expect(render("q-scn-s01-001", "a", 1, 5)).toContain("Question 1 of 5");
   });
 
   it("shows a quiz question the same way, without a situation or Ask AI", () => {
@@ -129,14 +129,14 @@ describe("Answer review", () => {
   });
 
   it("offers Ask AI about this step on a scenario step with prepared answers", () => {
-    expect(render("s1", "d")).toContain("Ask AI about this step");
+    expect(render("q-scn-s01-001", "a")).toContain("Ask AI about this step");
   });
 
   it("has the review strip under the top row, one square per question, current marked", () => {
-    const html = render("s1", "d", 2, 5);
+    const html = render("q-scn-s01-001", "a", 2, 5);
     const strip = html.slice(html.indexOf("<ol"), html.indexOf("</ol>"));
     expect(html.indexOf("Question 2 of 5")).toBeLessThan(html.indexOf("<ol"));
-    expect(html.indexOf("</ol>")).toBeLessThan(html.indexOf(getItem("s1").question));
+    expect(html.indexOf("</ol>")).toBeLessThan(html.indexOf(getItem("q-scn-s01-001").question));
     expect(strip.match(/<button/g)).toHaveLength(5);
     expect(strip).toContain('aria-label="Question 1, correct"');
     expect(strip).toContain('aria-label="Question 2, incorrect"');
@@ -145,7 +145,7 @@ describe("Answer review", () => {
   });
 
   it("shows a check on a correct square and a cross on an incorrect one, in the green and rose tints", () => {
-    const strip = render("s1", "d", 1, 5);
+    const strip = render("q-scn-s01-001", "a", 1, 5);
     const squares = strip.slice(strip.indexOf("<ol"), strip.indexOf("</ol>"));
     expect(squares.match(/lucide-check/g)).toHaveLength(3);
     expect(squares.match(/lucide-x/g)).toHaveLength(2);
@@ -154,6 +154,6 @@ describe("Answer review", () => {
   });
 
   it("has the bookmark on the question, to save it from the review", () => {
-    expect(render("s1", "d")).toContain('aria-label="Save question"');
+    expect(render("q-scn-s01-001", "a")).toContain('aria-label="Save question"');
   });
 });

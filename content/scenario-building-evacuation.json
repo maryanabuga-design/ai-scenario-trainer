@@ -6,36 +6,41 @@
   "source": "content/sample-evacuation-guide.md",
   "steps": [
     {
-      "id": "s1",
+      "id": "q-scn-s01-001",
       "section": "S1",
       "title": "The alarm sounds",
-      "situation": "14:20. The fire alarm sounds in a four-storey training centre. You are the duty officer on the second floor with twelve people. There is a faint smell of smoke from the north stairwell, and everyone looks at you for direction.",
-      "question": "What is your first instruction?",
+      "situation": "You are presenting to 14 participants in a second-floor training room when a continuous alarm begins to sound. Nobody has announced a drill and nothing in the room looks wrong. Several people look at you.",
+      "question": "What do you do first?",
       "options": [
         {
           "id": "a",
-          "text": "Stay where you are until the alarm is confirmed as real."
+          "text": "Tell everyone it is probably a test and carry on while you check."
         },
         {
           "id": "b",
-          "text": "Everyone leaves now by the stairs, taking only what they can carry in a few seconds."
+          "text": "Stop the session, tell everyone to leave now and lead them to the exit."
         },
         {
-          "id": "d",
-          "text": "First collect documents and equipment from the offices."
+          "id": "c",
+          "text": "Ask people to stay seated until someone confirms what the alarm means."
         }
       ],
       "correctOptionId": "b",
-      "why": "Treating the alarm as real, using the stairs and not delaying for belongings keeps the group safe.",
-      "hint": "Think about what an alarm means until it is officially confirmed otherwise, and how a group should leave a building.",
+      "why": "The guide says to treat every alarm as real until it is officially confirmed otherwise, so the group leaves at once.",
+      "hint": "Think about what the sound of an alarm can and cannot tell you.",
       "guideRef": [
         "S1"
       ],
+      "scene": "s01-sc1",
+      "image": {
+        "src": "",
+        "alt": "A second-floor training room as an alarm sounds and the participants stand up"
+      },
       "chat": [
         {
-          "id": "s1-situation",
+          "id": "q-scn-s01-001-situation",
           "question": "What is happening here?",
-          "answer": "The fire alarm sounded at 14:20 in a four-storey training centre. You are the duty officer on the second floor with twelve people, there is a faint smell of smoke from the north stairwell, and the group is waiting for your instruction.",
+          "answer": "You are presenting to 14 participants in a second-floor training room when a continuous alarm begins to sound. Nobody has announced a drill and nothing in the room looks wrong. Several people look at you.",
           "sources": [
             "S1"
           ],
@@ -52,9 +57,9 @@
           "suggested": true
         },
         {
-          "id": "s1-guide",
+          "id": "q-scn-s01-001-guide",
           "question": "Which part of the guide covers this?",
-          "answer": "Section S1, Responding to an alarm, covers what to do when an alarm sounds and how to leave the building. You can read it in full from the source chip below before you decide.",
+          "answer": "Section S1, Responding to an alarm, covers this. You can read it in full from the source chip below before you decide.",
           "sources": [
             "S1"
           ],
@@ -72,124 +77,61 @@
           "suggested": true
         },
         {
-          "id": "s1-assistance",
-          "question": "What if someone needs help to move?",
-          "answer": "The guide says to help people who need assistance only if it is safe. Otherwise, report where they are to responders so trained people can reach them.",
-          "sources": [
-            "S1",
-            "S4"
-          ],
-          "keywords": [
-            "help",
-            "assist",
-            "assistance",
-            "wheelchair",
-            "injured",
-            "slow",
-            "carry someone",
-            "move"
-          ],
-          "availability": "always",
-          "suggested": true
-        },
-        {
-          "id": "s1-elevator",
-          "question": "Why not take the elevator?",
-          "answer": "Elevators can stop or fill with smoke during a fire, which can trap the group. The guide is clear: during a fire, use the stairs.",
+          "id": "q-scn-s01-001-why",
+          "question": "Why are the other options worse?",
+          "answer": "The guide says to treat every alarm as real until it is officially confirmed otherwise, so the group leaves at once.",
           "sources": [
             "S1"
           ],
           "keywords": [
-            "elevator",
-            "elevators",
-            "lift",
-            "lifts"
+            "why",
+            "worse",
+            "other",
+            "options",
+            "wrong",
+            "not"
           ],
           "availability": "afterFeedback",
           "suggested": true
-        },
-        {
-          "id": "s1-wait",
-          "question": "Why not wait until the alarm is confirmed?",
-          "answer": "The guide asks you to treat every alarm as real until it is officially confirmed otherwise. Waiting costs time, and in this situation smoke is already spreading.",
-          "sources": [
-            "S1"
-          ],
-          "keywords": [
-            "wait",
-            "waiting",
-            "confirmed",
-            "confirm",
-            "drill",
-            "false",
-            "real"
-          ],
-          "availability": "afterFeedback",
-          "suggested": true
-        },
-        {
-          "id": "s1-belongings",
-          "question": "Can people take their things?",
-          "answer": "Only what they can carry in a few seconds. The guide says never to delay your exit to collect belongings, documents or equipment.",
-          "sources": [
-            "S1"
-          ],
-          "keywords": [
-            "belongings",
-            "things",
-            "bag",
-            "bags",
-            "documents",
-            "equipment",
-            "laptop",
-            "collect"
-          ],
-          "availability": "afterFeedback",
-          "suggested": false
         }
-      ],
-      "scene": "s01-sc1",
-      "image": {
-        "src": "",
-        "alt": "A second-floor training room as the fire alarm sounds and people stand up"
-      }
+      ]
     },
     {
       "id": "q-scn-s01-002",
       "section": "S1",
-      "title": "Is it only a test?",
-      "situation": "The group is starting to stand up when a colleague says the building ran a fire test last month and this is probably just another one. Nobody has announced anything yet, and the alarm keeps sounding.",
-      "question": "What do you tell the group?",
+      "title": "It is probably a test",
+      "situation": "As you start to move, a participant says the system was tested last month and it sounded exactly like this. A few people sit back down.",
+      "question": "How do you respond?",
       "options": [
         {
           "id": "a",
-          "text": "It is probably a test, so wait a few minutes for an announcement."
+          "text": "Explain that the sound cannot tell a test from a real alarm, so everyone leaves until it is officially confirmed otherwise."
         },
         {
           "id": "b",
-          "text": "Keep working until someone confirms there is a fire."
+          "text": "Agree it is likely a test, but ask everyone to be ready to go."
         },
         {
           "id": "c",
-          "text": "Treat it as real and keep leaving until it is officially confirmed otherwise."
+          "text": "Send one person to reception to ask while the group waits."
         }
       ],
-      "correctOptionId": "c",
-      "why": "The guide says to treat every alarm as real until it is officially confirmed otherwise. A guess that it is only a test is not a confirmation.",
-      "hint": "Think about what counts as a confirmation, and whether a guess is enough.",
+      "correctOptionId": "a",
+      "why": "A test and a real alarm sound the same, so only an official confirmation can change how you treat the alarm.",
+      "hint": "Ask who is entitled to decide that an alarm is not real.",
       "guideRef": [
         "S1"
       ],
       "scene": "s01-sc1",
       "image": {
         "src": "",
-        "alt": "A second-floor training room as the fire alarm sounds and people stand up"
+        "alt": "A second-floor training room as an alarm sounds and the participants stand up"
       },
       "chat": [
         {
           "id": "q-scn-s01-002-situation",
           "question": "What is happening here?",
-          "answer": "The group is starting to stand up when a colleague says the building ran a fire test last month and this is probably just another one. Nobody has announced anything yet, and the alarm keeps sounding.",
+          "answer": "As you start to move, a participant says the system was tested last month and it sounded exactly like this. A few people sit back down.",
           "sources": [
             "S1"
           ],
@@ -228,7 +170,7 @@
         {
           "id": "q-scn-s01-002-why",
           "question": "Why are the other options worse?",
-          "answer": "The guide says to treat every alarm as real until it is officially confirmed otherwise. A guess that it is only a test is not a confirmation.",
+          "answer": "A test and a real alarm sound the same, so only an official confirmation can change how you treat the alarm.",
           "sources": [
             "S1"
           ],
@@ -248,39 +190,39 @@
     {
       "id": "q-scn-s01-003",
       "section": "S1",
-      "title": "One last task",
-      "situation": "The group is on its feet, but one participant is still typing the last lines of a report and says it will only take a minute. Others have stopped to watch what you do.",
-      "question": "What do you say?",
+      "title": "Thirty more seconds",
+      "situation": "Participants are working on laptops with unsaved results. One of them asks for thirty more seconds to save before leaving.",
+      "question": "How do you answer the request for thirty more seconds?",
       "options": [
         {
           "id": "a",
-          "text": "Stop now and join the group; the report is not essential."
+          "text": "Allow thirty seconds, because the alarm has only just started."
         },
         {
           "id": "b",
-          "text": "Finish the sentence quickly, then follow us."
+          "text": "Let them save but ask everyone else to leave."
         },
         {
           "id": "c",
-          "text": "Save the report and shut the computer down properly before leaving."
+          "text": "Tell them to leave the laptop as it is and go now."
         }
       ],
-      "correctOptionId": "a",
-      "why": "The guide says to stop non-essential tasks when the alarm sounds. A report that can wait is a non-essential task.",
-      "hint": "Ask yourself whether the task has to be done before anyone can leave safely.",
+      "correctOptionId": "c",
+      "why": "Non-essential tasks stop at once. Saving work is not essential, and every extra second delays your exit.",
+      "hint": "Compare the value of the work with the value of the time.",
       "guideRef": [
         "S1"
       ],
       "scene": "s01-sc1",
       "image": {
         "src": "",
-        "alt": "A second-floor training room as the fire alarm sounds and people stand up"
+        "alt": "A second-floor training room as an alarm sounds and the participants stand up"
       },
       "chat": [
         {
           "id": "q-scn-s01-003-situation",
           "question": "What is happening here?",
-          "answer": "The group is on its feet, but one participant is still typing the last lines of a report and says it will only take a minute. Others have stopped to watch what you do.",
+          "answer": "Participants are working on laptops with unsaved results. One of them asks for thirty more seconds to save before leaving.",
           "sources": [
             "S1"
           ],
@@ -319,7 +261,7 @@
         {
           "id": "q-scn-s01-003-why",
           "question": "Why are the other options worse?",
-          "answer": "The guide says to stop non-essential tasks when the alarm sounds. A report that can wait is a non-essential task.",
+          "answer": "Non-essential tasks stop at once. Saving work is not essential, and every extra second delays your exit.",
           "sources": [
             "S1"
           ],
@@ -339,39 +281,39 @@
     {
       "id": "q-scn-s01-004",
       "section": "S1",
-      "title": "What to carry",
-      "situation": "At the door, people reach for their things. One person picks up a small bag from the chair beside them, while another starts to unplug a projector and gather the training equipment from the table.",
-      "question": "What do you tell them about their belongings?",
+      "title": "Bags and laptops",
+      "situation": "People are standing up, but most are packing laptops and bags. A participant is winding up a charger cable.",
+      "question": "What is your instruction?",
       "options": [
         {
           "id": "a",
-          "text": "Leave everything behind, even small personal items."
+          "text": "Pack quickly, but only one item each."
         },
         {
           "id": "b",
-          "text": "Take whatever you need, as long as everyone leaves together."
+          "text": "Leave bags and laptops; take only what is already in your hand, such as a phone."
         },
         {
           "id": "c",
-          "text": "Take only what you can carry in a few seconds and leave the rest."
+          "text": "Take bags only; laptops can stay."
         }
       ],
-      "correctOptionId": "c",
-      "why": "The guide says to take only what you can carry in a few seconds. Gathering equipment would slow the whole group down.",
-      "hint": "Think about how long picking something up should take.",
+      "correctOptionId": "b",
+      "why": "Take only what you can carry in a few seconds. Bags and laptops slow people down and crowd the exit.",
+      "hint": "Picture a whole floor of people carrying bags on one staircase.",
       "guideRef": [
         "S1"
       ],
       "scene": "s01-sc1",
       "image": {
         "src": "",
-        "alt": "A second-floor training room as the fire alarm sounds and people stand up"
+        "alt": "A second-floor training room as an alarm sounds and the participants stand up"
       },
       "chat": [
         {
           "id": "q-scn-s01-004-situation",
           "question": "What is happening here?",
-          "answer": "At the door, people reach for their things. One person picks up a small bag from the chair beside them, while another starts to unplug a projector and gather the training equipment from the table.",
+          "answer": "People are standing up, but most are packing laptops and bags. A participant is winding up a charger cable.",
           "sources": [
             "S1"
           ],
@@ -410,7 +352,7 @@
         {
           "id": "q-scn-s01-004-why",
           "question": "Why are the other options worse?",
-          "answer": "The guide says to take only what you can carry in a few seconds. Gathering equipment would slow the whole group down.",
+          "answer": "Take only what you can carry in a few seconds. Bags and laptops slow people down and crowd the exit.",
           "sources": [
             "S1"
           ],
@@ -431,7 +373,7 @@
       "id": "q-scn-s01-005",
       "section": "S1",
       "title": "The forgotten coat",
-      "situation": "You are halfway to the stairs when one participant realises their coat and car keys are still on a chair at the back of the room. The way back is only a few metres.",
+      "situation": "You are halfway to the corridor when a participant realises their coat and car keys are still on a chair at the back of the room. The way back is only a few metres.",
       "question": "What do you tell them?",
       "options": [
         {
@@ -448,21 +390,21 @@
         }
       ],
       "correctOptionId": "a",
-      "why": "The guide says never to delay your exit to collect belongings, even when they are close by.",
-      "hint": "Consider how a short detour changes the way the whole group leaves.",
+      "why": "Never delay your exit for belongings, even when they are close by. A short detour delays you and blocks others.",
+      "hint": "Consider how one short detour changes the way the whole group leaves.",
       "guideRef": [
         "S1"
       ],
       "scene": "s01-sc1",
       "image": {
         "src": "",
-        "alt": "A second-floor training room as the fire alarm sounds and people stand up"
+        "alt": "A second-floor training room as an alarm sounds and the participants stand up"
       },
       "chat": [
         {
           "id": "q-scn-s01-005-situation",
           "question": "What is happening here?",
-          "answer": "You are halfway to the stairs when one participant realises their coat and car keys are still on a chair at the back of the room. The way back is only a few metres.",
+          "answer": "You are halfway to the corridor when a participant realises their coat and car keys are still on a chair at the back of the room. The way back is only a few metres.",
           "sources": [
             "S1"
           ],
@@ -501,7 +443,7 @@
         {
           "id": "q-scn-s01-005-why",
           "question": "Why are the other options worse?",
-          "answer": "The guide says never to delay your exit to collect belongings, even when they are close by.",
+          "answer": "Never delay your exit for belongings, even when they are close by. A short detour delays you and blocks others.",
           "sources": [
             "S1"
           ],
@@ -521,39 +463,39 @@
     {
       "id": "q-scn-s01-006",
       "section": "S1",
-      "title": "The elevator",
-      "situation": "At the end of the corridor, a few people stop at the elevator. One of them says it will be quicker than walking down from the second floor.",
-      "question": "What do you do?",
+      "title": "The call in the corridor",
+      "situation": "In the corridor a participant keeps talking to a client on the phone while walking, still arranging a meeting.",
+      "question": "What do you ask them to do?",
       "options": [
         {
           "id": "a",
-          "text": "Let the people who are tired use the elevator while the others take the stairs."
+          "text": "Let them finish, as they are walking in the right direction anyway."
         },
         {
           "id": "b",
-          "text": "Tell them to wait at the elevator until its doors open."
+          "text": "Ask them to wrap up the call within a minute."
         },
         {
           "id": "c",
-          "text": "Direct everyone to the stairs, not the elevator."
+          "text": "Tell them to end the call now and speak again once they are outside."
         }
       ],
       "correctOptionId": "c",
-      "why": "The guide says not to use elevators during a fire and to use the stairs instead.",
-      "hint": "Think about which way of moving between floors the guide allows during a fire.",
+      "why": "Stopping what you are doing includes calls. The conversation can continue once everyone is out.",
+      "hint": "What does the call add to the exit, and what does it take away?",
       "guideRef": [
         "S1"
       ],
       "scene": "s01-sc2",
       "image": {
         "src": "",
-        "alt": "A second-floor corridor leading to the elevator and the stairs"
+        "alt": "A corridor with an open elevator and a stairwell door as participants head towards the exit"
       },
       "chat": [
         {
           "id": "q-scn-s01-006-situation",
           "question": "What is happening here?",
-          "answer": "At the end of the corridor, a few people stop at the elevator. One of them says it will be quicker than walking down from the second floor.",
+          "answer": "In the corridor a participant keeps talking to a client on the phone while walking, still arranging a meeting.",
           "sources": [
             "S1"
           ],
@@ -592,7 +534,7 @@
         {
           "id": "q-scn-s01-006-why",
           "question": "Why are the other options worse?",
-          "answer": "The guide says not to use elevators during a fire and to use the stairs instead.",
+          "answer": "Stopping what you are doing includes calls. The conversation can continue once everyone is out.",
           "sources": [
             "S1"
           ],
@@ -610,37 +552,41 @@
       ]
     },
     {
-      "id": "s7",
+      "id": "q-scn-s01-007",
       "section": "S1",
-      "title": "Someone needs help",
-      "situation": "As the group heads for the stairs, a visitor who walks with crutches tells you they cannot manage the stairs quickly. The corridor is still clear.",
-      "question": "What do you do?",
+      "title": "The waiting elevator",
+      "situation": "At the end of the corridor the elevator doors are open and the car is waiting at your floor. Two participants step towards it, saying it is quicker than the stairs.",
+      "question": "What do you do about the waiting elevator?",
       "options": [
         {
           "id": "a",
-          "text": "Send the visitor down in the elevator on their own."
+          "text": "Stop them and direct everyone to the stairs; elevators are not used during an alarm."
         },
         {
           "id": "b",
-          "text": "Have a colleague help the visitor down the stairs if it is safe, and if not, make sure their exact location is reported to responders."
+          "text": "Let them go, and take the rest of the group by the stairs."
         },
         {
           "id": "c",
-          "text": "Tell the visitor to wait in an office until the alarm stops."
+          "text": "Use the elevator for the whole group in two trips."
         }
       ],
-      "correctOptionId": "b",
-      "why": "The guide says to help people who need assistance only if it is safe, and otherwise to report where they are so responders can reach them.",
-      "hint": "Think about how to keep the whole group moving while still looking after the person who needs help.",
+      "correctOptionId": "a",
+      "why": "Do not use elevators during a fire; use the stairs. A car can stop between floors or open onto the fire.",
+      "hint": "Consider what could go wrong inside a closed car.",
       "guideRef": [
-        "S1",
-        "S4"
+        "S1"
       ],
+      "scene": "s01-sc2",
+      "image": {
+        "src": "",
+        "alt": "A corridor with an open elevator and a stairwell door as participants head towards the exit"
+      },
       "chat": [
         {
-          "id": "s7-situation",
+          "id": "q-scn-s01-007-situation",
           "question": "What is happening here?",
-          "answer": "A visitor who walks with crutches has told you they cannot move quickly. The corridor is still clear, and the rest of your group is waiting for direction.",
+          "answer": "At the end of the corridor the elevator doors are open and the car is waiting at your floor. Two participants step towards it, saying it is quicker than the stairs.",
           "sources": [
             "S1"
           ],
@@ -657,12 +603,11 @@
           "suggested": true
         },
         {
-          "id": "s7-guide",
+          "id": "q-scn-s01-007-guide",
           "question": "Which part of the guide covers this?",
-          "answer": "Section S1, Responding to an alarm, covers how to react to an alarm and how to leave. S4 covers the assembly point and what to tell the people in charge there.",
+          "answer": "Section S1, Responding to an alarm, covers this. You can read it in full from the source chip below before you decide.",
           "sources": [
-            "S1",
-            "S4"
+            "S1"
           ],
           "keywords": [
             "guide",
@@ -678,114 +623,61 @@
           "suggested": true
         },
         {
-          "id": "s7-belongings",
-          "question": "What can people take with them?",
-          "answer": "Only what they can carry in a few seconds. The guide says never to delay your exit to collect belongings.",
+          "id": "q-scn-s01-007-why",
+          "question": "Why are the other options worse?",
+          "answer": "Do not use elevators during a fire; use the stairs. A car can stop between floors or open onto the fire.",
           "sources": [
             "S1"
           ],
           "keywords": [
-            "belongings",
-            "things",
-            "bag",
-            "bags",
-            "take with",
-            "carry"
-          ],
-          "availability": "always",
-          "suggested": true
-        },
-        {
-          "id": "s7-elevator",
-          "question": "Why not use the elevator for the visitor?",
-          "answer": "Elevators can stop or fill with smoke during a fire, which could trap the visitor alone. The guide says to use the stairs.",
-          "sources": [
-            "S1"
-          ],
-          "keywords": [
-            "elevator",
-            "lift"
+            "why",
+            "worse",
+            "other",
+            "options",
+            "wrong",
+            "not"
           ],
           "availability": "afterFeedback",
           "suggested": true
-        },
-        {
-          "id": "s7-stop-group",
-          "question": "Why not stop the group until the visitor is ready?",
-          "answer": "Holding everyone back delays the exit for the whole group. The guide's approach is to help the person only if it is safe, keep the others moving, and report the person's location if they cannot get out.",
-          "sources": [
-            "S1"
-          ],
-          "keywords": [
-            "stop",
-            "hold",
-            "group",
-            "wait for"
-          ],
-          "availability": "afterFeedback",
-          "suggested": true
-        },
-        {
-          "id": "s7-wait-office",
-          "question": "Why not let the visitor wait in an office?",
-          "answer": "Waiting alone in an office keeps the visitor in danger, and nobody would know where they are. If they cannot leave, responders need their exact location.",
-          "sources": [
-            "S1",
-            "S4"
-          ],
-          "keywords": [
-            "office",
-            "wait",
-            "waiting",
-            "alone",
-            "room"
-          ],
-          "availability": "afterFeedback",
-          "suggested": false
         }
-      ],
-      "scene": "s01-sc2",
-      "image": {
-        "src": "",
-        "alt": "A second-floor corridor leading to the elevator and the stairs"
-      }
+      ]
     },
     {
       "id": "q-scn-s01-008",
       "section": "S1",
-      "title": "Too risky to carry on",
-      "situation": "With a colleague you start to help the visitor with crutches, but smoke begins to drift into the stairwell and it is no longer safe to keep helping. The rest of the group is already on its way down.",
-      "question": "What do you do next?",
+      "title": "Only two floors",
+      "situation": "A participant argues that it is only two floors, the elevator will take twenty seconds and the stairs will be crowded. Others hesitate.",
+      "question": "What is the best answer?",
       "options": [
         {
           "id": "a",
-          "text": "Stop helping and report the visitor's exact location to responders."
+          "text": "Agree for this one time because the building is small."
         },
         {
           "id": "b",
-          "text": "Keep helping the visitor down despite the smoke."
+          "text": "Explain that an elevator can stop between floors or open onto a fire, and keep everyone on the stairs."
         },
         {
           "id": "c",
-          "text": "Stay with the visitor and wait for the alarm to be switched off."
+          "text": "Say it is their own decision and move on."
         }
       ],
-      "correctOptionId": "a",
-      "why": "The guide says to help people who need assistance only if it is safe, and otherwise to report their location to responders.",
-      "hint": "Think about what responders need to know to reach someone you cannot safely help.",
+      "correctOptionId": "b",
+      "why": "The height of the building does not change the risk: a lift can still stop or open onto the danger, so everyone uses the stairs.",
+      "hint": "Does the height of a building change how a lift can fail?",
       "guideRef": [
         "S1"
       ],
       "scene": "s01-sc2",
       "image": {
         "src": "",
-        "alt": "A second-floor corridor leading to the elevator and the stairs"
+        "alt": "A corridor with an open elevator and a stairwell door as participants head towards the exit"
       },
       "chat": [
         {
           "id": "q-scn-s01-008-situation",
           "question": "What is happening here?",
-          "answer": "With a colleague you start to help the visitor with crutches, but smoke begins to drift into the stairwell and it is no longer safe to keep helping. The rest of the group is already on its way down.",
+          "answer": "A participant argues that it is only two floors, the elevator will take twenty seconds and the stairs will be crowded. Others hesitate.",
           "sources": [
             "S1"
           ],
@@ -824,7 +716,1099 @@
         {
           "id": "q-scn-s01-008-why",
           "question": "Why are the other options worse?",
-          "answer": "The guide says to help people who need assistance only if it is safe, and otherwise to report their location to responders.",
+          "answer": "The height of the building does not change the risk: a lift can still stop or open onto the danger, so everyone uses the stairs.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "why",
+            "worse",
+            "other",
+            "options",
+            "wrong",
+            "not"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        }
+      ]
+    },
+    {
+      "id": "q-scn-s01-009",
+      "section": "S1",
+      "title": "The sprained ankle",
+      "situation": "Halfway down the first flight, a participant with a sprained ankle is moving very slowly. The stairs are clear and nobody is waiting behind you.",
+      "question": "How do you help the participant with the sprained ankle?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Tell them to catch up and keep going with the group."
+        },
+        {
+          "id": "b",
+          "text": "Wait at the bottom of the stairs; they will manage."
+        },
+        {
+          "id": "c",
+          "text": "Offer a steady arm and go at their pace, because the stairs are clear and it is safe."
+        }
+      ],
+      "correctOptionId": "c",
+      "why": "Help people who need assistance only if it is safe. Here the way is clear and nobody is delayed, so a steady arm is safe help.",
+      "hint": "Check whether helping puts you or anyone else at risk.",
+      "guideRef": [
+        "S1"
+      ],
+      "scene": "s01-sc2",
+      "image": {
+        "src": "",
+        "alt": "A corridor with an open elevator and a stairwell door as participants head towards the exit"
+      },
+      "chat": [
+        {
+          "id": "q-scn-s01-009-situation",
+          "question": "What is happening here?",
+          "answer": "Halfway down the first flight, a participant with a sprained ankle is moving very slowly. The stairs are clear and nobody is waiting behind you.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "happening",
+            "situation",
+            "going on",
+            "who",
+            "where",
+            "describe",
+            "explain the"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-009-guide",
+          "question": "Which part of the guide covers this?",
+          "answer": "Section S1, Responding to an alarm, covers this. You can read it in full from the source chip below before you decide.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "guide",
+            "section",
+            "material",
+            "read",
+            "covers",
+            "cover",
+            "source",
+            "chapter"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-009-why",
+          "question": "Why are the other options worse?",
+          "answer": "Help people who need assistance only if it is safe. Here the way is clear and nobody is delayed, so a steady arm is safe help.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "why",
+            "worse",
+            "other",
+            "options",
+            "wrong",
+            "not"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        }
+      ]
+    },
+    {
+      "id": "q-scn-s01-010",
+      "section": "S1",
+      "title": "I will stay",
+      "situation": "A colleague from the next office looks out and says they will stay, because this is surely the test again and they have a deadline.",
+      "question": "How do you respond to the colleague who wants to stay?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Tell them clearly to leave with you now, because an alarm is real until officially confirmed otherwise."
+        },
+        {
+          "id": "b",
+          "text": "Let them stay, but ask them to follow if it continues."
+        },
+        {
+          "id": "c",
+          "text": "Note their name and leave without comment."
+        }
+      ],
+      "correctOptionId": "a",
+      "why": "An alarm is real until it is officially confirmed otherwise. A deadline or a guess is not a reason to stay.",
+      "hint": "Who has decided that this alarm is not real?",
+      "guideRef": [
+        "S1"
+      ],
+      "scene": "s01-sc2",
+      "image": {
+        "src": "",
+        "alt": "A corridor with an open elevator and a stairwell door as participants head towards the exit"
+      },
+      "chat": [
+        {
+          "id": "q-scn-s01-010-situation",
+          "question": "What is happening here?",
+          "answer": "A colleague from the next office looks out and says they will stay, because this is surely the test again and they have a deadline.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "happening",
+            "situation",
+            "going on",
+            "who",
+            "where",
+            "describe",
+            "explain the"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-010-guide",
+          "question": "Which part of the guide covers this?",
+          "answer": "Section S1, Responding to an alarm, covers this. You can read it in full from the source chip below before you decide.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "guide",
+            "section",
+            "material",
+            "read",
+            "covers",
+            "cover",
+            "source",
+            "chapter"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-010-why",
+          "question": "Why are the other options worse?",
+          "answer": "An alarm is real until it is officially confirmed otherwise. A deadline or a guess is not a reason to stay.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "why",
+            "worse",
+            "other",
+            "options",
+            "wrong",
+            "not"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        }
+      ]
+    },
+    {
+      "id": "q-scn-s01-011",
+      "section": "S1",
+      "title": "A colleague who cannot use the stairs",
+      "situation": "On the first-floor landing you meet a colleague who uses a wheelchair and cannot use the stairs. The landing is narrow and others are passing by. You are not trained to move people down stairs.",
+      "question": "What is the right action?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Try to carry them down the stairs with two volunteers right away."
+        },
+        {
+          "id": "b",
+          "text": "Tell them you will report their exact location, then do so immediately to a warden or responder."
+        },
+        {
+          "id": "c",
+          "text": "Stay with them and tell the rest of the group to go on without telling anyone."
+        }
+      ],
+      "correctOptionId": "b",
+      "why": "Help only if it is safe; otherwise report the person's location to responders. An untrained carry can injure both of you and block the stairs.",
+      "hint": "What can responders do if they know exactly where the person is?",
+      "guideRef": [
+        "S1"
+      ],
+      "scene": "s01-sc3",
+      "image": {
+        "src": "",
+        "alt": "A stairwell landing with a colleague in a wheelchair and a warden in a green vest nearby"
+      },
+      "chat": [
+        {
+          "id": "q-scn-s01-011-situation",
+          "question": "What is happening here?",
+          "answer": "On the first-floor landing you meet a colleague who uses a wheelchair and cannot use the stairs. The landing is narrow and others are passing by. You are not trained to move people down stairs.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "happening",
+            "situation",
+            "going on",
+            "who",
+            "where",
+            "describe",
+            "explain the"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-011-guide",
+          "question": "Which part of the guide covers this?",
+          "answer": "Section S1, Responding to an alarm, covers this. You can read it in full from the source chip below before you decide.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "guide",
+            "section",
+            "material",
+            "read",
+            "covers",
+            "cover",
+            "source",
+            "chapter"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-011-why",
+          "question": "Why are the other options worse?",
+          "answer": "Help only if it is safe; otherwise report the person's location to responders. An untrained carry can injure both of you and block the stairs.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "why",
+            "worse",
+            "other",
+            "options",
+            "wrong",
+            "not"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        }
+      ]
+    },
+    {
+      "id": "q-scn-s01-012",
+      "section": "S1",
+      "title": "Maya is still upstairs",
+      "situation": "At the foot of the stairs a participant says a colleague named Maya was in the print room on the second floor when the alarm sounded. A warden in a green vest is a few metres away.",
+      "question": "What do you do about the missing colleague?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Run back upstairs to check the print room."
+        },
+        {
+          "id": "b",
+          "text": "Wait to see whether Maya comes out."
+        },
+        {
+          "id": "c",
+          "text": "Tell the warden Maya's name and last known location straight away, and do not go back."
+        }
+      ],
+      "correctOptionId": "c",
+      "why": "Do not re-enter the building. Report the missing person's name and last known location so responders can search.",
+      "hint": "Who is equipped to look for her, and what do they need from you?",
+      "guideRef": [
+        "S1"
+      ],
+      "scene": "s01-sc3",
+      "image": {
+        "src": "",
+        "alt": "A stairwell landing with a colleague in a wheelchair and a warden in a green vest nearby"
+      },
+      "chat": [
+        {
+          "id": "q-scn-s01-012-situation",
+          "question": "What is happening here?",
+          "answer": "At the foot of the stairs a participant says a colleague named Maya was in the print room on the second floor when the alarm sounded. A warden in a green vest is a few metres away.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "happening",
+            "situation",
+            "going on",
+            "who",
+            "where",
+            "describe",
+            "explain the"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-012-guide",
+          "question": "Which part of the guide covers this?",
+          "answer": "Section S1, Responding to an alarm, covers this. You can read it in full from the source chip below before you decide.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "guide",
+            "section",
+            "material",
+            "read",
+            "covers",
+            "cover",
+            "source",
+            "chapter"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-012-why",
+          "question": "Why are the other options worse?",
+          "answer": "Do not re-enter the building. Report the missing person's name and last known location so responders can search.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "why",
+            "worse",
+            "other",
+            "options",
+            "wrong",
+            "not"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        }
+      ]
+    },
+    {
+      "id": "q-scn-s01-013",
+      "section": "S1",
+      "title": "Crowded stairs",
+      "situation": "The stairs are filling up. People behind you are pushing, and someone close to you starts to run.",
+      "question": "What do you tell the group?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Keep moving at a steady walking pace, hold the handrail and do not push or stop on the stairs."
+        },
+        {
+          "id": "b",
+          "text": "Stop on the landing until the crowd thins out."
+        },
+        {
+          "id": "c",
+          "text": "Overtake slower people to reach the bottom first."
+        }
+      ],
+      "correctOptionId": "a",
+      "why": "Moving steadily without pushing keeps the stairs flowing and prevents falls, which would block everyone behind.",
+      "hint": "What happens to everyone behind you if one person falls?",
+      "guideRef": [
+        "S1"
+      ],
+      "scene": "s01-sc3",
+      "image": {
+        "src": "",
+        "alt": "A stairwell landing with a colleague in a wheelchair and a warden in a green vest nearby"
+      },
+      "chat": [
+        {
+          "id": "q-scn-s01-013-situation",
+          "question": "What is happening here?",
+          "answer": "The stairs are filling up. People behind you are pushing, and someone close to you starts to run.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "happening",
+            "situation",
+            "going on",
+            "who",
+            "where",
+            "describe",
+            "explain the"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-013-guide",
+          "question": "Which part of the guide covers this?",
+          "answer": "Section S1, Responding to an alarm, covers this. You can read it in full from the source chip below before you decide.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "guide",
+            "section",
+            "material",
+            "read",
+            "covers",
+            "cover",
+            "source",
+            "chapter"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-013-why",
+          "question": "Why are the other options worse?",
+          "answer": "Moving steadily without pushing keeps the stairs flowing and prevents falls, which would block everyone behind.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "why",
+            "worse",
+            "other",
+            "options",
+            "wrong",
+            "not"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        }
+      ]
+    },
+    {
+      "id": "q-scn-s01-014",
+      "section": "S1",
+      "title": "The alarm falls silent",
+      "situation": "You reach the ground floor. The alarm suddenly stops, and a participant says it is over and the group can return to the training room.",
+      "question": "What should the group do?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Return to the room, since the alarm has ended."
+        },
+        {
+          "id": "b",
+          "text": "Stay outside until it is officially confirmed that it is safe."
+        },
+        {
+          "id": "c",
+          "text": "Send two people back to check and wait for them."
+        }
+      ],
+      "correctOptionId": "b",
+      "why": "A silent alarm is not an official confirmation. Stay out until building management, a warden or the emergency services say it is safe.",
+      "hint": "Is silence the same as an all-clear?",
+      "guideRef": [
+        "S1"
+      ],
+      "scene": "s01-sc3",
+      "image": {
+        "src": "",
+        "alt": "A stairwell landing with a colleague in a wheelchair and a warden in a green vest nearby"
+      },
+      "chat": [
+        {
+          "id": "q-scn-s01-014-situation",
+          "question": "What is happening here?",
+          "answer": "You reach the ground floor. The alarm suddenly stops, and a participant says it is over and the group can return to the training room.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "happening",
+            "situation",
+            "going on",
+            "who",
+            "where",
+            "describe",
+            "explain the"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-014-guide",
+          "question": "Which part of the guide covers this?",
+          "answer": "Section S1, Responding to an alarm, covers this. You can read it in full from the source chip below before you decide.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "guide",
+            "section",
+            "material",
+            "read",
+            "covers",
+            "cover",
+            "source",
+            "chapter"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-014-why",
+          "question": "Why are the other options worse?",
+          "answer": "A silent alarm is not an official confirmation. Stay out until building management, a warden or the emergency services say it is safe.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "why",
+            "worse",
+            "other",
+            "options",
+            "wrong",
+            "not"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        }
+      ]
+    },
+    {
+      "id": "q-scn-s01-015",
+      "section": "S1",
+      "title": "A message from a colleague",
+      "situation": "A phone buzzes: a colleague texts that facility staff told him it was only a faulty detector and the group can go back in.",
+      "question": "How do you treat the colleague's message?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Take the message as confirmation and lead the group back."
+        },
+        {
+          "id": "b",
+          "text": "Ask the sender to confirm by phone, then go in."
+        },
+        {
+          "id": "c",
+          "text": "Keep everyone out until building management, a warden or the emergency services officially confirm that it is safe."
+        }
+      ],
+      "correctOptionId": "c",
+      "why": "Only an official confirmation counts. A second-hand message, even from a colleague, is not one.",
+      "hint": "Where does the information in the message actually come from?",
+      "guideRef": [
+        "S1"
+      ],
+      "scene": "s01-sc3",
+      "image": {
+        "src": "",
+        "alt": "A stairwell landing with a colleague in a wheelchair and a warden in a green vest nearby"
+      },
+      "chat": [
+        {
+          "id": "q-scn-s01-015-situation",
+          "question": "What is happening here?",
+          "answer": "A phone buzzes: a colleague texts that facility staff told him it was only a faulty detector and the group can go back in.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "happening",
+            "situation",
+            "going on",
+            "who",
+            "where",
+            "describe",
+            "explain the"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-015-guide",
+          "question": "Which part of the guide covers this?",
+          "answer": "Section S1, Responding to an alarm, covers this. You can read it in full from the source chip below before you decide.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "guide",
+            "section",
+            "material",
+            "read",
+            "covers",
+            "cover",
+            "source",
+            "chapter"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-015-why",
+          "question": "Why are the other options worse?",
+          "answer": "Only an official confirmation counts. A second-hand message, even from a colleague, is not one.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "why",
+            "worse",
+            "other",
+            "options",
+            "wrong",
+            "not"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        }
+      ]
+    },
+    {
+      "id": "q-scn-s01-016",
+      "section": "S1",
+      "title": "Working late",
+      "situation": "A week later you are working late and alone on the third floor when a continuous alarm starts in the middle of an important report.",
+      "question": "What do you do when the alarm starts?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Stop work, leave the report as it is and go straight to the nearest exit."
+        },
+        {
+          "id": "b",
+          "text": "Save and close the report first; it will only take a minute."
+        },
+        {
+          "id": "c",
+          "text": "Look out of the window for signs of a fire before deciding."
+        }
+      ],
+      "correctOptionId": "a",
+      "why": "Stop non-essential tasks and leave. The alarm is real until officially confirmed otherwise, whether or not anyone is watching.",
+      "hint": "Does being alone change how you should treat an alarm?",
+      "guideRef": [
+        "S1"
+      ],
+      "scene": "s01-sc4",
+      "image": {
+        "src": "",
+        "alt": "An empty open-plan office in the evening with one lit desk and a flashing alarm light"
+      },
+      "chat": [
+        {
+          "id": "q-scn-s01-016-situation",
+          "question": "What is happening here?",
+          "answer": "A week later you are working late and alone on the third floor when a continuous alarm starts in the middle of an important report.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "happening",
+            "situation",
+            "going on",
+            "who",
+            "where",
+            "describe",
+            "explain the"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-016-guide",
+          "question": "Which part of the guide covers this?",
+          "answer": "Section S1, Responding to an alarm, covers this. You can read it in full from the source chip below before you decide.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "guide",
+            "section",
+            "material",
+            "read",
+            "covers",
+            "cover",
+            "source",
+            "chapter"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-016-why",
+          "question": "Why are the other options worse?",
+          "answer": "Stop non-essential tasks and leave. The alarm is real until officially confirmed otherwise, whether or not anyone is watching.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "why",
+            "worse",
+            "other",
+            "options",
+            "wrong",
+            "not"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        }
+      ]
+    },
+    {
+      "id": "q-scn-s01-017",
+      "section": "S1",
+      "title": "The video call",
+      "situation": "You are on a video call with a client when the alarm sounds. The client can hear it and asks you to finish the point you were making.",
+      "question": "How do you answer the client?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Say you will finish the point in one minute."
+        },
+        {
+          "id": "b",
+          "text": "Say there is an alarm, end the call and leave straight away."
+        },
+        {
+          "id": "c",
+          "text": "Say you will move to a quieter room and continue the call."
+        }
+      ],
+      "correctOptionId": "b",
+      "why": "A call is a non-essential task. End it at once and leave; the client can be called back from outside.",
+      "hint": "Which matters more right now: the call or the exit?",
+      "guideRef": [
+        "S1"
+      ],
+      "scene": "s01-sc4",
+      "image": {
+        "src": "",
+        "alt": "An empty open-plan office in the evening with one lit desk and a flashing alarm light"
+      },
+      "chat": [
+        {
+          "id": "q-scn-s01-017-situation",
+          "question": "What is happening here?",
+          "answer": "You are on a video call with a client when the alarm sounds. The client can hear it and asks you to finish the point you were making.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "happening",
+            "situation",
+            "going on",
+            "who",
+            "where",
+            "describe",
+            "explain the"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-017-guide",
+          "question": "Which part of the guide covers this?",
+          "answer": "Section S1, Responding to an alarm, covers this. You can read it in full from the source chip below before you decide.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "guide",
+            "section",
+            "material",
+            "read",
+            "covers",
+            "cover",
+            "source",
+            "chapter"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-017-why",
+          "question": "Why are the other options worse?",
+          "answer": "A call is a non-essential task. End it at once and leave; the client can be called back from outside.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "why",
+            "worse",
+            "other",
+            "options",
+            "wrong",
+            "not"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        }
+      ]
+    },
+    {
+      "id": "q-scn-s01-018",
+      "section": "S1",
+      "title": "Just a test",
+      "situation": "A colleague writes in the group chat: 'Alarm is just a test, ignore it.' No announcement has been made.",
+      "question": "How do you treat the alarm?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ignore the alarm, because a colleague has said it is a test."
+        },
+        {
+          "id": "b",
+          "text": "Reply asking for proof and wait for the answer."
+        },
+        {
+          "id": "c",
+          "text": "Treat it as real and leave; a chat message is not an official confirmation."
+        }
+      ],
+      "correctOptionId": "c",
+      "why": "Only building management, a warden or the emergency services can officially confirm that an alarm is not real.",
+      "hint": "Who is allowed to say that it is only a test?",
+      "guideRef": [
+        "S1"
+      ],
+      "scene": "s01-sc4",
+      "image": {
+        "src": "",
+        "alt": "An empty open-plan office in the evening with one lit desk and a flashing alarm light"
+      },
+      "chat": [
+        {
+          "id": "q-scn-s01-018-situation",
+          "question": "What is happening here?",
+          "answer": "A colleague writes in the group chat: 'Alarm is just a test, ignore it.' No announcement has been made.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "happening",
+            "situation",
+            "going on",
+            "who",
+            "where",
+            "describe",
+            "explain the"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-018-guide",
+          "question": "Which part of the guide covers this?",
+          "answer": "Section S1, Responding to an alarm, covers this. You can read it in full from the source chip below before you decide.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "guide",
+            "section",
+            "material",
+            "read",
+            "covers",
+            "cover",
+            "source",
+            "chapter"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-018-why",
+          "question": "Why are the other options worse?",
+          "answer": "Only building management, a warden or the emergency services can officially confirm that an alarm is not real.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "why",
+            "worse",
+            "other",
+            "options",
+            "wrong",
+            "not"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        }
+      ]
+    },
+    {
+      "id": "q-scn-s01-019",
+      "section": "S1",
+      "title": "What to carry",
+      "situation": "On your way out you have your phone in your pocket. Your laptop is in a bag beside the desk and a heavy box of files is by the door.",
+      "question": "What do you take?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Only what you already have on you or can pick up in a few seconds, such as your phone."
+        },
+        {
+          "id": "b",
+          "text": "The laptop, because it holds important data."
+        },
+        {
+          "id": "c",
+          "text": "The laptop and the lightest folder."
+        }
+      ],
+      "correctOptionId": "a",
+      "why": "Take only what you can carry in a few seconds. Laptops and boxes slow you down and can be replaced.",
+      "hint": "What can be replaced later, and what cannot?",
+      "guideRef": [
+        "S1"
+      ],
+      "scene": "s01-sc4",
+      "image": {
+        "src": "",
+        "alt": "An empty open-plan office in the evening with one lit desk and a flashing alarm light"
+      },
+      "chat": [
+        {
+          "id": "q-scn-s01-019-situation",
+          "question": "What is happening here?",
+          "answer": "On your way out you have your phone in your pocket. Your laptop is in a bag beside the desk and a heavy box of files is by the door.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "happening",
+            "situation",
+            "going on",
+            "who",
+            "where",
+            "describe",
+            "explain the"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-019-guide",
+          "question": "Which part of the guide covers this?",
+          "answer": "Section S1, Responding to an alarm, covers this. You can read it in full from the source chip below before you decide.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "guide",
+            "section",
+            "material",
+            "read",
+            "covers",
+            "cover",
+            "source",
+            "chapter"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-019-why",
+          "question": "Why are the other options worse?",
+          "answer": "Take only what you can carry in a few seconds. Laptops and boxes slow you down and can be replaced.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "why",
+            "worse",
+            "other",
+            "options",
+            "wrong",
+            "not"
+          ],
+          "availability": "afterFeedback",
+          "suggested": true
+        }
+      ]
+    },
+    {
+      "id": "q-scn-s01-020",
+      "section": "S1",
+      "title": "Someone who has not heard",
+      "situation": "In the stairwell you notice a cleaner on the second floor wearing headphones who does not seem to have heard the alarm.",
+      "question": "What do you do about the cleaner?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Carry on down; they will hear it soon."
+        },
+        {
+          "id": "b",
+          "text": "Alert them by voice and gesture, 'Alarm, leave now', then carry on without delay."
+        },
+        {
+          "id": "c",
+          "text": "Go into the room to find out what they are doing."
+        }
+      ],
+      "correctOptionId": "b",
+      "why": "Alerting others is safe, quick help. Do not delay your own exit or go into the danger area.",
+      "hint": "What is the quickest safe way to make sure someone knows?",
+      "guideRef": [
+        "S1"
+      ],
+      "scene": "s01-sc4",
+      "image": {
+        "src": "",
+        "alt": "An empty open-plan office in the evening with one lit desk and a flashing alarm light"
+      },
+      "chat": [
+        {
+          "id": "q-scn-s01-020-situation",
+          "question": "What is happening here?",
+          "answer": "In the stairwell you notice a cleaner on the second floor wearing headphones who does not seem to have heard the alarm.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "happening",
+            "situation",
+            "going on",
+            "who",
+            "where",
+            "describe",
+            "explain the"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-020-guide",
+          "question": "Which part of the guide covers this?",
+          "answer": "Section S1, Responding to an alarm, covers this. You can read it in full from the source chip below before you decide.",
+          "sources": [
+            "S1"
+          ],
+          "keywords": [
+            "guide",
+            "section",
+            "material",
+            "read",
+            "covers",
+            "cover",
+            "source",
+            "chapter"
+          ],
+          "availability": "always",
+          "suggested": true
+        },
+        {
+          "id": "q-scn-s01-020-why",
+          "question": "Why are the other options worse?",
+          "answer": "Alerting others is safe, quick help. Do not delay your own exit or go into the danger area.",
           "sources": [
             "S1"
           ],

@@ -8,15 +8,15 @@ describe("simulatedFeedback", () => {
   });
 
   it("returns the chosen and the correct option, and whether they are the same", () => {
-    const wrong = simulatedFeedback.evaluate(getStep("s1"), "d");
+    const wrong = simulatedFeedback.evaluate(getStep("q-scn-s01-001"), "a");
     expect(wrong.correct).toBe(false);
-    expect(wrong.chosen.id).toBe("d");
+    expect(wrong.chosen.id).toBe("a");
     expect(wrong.best.id).toBe("b");
-    expect(simulatedFeedback.evaluate(getStep("s1"), "b").correct).toBe(true);
+    expect(simulatedFeedback.evaluate(getStep("q-scn-s01-001"), "b").correct).toBe(true);
   });
 
   it("refuses an option the item does not have", () => {
-    expect(() => simulatedFeedback.evaluate(getStep("s1"), "z")).toThrow();
+    expect(() => simulatedFeedback.evaluate(getStep("q-scn-s01-001"), "z")).toThrow();
   });
 
   it("offers the not-covered question only on the smoke step", () => {

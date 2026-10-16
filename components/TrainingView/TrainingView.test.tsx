@@ -54,13 +54,16 @@ function render(
   );
 }
 
+/** Every quiz part of S1 done with 100%, S2's part at 60%. */
 const doneS1: PartRecords = {
-  "quiz:S1:1": {
-    lastPercent: 100,
-    attempts: 1,
-    answeredIds: partsFor("quiz")[0].itemIds,
-    correctIds: partsFor("quiz")[0].itemIds,
-  },
+  ...Object.fromEntries(
+    partsFor("quiz")
+      .filter((part) => part.sectionId === "S1")
+      .map((part) => [
+        part.id,
+        { lastPercent: 100, attempts: 1, answeredIds: part.itemIds, correctIds: part.itemIds },
+      ]),
+  ),
   "quiz:S2:1": { lastPercent: 60, attempts: 2, answeredIds: [], correctIds: [] },
 };
 
@@ -180,6 +183,7 @@ describe("a topic card and its parts", () => {
     );
     expect(s1).not.toContain("data-pill");
     expect(s1).toContain('aria-label="Part 1: last result 100%"');
+    expect(s1).toContain('aria-label="Part 2: last result 100%"');
     expect(s1).toContain("lucide-check");
     const s3 = html.slice(
       html.indexOf('aria-labelledby="topic-S3"'),
@@ -257,10 +261,10 @@ describe("the rose chip", () => {
     const history: FinishedSession[] = [
       {
         kind: "quiz",
-        itemIds: ["q-s1-1", "q-s1-2", "q-s2-1"],
+        itemIds: ["q-quiz-s01-001", "q-quiz-s01-002", "q-s2-1"],
         answers: [
-          { itemId: "q-s1-1", optionId: "a" },
-          { itemId: "q-s1-2", optionId: "a" },
+          { itemId: "q-quiz-s01-001", optionId: "b" },
+          { itemId: "q-quiz-s01-002", optionId: "a" },
           { itemId: "q-s2-1", optionId: "b" },
         ],
         finishedAt: 1,

@@ -13,12 +13,12 @@ const session = (finishedAt: number, picks: [string, string][]): FinishedSession
 
 /** s1: b right. s2: c right. s3: a right. */
 const bad = session(day(1), [
-  ["s1", "d"],
+  ["q-scn-s01-001", "a"],
   ["s2", "a"],
   ["s3", "b"],
 ]);
 const good = session(day(2), [
-  ["s1", "b"],
+  ["q-scn-s01-001", "b"],
   ["s2", "c"],
   ["s3", "a"],
 ]);
@@ -33,7 +33,7 @@ describe("per-session results", () => {
 
   it("rounds the percent", () => {
     const two = session(day(3), [
-      ["s1", "b"],
+      ["q-scn-s01-001", "b"],
       ["s2", "c"],
       ["s3", "b"],
     ]);

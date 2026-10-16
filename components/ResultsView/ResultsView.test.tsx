@@ -19,7 +19,7 @@ vi.mock("next/navigation", () => ({
 
 // s1 wrong, s2 right, s3 wrong: 1 of 3.
 const items = [
-  scoreItem(getItem("s1"), "d"),
+  scoreItem(getItem("q-scn-s01-001"), "d"),
   scoreItem(getItem("s2"), "c"),
   scoreItem(getItem("s3"), "b"),
 ];
@@ -42,7 +42,7 @@ function render(list: ScoredItem[]) {
 /** A result of exactly `right` correct answers out of `total`. */
 function result(right: number, total: number): ScoredItem[] {
   return Array.from({ length: total }, (_, index) =>
-    index < right ? scoreItem(getItem("s2"), "c") : scoreItem(getItem("s1"), "d"),
+    index < right ? scoreItem(getItem("s2"), "c") : scoreItem(getItem("q-scn-s01-001"), "d"),
   );
 }
 
@@ -165,7 +165,7 @@ describe("the Results buttons", () => {
 });
 
 describe("Back on Results", () => {
-  const items = [scoreItem(getItem("s1"), "d")];
+  const items = [scoreItem(getItem("q-scn-s01-001"), "d")];
   const back = (backHref?: string) =>
     renderToStaticMarkup(
       <SourceSheetProvider sections={loadAllSections()}>

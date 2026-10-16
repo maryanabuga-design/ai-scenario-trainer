@@ -145,7 +145,7 @@ function sampleDone(mode: TrainingMode) {
 
 /** One question screen with the top row, the step strip and the Next bar. */
 export function SessionSample({
-  itemId = "s1",
+  itemId = "q-scn-s01-001",
   index = 0,
   total = 10,
   answered = [],
@@ -259,7 +259,7 @@ const pick = (id: string, optionId: string) => scoreItem(getItem(id), optionId);
 
 /** Six answers in one session: three wrong, so the result is "Not passed yet". */
 const sampleAnswers = [
-  pick("s1", "d"),
+  pick("q-scn-s01-001", "a"),
   pick("s2", "c"),
   pick("s3", "a"),
   pick("s4", "a"),
@@ -293,7 +293,7 @@ export function ResultsSample({
 }
 
 const passedAnswers = [
-  pick("s1", "b"),
+  pick("q-scn-s01-001", "b"),
   pick("s2", "c"),
   pick("s3", "a"),
   pick("s4", "d"),
@@ -316,19 +316,19 @@ export function HomeSample({
     answers: right(ids),
     finishedAt: now.getTime(),
   });
-  const wrongStep = getItem("q-s1-1");
+  const wrongStep = getItem("q-quiz-s01-001");
   const history: FinishedSession[] =
     state === "first"
       ? []
       : state === "goal"
-        ? [done(["q-s1-1", "q-s1-2", "q-s1-3", "q-s1-4", "q-s2-1"])]
+        ? [done(["q-quiz-s01-001", "q-quiz-s01-002", "q-quiz-s01-003", "q-quiz-s01-004", "q-s2-1"])]
         : [
             {
               kind: "quiz",
-              itemIds: ["q-s1-1", "q-s2-1", "q-s2-2"],
+              itemIds: ["q-quiz-s01-001", "q-s2-1", "q-s2-2"],
               answers: [
                 {
-                  itemId: "q-s1-1",
+                  itemId: "q-quiz-s01-001",
                   optionId: wrongStep.options.find((o) => o.id !== wrongStep.correctOptionId)!.id,
                 },
                 ...right(["q-s2-1", "q-s2-2"]),
@@ -340,7 +340,7 @@ export function HomeSample({
     state === "continue"
       ? {
           kind: "scenario",
-          itemIds: Array.from({ length: 20 }, () => "s1"),
+          itemIds: Array.from({ length: 20 }, () => "q-scn-s01-001"),
           index: 6,
           answers: [],
           finished: false,
@@ -393,9 +393,9 @@ export function ProgressSample({
     picks.map(([itemId, optionId]) => ({ itemId, optionId }));
   const short: FinishedSession = {
     kind: "scenario",
-    itemIds: ["s1", "s2", "s3"],
+    itemIds: ["q-scn-s01-001", "s2", "s3"],
     answers: answers([
-      ["s1", "d"],
+      ["q-scn-s01-001", "a"],
       ["s2", "c"],
       ["s3", "a"],
     ]),
@@ -924,7 +924,7 @@ export function ExamLeaveSample() {
     <>
       <SessionSample
         kind="quiz"
-        itemId="q-s1-2"
+        itemId="q-quiz-s01-002"
         index={4}
         answered={[0, 1, 2, 3]}
         examSeconds={842}

@@ -11,7 +11,7 @@ const wrong = (id: string) =>
 
 /** `rightCount` right answers out of `total`, using the quiz questions. */
 function session(rightCount: number, total: number): ScoredItem[] {
-  const ids = ["q-s1-1", "q-s1-2", "q-s2-1", "q-s2-2", "q-s3-1"].slice(0, total);
+  const ids = ["q-quiz-s01-001", "q-quiz-s01-002", "q-s2-1", "q-s2-2", "q-s3-1"].slice(0, total);
   return ids.map((id, index) => (index < rightCount ? right(id) : wrong(id)));
 }
 
@@ -35,7 +35,7 @@ describe("the pass mark", () => {
     expect(resultPercent(session(4, 5))).toBe(80);
     expect(resultPercent(session(3, 5))).toBe(60);
     expect(resultPercent([])).toBe(0);
-    const third = [right("q-s1-1"), wrong("q-s1-2"), wrong("q-s2-1")];
+    const third = [right("q-quiz-s01-001"), wrong("q-quiz-s01-002"), wrong("q-s2-1")];
     expect(resultPercent(third)).toBe(33);
   });
 
@@ -45,7 +45,7 @@ describe("the pass mark", () => {
     // 79 right answers out of 100 is 79%, 80 out of 100 is 80%.
     const hundred = (rightCount: number) =>
       Array.from({ length: 100 }, (_, index) =>
-        index < rightCount ? right("q-s1-1") : wrong("q-s1-1"),
+        index < rightCount ? right("q-quiz-s01-001") : wrong("q-quiz-s01-001"),
       );
     expect(resultPercent(hundred(79))).toBe(79);
     expect(isPassed(hundred(79))).toBe(false);

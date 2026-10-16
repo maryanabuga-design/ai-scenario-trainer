@@ -6,14 +6,14 @@ import { materialForSection, topicIcon, topicTint } from "@/lib/weak-topics";
 import { currentWeakItems, scoreItem } from "@/lib/scoring";
 import type { FinishedSession } from "@/lib/session";
 
-// s1 d wrong (S1), s2 c right, s3 b wrong (S2), s4 a wrong (S6), s5 a wrong (S5), q-s1-1 a wrong (S1).
+// q-scn-s01-001 a wrong (S1), s2 c right, s3 b wrong (S2), s4 a wrong (S6), s5 a wrong (S5), q-quiz-s01-001 b wrong (S1).
 const items = [
-  scoreItem(getItem("s1"), "d"),
+  scoreItem(getItem("q-scn-s01-001"), "a"),
   scoreItem(getItem("s2"), "c"),
   scoreItem(getItem("s3"), "b"),
   scoreItem(getItem("s4"), "a"),
   scoreItem(getItem("s5"), "a"),
-  scoreItem(getItem("q-s1-1"), "a"),
+  scoreItem(getItem("q-quiz-s01-001"), "b"),
 ];
 
 describe("weak topics", () => {
@@ -42,13 +42,17 @@ describe("weak topics", () => {
 
   it("brings back the questions answered wrong in the chosen sections, each once", () => {
     const topics = weakTopics(items);
-    expect(repeatItemIds(topics)).toEqual(["s1", "q-s1-1", "s3", "s5", "s4"]);
+    expect(repeatItemIds(topics)).toEqual(["q-scn-s01-001", "q-quiz-s01-001", "s3", "s5", "s4"]);
     const chosen = topics.filter((topic) => ["S2", "S6"].includes(topic.sectionId));
     expect(repeatItemIds(chosen)).toEqual(["s3", "s4"]);
   });
 
   it("clears a topic once the latest answer to its questions is right", () => {
-    const later = [...items, scoreItem(getItem("s3"), "a"), scoreItem(getItem("s1"), "b")];
+    const later = [
+      ...items,
+      scoreItem(getItem("s3"), "a"),
+      scoreItem(getItem("q-scn-s01-001"), "b"),
+    ];
     const sections = weakTopics(currentWeakItems(later)).map((topic) => topic.sectionId);
     expect(sections).not.toContain("S2");
     expect(sections).toContain("S1");
@@ -70,9 +74,9 @@ describe("weak topics from the saved history", () => {
 
   it("uses the latest answer to each question, oldest session first", () => {
     const history = [
-      session(2, [["s1", "b"]]),
+      session(2, [["q-scn-s01-001", "b"]]),
       session(1, [
-        ["s1", "d"],
+        ["q-scn-s01-001", "a"],
         ["s4", "a"],
       ]),
     ];

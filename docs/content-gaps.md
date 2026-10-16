@@ -17,15 +17,13 @@ or `- pending <topic> <mode>: <number>` (not expanded yet).
 questions (what to do, what not to do, a true or false check, one scenario decision); beyond that
 the questions would repeat the same fact in other words, which the content rules forbid.
 
-## S1 Responding to an alarm (piloted 17 Oct 2026)
+## S1 Responding to an alarm (extended with the demo extension, 17 Oct 2026)
 
-The section has 4 bullets and 7 distinct statements: treat the alarm as real until officially
-confirmed otherwise; stop non-essential tasks; take only what you can carry in a few seconds;
-never delay your exit to collect belongings; no elevators during a fire, use the stairs; help
-people who need assistance only if it is safe; otherwise report their location to responders.
-
-- limited S1 scenario: 8
-- limited S1 quiz: 9
+S1 is no longer limited by the guide: the original section has 4 bullets, and the demo extension
+(`s01-guide-extension.md`, see `docs/content-notes.md`) adds 7 subsections of general public
+safety practice under it. S1 now has 20 scenario steps and 20 quiz questions (two parts of 10 in
+each mode), above the minimum of 20 and below the target of 30. It is therefore not listed as
+limited. The extension is demo material, not an official procedure.
 
 ## Not expanded yet
 

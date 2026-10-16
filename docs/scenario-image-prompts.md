@@ -45,19 +45,30 @@ in the content file stays empty. The first scene of each topic is the priority s
 
 ### S1 Responding to an alarm
 
-**s01-sc1** (priority) — steps 1 to 5 (`s1`, `q-scn-s01-002` to `q-scn-s01-005`).
-A second-floor training room where the fire alarm has just sounded and twelve people are standing
-up.
-Paste after the prefix: "a wooden-mannequin duty officer in an olive vest in a bright training
-room, twelve faceless wooden mannequins standing up from tables with bags and a projector, an alarm
-bell on the wall, calm and orderly, 4:3".
+All four S1 scenes are the priority set for this topic; `s01-sc1` is the first one to make.
 
-**s01-sc2** — steps 6 to 8 (`q-scn-s01-006`, `s7`, `q-scn-s01-008`).
-A second-floor corridor with an elevator at the end and the stairwell door, where a visitor on
-crutches needs help.
-Paste after the prefix: "a corridor with an elevator and a stairwell door, a faceless wooden
-mannequin on crutches helped by a colleague, the rest of the group heading down the stairs, light
-haze at the stairwell door, 4:3".
+**s01-sc1** (priority) — steps 1 to 5 (`q-scn-s01-001` to `q-scn-s01-005`).
+A second-floor training room as an alarm sounds and the participants stand up.
+Paste after the prefix: "a wooden-mannequin presenter in an olive vest in a bright second-floor
+training room, fourteen faceless wooden mannequins standing up from tables with laptops and bags,
+an alarm bell on the wall, calm and orderly, 4:3".
+
+**s01-sc2** — steps 6 to 10 (`q-scn-s01-006` to `q-scn-s01-010`).
+A corridor with an open elevator and a stairwell door as participants head towards the exit.
+Paste after the prefix: "a long office corridor with an open elevator and a stairwell door at the
+end, a group of faceless wooden mannequins walking towards the stairs, one on the phone, one with a
+bandaged ankle, 4:3".
+
+**s01-sc3** — steps 11 to 15 (`q-scn-s01-011` to `q-scn-s01-015`).
+A stairwell landing with a colleague in a wheelchair and a warden in a green vest nearby.
+Paste after the prefix: "a narrow stairwell landing, a faceless wooden mannequin in a wheelchair
+waiting calmly, a warden mannequin in a green vest a few steps away, other mannequins passing down
+the stairs holding the handrail, 4:3".
+
+**s01-sc4** — steps 16 to 20 (`q-scn-s01-016` to `q-scn-s01-020`).
+An empty open-plan office in the evening with one lit desk and a flashing alarm light.
+Paste after the prefix: "an empty open-plan office in the evening, one lit desk with a laptop and
+a headset, a flashing red alarm light on the ceiling, one wooden mannequin standing up to leave, 4:3".
 
 ### Scenes of the other topics
 

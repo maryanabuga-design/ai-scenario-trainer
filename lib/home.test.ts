@@ -54,7 +54,13 @@ const rightAnswers = (time: number, ids: string[]) =>
     time,
     ids.map((id): [string, boolean] => [id, true]),
   );
-const fiveRight = ["q-s1-1", "q-s1-2", "q-s1-3", "q-s1-4", "q-s2-1"];
+const fiveRight = [
+  "q-quiz-s01-001",
+  "q-quiz-s01-002",
+  "q-quiz-s01-003",
+  "q-quiz-s01-004",
+  "q-s2-1",
+];
 
 const record = (lastPercent: number) => ({
   lastPercent,
@@ -80,14 +86,13 @@ describe("the topic strip", () => {
   });
 
   it("is done only when every part of the section, in both modes, is at or above the pass mark", () => {
-    // S1 has a scenario part and a quiz part.
+    // S1 has two scenario parts and two quiz parts.
+    const s1 = ["scenario:S1:1", "scenario:S1:2", "quiz:S1:1", "quiz:S1:2"];
+    const all = (percent: number) => Object.fromEntries(s1.map((id) => [id, record(percent)]));
     expect(states({ "quiz:S1:1": record(100) })[0]).toBe("in progress");
-    expect(states({ "quiz:S1:1": record(100), "scenario:S1:1": record(PASS_MARK - 1) })[0]).toBe(
-      "in progress",
-    );
-    expect(states({ "quiz:S1:1": record(100), "scenario:S1:1": record(PASS_MARK) })[0]).toBe(
-      "done",
-    );
+    expect(states({ ...all(100), "scenario:S1:2": record(PASS_MARK - 1) })[0]).toBe("in progress");
+    expect(states({ ...all(100), "scenario:S1:2": record(PASS_MARK) })[0]).toBe("done");
+    expect(states(all(PASS_MARK))[0]).toBe("done");
     // S3 has no scenario part: its quiz part alone decides.
     expect(states({ "quiz:S3:1": record(PASS_MARK) })[2]).toBe("done");
   });
@@ -99,7 +104,7 @@ describe("the topic strip", () => {
 
 describe("the sentence under the greeting", () => {
   it("1 says where an unfinished session stopped, even with weak topics and a reached goal", () => {
-    const history = [finished(at(17), [["q-s1-1", false]])];
+    const history = [finished(at(17), [["q-quiz-s01-001", false]])];
     expect(summary(session("scenario", 6), history).subtitle).toBe(
       "You stopped at question 7 of 20.",
     );
@@ -110,11 +115,11 @@ describe("the sentence under the greeting", () => {
   });
 
   it("3 counts the topics that need another look, in the singular too, before the daily goal", () => {
-    const one = [finished(at(17), [["q-s1-1", false]])];
+    const one = [finished(at(17), [["q-quiz-s01-001", false]])];
     expect(summary(null, one).subtitle).toBe("1 topic needs another look.");
     const two = [
       finished(at(17), [
-        ["q-s1-1", false],
+        ["q-quiz-s01-001", false],
         ["q-s2-1", false],
       ]),
     ];
@@ -150,9 +155,9 @@ describe("the daily goal", () => {
 
   it("counts the answers of finished sessions of the local day only", () => {
     const history = [
-      rightAnswers(at(17, 8), ["q-s1-1", "q-s1-2"]),
-      rightAnswers(at(17, 12), ["q-s1-3"]),
-      rightAnswers(at(16, 23), ["q-s1-4", "q-s2-1"]),
+      rightAnswers(at(17, 8), ["q-quiz-s01-001", "q-quiz-s01-002"]),
+      rightAnswers(at(17, 12), ["q-quiz-s01-003"]),
+      rightAnswers(at(16, 23), ["q-quiz-s01-004", "q-s2-1"]),
     ];
     expect(questionsToday(history, NOW)).toBe(3);
     expect(questionsToday(null, NOW)).toBe(0);
@@ -168,7 +173,7 @@ describe("the daily goal", () => {
   it("counts nothing from an unfinished session", () => {
     const open = {
       ...session("quiz", 3, 5),
-      answers: [{ itemId: "q-s1-1", optionId: "a" }],
+      answers: [{ itemId: "q-quiz-s01-001", optionId: "a" }],
     };
     expect(summary(open, []).goal.done).toBe(0);
   });
@@ -202,14 +207,14 @@ describe("readiness", () => {
 
   it("updates after another finished session, and counts a question once", () => {
     const first = finished(1, [
-      ["s1", true],
+      ["q-scn-s01-001", true],
       ["s2", true],
     ]);
     const before = readiness([first]);
     const more = finished(2, [
-      ["s1", true],
-      ["q-s1-1", true],
-      ["q-s1-2", true],
+      ["q-scn-s01-001", true],
+      ["q-quiz-s01-001", true],
+      ["q-quiz-s01-002", true],
     ]);
     expect(readiness([first, more])).toBeGreaterThan(before);
     // s1 was right twice: 4 different questions are right, not 5.
@@ -218,11 +223,11 @@ describe("readiness", () => {
 
   it("uses only the latest answer: a later wrong answer takes a question away, a right one gives it back", () => {
     const right = finished(1, [
-      ["s1", true],
-      ["q-s1-1", true],
+      ["q-scn-s01-001", true],
+      ["q-quiz-s01-001", true],
     ]);
-    const wrong = finished(2, [["s1", false]]);
-    const again = finished(3, [["s1", true]]);
+    const wrong = finished(2, [["q-scn-s01-001", false]]);
+    const again = finished(3, [["q-scn-s01-001", true]]);
     expect(readiness([right, wrong])).toBe(Math.floor((1 / TOTAL) * 100));
     expect(readiness([right, wrong, again])).toBe(readiness([right]));
     // the order the sessions are stored in does not matter
@@ -241,8 +246,8 @@ describe("readiness", () => {
   it("is the same number the Training screen's selectors give", () => {
     const history = [
       finished(1, [
-        ["s1", true],
-        ["q-s1-1", true],
+        ["q-scn-s01-001", true],
+        ["q-quiz-s01-001", true],
         ["q-s2-1", false],
       ]),
     ];
@@ -254,9 +259,9 @@ describe("readiness", () => {
 });
 
 describe("the tiles", () => {
-  const counts = homeCounts({ history: [], saved: ["s1", "q-s2-1", "gone"] });
+  const counts = homeCounts({ history: [], saved: ["q-scn-s01-001", "q-s2-1", "gone"] });
   const exam = (at: number, percent: number): FinishedSession => ({
-    ...finished(at, [["q-s1-1", true]]),
+    ...finished(at, [["q-quiz-s01-001", true]]),
     kind: "exam",
     exam: { percent, questions: 20, timeUsedSeconds: 600 },
   });
@@ -268,9 +273,9 @@ describe("the tiles", () => {
   it("counts the sections to repeat from the latest wrong answers", () => {
     const history = [
       finished(1, [
-        ["s1", false],
+        ["q-scn-s01-001", false],
         ["s4", false],
-        ["q-s1-1", false],
+        ["q-quiz-s01-001", false],
         ["s2", true],
       ]),
     ];
@@ -278,8 +283,8 @@ describe("the tiles", () => {
     const cleared = [
       ...history,
       finished(2, [
-        ["s1", true],
-        ["q-s1-1", true],
+        ["q-scn-s01-001", true],
+        ["q-quiz-s01-001", true],
       ]),
     ];
     expect(homeCounts({ history: cleared, saved: null }).weakSections).toBe(1);

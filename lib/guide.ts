@@ -1,10 +1,19 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
+/** A `### Title` block inside a section: the extended guide text (for example the S1 demo extension). */
+export type GuideSubsection = {
+  title: string;
+  lines: string[];
+};
+
 export type GuideSection = {
   id: string;
   title: string;
+  /** The text under the `##` heading, before any `###` subsection. */
   lines: string[];
+  /** The `###` subsections, in order; empty when the section has none. */
+  subsections: GuideSubsection[];
 };
 
 export type Guide = {
@@ -25,14 +34,20 @@ function readGuide(file: string): Guide {
     .map((block) => {
       const [heading, ...rest] = block.split("\n");
       const match = heading.match(/^([A-Z]\d+)\. (.+)$/);
-      return {
-        id: match?.[1] ?? heading,
-        title: match?.[2] ?? heading,
-        lines: rest
-          .map((line) => line.trim())
-          .filter((line) => line.length > 0)
-          .map((line) => line.replace(/^(- |\d+\. )/, "").replaceAll("**", "")),
-      };
+      const lines: string[] = [];
+      const subsections: GuideSubsection[] = [];
+      for (const raw of rest) {
+        const line = raw.trim();
+        if (line.length === 0) continue;
+        const sub = line.match(/^### (.+)$/);
+        if (sub) {
+          subsections.push({ title: sub[1], lines: [] });
+          continue;
+        }
+        const text = line.replace(/^(- |\d+\. )/, "").replaceAll("**", "");
+        (subsections.at(-1)?.lines ?? lines).push(text);
+      }
+      return { id: match?.[1] ?? heading, title: match?.[2] ?? heading, lines, subsections };
     });
   return { title, sections };
 }

@@ -11,7 +11,7 @@ import type { WeakTopic } from "@/lib/weak-topics";
 const topic = (sectionId: string, wrongAnswers: number): WeakTopic => ({
   sectionId,
   icon: "DoorOpen",
-  items: Array.from({ length: wrongAnswers }, () => scoreItem(getItem("s1"), "d")),
+  items: Array.from({ length: wrongAnswers }, () => scoreItem(getItem("q-scn-s01-001"), "d")),
 });
 
 function render(topics: WeakTopic[], selected: string[]) {

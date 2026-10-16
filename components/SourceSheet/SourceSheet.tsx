@@ -71,6 +71,16 @@ export function SourceSheetProvider({
                 <li key={line}>{line}</li>
               ))}
             </ul>
+            {section.subsections.map((subsection) => (
+              <section key={subsection.title} className="flex flex-col gap-2">
+                <h3 className="type-body-strong">{subsection.title}</h3>
+                <ul className="type-body flex list-disc flex-col gap-2 pl-5">
+                  {subsection.lines.map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+              </section>
+            ))}
           </div>
         )}
       </dialog>

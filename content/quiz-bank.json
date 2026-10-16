@@ -1,34 +1,39 @@
 {
   "questions": [
     {
-      "id": "q-s1-1",
+      "id": "q-quiz-s01-001",
       "section": "S1",
-      "question": "An alarm sounds and nobody knows whether it is a drill. How should you treat it?",
+      "question": "Which statement describes the safest assumption when an alarm sounds?",
       "options": [
         {
           "id": "a",
-          "text": "As a drill until someone confirms a real fire"
+          "text": "It is real until it is officially confirmed otherwise."
         },
         {
           "id": "b",
-          "text": "As real until it is officially confirmed otherwise"
+          "text": "It is a drill unless smoke is visible."
         },
         {
           "id": "c",
-          "text": "As real only if you can smell smoke"
+          "text": "It is a fault if the alarm is short."
+        },
+        {
+          "id": "d",
+          "text": "It is real only if other people are leaving."
         }
       ],
-      "correctOptionId": "b",
-      "why": "The guide says to treat every alarm as real until it is officially confirmed otherwise.",
+      "correctOptionId": "a",
+      "why": "The cause cannot be known from the sound, so the guide says to treat every alarm as real until it is officially confirmed otherwise.",
+      "hint": "Think about what you can know from the sound alone.",
       "guideRef": [
         "S1"
       ]
     },
     {
-      "id": "q-s1-2",
+      "id": "q-quiz-s01-002",
       "type": "true-false",
       "section": "S1",
-      "question": "During a fire, the elevator is a safe way to move people who walk slowly.",
+      "question": "You can tell a test from a real alarm by the sound alone.",
       "options": [
         {
           "id": "a",
@@ -40,63 +45,59 @@
         }
       ],
       "correctOptionId": "b",
-      "why": "The guide says not to use elevators during a fire; use the stairs.",
+      "why": "Tests, faults and real fires can sound identical, so the sound is not evidence.",
+      "hint": "Consider how a test is designed to sound.",
       "guideRef": [
         "S1"
       ]
     },
     {
-      "id": "q-s1-3",
+      "id": "q-quiz-s01-003",
       "section": "S1",
-      "question": "Which of these is part of the guide's advice when an alarm sounds?",
+      "question": "Which of these is an official confirmation that an alarm is not real?",
       "options": [
         {
           "id": "a",
-          "text": "Collect documents from your desk first"
+          "text": "A message from a colleague."
         },
         {
           "id": "b",
-          "text": "Use the stairs, not the elevator"
+          "text": "The alarm falling silent."
         },
         {
           "id": "c",
-          "text": "Finish the task you are working on"
+          "text": "A statement from building management, a warden or the emergency services."
         },
         {
           "id": "d",
-          "text": "Wait for a colleague to confirm the alarm"
+          "text": "Most people staying in their seats."
         }
       ],
-      "correctOptionId": "b",
-      "why": "The guide asks you to stop non-essential tasks, use the stairs and take only what you can carry in seconds. Collecting documents delays the exit.",
+      "correctOptionId": "c",
+      "why": "Only people responsible for the building or the response can officially confirm it. Messages, silence and the behaviour of others are not confirmation.",
+      "hint": "Who is responsible for the building and the response?",
       "guideRef": [
         "S1"
       ]
     },
     {
-      "id": "q-s1-4",
+      "id": "q-quiz-s01-004",
+      "type": "true-false",
       "section": "S1",
-      "question": "Someone needs help to leave, but helping them is not safe. What should you report to responders?",
+      "question": "The way you act in a drill is the way you are likely to act in a real alarm.",
       "options": [
         {
           "id": "a",
-          "text": "Who started the alarm"
+          "text": "True"
         },
         {
           "id": "b",
-          "text": "Where the person is (their location)"
-        },
-        {
-          "id": "c",
-          "text": "How many people have already left"
-        },
-        {
-          "id": "d",
-          "text": "How the fire began"
+          "text": "False"
         }
       ],
-      "correctOptionId": "b",
-      "why": "The guide says to help only if it is safe; otherwise report the person's location so responders can reach them.",
+      "correctOptionId": "a",
+      "why": "People repeat the habits they practise, so drills should be taken as seriously as a real alarm.",
+      "hint": "What do people fall back on under stress?",
       "guideRef": [
         "S1"
       ]
@@ -104,23 +105,28 @@
     {
       "id": "q-quiz-s01-005",
       "section": "S1",
-      "question": "What should you do with non-essential tasks when an alarm sounds?",
+      "question": "What should you do first when you hear an alarm?",
       "options": [
         {
           "id": "a",
-          "text": "Stop them"
+          "text": "Finish the task in progress."
         },
         {
           "id": "b",
-          "text": "Finish them quickly first"
+          "text": "Stop non-essential tasks and start to leave."
         },
         {
           "id": "c",
-          "text": "Save your work and shut everything down"
+          "text": "Phone the building manager to ask the cause."
+        },
+        {
+          "id": "d",
+          "text": "Look for signs of a fire."
         }
       ],
-      "correctOptionId": "a",
-      "why": "The guide says to stop non-essential tasks when an alarm sounds.",
+      "correctOptionId": "b",
+      "why": "The first seconds matter. Stopping what you are doing and starting to leave saves time for the exit.",
+      "hint": "What takes up the first seconds if you do not stop?",
       "guideRef": [
         "S1"
       ]
@@ -128,23 +134,28 @@
     {
       "id": "q-quiz-s01-006",
       "section": "S1",
-      "question": "How much should you take with you when you leave?",
+      "question": "What may you take with you when leaving?",
       "options": [
         {
           "id": "a",
-          "text": "Everything you may need later, in several trips"
+          "text": "Anything you can gather within a minute."
         },
         {
           "id": "b",
-          "text": "Nothing at all, not even a phone"
+          "text": "Nothing at all, not even a phone."
         },
         {
           "id": "c",
-          "text": "Only what you can carry in a few seconds"
+          "text": "Your laptop and bag."
+        },
+        {
+          "id": "d",
+          "text": "Only what you can carry in a few seconds."
         }
       ],
-      "correctOptionId": "c",
-      "why": "The guide says to take only what you can carry in a few seconds.",
+      "correctOptionId": "d",
+      "why": "The guide allows only what can be carried in a few seconds, such as a phone already in hand.",
+      "hint": "The limit is about time, not about a list of items.",
       "guideRef": [
         "S1"
       ]
@@ -153,7 +164,7 @@
       "id": "q-quiz-s01-007",
       "type": "true-false",
       "section": "S1",
-      "question": "It is acceptable to delay your exit for a short time to collect your belongings.",
+      "question": "It is acceptable to delay your exit briefly to collect belongings that are close by.",
       "options": [
         {
           "id": "a",
@@ -165,7 +176,8 @@
         }
       ],
       "correctOptionId": "b",
-      "why": "The guide says never to delay your exit to collect belongings.",
+      "why": "The guide says never to delay your exit to collect belongings, even when they are close.",
+      "hint": "Does the distance to the item change the rule?",
       "guideRef": [
         "S1"
       ]
@@ -173,23 +185,28 @@
     {
       "id": "q-quiz-s01-008",
       "section": "S1",
-      "question": "When should you help a person who needs assistance to leave?",
+      "question": "Why should you not go back for a coat that is only a few metres away?",
       "options": [
         {
           "id": "a",
-          "text": "Always, whatever the risk"
+          "text": "A detour delays you, blocks others and may take you towards danger."
         },
         {
           "id": "b",
-          "text": "Only if it is safe to do so"
+          "text": "Coats are not allowed in stairwells."
         },
         {
           "id": "c",
-          "text": "Never; leave every such person to responders"
+          "text": "Belongings are always insured."
+        },
+        {
+          "id": "d",
+          "text": "The alarm may stop soon."
         }
       ],
-      "correctOptionId": "b",
-      "why": "The guide says to help people who need assistance only if it is safe, and otherwise to report their location to responders.",
+      "correctOptionId": "a",
+      "why": "A short detour costs time, can block the route for others and may take you towards the danger.",
+      "hint": "Think about the others on the route as well as yourself.",
       "guideRef": [
         "S1"
       ]
@@ -197,27 +214,333 @@
     {
       "id": "q-quiz-s01-009",
       "section": "S1",
-      "question": "Which of these is NOT part of the guide's advice when an alarm sounds?",
+      "question": "Which items are best left behind?",
       "options": [
         {
           "id": "a",
-          "text": "Stop non-essential tasks"
+          "text": "A phone in your hand."
         },
         {
           "id": "b",
-          "text": "Use the stairs"
+          "text": "Medicine you need and can reach at once."
         },
         {
           "id": "c",
-          "text": "Take only what you can carry in a few seconds"
+          "text": "Heavy bags, laptops and files."
         },
         {
           "id": "d",
-          "text": "Wait until the alarm is confirmed before you leave"
+          "text": "Glasses you are wearing."
+        }
+      ],
+      "correctOptionId": "c",
+      "why": "Bulky or heavy items slow you down, while small items already in your hand cost no time.",
+      "hint": "Which items take time to pick up or slow you down?",
+      "guideRef": [
+        "S1"
+      ]
+    },
+    {
+      "id": "q-quiz-s01-010",
+      "section": "S1",
+      "question": "Why is an ordinary elevator not used during a fire alarm?",
+      "options": [
+        {
+          "id": "a",
+          "text": "It uses too much power."
+        },
+        {
+          "id": "b",
+          "text": "It may stop between floors, open onto the fire or lose power."
+        },
+        {
+          "id": "c",
+          "text": "It is reserved for goods."
+        },
+        {
+          "id": "d",
+          "text": "It is slower than the stairs."
+        }
+      ],
+      "correctOptionId": "b",
+      "why": "A lift can trap you between floors, open at a floor affected by the fire or stop when power fails.",
+      "hint": "Imagine being inside a stopped car.",
+      "guideRef": [
+        "S1"
+      ]
+    },
+    {
+      "id": "q-quiz-s01-011",
+      "type": "true-false",
+      "section": "S1",
+      "question": "Ordinary elevators should not be used during a fire alarm.",
+      "options": [
+        {
+          "id": "a",
+          "text": "True"
+        },
+        {
+          "id": "b",
+          "text": "False"
+        }
+      ],
+      "correctOptionId": "a",
+      "why": "The guide says not to use elevators during a fire and to use the stairs.",
+      "hint": "What does the guide say about stairs and elevators?",
+      "guideRef": [
+        "S1"
+      ]
+    },
+    {
+      "id": "q-quiz-s01-012",
+      "section": "S1",
+      "question": "Which lifts may be used for evacuation?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Any lift if the stairs are crowded."
+        },
+        {
+          "id": "b",
+          "text": "The lift nearest to the exit."
+        },
+        {
+          "id": "c",
+          "text": "Goods lifts."
+        },
+        {
+          "id": "d",
+          "text": "Only lifts designated for evacuation and operated by the emergency services or trained staff."
         }
       ],
       "correctOptionId": "d",
-      "why": "The guide says to treat every alarm as real until it is officially confirmed otherwise, so you do not wait for confirmation before leaving.",
+      "why": "Some buildings have designated evacuation lifts, but they are used only under the control of trained staff or the emergency services.",
+      "hint": "Who operates a lift that is designated for evacuation?",
+      "guideRef": [
+        "S1"
+      ]
+    },
+    {
+      "id": "q-quiz-s01-013",
+      "section": "S1",
+      "question": "How should you move on the stairs?",
+      "options": [
+        {
+          "id": "a",
+          "text": "At a steady walking pace, holding the handrail."
+        },
+        {
+          "id": "b",
+          "text": "Running, to save time."
+        },
+        {
+          "id": "c",
+          "text": "Stopping on each landing."
+        },
+        {
+          "id": "d",
+          "text": "Side by side, so you can talk."
+        }
+      ],
+      "correctOptionId": "a",
+      "why": "A steady pace and a hand on the rail prevent falls, which would block everyone behind you.",
+      "hint": "What would a fall do to the people behind you?",
+      "guideRef": [
+        "S1"
+      ]
+    },
+    {
+      "id": "q-quiz-s01-014",
+      "section": "S1",
+      "question": "When should you help another person during an evacuation?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Always, whatever the risk."
+        },
+        {
+          "id": "b",
+          "text": "Only if you are a manager."
+        },
+        {
+          "id": "c",
+          "text": "Only if it is safe for you."
+        },
+        {
+          "id": "d",
+          "text": "Never."
+        }
+      ],
+      "correctOptionId": "c",
+      "why": "A rescuer who becomes a casualty creates a second problem. Help only if it is safe, otherwise report the person's location.",
+      "hint": "Consider what happens if the helper is hurt as well.",
+      "guideRef": [
+        "S1"
+      ]
+    },
+    {
+      "id": "q-quiz-s01-015",
+      "section": "S1",
+      "question": "A colleague cannot use the stairs and you are not trained to move them. What do you do?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Carry them down with a colleague."
+        },
+        {
+          "id": "b",
+          "text": "Tell them you will report their location, then report it to a warden or responder at once."
+        },
+        {
+          "id": "c",
+          "text": "Leave without telling anyone."
+        },
+        {
+          "id": "d",
+          "text": "Block the stairs until help arrives."
+        }
+      ],
+      "correctOptionId": "b",
+      "why": "Untrained carrying can injure both people and block the route. Reporting the exact location lets responders reach them.",
+      "hint": "What action helps trained responders most?",
+      "guideRef": [
+        "S1"
+      ]
+    },
+    {
+      "id": "q-quiz-s01-016",
+      "section": "S1",
+      "question": "Which details help responders find someone who could not leave?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Their job title."
+        },
+        {
+          "id": "b",
+          "text": "Their name only."
+        },
+        {
+          "id": "c",
+          "text": "The time the alarm began."
+        },
+        {
+          "id": "d",
+          "text": "The floor, the room, the nearest landing and how many people are with them."
+        }
+      ],
+      "correctOptionId": "d",
+      "why": "A precise location and the number of people let responders go to the right place with the right help.",
+      "hint": "How would you describe where someone is to a stranger?",
+      "guideRef": [
+        "S1"
+      ]
+    },
+    {
+      "id": "q-quiz-s01-017",
+      "type": "true-false",
+      "section": "S1",
+      "question": "If someone is missing, you should go back into the building to look for them.",
+      "options": [
+        {
+          "id": "a",
+          "text": "True"
+        },
+        {
+          "id": "b",
+          "text": "False"
+        }
+      ],
+      "correctOptionId": "b",
+      "why": "Do not re-enter. Report the missing person's name and last known location to responders.",
+      "hint": "Who is equipped to search a building during an alarm?",
+      "guideRef": [
+        "S1"
+      ]
+    },
+    {
+      "id": "q-quiz-s01-018",
+      "section": "S1",
+      "question": "Nobody in the room reacts to the alarm. What is the best action?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Start moving and say clearly: 'Alarm, leave now.'"
+        },
+        {
+          "id": "b",
+          "text": "Wait until someone else moves."
+        },
+        {
+          "id": "c",
+          "text": "Ask the group to vote."
+        },
+        {
+          "id": "d",
+          "text": "Check your phone for news."
+        }
+      ],
+      "correctOptionId": "a",
+      "why": "Groups often wait for someone else to act. Starting to move and calling it out breaks the pause.",
+      "hint": "What happens when everyone waits for someone else?",
+      "guideRef": [
+        "S1"
+      ]
+    },
+    {
+      "id": "q-quiz-s01-019",
+      "section": "S1",
+      "question": "Why do people often delay reacting to an alarm?",
+      "options": [
+        {
+          "id": "a",
+          "text": "They are not allowed to leave."
+        },
+        {
+          "id": "b",
+          "text": "They cannot hear it."
+        },
+        {
+          "id": "c",
+          "text": "They assume it is a drill or a fault and wait for others."
+        },
+        {
+          "id": "d",
+          "text": "They are trained to stay."
+        }
+      ],
+      "correctOptionId": "c",
+      "why": "Frequent tests and faults teach people to expect a false alarm, and they watch others instead of acting.",
+      "hint": "What have repeated false alarms taught them?",
+      "guideRef": [
+        "S1"
+      ]
+    },
+    {
+      "id": "q-quiz-s01-020",
+      "section": "S1",
+      "question": "The alarm stops while you are outside. What should you do?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Go back inside to collect your things."
+        },
+        {
+          "id": "b",
+          "text": "Stay out until it is officially confirmed that it is safe."
+        },
+        {
+          "id": "c",
+          "text": "Send one person to check."
+        },
+        {
+          "id": "d",
+          "text": "Go back if no one is around."
+        }
+      ],
+      "correctOptionId": "b",
+      "why": "Silence is not confirmation. Stay out until building management, a warden or the emergency services say it is safe.",
+      "hint": "Does the end of the sound mean the end of the danger?",
       "guideRef": [
         "S1"
       ]

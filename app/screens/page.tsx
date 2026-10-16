@@ -265,7 +265,7 @@ export default function Screens() {
             <Screen>
               <SessionSample
                 kind="quiz"
-                itemId="q-s1-2"
+                itemId="q-quiz-s01-002"
                 index={4}
                 answered={[0, 1, 2, 3]}
                 choice="b"
@@ -277,7 +277,7 @@ export default function Screens() {
             <Screen>
               <SessionSample
                 kind="quiz"
-                itemId="q-s1-2"
+                itemId="q-quiz-s01-002"
                 index={18}
                 total={20}
                 answered={[0, 1, 2]}
@@ -341,7 +341,7 @@ export default function Screens() {
           </PhoneFrame>
           <PhoneFrame label="Quiz: True / False (2 options, no picture, no gap)">
             <Screen>
-              <SessionSample itemId="q-s1-2" kind="quiz" index={1} answered={[0]} />
+              <SessionSample itemId="q-quiz-s01-002" kind="quiz" index={1} answered={[0]} />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Back to question 2: the stored choice is filled in">
@@ -379,12 +379,12 @@ export default function Screens() {
         <Group title="Answer review">
           <PhoneFrame label="Review: with the right and wrong strip, the person was right">
             <Screen>
-              <AnswerReviewSample itemId="s1" choice="b" />
+              <AnswerReviewSample itemId="q-scn-s01-001" choice="b" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Review: the person was wrong">
             <Screen>
-              <AnswerReviewSample itemId="s1" choice="d" />
+              <AnswerReviewSample itemId="q-scn-s01-001" choice="d" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Review: a quiz question, wrong">

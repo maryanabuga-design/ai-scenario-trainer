@@ -35,8 +35,10 @@ describe("parts", () => {
         expect(own.flatMap((part) => part.itemIds)).toHaveLength(count);
       }
     }
-    // every section of the guide has fewer than 5 quiz questions here: one part each
-    expect(partsFor("quiz").every((part) => part.n === 1)).toBe(true);
+    // 20 questions give two parts of 10 (S1); sections with fewer than 10 have one part
+    const s1Quiz = partsFor("quiz").filter((part) => part.sectionId === "S1");
+    expect(s1Quiz.map((part) => part.itemIds.length)).toEqual([10, 10]);
+    expect(partsFor("quiz").filter((part) => part.sectionId === "S3")).toHaveLength(1);
   });
 
   it("chunks ids by PART_SIZE: 12 ids make 3 parts, 3 ids one, none make none", () => {
@@ -68,7 +70,7 @@ describe("parts", () => {
       .filter((part) => part.sectionId === "S1")
       .flatMap((part) => part.itemIds);
     expect(s1steps).toEqual(steps.filter((id) => s1steps.includes(id)));
-    expect(s1steps[0]).toBe("s1");
+    expect(s1steps[0]).toBe("q-scn-s01-001");
     const bank = questions.map((question) => question.id);
     const s1 = partsFor("quiz")
       .filter((part) => part.sectionId === "S1")

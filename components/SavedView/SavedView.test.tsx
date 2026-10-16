@@ -19,7 +19,7 @@ const render = (ids: string[]) =>
 
 describe("the Saved screen", () => {
   it("has the Back circle and the title", () => {
-    const html = render(["s1"]);
+    const html = render(["q-scn-s01-001"]);
     expect(html).toContain('aria-label="Back to Home"');
     expect(html).toContain(">Saved questions</h1>");
   });
@@ -34,16 +34,16 @@ describe("the Saved screen", () => {
   });
 
   it("lists a row for each saved question: section chip, question text and a chevron, in saved order", () => {
-    const html = render(["q-s2-1", "s1"]);
+    const html = render(["q-s2-1", "q-scn-s01-001"]);
     expect(html.match(/<li/g)).toHaveLength(2);
     expect(html.indexOf(getItem("q-s2-1").question)).toBeLessThan(
-      html.indexOf(getItem("s1").question),
+      html.indexOf(getItem("q-scn-s01-001").question),
     );
     expect(html).toContain(">S2<");
     expect(html).toContain(">S1<");
     expect(html).toContain("lucide-chevron-right");
     expect(html).toContain('href="/saved/q-s2-1"');
-    expect(html).toContain('href="/saved/s1"');
+    expect(html).toContain('href="/saved/q-scn-s01-001"');
   });
 
   it("offers Repeat saved (N) only when something is saved", () => {
@@ -58,7 +58,12 @@ describe("a saved question on its own", () => {
     renderToStaticMarkup(
       <SourceSheetProvider sections={loadAllSections()}>
         <AskAiProvider>
-          <ReviewQuestion item={getItem("s1")} choice={null} saved={saved} onToggleSaved={noop} />
+          <ReviewQuestion
+            item={getItem("q-scn-s01-001")}
+            choice={null}
+            saved={saved}
+            onToggleSaved={noop}
+          />
         </AskAiProvider>
       </SourceSheetProvider>,
     );

@@ -10,12 +10,9 @@ import { getStep, scenario } from "@/lib/scenario";
 
 describe("keyword matching", () => {
   it("answers a free question from the prepared pair with the most matching keywords", () => {
-    const reply = matchQuestion(getStep("s1"), "Why can't we just use the lift?");
-    expect(reply).toEqual({
-      kind: "answer",
-      text: getStep("s1").chat?.find((entry) => entry.id === "s1-elevator")?.answer,
-      sources: ["S1"],
-    });
+    const entry = getStep("s2").chat?.find((candidate) => candidate.id === "s2-check-door");
+    const reply = matchQuestion(getStep("s2"), "How do I feel the door with my hand to check it?");
+    expect(reply).toEqual({ kind: "answer", text: entry?.answer, sources: entry?.sources });
   });
 
   it("matches longer word forms and is not case sensitive", () => {
@@ -77,7 +74,7 @@ describe("suggested chips", () => {
   });
 
   it("hides a chip once it has been asked", () => {
-    const step = getStep("s1");
+    const step = getStep("q-scn-s01-001");
     const [first] = suggestedChips(step, []);
     expect(suggestedChips(step, [first.id]).map((chip) => chip.id)).not.toContain(first.id);
   });

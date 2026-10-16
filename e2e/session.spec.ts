@@ -10,14 +10,15 @@ const scenarioSteps: { id: string; section: string }[] = JSON.parse(
   readFileSync("content/scenario-building-evacuation.json", "utf8"),
 ).steps;
 const QUIZ_TOTAL = quizBank.length;
-const s1Quiz = quizBank.filter((question) => question.section === "S1");
+const PART_SIZE = 10;
+const s1Quiz = quizBank.filter((question) => question.section === "S1").slice(0, PART_SIZE);
 const SCENARIO_TOTAL = scenarioSteps.length;
 const quizOf = (section: string) => quizBank.filter((question) => question.section === section);
 
 const profile = { direction: "building-evacuation", onboarded: true };
 const scenario = {
   kind: "scenario",
-  itemIds: ["s1", "s2", "s3"],
+  itemIds: ["q-scn-s01-001", "s2", "s3"],
   answers: [],
   index: 0,
   finished: false,
@@ -41,8 +42,8 @@ const finish = (page: Page) => page.getByRole("button", { name: "Finish", exact:
 const option = (page: Page, text: string | RegExp) => page.locator("label", { hasText: text });
 
 // s1: b is right; s2: c; s3: a.
-const S1_RIGHT = "Everyone leaves now by the stairs";
-const S1_WRONG = "Stay where you are until the alarm is confirmed as real.";
+const S1_RIGHT = "Stop the session, tell everyone to leave now";
+const S1_WRONG = "Tell everyone it is probably a test and carry on while you check.";
 
 test.describe("a running session", () => {
   test("has the top row, the strip and a single Next button, with no verdict", async ({ page }) => {
@@ -91,7 +92,7 @@ test.describe("a running session", () => {
     await option(page, S1_WRONG).click();
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.session.v1")!));
     expect(saved.schema).toBe(5);
-    expect(saved.value.answers).toEqual([{ itemId: "s1", optionId: "a" }]);
+    expect(saved.value.answers).toEqual([{ itemId: "q-scn-s01-001", optionId: "a" }]);
   });
 
   test("asks before leaving, from Exit and from Back on the first step, and keeps the answers", async ({
@@ -189,10 +190,10 @@ test.describe("a running session", () => {
           "ast.session.v1",
           JSON.stringify({
             mode: "full",
-            stepIds: ["s1", "s2"],
+            stepIds: ["q-scn-s01-001", "s2"],
             index: 0,
             phase: "decide",
-            answers: [{ stepId: "s1", optionId: "b", confidence: 3, explanation: "" }],
+            answers: [{ stepId: "q-scn-s01-001", optionId: "b", confidence: 3, explanation: "" }],
             finished: false,
           }),
         );
@@ -214,7 +215,7 @@ test.describe("a running session", () => {
 test.describe("the question screen: hint and bookmark", () => {
   const quizSession = {
     kind: "quiz",
-    itemIds: ["q-s1-2", "q-s1-1"],
+    itemIds: ["q-quiz-s01-002", "q-quiz-s01-001"],
     answers: [],
     index: 0,
     finished: false,
@@ -230,7 +231,9 @@ test.describe("the question screen: hint and bookmark", () => {
     await lightbulb.click();
     const card = page.getByRole("region", { name: "Hint" });
     await expect(card).toBeVisible();
-    await expect(card).toContainText("Think about what an alarm means");
+    await expect(card).toContainText(
+      "Think about what the sound of an alarm can and cannot tell you.",
+    );
     await expect(card.getByRole("button", { name: /Guide · S1/ })).toBeVisible();
     // under the options, in the page, not a sheet
     const optionBox = await page.locator("fieldset label").last().boundingBox();
@@ -256,7 +259,7 @@ test.describe("the question screen: hint and bookmark", () => {
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.session.v1")!));
     expect(saved.schema).toBe(5);
     const [first, second] = saved.value.answers;
-    expect(first).toEqual({ itemId: "s1", optionId: "b", hintUsed: true });
+    expect(first).toEqual({ itemId: "q-scn-s01-001", optionId: "b", hintUsed: true });
     expect(second.hintUsed).toBeUndefined();
   });
 
@@ -274,7 +277,8 @@ test.describe("the question screen: hint and bookmark", () => {
   test("shows a hint (the fallback) on a quiz question too, as Review: the section", async ({
     page,
   }) => {
-    await start(page, quizSession);
+    // q-s2-1 has no hint of its own, so the fallback "Review: <section>" is shown.
+    await start(page, { ...quizSession, itemIds: ["q-s2-1"] });
     await page.getByRole("button", { name: "Hint", exact: true }).click();
     await expect(page.getByRole("region", { name: "Hint" })).toContainText("Review:");
   });
@@ -311,7 +315,7 @@ test.describe("the question screen: hint and bookmark", () => {
     await page.reload();
     await expect(page.getByRole("button", { name: "Remove from saved" })).toBeVisible();
     const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.saved.v1")!));
-    expect(stored).toEqual({ schema: 5, value: ["s1"] });
+    expect(stored).toEqual({ schema: 5, value: ["q-scn-s01-001"] });
     await page.getByRole("button", { name: "Remove from saved" }).click();
     await expect(page.getByRole("button", { name: "Save question" })).toBeVisible();
     await page.reload();
@@ -340,13 +344,13 @@ test.describe("saved questions", () => {
     await next(page).click();
     await page.getByRole("button", { name: "Save question" }).click();
     await page.goto("/saved");
-    await expect(page.getByRole("link", { name: /What is your first instruction/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /What do you do first/ })).toBeVisible();
     await expect(page.locator("main li:visible")).toHaveCount(2);
     await expect(page.getByRole("button", { name: /Repeat saved/ })).toContainText("2");
 
     // One saved question on its own: all options, the correct one marked, Why, bookmark.
-    await page.getByRole("link", { name: /What is your first instruction/ }).click();
-    await expect(page).toHaveURL(/\/saved\/s1$/);
+    await page.getByRole("link", { name: /What do you do first/ }).click();
+    await expect(page).toHaveURL(/\/saved\/q-scn-s01-001$/);
     await expect(page.locator("li[data-state=correct]:visible")).toContainText("Correct answer");
     await expect(page.locator("li[data-state]:visible")).toHaveCount(3);
     await expect(page.getByText("Why", { exact: true })).toBeVisible();
@@ -368,7 +372,7 @@ test.describe("saved questions", () => {
       {
         ...scenario,
         answers: [
-          { itemId: "s1", optionId: "a" },
+          { itemId: "q-scn-s01-001", optionId: "a" },
           { itemId: "s2", optionId: "c" },
           { itemId: "s3", optionId: "b" },
         ],
@@ -439,7 +443,7 @@ test.describe("Home", () => {
   test("continues an unfinished session at the right question", async ({ page }) => {
     await home(page, {
       ...scenario,
-      answers: [{ itemId: "s1", optionId: "b" }],
+      answers: [{ itemId: "q-scn-s01-001", optionId: "b" }],
       index: 1,
     });
     await expect(page.getByText("You stopped at question 2 of 3.")).toBeVisible();
@@ -457,9 +461,9 @@ test.describe("Home", () => {
       page,
       null,
       history([
-        { itemId: "s1", optionId: "b" },
+        { itemId: "q-scn-s01-001", optionId: "b" },
         { itemId: "s2", optionId: "c" },
-        { itemId: "q-s1-1", optionId: "b" },
+        { itemId: "q-quiz-s01-001", optionId: "a" },
       ]),
     );
     // 3 right of all the questions in the guide's sections.
@@ -470,7 +474,7 @@ test.describe("Home", () => {
   test("shows the sections to repeat after a wrong answer, and opens Weak topics", async ({
     page,
   }) => {
-    await home(page, null, history([{ itemId: "s1", optionId: "a" }]));
+    await home(page, null, history([{ itemId: "q-scn-s01-001", optionId: "a" }]));
     await expect(page.getByText("1 section to repeat")).toBeVisible();
     await page.getByRole("link", { name: /Weak topics/ }).click();
     await expect(page).toHaveURL(/\/weak-topics$/);
@@ -479,7 +483,7 @@ test.describe("Home", () => {
   test("always says Start training on the hero card, whatever the progress, and opens Training", async ({
     page,
   }) => {
-    await home(page, null, history([{ itemId: "s1", optionId: "a" }]));
+    await home(page, null, history([{ itemId: "q-scn-s01-001", optionId: "a" }]));
     await expect(page.getByText("1 topic needs another look.")).toBeVisible();
     const hero = page.getByRole("region", { name: "Your training" });
     await expect(hero.getByRole("link", { name: "Start training" })).toBeVisible();
@@ -571,7 +575,7 @@ test.describe("Training", () => {
     await expect(page.getByText("0%", { exact: true }).first()).toBeVisible();
     await expect(page.getByRole("radio", { name: "Scenario" })).toBeChecked();
     await expect(page.locator("section[aria-labelledby^=topic-]")).toHaveCount(5);
-    await expect(page.getByRole("button", { name: "Start" })).toHaveCount(5);
+    await expect(page.locator("section[aria-labelledby^=topic-] [data-pill]")).toHaveCount(5);
     await expect(page.getByText(/Shuffle|Only topics|Guide sections/)).toHaveCount(0);
     await page.getByRole("link", { name: "Back to Home" }).click();
     await expect(page).toHaveURL(/\/$/);
@@ -613,7 +617,7 @@ test.describe("Training", () => {
     expect(started.value.itemIds).toEqual(s1Quiz.map((question) => question.id));
 
     // Leaving midway changes nothing in the stats: only a finished session counts.
-    await option(page, /As real until/).click();
+    await option(page, /It is real until it is officially/).click();
     await page.getByRole("button", { name: "Exit" }).click();
     await page.getByRole("button", { name: "Leave", exact: true }).click();
     await page.goto("/training?mode=quiz");
@@ -633,7 +637,8 @@ test.describe("Training", () => {
     await expect(page.getByRole("radio", { name: "Quiz" })).toBeChecked();
     await expect(page.getByText(`${s1Quiz.length}/${QUIZ_TOTAL}`)).toBeVisible();
     await expect(page.getByRole("img", { name: /Part 1: last result \d+%/ }).first()).toBeVisible();
-    await expect(page.locator("section[aria-labelledby=topic-S1] [data-pill]")).toHaveCount(0);
+    // part 1 is done, so the Start pill moves to part 2 of S1
+    await expect(page.locator("section[aria-labelledby=topic-S1] [data-pill]")).toHaveCount(1);
     await expect(page.getByText(/\d to repeat/).first()).toBeVisible();
   });
 
@@ -641,9 +646,9 @@ test.describe("Training", () => {
     await open(page, "/training?mode=quiz", [
       {
         kind: "quiz",
-        itemIds: ["q-s1-1", "q-s2-1"],
+        itemIds: ["q-quiz-s01-001", "q-s2-1"],
         answers: [
-          { itemId: "q-s1-1", optionId: "a" },
+          { itemId: "q-quiz-s01-001", optionId: "b" },
           { itemId: "q-s2-1", optionId: "b" },
         ],
         finishedAt: 1,
@@ -657,8 +662,8 @@ test.describe("Training", () => {
   test("Home shows where you stopped and Training resumes the part", async ({ page }) => {
     await open(page, "/", undefined, {
       kind: "quiz",
-      itemIds: ["q-s1-1", "q-s1-2", "q-s1-3", "q-s1-4"],
-      answers: [{ itemId: "q-s1-1", optionId: "b" }],
+      itemIds: ["q-quiz-s01-001", "q-quiz-s01-002", "q-quiz-s01-003", "q-quiz-s01-004"],
+      answers: [{ itemId: "q-quiz-s01-001", optionId: "b" }],
       index: 1,
       finished: false,
       partId: "quiz:S1:1",
@@ -710,12 +715,12 @@ test.describe("Mini-quiz", () => {
     const s1 = quizOf("S1").length;
     const s2 = quizOf("S2").length;
     await expect(page.getByText(`${s1} questions available in your selected topics`)).toBeVisible();
-    await expect(amounts(page)).toHaveCount(s1 >= 10 ? 2 : s1 >= 5 ? 1 : 1);
+    await expect(amounts(page)).toHaveCount(s1 >= 15 ? 3 : s1 >= 10 ? 2 : 1);
     await page.getByText("Checking the route").click();
     await expect(
       page.getByText(`${s1 + s2} questions available in your selected topics`),
     ).toBeVisible();
-    await expect(amounts(page)).toHaveCount(s1 + s2 >= 10 ? 2 : 1);
+    await expect(amounts(page)).toHaveCount(s1 + s2 >= 15 ? 3 : s1 + s2 >= 10 ? 2 : 1);
     await expect(page.getByLabel("5", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Select all" }).click();
     await expect(amounts(page)).toHaveCount(3);
@@ -780,9 +785,7 @@ test.describe("Mini-quiz", () => {
 
 test.describe("Exam", () => {
   const exam = (extra: object) => ({
-    itemIds: Array.from({ length: 20 }, (_, i) =>
-      i < 10 ? `q-s${(i % 10) + 1}-1` : `s${(i % 10) + 1}`,
-    ),
+    itemIds: quizBank.slice(0, 20).map((question) => question.id),
     answers: [],
     index: 0,
     startedAt: Date.now() - 1000,
