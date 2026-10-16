@@ -55,6 +55,7 @@ public/
 ```
 
 ## Git and quality rules
+- Server pages and layouts import only pure content helpers (`lib/parts.ts`, `lib/guide.ts`, `lib/materials-topics.ts`); anything that reads progress (`lib/store.ts`, `lib/session.ts`, `lib/part-progress.ts`, `lib/practise.ts`) lives in client components. `lib/server-client-boundary.test.ts` enforces it.
 - Small commits with conventional messages (`feat:`, `fix:`, `docs:`, `chore:`).
 - Run `npm run lint` and `npm run typecheck` before each commit.
 - Keep `README.md` current: what it is, how to run, env variables, scope, known limits.

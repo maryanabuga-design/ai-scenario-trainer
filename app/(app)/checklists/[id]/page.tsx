@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { ChecklistDetail } from "@/components/ChecklistView/ChecklistDetail";
 import { checklists, getChecklist } from "@/lib/checklists";
 
@@ -6,9 +7,20 @@ export function generateStaticParams() {
   return checklists.map((checklist) => ({ id: checklist.id }));
 }
 
-export default async function ChecklistPage({ params }: { params: Promise<{ id: string }> }) {
+type Params = Promise<{ id: string }>;
+
+async function Checklist({ params }: { params: Params }) {
   const { id } = await params;
   const checklist = getChecklist(id);
   if (!checklist) notFound();
   return <ChecklistDetail checklist={checklist} />;
+}
+
+// The id comes from the URL, so it is read inside a Suspense boundary (Next.js 16 asks for it).
+export default function ChecklistPage({ params }: { params: Params }) {
+  return (
+    <Suspense fallback={null}>
+      <Checklist params={params} />
+    </Suspense>
+  );
 }

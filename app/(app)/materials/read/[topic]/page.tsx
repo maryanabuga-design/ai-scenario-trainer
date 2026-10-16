@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { ReadingView } from "@/components/ReadingView/ReadingView";
 import { allTopics, stepsFor, topicFor } from "@/lib/materials-topics";
 import { canPractise } from "@/lib/parts";
@@ -7,7 +8,9 @@ export function generateStaticParams() {
   return allTopics().map((topic) => ({ topic: topic.id }));
 }
 
-export default async function ReadingPage({ params }: { params: Promise<{ topic: string }> }) {
+type Params = Promise<{ topic: string }>;
+
+async function Reading({ params }: { params: Params }) {
   const { topic: id } = await params;
   const topic = topicFor(id);
   if (!topic) notFound();
@@ -27,5 +30,15 @@ export default async function ReadingPage({ params }: { params: Promise<{ topic:
         next: topic.next ? { id: topic.next.id, title: topic.next.title } : null,
       }}
     />
+  );
+}
+
+// The topic comes from the URL, so it is read inside a Suspense boundary (Next.js 16 asks for it);
+// the pages themselves are still prepared at build time by generateStaticParams.
+export default function ReadingPage({ params }: { params: Params }) {
+  return (
+    <Suspense fallback={null}>
+      <Reading params={params} />
+    </Suspense>
   );
 }

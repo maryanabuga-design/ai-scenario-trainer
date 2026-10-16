@@ -410,6 +410,28 @@ test.describe("Materials", () => {
     await expect(page.getByRole("link", { name: /^Previous\s/ })).toHaveCount(0);
   });
 
+  test("every topic's reading page opens without console or page errors", async ({ page }) => {
+    const errors: string[] = [];
+    // WebKit reports a prefetch cancelled by the next navigation as an "access control" error
+    const note = (text: string) => {
+      if (!text.includes("access control checks")) errors.push(text);
+    };
+    page.on("pageerror", (error) => note(error.message));
+    page.on("console", (message) => {
+      if (message.type() === "error") note(message.text());
+    });
+    const ids = [
+      ...Array.from({ length: 10 }, (_, i) => `S${i + 1}`),
+      ...["F1", "F2", "F3", "F4", "F5", "F6", "F7"],
+    ];
+    for (const id of ids) {
+      await open(page, `/materials/read/${id}`);
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await expect(page.getByRole("region", { name: "What next" })).toBeVisible();
+    }
+    expect(errors).toEqual([]);
+  });
+
   test("the reading screen has no sideways scroll and keeps its gutters", async ({ page }) => {
     for (const id of ["S2", "S1", "S10", "F3"]) {
       await open(page, `/materials/read/${id}`);

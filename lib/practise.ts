@@ -1,3 +1,8 @@
+/**
+ * CLIENT ONLY: this reads progress (the part records and the saved session), so it is imported
+ * only from client components such as ReadingView, never from a server page. The pure content
+ * side (which parts a topic has) is in `lib/parts.ts`. See lib/server-client-boundary.test.ts.
+ */
 import { partState, recommendedPart } from "@/lib/part-progress";
 import type { PartRecords } from "@/lib/part-progress";
 import { practiceParts } from "@/lib/parts";
