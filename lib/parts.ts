@@ -4,7 +4,7 @@ import type { Item } from "@/lib/items";
 import { sectionOrder } from "@/lib/items";
 
 /** The number of questions in a part. */
-export const PART_SIZE = 5;
+export const PART_SIZE = 10;
 
 export type TrainingMode = "scenario" | "quiz";
 

@@ -41,6 +41,8 @@ export type Item = {
   /** The guide sections shown as Guide chips. */
   guideRef: string[];
   image?: ContentImage;
+  /** Scenario steps: the scene (place or moment) this step belongs to; consecutive steps of a scene share its image. */
+  scene?: string;
   /** A reminder of what to think about; never the answer. Without one, a fallback is built from guideRef. */
   hint?: string;
   /** "true-false" has two options, True and False; the default is "single". */

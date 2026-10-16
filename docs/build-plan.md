@@ -1,6 +1,6 @@
 # Build plan
 
-One commit per screen group, in this order. Steps 1 to 80 are built. Steps 2 to 6 were first built as a thin clickable path through the whole cycle. Each commit runs `npm run lint`, `npm run typecheck` and `npm run build`, and saves a screenshot in `docs/screens/`.
+One commit per screen group, in this order. Steps 1 to 81 are built (step 81 is in progress: the pilot topic S1). Steps 2 to 6 were first built as a thin clickable path through the whole cycle. Each commit runs `npm run lint`, `npm run typecheck` and `npm run build`, and saves a screenshot in `docs/screens/`.
 
 1. Foundation refresh: tokens, pill buttons, cards, tags, gradient helper, four-item bottom navigation, storage helper. (A temporary "Coming next" screen stood in for unbuilt sections and is now removed.)
 2. Materials: list, material page, upload sequence.
@@ -77,6 +77,7 @@ One commit per screen group, in this order. Steps 1 to 80 are built. Steps 2 to 
 78. Home, the hero card (Batch 2 part 4, 17 Oct 2026): the hero card "Your training" replaces the changing big card: it always says Start training and opens Training (topic strip of 10 sections, Topics x/10, Today x/5, a square readiness ring to Progress); the tiles count the selected guide (1 scenario, 33 questions); the Mini-quiz row has a 72px 3D row icon placeholder; Media3D gets `tile` and `row`; Training shows "Continue your session" for any unfinished session; `docs/scenario-image-prompts.md`. Screenshots: `docs/screens/72-*`.
 79. Home tiles (17 Oct 2026): four tiles in a 2x2 grid (Exam, Steps, Weak topics, Saved questions); the Scenarios, Quiz, Guide and Quick checklists tiles are gone, Materials is reached from the bottom navigation only.
 80. Exam (17 Oct 2026): intro, timed session (shared SessionRunner, ExamTimer, own storage key `ast.exam.v1`), results and review under `/exam`, history entries with the exam result, schema 5. Screenshots: `docs/screens/73-*`.
+81. Content expansion (17 Oct 2026, in progress): PART_SIZE = 10, `scene` on scenario steps, content tests (`lib/content-model.test.ts`), `docs/content-gaps.md`. Pilot topic S1 first; S2 to S5, S6 to S10 and the flood guide follow after the user's go.
 
 ## Screen review page
 `/screens` is a development-only page (404 in production, not linked from the navigation) that shows every planned screen at 390 by 844. Screens that are not built are dashed frames. Each screen commit replaces its frame with the real screen using sample data.

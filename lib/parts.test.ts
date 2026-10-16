@@ -12,8 +12,8 @@ import { questions } from "@/lib/quiz";
 import { scenario } from "@/lib/scenario";
 
 describe("parts", () => {
-  it("has one named size: 5", () => {
-    expect(PART_SIZE).toBe(5);
+  it("has one named size: 10", () => {
+    expect(PART_SIZE).toBe(10);
   });
 
   it("covers the guide sections S1 to S10", () => {
@@ -41,10 +41,13 @@ describe("parts", () => {
 
   it("chunks ids by PART_SIZE: 12 ids make 3 parts, 3 ids one, none make none", () => {
     const ids = Array.from({ length: 12 }, (_, index) => `q${index}`);
-    expect(chunkIds(ids).map((chunk) => chunk.length)).toEqual([5, 5, 2]);
+    expect(chunkIds(ids).map((chunk) => chunk.length)).toEqual([10, 2]);
     expect(chunkIds(ids.slice(0, 3))).toHaveLength(1);
-    expect(chunkIds(ids.slice(0, 5))).toHaveLength(1);
-    expect(chunkIds(ids.slice(0, 6)).map((chunk) => chunk.length)).toEqual([5, 1]);
+    expect(chunkIds(ids.slice(0, 10))).toHaveLength(1);
+    expect(chunkIds(ids.slice(0, 11)).map((chunk) => chunk.length)).toEqual([10, 1]);
+    const thirty = Array.from({ length: 30 }, (_, index) => `q${index}`);
+    expect(chunkIds(thirty).map((chunk) => chunk.length)).toEqual([10, 10, 10]);
+    expect(chunkIds(thirty.slice(0, 20)).map((chunk) => chunk.length)).toEqual([10, 10]);
     expect(chunkIds([])).toEqual([]);
   });
 
@@ -61,6 +64,11 @@ describe("parts", () => {
       .flatMap((part) => part.itemIds);
     expect(s2).toEqual(steps.filter((id) => s2.includes(id)));
     expect(s2).toEqual(["s2", "s3", "s8"]);
+    const s1steps = partsFor("scenario")
+      .filter((part) => part.sectionId === "S1")
+      .flatMap((part) => part.itemIds);
+    expect(s1steps).toEqual(steps.filter((id) => s1steps.includes(id)));
+    expect(s1steps[0]).toBe("s1");
     const bank = questions.map((question) => question.id);
     const s1 = partsFor("quiz")
       .filter((part) => part.sectionId === "S1")
@@ -72,8 +80,10 @@ describe("parts", () => {
   it("lists only sections that have questions in the mode, and every question once", () => {
     expect(sectionsWithParts("scenario")).toEqual(["S1", "S2", "S4", "S5", "S6"]);
     expect(sectionsWithParts("quiz")).toEqual(trainingSections);
-    expect(partsFor("scenario").flatMap((part) => part.itemIds)).toHaveLength(10);
-    expect(partsFor("quiz").flatMap((part) => part.itemIds)).toHaveLength(33);
+    expect(partsFor("scenario").flatMap((part) => part.itemIds)).toHaveLength(
+      modeItems("scenario").length,
+    );
+    expect(partsFor("quiz").flatMap((part) => part.itemIds)).toHaveLength(modeItems("quiz").length);
   });
 
   it("finds a part by id, and not an unknown one", () => {

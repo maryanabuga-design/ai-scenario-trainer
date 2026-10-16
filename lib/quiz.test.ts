@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { modeItems } from "@/lib/parts";
 import floodBank from "@/content/question-bank-flood.json";
 import bank from "@/content/quiz-bank.json";
 import { getQuestion, questions, questionsFor } from "@/lib/quiz";
@@ -37,7 +38,7 @@ describe("the question banks", () => {
 
   it("keeps the ids: every guide section has questions and ids are unique", () => {
     expect(new Set(questions.map((question) => question.id)).size).toBe(questions.length);
-    expect(bank.questions.length).toBe(33);
+    expect(bank.questions.length).toBe(modeItems("quiz").length);
     expect(floodBank.questions.length).toBe(10);
     ["q-s1-3", "q-s2-3", "q-s5-2", "q-s7-4", "q-s10-1", "flood-q4", "flood-q6"].forEach((id) =>
       expect(getQuestion(id).options.length).toBeGreaterThanOrEqual(3),

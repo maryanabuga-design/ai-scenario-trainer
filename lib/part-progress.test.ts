@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { modeItems } from "@/lib/parts";
 import { PASS_MARK } from "@/lib/config";
 import { getItem } from "@/lib/items";
 import {
@@ -64,20 +65,25 @@ describe("stats follow the mode", () => {
   it("counts answered over all questions of the mode, and accuracy of the answered", () => {
     expect(modeStats(history, "scenario")).toEqual({
       answered: 2,
-      total: 10,
+      total: modeItems("scenario").length,
       correct: 1,
       accuracy: 50,
     });
     expect(modeStats(history, "quiz")).toEqual({
       answered: 3,
-      total: 33,
+      total: modeItems("quiz").length,
       correct: 2,
       accuracy: 67,
     });
   });
 
   it("is 0 answered and 0% accuracy when nothing is done", () => {
-    expect(modeStats(null, "quiz")).toEqual({ answered: 0, total: 33, correct: 0, accuracy: 0 });
+    expect(modeStats(null, "quiz")).toEqual({
+      answered: 0,
+      total: modeItems("quiz").length,
+      correct: 0,
+      accuracy: 0,
+    });
     expect(modeStats([], "scenario").accuracy).toBe(0);
   });
 
@@ -227,7 +233,9 @@ describe("readiness", () => {
         ["q-s1-1", true],
       ]),
     ];
-    expect(readinessOf(history)).toBe(Math.floor((2 / 43) * 100));
+    expect(readinessOf(history)).toBe(
+      Math.floor((2 / (modeItems("scenario").length + modeItems("quiz").length)) * 100),
+    );
     expect(getPart("scenario:S1:1")).toBeDefined();
   });
 });

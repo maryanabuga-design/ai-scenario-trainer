@@ -44,6 +44,7 @@ describe("binary grading", () => {
         "correctOptionId",
         "guideRef",
         "id",
+        "image",
         "kind",
         "prompt",
         "section",

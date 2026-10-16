@@ -180,8 +180,8 @@ describe("the daily goal", () => {
 });
 
 describe("readiness", () => {
-  /** Questions of the guide's sections S1 to S10: 10 scenario steps and 33 quiz questions. */
-  const TOTAL = 43;
+  /** Questions of the guide's sections S1 to S10, in both modes. */
+  const TOTAL = modeItems("scenario").length + modeItems("quiz").length;
 
   it("is 0% when nothing is done", () => {
     expect(readiness(null)).toBe(0);

@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { HomeView } from "@/components/HomeView/HomeView";
 import { getItem } from "@/lib/items";
-import { homeCounts, homeSummary } from "@/lib/home";
+import { heroCounts, heroCountsLine, homeCounts, homeSummary } from "@/lib/home";
 import type { PartRecords } from "@/lib/part-progress";
 import type { FinishedSession, Session } from "@/lib/session";
 import { DEMO_USER } from "@/lib/user";
@@ -159,7 +159,7 @@ describe("the hero card", () => {
   it("shows the guide name, the real counts and the 3D tile placeholder", () => {
     const card = hero(render());
     expect(card).toContain(`>${guideName}</h2>`);
-    expect(card).toContain("1 scenario · 33 quiz questions");
+    expect(card).toContain(heroCountsLine(heroCounts.scenarios, heroCounts.questions));
     expect(card).toContain('data-media3d="placeholder"');
     expect(card).toContain("h-20 w-20");
     expect(card).toContain(">3D<");

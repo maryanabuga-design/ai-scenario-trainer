@@ -40,7 +40,7 @@
         }
       ],
       "correctOptionId": "b",
-      "why": "Elevators can stop or fill with smoke. The guide says not to use them during a fire; use the stairs.",
+      "why": "The guide says not to use elevators during a fire; use the stairs.",
       "guideRef": [
         "S1"
       ]
@@ -97,6 +97,127 @@
       ],
       "correctOptionId": "b",
       "why": "The guide says to help only if it is safe; otherwise report the person's location so responders can reach them.",
+      "guideRef": [
+        "S1"
+      ]
+    },
+    {
+      "id": "q-quiz-s01-005",
+      "section": "S1",
+      "question": "What should you do with non-essential tasks when an alarm sounds?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Stop them"
+        },
+        {
+          "id": "b",
+          "text": "Finish them quickly first"
+        },
+        {
+          "id": "c",
+          "text": "Save your work and shut everything down"
+        }
+      ],
+      "correctOptionId": "a",
+      "why": "The guide says to stop non-essential tasks when an alarm sounds.",
+      "guideRef": [
+        "S1"
+      ]
+    },
+    {
+      "id": "q-quiz-s01-006",
+      "section": "S1",
+      "question": "How much should you take with you when you leave?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Everything you may need later, in several trips"
+        },
+        {
+          "id": "b",
+          "text": "Nothing at all, not even a phone"
+        },
+        {
+          "id": "c",
+          "text": "Only what you can carry in a few seconds"
+        }
+      ],
+      "correctOptionId": "c",
+      "why": "The guide says to take only what you can carry in a few seconds.",
+      "guideRef": [
+        "S1"
+      ]
+    },
+    {
+      "id": "q-quiz-s01-007",
+      "type": "true-false",
+      "section": "S1",
+      "question": "It is acceptable to delay your exit for a short time to collect your belongings.",
+      "options": [
+        {
+          "id": "a",
+          "text": "True"
+        },
+        {
+          "id": "b",
+          "text": "False"
+        }
+      ],
+      "correctOptionId": "b",
+      "why": "The guide says never to delay your exit to collect belongings.",
+      "guideRef": [
+        "S1"
+      ]
+    },
+    {
+      "id": "q-quiz-s01-008",
+      "section": "S1",
+      "question": "When should you help a person who needs assistance to leave?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Always, whatever the risk"
+        },
+        {
+          "id": "b",
+          "text": "Only if it is safe to do so"
+        },
+        {
+          "id": "c",
+          "text": "Never; leave every such person to responders"
+        }
+      ],
+      "correctOptionId": "b",
+      "why": "The guide says to help people who need assistance only if it is safe, and otherwise to report their location to responders.",
+      "guideRef": [
+        "S1"
+      ]
+    },
+    {
+      "id": "q-quiz-s01-009",
+      "section": "S1",
+      "question": "Which of these is NOT part of the guide's advice when an alarm sounds?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Stop non-essential tasks"
+        },
+        {
+          "id": "b",
+          "text": "Use the stairs"
+        },
+        {
+          "id": "c",
+          "text": "Take only what you can carry in a few seconds"
+        },
+        {
+          "id": "d",
+          "text": "Wait until the alarm is confirmed before you leave"
+        }
+      ],
+      "correctOptionId": "d",
+      "why": "The guide says to treat every alarm as real until it is officially confirmed otherwise, so you do not wait for confirmation before leaving.",
       "guideRef": [
         "S1"
       ]
@@ -362,14 +483,14 @@
         },
         {
           "id": "b",
-          "text": "Point at one person and tell them to call and report back"
+          "text": "Wait to see whether anyone has called"
         },
         {
           "id": "c",
-          "text": "Wait to see whether anyone has called"
+          "text": "Point at one person and tell them to call and report back"
         }
       ],
-      "correctOptionId": "b",
+      "correctOptionId": "c",
       "why": "A general request makes people assume someone else has called. Assign one specific person.",
       "guideRef": [
         "S5"
@@ -616,14 +737,14 @@
         },
         {
           "id": "b",
-          "text": "10 to 20 minutes"
+          "text": "Until the skin feels numb"
         },
         {
           "id": "c",
-          "text": "Until the skin feels numb"
+          "text": "10 to 20 minutes"
         }
       ],
-      "correctOptionId": "b",
+      "correctOptionId": "c",
       "why": "Cool the burn under cool running water for 10 to 20 minutes.",
       "guideRef": [
         "S8"
@@ -689,14 +810,14 @@
         },
         {
           "id": "b",
-          "text": "Place them in the recovery position and monitor breathing"
+          "text": "Sit them up and give them water"
         },
         {
           "id": "c",
-          "text": "Sit them up and give them water"
+          "text": "Place them in the recovery position and monitor breathing"
         }
       ],
-      "correctOptionId": "b",
+      "correctOptionId": "c",
       "why": "If the person is breathing normally, place them in the recovery position, keep the airway open and monitor breathing.",
       "guideRef": [
         "S9"

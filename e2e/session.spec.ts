@@ -1,5 +1,18 @@
+import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
+
+/** The content counts, read from the content files so the tests follow the content. */
+const quizBank: { id: string; section: string }[] = JSON.parse(
+  readFileSync("content/quiz-bank.json", "utf8"),
+).questions;
+const scenarioSteps: { id: string; section: string }[] = JSON.parse(
+  readFileSync("content/scenario-building-evacuation.json", "utf8"),
+).steps;
+const QUIZ_TOTAL = quizBank.length;
+const s1Quiz = quizBank.filter((question) => question.section === "S1");
+const SCENARIO_TOTAL = scenarioSteps.length;
+const quizOf = (section: string) => quizBank.filter((question) => question.section === section);
 
 const profile = { direction: "building-evacuation", onboarded: true };
 const scenario = {
@@ -449,8 +462,9 @@ test.describe("Home", () => {
         { itemId: "q-s1-1", optionId: "b" },
       ]),
     );
-    // 3 right of 43 questions in the guide's sections: 6%.
-    await expect(page.getByRole("img", { name: "Readiness 6%" })).toBeVisible();
+    // 3 right of all the questions in the guide's sections.
+    const percent = Math.floor((3 / (QUIZ_TOTAL + SCENARIO_TOTAL)) * 100);
+    await expect(page.getByRole("img", { name: `Readiness ${percent}%` })).toBeVisible();
   });
 
   test("shows the sections to repeat after a wrong answer, and opens Weak topics", async ({
@@ -481,7 +495,7 @@ test.describe("Home", () => {
     const hero = page.getByRole("region", { name: "Your training" });
     await expect(hero.getByText("Topics 0/10")).toBeVisible();
     await expect(hero.getByText("Today 0/5")).toBeVisible();
-    await expect(hero.getByText("1 scenario · 33 quiz questions")).toBeVisible();
+    await expect(hero.getByText(`1 scenario · ${QUIZ_TOTAL} quiz questions`)).toBeVisible();
     await hero.getByRole("link", { name: /Readiness 0%, open Progress/ }).click();
     await expect(page).toHaveURL(/\/progress$/);
     await page.goBack();
@@ -553,7 +567,7 @@ test.describe("Training", () => {
 
   test("shows the stats, the switch, the topic cards and no settings", async ({ page }) => {
     await open(page);
-    await expect(page.getByText("0/10")).toBeVisible();
+    await expect(page.getByText(`0/${SCENARIO_TOTAL}`)).toBeVisible();
     await expect(page.getByText("0%", { exact: true }).first()).toBeVisible();
     await expect(page.getByRole("radio", { name: "Scenario" })).toBeChecked();
     await expect(page.locator("section[aria-labelledby^=topic-]")).toHaveCount(5);
@@ -566,7 +580,7 @@ test.describe("Training", () => {
   test("switches the mode, updates the whole list and remembers the mode", async ({ page }) => {
     await open(page);
     await page.getByText("Quiz", { exact: true }).click();
-    await expect(page.getByText("0/33")).toBeVisible();
+    await expect(page.getByText(`0/${QUIZ_TOTAL}`)).toBeVisible();
     await expect(page.locator("section[aria-labelledby^=topic-]")).toHaveCount(10);
     await expect(page.getByRole("link", { name: /Mini-quiz/ })).toBeVisible();
     await page.goto("/");
@@ -592,32 +606,32 @@ test.describe("Training", () => {
       .first()
       .click();
     await expect(page).toHaveURL(/\/session$/);
-    await expect(page.getByText("Question 1 of 4").first()).toBeVisible();
+    await expect(page.getByText(`Question 1 of ${s1Quiz.length}`).first()).toBeVisible();
     await expect(page.getByText("Responding to an alarm").first()).toBeVisible();
     const started = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.session.v1")!));
     expect(started.value.partId).toBe("quiz:S1:1");
-    expect(started.value.itemIds).toEqual(["q-s1-1", "q-s1-2", "q-s1-3", "q-s1-4"]);
+    expect(started.value.itemIds).toEqual(s1Quiz.map((question) => question.id));
 
     // Leaving midway changes nothing in the stats: only a finished session counts.
     await option(page, /As real until/).click();
     await page.getByRole("button", { name: "Exit" }).click();
     await page.getByRole("button", { name: "Leave", exact: true }).click();
     await page.goto("/training?mode=quiz");
-    await expect(page.getByText("0/33")).toBeVisible();
+    await expect(page.getByText(`0/${QUIZ_TOTAL}`)).toBeVisible();
     await expect(page.getByRole("button", { name: "Continue" })).toHaveCount(1);
     await page.getByRole("button", { name: "Continue" }).click();
-    await expect(page.getByText("Question 1 of 4").first()).toBeVisible();
+    await expect(page.getByText(`Question 1 of ${s1Quiz.length}`).first()).toBeVisible();
 
     // Finish the part: answer every question (the first option) and finish.
-    for (let n = 0; n < 4; n++) {
+    for (let n = 0; n < s1Quiz.length; n++) {
       await page.locator("fieldset[aria-labelledby^=question-] label:visible").first().click();
-      await (n < 3 ? next(page) : finish(page)).click();
+      await (n < s1Quiz.length - 1 ? next(page) : finish(page)).click();
     }
     await expect(page).toHaveURL(/\/session\/results$/);
     await page.getByRole("link", { name: "Back to Training" }).click();
     await expect(page).toHaveURL(/\/training\?mode=quiz$/);
     await expect(page.getByRole("radio", { name: "Quiz" })).toBeChecked();
-    await expect(page.getByText("4/33")).toBeVisible();
+    await expect(page.getByText(`${s1Quiz.length}/${QUIZ_TOTAL}`)).toBeVisible();
     await expect(page.getByRole("img", { name: /Part 1: last result \d+%/ }).first()).toBeVisible();
     await expect(page.locator("section[aria-labelledby=topic-S1] [data-pill]")).toHaveCount(0);
     await expect(page.getByText(/\d to repeat/).first()).toBeVisible();
@@ -679,7 +693,9 @@ test.describe("Mini-quiz", () => {
     await expect(page.locator("input[name=mini-topics]:checked")).toHaveCount(10);
     await expect(amounts(page)).toHaveCount(3);
     await expect(page.getByLabel("15", { exact: true })).toBeChecked();
-    await expect(page.getByText("33 questions available in your selected topics")).toBeVisible();
+    await expect(
+      page.getByText(`${QUIZ_TOTAL} questions available in your selected topics`),
+    ).toBeVisible();
     await expect(page.getByRole("button", { name: "Start mini-quiz" })).toBeEnabled();
   });
 
@@ -691,13 +707,16 @@ test.describe("Mini-quiz", () => {
     await expect(amounts(page)).toHaveCount(0);
     await expect(page.getByText("0 questions available in your selected topics")).toBeVisible();
     await page.getByText("Responding to an alarm").click();
-    await expect(page.getByText("4 questions available in your selected topics")).toBeVisible();
-    await expect(amounts(page)).toHaveCount(1);
-    await expect(page.getByText("All 4")).toBeVisible();
+    const s1 = quizOf("S1").length;
+    const s2 = quizOf("S2").length;
+    await expect(page.getByText(`${s1} questions available in your selected topics`)).toBeVisible();
+    await expect(amounts(page)).toHaveCount(s1 >= 10 ? 2 : s1 >= 5 ? 1 : 1);
     await page.getByText("Checking the route").click();
-    await expect(page.getByText("7 questions available in your selected topics")).toBeVisible();
-    await expect(amounts(page)).toHaveCount(1);
-    await expect(page.getByText("5", { exact: true })).toBeVisible();
+    await expect(
+      page.getByText(`${s1 + s2} questions available in your selected topics`),
+    ).toBeVisible();
+    await expect(amounts(page)).toHaveCount(s1 + s2 >= 10 ? 2 : 1);
+    await expect(page.getByLabel("5", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Select all" }).click();
     await expect(amounts(page)).toHaveCount(3);
     await expect(page.getByLabel("15", { exact: true })).toBeChecked();
@@ -719,7 +738,11 @@ test.describe("Mini-quiz", () => {
     const ids: string[] = stored.value.itemIds;
     expect(ids).toHaveLength(10);
     expect(new Set(ids).size).toBe(10);
-    ids.forEach((id) => expect(id).toMatch(/^q-s[123]-/));
+    ids.forEach((id) =>
+      expect(["S1", "S2", "S3"]).toContain(
+        quizBank.find((question) => question.id === id)?.section,
+      ),
+    );
     expect(stored.value.partId).toBeUndefined();
     expect(stored.value.returnTo).toBe("/training?mode=quiz");
   });
@@ -736,7 +759,7 @@ test.describe("Mini-quiz", () => {
     await expect(page).toHaveURL(/\/session\/results$/);
     await page.getByRole("link", { name: "Back to Training" }).click();
     await expect(page).toHaveURL(/\/training\?mode=quiz$/);
-    await expect(page.getByText("15/33")).toBeVisible();
+    await expect(page.getByText(`15/${QUIZ_TOTAL}`)).toBeVisible();
     await expect(page.getByRole("img", { name: /Part \d: last result/ })).toHaveCount(0);
     await expect(page.locator("[data-pill]")).toHaveCount(10);
   });

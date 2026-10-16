@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { questionsFor } from "@/lib/quiz";
-import { getScenario } from "@/lib/scenario";
+import { getScenario, scenario } from "@/lib/scenario";
 import {
   choiceProblem,
   createTraining,
@@ -22,7 +22,7 @@ const floodGuide = planTraining({ sectionIds: flood, scenarioId: FLOOD });
 describe("planning training from a material", () => {
   it("lets the full guide make a scenario and a quiz", () => {
     expect(guide.canScenario).toBe(true);
-    expect(guide.scenarioDecisions).toBe(10);
+    expect(guide.scenarioDecisions).toBe(scenario.steps.length);
     expect(guide.sections).toEqual(all);
   });
 

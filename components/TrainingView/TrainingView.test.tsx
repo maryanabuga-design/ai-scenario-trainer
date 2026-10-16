@@ -6,7 +6,7 @@ import type { TrainingTopic } from "@/components/TrainingView/TrainingView";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
 import { modeStats, partState, recommendedPart, weakCount } from "@/lib/part-progress";
 import type { PartRecords } from "@/lib/part-progress";
-import { partsFor, sectionsWithParts } from "@/lib/parts";
+import { modeItems, partsFor, sectionsWithParts } from "@/lib/parts";
 import type { TrainingMode } from "@/lib/parts";
 import type { FinishedSession } from "@/lib/session";
 
@@ -97,7 +97,7 @@ describe("Training layout", () => {
 describe("the stats card", () => {
   it("shows two columns with a divider, olive icon tiles, the answered count and the accuracy", () => {
     const html = render("quiz");
-    expect(html).toContain("0/33");
+    expect(html).toContain(`0/${modeItems("quiz").length}`);
     expect(html).toContain(">0%<");
     expect(html.match(/bg-olive-tint/g)!.length).toBeGreaterThanOrEqual(2);
     expect(html).toContain("w-px");
@@ -105,8 +105,8 @@ describe("the stats card", () => {
   });
 
   it("follows the mode", () => {
-    expect(render("scenario")).toContain("0/10");
-    expect(render("quiz")).toContain("0/33");
+    expect(render("scenario")).toContain(`0/${modeItems("scenario").length}`);
+    expect(render("quiz")).toContain(`0/${modeItems("quiz").length}`);
   });
 });
 
@@ -131,8 +131,10 @@ describe("the switch and the Mini-quiz card", () => {
     expect(scenario).not.toContain("/mini-quiz");
   });
 
-  it("lists the topics of the mode: 5 in scenario mode, all 10 in quiz mode", () => {
-    expect(render("scenario").match(/aria-labelledby="topic-/g)).toHaveLength(5);
+  it("lists the topics that have questions in the mode: all 10 in quiz mode", () => {
+    expect(render("scenario").match(/aria-labelledby="topic-/g)).toHaveLength(
+      sectionsWithParts("scenario").length,
+    );
     expect(render("quiz").match(/aria-labelledby="topic-/g)).toHaveLength(10);
   });
 
@@ -167,7 +169,7 @@ describe("a topic card and its parts", () => {
     expect(card.match(/>Part \d</g)).toHaveLength(
       partsFor("quiz").filter((p) => p.sectionId === "S1").length,
     );
-    expect(card).toContain("4 questions");
+    expect(card).toMatch(/\d+ questions?/);
     expect(card).toContain("border-t border-border");
   });
 

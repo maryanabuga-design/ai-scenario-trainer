@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { modeItems } from "@/lib/parts";
 import {
   amountOptions,
   drawMiniQuiz,
@@ -20,7 +21,7 @@ const values = (pool: number) => amountOptions(pool).map((option) => option.valu
 
 describe("the pool", () => {
   it("is the quiz questions of the selected topics, never scenarios or the flood guide", () => {
-    expect(miniQuizPool(miniQuizSections)).toHaveLength(33);
+    expect(miniQuizPool(miniQuizSections)).toHaveLength(modeItems("quiz").length);
     const s1 = miniQuizPool(["S1"]);
     expect(s1.length).toBeGreaterThan(0);
     s1.forEach((question) => {
@@ -82,12 +83,14 @@ describe("the amounts follow the pool", () => {
 
   it("follows the real topic selections", () => {
     const pool = (sections: string[]) => miniQuizPool(sections).length;
+    // Whatever the content holds, the options are the ones the pool of the topics allows.
+    for (const sections of [miniQuizSections, ["S1"], ["S1", "S2"], ["S1", "S2", "S3"]]) {
+      const size = pool(sections);
+      expect(values(size)).toEqual(
+        size < 5 ? [size] : MINI_QUIZ_AMOUNTS.filter((amount) => amount <= size),
+      );
+    }
     expect(values(pool(miniQuizSections))).toEqual([5, 10, 15]);
-    // S1 has 4 questions: below 5 there is one option, All 4
-    expect(amountOptions(pool(["S1"]))).toEqual([{ value: 4, label: "All 4" }]);
-    // S1 and S2 together have 7: only 5
-    expect(values(pool(["S1", "S2"]))).toEqual([5]);
-    expect(values(pool(["S1", "S2", "S3"]))).toEqual([5, 10]);
   });
 });
 

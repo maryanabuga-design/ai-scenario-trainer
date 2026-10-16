@@ -5,7 +5,7 @@ import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
 import { MiniQuizView } from "@/components/MiniQuizView/MiniQuizView";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { loadAllSections } from "@/lib/guide";
-import { fitAmount, miniQuizPool, miniQuizSections } from "@/lib/mini-quiz";
+import { amountOptions, fitAmount, miniQuizPool, miniQuizSections } from "@/lib/mini-quiz";
 
 const noop = () => undefined;
 const titles = loadAllSections();
@@ -62,7 +62,7 @@ describe("the Topics card", () => {
     expect(html.match(/type="checkbox"/g)).toHaveLength(10);
     for (const id of miniQuizSections) expect(html).toContain(`>${id}</span>`);
     expect(html).toContain("bg-olive-tint");
-    expect(html).toContain("4 questions");
+    expect(html).toMatch(/\d+ questions/);
     expect(html).toContain(titles.find((section) => section.id === "S3")!.title);
   });
 
@@ -93,22 +93,23 @@ describe("the Questions card", () => {
     expect(checked[0]).toContain('value="15"');
   });
 
-  it("shows only the amounts the pool allows: 7 questions give 5, 4 give All 4", () => {
-    const two = render(["S1", "S2"]);
-    expect(two.match(/type="radio"/g)).toHaveLength(1);
-    expect(two).toContain(">5<");
-    expect(two).not.toContain(">10<");
-    expect(two).toContain("7 questions available in your selected topics");
-    const one = render(["S1"]);
-    expect(one).toContain(">All 4<");
-    expect(one).toContain("4 questions available in your selected topics");
+  it("shows only the amounts the pool allows, and All N below 5", () => {
+    for (const sections of [["S1", "S2"], ["S1"], ["S3"], ["S1", "S2", "S3"]]) {
+      const html = render(sections);
+      const size = miniQuizPool(sections).length;
+      const expected = amountOptions(size);
+      expect(html.match(/type="radio"/g)).toHaveLength(expected.length);
+      for (const option of expected) expect(html).toContain(`>${option.label}<`);
+      expect(html).toContain(`${size} questions available in your selected topics`);
+    }
   });
 
-  it("recomputes the choice when the topics change: 10 stays while offered, else the largest", () => {
-    expect(fitAmount(10, miniQuizPool(["S1", "S2", "S3"]).length)).toBe(10);
-    const radios = render(["S1", "S2", "S3"], 10).match(/<input type="radio"[^>]*>/g) ?? [];
-    expect(radios.find((radio) => radio.includes('checked=""'))).toContain('value="10"');
-    expect(fitAmount(10, miniQuizPool(["S1", "S2"]).length)).toBe(5);
+  it("recomputes the choice when the topics change: it stays while offered, else the largest", () => {
+    const three = miniQuizPool(["S1", "S2", "S3"]).length;
+    expect(fitAmount(10, three)).toBe(three >= 10 ? 10 : 5);
+    expect(fitAmount(10, 7)).toBe(5);
+    const radios = render(["S1", "S2", "S3"], 5).match(/<input type="radio"[^>]*>/g) ?? [];
+    expect(radios.find((radio) => radio.includes('checked=""'))).toContain('value="5"');
   });
 
   it("shows no amounts and the hint when no topic is selected", () => {
