@@ -1,5 +1,7 @@
 "use client";
 
+import { StepsTopicView } from "@/components/StepsView/StepsTopic";
+import { checklists } from "@/lib/checklists";
 import { QuickActionsBar } from "@/components/QuickActionsBar/QuickActionsBar";
 import { Tag } from "@/components/Tag/Tag";
 import { StatusChip } from "@/components/StatusChip/StatusChip";
@@ -1004,5 +1006,29 @@ export function HighlightSample({
 export function QuickBarSample({ stepsHref }: { stepsHref: string | null }) {
   return (
     <QuickActionsBar visible stepsHref={stepsHref} onPractise={() => {}} placement="absolute" />
+  );
+}
+
+/** A Steps topic screen in a fixed state, for the screen review page. */
+export function StepsTopicSample({
+  checklistIndex,
+  state,
+}: {
+  checklistIndex: number;
+  state: "first" | "second";
+}) {
+  const checklist = checklists[checklistIndex];
+  const open = checklist.steps[state === "first" ? 0 : 1].id;
+  const done = state === "first" ? [] : [checklist.steps[0].id];
+  return (
+    <StepsTopicView
+      checklist={checklist}
+      open={open}
+      done={done}
+      onBack={() => {}}
+      onToggleOpen={() => {}}
+      onToggleDone={() => {}}
+      onPractise={() => {}}
+    />
   );
 }

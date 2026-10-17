@@ -3,8 +3,7 @@ import type { ReactNode } from "react";
 import Materials from "@/app/(app)/materials/page";
 import { ActionBarProvider, ActionBarSlot } from "@/components/ActionBar/ActionBar";
 import { AskAiProvider } from "@/components/AskAi/AskAi";
-import { ChecklistDetail } from "@/components/ChecklistView/ChecklistDetail";
-import { ChecklistList } from "@/components/ChecklistView/ChecklistList";
+import { StepsList } from "@/components/StepsView/StepsList";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
 import { Button } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
@@ -12,7 +11,6 @@ import { ReadingView } from "@/components/ReadingView/ReadingView";
 import { PhoneFrame } from "@/components/PhoneFrame/PhoneFrame";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { Tag } from "@/components/Tag/Tag";
-import { checklists } from "@/lib/checklists";
 import { loadAllSections, loadGuides } from "@/lib/guide";
 import { stepsFor, topicFor } from "@/lib/materials-topics";
 import { canPractise } from "@/lib/parts";
@@ -34,6 +32,7 @@ import {
   ExamResultsSample,
   HighlightSample,
   QuickBarSample,
+  StepsTopicSample,
   HomeSample,
   MaterialTypesSample,
   WeakTopicsSample,
@@ -559,14 +558,19 @@ export default function Screens() {
               <HomeSample state="goal" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Quick checklists">
+          <PhoneFrame label="Steps: the list">
             <Screen>
-              <ChecklistList />
+              <StepsList />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Quick checklist: one checklist">
+          <PhoneFrame label="Steps: a topic, step 1 open">
             <Screen>
-              <ChecklistDetail checklist={checklists[1]} />
+              <StepsTopicSample checklistIndex={1} state="first" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Steps: a topic, step 2 open and one step done">
+            <Screen>
+              <StepsTopicSample checklistIndex={1} state="second" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Weak topics">

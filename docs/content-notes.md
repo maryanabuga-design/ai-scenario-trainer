@@ -28,3 +28,11 @@ the content rules ask for two to four; they are listed as exceptions in
 `lib/content-model.test.ts` and left unchanged. The steps came without prepared Ask AI answers; the
 generic ones (what is happening, which part of the guide, why the other options are worse) were
 generated from each step's own text.
+
+## Steps details (18 Oct 2026)
+`content/checklists.json` now gives every step a stable id, a short title and `details`. The titles
+and the details of all 17 steps are "expanded from guide, to be replaced by authored step details":
+each detail is a sentence of the corresponding guide topic (S1 to S8 and S10), copied or lightly
+shortened, with no new facts, numbers or links. The guide has no source URLs, so no topic has a
+`source` and the Source row stays hidden.
+

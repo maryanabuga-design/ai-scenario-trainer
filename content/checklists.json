@@ -3,39 +3,156 @@
     {
       "id": "leaving-a-building",
       "title": "Leaving a building during an alarm",
+      "topic": "S1",
       "guideRef": ["S1", "S2", "S3", "S4"],
       "steps": [
-        "Treat the alarm as real until it is officially confirmed otherwise.",
-        "Stop non-essential tasks and take only what you can carry in a few seconds.",
-        "Use the stairs, not the elevator.",
-        "Feel a closed door with the back of your hand. If it is hot, do not open it and use another route.",
-        "In smoke, stay low, cover your nose and mouth, keep one hand on the wall and close doors behind you.",
-        "Go to the assembly point, report to the person doing the headcount, and do not go back in until responders say it is safe."
+        {
+          "id": "leaving-a-building-s1",
+          "title": "Treat the alarm as real",
+          "details": [
+            "Treat every alarm as real until it is officially confirmed otherwise.",
+            "Nobody can tell from the sound alone whether an alarm is a drill, a fault or a real fire.",
+            "A message from a colleague, a rumour or the alarm falling silent is not official confirmation."
+          ]
+        },
+        {
+          "id": "leaving-a-building-s2",
+          "title": "Stop and take only what you carry",
+          "details": [
+            "Stop non-essential tasks. Take only what you can carry in a few seconds; never delay your exit to collect belongings.",
+            "Never go back for an item, even if it is only a few metres away."
+          ]
+        },
+        {
+          "id": "leaving-a-building-s3",
+          "title": "Use the stairs, not the elevator",
+          "details": [
+            "Do not use elevators during a fire. Use the stairs.",
+            "On the stairs, walk at a steady pace and hold the handrail. Do not run, push or stop on the landings."
+          ]
+        },
+        {
+          "id": "leaving-a-building-s4",
+          "title": "Check a closed door first",
+          "details": [
+            "Before opening a closed door, feel it with the back of your hand. If it is hot, do not open it. Use another route.",
+            "If the door is cool, open it slowly and be ready to close it at once if you see smoke or feel heat."
+          ]
+        },
+        {
+          "id": "leaving-a-building-s5",
+          "title": "Move through smoke",
+          "details": [
+            "Smoke and hot gases rise. Stay low, where the air is cleaner, and cover your nose and mouth with cloth if possible.",
+            "Keep one hand on the wall to hold your direction and move to the nearest safe exit.",
+            "Close doors behind you. This slows the spread of fire and smoke."
+          ]
+        },
+        {
+          "id": "leaving-a-building-s6",
+          "title": "Go to the assembly point",
+          "details": [
+            "Go to the designated assembly point, away from the building and its entrances so responders have access.",
+            "Report to the person responsible for the headcount. Report anyone missing and their last known location.",
+            "Do not re-enter the building until it is declared safe by responders."
+          ]
+        }
       ]
     },
     {
       "id": "severe-bleeding",
       "title": "Severe bleeding",
+      "topic": "S7",
       "guideRef": ["S6", "S5", "S7", "S10"],
       "steps": [
-        "Check that the scene is safe first, so you do not become a second casualty.",
-        "Call 112 or the local emergency number. Give the location, what happened, the number of injured people and any hazards.",
-        "Press firmly and directly on the wound with a clean cloth or dressing, and keep the pressure on.",
-        "If the cloth soaks through, add more layers on top instead of removing it.",
-        "Keep the person lying down and warm, and monitor them until help arrives.",
-        "Hand over to responders: what happened, what you found, what you did and when, and any changes since."
+        {
+          "id": "severe-bleeding-s1",
+          "title": "Check the scene is safe",
+          "details": [
+            "Check that the scene is safe first. Do not become a second casualty.",
+            "Check responsiveness (speak to the person and gently tap the shoulders), then breathing (look, listen and feel for up to 10 seconds).",
+            "Deal with life-threatening problems first: not breathing and severe bleeding."
+          ]
+        },
+        {
+          "id": "severe-bleeding-s2",
+          "title": "Call for help",
+          "details": [
+            "Call 112 or the local emergency number. Give the location, what happened, the number of injured people and any hazards. Stay on the line until told to hang up.",
+            "Assign one specific person to call, for example: \"You, call 112 and tell me what they said.\""
+          ]
+        },
+        {
+          "id": "severe-bleeding-s3",
+          "title": "Press on the wound",
+          "details": [
+            "Press firmly and directly on the wound with a clean cloth or dressing, and keep the pressure on."
+          ]
+        },
+        {
+          "id": "severe-bleeding-s4",
+          "title": "Add layers, do not remove",
+          "details": [
+            "If the cloth soaks through, add more layers on top instead of removing it.",
+            "If a limb wound bleeds heavily and pressure does not control it, a tourniquet may be applied by someone trained and equipped. Note the time."
+          ]
+        },
+        {
+          "id": "severe-bleeding-s5",
+          "title": "Keep the person lying down and warm",
+          "details": [
+            "Keep the person lying down and warm, and monitor them until help arrives."
+          ]
+        },
+        {
+          "id": "severe-bleeding-s6",
+          "title": "Hand over to responders",
+          "details": [
+            "Give a short, ordered handover: what happened, what you found, what you did and when, and any changes since.",
+            "Name any missing person and the last place they were seen."
+          ]
+        }
       ]
     },
     {
       "id": "burns",
       "title": "Burns",
+      "topic": "S8",
       "guideRef": ["S6", "S8"],
       "steps": [
-        "Deal with life-threatening problems first: not breathing and severe bleeding.",
-        "Cool the burn under cool running water for 10 to 20 minutes.",
-        "Do not apply ice, butter, oils or toothpaste, and do not burst blisters.",
-        "Cover the burn loosely with a clean, non-fluffy dressing.",
-        "Seek medical help for large or deep burns, burns on the face, hands or genitals, or if you are unsure."
+        {
+          "id": "burns-s1",
+          "title": "Deal with life threats first",
+          "details": [
+            "Deal with life-threatening problems first: not breathing and severe bleeding.",
+            "Check that the scene is safe first. Do not become a second casualty."
+          ]
+        },
+        {
+          "id": "burns-s2",
+          "title": "Cool the burn",
+          "details": ["Cool the burn under cool running water for 10 to 20 minutes."]
+        },
+        {
+          "id": "burns-s3",
+          "title": "Do not apply anything else",
+          "details": [
+            "Do not apply ice, butter, oils or toothpaste.",
+            "Do not burst blisters."
+          ]
+        },
+        {
+          "id": "burns-s4",
+          "title": "Cover the burn loosely",
+          "details": ["Cover loosely with a clean, non-fluffy dressing."]
+        },
+        {
+          "id": "burns-s5",
+          "title": "Know when to seek medical help",
+          "details": [
+            "Seek medical help for large or deep burns, burns on the face, hands or genitals, or if you are unsure."
+          ]
+        }
       ]
     }
   ]

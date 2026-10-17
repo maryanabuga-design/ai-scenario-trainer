@@ -45,6 +45,7 @@
   --olive-tint-pressed: #d6ddcb;
   --placeholder-stroke: #b9c4ac;
   --card: #ffffff;
+  --list-card: #faf7f4;
   --arrow-stroke: #e4dfd5;
   --arrow-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
   --card-shadow: 0 1px 2px rgb(60 45 30 / 0.04), 0 8px 24px rgb(60 45 30 / 0.05);
@@ -86,6 +87,7 @@
   --color-selectable-stroke: var(--selectable-stroke);
   --color-highlight: var(--highlight);
   --color-olive-tint: var(--olive-tint);
+  --color-list-card: var(--list-card);
   --color-olive-tint-pressed: var(--olive-tint-pressed);
   --color-placeholder-stroke: var(--placeholder-stroke);
   --color-card: var(--card);

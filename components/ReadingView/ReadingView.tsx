@@ -7,15 +7,12 @@ import { HighlightableText } from "@/components/HighlightableText/HighlightableT
 import { QuickActionsBar } from "@/components/QuickActionsBar/QuickActionsBar";
 import { ReadingHeader } from "@/components/ReadingHeader/ReadingHeader";
 import { dismissTip, useTipSeen } from "@/lib/highlight-store";
-import { usePartRecords } from "@/lib/part-progress";
-import { practicePlan } from "@/lib/practise";
 import { canGoBackToList, requestListRestore } from "@/lib/navigation-origin";
 import { initialQuickBar, nextQuickBar } from "@/lib/quick-bar";
 import type { QuickBarState } from "@/lib/quick-bar";
 import { readingLabel, readingPath } from "@/lib/reading";
-import { scenario } from "@/lib/scenario";
 import { TIP_TEXT } from "@/lib/selection-actions";
-import { isValidSession, saveSession, startSession, useSession } from "@/lib/session";
+import { usePractise } from "@/lib/use-practise";
 
 export type ReadingTopic = {
   id: string;
@@ -62,30 +59,14 @@ const BAR_CLEARANCE = 100;
  */
 export function ReadingView({ topic }: { topic: ReadingTopic }) {
   const router = useRouter();
-  const session = useSession();
-  const records = usePartRecords();
   const endRef = useRef<HTMLElement>(null);
   const bar = useRef<QuickBarState>(initialQuickBar);
   const selecting = useRef(false);
   const [scrolled, setScrolled] = useState(false);
   const [barVisible, setBarVisible] = useState(false);
 
-  function practise() {
-    if (session === "loading" || records === "loading") return;
-    const unfinished = session && !session.finished && isValidSession(session) ? session : null;
-    const plan = practicePlan(topic.id, records, unfinished);
-    if (!plan) return;
-    // Exit and Back on Results return here, not to Home or Training.
-    const returnTo = readingPath(topic.id);
-    if (plan.resume && unfinished) saveSession({ ...unfinished, returnTo });
-    else
-      startSession(plan.part.mode, plan.part.itemIds, {
-        scenarioId: plan.part.mode === "scenario" ? scenario.id : undefined,
-        partId: plan.part.id,
-        returnTo,
-      });
-    router.push("/session");
-  }
+  // Exit and Back on Results return here, not to Home or Training.
+  const practise = usePractise(topic.id, readingPath(topic.id));
 
   /** One pass of the scroll rules: the header line and the quick-actions bar. */
   const update = useCallback(() => {

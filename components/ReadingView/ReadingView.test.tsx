@@ -43,12 +43,13 @@ describe("the reading screen", () => {
   });
 
   it("Practise starts or resumes a part session that returns to this reading screen", () => {
-    expect(source).toContain("practicePlan(topic.id, records, unfinished)");
-    expect(source).toContain("const returnTo = readingPath(topic.id)");
-    expect(source).toContain("saveSession({ ...unfinished, returnTo })");
-    expect(source).toContain('router.push("/session")');
+    expect(source).toContain("usePractise(topic.id, readingPath(topic.id))");
     // it never opens the Training topic list
     expect(source).not.toContain("/training");
+    const hook = readFileSync("lib/use-practise.ts", "utf8").replace(/\s+/g, " ");
+    expect(hook).toContain("practicePlan(topicId, records, unfinished)");
+    expect(hook).toContain('router.push("/session")');
+    expect(hook).toContain("saveSession(returnTo ? { ...unfinished, returnTo } : unfinished)");
   });
 
   it("shows the quick-actions bar only for a topic that can be practised, and hides it while selecting", () => {

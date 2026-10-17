@@ -44,6 +44,8 @@ const sizes = {
   compact: { tile: "h-9 w-9", icon: 18, stroke: 1.75 },
   /** The 44px rounded square of the Materials rows (12px radius, not a circle). */
   tile: { tile: "h-11 w-11 rounded-[12px]", icon: 22, stroke: 2 },
+  /** The 44px circle of the Steps list cards. */
+  circle44: { tile: "h-11 w-11", icon: 22, stroke: 2 },
 } as const;
 
 /** A topic's icon on a pastel tile coloured by its guide section (or the olive tint in a selectable row). Decorative: the name sits next to it. */

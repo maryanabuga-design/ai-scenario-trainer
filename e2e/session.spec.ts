@@ -604,16 +604,16 @@ test.describe("Home", () => {
     await expect(page).toHaveURL(/\/$/);
   });
 
-  test("opens the Quick checklists, a checklist, and goes back step by step", async ({ page }) => {
+  test("opens the Steps list, a topic screen, and goes back step by step", async ({ page }) => {
     await home(page, null);
     await page.getByRole("link", { name: /^Steps/ }).click();
     await expect(page).toHaveURL(/\/checklists$/);
-    await expect(page.getByRole("heading", { name: "Quick checklists" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Steps", level: 1 })).toBeVisible();
     await expect(page.locator("main li:visible")).toHaveCount(3);
     await page.getByRole("link", { name: /Severe bleeding/ }).click();
     await expect(page).toHaveURL(/\/checklists\/severe-bleeding$/);
     await expect(page.locator("main ol li:visible")).toHaveCount(6);
-    await page.getByRole("link", { name: "Back to checklists" }).click();
+    await page.getByRole("button", { name: "Back" }).click();
     await expect(page).toHaveURL(/\/checklists$/);
     await page.getByRole("link", { name: "Back to Home" }).click();
     await expect(page).toHaveURL(/\/$/);

@@ -1,5 +1,5 @@
-import { ChecklistList } from "@/components/ChecklistView/ChecklistList";
+import { StepsList } from "@/components/StepsView/StepsList";
 
 export default function ChecklistsPage() {
-  return <ChecklistList />;
+  return <StepsList />;
 }
