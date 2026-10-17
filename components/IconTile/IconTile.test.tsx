@@ -69,7 +69,7 @@ describe("the places that draw an icon in a tile", () => {
   it("keep the olive tint where it means something else", () => {
     expect(read("components/Button/Button.tsx")).toContain("bg-olive-tint");
     expect(read("components/Chip/Chip.tsx")).toContain("bg-olive-tint");
-    expect(read("components/PageHeaderBand/PageHeaderBand.tsx")).toContain("bg-band-olive-100");
+    expect(read("components/PageHeaderBand/PageHeaderBand.tsx")).toContain("bg-band-olive-200");
     expect(read("components/PageHeaderBand/PageHeaderBand.tsx")).not.toContain("icon-tile");
   });
 });

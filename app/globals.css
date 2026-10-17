@@ -48,7 +48,7 @@
   --placeholder-stroke: #b9c4ac;
   --card: #ffffff;
   --list-card: #faf7f4;
-  --band-olive-100: #e5e8d8;
+  --band-olive-200: #cdd3b7;
   --step-caption: #3f6b2a;
   --list-card-height: 80px;
   --arrow-stroke: #e4dfd5;
@@ -95,7 +95,7 @@
   --color-icon-tile-bg: var(--icon-tile-bg);
   --color-icon-ink: var(--icon-ink);
   --color-list-card: var(--list-card);
-  --color-band-olive-100: var(--band-olive-100);
+  --color-band-olive-200: var(--band-olive-200);
   --color-step-caption: var(--step-caption);
   --color-olive-tint-pressed: var(--olive-tint-pressed);
   --color-placeholder-stroke: var(--placeholder-stroke);

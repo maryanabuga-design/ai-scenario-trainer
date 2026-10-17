@@ -25,7 +25,7 @@ describe("the page header band", () => {
   it("is a full-bleed olive band, edge to edge and under the status bar, with no border or shadow", () => {
     const html = render();
     expect(html).toContain("data-full-bleed");
-    expect(html).toContain("bg-band-olive-100");
+    expect(html).toContain("bg-band-olive-200");
     expect(html).not.toContain("bg-primary");
     expect(html).toContain("-mx-[var(--gutter,1rem)]");
     expect(html).toContain("env(safe-area-inset-top)");
@@ -52,10 +52,10 @@ describe("the page header band", () => {
   it("reads the title and the subtitle at least 4.5:1 on the band, computed from the real classes", () => {
     const html = render();
     // the fill and the text classes the band really uses, mapped to their tokens
-    const fill = /bg-(band-olive-100)/.exec(html)![1];
+    const fill = /bg-(band-olive-200)/.exec(html)![1];
     const title = /<h1 class="[^"]*\btext-(text)\b/.exec(html)![1];
     const subtitle = /<p class="[^"]*\btext-(text)\b/.exec(html)![1];
-    expect(token(fill)).toBe("#e5e8d8");
+    expect(token(fill)).toBe("#cdd3b7");
     for (const name of [title, subtitle]) {
       expect(contrastRatio(token(name), token(fill))).toBeGreaterThanOrEqual(TEXT_CONTRAST);
     }

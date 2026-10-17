@@ -30,11 +30,11 @@ test.describe("Steps", () => {
     await open(page, "/");
     await page.getByRole("link", { name: /^Steps/ }).click();
     await expect(page).toHaveURL(/\/checklists$/);
-    // the band: olive-100, edge to edge, dark text, with Back, the title and the subtitle inside
+    // the band: olive-200, edge to edge, dark text, with Back, the title and the subtitle inside
     const band = page.locator("[data-page-header-band]:visible");
     const box = (await band.boundingBox())!;
     expect(await band.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
-      "rgb(229, 232, 216)",
+      "rgb(205, 211, 183)",
     );
     // the title and the subtitle are dark, Back is a white circle
     expect(
@@ -177,7 +177,7 @@ test.describe("Steps", () => {
     const f = (await frame.boundingBox())!;
     const c = (await card.boundingBox())!;
     expect(await frame.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
-      "rgb(229, 232, 216)",
+      "rgb(205, 211, 183)",
     );
     expect(await frame.evaluate((el) => el.hasAttribute("data-full-bleed"))).toBe(true);
     // edge to edge (the app column has a 1px side border) and up to the top of the screen
@@ -497,7 +497,7 @@ test.describe("Steps", () => {
       await open(page, path);
       const band = page.locator("[data-page-header-band]:visible");
       expect(await band.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
-        "rgb(229, 232, 216)",
+        "rgb(205, 211, 183)",
       );
       const box = (await band.boundingBox())!;
       expect(box.width).toBe(360);
