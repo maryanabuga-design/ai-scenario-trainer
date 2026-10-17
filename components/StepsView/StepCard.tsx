@@ -1,12 +1,12 @@
 import { ChevronDown } from "lucide-react";
 import type { Step } from "@/lib/checklists";
 
-/** The fill, border and radius of the Steps list card and the Source row (the step cards are green). */
+/** The fill, border and radius of the Steps list card and the Source row. */
 export const stepsCard = "rounded-card border border-selectable-stroke bg-list-card";
 
 /**
- * One step as a green accordion card (the step-green tokens, only used here): the caption, the title and a chevron in one header button
- * (`aria-expanded`, `aria-controls`), and the details in a region that animates its height (a grid
+ * One step as an accordion card in the standard card style (only its caption is green,
+ * `--step-caption`): the caption, the title and a chevron in one header button (`aria-expanded`, `aria-controls`), and the details in a region that animates its height (a grid
  * row from 0fr to 1fr) and, closed, is inert and invisible. The padding is the page gutter on every
  * side. There is no done state.
  */
@@ -24,7 +24,7 @@ export function StepCard({
   const headerId = `${step.id}-header`;
   const panelId = `${step.id}-panel`;
   return (
-    <li className="overflow-hidden rounded-card border border-step-green-border bg-step-green">
+    <li className="overflow-hidden rounded-card border border-selectable-stroke bg-card">
       <button
         type="button"
         id={headerId}

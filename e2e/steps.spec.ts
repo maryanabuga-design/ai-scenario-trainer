@@ -30,11 +30,11 @@ test.describe("Steps", () => {
     await open(page, "/");
     await page.getByRole("link", { name: /^Steps/ }).click();
     await expect(page).toHaveURL(/\/checklists$/);
-    // the band: sand, edge to edge, dark text, with Back, the title and the subtitle inside
+    // the band: pale blue-grey, edge to edge, dark text, with Back, the title and the subtitle inside
     const band = page.locator("[data-page-header-band]:visible");
     const box = (await band.boundingBox())!;
     expect(await band.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
-      "rgb(227, 209, 171)",
+      "rgb(226, 236, 240)",
     );
     // the title and the subtitle are dark, Back is a white circle
     expect(
@@ -163,7 +163,7 @@ test.describe("Steps", () => {
     await expect(page.getByRole("link", { name: "Burns, 5 steps" })).toBeVisible();
   });
 
-  test("the topic screen has the sand band edge to edge with the summary card over its bottom edge", async ({
+  test("the topic screen has the mist band edge to edge with the summary card over its bottom edge", async ({
     page,
   }) => {
     await open(page, "/checklists");
@@ -174,7 +174,7 @@ test.describe("Steps", () => {
     const f = (await frame.boundingBox())!;
     const c = (await card.boundingBox())!;
     expect(await frame.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
-      "rgb(227, 209, 171)",
+      "rgb(226, 236, 240)",
     );
     expect(await frame.evaluate((el) => el.hasAttribute("data-full-bleed"))).toBe(true);
     // edge to edge (the app column has a 1px side border) and up to the top of the screen
@@ -278,22 +278,22 @@ test.describe("Steps", () => {
         inputs: li.querySelectorAll("input").length,
       };
     });
-    // green step card: step-green fill, step-green-border stroke
-    expect(look.background).toBe("rgb(211, 226, 191)");
-    expect(look.border).toEqual(["1px", "rgb(188, 207, 163)"]);
+    // a standard card: the card fill and the normal border, not green
+    expect(look.background).toBe("rgb(255, 255, 255)");
+    expect(look.border).toEqual(["1px", "rgb(228, 223, 213)"]);
     expect(look.radius).toBe("24px");
     expect(look.padding).toEqual(["16px", "16px", "16px", "16px"]);
     expect(look.textLeft).toBeCloseTo(17, 0);
     expect(look.buttons).toBe(1);
     expect(look.inputs).toBe(0);
-    // the caption reads "STEP 1" (set in capitals by its style), in deep olive
+    // the caption reads "STEP 1" (set in capitals by its style), in green (step-caption)
     const caption = first.getByText("Step 1", { exact: true });
     expect(
       await caption.evaluate((el) => [
         getComputedStyle(el).textTransform,
         getComputedStyle(el).color,
       ]),
-    ).toEqual(["uppercase", "rgb(63, 74, 44)"]);
+    ).toEqual(["uppercase", "rgb(63, 107, 42)"]);
     // the title and the chevron are dark
     const title = first.getByText("Check the scene is safe", { exact: true });
     expect(await title.evaluate((el) => getComputedStyle(el).color)).toBe("rgb(26, 26, 26)");
@@ -307,7 +307,7 @@ test.describe("Steps", () => {
     const body = first.getByText("Check that the scene is safe first.");
     expect(await body.evaluate((el) => getComputedStyle(el).color)).toBe("rgb(26, 26, 26)");
     expect(await first.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
-      "rgb(211, 226, 191)",
+      "rgb(255, 255, 255)",
     );
     // the summary card is white, not green
     expect(
@@ -488,7 +488,7 @@ test.describe("Steps", () => {
       await open(page, path);
       const band = page.locator("[data-page-header-band]:visible");
       expect(await band.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
-        "rgb(227, 209, 171)",
+        "rgb(226, 236, 240)",
       );
       const box = (await band.boundingBox())!;
       expect(box.width).toBe(360);
@@ -516,12 +516,12 @@ test.describe("Steps", () => {
         const css = getComputedStyle(el);
         return [css.backgroundColor, css.borderTopColor, css.borderTopWidth];
       });
-      expect(look).toEqual(["rgb(211, 226, 191)", "rgb(188, 207, 163)", "1px"]);
+      expect(look).toEqual(["rgb(255, 255, 255)", "rgb(228, 223, 213)", "1px"]);
       const caption = await card
         .locator(".type-label")
         .first()
         .evaluate((el) => getComputedStyle(el).color);
-      expect(caption).toBe("rgb(63, 74, 44)");
+      expect(caption).toBe("rgb(63, 107, 42)");
     }
     // the summary card's top edge is inside the band's box
     const band = (await page.locator("[data-page-header-band]:visible").boundingBox())!;

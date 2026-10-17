@@ -22,10 +22,10 @@ const render = (props: Partial<Parameters<typeof PageHeaderBand>[0]> = {}) =>
   );
 
 describe("the page header band", () => {
-  it("is a full-bleed sand band, edge to edge and under the status bar, with no border or shadow", () => {
+  it("is a full-bleed mist band, edge to edge and under the status bar, with no border or shadow", () => {
     const html = render();
     expect(html).toContain("data-full-bleed");
-    expect(html).toContain("bg-band-sand");
+    expect(html).toContain("bg-band-mist");
     expect(html).not.toContain("bg-primary");
     expect(html).toContain("-mx-[var(--gutter,1rem)]");
     expect(html).toContain("env(safe-area-inset-top)");
@@ -52,15 +52,15 @@ describe("the page header band", () => {
   it("reads the title and the subtitle at least 4.5:1 on the band, computed from the real classes", () => {
     const html = render();
     // the fill and the text classes the band really uses, mapped to their tokens
-    const fill = /bg-(band-sand)/.exec(html)![1];
+    const fill = /bg-(band-mist)/.exec(html)![1];
     const title = /<h1 class="[^"]*\btext-(text)\b/.exec(html)![1];
     const subtitle = /<p class="[^"]*\btext-(text)\b/.exec(html)![1];
-    expect(token(fill)).toBe("#e3d1ab");
+    expect(token(fill)).toBe("#e2ecf0");
     for (const name of [title, subtitle]) {
       expect(contrastRatio(token(name), token(fill))).toBeGreaterThanOrEqual(TEXT_CONTRAST);
     }
-    // about 11.6:1 for the main text colour on the sand
-    expect(contrastRatio(token("text"), token("band-sand"))).toBeCloseTo(11.6, 0);
+    // about 14:1 for the main text colour on the band
+    expect(contrastRatio(token("text"), token("band-mist"))).toBeCloseTo(14, 0);
   });
 
   it("limits the title to two lines with an ellipsis", () => {

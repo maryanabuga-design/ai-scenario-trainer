@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 /**
- * Colour classes must exist in the theme. A class like `bg-band-sand` with no `--color-band-sand`
+ * Colour classes must exist in the theme. A class like `bg-band-xyz` with no `--color-band-xyz`
  * in `app/globals.css` renders NO background, and a border with no colour class falls back to the
  * default (black). Neither fails the build, so this test finds both.
  */
@@ -79,14 +79,15 @@ function colourClasses(code: string): { prefix: string; name: string }[] {
 }
 
 describe("the theme tokens", () => {
-  it("registers the band and step colours", () => {
-    for (const name of ["band-sand", "step-green", "step-green-border", "step-caption"]) {
+  it("registers the band and step caption colours", () => {
+    for (const name of ["band-mist", "step-caption"]) {
       expect(theme.has(name), `--color-${name}`).toBe(true);
     }
   });
 
-  it("has no leftover sage band token", () => {
-    expect(css).not.toContain("band-sage");
+  it("has no other band or step tokens: one band colour and one step caption colour", () => {
+    const names = [...css.matchAll(/--((?:band|step)-[a-z-]+):/g)].map((match) => match[1]);
+    expect(new Set(names)).toEqual(new Set(["band-mist", "step-caption"]));
   });
 
   it("defines every custom colour class a component uses", () => {
