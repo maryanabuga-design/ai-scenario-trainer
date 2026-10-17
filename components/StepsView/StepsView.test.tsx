@@ -1,10 +1,12 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { StepCard } from "@/components/StepsView/StepCard";
 import { StepsList } from "@/components/StepsView/StepsList";
 import { StepsTopicView } from "@/components/StepsView/StepsTopic";
 import { checklists } from "@/lib/checklists";
+import { contrastRatio, TEXT_CONTRAST } from "@/lib/contrast";
 
 const noop = () => {};
 const topic = (open: string | null, checklist = checklists[1]) =>
@@ -18,7 +20,7 @@ describe("the Steps list", () => {
   it("has the primary header band with the 40px Back to Home, the title and the subtitle", () => {
     const band = html.slice(0, html.indexOf("<ul"));
     expect(band).toContain("data-page-header-band");
-    expect(band).toContain("bg-band-sage");
+    expect(band).toContain("bg-band-sand");
     expect(band).toContain('aria-label="Back to Home"');
     expect(band).toContain("h-10 w-10");
     expect(band).toContain(">Steps</h1>");
@@ -96,7 +98,7 @@ describe("a Steps topic screen", () => {
   it("has the primary header band with Back and the title, no subtitle, and room for the card", () => {
     const html = topic(first.id);
     const band = html.slice(html.indexOf("data-page-header-band"), html.indexOf("<section"));
-    expect(band).toContain("bg-band-sage");
+    expect(band).toContain("bg-band-sand");
     expect(band).toContain("data-full-bleed");
     expect(band).toContain('aria-label="Back"');
     expect(band).toContain("h-10 w-10");
@@ -193,5 +195,78 @@ describe("a Steps topic screen", () => {
     expect(code).toContain("router.back()");
     expect(code).toContain('router.push("/checklists")');
     expect(code).not.toMatch(/ArrowCircle|steps-progress|usePractise|toggleStep/);
+  });
+});
+
+describe("the green step cards", () => {
+  const css = readFileSync("app/globals.css", "utf8");
+  const token = (name: string) => {
+    const match = new RegExp(`--${name}:\\s*(#[0-9a-f]{6});`, "i").exec(css);
+    if (!match) throw new Error(`No hex value for --${name}`);
+    return match[1].toLowerCase();
+  };
+  const step = checklists[0].steps[0];
+  const html = renderToStaticMarkup(
+    <StepCard step={step} index={0} open onToggleOpen={() => {}} />,
+  );
+
+  it("has the three step tokens", () => {
+    expect(token("step-green")).toBe("#d3e2bf");
+    expect(token("step-green-border")).toBe("#bccfa3");
+    expect(token("step-caption")).toBe("#3f4a2c");
+  });
+
+  it("uses the step tokens for the fill, the border and the caption, and dark text", () => {
+    expect(html).toContain("bg-step-green");
+    expect(html).toContain("border-step-green-border");
+    expect(html).toContain("text-step-caption");
+    expect(html).toContain("type-body-strong text-text");
+    expect(html).toContain("shrink-0 text-text");
+    expect(html).toContain("rounded-card");
+    expect(html).toContain("p-[var(--gutter,1rem)]");
+    // the white summary card and the list cards are not green
+    const topic = renderToStaticMarkup(
+      <StepsTopicView
+        checklist={checklists[0]}
+        open={null}
+        onBack={() => {}}
+        onToggleOpen={() => {}}
+      />,
+    );
+    const summary = topic.slice(topic.indexOf('aria-label="Summary"'), topic.indexOf("<ol"));
+    expect(summary).toContain("bg-card");
+    expect(summary).not.toContain("step-green");
+  });
+
+  it("never uses the answer-feedback green: its tokens differ and the card does not reference them", () => {
+    for (const answer of ["correct", "correct-bg", "correct-text"]) {
+      expect([
+        token("step-green"),
+        token("step-green-border"),
+        token("step-caption"),
+      ]).not.toContain(token(answer));
+      expect(html).not.toContain(answer);
+    }
+  });
+
+  it("keeps the step tokens to the Steps topic screen only", () => {
+    const files = (dir: string): string[] =>
+      readdirSync(dir).flatMap((name) => {
+        const path = join(dir, name);
+        if (statSync(path).isDirectory()) return files(path);
+        return /\.(tsx?|css)$/.test(name) && !/\.test\./.test(name) ? [path] : [];
+      });
+    const users = [...files("components"), ...files("app"), ...files("lib")].filter((file) =>
+      /step-green|step-caption/.test(readFileSync(file, "utf8")),
+    );
+    expect(users.sort()).toEqual(["app/globals.css", "components/StepsView/StepCard.tsx"]);
+  });
+
+  it("reads at least 4.5:1: the main text and the caption on the green", () => {
+    const green = token("step-green");
+    expect(contrastRatio(token("text"), green)).toBeGreaterThanOrEqual(TEXT_CONTRAST);
+    expect(contrastRatio(token("step-caption"), green)).toBeGreaterThanOrEqual(TEXT_CONTRAST);
+    // a link in the body (the deep olive Primary) also stays readable on the green
+    expect(contrastRatio(token("primary"), green)).toBeGreaterThanOrEqual(TEXT_CONTRAST);
   });
 });

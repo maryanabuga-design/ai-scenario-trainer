@@ -1,11 +1,11 @@
 import { ChevronDown } from "lucide-react";
 import type { Step } from "@/lib/checklists";
 
-/** The fill, border and radius shared by the Steps list card and the step card. */
+/** The fill, border and radius of the Steps list card and the Source row (the step cards are green). */
 export const stepsCard = "rounded-card border border-selectable-stroke bg-list-card";
 
 /**
- * One step as an accordion card: the caption, the title and a chevron in one header button
+ * One step as a green accordion card (the step-green tokens, only used here): the caption, the title and a chevron in one header button
  * (`aria-expanded`, `aria-controls`), and the details in a region that animates its height (a grid
  * row from 0fr to 1fr) and, closed, is inert and invisible. The padding is the page gutter on every
  * side. There is no done state.
@@ -24,7 +24,7 @@ export function StepCard({
   const headerId = `${step.id}-header`;
   const panelId = `${step.id}-panel`;
   return (
-    <li className={`${stepsCard} overflow-hidden`}>
+    <li className="overflow-hidden rounded-card border border-step-green-border bg-step-green">
       <button
         type="button"
         id={headerId}
@@ -34,14 +34,14 @@ export function StepCard({
         className="flex min-h-11 w-full items-center gap-3 p-[var(--gutter,1rem)] text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
       >
         <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span className="type-label text-primary">Step {index + 1}</span>
-          <span className="type-body-strong">{step.title}</span>
+          <span className="type-label text-step-caption">Step {index + 1}</span>
+          <span className="type-body-strong text-text">{step.title}</span>
         </span>
         <ChevronDown
           size={20}
           strokeWidth={2}
           aria-hidden="true"
-          className={`shrink-0 text-primary transition-transform duration-200 motion-reduce:transition-none ${open ? "rotate-180" : ""}`}
+          className={`shrink-0 text-text transition-transform duration-200 motion-reduce:transition-none ${open ? "rotate-180" : ""}`}
         />
       </button>
       <div
@@ -55,7 +55,7 @@ export function StepCard({
         <div className="min-h-0 overflow-hidden">
           <div className="flex flex-col gap-2 px-[var(--gutter,1rem)] pb-[var(--gutter,1rem)]">
             {step.details.map((detail) => (
-              <p key={detail} className="type-body">
+              <p key={detail} className="type-body text-text">
                 {detail}
               </p>
             ))}

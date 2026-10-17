@@ -30,11 +30,11 @@ test.describe("Steps", () => {
     await open(page, "/");
     await page.getByRole("link", { name: /^Steps/ }).click();
     await expect(page).toHaveURL(/\/checklists$/);
-    // the band: light sage, edge to edge, dark text, with Back, the title and the subtitle inside
+    // the band: sand, edge to edge, dark text, with Back, the title and the subtitle inside
     const band = page.locator("[data-page-header-band]:visible");
     const box = (await band.boundingBox())!;
     expect(await band.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
-      "rgb(183, 196, 155)",
+      "rgb(227, 209, 171)",
     );
     // the title and the subtitle are dark, Back is a white circle
     expect(
@@ -163,7 +163,7 @@ test.describe("Steps", () => {
     await expect(page.getByRole("link", { name: "Burns, 5 steps" })).toBeVisible();
   });
 
-  test("the topic screen has the sage band edge to edge with the summary card over its bottom edge", async ({
+  test("the topic screen has the sand band edge to edge with the summary card over its bottom edge", async ({
     page,
   }) => {
     await open(page, "/checklists");
@@ -174,7 +174,7 @@ test.describe("Steps", () => {
     const f = (await frame.boundingBox())!;
     const c = (await card.boundingBox())!;
     expect(await frame.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
-      "rgb(183, 196, 155)",
+      "rgb(227, 209, 171)",
     );
     expect(await frame.evaluate((el) => el.hasAttribute("data-full-bleed"))).toBe(true);
     // edge to edge (the app column has a 1px side border) and up to the top of the screen
@@ -278,8 +278,9 @@ test.describe("Steps", () => {
         inputs: li.querySelectorAll("input").length,
       };
     });
-    expect(look.background).toBe("rgb(250, 247, 244)");
-    expect(look.border).toEqual(["1px", "rgb(228, 223, 213)"]);
+    // green step card: step-green fill, step-green-border stroke
+    expect(look.background).toBe("rgb(211, 226, 191)");
+    expect(look.border).toEqual(["1px", "rgb(188, 207, 163)"]);
     expect(look.radius).toBe("24px");
     expect(look.padding).toEqual(["16px", "16px", "16px", "16px"]);
     expect(look.textLeft).toBeCloseTo(17, 0);
@@ -292,7 +293,28 @@ test.describe("Steps", () => {
         getComputedStyle(el).textTransform,
         getComputedStyle(el).color,
       ]),
-    ).toEqual(["uppercase", "rgb(63, 70, 56)"]);
+    ).toEqual(["uppercase", "rgb(63, 74, 44)"]);
+    // the title and the chevron are dark
+    const title = first.getByText("Check the scene is safe", { exact: true });
+    expect(await title.evaluate((el) => getComputedStyle(el).color)).toBe("rgb(26, 26, 26)");
+    expect(
+      await first
+        .locator("svg")
+        .first()
+        .evaluate((el) => getComputedStyle(el).color),
+    ).toBe("rgb(26, 26, 26)");
+    // the open step's body text is dark on the same fill
+    const body = first.getByText("Check that the scene is safe first.");
+    expect(await body.evaluate((el) => getComputedStyle(el).color)).toBe("rgb(26, 26, 26)");
+    expect(await first.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
+      "rgb(211, 226, 191)",
+    );
+    // the summary card is white, not green
+    expect(
+      await page
+        .getByRole("region", { name: "Summary" })
+        .evaluate((el) => getComputedStyle(el).backgroundColor),
+    ).toBe("rgb(255, 255, 255)");
     await expect(first).toContainText("Check the scene is safe");
   });
 
