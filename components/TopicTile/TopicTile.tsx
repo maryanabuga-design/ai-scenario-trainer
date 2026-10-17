@@ -6,6 +6,7 @@ import {
   ClipboardList,
   DoorOpen,
   Droplet,
+  Flame,
   HeartPulse,
   MapPin,
   Phone,
@@ -26,6 +27,7 @@ const icons: Record<TopicIcon, LucideIcon> = {
   Bandage,
   ClipboardList,
   Droplet,
+  Flame,
   BookOpen,
   FileText,
 };

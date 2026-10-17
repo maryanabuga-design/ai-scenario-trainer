@@ -30,12 +30,20 @@ test.describe("Steps", () => {
     await open(page, "/");
     await page.getByRole("link", { name: /^Steps/ }).click();
     await expect(page).toHaveURL(/\/checklists$/);
-    // the band: primary colour, edge to edge, with Back, the title and the subtitle inside
+    // the band: light sage, edge to edge, dark text, with Back, the title and the subtitle inside
     const band = page.locator("[data-page-header-band]:visible");
     const box = (await band.boundingBox())!;
     expect(await band.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
-      "rgb(63, 70, 56)",
+      "rgb(183, 196, 155)",
     );
+    // the title and the subtitle are dark, Back is a white circle
+    expect(
+      await band.evaluate((el) => [
+        getComputedStyle(el.querySelector("h1")!).color,
+        getComputedStyle(el.querySelector("p")!).color,
+        getComputedStyle(el.querySelector("a")!).backgroundColor,
+      ]),
+    ).toEqual(["rgb(26, 26, 26)", "rgb(26, 26, 26)", "rgb(255, 255, 255)"]);
     expect(box.y).toBe(0);
     expect(box.x).toBeLessThanOrEqual(1);
     expect(box.x + box.width).toBeGreaterThanOrEqual(359);
@@ -50,16 +58,42 @@ test.describe("Steps", () => {
     const cards = page.locator("main ul li:visible a");
     await expect(cards).toHaveCount(3);
     expect((await cards.first().boundingBox())!.y - (box.y + box.height)).toBeCloseTo(16, 0);
-    // no icon in a card, and the text starts at the left padding
+    // every card is 80px high, with a 44px rounded-square olive tile, the text after a 12px gap
+    const icons: string[] = [];
     for (let n = 0; n < 3; n++) {
       const card = cards.nth(n);
-      expect(await card.locator("svg").count()).toBe(1); // the chevron only
-      const gap = await card.evaluate((el) => {
-        const text = el.querySelector("span")!.getBoundingClientRect().left;
-        return text - el.getBoundingClientRect().left;
+      const look = await card.evaluate((el) => {
+        const box = el.getBoundingClientRect();
+        const tile = el.querySelector("span[aria-hidden]")!;
+        const tileBox = tile.getBoundingClientRect();
+        const tileCss = getComputedStyle(tile);
+        const text = el.querySelector("span.truncate")!.parentElement!.getBoundingClientRect();
+        const chevron = el.querySelector("span[aria-hidden]:last-of-type")!.getBoundingClientRect();
+        return {
+          height: box.height,
+          tile: [
+            tileBox.width,
+            tileBox.height,
+            tileCss.borderTopLeftRadius,
+            tileCss.backgroundColor,
+          ],
+          tileLeft: tileBox.left - box.left,
+          gap: text.left - tileBox.right,
+          tileCenter: tileBox.top + tileBox.height / 2 - (box.top + box.height / 2),
+          chevronInside: chevron.right <= box.right,
+          icon: tile.querySelector("svg")!.getAttribute("class"),
+        };
       });
-      expect(gap).toBeCloseTo(17, 0);
+      expect(look.height).toBe(80);
+      expect(look.tile).toEqual([44, 44, "12px", "rgb(224, 230, 214)"]);
+      expect(look.tileLeft).toBeCloseTo(17, 0);
+      expect(look.gap).toBe(12);
+      expect(Math.abs(look.tileCenter)).toBeLessThanOrEqual(1);
+      expect(look.chevronInside).toBe(true);
+      icons.push(look.icon!);
     }
+    // three different icons
+    expect(new Set(icons).size).toBe(3);
     await expect(cards.nth(0)).toContainText("Leaving a building during an alarm");
     await expect(cards.nth(0)).toContainText("6 steps");
     await expect(cards.nth(1)).toContainText("Severe bleeding");
@@ -82,8 +116,9 @@ test.describe("Steps", () => {
     expect(look.background).toBe("rgb(250, 247, 244)");
     expect(look.border).toEqual(["1px", "rgb(228, 223, 213)"]);
     expect(look.radius).toBe("24px");
-    expect(look.padding).toEqual(["16px", "16px", "16px", "16px"]);
-    expect(look.height).toBeGreaterThanOrEqual(44);
+    expect(look.padding[1]).toBe("16px");
+    expect(look.padding[3]).toBe("16px");
+    expect(look.height).toBe(80);
     expect(look.left).toBeGreaterThanOrEqual(16);
     expect(look.right).toBeGreaterThanOrEqual(16);
     expect(look.shadow).toBe("none");
@@ -92,7 +127,43 @@ test.describe("Steps", () => {
     await expect(page).toHaveURL(/\/$/);
   });
 
-  test("the topic screen has the primary band edge to edge with the summary card over its bottom edge", async ({
+  test("a very long title stays on one line with an ellipsis: the card keeps 80px and the chevron stays inside", async ({
+    page,
+  }) => {
+    await open(page, "/checklists");
+    const cards = page.locator("main ul li:visible a");
+    await expect(cards).toHaveCount(3);
+    const result = await cards.first().evaluate((card) => {
+      const title = card.querySelector("span.truncate")!;
+      title.textContent =
+        "A very long title of a step guide that goes on and on and on and on and on and on and on";
+      const box = card.getBoundingClientRect();
+      const chevron = card.querySelector("span[aria-hidden]:last-of-type")!.getBoundingClientRect();
+      const css = getComputedStyle(title);
+      return {
+        length: title.textContent!.length,
+        height: box.height,
+        chevronInside: chevron.right <= box.right && chevron.left >= box.left,
+        ellipsis: css.textOverflow,
+        whiteSpace: css.whiteSpace,
+        truncated: title.scrollWidth > title.clientWidth,
+        lineHeight: title.getBoundingClientRect().height,
+        sideways: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      };
+    });
+    expect(result.length).toBeGreaterThan(80);
+    expect(result.height).toBe(80);
+    expect(result.chevronInside).toBe(true);
+    expect(result.ellipsis).toBe("ellipsis");
+    expect(result.whiteSpace).toBe("nowrap");
+    expect(result.truncated).toBe(true);
+    expect(result.lineHeight).toBeLessThan(30);
+    expect(result.sideways).toBe(true);
+    // the real cards keep their full title for assistive technology
+    await expect(page.getByRole("link", { name: "Burns, 5 steps" })).toBeVisible();
+  });
+
+  test("the topic screen has the sage band edge to edge with the summary card over its bottom edge", async ({
     page,
   }) => {
     await open(page, "/checklists");
@@ -103,7 +174,7 @@ test.describe("Steps", () => {
     const f = (await frame.boundingBox())!;
     const c = (await card.boundingBox())!;
     expect(await frame.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
-      "rgb(63, 70, 56)",
+      "rgb(183, 196, 155)",
     );
     expect(await frame.evaluate((el) => el.hasAttribute("data-full-bleed"))).toBe(true);
     // edge to edge (the app column has a 1px side border) and up to the top of the screen
@@ -126,7 +197,7 @@ test.describe("Steps", () => {
         const css = getComputedStyle(el);
         return [css.fontSize, css.color];
       }),
-    ).toEqual(["28px", "rgb(255, 255, 255)"]);
+    ).toEqual(["28px", "rgb(26, 26, 26)"]);
     expect((await title.boundingBox())!.x).toBeGreaterThanOrEqual(16);
     // the card: white, 1px border, 24px radius, 16px padding all round, no shadow
     const look = await card.evaluate((el) => {

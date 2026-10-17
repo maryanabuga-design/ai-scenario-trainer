@@ -23,14 +23,14 @@ export function PageHeaderBand({
     <div
       data-page-header-band
       data-full-bleed
-      className={`-mx-[var(--gutter,1rem)] -mt-[calc(1.5rem+env(safe-area-inset-top))] flex flex-col gap-4 bg-primary px-[var(--gutter,1rem)] pt-[calc(1.5rem+env(safe-area-inset-top))] ${overlap ? "pb-14" : "pb-[var(--gutter,1rem)]"}`}
+      className={`-mx-[var(--gutter,1rem)] -mt-[calc(1.5rem+env(safe-area-inset-top))] flex flex-col gap-4 bg-band-sage px-[var(--gutter,1rem)] pt-[calc(1.5rem+env(safe-area-inset-top))] ${overlap ? "pb-14" : "pb-[var(--gutter,1rem)]"}`}
     >
       <div>
         <CircleBackButton size="small" {...back} />
       </div>
       <div className="flex flex-col gap-1">
-        <h1 className="type-page-title text-primary-text">{title}</h1>
-        {subtitle && <p className="type-body text-primary-text">{subtitle}</p>}
+        <h1 className="type-page-title text-text line-clamp-2">{title}</h1>
+        {subtitle && <p className="type-body text-text">{subtitle}</p>}
       </div>
     </div>
   );

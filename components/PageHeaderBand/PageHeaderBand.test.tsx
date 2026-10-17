@@ -22,10 +22,11 @@ const render = (props: Partial<Parameters<typeof PageHeaderBand>[0]> = {}) =>
   );
 
 describe("the page header band", () => {
-  it("is a full-bleed Primary band, edge to edge and under the status bar, with no border or shadow", () => {
+  it("is a full-bleed sage band, edge to edge and under the status bar, with no border or shadow", () => {
     const html = render();
     expect(html).toContain("data-full-bleed");
-    expect(html).toContain("bg-primary");
+    expect(html).toContain("bg-band-sage");
+    expect(html).not.toContain("bg-primary");
     expect(html).toContain("-mx-[var(--gutter,1rem)]");
     expect(html).toContain("env(safe-area-inset-top)");
     expect(html).toContain("px-[var(--gutter,1rem)]");
@@ -38,7 +39,7 @@ describe("the page header band", () => {
     expect(html).toContain('aria-label="Back to Home"');
     expect(html).toContain("h-10 w-10");
     expect(html).toContain("bg-surface");
-    expect(html).toContain('<h1 class="type-page-title text-primary-text">Steps</h1>');
+    expect(html).toContain('<h1 class="type-page-title text-text line-clamp-2">Steps</h1>');
     expect(html).toContain("Short step-by-step guides for each topic.");
     expect(render({ subtitle: undefined })).not.toMatch(/<p[ >]/);
   });
@@ -48,13 +49,21 @@ describe("the page header band", () => {
     expect(render({ overlap: true })).toContain("pb-14");
   });
 
-  it("reads the title and the subtitle at least 4.5:1 on the band", () => {
+  it("reads the title and the subtitle at least 4.5:1 on the band, computed from the real classes", () => {
     const html = render();
-    // the classes the title and subtitle really use, and the band's own fill
-    expect(html).toContain("text-primary-text");
-    expect(html.match(/text-primary-text/g)).toHaveLength(2);
-    const band = token("primary");
-    const text = token("primary-text");
-    expect(contrastRatio(text, band)).toBeGreaterThanOrEqual(TEXT_CONTRAST);
+    // the fill and the text classes the band really uses, mapped to their tokens
+    const fill = /bg-(band-sage)/.exec(html)![1];
+    const title = /<h1 class="[^"]*\btext-(text)\b/.exec(html)![1];
+    const subtitle = /<p class="[^"]*\btext-(text)\b/.exec(html)![1];
+    expect(token(fill)).toBe("#b7c49b");
+    for (const name of [title, subtitle]) {
+      expect(contrastRatio(token(name), token(fill))).toBeGreaterThanOrEqual(TEXT_CONTRAST);
+    }
+    // about 9.4:1 for the main text colour on the sage
+    expect(contrastRatio(token("text"), token("band-sage"))).toBeCloseTo(9.4, 0);
+  });
+
+  it("limits the title to two lines with an ellipsis", () => {
+    expect(render()).toContain("line-clamp-2");
   });
 });

@@ -31,6 +31,11 @@ describe("quick checklists", () => {
     });
   });
 
+  it("gives each guide its own known icon: bell, blood drop, flame", () => {
+    expect(checklists.map((checklist) => checklist.icon)).toEqual(["BellRing", "Droplet", "Flame"]);
+    expect(new Set(checklists.map((checklist) => checklist.icon)).size).toBe(checklists.length);
+  });
+
   it("never invents a link: there is no source or URL unless the content has one", () => {
     expect(JSON.stringify(checklists)).not.toMatch(/https?:|www\./);
     checklists.forEach((checklist) => expect(checklist.source).toBeUndefined());

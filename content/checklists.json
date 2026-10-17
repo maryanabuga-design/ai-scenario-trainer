@@ -4,6 +4,7 @@
       "id": "leaving-a-building",
       "title": "Leaving a building during an alarm",
       "topic": "S1",
+      "icon": "BellRing",
       "guideRef": ["S1", "S2", "S3", "S4"],
       "steps": [
         {
@@ -63,6 +64,7 @@
       "id": "severe-bleeding",
       "title": "Severe bleeding",
       "topic": "S7",
+      "icon": "Droplet",
       "guideRef": ["S6", "S5", "S7", "S10"],
       "steps": [
         {
@@ -118,6 +120,7 @@
       "id": "burns",
       "title": "Burns",
       "topic": "S8",
+      "icon": "Flame",
       "guideRef": ["S6", "S8"],
       "steps": [
         {

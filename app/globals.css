@@ -46,6 +46,8 @@
   --placeholder-stroke: #b9c4ac;
   --card: #ffffff;
   --list-card: #faf7f4;
+  --band-sage: #b7c49b;
+  --list-card-height: 80px;
   --arrow-stroke: #e4dfd5;
   --arrow-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
   --card-shadow: 0 1px 2px rgb(60 45 30 / 0.04), 0 8px 24px rgb(60 45 30 / 0.05);
@@ -88,6 +90,7 @@
   --color-highlight: var(--highlight);
   --color-olive-tint: var(--olive-tint);
   --color-list-card: var(--list-card);
+  --color-band-sage: var(--band-sage);
   --color-olive-tint-pressed: var(--olive-tint-pressed);
   --color-placeholder-stroke: var(--placeholder-stroke);
   --color-card: var(--card);

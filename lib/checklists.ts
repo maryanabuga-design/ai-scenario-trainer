@@ -1,4 +1,5 @@
 import data from "@/content/checklists.json";
+import type { TopicIcon } from "@/lib/weak-topics";
 
 export type Step = {
   /** Stable, never renumbered: `<checklist id>-s1`. */
@@ -14,6 +15,8 @@ export type Checklist = {
   title: string;
   /** The guide topic this step guide belongs to: its reading screen and its practice. */
   topic: string;
+  /** The icon of this guide on the Steps list and the summary card. */
+  icon: TopicIcon;
   /** The guide sections the steps come from. */
   guideRef: string[];
   steps: Step[];
@@ -22,7 +25,7 @@ export type Checklist = {
 };
 
 /** The step guides, written from the guide's own sentences. */
-export const checklists: Checklist[] = data.checklists;
+export const checklists = data.checklists as Checklist[];
 
 export function getChecklist(id: string): Checklist | undefined {
   return checklists.find((checklist) => checklist.id === id);

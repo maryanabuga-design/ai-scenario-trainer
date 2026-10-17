@@ -116,6 +116,8 @@ async function nearTheEdge(page: Page) {
           box.right,
         );
       }
+      // a truncated line (ellipsis) is clipped to its box: the part that does not show is not measured
+      if (style.textOverflow === "ellipsis") continue;
       for (const node of element.childNodes) {
         if (node.nodeType !== Node.TEXT_NODE || !node.textContent?.trim()) continue;
         const range = document.createRange();

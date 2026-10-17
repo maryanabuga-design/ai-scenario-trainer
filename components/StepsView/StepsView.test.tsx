@@ -18,7 +18,7 @@ describe("the Steps list", () => {
   it("has the primary header band with the 40px Back to Home, the title and the subtitle", () => {
     const band = html.slice(0, html.indexOf("<ul"));
     expect(band).toContain("data-page-header-band");
-    expect(band).toContain("bg-primary");
+    expect(band).toContain("bg-band-sage");
     expect(band).toContain('aria-label="Back to Home"');
     expect(band).toContain("h-10 w-10");
     expect(band).toContain(">Steps</h1>");
@@ -28,30 +28,63 @@ describe("the Steps list", () => {
     expect(html.match(/Short step-by-step guides/g)).toHaveLength(1);
   });
 
-  it("has a card per topic with only its title, its number of steps and a chevron, no icon", () => {
+  it("has a card per topic: icon tile, one-line title, the number of steps and a chevron", () => {
     const list = html.slice(html.indexOf("<ul"));
     expect(list.match(/<li/g)).toHaveLength(checklists.length);
     checklists.forEach((checklist) => {
       expect(list).toContain(checklist.title);
       expect(list).toContain(`>${checklist.steps.length} steps<`);
       expect(list).toContain(`href="/checklists/${checklist.id}"`);
+      // the full title and the count for assistive technology
+      expect(list).toContain(`aria-label="${checklist.title}, ${checklist.steps.length} steps"`);
     });
     expect(list).not.toMatch(/done|·/);
     expect(list.match(/lucide-chevron-right/g)).toHaveLength(checklists.length);
-    // no icon tile: the chevron is the only svg in a card
-    expect(list.match(/<svg/g)).toHaveLength(checklists.length);
-    expect(list).not.toMatch(/rounded-full|bg-olive-tint/);
+    // a 44px rounded-square olive tile with an icon (and the chevron): two svgs a card
+    expect(list.match(/<svg/g)).toHaveLength(checklists.length * 2);
+    expect(list.match(/h-11 w-11 rounded-\[12px\]/g)).toHaveLength(checklists.length);
+    expect(list.match(/bg-olive-tint/g)).toHaveLength(checklists.length);
+    expect(list).not.toContain("rounded-full");
   });
 
-  it("is the list-card look: fill, 1px stroke, radius, gutter padding, no shadow", () => {
+  it("gives the three guides three different icons: bell, blood drop, flame", () => {
+    expect(checklists.map((checklist) => checklist.icon)).toEqual(["BellRing", "Droplet", "Flame"]);
+    const list = html.slice(html.indexOf("<ul"));
+    expect(list).toContain("lucide-bell-ring");
+    expect(list).toContain("lucide-droplet");
+    expect(list).toContain("lucide-flame");
+  });
+
+  it("is the list-card look with a fixed height: fill, 1px stroke, radius, gutter padding, no shadow", () => {
     const list = html.slice(html.indexOf("<ul"));
     expect(list).toContain("bg-list-card");
     expect(list).toContain("border border-selectable-stroke");
     expect(list).toContain("rounded-card");
-    expect(list).toContain("p-[var(--gutter,1rem)]");
-    expect(list).toContain("min-h-11");
+    expect(list).toContain("px-[var(--gutter,1rem)]");
+    expect(list.match(/h-\[var\(--list-card-height,80px\)\]/g)).toHaveLength(checklists.length);
     expect(list).not.toContain("shadow");
     expect(html).not.toContain("ArrowCircle");
+  });
+
+  it("keeps a very long title on one line: the text block shrinks and the title is truncated", () => {
+    const long = {
+      ...checklists[0],
+      id: "long",
+      title:
+        "A very long title of a step guide that goes on and on and on and on and on and on and on",
+    };
+    expect(long.title.length).toBeGreaterThan(80);
+    const withLong = renderToStaticMarkup(<StepsList items={[long, checklists[1]]} />);
+    const card = withLong.slice(withLong.indexOf("<ul"));
+    expect(card).toContain(long.title);
+    // min-w-0 on the text block, truncate on the title and on the count line
+    expect(card.match(/min-w-0 flex-1 flex-col/g)).toHaveLength(2);
+    expect(card.match(/type-body-strong truncate/g)).toHaveLength(2);
+    expect(card.match(/truncate text-text-secondary/g)).toHaveLength(2);
+    // the same fixed height class as the short card
+    expect(card.match(/h-\[var\(--list-card-height,80px\)\]/g)).toHaveLength(2);
+    // the full title is in the link's accessible name
+    expect(card).toContain(`aria-label="${long.title}, 6 steps"`);
   });
 });
 
@@ -63,7 +96,7 @@ describe("a Steps topic screen", () => {
   it("has the primary header band with Back and the title, no subtitle, and room for the card", () => {
     const html = topic(first.id);
     const band = html.slice(html.indexOf("data-page-header-band"), html.indexOf("<section"));
-    expect(band).toContain("bg-primary");
+    expect(band).toContain("bg-band-sage");
     expect(band).toContain("data-full-bleed");
     expect(band).toContain('aria-label="Back"');
     expect(band).toContain("h-10 w-10");
@@ -83,6 +116,8 @@ describe("a Steps topic screen", () => {
     expect(card).toContain(`>${checklist.steps.length} steps<`);
     // the 48px tile has the 12px radius, not a circle
     expect(card).toContain("h-12 w-12 rounded-[12px]");
+    // the same icon as its list card
+    expect(card).toContain("lucide-droplet");
     expect(card).not.toContain("rounded-full");
     expect(card).toContain("bg-olive-tint");
     // informational only: no progress, no done, no arrow circle

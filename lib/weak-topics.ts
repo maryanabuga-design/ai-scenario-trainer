@@ -12,6 +12,7 @@ export type TopicIcon =
   | "Bandage"
   | "ClipboardList"
   | "Droplet"
+  | "Flame"
   | "BookOpen"
   | "FileText";
 

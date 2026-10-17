@@ -9,7 +9,6 @@ import { TopicTile } from "@/components/TopicTile/TopicTile";
 import { initialOpen, toggleOpen } from "@/lib/accordion";
 import { stepCountLabel } from "@/lib/checklists";
 import type { Checklist } from "@/lib/checklists";
-import { topicIcon } from "@/lib/weak-topics";
 
 /** The presentation of one topic's steps, with the open step passed in (the screen review page shows fixed states). */
 export function StepsTopicView({
@@ -31,12 +30,7 @@ export function StepsTopicView({
         aria-label="Summary"
         className="relative z-10 -mt-10 flex items-center gap-3 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)]"
       >
-        <TopicTile
-          sectionId={checklist.topic}
-          icon={topicIcon(checklist.topic)}
-          size="square48"
-          tone="olive"
-        />
+        <TopicTile sectionId={checklist.topic} icon={checklist.icon} size="square48" tone="olive" />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <p className="type-body-strong">Step-by-step guide</p>
           <p className="type-small text-text-secondary tabular-nums">
