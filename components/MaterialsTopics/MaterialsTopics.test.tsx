@@ -53,13 +53,14 @@ describe("the Materials list", () => {
     expect(html).not.toMatch(/lock|disabled/i);
   });
 
-  it("has a flat row: a 44px rounded-square olive tile, the title, 'S1 · N min read' and a plain chevron", () => {
+  it("has a flat row: a 44px rounded-square icon tile, the title, 'S1 · N min read' and a plain chevron", () => {
     const s1 = card("S1");
     const topic = allTopics()[0];
     expect(s1).toContain("h-11 w-11");
     expect(s1).toContain("rounded-[12px]");
     expect(s1).not.toContain("rounded-full");
-    expect(s1).toContain("bg-olive-tint");
+    expect(s1).toContain("bg-icon-tile-bg text-icon-ink");
+    expect(s1).not.toContain("bg-olive-tint");
     expect(s1).toContain(">Responding to an alarm<");
     expect(s1).toContain(`S1 · ${topic.minutes} min read`);
     expect(s1).toContain("lucide-chevron-right");

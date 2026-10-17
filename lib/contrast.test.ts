@@ -101,6 +101,12 @@ const pairs: Pair[] = [
     min: TEXT_CONTRAST,
   },
   {
+    what: "icon ink on the icon tile (a graphic: 3:1)",
+    front: token("icon-ink"),
+    back: token("icon-tile-bg"),
+    min: GRAPHIC_CONTRAST,
+  },
+  {
     what: "toolbar text on the toolbar (primary-text on primary)",
     front: token("primary-text"),
     back: token("primary"),

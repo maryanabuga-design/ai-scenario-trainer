@@ -34,7 +34,7 @@ function TopicOption({
         <Media3D
           variant="icon"
           fallback={
-            <TopicTile sectionId={topic.sectionId} icon={topic.icon} size="compact" tone="olive" />
+            <TopicTile sectionId={topic.sectionId} icon={topic.icon} size="compact" tone="icon" />
           }
         />
         <span className="flex flex-col gap-0.5">

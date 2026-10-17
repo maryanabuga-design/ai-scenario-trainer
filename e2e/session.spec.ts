@@ -1240,13 +1240,13 @@ test.describe("selectable rows", () => {
     expect(selected.borderColor).toBe("rgb(228, 223, 213)");
     const space = await gutter(page);
     expect(selected.padding).toEqual([space, space, space, space]);
-    // the icon circle is the one olive tint
+    // the icon circle is the shared icon tile
     const circle = await rows
       .nth(0)
       .locator("span[aria-hidden=true]")
       .first()
       .evaluate((element) => getComputedStyle(element).backgroundColor);
-    expect(circle).toBe("rgb(224, 230, 214)");
+    expect(circle).toBe("rgb(234, 237, 223)");
     // a tap on the very edge of the row (the padding) toggles it too
     await rows.nth(1).click({ position: { x: 6, y: 30 } });
     await expect(rows.nth(1).locator("input")).toBeChecked();

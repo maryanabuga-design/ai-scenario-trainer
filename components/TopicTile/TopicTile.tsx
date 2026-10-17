@@ -13,6 +13,7 @@ import {
   Wind,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { IconTile } from "@/components/IconTile/IconTile";
 import type { TopicIcon } from "@/lib/weak-topics";
 import { topicTint } from "@/lib/weak-topics";
 import type { TopicTint } from "@/lib/weak-topics";
@@ -50,7 +51,7 @@ const sizes = {
   square48: { tile: "h-12 w-12 rounded-[12px]", icon: 24, stroke: 2 },
 } as const;
 
-/** A topic's icon on a pastel tile coloured by its guide section (or the olive tint in a selectable row). Decorative: the name sits next to it. */
+/** A topic's icon on a pastel tile coloured by its guide section, or on the shared icon tile. Decorative: the name sits next to it. */
 export function TopicTile({
   sectionId,
   icon,
@@ -60,15 +61,23 @@ export function TopicTile({
   sectionId: string;
   icon: TopicIcon;
   size?: keyof typeof sizes;
-  /** "olive" is the one light olive tint of every selectable row; "pastel" is the topic's own colour. */
-  tone?: "pastel" | "olive";
+  /** "icon" is the shared icon tile look (`IconTile`); "pastel" is the topic's own colour. */
+  tone?: "pastel" | "icon";
 }) {
   const Icon = icons[icon];
   const look = sizes[size];
+  const shape = `${look.tile} ${size === "tile" || size === "square48" ? "" : "rounded-full"}`;
+  if (tone === "icon") {
+    return (
+      <IconTile className={shape}>
+        <Icon size={look.icon} strokeWidth={look.stroke} />
+      </IconTile>
+    );
+  }
   return (
     <span
       aria-hidden="true"
-      className={`flex ${look.tile} shrink-0 items-center justify-center ${size === "tile" || size === "square48" ? "" : "rounded-full"} text-text ${tone === "olive" ? "bg-olive-tint" : tints[topicTint(sectionId)]}`}
+      className={`flex ${shape} shrink-0 items-center justify-center text-text ${tints[topicTint(sectionId)]}`}
     >
       <Icon size={look.icon} strokeWidth={look.stroke} />
     </span>

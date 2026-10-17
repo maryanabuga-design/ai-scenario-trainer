@@ -1,4 +1,5 @@
 import { FileText, Link2 } from "lucide-react";
+import { IconTile } from "@/components/IconTile/IconTile";
 import { fileTypeLabel, materialKind } from "@/lib/materials";
 
 /**
@@ -8,12 +9,9 @@ import { fileTypeLabel, materialKind } from "@/lib/materials";
 export function MaterialTile({ type }: { type: string }) {
   const Icon = materialKind(type) === "link" ? Link2 : FileText;
   return (
-    <span
-      aria-hidden="true"
-      className="flex h-16 w-16 shrink-0 flex-col items-center justify-center gap-0.5 rounded-[20px] bg-olive-tint"
-    >
-      <Icon size={24} strokeWidth={2} className="text-primary" />
+    <IconTile className="h-16 w-16 flex-col gap-0.5 rounded-[20px]">
+      <Icon size={24} strokeWidth={2} />
       <span className="type-label text-primary">{fileTypeLabel(type)}</span>
-    </span>
+    </IconTile>
   );
 }

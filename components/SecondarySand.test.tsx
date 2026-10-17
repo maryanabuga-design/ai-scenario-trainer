@@ -89,7 +89,7 @@ describe("coloured chips and icon backgrounds stay as they are", () => {
       renderToStaticMarkup(<TopicTile sectionId={sectionId} icon="DoorOpen" />);
     expect(tile("S1")).toContain("bg-pastel-yellow");
     expect(tile("S2")).toContain("bg-pastel-blue");
-    expect(renderToStaticMarkup(<MaterialTile type="PDF" />)).toContain("bg-olive-tint");
+    expect(renderToStaticMarkup(<MaterialTile type="PDF" />)).toContain("bg-icon-tile-bg");
   });
 });
 

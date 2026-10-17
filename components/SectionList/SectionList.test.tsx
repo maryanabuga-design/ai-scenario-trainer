@@ -28,9 +28,11 @@ describe("one olive tint", () => {
     expect(css).not.toMatch(/--(code-|material-tile|section-tint)/);
   });
 
-  it("is the background of every file-type tile", () => {
+  it("is no longer the background of a file-type tile (they use the icon tile tokens)", () => {
     for (const type of ["PDF", "Word document", "Link", "Image", "Text file"]) {
-      expect(renderToStaticMarkup(<MaterialTile type={type} />)).toContain("bg-olive-tint");
+      const html = renderToStaticMarkup(<MaterialTile type={type} />);
+      expect(html).toContain("bg-icon-tile-bg");
+      expect(html).not.toContain("bg-olive-tint");
     }
   });
 

@@ -82,10 +82,13 @@ test.describe("Steps", () => {
           tileCenter: tileBox.top + tileBox.height / 2 - (box.top + box.height / 2),
           chevronInside: chevron.right <= box.right,
           icon: tile.querySelector("svg")!.getAttribute("class"),
+          ink: [getComputedStyle(tile).color, getComputedStyle(tile.querySelector("svg")!).stroke],
         };
       });
       expect(look.height).toBe(80);
-      expect(look.tile).toEqual([44, 44, "12px", "rgb(224, 230, 214)"]);
+      expect(look.tile).toEqual([44, 44, "12px", "rgb(234, 237, 223)"]);
+      // the icon is drawn in the icon ink
+      expect(look.ink).toEqual(["rgb(91, 105, 56)", "rgb(91, 105, 56)"]);
       expect(look.tileLeft).toBeCloseTo(17, 0);
       expect(look.gap).toBe(12);
       expect(Math.abs(look.tileCenter)).toBeLessThanOrEqual(1);
@@ -226,9 +229,15 @@ test.describe("Steps", () => {
       .evaluate((el) => {
         const css = getComputedStyle(el);
         const box = el.getBoundingClientRect();
-        return [box.width, box.height, css.borderTopLeftRadius, css.backgroundColor];
+        return [
+          box.width,
+          box.height,
+          css.borderTopLeftRadius,
+          css.backgroundColor,
+          getComputedStyle(el.querySelector("svg")!).stroke,
+        ];
       });
-    expect(tile).toEqual([48, 48, "12px", "rgb(224, 230, 214)"]);
+    expect(tile).toEqual([48, 48, "12px", "rgb(234, 237, 223)", "rgb(91, 105, 56)"]);
     // informational only: no progress, no done text, no checkbox, no done-circle
     await expect(page.getByRole("progressbar")).toHaveCount(0);
     await expect(page.locator("main")).not.toContainText(/done/i);

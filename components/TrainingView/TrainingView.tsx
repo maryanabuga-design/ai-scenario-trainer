@@ -4,6 +4,7 @@ import { ListChecks, Target } from "lucide-react";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { buttonClasses } from "@/components/Button/Button";
+import { IconTile } from "@/components/IconTile/IconTile";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { Chip } from "@/components/Chip/Chip";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
@@ -35,12 +36,9 @@ function StatTile({
 }) {
   return (
     <div className="flex flex-1 items-center gap-3">
-      <span
-        aria-hidden="true"
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-olive-tint text-text"
-      >
+      <IconTile className="h-9 w-9 rounded-full">
         <Icon size={18} strokeWidth={1.75} />
-      </span>
+      </IconTile>
       <div className="flex min-w-0 flex-col">
         <span className="type-small text-text-secondary">{label}</span>
         <span className="type-numeral tabular-nums">{value}</span>

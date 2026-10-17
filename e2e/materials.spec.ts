@@ -83,6 +83,7 @@ test.describe("Materials", () => {
           tile: [box.width, box.height],
           tileRadius: getComputedStyle(tile).borderTopLeftRadius,
           tileBackground: getComputedStyle(tile).backgroundColor,
+          ink: [getComputedStyle(tile).color, getComputedStyle(tile.querySelector("svg")!).stroke],
           width: li.getBoundingClientRect().width,
           left: li.getBoundingClientRect().left,
           height: link.getBoundingClientRect().height,
@@ -102,10 +103,12 @@ test.describe("Materials", () => {
       // 16px above and below, at least 44px high
       expect(row.padding).toEqual(["16px", "16px"]);
       expect(row.height).toBeGreaterThanOrEqual(44);
-      // a 44px rounded square in the olive tint
+      // a 44px rounded square icon tile
       expect(row.tile).toEqual([44, 44]);
       expect(row.tileRadius).toBe("12px");
-      expect(row.tileBackground).toBe("rgb(224, 230, 214)");
+      expect(row.tileBackground).toBe("rgb(234, 237, 223)");
+      // the icon is drawn in the icon ink
+      expect(row.ink).toEqual(["rgb(91, 105, 56)", "rgb(91, 105, 56)"]);
       // the divider runs from the left gutter to the right gutter
       // (the app frame has a 1px side border, so the gutter measures 17px)
       expect(row.left).toBeGreaterThanOrEqual(16);

@@ -31,7 +31,7 @@ export function StepsList({ items = checklists }: { items?: Checklist[] }) {
                 sectionId={checklist.topic}
                 icon={checklist.icon}
                 size="tile"
-                tone="olive"
+                tone="icon"
               />
               <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                 <span className="type-body-strong truncate">{checklist.title}</span>

@@ -1,5 +1,6 @@
 "use client";
 
+import { IconTile } from "@/components/IconTile/IconTile";
 import { SelectableRow } from "@/components/SelectableRow/SelectableRow";
 import { ArrowRight, FileQuestionMark, FileText } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -50,12 +51,9 @@ function CreateOption({
       disabled={disabled}
       onChange={onToggle}
     >
-      <span
-        aria-hidden="true"
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-olive-tint text-text"
-      >
+      <IconTile className="h-9 w-9 rounded-full">
         <Icon size={18} strokeWidth={1.75} />
-      </span>
+      </IconTile>
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="type-body-strong">{title}</span>
         <span className="type-small text-text-secondary">{children}</span>

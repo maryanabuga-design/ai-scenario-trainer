@@ -2,6 +2,7 @@
 
 import { Clock, ListChecks, LightbulbOff, Target } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { IconTile } from "@/components/IconTile/IconTile";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
@@ -60,12 +61,9 @@ export function ExamIntroView({
         <ul className="flex flex-col gap-3">
           {examRules.map(({ icon: Icon, text }) => (
             <li key={text} className="flex items-center gap-3">
-              <span
-                aria-hidden="true"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-olive-tint text-text"
-              >
+              <IconTile className="h-9 w-9 rounded-full">
                 <Icon size={18} strokeWidth={1.75} />
-              </span>
+              </IconTile>
               <span>{text}</span>
             </li>
           ))}

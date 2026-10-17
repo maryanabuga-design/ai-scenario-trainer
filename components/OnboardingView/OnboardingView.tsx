@@ -2,6 +2,7 @@
 
 import { FileCheck2, RefreshCw, Target } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { IconTile } from "@/components/IconTile/IconTile";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button } from "@/components/Button/Button";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
@@ -81,12 +82,9 @@ export function OnboardingView({
       <div className="flex flex-1 flex-col justify-center gap-3 py-8">
         {content && (
           <>
-            <span
-              aria-hidden="true"
-              className="mb-3 flex h-22 w-22 items-center justify-center rounded-full bg-olive-tint text-text"
-            >
+            <IconTile className="mb-3 h-22 w-22 rounded-full">
               <Icon size={40} strokeWidth={1.75} />
-            </span>
+            </IconTile>
             <p className="type-label text-text-secondary">{stepLabel(step)}</p>
           </>
         )}

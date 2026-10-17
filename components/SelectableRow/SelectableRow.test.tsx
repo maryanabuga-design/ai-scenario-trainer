@@ -192,7 +192,7 @@ describe("every choice uses SelectableRow", () => {
     }
   });
 
-  it("uses the one olive-tint circle in every selection screen, never a per-topic pastel", () => {
+  it("uses the one icon tile in every selection screen, never a per-topic pastel", () => {
     for (const file of [
       "components/WeakTopicsView/WeakTopicsView.tsx",
       "components/TrainingCreate/TrainingCreate.tsx",
@@ -202,7 +202,7 @@ describe("every choice uses SelectableRow", () => {
       expect(code, file).not.toMatch(/pastel-/);
     }
     expect(readFileSync("components/WeakTopicsView/WeakTopicsView.tsx", "utf8")).toContain(
-      'tone="olive"',
+      'tone="icon"',
     );
   });
 });
