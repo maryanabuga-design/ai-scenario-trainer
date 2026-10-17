@@ -46,7 +46,7 @@
   --placeholder-stroke: #b9c4ac;
   --card: #ffffff;
   --list-card: #faf7f4;
-  --band-mist: #e2ecf0;
+  --band-olive-100: #e5e8d8;
   --step-caption: #3f6b2a;
   --list-card-height: 80px;
   --arrow-stroke: #e4dfd5;
@@ -91,7 +91,7 @@
   --color-highlight: var(--highlight);
   --color-olive-tint: var(--olive-tint);
   --color-list-card: var(--list-card);
-  --color-band-mist: var(--band-mist);
+  --color-band-olive-100: var(--band-olive-100);
   --color-step-caption: var(--step-caption);
   --color-olive-tint-pressed: var(--olive-tint-pressed);
   --color-placeholder-stroke: var(--placeholder-stroke);
