@@ -15,9 +15,11 @@ async function Reading({ params }: { params: Params }) {
   const topic = topicFor(id);
   if (!topic) notFound();
   const steps = stepsFor(topic.id);
+  const inGuide = allTopics().filter((other) => other.guideId === topic.guideId);
 
   return (
     <ReadingView
+      key={topic.id}
       topic={{
         id: topic.id,
         title: topic.title,
@@ -26,6 +28,8 @@ async function Reading({ params }: { params: Params }) {
         body: topic.section.body,
         canPractise: canPractise(topic.id),
         stepsHref: steps ? `/checklists/${steps.id}` : null,
+        position: inGuide.findIndex((other) => other.id === topic.id) + 1,
+        total: inGuide.length,
         previous: topic.previous ? { id: topic.previous.id, title: topic.previous.title } : null,
         next: topic.next ? { id: topic.next.id, title: topic.next.title } : null,
       }}

@@ -143,6 +143,8 @@ describe("a secondary always comes with a primary above it", () => {
       )
       .sort();
     expect(withSecondary).toEqual([
+      // The reading screen's quick-actions bar: Steps next to the primary Practise this topic.
+      "components/QuickActionsBar/QuickActionsBar.tsx",
       // The reading screen: Steps for this topic, below the primary Practise this topic.
       "components/ReadingView/ReadingView.tsx",
       // Results: Review answers, below the primary Repeat weak topics.

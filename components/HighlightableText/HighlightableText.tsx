@@ -37,7 +37,16 @@ function offsetIn(block: Element, node: Node, offset: number): number {
  * the reading screen). The toolbar follows the selection, or a tapped highlight, and has the
  * actions of `toolbarActions`: Highlight or Unhighlight, and Copy.
  */
-export function HighlightableText({ topicId, markdown }: { topicId: string; markdown: string }) {
+export function HighlightableText({
+  topicId,
+  markdown,
+  onActiveChange,
+}: {
+  topicId: string;
+  markdown: string;
+  /** Called when the toolbar opens or closes (a selection or a tapped highlight). */
+  onActiveChange?: (active: boolean) => void;
+}) {
   const bodyRef = useRef<HTMLDivElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const stored = useHighlights();
@@ -54,6 +63,9 @@ export function HighlightableText({ topicId, markdown }: { topicId: string; mark
   // The position counts only for the target it was worked out for, so a new target never flashes at the old place.
   const placed = position && position.target === target ? position : null;
   const [copied, setCopied] = useState(false);
+
+  const active = target !== null;
+  useEffect(() => onActiveChange?.(active), [active, onActiveChange]);
 
   /** The rectangle the toolbar sits next to: the selection, or the marks of the tapped highlight. */
   const anchorRect = useCallback((current: Target): DOMRect | null => {
@@ -172,6 +184,8 @@ export function HighlightableText({ topicId, markdown }: { topicId: string; mark
         viewport: { width: document.documentElement.clientWidth, height: window.innerHeight },
         gutter: GUTTER,
         bottomLimit: nav ? nav.getBoundingClientRect().top : window.innerHeight,
+        topLimit:
+          document.querySelector("[data-reading-header]")?.getBoundingClientRect().bottom ?? 0,
         touch: window.matchMedia("(pointer: coarse)").matches,
       });
       setPosition({ target, left: placed.left, top: placed.top });

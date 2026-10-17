@@ -264,7 +264,7 @@ test.describe("Materials", () => {
     await expect(page.getByRole("button", { name: "Practise this topic" })).toBeVisible();
   });
 
-  test("Next opens the next topic of the same guide, and Back returns to the Materials list", async ({
+  test("the pager's Next replaces the history entry: Back goes to the Materials list, not the previous topic", async ({
     page,
   }) => {
     await open(page, "/materials");
@@ -272,8 +272,6 @@ test.describe("Materials", () => {
     await page.getByRole("link", { name: /^Next\s*Checking the route$/ }).click();
     await expect(page).toHaveURL(/\/materials\/read\/S2$/);
     await expect(page.getByRole("heading", { name: "Checking the route", level: 1 })).toBeVisible();
-    await page.getByRole("button", { name: "Back" }).click();
-    await expect(page).toHaveURL(/\/materials\/read\/S1$/);
     await page.getByRole("button", { name: "Back" }).click();
     await expect(page).toHaveURL(/\/materials$/);
     await expect(page.getByRole("heading", { name: "Materials", level: 1 })).toBeVisible();
@@ -469,6 +467,232 @@ test.describe("Materials", () => {
       await expect(page.getByRole("region", { name: "What next" })).toBeVisible();
     }
     expect(errors).toEqual([]);
+  });
+
+  test.describe("the sticky header and the quick-actions bar (360 by 640)", () => {
+    test.use({ viewport: { width: 360, height: 640 } });
+
+    const bar = (page: Page) => page.locator("[data-quick-bar]");
+    const scrollTo = async (page: Page, y: number) => {
+      await page.evaluate((to) => window.scrollTo(0, to), y);
+      await page.waitForTimeout(120);
+    };
+    // (a topic left by the replace navigation stays in the page, hidden)
+    const header = (page: Page) => page.locator("[data-reading-header]:visible");
+    const headerLine = (page: Page) =>
+      header(page).evaluate((el) => getComputedStyle(el).borderBottomColor);
+
+    test("the header stays on top with the position, and its line shows only after scrolling", async ({
+      page,
+    }) => {
+      await open(page, "/materials/read/S1");
+      await expect(header(page)).toContainText("S1 · 1 of 10");
+      // no title in the header: the title is in the page, once
+      await expect(header(page).getByRole("heading")).toHaveCount(0);
+      const style = await header(page).evaluate((el) => {
+        const css = getComputedStyle(el);
+        return {
+          position: css.position,
+          background: css.backgroundColor,
+          height: el.getBoundingClientRect().height,
+        };
+      });
+      expect(style.position).toBe("sticky");
+      expect(style.background).toBe("rgb(246, 244, 240)");
+      expect(style.height).toBe(56);
+      expect((await header(page).boundingBox())!.y).toBe(0);
+      expect(await headerLine(page)).toBe("rgba(0, 0, 0, 0)");
+      await scrollTo(page, 900);
+      expect((await header(page).boundingBox())!.y).toBe(0);
+      expect(await headerLine(page)).toBe("rgb(228, 223, 213)");
+      await scrollTo(page, 0);
+      await expect.poll(() => headerLine(page)).toBe("rgba(0, 0, 0, 0)");
+    });
+
+    test("the header arrows: Previous is disabled on the first topic, Next on the last, and each keeps its place", async ({
+      page,
+    }) => {
+      await open(page, "/materials/read/S1");
+      const prev = page.getByRole("button", { name: "Previous topic" });
+      const next = page.getByRole("button", { name: "Next topic" });
+      await expect(prev).toBeDisabled();
+      await expect(next).toBeEnabled();
+      const where = await next.boundingBox();
+      await open(page, "/materials/read/S10");
+      await expect(next).toBeDisabled();
+      await expect(prev).toBeEnabled();
+      expect(await next.boundingBox()).toEqual(where);
+      await open(page, "/materials/read/F2");
+      await expect(header(page)).toContainText("F2 · 2 of 7");
+      await open(page, "/materials/read/F1");
+      await expect(prev).toBeDisabled();
+      await open(page, "/materials/read/F7");
+      await expect(next).toBeDisabled();
+    });
+
+    test("header Next opens the next topic at the top, and Back returns to the Materials list", async ({
+      page,
+    }) => {
+      await open(page, "/materials");
+      await page.getByRole("link", { name: /^Responding to an alarm/ }).click();
+      await expect(page).toHaveURL(/\/materials\/read\/S1$/);
+      await scrollTo(page, 700);
+      await page.getByRole("button", { name: "Next topic" }).click();
+      await expect(page).toHaveURL(/\/materials\/read\/S2$/);
+      await expect(
+        page.getByRole("heading", { name: "Checking the route", level: 1 }),
+      ).toBeVisible();
+      await expect(header(page)).toContainText("S2 · 2 of 10");
+      expect(await page.evaluate(() => window.scrollY)).toBe(0);
+      await page.getByRole("button", { name: "Previous topic" }).click();
+      await expect(page).toHaveURL(/\/materials\/read\/S1$/);
+      await page.getByRole("button", { name: "Back" }).click();
+      await expect(page).toHaveURL(/\/materials$/);
+    });
+
+    test("the quick-actions bar: hidden at the top and while scrolling down, shown on scrolling up past one viewport, hidden at the end", async ({
+      page,
+    }) => {
+      await open(page, "/materials/read/S1");
+      await expect(bar(page)).toBeHidden();
+      // while scrolling down it never shows
+      for (const y of [300, 700, 1200, 1800]) {
+        await scrollTo(page, y);
+        await expect(bar(page)).toBeHidden();
+      }
+      // up by 100px, well past one viewport (640)
+      await scrollTo(page, 1700);
+      await expect(bar(page)).toBeVisible();
+      await expect(bar(page).getByRole("button", { name: "Practise this topic" })).toBeVisible();
+      await expect(bar(page).getByRole("link", { name: "Steps", exact: true })).toBeVisible();
+      // down again: hidden
+      await scrollTo(page, 1800);
+      await expect(bar(page)).toBeHidden();
+      // back within the first viewport height: hidden
+      await scrollTo(page, 1700);
+      await expect(bar(page)).toBeVisible();
+      await scrollTo(page, 500);
+      await expect(bar(page)).toBeHidden();
+      // the end of the text, with the end block in view: hidden, even when scrolling up a little
+      await scrollTo(page, 99999);
+      await expect(bar(page)).toBeHidden();
+      await scrollTo(page, (await page.evaluate(() => window.scrollY)) - 20);
+      await expect(bar(page)).toBeHidden();
+      await expect(page.getByRole("region", { name: "What next" })).toBeInViewport();
+    });
+
+    test("the bar sits inside the gutters over a fade, with 52px buttons, and nothing overflows", async ({
+      page,
+    }) => {
+      await open(page, "/materials/read/S1");
+      await scrollTo(page, 1800);
+      await scrollTo(page, 1700);
+      await expect(bar(page)).toBeVisible();
+      const look = await page.evaluate(() => {
+        const rect = (el: Element) => el.getBoundingClientRect();
+        const root = document.querySelector("[data-quick-bar]")!;
+        const buttons = [...root.querySelectorAll("a, button")];
+        return {
+          position: getComputedStyle(root).position,
+          bottom: rect(root).bottom,
+          viewport: window.innerHeight,
+          buttons: buttons.map((b) => ({
+            left: rect(b).left,
+            right: rect(b).right,
+            height: rect(b).height,
+            width: rect(b).width,
+          })),
+          border: getComputedStyle(root).borderTopWidth,
+        };
+      });
+      expect(look.position).toBe("fixed");
+      expect(look.bottom).toBeCloseTo(look.viewport, 0);
+      expect(look.border).toBe("0px");
+      for (const button of look.buttons) {
+        expect(button.height).toBe(52);
+        expect(button.left).toBeGreaterThanOrEqual(16);
+        expect(button.right).toBeLessThanOrEqual(344);
+      }
+      // Steps about 40% and Practise about 60% of the row
+      const [steps, practise] = look.buttons;
+      expect(steps.width / (steps.width + practise.width)).toBeCloseTo(0.4, 1);
+      expect(await noSidewaysScroll(page)).toBe(true);
+    });
+
+    test("the bar's buttons start the right flows", async ({ page }) => {
+      await open(page, "/materials/read/S1");
+      await scrollTo(page, 1800);
+      await scrollTo(page, 1700);
+      await bar(page).getByRole("button", { name: "Practise this topic" }).click();
+      await expect(page).toHaveURL(/\/session$/);
+      await expect(page.getByText(/^Step 1 of \d+$/)).toBeVisible();
+      await open(page, "/materials/read/S1");
+      await scrollTo(page, 1800);
+      await scrollTo(page, 1700);
+      await bar(page).getByRole("link", { name: "Steps", exact: true }).click();
+      await expect(page).toHaveURL(/\/checklists\/leaving-a-building$/);
+    });
+
+    test("a text selection hides the bar, and it needs a new scroll up to come back", async ({
+      page,
+    }) => {
+      await open(page, "/materials/read/S1");
+      await scrollTo(page, 1800);
+      await scrollTo(page, 1700);
+      await expect(bar(page)).toBeVisible();
+      await page.evaluate(() => {
+        const blocks = [...document.querySelectorAll("[data-reading-body] [data-block]")];
+        const block = blocks.find((el) => {
+          const r = el.getBoundingClientRect();
+          return r.top > 100 && r.bottom < window.innerHeight - 140;
+        })!;
+        const text = document.createTreeWalker(block, NodeFilter.SHOW_TEXT).nextNode()!;
+        const range = document.createRange();
+        range.setStart(text, 0);
+        range.setEnd(text, 8);
+        const selection = window.getSelection()!;
+        selection.removeAllRanges();
+        selection.addRange(range);
+      });
+      await expect(page.getByRole("toolbar")).toBeVisible();
+      await expect(bar(page)).toBeHidden();
+      // the toolbar stays under the header
+      const box = (await page.getByRole("toolbar").boundingBox())!;
+      expect(box.y).toBeGreaterThanOrEqual(56);
+      await page.evaluate(() => window.getSelection()!.removeAllRanges());
+      await page.waitForTimeout(150);
+      await expect(bar(page)).toBeHidden();
+      const y = await page.evaluate(() => window.scrollY);
+      await scrollTo(page, y - 30);
+      await expect(bar(page)).toBeVisible();
+    });
+
+    test("a short topic never shows the bar, and a hidden bar cannot be focused", async ({
+      page,
+    }) => {
+      await open(page, "/materials/read/S10");
+      for (const y of [0, 100, 0]) {
+        await scrollTo(page, y);
+        await expect(bar(page)).toBeHidden();
+      }
+      const focusable = await page.evaluate(() => {
+        const root = document.querySelector("[data-quick-bar]")!;
+        const button = root.querySelector("button") as HTMLElement;
+        button.focus();
+        return {
+          focused: document.activeElement === button,
+          inert: root.hasAttribute("inert"),
+          hidden: root.getAttribute("aria-hidden"),
+        };
+      });
+      expect(focusable).toEqual({ focused: false, inert: true, hidden: "true" });
+    });
+
+    test("a topic with no practice has no bar and keeps only the header", async ({ page }) => {
+      await open(page, "/materials/read/F5");
+      await expect(bar(page)).toHaveCount(0);
+      await expect(header(page)).toContainText("F5 · 5 of 7");
+    });
   });
 
   test("the reading screen has no sideways scroll and keeps its gutters", async ({ page }) => {

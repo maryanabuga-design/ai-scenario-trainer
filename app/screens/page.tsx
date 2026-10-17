@@ -33,6 +33,7 @@ import {
   ExamLeaveSample,
   ExamResultsSample,
   HighlightSample,
+  QuickBarSample,
   HomeSample,
   MaterialTypesSample,
   WeakTopicsSample,
@@ -64,6 +65,8 @@ function ReadingExample({ id }: { id: string }) {
         body: topic.section.body,
         canPractise: canPractise(id),
         stepsHref: steps ? `/checklists/${steps.id}` : null,
+        position: Number(id.slice(1)),
+        total: id.startsWith("F") ? 7 : 10,
         previous: topic.previous ? { id: topic.previous.id, title: topic.previous.title } : null,
         next: topic.next ? { id: topic.next.id, title: topic.next.title } : null,
       }}
@@ -221,6 +224,18 @@ export default function Screens() {
             <Screen>
               <ReadingExample id="S2" />
             </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Reading: the quick-actions bar over the text (Steps and Practise this topic)">
+            <Screen>
+              <ReadingExample id="S1" />
+            </Screen>
+            <QuickBarSample stepsHref="/checklists/leaving-a-building" />
+          </PhoneFrame>
+          <PhoneFrame label="Reading: the quick-actions bar for a topic without steps (Practise only)">
+            <Screen>
+              <ReadingExample id="S9" />
+            </Screen>
+            <QuickBarSample stepsHref={null} />
           </PhoneFrame>
           <PhoneFrame label="Reading screen: S10, the last topic (only Previous; no bottom navigation)">
             <Screen>

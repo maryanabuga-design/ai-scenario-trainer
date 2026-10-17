@@ -48,4 +48,12 @@ describe("placing the toolbar", () => {
       }
     }
   });
+
+  it("keeps clear of a header at the top: no room above means below", () => {
+    const place = placeToolbar({ ...base, touch: false, topLimit: 56, rect: rect(70, 90) });
+    expect(place.side).toBe("below");
+    expect(placeToolbar({ ...base, touch: false, topLimit: 56, rect: rect(120, 140) }).top).toBe(
+      120 - 8 - TOOLBAR_HEIGHT,
+    );
+  });
 });

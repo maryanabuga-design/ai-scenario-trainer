@@ -1,5 +1,6 @@
 "use client";
 
+import { QuickActionsBar } from "@/components/QuickActionsBar/QuickActionsBar";
 import { Tag } from "@/components/Tag/Tag";
 import { StatusChip } from "@/components/StatusChip/StatusChip";
 import { GuideChip } from "@/components/GuideChip/GuideChip";
@@ -996,5 +997,12 @@ export function HighlightSample({
         />
       </div>
     </div>
+  );
+}
+
+/** The reading screen's quick-actions bar drawn inside a phone frame (the frame is its container). */
+export function QuickBarSample({ stepsHref }: { stepsHref: string | null }) {
+  return (
+    <QuickActionsBar visible stepsHref={stepsHref} onPractise={() => {}} placement="absolute" />
   );
 }

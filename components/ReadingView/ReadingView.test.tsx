@@ -9,8 +9,9 @@ const code = source.replace(/\/\*\*.*?\*\//g, "");
 const page = readFileSync("app/(app)/materials/read/[topic]/page.tsx", "utf8");
 
 describe("the reading screen", () => {
-  it("has the 40px Back, the title, one meta line with the guide, the topic id and the reading time", () => {
-    expect(source).toContain('size="small"');
+  it("has the sticky header, the title, one meta line with the guide, the topic id and the reading time", () => {
+    expect(source).toContain("<ReadingHeader");
+    expect(source).toContain("label={`${topic.id} · ${topic.position} of ${topic.total}`}");
     expect(source).toContain("router.back()");
     expect(source).toContain('router.push("/materials")');
     expect(source).toContain("{topic.guideTitle} · {topic.id} · {readingLabel(topic.minutes)}");
@@ -33,7 +34,9 @@ describe("the reading screen", () => {
   it("is a sticky-footer column: the block is pushed to the end, with no fixed or sticky panel", () => {
     expect(source).toContain('className="flex flex-1 flex-col pb-[var(--gutter,1rem)]"');
     expect(source).toContain('className="mt-auto flex flex-col pt-6"');
-    expect(code).not.toMatch(/ActionBar|\b(sticky|fixed)\b|shadow|bg-/);
+    // the end block (from its section to the quick bar) has no panel, shadow, sticky or fixed
+    const end = code.slice(code.indexOf("<section"), code.indexOf("{topic.canPractise && ("));
+    expect(end).not.toMatch(/ActionBar|\b(sticky|fixed)\b|shadow|bg-/);
   });
 
   it("Practise starts or resumes a part session that returns to this reading screen", () => {
@@ -43,6 +46,14 @@ describe("the reading screen", () => {
     expect(source).toContain('router.push("/session")');
     // it never opens the Training topic list
     expect(source).not.toContain("/training");
+  });
+
+  it("shows the quick-actions bar only for a topic that can be practised, and hides it while selecting", () => {
+    expect(source).toContain("{topic.canPractise && (");
+    expect(source).toContain("<QuickActionsBar");
+    expect(source).toContain("busy: selecting.current");
+    expect(source).toContain("onActiveChange={onSelecting}");
+    expect(source).toContain("requestAnimationFrame(update)");
   });
 
   it("only a tap on Practise changes progress: reading does not", () => {

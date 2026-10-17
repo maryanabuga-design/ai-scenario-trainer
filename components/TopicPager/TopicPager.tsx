@@ -22,7 +22,7 @@ export function TopicPager({
   return (
     <nav aria-label="Topics" className="grid grid-cols-2 gap-4 pt-4">
       {previous ? (
-        <Link href={readingPath(previous.id)} className={`${link} items-start text-left`}>
+        <Link replace href={readingPath(previous.id)} className={`${link} items-start text-left`}>
           <span className="type-small flex items-center gap-1 text-text-secondary">
             <ArrowLeft size={16} strokeWidth={2} aria-hidden="true" />
             Previous
@@ -33,7 +33,7 @@ export function TopicPager({
         <span aria-hidden="true" />
       )}
       {next ? (
-        <Link href={readingPath(next.id)} className={`${link} items-end text-right`}>
+        <Link replace href={readingPath(next.id)} className={`${link} items-end text-right`}>
           <span className="type-small flex items-center gap-1 text-text-secondary">
             Next
             <ArrowRight size={16} strokeWidth={2} aria-hidden="true" />

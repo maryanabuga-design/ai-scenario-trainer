@@ -73,7 +73,10 @@ async function nearTheEdge(page: Page) {
         continue;
       }
       inside.add(root);
-      for (const child of root.querySelectorAll("*")) inside.add(child);
+      // a full-bleed wrapper inside the page (the reading header) is exempt itself; its own pass
+      // adds its content
+      for (const child of root.querySelectorAll("*"))
+        if (!child.matches("[data-full-bleed]")) inside.add(child);
     }
     const hidden = (element: Element) => {
       const style = getComputedStyle(element);

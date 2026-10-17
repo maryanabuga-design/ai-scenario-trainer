@@ -17,6 +17,7 @@ export function placeToolbar({
   viewport,
   gutter,
   bottomLimit,
+  topLimit = 0,
   touch,
 }: {
   rect: { left: number; right: number; top: number; bottom: number };
@@ -25,6 +26,8 @@ export function placeToolbar({
   gutter: number;
   /** The top of the bottom navigation: the toolbar must end above it. */
   bottomLimit: number;
+  /** The bottom of a sticky header at the top: the toolbar must not go under it. */
+  topLimit?: number;
   touch: boolean;
 }): Placement {
   const centre = (rect.left + rect.right) / 2;
@@ -35,14 +38,14 @@ export function placeToolbar({
   const below = rect.bottom + GAP;
   const above = rect.top - GAP - TOOLBAR_HEIGHT;
   const fitsBelow = below + TOOLBAR_HEIGHT <= bottomLimit - GAP;
-  const fitsAbove = above >= GAP;
+  const fitsAbove = above >= topLimit + GAP;
   const preferBelow = touch;
   if (preferBelow ? fitsBelow : !fitsAbove && fitsBelow) return { left, top: below, side: "below" };
   if (preferBelow ? !fitsBelow && fitsAbove : fitsAbove) return { left, top: above, side: "above" };
   // neither side has room (a very tall selection): stay on screen, at the top, inside the text
   return {
     left,
-    top: Math.max(GAP, Math.min(above, bottomLimit - TOOLBAR_HEIGHT - GAP)),
+    top: Math.max(topLimit + GAP, Math.min(above, bottomLimit - TOOLBAR_HEIGHT - GAP)),
     side: "above",
   };
 }

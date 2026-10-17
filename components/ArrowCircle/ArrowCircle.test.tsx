@@ -98,6 +98,8 @@ describe("every card arrow goes through ArrowCircle", () => {
       "Chevron/Chevron.tsx",
       // the small arrows of the Previous / Next captions
       "TopicPager/TopicPager.tsx",
+      // the chevrons of the reading header's topic arrows
+      "ReadingHeader/ReadingHeader.tsx",
       "ErrorTypesCard/ErrorTypesCard.tsx",
     ];
     const own = [...files("components"), ...files("app")].filter((file) => {
