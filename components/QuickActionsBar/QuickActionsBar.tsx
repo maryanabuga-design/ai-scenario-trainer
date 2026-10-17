@@ -1,4 +1,5 @@
 import { Button, ButtonLink } from "@/components/Button/Button";
+import { QUICK_PRACTISE_LABEL, QUICK_STEPS_LABEL } from "@/lib/reading";
 
 /**
  * The quick actions of a long reading screen: Steps (when the topic has steps) and Practise this
@@ -32,14 +33,14 @@ export function QuickActionsBar({
       />
       <div className="flex gap-3 bg-bg px-[var(--gutter,1rem)] pt-1 pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]">
         {stepsHref && (
-          <div className={`pointer-events-auto flex-[2] ${shadow}`}>
+          <div className={`pointer-events-auto flex-1 ${shadow}`}>
             <ButtonLink href={stepsHref} variant="secondary">
-              Steps
+              {QUICK_STEPS_LABEL}
             </ButtonLink>
           </div>
         )}
-        <div className={`pointer-events-auto flex-[3] ${shadow}`}>
-          <Button onClick={onPractise}>Practise this topic</Button>
+        <div className={`pointer-events-auto flex-1 ${shadow}`}>
+          <Button onClick={onPractise}>{QUICK_PRACTISE_LABEL}</Button>
         </div>
       </div>
     </div>

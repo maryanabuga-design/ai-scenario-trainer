@@ -563,7 +563,9 @@ test.describe("Materials", () => {
       // up by 100px, well past one viewport (640)
       await scrollTo(page, 1700);
       await expect(bar(page)).toBeVisible();
-      await expect(bar(page).getByRole("button", { name: "Practise this topic" })).toBeVisible();
+      await expect(
+        bar(page).getByRole("button", { name: "Practise topic", exact: true }),
+      ).toBeVisible();
       await expect(bar(page).getByRole("link", { name: "Steps", exact: true })).toBeVisible();
       // down again: hidden
       await scrollTo(page, 1800);
@@ -613,17 +615,47 @@ test.describe("Materials", () => {
         expect(button.left).toBeGreaterThanOrEqual(16);
         expect(button.right).toBeLessThanOrEqual(344);
       }
-      // Steps about 40% and Practise about 60% of the row
+      // equal widths: each half of the 328px row minus half of the 12px gap
       const [steps, practise] = look.buttons;
-      expect(steps.width / (steps.width + practise.width)).toBeCloseTo(0.4, 1);
+      expect(Math.abs(steps.width - practise.width)).toBeLessThanOrEqual(1);
+      expect(Math.abs(steps.width - 158)).toBeLessThanOrEqual(1);
+      expect(Math.round(practise.left - steps.right)).toBe(12);
       expect(await noSidewaysScroll(page)).toBe(true);
+    });
+
+    test("the bar's labels are Steps and Practise topic, each on one line, and the end block keeps its own", async ({
+      page,
+    }) => {
+      await open(page, "/materials/read/S1");
+      await scrollTo(page, 1800);
+      await scrollTo(page, 1700);
+      const lines = await bar(page)
+        .locator("a, button")
+        .evaluateAll((els) =>
+          els.map((el) => {
+            const range = document.createRange();
+            range.selectNodeContents(el);
+            return {
+              text: el.textContent,
+              lines: range.getClientRects().length,
+              fits: el.scrollWidth <= el.clientWidth,
+            };
+          }),
+        );
+      expect(lines).toEqual([
+        { text: "Steps", lines: 1, fits: true },
+        { text: "Practise topic", lines: 1, fits: true },
+      ]);
+      await scrollTo(page, 99999);
+      await expect(page.getByRole("button", { name: "Practise this topic" })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Steps for this topic" })).toBeVisible();
     });
 
     test("the bar's buttons start the right flows", async ({ page }) => {
       await open(page, "/materials/read/S1");
       await scrollTo(page, 1800);
       await scrollTo(page, 1700);
-      await bar(page).getByRole("button", { name: "Practise this topic" }).click();
+      await bar(page).getByRole("button", { name: "Practise topic", exact: true }).click();
       await expect(page).toHaveURL(/\/session$/);
       await expect(page.getByText(/^Step 1 of \d+$/)).toBeVisible();
       await open(page, "/materials/read/S1");
@@ -686,6 +718,50 @@ test.describe("Materials", () => {
         };
       });
       expect(focusable).toEqual({ focused: false, inert: true, hidden: "true" });
+    });
+
+    for (const [name, from] of [
+      ["Training", "/training"],
+      ["a Steps screen", "/checklists/leaving-a-building"],
+      ["Results", "/session/results"],
+    ] as const) {
+      test(`Back goes to the Materials list when the reading screen was opened from ${name}`, async ({
+        page,
+      }) => {
+        // the list was scrolled earlier in this tab
+        await open(page, "/materials");
+        await page.evaluate(() => window.scrollTo(0, 500));
+        await page.waitForTimeout(200);
+        await page.goto(from);
+        await page.waitForTimeout(300);
+        // a client navigation, as a link would do it
+        await page.evaluate(() =>
+          (
+            window as unknown as { next: { router: { push: (to: string) => void } } }
+          ).next.router.push("/materials/read/S1"),
+        );
+        await expect(page).toHaveURL(/\/materials\/read\/S1$/);
+        await page.getByRole("button", { name: "Back" }).click();
+        await expect(page).toHaveURL(/\/materials$/);
+        await expect(page.getByRole("navigation", { name: "Main" })).toBeVisible();
+      });
+    }
+
+    test("Back from a reading screen opened from the list keeps the list scroll, and topic arrows add no history", async ({
+      page,
+    }) => {
+      await open(page, "/materials");
+      await page.evaluate(() => window.scrollTo(0, 500));
+      await page.waitForTimeout(200);
+      const before = await page.evaluate(() => window.scrollY);
+      await page.getByRole("link", { name: /^Calling for help/ }).click();
+      await page.getByRole("button", { name: "Next topic" }).click();
+      await expect(header(page)).toContainText("S6 · 6 of 10");
+      await page.getByRole("button", { name: "Next topic" }).click();
+      await expect(header(page)).toContainText("S7 · 7 of 10");
+      await page.getByRole("button", { name: "Back" }).click();
+      await expect(page).toHaveURL(/\/materials$/);
+      await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(before - 60);
     });
 
     test("a topic with no practice has no bar and keeps only the header", async ({ page }) => {

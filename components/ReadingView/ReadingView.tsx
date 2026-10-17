@@ -10,6 +10,7 @@ import { TopicPager } from "@/components/TopicPager/TopicPager";
 import { dismissTip, useTipSeen } from "@/lib/highlight-store";
 import { usePartRecords } from "@/lib/part-progress";
 import { practicePlan } from "@/lib/practise";
+import { canGoBackToList, requestListRestore } from "@/lib/navigation-origin";
 import { initialQuickBar, nextQuickBar } from "@/lib/quick-bar";
 import type { QuickBarState } from "@/lib/quick-bar";
 import { readingLabel, readingPath } from "@/lib/reading";
@@ -134,7 +135,15 @@ export function ReadingView({ topic }: { topic: ReadingTopic }) {
         previousId={topic.previous?.id ?? null}
         nextId={topic.next?.id ?? null}
         scrolled={scrolled}
-        onBack={() => (window.history.length > 1 ? router.back() : router.push("/materials"))}
+        onBack={() => {
+          // always the Materials list: the history when it leads there (the list keeps its scroll),
+          // otherwise a new navigation to the list, which scrolls back to where it was
+          if (canGoBackToList()) router.back();
+          else {
+            requestListRestore();
+            router.push("/materials");
+          }
+        }}
       />
       <div className="flex flex-col gap-6">
         <header className="flex flex-col gap-2">

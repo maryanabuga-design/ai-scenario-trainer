@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { ReactNode } from "react";
 import { ActionBarProvider, ActionBarSlot } from "@/components/ActionBar/ActionBar";
+import { NavigationTracker } from "@/components/NavigationTracker/NavigationTracker";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { loadAllSections } from "@/lib/guide";
@@ -8,6 +9,9 @@ import { loadAllSections } from "@/lib/guide";
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col border-x border-border bg-bg pt-[env(safe-area-inset-top)]">
+      <Suspense fallback={null}>
+        <NavigationTracker />
+      </Suspense>
       <SourceSheetProvider sections={loadAllSections()}>
         <ActionBarProvider>
           <main className="flex flex-1 flex-col px-[var(--gutter,1rem)] pt-6">{children}</main>

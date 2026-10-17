@@ -46,3 +46,11 @@ describe("the Materials texts", () => {
     expect(MATERIALS_SUBTITLE).toBe("Read the training guides, then practise what you read.");
   });
 });
+
+describe("the quick-actions bar labels", () => {
+  it("are shorter than the end block's and kept in constants", async () => {
+    const { QUICK_PRACTISE_LABEL, QUICK_STEPS_LABEL } = await import("@/lib/reading");
+    expect(QUICK_STEPS_LABEL).toBe("Steps");
+    expect(QUICK_PRACTISE_LABEL).toBe("Practise topic");
+  });
+});
