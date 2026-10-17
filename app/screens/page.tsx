@@ -563,14 +563,14 @@ export default function Screens() {
               <StepsList />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Steps: a topic, step 1 open">
+          <PhoneFrame label="Steps: a topic, the olive frame, step 1 open">
             <Screen>
-              <StepsTopicSample checklistIndex={1} state="first" />
+              <StepsTopicSample checklistIndex={1} openStep={1} />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Steps: a topic, step 2 open and one step done">
+          <PhoneFrame label="Steps: a topic, step 3 open">
             <Screen>
-              <StepsTopicSample checklistIndex={1} state="second" />
+              <StepsTopicSample checklistIndex={1} openStep={3} />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Weak topics">

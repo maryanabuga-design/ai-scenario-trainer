@@ -44,6 +44,8 @@ const sizes = {
   compact: { tile: "h-9 w-9", icon: 18, stroke: 1.75 },
   /** The 44px rounded square of the Materials rows (12px radius, not a circle). */
   tile: { tile: "h-11 w-11 rounded-[12px]", icon: 22, stroke: 2 },
+  /** The 48px rounded square of the Steps summary card (12px radius, like the Materials rows). */
+  square48: { tile: "h-12 w-12 rounded-[12px]", icon: 24, stroke: 2 },
   /** The 44px circle of the Steps list cards. */
   circle44: { tile: "h-11 w-11", icon: 22, stroke: 2 },
 } as const;
@@ -66,7 +68,7 @@ export function TopicTile({
   return (
     <span
       aria-hidden="true"
-      className={`flex ${look.tile} shrink-0 items-center justify-center ${size === "tile" ? "" : "rounded-full"} text-text ${tone === "olive" ? "bg-olive-tint" : tints[topicTint(sectionId)]}`}
+      className={`flex ${look.tile} shrink-0 items-center justify-center ${size === "tile" || size === "square48" ? "" : "rounded-full"} text-text ${tone === "olive" ? "bg-olive-tint" : tints[topicTint(sectionId)]}`}
     >
       <Icon size={look.icon} strokeWidth={look.stroke} />
     </span>

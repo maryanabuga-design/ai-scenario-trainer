@@ -1,18 +1,13 @@
-"use client";
-
 import Link from "next/link";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { stepsCard } from "@/components/StepsView/StepCard";
 import { TopicTile } from "@/components/TopicTile/TopicTile";
-import { STEPS_SUBTITLE, STEPS_TITLE, checklists } from "@/lib/checklists";
-import { doneCount, listLine, useStepsProgress } from "@/lib/steps-progress";
+import { STEPS_SUBTITLE, STEPS_TITLE, checklists, stepCountLabel } from "@/lib/checklists";
 import { topicIcon } from "@/lib/weak-topics";
 
-/** The Steps list: a card per topic with a step guide, with its number of steps and how many are done. */
+/** The Steps list: a card per topic with a step guide, with its number of steps. */
 export function StepsList() {
-  const progress = useStepsProgress();
-  const saved = progress === "loading" ? null : progress;
   return (
     <div className="flex flex-col gap-6 pb-6">
       <CircleBackButton size="small" href="/" label="Back to Home" />
@@ -36,7 +31,7 @@ export function StepsList() {
               <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                 <span className="type-body-strong">{checklist.title}</span>
                 <span className="type-small text-text-secondary tabular-nums">
-                  {listLine(doneCount(saved, checklist), checklist.steps.length)}
+                  {stepCountLabel(checklist.steps.length)}
                 </span>
               </span>
               <Chevron />

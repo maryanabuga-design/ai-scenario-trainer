@@ -3,7 +3,6 @@ import { clearPartRecords, recordPartResult } from "@/lib/part-progress";
 import { clearExam } from "@/lib/exam-store";
 import { cleanHistory, cleanSession } from "@/lib/saved-data";
 import { createStore } from "@/lib/store";
-import { clearStepsProgress } from "@/lib/steps-progress";
 import { clearTrainings } from "@/lib/trainings";
 
 export type SessionKind = "scenario" | "quiz" | "repeat" | "exam";
@@ -198,12 +197,11 @@ export function saveProfile(profile: Profile) {
   profileStore.write(profile);
 }
 
-/** Deletes sessions, history, weak topics, steps progress and created trainings. Direction, onboarding and uploads stay. */
+/** Deletes sessions, history, weak topics and created trainings. Direction, onboarding and uploads stay. */
 export function resetProgress() {
   sessionStore.write(null);
   clearExam();
   historyStore.write(null);
   clearPartRecords();
   clearTrainings();
-  clearStepsProgress();
 }

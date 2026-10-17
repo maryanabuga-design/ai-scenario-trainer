@@ -1,74 +1,49 @@
-import { Check, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import type { Step } from "@/lib/checklists";
 
-/** The fill, border and radius shared by the Steps list card, summary card and step card. */
+/** The fill, border and radius shared by the Steps list card and the step card. */
 export const stepsCard = "rounded-card border border-selectable-stroke bg-list-card";
 
 /**
- * One step as an accordion card. The header is a button (`aria-expanded`, `aria-controls`) and the
- * done-circle beside it is a second button, so ticking a step never opens or closes it. The details
- * live in a region that animates its height (a grid row from 0fr to 1fr) and, closed, is inert.
+ * One step as an accordion card: the caption, the title and a chevron in one header button
+ * (`aria-expanded`, `aria-controls`), and the details in a region that animates its height (a grid
+ * row from 0fr to 1fr) and, closed, is inert and invisible. The padding is the page gutter on every
+ * side. There is no done state.
  */
 export function StepCard({
   step,
   index,
   open,
-  done,
   onToggleOpen,
-  onToggleDone,
 }: {
   step: Step;
   index: number;
   open: boolean;
-  done: boolean;
   onToggleOpen: () => void;
-  onToggleDone: () => void;
 }) {
   const headerId = `${step.id}-header`;
   const panelId = `${step.id}-panel`;
-  const focus =
-    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
   return (
     <li className={`${stepsCard} overflow-hidden`}>
-      <div className="flex items-center gap-1 p-[var(--gutter,1rem)]">
-        <button
-          type="button"
-          aria-pressed={done}
-          aria-label={done ? `Step ${index + 1} done` : `Mark step ${index + 1} done`}
-          onClick={onToggleDone}
-          className={`-ml-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${focus}`}
-        >
-          <span
-            aria-hidden="true"
-            className={`flex h-6 w-6 items-center justify-center rounded-full ${
-              done
-                ? "bg-primary text-primary-text"
-                : "border-[1.5px] border-border-strong bg-list-card"
-            }`}
-          >
-            {done && <Check size={16} strokeWidth={3} />}
-          </span>
-        </button>
-        <button
-          type="button"
-          id={headerId}
-          aria-expanded={open}
-          aria-controls={panelId}
-          onClick={onToggleOpen}
-          className={`flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-[12px] pl-2 text-left ${focus}`}
-        >
-          <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <span className="type-label text-primary">Step {index + 1}</span>
-            <span className="type-body-strong">{step.title}</span>
-          </span>
-          <ChevronDown
-            size={20}
-            strokeWidth={2}
-            aria-hidden="true"
-            className={`shrink-0 text-primary transition-transform duration-200 motion-reduce:transition-none ${open ? "rotate-180" : ""}`}
-          />
-        </button>
-      </div>
+      <button
+        type="button"
+        id={headerId}
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={onToggleOpen}
+        className="flex min-h-11 w-full items-center gap-3 p-[var(--gutter,1rem)] text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
+      >
+        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className="type-label text-primary">Step {index + 1}</span>
+          <span className="type-body-strong">{step.title}</span>
+        </span>
+        <ChevronDown
+          size={20}
+          strokeWidth={2}
+          aria-hidden="true"
+          className={`shrink-0 text-primary transition-transform duration-200 motion-reduce:transition-none ${open ? "rotate-180" : ""}`}
+        />
+      </button>
       <div
         id={panelId}
         role="region"

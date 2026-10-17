@@ -7,17 +7,9 @@ import { StepsTopicView } from "@/components/StepsView/StepsTopic";
 import { checklists } from "@/lib/checklists";
 
 const noop = () => {};
-const topic = (open: string | null, done: string[], checklist = checklists[1]) =>
+const topic = (open: string | null, checklist = checklists[1]) =>
   renderToStaticMarkup(
-    <StepsTopicView
-      checklist={checklist}
-      open={open}
-      done={done}
-      onBack={noop}
-      onToggleOpen={noop}
-      onToggleDone={noop}
-      onPractise={noop}
-    />,
+    <StepsTopicView checklist={checklist} open={open} onBack={noop} onToggleOpen={noop} />,
   );
 
 describe("the Steps list", () => {
@@ -30,13 +22,14 @@ describe("the Steps list", () => {
     expect(html).toContain("Short step-by-step guides for each topic.");
   });
 
-  it("has a card per topic with its steps and done count, and a chevron, opening the topic screen", () => {
+  it("has a card per topic with only its number of steps, and a chevron, opening the topic screen", () => {
     expect(html.match(/<li/g)).toHaveLength(checklists.length);
     checklists.forEach((checklist) => {
       expect(html).toContain(checklist.title);
-      expect(html).toContain(`${checklist.steps.length} steps · 0 done`);
+      expect(html).toContain(`>${checklist.steps.length} steps<`);
       expect(html).toContain(`href="/checklists/${checklist.id}"`);
     });
+    expect(html).not.toMatch(/done|·/);
     expect(html.match(/lucide-chevron-right/g)).toHaveLength(checklists.length);
   });
 
@@ -58,21 +51,40 @@ describe("a Steps topic screen", () => {
   const first = checklist.steps[0];
   const second = checklist.steps[1];
 
-  it("has the summary card with the done count, a progress bar and no arrow circle", () => {
-    const html = topic(first.id, []);
-    expect(html).toContain(`>${checklist.title}</h1>`);
-    expect(html).toContain(`0 of ${checklist.steps.length} steps done`);
-    expect(html).toContain('role="progressbar"');
-    expect(html).toContain('aria-valuenow="0"');
-    const withDone = topic(first.id, [first.id, second.id]);
-    expect(withDone).toContain(`2 of ${checklist.steps.length} steps done`);
-    expect(withDone).toContain('aria-valuenow="2"');
-    expect(withDone).toContain(`width:${(2 / checklist.steps.length) * 100}%`);
-    expect(html).not.toMatch(/rounded-full[^"]*border-arrow-stroke/);
+  it("has the olive full-bleed frame with Back and the title as a large heading", () => {
+    const html = topic(first.id);
+    const frame = html.slice(html.indexOf("data-steps-frame"), html.indexOf("<section"));
+    expect(frame).toContain("bg-olive-tint");
+    expect(frame).toContain("data-full-bleed");
+    expect(frame).toContain("-mx-[var(--gutter,1rem)]");
+    expect(frame).toContain("env(safe-area-inset-top)");
+    expect(frame).toContain('aria-label="Back"');
+    expect(frame).toContain("h-10 w-10");
+    expect(frame).toContain(`<h1 class="type-page-title">${checklist.title}</h1>`);
+    // a straight bottom edge
+    expect(frame).not.toMatch(/rounded-b|rounded-\[/);
+  });
+
+  it("has the summary card over the frame's edge: Step-by-step guide, the step count, a rounded-square tile", () => {
+    const html = topic(first.id);
+    const card = html.slice(html.indexOf('aria-label="Summary"'), html.indexOf("<ol"));
+    expect(card).toContain("-mt-10");
+    expect(card).toContain("border border-selectable-stroke");
+    expect(card).toContain("bg-card");
+    expect(card).toContain("p-[var(--gutter,1rem)]");
+    expect(card).toContain(">Step-by-step guide<");
+    expect(card).toContain(`>${checklist.steps.length} steps<`);
+    // the 48px tile has the 12px radius, not a circle
+    expect(card).toContain("h-12 w-12 rounded-[12px]");
+    expect(card).not.toContain("rounded-full");
+    expect(card).toContain("bg-olive-tint");
+    // informational only: no progress, no done, no arrow circle
+    expect(html).not.toMatch(/progressbar|done|checkbox|aria-pressed/i);
+    expect(html).not.toContain("ArrowCircle");
   });
 
   it("has one card per step with the caption, the title and a closed or open chevron", () => {
-    const html = topic(first.id, []);
+    const html = topic(first.id);
     checklist.steps.forEach((step, index) => {
       expect(html).toContain(`Step ${index + 1}`);
       expect(html).toContain(step.title);
@@ -80,72 +92,64 @@ describe("a Steps topic screen", () => {
     expect(html.match(/aria-expanded="true"/g)).toHaveLength(1);
     expect(html.match(/aria-expanded="false"/g)).toHaveLength(checklist.steps.length - 1);
     expect(html).toContain("rotate-180");
-    expect(topic(null, []).match(/aria-expanded="true"/g)).toBeNull();
+    expect(topic(null).match(/aria-expanded="true"/g)).toBeNull();
   });
 
   it("opens only one step: the others' details are inert and hidden", () => {
-    const html = topic(second.id, []);
+    const html = topic(second.id);
     expect(html.match(/inert=""/g)).toHaveLength(checklist.steps.length - 1);
     expect(html.match(/aria-hidden="false"/g)).toHaveLength(1);
     // a closed panel is invisible once its height has collapsed (visibility is part of the transition)
     expect(html).toContain("transition-[grid-template-rows,visibility]");
     expect(html.match(/invisible grid-rows-\[0fr\]/g)).toHaveLength(checklist.steps.length - 1);
     expect(html).toContain("grid-rows-[1fr]");
-    expect(html).toContain("grid-rows-[0fr]");
   });
 
-  it("has the header button wired to its panel, and a separate done-circle", () => {
-    const html = renderToStaticMarkup(
-      <StepCard step={first} index={0} open done={false} onToggleOpen={noop} onToggleDone={noop} />,
-    );
+  it("has the header as the one button of a step, wired to its panel, with equal padding", () => {
+    const html = renderToStaticMarkup(<StepCard step={first} index={0} open onToggleOpen={noop} />);
     expect(html).toContain(`id="${first.id}-header"`);
     expect(html).toContain(`aria-controls="${first.id}-panel"`);
     expect(html).toContain(`aria-labelledby="${first.id}-header"`);
-    expect(html).toContain('aria-pressed="false"');
-    expect(html).toContain('aria-label="Mark step 1 done"');
-    expect(html).toContain("h-11 w-11");
-    // two sibling buttons, never nested
-    expect(html.match(/<button/g)).toHaveLength(2);
-    expect(html).not.toMatch(/<button[^>]*>(?:(?!<\/button>)[\s\S])*<button/);
-  });
-
-  it("shows a done step as a filled olive circle with a check, and says so", () => {
-    const html = renderToStaticMarkup(
-      <StepCard step={first} index={0} open={false} done onToggleOpen={noop} onToggleDone={noop} />,
-    );
-    expect(html).toContain("bg-primary");
-    expect(html).toContain("lucide-check");
-    expect(html).toContain('aria-pressed="true"');
-    expect(html).toContain('aria-label="Step 1 done"');
+    expect(html.match(/<button/g)).toHaveLength(1);
+    expect(html).toContain("p-[var(--gutter,1rem)]");
+    expect(html).not.toMatch(/aria-pressed|checkbox|lucide-check\b/);
   });
 
   it("animates the height in 200ms, and not for reduced motion", () => {
-    const html = topic(first.id, []);
+    const html = topic(first.id);
     expect(html).toContain("duration-200");
     expect(html).toContain("motion-reduce:transition-none");
   });
 
-  it("ends with Practise this topic (primary) over Read the material (secondary), and no Source without a link", () => {
-    const html = topic(first.id, []);
+  it("has no buttons or links below the steps, and no Source row without a link", () => {
+    const html = topic(first.id);
+    const below = html.slice(html.indexOf("</ol>"));
+    expect(below).not.toMatch(/<(a|button)\b/);
+    expect(html).not.toMatch(/Practise|Read the material|Steps for this topic/);
     expect(html).not.toContain(">Source<");
-    expect(html.indexOf(">Practise this topic<")).toBeLessThan(html.indexOf(">Read the material<"));
-    expect(html).toContain('href="/materials/read/S7"');
   });
 
   it("shows the Source row only when the content has a link", () => {
-    const html = topic(first.id, [], {
-      ...checklist,
-      source: { label: "Official guidance", url: "https://example.org/guide" },
-    });
+    const html = renderToStaticMarkup(
+      <StepsTopicView
+        checklist={{
+          ...checklist,
+          source: { label: "Official guidance", url: "https://example.org/guide" },
+        }}
+        open={null}
+        onBack={noop}
+        onToggleOpen={noop}
+      />,
+    );
     expect(html).toContain(">Source<");
     expect(html).toContain('href="https://example.org/guide"');
     expect(html).toContain('rel="noopener noreferrer"');
   });
 
-  it("goes back through the history, and has no Steps ArrowCircle", () => {
+  it("goes back through the history, and keeps no progress code", () => {
     const code = readFileSync("components/StepsView/StepsTopic.tsx", "utf8");
     expect(code).toContain("router.back()");
     expect(code).toContain('router.push("/checklists")');
-    expect(code).not.toContain("ArrowCircle");
+    expect(code).not.toMatch(/ArrowCircle|steps-progress|usePractise|toggleStep/);
   });
 });

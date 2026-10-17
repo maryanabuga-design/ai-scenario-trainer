@@ -20,16 +20,11 @@ const noSidewaysScroll = (page: Page) =>
 
 /** The accordion headers of the visible topic screen. */
 const headers = (page: Page) => page.locator("main ol button[aria-expanded]:visible");
-const done = (page: Page, n: number) =>
-  page
-    .locator("main ol li:visible")
-    .nth(n - 1)
-    .locator("button[aria-pressed]");
 
 test.describe("Steps", () => {
   test.use({ viewport: { width: 360, height: 800 } });
 
-  test("the list shows every topic with its step count, as flat-bordered cards inside the gutters", async ({
+  test("the list shows every topic with only its step count, as bordered cards inside the gutters", async ({
     page,
   }) => {
     await open(page, "/");
@@ -40,9 +35,10 @@ test.describe("Steps", () => {
     const cards = page.locator("main ul li:visible a");
     await expect(cards).toHaveCount(3);
     await expect(cards.nth(0)).toContainText("Leaving a building during an alarm");
-    await expect(cards.nth(0)).toContainText("6 steps · 0 done");
+    await expect(cards.nth(0)).toContainText("6 steps");
     await expect(cards.nth(1)).toContainText("Severe bleeding");
-    await expect(cards.nth(2)).toContainText("5 steps · 0 done");
+    await expect(cards.nth(2)).toContainText("5 steps");
+    for (const text of await cards.allTextContents()) expect(text).not.toMatch(/done|·/);
     const look = await cards.first().evaluate((card) => {
       const css = getComputedStyle(card);
       const box = card.getBoundingClientRect();
@@ -66,19 +62,85 @@ test.describe("Steps", () => {
     expect(look.right).toBeGreaterThanOrEqual(16);
     expect(look.shadow).toBe("none");
     expect(await noSidewaysScroll(page)).toBe(true);
-    // Back goes Home
     await page.getByRole("link", { name: "Back to Home" }).click();
     await expect(page).toHaveURL(/\/$/);
   });
 
-  test("a topic opens with its title, 0 done and step 1 expanded; opening step 2 collapses step 1", async ({
+  test("the topic screen has the olive frame edge to edge with the summary card over its bottom edge", async ({
     page,
   }) => {
     await open(page, "/checklists");
     await page.getByRole("link", { name: /Severe bleeding/ }).click();
     await expect(page).toHaveURL(/\/checklists\/severe-bleeding$/);
-    await expect(page.getByRole("heading", { name: "Severe bleeding", level: 1 })).toBeVisible();
-    await expect(page.getByText("0 of 6 steps done")).toBeVisible();
+    const frame = page.locator("[data-steps-frame]");
+    const card = page.getByRole("region", { name: "Summary" });
+    const f = (await frame.boundingBox())!;
+    const c = (await card.boundingBox())!;
+    expect(await frame.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
+      "rgb(224, 230, 214)",
+    );
+    expect(await frame.evaluate((el) => el.hasAttribute("data-full-bleed"))).toBe(true);
+    // edge to edge (the app column has a 1px side border) and up to the top of the screen
+    expect(f.x).toBeLessThanOrEqual(1);
+    expect(f.x + f.width).toBeGreaterThanOrEqual(359);
+    expect(f.y).toBe(0);
+    // the card's top is inside the frame, about half the card's height above the frame's bottom
+    expect(c.y).toBeGreaterThan(f.y);
+    expect(c.y).toBeLessThan(f.y + f.height);
+    expect(Math.abs(f.y + f.height - c.y - 40)).toBeLessThanOrEqual(1);
+    expect(c.y + c.height).toBeGreaterThan(f.y + f.height);
+    // inside the frame: Back (40px) and the large title, both inside the gutters
+    const back = (await frame.getByRole("button", { name: "Back" }).boundingBox())!;
+    expect([back.width, back.height]).toEqual([40, 40]);
+    expect(back.x).toBeGreaterThanOrEqual(16);
+    const title = page.getByRole("heading", { name: "Severe bleeding", level: 1 });
+    await expect(frame.getByRole("heading", { level: 1 })).toHaveText("Severe bleeding");
+    expect(
+      await title.evaluate((el) => {
+        const css = getComputedStyle(el);
+        return [css.fontSize, css.color];
+      }),
+    ).toEqual(["28px", "rgb(26, 26, 26)"]);
+    expect((await title.boundingBox())!.x).toBeGreaterThanOrEqual(16);
+    // the card: white, 1px border, 24px radius, 16px padding all round, no shadow
+    const look = await card.evaluate((el) => {
+      const css = getComputedStyle(el);
+      return {
+        background: css.backgroundColor,
+        border: [css.borderTopWidth, css.borderTopColor],
+        radius: css.borderTopLeftRadius,
+        padding: [css.paddingTop, css.paddingRight, css.paddingBottom, css.paddingLeft],
+        shadow: css.boxShadow,
+      };
+    });
+    expect(look).toEqual({
+      background: "rgb(255, 255, 255)",
+      border: ["1px", "rgb(228, 223, 213)"],
+      radius: "24px",
+      padding: ["16px", "16px", "16px", "16px"],
+      shadow: "none",
+    });
+    await expect(card).toContainText("Step-by-step guide");
+    await expect(card).toContainText("6 steps");
+    // the tile is a rounded square, not a circle
+    const tile = await card
+      .locator("span[aria-hidden]")
+      .first()
+      .evaluate((el) => {
+        const css = getComputedStyle(el);
+        const box = el.getBoundingClientRect();
+        return [box.width, box.height, css.borderTopLeftRadius, css.backgroundColor];
+      });
+    expect(tile).toEqual([48, 48, "12px", "rgb(224, 230, 214)"]);
+    // informational only: no progress, no done text, no checkbox, no done-circle
+    await expect(page.getByRole("progressbar")).toHaveCount(0);
+    await expect(page.locator("main")).not.toContainText(/done/i);
+    await expect(page.locator("main [aria-pressed], main input[type=checkbox]")).toHaveCount(0);
+    expect(await noSidewaysScroll(page)).toBe(true);
+  });
+
+  test("the accordion starts with step 1 open and keeps one open at a time", async ({ page }) => {
+    await open(page, "/checklists/severe-bleeding");
     await expect(headers(page)).toHaveCount(6);
     await expect(headers(page).nth(0)).toHaveAttribute("aria-expanded", "true");
     await expect(headers(page).nth(1)).toHaveAttribute("aria-expanded", "false");
@@ -89,108 +151,91 @@ test.describe("Steps", () => {
     await expect(page.getByText("Call 112 or the local emergency number.").first()).toBeVisible();
     // the closed step's details are not visible and cannot be focused
     await expect(page.getByText("Check that the scene is safe first.")).toBeHidden();
+    await headers(page).nth(2).click();
+    await expect(page.locator("main ol button[aria-expanded=true]")).toHaveCount(1);
+    await expect(headers(page).nth(2)).toHaveAttribute("aria-expanded", "true");
     // tapping the open step closes it: nothing is open
-    await headers(page).nth(1).click();
+    await headers(page).nth(2).click();
     await expect(page.locator("main ol button[aria-expanded=true]")).toHaveCount(0);
-    expect(await noSidewaysScroll(page)).toBe(true);
   });
 
-  test("the done-circle changes the count without opening or closing, and survives a reload", async ({
+  test("a step card is a caption, a title and a chevron with equal padding, and no circle", async ({
     page,
   }) => {
     await open(page, "/checklists/severe-bleeding");
-    await headers(page).nth(1).click();
-    await expect(headers(page).nth(1)).toHaveAttribute("aria-expanded", "true");
-    await done(page, 2).click();
-    await expect(page.getByText("1 of 6 steps done")).toBeVisible();
-    await expect(done(page, 2)).toHaveAttribute("aria-pressed", "true");
-    // the open state is unchanged
-    await expect(headers(page).nth(1)).toHaveAttribute("aria-expanded", "true");
-    await expect(headers(page).nth(0)).toHaveAttribute("aria-expanded", "false");
-    // ticking a closed step does not open it
-    await done(page, 4).click();
-    await expect(page.getByText("2 of 6 steps done")).toBeVisible();
-    await expect(headers(page).nth(3)).toHaveAttribute("aria-expanded", "false");
-    await done(page, 4).click();
-    await expect(page.getByText("1 of 6 steps done")).toBeVisible();
-    const filled = await done(page, 2)
-      .locator("span")
-      .evaluate((el) => {
-        const css = getComputedStyle(el);
-        return [css.backgroundColor, el.querySelector("svg") !== null];
-      });
-    expect(filled).toEqual(["rgb(63, 70, 56)", true]);
-    // the bar
-    const bar = page.getByRole("progressbar");
-    await expect(bar).toHaveAttribute("aria-valuenow", "1");
-    // saved on this device
-    await page.reload();
-    await expect(page.getByText("1 of 6 steps done")).toBeVisible();
-    await expect(done(page, 2)).toHaveAttribute("aria-pressed", "true");
-    // the list card says so
-    await page.goto("/checklists");
-    await expect(page.getByRole("link", { name: /Severe bleeding/ })).toContainText(
-      "6 steps · 1 done",
-    );
+    const first = page.locator("main ol li:visible").first();
+    const look = await first.evaluate((li) => {
+      const css = getComputedStyle(li);
+      const button = li.querySelector("button")!;
+      const text = li.querySelector("button > span")!.getBoundingClientRect();
+      const box = li.getBoundingClientRect();
+      const pad = getComputedStyle(button);
+      return {
+        background: css.backgroundColor,
+        border: [css.borderTopWidth, css.borderTopColor],
+        radius: css.borderTopLeftRadius,
+        padding: [pad.paddingTop, pad.paddingRight, pad.paddingBottom, pad.paddingLeft],
+        // the text starts at the left padding (the 1px border plus 16px), with no empty space
+        textLeft: text.left - box.left,
+        buttons: li.querySelectorAll("button").length,
+        inputs: li.querySelectorAll("input").length,
+      };
+    });
+    expect(look.background).toBe("rgb(250, 247, 244)");
+    expect(look.border).toEqual(["1px", "rgb(228, 223, 213)"]);
+    expect(look.radius).toBe("24px");
+    expect(look.padding).toEqual(["16px", "16px", "16px", "16px"]);
+    expect(look.textLeft).toBeCloseTo(17, 0);
+    expect(look.buttons).toBe(1);
+    expect(look.inputs).toBe(0);
+    // the caption reads "STEP 1" (set in capitals by its style), in deep olive
+    const caption = first.getByText("Step 1", { exact: true });
+    expect(
+      await caption.evaluate((el) => [
+        getComputedStyle(el).textTransform,
+        getComputedStyle(el).color,
+      ]),
+    ).toEqual(["uppercase", "rgb(63, 70, 56)"]);
+    await expect(first).toContainText("Check the scene is safe");
   });
 
-  test("steps progress changes nothing else: not Today, not readiness", async ({ page }) => {
-    await open(page, "/checklists/burns");
-    await done(page, 1).click();
-    await done(page, 2).click();
-    await page.goto("/");
-    await expect(page.getByText("Today 0/5")).toBeVisible();
-    const stored = await page.evaluate(() => ({
-      history: localStorage.getItem("ast.history.v1"),
-      session: localStorage.getItem("ast.session.v1"),
-      parts: localStorage.getItem("ast.parts.v1"),
-    }));
-    expect(stored).toEqual({ history: null, session: null, parts: null });
+  test("nothing but the steps and the optional Source row is below the summary: no buttons", async ({
+    page,
+  }) => {
+    await open(page, "/checklists/leaving-a-building");
+    await expect(page.getByRole("button", { name: "Practise this topic" })).toHaveCount(0);
+    await expect(
+      page.getByRole("link", { name: /Steps for this topic|Read the material/ }),
+    ).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Back" })).toHaveCount(1);
+    // the only buttons in the page are Back and the step headers
+    expect(await page.locator("main button:visible").count()).toBe(1 + 6);
+    // and the only links: none
+    await expect(page.locator("main a:visible")).toHaveCount(0);
+    await expect(page.getByText("Source", { exact: true })).toHaveCount(0);
   });
 
-  test("broken or old saved data never breaks the screens", async ({ page }) => {
+  test("old saved 'steps done' data is ignored and nothing about it is shown", async ({ page }) => {
     await page.addInitScript(
       ([p]) => {
-        // seeded once: a reload must not put the old data back
         if (localStorage.getItem("ast.profile.v1")) return;
         localStorage.setItem("ast.profile.v1", JSON.stringify(p));
         localStorage.setItem(
           "ast.steps.v1",
-          JSON.stringify({
-            schema: 6,
-            content: "old",
-            value: { burns: ["ghost", "burns-s2", 7], nothing: ["x"], "severe-bleeding": "no" },
-          }),
+          JSON.stringify({ schema: 6, content: "old", value: { burns: ["burns-s2"] } }),
         );
       },
       [profile],
     );
     await page.goto("/checklists");
-    await expect(page.getByRole("link", { name: /^Burns/ })).toContainText("5 steps · 1 done");
+    await expect(page.getByRole("link", { name: /^Burns/ })).toContainText("5 steps");
+    await expect(page.locator("main")).not.toContainText(/done/i);
     await page.getByRole("link", { name: /^Burns/ }).click();
-    await expect(page.getByText("1 of 5 steps done")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Burns", level: 1 })).toBeVisible();
+    await expect(page.locator("main")).not.toContainText(/done/i);
     await page.evaluate(() => localStorage.setItem("ast.steps.v1", "{broken"));
     await page.reload();
-    await expect(page.getByText("0 of 5 steps done")).toBeVisible();
-  });
-
-  test("Read the material and Practise this topic open the right screens", async ({ page }) => {
-    await open(page, "/checklists/leaving-a-building");
-    const read = page.getByRole("link", { name: "Read the material" });
-    const practise = page.getByRole("button", { name: "Practise this topic" });
-    await expect(read).toBeVisible();
-    await expect(practise).toBeVisible();
-    // Primary on top, Secondary under it, both full width
-    const [a, b] = [(await practise.boundingBox())!, (await read.boundingBox())!];
-    expect(a.y).toBeLessThan(b.y);
-    expect(a.width).toBe(b.width);
-    expect(a.height).toBe(52);
-    await read.click();
-    await expect(page).toHaveURL(/\/materials\/read\/S1$/);
-    await open(page, "/checklists/leaving-a-building");
-    await page.getByRole("button", { name: "Practise this topic" }).click();
-    await expect(page).toHaveURL(/\/session$/);
-    await expect(page.getByText(/^Step 1 of \d+$/)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Burns", level: 1 })).toBeVisible();
   });
 
   test("Back goes to the Steps list from the list, and to the reading screen from Steps for this topic", async ({
@@ -201,7 +246,6 @@ test.describe("Steps", () => {
     await expect(page).toHaveURL(/\/checklists\/burns$/);
     await page.getByRole("button", { name: "Back" }).click();
     await expect(page).toHaveURL(/\/checklists$/);
-    // from the reading screen
     await page.goto("/materials/read/S8");
     await page.getByRole("link", { name: "Steps for this topic" }).click();
     await expect(page).toHaveURL(/\/checklists\/burns$/);
@@ -209,16 +253,14 @@ test.describe("Steps", () => {
     await expect(page).toHaveURL(/\/materials\/read\/S8$/);
   });
 
-  test("a topic without a step guide has no Steps button, and the Source row is hidden", async ({
+  test("a topic without a step guide has no Steps button on its reading screen", async ({
     page,
   }) => {
     await open(page, "/materials/read/S9");
     await expect(page.getByRole("link", { name: "Steps for this topic" })).toHaveCount(0);
-    await open(page, "/checklists/burns");
-    await expect(page.getByText("Source", { exact: true })).toHaveCount(0);
   });
 
-  test("the end of a topic screen keeps the gutters and does not scroll sideways", async ({
+  test("the whole screen keeps the gutters outside the frame and does not scroll sideways", async ({
     page,
   }) => {
     await open(page, "/checklists/leaving-a-building");
@@ -235,13 +277,24 @@ test.describe("Steps", () => {
         return [box.left, document.documentElement.clientWidth - box.right];
       }),
     );
+    expect(sides.length).toBeGreaterThan(6);
     for (const [left, right] of sides) {
       expect(left).toBeGreaterThanOrEqual(16);
       expect(right).toBeGreaterThanOrEqual(16);
     }
+    // the bottom gap below the last card is at least the gutter
+    await page.evaluate(() => window.scrollTo(0, 99999));
+    const gap = await page.evaluate(() => {
+      const last = [...document.querySelectorAll("main ol > li")].pop()!;
+      return (
+        document.querySelector("main")!.getBoundingClientRect().bottom -
+        last.getBoundingClientRect().bottom
+      );
+    });
+    expect(gap).toBeGreaterThanOrEqual(16);
   });
 
-  test("the header is a button for the keyboard: it opens with Enter", async ({ page }) => {
+  test("the header button works with the keyboard: Enter opens it", async ({ page }) => {
     await open(page, "/checklists/burns");
     await headers(page).nth(2).focus();
     await page.keyboard.press("Enter");

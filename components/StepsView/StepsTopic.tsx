@@ -3,79 +3,66 @@
 import { ExternalLink } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button, ButtonLink } from "@/components/Button/Button";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { StepCard, stepsCard } from "@/components/StepsView/StepCard";
 import { TopicTile } from "@/components/TopicTile/TopicTile";
 import { initialOpen, toggleOpen } from "@/lib/accordion";
+import { stepCountLabel } from "@/lib/checklists";
 import type { Checklist } from "@/lib/checklists";
-import { canPractise } from "@/lib/parts";
-import { readingPath } from "@/lib/reading";
-import { doneIds, doneLabel, toggleStep, useStepsProgress } from "@/lib/steps-progress";
-import { usePractise } from "@/lib/use-practise";
 import { topicIcon } from "@/lib/weak-topics";
 
-/** The presentation of one topic's steps, with its state passed in (the screen review page shows fixed states). */
+/** The presentation of one topic's steps, with the open step passed in (the screen review page shows fixed states). */
 export function StepsTopicView({
   checklist,
   open,
-  done,
   onBack,
   onToggleOpen,
-  onToggleDone,
-  onPractise,
 }: {
   checklist: Checklist;
   open: string | null;
-  done: string[];
   onBack: () => void;
   onToggleOpen: (stepId: string) => void;
-  onToggleDone: (stepId: string) => void;
-  onPractise: () => void;
 }) {
-  const total = checklist.steps.length;
   return (
-    <div className="flex flex-col gap-4 pb-6">
-      <CircleBackButton size="small" label="Back" onClick={onBack} />
+    <div className="flex flex-col pb-[var(--gutter,1rem)]">
+      {/* the olive frame runs edge to edge and up under the status bar; its content keeps the gutters */}
+      <div
+        data-steps-frame
+        data-full-bleed
+        className="-mx-[var(--gutter,1rem)] -mt-[calc(1.5rem+env(safe-area-inset-top))] flex flex-col gap-4 bg-olive-tint px-[var(--gutter,1rem)] pt-[calc(1.5rem+env(safe-area-inset-top))] pb-14"
+      >
+        <div>
+          <CircleBackButton size="small" label="Back" onClick={onBack} />
+        </div>
+        <h1 className="type-page-title">{checklist.title}</h1>
+      </div>
 
       <section
-        aria-label="Progress"
-        className={`${stepsCard} flex flex-col gap-3 p-[var(--gutter,1rem)]`}
+        aria-label="Summary"
+        className="relative z-10 -mt-10 flex items-center gap-3 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)]"
       >
-        <div className="flex items-center gap-3">
-          <TopicTile sectionId={checklist.topic} icon={topicIcon(checklist.topic)} tone="olive" />
-          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <h1 className="type-item-title">{checklist.title}</h1>
-            <p className="type-small text-text-secondary tabular-nums">
-              {doneLabel(done.length, total)}
-            </p>
-          </div>
-        </div>
-        <div
-          role="progressbar"
-          aria-label="Steps done"
-          aria-valuemin={0}
-          aria-valuemax={total}
-          aria-valuenow={done.length}
-          className="h-1.5 w-full overflow-hidden rounded-full bg-olive-tint"
-        >
-          <div
-            className="h-full rounded-full bg-primary transition-[width] duration-200 motion-reduce:transition-none"
-            style={{ width: `${(done.length / total) * 100}%` }}
-          />
+        <TopicTile
+          sectionId={checklist.topic}
+          icon={topicIcon(checklist.topic)}
+          size="square48"
+          tone="olive"
+        />
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <p className="type-body-strong">Step-by-step guide</p>
+          <p className="type-small text-text-secondary tabular-nums">
+            {stepCountLabel(checklist.steps.length)}
+          </p>
         </div>
       </section>
 
-      <ol className="flex flex-col gap-3">
+      <ol className="mt-4 flex flex-col gap-3">
         {checklist.steps.map((step, index) => (
           <StepCard
             key={step.id}
             step={step}
             index={index}
             open={open === step.id}
-            done={done.includes(step.id)}
             onToggleOpen={() => onToggleOpen(step.id)}
-            onToggleDone={() => onToggleDone(step.id)}
           />
         ))}
       </ol>
@@ -85,7 +72,7 @@ export function StepsTopicView({
           href={checklist.source.url}
           target="_blank"
           rel="noopener noreferrer"
-          className={`${stepsCard} flex min-h-11 items-center gap-3 p-[var(--gutter,1rem)] active:bg-secondary-sand has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent`}
+          className={`${stepsCard} mt-4 flex min-h-11 items-center gap-3 p-[var(--gutter,1rem)] active:bg-secondary-sand has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent`}
         >
           <span className="flex min-w-0 flex-1 flex-col gap-0.5">
             <span className="type-label text-text-secondary">Source</span>
@@ -94,38 +81,25 @@ export function StepsTopicView({
           <ExternalLink size={20} strokeWidth={2} aria-hidden="true" className="text-primary" />
         </a>
       )}
-
-      <div className="flex flex-col gap-3">
-        {canPractise(checklist.topic) && <Button onClick={onPractise}>Practise this topic</Button>}
-        <ButtonLink href={readingPath(checklist.topic)} variant="secondary">
-          Read the material
-        </ButtonLink>
-      </div>
     </div>
   );
 }
 
 /**
- * One topic's steps: a summary card (done count and progress bar) over an accordion of step cards
- * (one open at a time, step 1 open at first, a done-circle on each), the optional Source row, and
- * the buttons to practise and to read the material. Steps progress changes nothing else.
+ * One topic's steps, informational only: the olive header frame with Back and the title, the
+ * summary card over its edge, and an accordion of step cards (one open at a time, step 1 open at
+ * first), then the optional Source row. No completion tracking and no action buttons.
  */
 export function StepsTopic({ checklist }: { checklist: Checklist }) {
   const router = useRouter();
-  const progress = useStepsProgress();
-  const saved = progress === "loading" ? null : progress;
   const [open, setOpen] = useState(() => initialOpen(checklist.steps.map((step) => step.id)));
-  const practise = usePractise(checklist.topic);
 
   return (
     <StepsTopicView
       checklist={checklist}
       open={open}
-      done={doneIds(saved, checklist)}
       onBack={() => (window.history.length > 1 ? router.back() : router.push("/checklists"))}
       onToggleOpen={(id) => setOpen((current) => toggleOpen(current, id))}
-      onToggleDone={(id) => toggleStep(checklist, id)}
-      onPractise={practise}
     />
   );
 }

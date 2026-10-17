@@ -40,6 +40,7 @@ const screens: { name: string; path: string; session?: object; saved?: string[] 
   { name: "Reading screen", path: "/materials/read/S1" },
   { name: "Reading screen (flood)", path: "/materials/read/F5" },
   { name: "Steps", path: "/checklists" },
+  { name: "Steps topic", path: "/checklists/severe-bleeding" },
   { name: "Profile", path: "/profile" },
   { name: "Saved questions", path: "/saved", saved: ["q-scn-s01-001", "s2"] },
   { name: "Progress", path: "/progress" },

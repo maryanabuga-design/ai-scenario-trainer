@@ -1009,26 +1009,22 @@ export function QuickBarSample({ stepsHref }: { stepsHref: string | null }) {
   );
 }
 
-/** A Steps topic screen in a fixed state, for the screen review page. */
+/** A Steps topic screen with one step open, for the screen review page. */
 export function StepsTopicSample({
   checklistIndex,
-  state,
+  openStep,
 }: {
   checklistIndex: number;
-  state: "first" | "second";
+  /** 1-based number of the open step. */
+  openStep: number;
 }) {
   const checklist = checklists[checklistIndex];
-  const open = checklist.steps[state === "first" ? 0 : 1].id;
-  const done = state === "first" ? [] : [checklist.steps[0].id];
   return (
     <StepsTopicView
       checklist={checklist}
-      open={open}
-      done={done}
+      open={checklist.steps[openStep - 1].id}
       onBack={() => {}}
       onToggleOpen={() => {}}
-      onToggleDone={() => {}}
-      onPractise={() => {}}
     />
   );
 }
