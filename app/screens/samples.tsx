@@ -749,7 +749,7 @@ export function ChipTonesSample() {
         <h2 className="type-item-title">On a card</h2>
         {group}
       </section>
-      <section className="flex flex-col gap-3 rounded-card border-[1.5px] border-selected-stroke bg-selected-tint p-4">
+      <section className="flex flex-col gap-3 rounded-card border border-selectable-stroke bg-olive-tint p-4">
         <h2 className="type-item-title">On a selected card</h2>
         {group}
       </section>

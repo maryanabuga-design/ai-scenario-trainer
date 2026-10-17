@@ -8,7 +8,7 @@ import { loadAllSections } from "@/lib/guide";
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col border-x border-border bg-bg pt-[env(safe-area-inset-top)]">
+    <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col border-border bg-bg min-[431px]:border-x pt-[env(safe-area-inset-top)]">
       <Suspense fallback={null}>
         <NavigationTracker />
       </Suspense>

@@ -420,4 +420,113 @@ test.describe("Steps", () => {
     await expect(headers(page).nth(2)).toHaveAttribute("aria-expanded", "true");
     await expect(headers(page).nth(2)).toHaveAttribute("aria-controls", "burns-s3-panel");
   });
+
+  for (const width of [360, 430]) {
+    test(`the gutters are exactly 16px from the screen edge at ${width}px, on both Steps screens`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 800 });
+      // the list: Back and every card
+      await open(page, "/checklists");
+      await expect(page.locator("main ul li a")).toHaveCount(3);
+      const list = await page.evaluate(() => {
+        const left = (el: Element) => el.getBoundingClientRect().left;
+        const right = (el: Element) =>
+          document.documentElement.clientWidth - el.getBoundingClientRect().right;
+        const band = document.querySelector("[data-page-header-band]")!;
+        return {
+          band: [left(band), right(band)],
+          back: left(band.querySelector("a")!),
+          title: left(band.querySelector("h1")!),
+          cards: [...document.querySelectorAll("main ul li a")].map((a) => [left(a), right(a)]),
+        };
+      });
+      expect(list.band).toEqual([0, 0]);
+      expect(list.back).toBeCloseTo(16, 0);
+      expect(Math.abs(list.back - 16)).toBeLessThanOrEqual(0.5);
+      expect(Math.abs(list.title - 16)).toBeLessThanOrEqual(0.5);
+      expect(list.cards).toHaveLength(3);
+      for (const [left, right] of list.cards) {
+        expect(Math.abs(left - 16)).toBeLessThanOrEqual(0.5);
+        expect(Math.abs(right - 16)).toBeLessThanOrEqual(0.5);
+      }
+      // the topic screen: Back, the summary card and every step card
+      await open(page, "/checklists/severe-bleeding");
+      await expect(page.getByRole("region", { name: "Summary" })).toBeVisible();
+      await expect(page.locator("main ol > li")).toHaveCount(6);
+      const topic = await page.evaluate(() => {
+        const left = (el: Element) => el.getBoundingClientRect().left;
+        const right = (el: Element) =>
+          document.documentElement.clientWidth - el.getBoundingClientRect().right;
+        const band = document.querySelector("[data-page-header-band]")!;
+        return {
+          band: [left(band), right(band)],
+          back: left(band.querySelector("button")!),
+          title: left(band.querySelector("h1")!),
+          summary: [
+            left(document.querySelector("section[aria-label=Summary]")!),
+            right(document.querySelector("section[aria-label=Summary]")!),
+          ],
+          steps: [...document.querySelectorAll("main ol > li")].map((li) => [left(li), right(li)]),
+        };
+      });
+      expect(topic.band).toEqual([0, 0]);
+      expect(Math.abs(topic.back - 16)).toBeLessThanOrEqual(0.5);
+      expect(Math.abs(topic.title - 16)).toBeLessThanOrEqual(0.5);
+      for (const [left, right] of [topic.summary, ...topic.steps]) {
+        expect(Math.abs(left - 16)).toBeLessThanOrEqual(0.5);
+        expect(Math.abs(right - 16)).toBeLessThanOrEqual(0.5);
+      }
+      expect(topic.steps).toHaveLength(6);
+    });
+  }
+
+  test("what the browser really shows: band, step cards and borders are never default black", async ({
+    page,
+  }) => {
+    for (const path of ["/checklists", "/checklists/severe-bleeding"]) {
+      await open(page, path);
+      const band = page.locator("[data-page-header-band]:visible");
+      expect(await band.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
+        "rgb(227, 209, 171)",
+      );
+      const box = (await band.boundingBox())!;
+      expect(box.width).toBe(360);
+      await expect(
+        band.getByRole(path === "/checklists" ? "link" : "button", { name: /Back/ }),
+      ).toBeVisible();
+      await expect(band.getByRole("heading", { level: 1 })).toBeVisible();
+    }
+    // every visible border on the topic screen has a named, non-black colour
+    const black = await page.evaluate(() =>
+      [...document.querySelectorAll("main *")]
+        .filter((el) => (el as HTMLElement).offsetParent !== null)
+        .filter((el) => parseFloat(getComputedStyle(el).borderTopWidth) > 0)
+        .filter((el) =>
+          ["rgb(0, 0, 0)", "rgb(26, 26, 26)"].includes(getComputedStyle(el).borderTopColor),
+        )
+        .map((el) => el.tagName + "." + el.className.toString().slice(0, 40)),
+    );
+    expect(black).toEqual([]);
+    const cards = page.locator("main ol > li:visible");
+    await expect(cards).toHaveCount(6);
+    for (let n = 0; n < 6; n++) {
+      const card = cards.nth(n);
+      const look = await card.evaluate((el) => {
+        const css = getComputedStyle(el);
+        return [css.backgroundColor, css.borderTopColor, css.borderTopWidth];
+      });
+      expect(look).toEqual(["rgb(211, 226, 191)", "rgb(188, 207, 163)", "1px"]);
+      const caption = await card
+        .locator(".type-label")
+        .first()
+        .evaluate((el) => getComputedStyle(el).color);
+      expect(caption).toBe("rgb(63, 74, 44)");
+    }
+    // the summary card's top edge is inside the band's box
+    const band = (await page.locator("[data-page-header-band]:visible").boundingBox())!;
+    const summary = (await page.getByRole("region", { name: "Summary" }).boundingBox())!;
+    expect(summary.y).toBeGreaterThan(band.y);
+    expect(summary.y).toBeLessThan(band.y + band.height);
+  });
 });
