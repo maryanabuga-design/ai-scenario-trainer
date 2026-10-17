@@ -3,7 +3,7 @@
 import { ExternalLink } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
+import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { StepCard, stepsCard } from "@/components/StepsView/StepCard";
 import { TopicTile } from "@/components/TopicTile/TopicTile";
 import { initialOpen, toggleOpen } from "@/lib/accordion";
@@ -25,17 +25,7 @@ export function StepsTopicView({
 }) {
   return (
     <div className="flex flex-col pb-[var(--gutter,1rem)]">
-      {/* the olive frame runs edge to edge and up under the status bar; its content keeps the gutters */}
-      <div
-        data-steps-frame
-        data-full-bleed
-        className="-mx-[var(--gutter,1rem)] -mt-[calc(1.5rem+env(safe-area-inset-top))] flex flex-col gap-4 bg-olive-tint px-[var(--gutter,1rem)] pt-[calc(1.5rem+env(safe-area-inset-top))] pb-14"
-      >
-        <div>
-          <CircleBackButton size="small" label="Back" onClick={onBack} />
-        </div>
-        <h1 className="type-page-title">{checklist.title}</h1>
-      </div>
+      <PageHeaderBand title={checklist.title} back={{ label: "Back", onClick: onBack }} overlap />
 
       <section
         aria-label="Summary"

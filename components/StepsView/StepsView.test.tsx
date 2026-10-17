@@ -15,33 +15,42 @@ const topic = (open: string | null, checklist = checklists[1]) =>
 describe("the Steps list", () => {
   const html = renderToStaticMarkup(<StepsList />);
 
-  it("has the 40px Back to Home, the title and the subtitle", () => {
-    expect(html).toContain('aria-label="Back to Home"');
-    expect(html).toContain("h-10 w-10");
-    expect(html).toContain(">Steps</h1>");
-    expect(html).toContain("Short step-by-step guides for each topic.");
+  it("has the primary header band with the 40px Back to Home, the title and the subtitle", () => {
+    const band = html.slice(0, html.indexOf("<ul"));
+    expect(band).toContain("data-page-header-band");
+    expect(band).toContain("bg-primary");
+    expect(band).toContain('aria-label="Back to Home"');
+    expect(band).toContain("h-10 w-10");
+    expect(band).toContain(">Steps</h1>");
+    expect(band).toContain("Short step-by-step guides for each topic.");
+    // nothing else on the page background carries a title or a subtitle
+    expect(html.match(/<h1/g)).toHaveLength(1);
+    expect(html.match(/Short step-by-step guides/g)).toHaveLength(1);
   });
 
-  it("has a card per topic with only its number of steps, and a chevron, opening the topic screen", () => {
-    expect(html.match(/<li/g)).toHaveLength(checklists.length);
+  it("has a card per topic with only its title, its number of steps and a chevron, no icon", () => {
+    const list = html.slice(html.indexOf("<ul"));
+    expect(list.match(/<li/g)).toHaveLength(checklists.length);
     checklists.forEach((checklist) => {
-      expect(html).toContain(checklist.title);
-      expect(html).toContain(`>${checklist.steps.length} steps<`);
-      expect(html).toContain(`href="/checklists/${checklist.id}"`);
+      expect(list).toContain(checklist.title);
+      expect(list).toContain(`>${checklist.steps.length} steps<`);
+      expect(list).toContain(`href="/checklists/${checklist.id}"`);
     });
-    expect(html).not.toMatch(/done|·/);
-    expect(html.match(/lucide-chevron-right/g)).toHaveLength(checklists.length);
+    expect(list).not.toMatch(/done|·/);
+    expect(list.match(/lucide-chevron-right/g)).toHaveLength(checklists.length);
+    // no icon tile: the chevron is the only svg in a card
+    expect(list.match(/<svg/g)).toHaveLength(checklists.length);
+    expect(list).not.toMatch(/rounded-full|bg-olive-tint/);
   });
 
-  it("is the list-card look: fill, 1px stroke, radius, gutter padding, olive circle icon, no shadow", () => {
-    expect(html).toContain("bg-list-card");
-    expect(html).toContain("border border-selectable-stroke");
-    expect(html).toContain("rounded-card");
-    expect(html).toContain("p-[var(--gutter,1rem)]");
-    expect(html).toContain("bg-olive-tint");
-    expect(html).toContain("min-h-11");
-    // no shadow on the cards (the Back circle has the one soft shadow)
-    expect(html.slice(html.indexOf("<ul"))).not.toContain("shadow");
+  it("is the list-card look: fill, 1px stroke, radius, gutter padding, no shadow", () => {
+    const list = html.slice(html.indexOf("<ul"));
+    expect(list).toContain("bg-list-card");
+    expect(list).toContain("border border-selectable-stroke");
+    expect(list).toContain("rounded-card");
+    expect(list).toContain("p-[var(--gutter,1rem)]");
+    expect(list).toContain("min-h-11");
+    expect(list).not.toContain("shadow");
     expect(html).not.toContain("ArrowCircle");
   });
 });
@@ -51,18 +60,16 @@ describe("a Steps topic screen", () => {
   const first = checklist.steps[0];
   const second = checklist.steps[1];
 
-  it("has the olive full-bleed frame with Back and the title as a large heading", () => {
+  it("has the primary header band with Back and the title, no subtitle, and room for the card", () => {
     const html = topic(first.id);
-    const frame = html.slice(html.indexOf("data-steps-frame"), html.indexOf("<section"));
-    expect(frame).toContain("bg-olive-tint");
-    expect(frame).toContain("data-full-bleed");
-    expect(frame).toContain("-mx-[var(--gutter,1rem)]");
-    expect(frame).toContain("env(safe-area-inset-top)");
-    expect(frame).toContain('aria-label="Back"');
-    expect(frame).toContain("h-10 w-10");
-    expect(frame).toContain(`<h1 class="type-page-title">${checklist.title}</h1>`);
-    // a straight bottom edge
-    expect(frame).not.toMatch(/rounded-b|rounded-\[/);
+    const band = html.slice(html.indexOf("data-page-header-band"), html.indexOf("<section"));
+    expect(band).toContain("bg-primary");
+    expect(band).toContain("data-full-bleed");
+    expect(band).toContain('aria-label="Back"');
+    expect(band).toContain("h-10 w-10");
+    expect(band).toContain(`>${checklist.title}</h1>`);
+    expect(band).toContain("pb-14");
+    expect(band).not.toMatch(/<p[ >]/);
   });
 
   it("has the summary card over the frame's edge: Step-by-step guide, the step count, a rounded-square tile", () => {

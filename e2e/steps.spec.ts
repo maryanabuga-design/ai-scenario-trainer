@@ -30,10 +30,36 @@ test.describe("Steps", () => {
     await open(page, "/");
     await page.getByRole("link", { name: /^Steps/ }).click();
     await expect(page).toHaveURL(/\/checklists$/);
-    await expect(page.getByRole("heading", { name: "Steps", level: 1 })).toBeVisible();
-    await expect(page.getByText("Short step-by-step guides for each topic.")).toBeVisible();
+    // the band: primary colour, edge to edge, with Back, the title and the subtitle inside
+    const band = page.locator("[data-page-header-band]:visible");
+    const box = (await band.boundingBox())!;
+    expect(await band.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
+      "rgb(63, 70, 56)",
+    );
+    expect(box.y).toBe(0);
+    expect(box.x).toBeLessThanOrEqual(1);
+    expect(box.x + box.width).toBeGreaterThanOrEqual(359);
+    await expect(band.getByRole("link", { name: "Back to Home" })).toBeVisible();
+    await expect(band.getByRole("heading", { name: "Steps", level: 1 })).toBeVisible();
+    await expect(band.getByText("Short step-by-step guides for each topic.")).toBeVisible();
+    const inside = await band.evaluate((el) =>
+      [...el.querySelectorAll("a, h1, p")].map((node) => node.getBoundingClientRect().left),
+    );
+    for (const left of inside) expect(left).toBeGreaterThanOrEqual(16);
+    // the cards start below the band, one gutter lower
     const cards = page.locator("main ul li:visible a");
     await expect(cards).toHaveCount(3);
+    expect((await cards.first().boundingBox())!.y - (box.y + box.height)).toBeCloseTo(16, 0);
+    // no icon in a card, and the text starts at the left padding
+    for (let n = 0; n < 3; n++) {
+      const card = cards.nth(n);
+      expect(await card.locator("svg").count()).toBe(1); // the chevron only
+      const gap = await card.evaluate((el) => {
+        const text = el.querySelector("span")!.getBoundingClientRect().left;
+        return text - el.getBoundingClientRect().left;
+      });
+      expect(gap).toBeCloseTo(17, 0);
+    }
     await expect(cards.nth(0)).toContainText("Leaving a building during an alarm");
     await expect(cards.nth(0)).toContainText("6 steps");
     await expect(cards.nth(1)).toContainText("Severe bleeding");
@@ -66,18 +92,18 @@ test.describe("Steps", () => {
     await expect(page).toHaveURL(/\/$/);
   });
 
-  test("the topic screen has the olive frame edge to edge with the summary card over its bottom edge", async ({
+  test("the topic screen has the primary band edge to edge with the summary card over its bottom edge", async ({
     page,
   }) => {
     await open(page, "/checklists");
     await page.getByRole("link", { name: /Severe bleeding/ }).click();
     await expect(page).toHaveURL(/\/checklists\/severe-bleeding$/);
-    const frame = page.locator("[data-steps-frame]");
+    const frame = page.locator("[data-page-header-band]:visible");
     const card = page.getByRole("region", { name: "Summary" });
     const f = (await frame.boundingBox())!;
     const c = (await card.boundingBox())!;
     expect(await frame.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
-      "rgb(224, 230, 214)",
+      "rgb(63, 70, 56)",
     );
     expect(await frame.evaluate((el) => el.hasAttribute("data-full-bleed"))).toBe(true);
     // edge to edge (the app column has a 1px side border) and up to the top of the screen
@@ -100,7 +126,7 @@ test.describe("Steps", () => {
         const css = getComputedStyle(el);
         return [css.fontSize, css.color];
       }),
-    ).toEqual(["28px", "rgb(26, 26, 26)"]);
+    ).toEqual(["28px", "rgb(255, 255, 255)"]);
     expect((await title.boundingBox())!.x).toBeGreaterThanOrEqual(16);
     // the card: white, 1px border, 24px radius, 16px padding all round, no shadow
     const look = await card.evaluate((el) => {
