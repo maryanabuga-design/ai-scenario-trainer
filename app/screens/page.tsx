@@ -215,12 +215,12 @@ export default function Screens() {
               <MaterialTypesSample />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Reading screen: S1, the first topic (a long text: the block follows it; only Next)">
+          <PhoneFrame label="Reading screen: S1, the first topic (a long text: the two buttons follow it)">
             <Screen>
               <ReadingExample id="S1" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Reading screen: S2, a short topic (the action block at the bottom, Previous and Next)">
+          <PhoneFrame label="Reading screen: S2, a short topic (the two buttons at the bottom)">
             <Screen>
               <ReadingExample id="S2" />
             </Screen>
@@ -237,7 +237,7 @@ export default function Screens() {
             </Screen>
             <QuickBarSample stepsHref={null} />
           </PhoneFrame>
-          <PhoneFrame label="Reading screen: S10, the last topic (only Previous; no bottom navigation)">
+          <PhoneFrame label="Reading screen: S10, the last topic (no bottom navigation)">
             <Screen>
               <ReadingExample id="S10" />
             </Screen>
@@ -257,7 +257,7 @@ export default function Screens() {
               <HighlightSample markdown={loadGuides()[0].sections[0].body} state="copied" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Reading screen: a flood topic (no Practise or Steps, only the pager)">
+          <PhoneFrame label="Reading screen: a flood topic (no Practise or Steps: just the text)">
             <Screen>
               <ReadingExample id="F5" />
             </Screen>

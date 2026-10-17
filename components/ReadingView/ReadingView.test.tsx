@@ -19,14 +19,16 @@ describe("the reading screen", () => {
     expect(source).toContain('<h1 className="type-page-title">{topic.title}</h1>');
   });
 
-  it("ends with the action block: Practise (primary button), Steps (secondary), each hidden when it does not apply, then the pager", () => {
+  it("ends with the action block: Practise (primary button), Steps (secondary), each hidden when it does not apply, and nothing else", () => {
     expect(source).toContain(
       "{topic.canPractise && <Button onClick={practise}>Practise this topic</Button>}",
     );
     expect(source).toContain("{topic.stepsHref && (");
     expect(source).toContain('variant="secondary"');
     expect(source).toContain("Steps for this topic");
-    expect(source).toContain("<TopicPager previous={topic.previous} next={topic.next} />");
+    // the pager is gone: the header arrows are the only way between topics
+    expect(source).not.toMatch(/TopicPager|Previous|Next\b/);
+    expect(source).not.toContain("border-t");
     // the old stacked block and the "Next: ..." link are gone
     expect(source).not.toContain("Next: {topic.next.title}");
     expect(source).not.toContain('variant="tertiary"');
@@ -34,7 +36,7 @@ describe("the reading screen", () => {
 
   it("is a sticky-footer column: the block is pushed to the end, with no fixed or sticky panel", () => {
     expect(source).toContain('className="flex flex-1 flex-col pb-[var(--gutter,1rem)]"');
-    expect(source).toContain('className="mt-auto flex flex-col pt-6"');
+    expect(source).toContain('className="mt-auto flex flex-col gap-3 pt-6"');
     // the end block (from its section to the quick bar) has no panel, shadow, sticky or fixed
     const end = code.slice(code.indexOf("<section"), code.indexOf("{topic.canPractise && ("));
     expect(end).not.toMatch(/ActionBar|\b(sticky|fixed)\b|shadow|bg-/);
