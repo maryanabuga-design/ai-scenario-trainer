@@ -30,12 +30,19 @@ test.describe("Steps", () => {
     await open(page, "/");
     await page.getByRole("link", { name: /^Steps/ }).click();
     await expect(page).toHaveURL(/\/checklists$/);
-    // the band: olive-200, edge to edge, dark text, with Back, the title and the subtitle inside
+    // the band: the hero-card colour, edge to edge, dark text, with Back, the title and the subtitle inside
     const band = page.locator("[data-page-header-band]:visible");
     const box = (await band.boundingBox())!;
     expect(await band.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
-      "rgb(205, 211, 183)",
+      "rgb(240, 236, 230)",
     );
+    // a 1px hairline in the normal border colour closes the band
+    expect(
+      await band.evaluate((el) => {
+        const css = getComputedStyle(el);
+        return [css.borderBottomWidth, css.borderBottomStyle, css.borderBottomColor];
+      }),
+    ).toEqual(["1px", "solid", "rgb(228, 223, 213)"]);
     // the title and the subtitle are dark, Back is a white circle
     expect(
       await band.evaluate((el) => [
@@ -177,7 +184,7 @@ test.describe("Steps", () => {
     const f = (await frame.boundingBox())!;
     const c = (await card.boundingBox())!;
     expect(await frame.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
-      "rgb(205, 211, 183)",
+      "rgb(240, 236, 230)",
     );
     expect(await frame.evaluate((el) => el.hasAttribute("data-full-bleed"))).toBe(true);
     // edge to edge (the app column has a 1px side border) and up to the top of the screen
@@ -497,7 +504,7 @@ test.describe("Steps", () => {
       await open(page, path);
       const band = page.locator("[data-page-header-band]:visible");
       expect(await band.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
-        "rgb(205, 211, 183)",
+        "rgb(240, 236, 230)",
       );
       const box = (await band.boundingBox())!;
       expect(box.width).toBe(360);
@@ -537,5 +544,53 @@ test.describe("Steps", () => {
     const summary = (await page.getByRole("region", { name: "Summary" }).boundingBox())!;
     expect(summary.y).toBeGreaterThan(band.y);
     expect(summary.y).toBeLessThan(band.y + band.height);
+  });
+
+  test("the band is exactly the colour of the Home hero card, on both screens", async ({
+    page,
+  }) => {
+    await open(page, "/");
+    const hero = await page
+      .getByRole("heading", { name: "Training materials" })
+      .evaluate((heading) => {
+        // the nearest ancestor with a painted background is the hero card's inner panel
+        let el: Element | null = heading;
+        while (el && getComputedStyle(el).backgroundColor === "rgba(0, 0, 0, 0)")
+          el = el.parentElement;
+        return getComputedStyle(el!).backgroundColor;
+      });
+    expect(hero).toBe("rgb(240, 236, 230)");
+    for (const path of ["/checklists", "/checklists/severe-bleeding"]) {
+      await open(page, path);
+      const band = page.locator("[data-page-header-band]:visible");
+      await expect(band).toBeVisible();
+      const look = await band.evaluate((el) => {
+        const css = getComputedStyle(el);
+        return [css.backgroundColor, css.borderBottomWidth, css.borderBottomColor];
+      });
+      expect(look[0]).toBe(hero);
+      expect(look.slice(1)).toEqual(["1px", "rgb(228, 223, 213)"]);
+      expect((await band.boundingBox())!.width).toBe(360);
+    }
+  });
+
+  test("the white Back circle stays visible on the band, and the summary card sits above the hairline", async ({
+    page,
+  }) => {
+    await open(page, "/checklists/severe-bleeding");
+    const back = page
+      .locator("[data-page-header-band]:visible")
+      .getByRole("button", { name: "Back" });
+    const look = await back.evaluate((el) => {
+      const css = getComputedStyle(el);
+      return [css.backgroundColor, css.boxShadow !== "none"];
+    });
+    expect(look).toEqual(["rgb(255, 255, 255)", true]);
+    const summary = page.getByRole("region", { name: "Summary" });
+    const z = await summary.evaluate((el) => [
+      getComputedStyle(el).position,
+      getComputedStyle(el).zIndex,
+    ]);
+    expect(z).toEqual(["relative", "10"]);
   });
 });

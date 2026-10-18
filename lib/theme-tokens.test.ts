@@ -79,15 +79,15 @@ function colourClasses(code: string): { prefix: string; name: string }[] {
 }
 
 describe("the theme tokens", () => {
-  it("registers the band and step caption colours", () => {
-    for (const name of ["band-olive-200", "step-caption"]) {
+  it("registers the band (hero-card) and step caption colours", () => {
+    for (const name of ["secondary-sand", "step-caption"]) {
       expect(theme.has(name), `--color-${name}`).toBe(true);
     }
   });
 
-  it("has no other band or step tokens: one band colour and one step caption colour", () => {
+  it("has no band token of its own and one step caption colour", () => {
     const names = [...css.matchAll(/--((?:band|step)-[a-z0-9-]+):/g)].map((match) => match[1]);
-    expect(new Set(names)).toEqual(new Set(["band-olive-200", "step-caption"]));
+    expect(new Set(names)).toEqual(new Set(["step-caption"]));
   });
 
   it("defines every custom colour class a component uses", () => {

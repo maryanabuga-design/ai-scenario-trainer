@@ -22,16 +22,23 @@ const render = (props: Partial<Parameters<typeof PageHeaderBand>[0]> = {}) =>
   );
 
 describe("the page header band", () => {
-  it("is a full-bleed olive band, edge to edge and under the status bar, with no border or shadow", () => {
+  it("is a full-bleed band in the hero-card colour, edge to edge and under the status bar, with a hairline bottom border and no shadow", () => {
     const html = render();
     expect(html).toContain("data-full-bleed");
-    expect(html).toContain("bg-band-olive-200");
+    // the Home hero card's own token, not a copy of its value
+    expect(html).toContain("bg-secondary-sand");
+    expect(readFileSync("components/HomeView/HomeView.tsx", "utf8")).toContain(
+      "bg-secondary-sand p-4",
+    );
+    expect(html).toContain("border-b border-selectable-stroke");
     expect(html).not.toContain("bg-primary");
     expect(html).toContain("-mx-[var(--gutter,1rem)]");
     expect(html).toContain("env(safe-area-inset-top)");
     expect(html).toContain("px-[var(--gutter,1rem)]");
-    // the band itself (its first tag) has no border, shadow, rounding or gradient
-    expect(html.slice(0, html.indexOf(">"))).not.toMatch(/border|shadow|rounded|gradient/);
+    // the band itself (its first tag): only the bottom border; no shadow, rounding or gradient
+    const band = html.slice(0, html.indexOf(">"));
+    expect(band).not.toMatch(/shadow|rounded|gradient/);
+    expect(band.match(/border/g)).toHaveLength(2);
   });
 
   it("has the white 40px Back, the white title and the optional subtitle", () => {
@@ -52,10 +59,10 @@ describe("the page header band", () => {
   it("reads the title and the subtitle at least 4.5:1 on the band, computed from the real classes", () => {
     const html = render();
     // the fill and the text classes the band really uses, mapped to their tokens
-    const fill = /bg-(band-olive-200)/.exec(html)![1];
+    const fill = /bg-(secondary-sand)/.exec(html)![1];
     const title = /<h1 class="[^"]*\btext-(text)\b/.exec(html)![1];
     const subtitle = /<p class="[^"]*\btext-(text)\b/.exec(html)![1];
-    expect(token(fill)).toBe("#cdd3b7");
+    expect(token(fill)).toBe("#f0ece6");
     for (const name of [title, subtitle]) {
       expect(contrastRatio(token(name), token(fill))).toBeGreaterThanOrEqual(TEXT_CONTRAST);
     }

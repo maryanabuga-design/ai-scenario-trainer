@@ -20,7 +20,7 @@ describe("the Steps list", () => {
   it("has the primary header band with the 40px Back to Home, the title and the subtitle", () => {
     const band = html.slice(0, html.indexOf("<ul"));
     expect(band).toContain("data-page-header-band");
-    expect(band).toContain("bg-band-olive-200");
+    expect(band).toContain("bg-secondary-sand");
     expect(band).toContain('aria-label="Back to Home"');
     expect(band).toContain("h-10 w-10");
     expect(band).toContain(">Steps</h1>");
@@ -99,7 +99,7 @@ describe("a Steps topic screen", () => {
   it("has the primary header band with Back and the title, no subtitle, and room for the card", () => {
     const html = topic(first.id);
     const band = html.slice(html.indexOf("data-page-header-band"), html.indexOf("<section"));
-    expect(band).toContain("bg-band-olive-200");
+    expect(band).toContain("bg-secondary-sand");
     expect(band).toContain("data-full-bleed");
     expect(band).toContain('aria-label="Back"');
     expect(band).toContain("h-10 w-10");
@@ -213,11 +213,10 @@ describe("the step cards: standard cards with green captions", () => {
   );
 
   it("has the band and caption tokens, and no green card tokens", () => {
-    expect(token("band-olive-200")).toBe("#cdd3b7");
     expect(token("step-caption")).toBe("#3f6b2a");
     // no other band or step colours are registered
     const names = [...css.matchAll(/--((?:band|step)-[a-z0-9-]+):/g)].map((match) => match[1]);
-    expect(new Set(names)).toEqual(new Set(["band-olive-200", "step-caption"]));
+    expect(new Set(names)).toEqual(new Set(["step-caption"]));
   });
 
   it("is the standard card: card fill, 1px normal border, card radius, gutter padding", () => {
@@ -271,7 +270,7 @@ describe("the step cards: standard cards with green captions", () => {
     const card = token("card");
     expect(contrastRatio(token("step-caption"), card)).toBeGreaterThanOrEqual(TEXT_CONTRAST);
     expect(contrastRatio(token("text"), card)).toBeGreaterThanOrEqual(TEXT_CONTRAST);
-    expect(contrastRatio(token("text"), token("band-olive-200"))).toBeGreaterThanOrEqual(
+    expect(contrastRatio(token("text"), token("secondary-sand"))).toBeGreaterThanOrEqual(
       TEXT_CONTRAST,
     );
   });
