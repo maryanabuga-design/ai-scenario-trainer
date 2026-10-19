@@ -4,14 +4,13 @@ import type { ReactNode } from "react";
 import { artworkTransform, homeFrames } from "@/lib/home";
 import type { Artwork } from "@/lib/home";
 
-export type Media3DVariant = "hero" | "step" | "icon" | "tile" | "row" | "gauge";
+export type Media3DVariant = "hero" | "step" | "icon" | "tile" | "row";
 
 const frames = {
   hero: "h-[200px] w-[200px] rounded-[28px]",
   step: "aspect-[4/3] w-full rounded-[16px]",
   tile: "h-20 w-20 rounded-[16px]",
   row: "h-[72px] w-[72px] rounded-[16px]",
-  gauge: "h-16 w-16 rounded-[16px]",
 } as const;
 
 /**
@@ -26,7 +25,7 @@ const frames = {
  * Results; a step picture (full width, 4:3, 16px radius) sits above a question; an icon is the
  * existing icon tile, which stays the fallback. Hero and step show a dashed olive placeholder with
  * "3D" until a picture (`src`) is supplied. Home adds a `tile` (the hero card picture) and a
- * `row` icon (the Mini-quiz row picture); Progress adds a `gauge` (the 64 by 64 Readiness card slot); with a picture they are drawn bare (no background, border
+ * `row` icon (the Mini-quiz row picture); with a picture they are drawn bare (no background, border
  * or shadow) and decorative; without one the dashed olive square with only the "3D" caption shows.
  */
 export function Media3D({
@@ -52,7 +51,7 @@ export function Media3D({
     );
   }
   const frame = frames[variant];
-  if (variant === "tile" || variant === "row" || variant === "gauge") {
+  if (variant === "tile" || variant === "row") {
     const size = homeFrames[variant];
     const fit = artwork ? artworkTransform(artwork, size) : null;
     return src ? (

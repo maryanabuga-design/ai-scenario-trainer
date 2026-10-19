@@ -73,8 +73,6 @@ export const ARTWORK_FILL = 0.99;
 export const homeFrames = {
   tile: { width: 76, height: 60 },
   row: { width: 64, height: 60 },
-  /** The Readiness card on Progress. */
-  gauge: { width: 64, height: 64 },
 } as const;
 
 /**

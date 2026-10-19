@@ -157,7 +157,7 @@ describe("Progress: the readiness card", () => {
   });
 });
 
-describe("Progress: the change line and the 3D slot", () => {
+describe("Progress: the change line", () => {
   const withReadiness = (values: (number | undefined)[]) =>
     values.map((readinessAfter, index) =>
       entry(s1.slice(0, 3), 2, day(values.length - index), {
@@ -212,21 +212,13 @@ describe("Progress: the change line and the 3D slot", () => {
     expect(render(withReadiness([undefined, 12]))).not.toContain("data-readiness-change");
   });
 
-  it("has the 64 by 64 dashed 3D placeholder at the top right, with the text kept 8px clear of it", () => {
-    const html = render(seeded);
-    const card = html.slice(html.indexOf('aria-labelledby="exam-readiness"'));
-    expect(card).toContain("data-gauge-slot");
-    expect(card).toContain("absolute inset-y-0 right-0 flex items-center");
-    expect(card).toContain('data-media3d="placeholder"');
-    expect(card).toContain("h-16 w-16");
-    expect(card).toContain(">3D<");
-    // the two lines keep 72px on the right (64px frame + 8px), and the exam line is one truncated line
-    expect(card).toContain("pr-[72px]");
-    expect(card).toMatch(/data-readiness-exam[^>]*class="type-small truncate/);
-    // decorative
-    expect(card.slice(card.indexOf('data-media3d="placeholder"') - 60)).toContain(
-      'aria-hidden="true"',
-    );
+  it("has no 3D slot: the title and the exam line use the full card width", () => {
+    const card = render(seeded).slice(render(seeded).indexOf('aria-labelledby="exam-readiness"'));
+    const head = card.slice(0, card.indexOf("data-readiness-number"));
+    for (const gone of ["data-gauge-slot", "data-media3d", ">3D<", "pr-[72px]", "h-16 w-16"]) {
+      expect(head).not.toContain(gone);
+    }
+    expect(head).toMatch(/data-readiness-exam[^>]*class="type-small truncate/);
   });
 });
 

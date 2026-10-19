@@ -258,52 +258,36 @@ for (const width of [360, 430]) {
       await expect(page.locator("[data-readiness-change]")).toHaveCount(0);
     });
 
-    test("the 3D slot is a 64 by 64 frame at the top right, centred on the two text lines", async ({
+    test("the title and the exam line use the full card width, with no 3D slot", async ({
       page,
     }) => {
       await open(page, null);
       const card = page.getByRole("region", { name: "Exam readiness" });
-      const frame = card.locator("[data-gauge-slot] [data-media3d]");
-      await expect(frame).toBeVisible();
-      await expect(frame).toHaveText("3D");
-      expect(await frame.getAttribute("aria-hidden")).toBe("true");
-      const f = (await frame.boundingBox())!;
-      expect([f.width, f.height]).toEqual([64, 64]);
+      await expect(card.locator("[data-media3d], [data-gauge-slot]")).toHaveCount(0);
+      await expect(card.getByText("3D", { exact: true })).toHaveCount(0);
       const c = (await card.boundingBox())!;
-      const title = (await card.getByRole("heading", { name: "Exam readiness" }).boundingBox())!;
       const exam = card.locator("[data-readiness-exam]");
       const e = (await exam.boundingBox())!;
-      // centred on the block from the top of the title to the bottom of the exam line (2px)
-      const blockCentre = (title.y + (e.y + e.height)) / 2;
-      expect(Math.abs(f.y + f.height / 2 - blockCentre)).toBeLessThanOrEqual(2);
-      // top right: the right edge is the card's 16px padding
-      expect(Math.abs(c.x + c.width - 16 - (f.x + f.width))).toBeLessThanOrEqual(1);
-      expect(f.y).toBeGreaterThanOrEqual(c.y);
-      // no overlap, 8px kept clear of both text lines (1px for rounding)
-      expect(f.x - (title.x + title.width)).toBeGreaterThanOrEqual(7);
-      expect(f.x - (e.x + e.width)).toBeGreaterThanOrEqual(7);
-      // the exam line is one line, cut with an ellipsis when it does not fit
+      // the exam line spans the card's inner width: 16px padding on each side
+      expect(Math.abs(e.x - (c.x + 16))).toBeLessThanOrEqual(1);
+      expect(Math.abs(e.width - (c.width - 32))).toBeLessThanOrEqual(1);
+      // one line, cut with an ellipsis when it does not fit
       const info = await exam.evaluate((el) => ({
         height: el.getBoundingClientRect().height,
         line: parseFloat(getComputedStyle(el).lineHeight),
         ellipsis: getComputedStyle(el).textOverflow,
         nowrap: getComputedStyle(el).whiteSpace,
-        cut: el.scrollWidth > el.clientWidth,
       }));
       expect(info.height).toBeCloseTo(info.line, 0);
       expect(info.ellipsis).toBe("ellipsis");
       expect(info.nowrap).toBe("nowrap");
-      if (width === 360) expect(info.cut).toBe(true);
       await expect(exam).toContainText("Evacuation basics exam");
-      // the bar, the sentence and the button are still full width below the frame
+      // the bar, the sentence and the button are full width below
       const bar = (await card.getByRole("progressbar").boundingBox())!;
       expect(Math.abs(bar.width - (c.width - 32))).toBeLessThanOrEqual(1);
-      expect(bar.y).toBeGreaterThan(f.y + f.height);
     });
 
-    test("the card is not taller than before the slot (it only has the change line when there is one)", async ({
-      page,
-    }) => {
+    test("the card is not taller than it was before the slot", async ({ page }) => {
       // without a previous session there is no change line, so the card has its old height
       await open(page, null);
       const card = page.getByRole("region", { name: "Exam readiness" });
