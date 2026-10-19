@@ -101,9 +101,9 @@ const pairs: Pair[] = [
     min: TEXT_CONTRAST,
   },
   {
-    what: "icon ink on the icon tile (a graphic: 3:1)",
-    front: token("icon-ink"),
-    back: token("icon-tile-bg"),
+    what: "icon ink on the neutral icon tile (a graphic: 3:1)",
+    front: token("neutral-tile-ink"),
+    back: token("neutral-tile-bg"),
     min: GRAPHIC_CONTRAST,
   },
   {

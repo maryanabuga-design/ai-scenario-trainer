@@ -45,7 +45,7 @@ describe("the Steps list", () => {
     // a 44px rounded-square icon tile with an icon (and the chevron): two svgs a card
     expect(list.match(/<svg/g)).toHaveLength(checklists.length * 2);
     expect(list.match(/h-11 w-11 rounded-\[12px\]/g)).toHaveLength(checklists.length);
-    expect(list.match(/bg-icon-tile-bg text-icon-ink/g)).toHaveLength(checklists.length);
+    expect(list.match(/bg-neutral-tile-bg text-neutral-tile-ink/g)).toHaveLength(checklists.length);
     expect(list).not.toContain("bg-olive-tint");
     expect(list).not.toContain("rounded-full");
   });
@@ -122,7 +122,7 @@ describe("a Steps topic screen", () => {
     // the same icon as its list card
     expect(card).toContain("lucide-droplet");
     expect(card).not.toContain("rounded-full");
-    expect(card).toContain("bg-icon-tile-bg text-icon-ink");
+    expect(card).toContain("bg-neutral-tile-bg text-neutral-tile-ink");
     expect(card).not.toContain("bg-olive-tint");
     // informational only: no progress, no done, no arrow circle
     expect(html).not.toMatch(/progressbar|done|checkbox|aria-pressed/i);

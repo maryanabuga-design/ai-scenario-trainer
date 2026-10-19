@@ -228,9 +228,7 @@ describe("the tiles", () => {
     expect(homeTiles({ ...counts, saved: 0 })[3].count).toBe("0 saved");
   });
 
-  it("gives every tile its own pastel from the shared palette", () => {
-    const tones = homeTiles(counts).map((tile) => tile.tone);
-    expect(new Set(tones).size).toBe(4);
-    expect(tones).not.toContain("rose");
+  it("has no per-tile colour: every tile is drawn in the one neutral tile", () => {
+    for (const tile of homeTiles(counts)) expect(tile).not.toHaveProperty("tone");
   });
 });

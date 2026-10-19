@@ -163,8 +163,12 @@ for (const width of [360, 430]) {
       );
       const button = await box(hero.getByRole("link", { name: "Choose a topic" }));
       expect([frame.width, frame.height]).toEqual([76, 60]);
-      // the top of the frame is the top of the title (4px)
-      expect(Math.abs(frame.y - title.y)).toBeLessThanOrEqual(4);
+      // the frame is vertically centred on the text block, title top to subtitle bottom (2px)
+      const blockTop = title.y;
+      const blockBottom = Math.max(title.y + title.height, subtitle.y + subtitle.height);
+      expect(
+        Math.abs(frame.y + frame.height / 2 - (blockTop + blockBottom) / 2),
+      ).toBeLessThanOrEqual(2);
       // the text never meets the frame: 8px gap at least (1px for rounding), no intersection
       expect(intersects(frame, title)).toBe(false);
       expect(intersects(frame, subtitle)).toBe(false);
@@ -172,23 +176,13 @@ for (const width of [360, 430]) {
       expect(frame.x - (subtitle.x + subtitle.width)).toBeGreaterThanOrEqual(8 - 1);
       // the title keeps its left edge: card 8 + panel 16 + gutter 16
       expect(Math.abs(title.x - (16 + 8 + 16))).toBeLessThanOrEqual(1);
-      // two-line subtitle: the frame ends no lower than the subtitle's bottom (+4)
-      const textBottom = Math.max(title.y + title.height, subtitle.y + subtitle.height);
+      const textBottom = blockBottom;
       const textHeight = textBottom - title.y;
-      const subtitleLines = Math.round(
-        subtitle.height /
-          (await hero
-            .getByText("Practical scenarios and theory quizzes, by topic")
-            .evaluate((el) => parseFloat(getComputedStyle(el).lineHeight))),
-      );
-      if (subtitleLines <= 2) {
-        expect(frame.y + frame.height).toBeLessThanOrEqual(subtitle.y + subtitle.height + 4);
-      }
-      // the frame is never taller than the text block and adds no height
+      // the frame is never taller than the text block
       expect(frame.height).toBeLessThanOrEqual(textHeight + 4);
       // text block to button: 16px (+-1)
       expect(Math.abs(button.y - textBottom - 16)).toBeLessThanOrEqual(1);
-      expect(button.y - (frame.y + frame.height)).toBeGreaterThanOrEqual(16 - 1);
+      expect(button.y - (frame.y + frame.height)).toBeGreaterThanOrEqual(12);
       // card padding 16 above the text and below the button (inside the 8px card frame)
       expect(Math.abs(title.y - (card.y + 8 + 16))).toBeLessThanOrEqual(1);
       expect(
@@ -205,7 +199,7 @@ for (const width of [360, 430]) {
       expect(Math.abs(width - (card.x + card.width) - 16)).toBeLessThanOrEqual(0.5);
     });
 
-    test("the Mini-quiz row: 64 by 60 frame at the left, top aligned, 12px to the text, no taller than before", async ({
+    test("the Mini-quiz row: 64 by 60 frame at the left, centred on the text, 12px to the text, no taller than before", async ({
       page,
     }) => {
       await openHome(page);
@@ -221,12 +215,15 @@ for (const width of [360, 430]) {
       expect(textLeft - (frame.x + frame.width)).toBeCloseTo(12, 0);
       // the text starts where it did with the 72px placeholder (16px padding + 72 + 12), +4 at most
       expect(textLeft).toBeLessThanOrEqual(16 + 16 + 72 + 12 + 4);
-      // top aligned with the title; the bottom no lower than the description's bottom (+4)
-      expect(Math.abs(frame.y - title.y)).toBeLessThanOrEqual(4);
-      // (only when the description has two lines; with one line the frame stays 60px, top aligned)
-      if (description.height > 30) {
-        expect(frame.y + frame.height).toBeLessThanOrEqual(description.y + description.height + 4);
-      }
+      // centred on the text block (title top to description bottom) and in the row, 2px
+      const blockCentre =
+        (Math.min(title.y, description.y) +
+          Math.max(title.y + title.height, description.y + description.height)) /
+        2;
+      expect(Math.abs(frame.y + frame.height / 2 - blockCentre)).toBeLessThanOrEqual(2);
+      expect(
+        Math.abs(frame.y + frame.height / 2 - (rowBox.y + rowBox.height / 2)),
+      ).toBeLessThanOrEqual(2);
       // the row is not taller than with the placeholder (104px minimum), +4 at most
       expect(rowBox.height).toBeLessThanOrEqual(104 + 4);
       // the chevron stays on the right

@@ -154,7 +154,6 @@ describe("the exam screen", () => {
     // the four rules sit in neutral warm grey circles, not the olive tile
     const rules = html.slice(html.indexOf(">How it works<"), html.indexOf(">Your results<"));
     expect(rules.match(/bg-neutral-tile-bg text-neutral-tile-ink/g)).toHaveLength(4);
-    expect(rules).not.toContain("bg-icon-tile-bg");
     expect(rules.match(/rounded-full/g)).toHaveLength(4);
   });
 

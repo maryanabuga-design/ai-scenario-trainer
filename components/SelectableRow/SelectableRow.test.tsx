@@ -202,7 +202,7 @@ describe("every choice uses SelectableRow", () => {
       expect(code, file).not.toMatch(/pastel-/);
     }
     expect(readFileSync("components/WeakTopicsView/WeakTopicsView.tsx", "utf8")).toContain(
-      'tone="icon"',
+      "<TopicTile",
     );
   });
 });

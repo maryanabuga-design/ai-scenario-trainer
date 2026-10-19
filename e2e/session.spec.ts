@@ -1284,7 +1284,7 @@ test.describe("selectable rows", () => {
       .locator("span[aria-hidden=true]")
       .first()
       .evaluate((element) => getComputedStyle(element).backgroundColor);
-    expect(circle).toBe("rgb(234, 237, 223)");
+    expect(circle).toBe("rgb(226, 222, 214)");
     // a tap on the very edge of the row (the padding) toggles it too
     await rows.nth(1).click({ position: { x: 6, y: 30 } });
     await expect(rows.nth(1).locator("input")).toBeChecked();

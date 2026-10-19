@@ -59,7 +59,7 @@ describe("the Materials list", () => {
     expect(s1).toContain("h-11 w-11");
     expect(s1).toContain("rounded-[12px]");
     expect(s1).not.toContain("rounded-full");
-    expect(s1).toContain("bg-icon-tile-bg text-icon-ink");
+    expect(s1).toContain("bg-neutral-tile-bg text-neutral-tile-ink");
     expect(s1).not.toContain("bg-olive-tint");
     expect(s1).toContain(">Responding to an alarm<");
     expect(s1).toContain(`S1 · ${topic.minutes} min read`);

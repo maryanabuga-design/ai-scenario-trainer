@@ -795,8 +795,10 @@ export function Media3DSample() {
         <Media3D variant="step" />
       </section>
       <section className="flex flex-col items-start gap-2">
-        <h2 className="type-label text-text-secondary">icon (the flat icon is the fallback)</h2>
-        <Media3D variant="icon" fallback={<TopicTile sectionId="S2" icon={topicIcon("S2")} />} />
+        <h2 className="type-label text-text-secondary">
+          icon (the flat icon is the fallback, on the one neutral tile)
+        </h2>
+        <Media3D variant="icon" fallback={<TopicTile icon={topicIcon("S2")} />} />
       </section>
       <section className="flex flex-col items-start gap-2">
         <h2 className="type-label text-text-secondary">tile (80px placeholder, Home hero card)</h2>

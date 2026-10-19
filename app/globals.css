@@ -47,8 +47,6 @@
   --next-card: #f2f3ee;
   --selectable-stroke: #e4dfd5;
   --highlight: #ffe9a0;
-  --icon-tile-bg: #eaeddf;
-  --icon-ink: #5b6938;
   --olive-tint: #e0e6d6;
   --olive-tint-pressed: #d6ddcb;
   --placeholder-stroke: #b9c4ac;
@@ -103,8 +101,6 @@
   --color-selectable-stroke: var(--selectable-stroke);
   --color-highlight: var(--highlight);
   --color-olive-tint: var(--olive-tint);
-  --color-icon-tile-bg: var(--icon-tile-bg);
-  --color-icon-ink: var(--icon-ink);
   --color-list-card: var(--list-card);
   --color-step-caption: var(--step-caption);
   --color-olive-tint-pressed: var(--olive-tint-pressed);

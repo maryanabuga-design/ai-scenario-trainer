@@ -12,17 +12,11 @@ const token = (name: string) => {
 };
 
 describe("the icon tile tokens", () => {
-  it("are registered with their values and as theme colours", () => {
-    expect(token("icon-tile-bg")).toBe("#eaeddf");
-    expect(token("icon-ink")).toBe("#5b6938");
-    expect(css).toContain("--color-icon-tile-bg: var(--icon-tile-bg);");
-    expect(css).toContain("--color-icon-ink: var(--icon-ink);");
-  });
-
-  it("keep the icon at least 3:1 on the tile, computed from the registered values", () => {
-    const ratio = contrastRatio(token("icon-ink"), token("icon-tile-bg"));
-    expect(ratio).toBeGreaterThanOrEqual(GRAPHIC_CONTRAST);
-    expect(ratio).toBeCloseTo(5, 0);
+  it("are the one neutral pair; the old olive icon tile tokens are gone", () => {
+    expect(token("neutral-tile-bg")).toBe("#e2ded6");
+    expect(token("neutral-tile-ink")).toBe("#5c5a56");
+    expect(css).not.toContain("--icon-tile-bg");
+    expect(css).not.toContain("--icon-ink");
   });
 
   it("leave the olive tint as it was", () => {
@@ -37,7 +31,7 @@ describe("the icon tile", () => {
         <svg />
       </IconTile>,
     );
-    expect(html).toContain("bg-icon-tile-bg text-icon-ink");
+    expect(html).toContain("bg-neutral-tile-bg text-neutral-tile-ink");
     expect(html).toContain("h-9 w-9 rounded-full");
     expect(html).toContain("items-center justify-center");
     expect(html).toContain('aria-hidden="true"');
@@ -103,13 +97,13 @@ describe("the exam status tiles", () => {
   });
 
   it("draw the three tones", () => {
-    const html = (tone: "default" | "attention" | "success") =>
+    const html = (tone: "neutral" | "attention" | "success") =>
       renderToStaticMarkup(
         <IconTile tone={tone} className="h-11 w-11 rounded-[12px]">
           <svg />
         </IconTile>,
       );
-    expect(html("default")).toContain("bg-icon-tile-bg text-icon-ink");
+    expect(html("neutral")).toContain("bg-neutral-tile-bg text-neutral-tile-ink");
     expect(html("attention")).toContain("bg-status-attention-bg text-status-attention-ink");
     expect(html("success")).toContain("bg-status-success-bg text-status-success-ink");
     expect(html("success")).not.toContain("correct");
@@ -117,7 +111,7 @@ describe("the exam status tiles", () => {
 });
 
 describe("the neutral warm grey pair", () => {
-  it("is registered once, for the exam rules circles and the bookmark", () => {
+  it("is registered once, for every icon tile and the bookmark", () => {
     expect(token("neutral-tile-bg")).toBe("#e2ded6");
     expect(token("neutral-tile-ink")).toBe("#5c5a56");
     expect(css).toContain("--color-neutral-tile-bg: var(--neutral-tile-bg);");
@@ -134,14 +128,9 @@ describe("the neutral warm grey pair", () => {
     ).toContain("bg-neutral-tile-bg text-neutral-tile-ink");
   });
 
-  it("keeps the icon at least 3:1 on the circle, computed from the registered tokens (about 4.9:1)", () => {
+  it("keeps the icon at least 3:1 on the tile, computed from the registered tokens (about 4.9:1)", () => {
     const ratio = contrastRatio(token("neutral-tile-ink"), token("neutral-tile-bg"));
     expect(ratio).toBeGreaterThanOrEqual(GRAPHIC_CONTRAST);
     expect(ratio).toBeCloseTo(4.9, 0);
-  });
-
-  it("leaves the olive icon tiles as they were", () => {
-    expect(token("icon-tile-bg")).toBe("#eaeddf");
-    expect(token("icon-ink")).toBe("#5b6938");
   });
 });

@@ -27,12 +27,7 @@ export function StepsList({ items = checklists }: { items?: Checklist[] }) {
               aria-label={`${checklist.title}, ${stepCountLabel(checklist.steps.length)}`}
               className={`${stepsCard} flex h-[var(--list-card-height,80px)] items-center gap-3 px-[var(--gutter,1rem)] active:bg-secondary-sand has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent`}
             >
-              <TopicTile
-                sectionId={checklist.topic}
-                icon={checklist.icon}
-                size="tile"
-                tone="icon"
-              />
+              <TopicTile icon={checklist.icon} size="tile" />
               <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                 <span className="type-body-strong truncate">{checklist.title}</span>
                 <span className="type-small truncate text-text-secondary tabular-nums">

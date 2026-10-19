@@ -31,12 +31,7 @@ function TopicOption({
       onChange={onToggle}
     >
       <span className="flex items-center gap-3">
-        <Media3D
-          variant="icon"
-          fallback={
-            <TopicTile sectionId={topic.sectionId} icon={topic.icon} size="compact" tone="icon" />
-          }
-        />
+        <Media3D variant="icon" fallback={<TopicTile icon={topic.icon} size="compact" />} />
         <span className="flex flex-col gap-0.5">
           <span className="type-body-strong">{name}</span>
           <span className="type-small text-text-secondary">

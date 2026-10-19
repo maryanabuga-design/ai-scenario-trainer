@@ -106,9 +106,9 @@ test.describe("Materials", () => {
       // a 44px rounded square icon tile
       expect(row.tile).toEqual([44, 44]);
       expect(row.tileRadius).toBe("12px");
-      expect(row.tileBackground).toBe("rgb(234, 237, 223)");
+      expect(row.tileBackground).toBe("rgb(226, 222, 214)");
       // the icon is drawn in the icon ink
-      expect(row.ink).toEqual(["rgb(91, 105, 56)", "rgb(91, 105, 56)"]);
+      expect(row.ink).toEqual(["rgb(92, 90, 86)", "rgb(92, 90, 86)"]);
       // the divider runs from the left gutter to the right gutter
       // (the app frame has a 1px side border, so the gutter measures 17px)
       expect(row.left).toBeGreaterThanOrEqual(16);

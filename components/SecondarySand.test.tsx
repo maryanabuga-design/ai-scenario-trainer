@@ -84,41 +84,26 @@ describe("coloured chips and icon backgrounds stay as they are", () => {
     }
   });
 
-  it("keeps topic tiles by section and the material tile on its own colour", () => {
-    const tile = (sectionId: string) =>
-      renderToStaticMarkup(<TopicTile sectionId={sectionId} icon="DoorOpen" />);
-    expect(tile("S1")).toContain("bg-pastel-yellow");
-    expect(tile("S2")).toContain("bg-pastel-blue");
-    expect(renderToStaticMarkup(<MaterialTile type="PDF" />)).toContain("bg-icon-tile-bg");
+  it("draws topic tiles and the material tile in the one neutral tile", () => {
+    const tile = renderToStaticMarkup(<TopicTile icon="DoorOpen" />);
+    expect(tile).toContain("bg-neutral-tile-bg text-neutral-tile-ink");
+    expect(tile).not.toContain("pastel");
+    expect(renderToStaticMarkup(<MaterialTile type="PDF" />)).toContain("bg-neutral-tile-bg");
   });
 });
 
-describe("the shared pastel palette on icon tiles", () => {
+describe("the topic icon tile sizes", () => {
   it("draws the Home topic tile at the default size: 48px circle, 24px icon", () => {
-    const html = renderToStaticMarkup(<TopicTile sectionId="S1" icon="DoorOpen" />);
+    const html = renderToStaticMarkup(<TopicTile icon="DoorOpen" />);
     expect(html).toContain("h-12 w-12");
     expect(html).toContain('width="24"');
     expect(html).toContain('stroke-width="2"');
   });
 
   it("has a compact variant: 36px circle, 18px icon, 1.75 stroke", () => {
-    const html = renderToStaticMarkup(<TopicTile sectionId="S1" icon="DoorOpen" size="compact" />);
+    const html = renderToStaticMarkup(<TopicTile icon="DoorOpen" size="compact" />);
     expect(html).toContain("h-9 w-9");
     expect(html).toContain('width="18"');
     expect(html).toContain('stroke-width="1.75"');
-  });
-
-  it("cycles the five palette tones by section, the sage now being the green", () => {
-    const fill = (id: string) =>
-      /bg-pastel-[a-z]+/.exec(
-        renderToStaticMarkup(<TopicTile sectionId={id} icon="DoorOpen" />),
-      )?.[0];
-    expect(["S1", "S2", "S3", "S4", "S5"].map(fill)).toEqual([
-      "bg-pastel-yellow",
-      "bg-pastel-blue",
-      "bg-pastel-lilac",
-      "bg-pastel-green",
-      "bg-pastel-peach",
-    ]);
   });
 });

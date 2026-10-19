@@ -69,7 +69,7 @@ export function HomeView({
               <h2 className="type-card-title">{HERO_TITLE}</h2>
               <p className="type-small text-text-secondary">{HERO_SUBTITLE}</p>
             </div>
-            <div className="absolute top-0 right-0">
+            <div className="absolute inset-y-0 right-0 flex items-center">
               <Media3D
                 variant="tile"
                 src={homeImages.heroTraining}
@@ -94,10 +94,7 @@ export function HomeView({
               href={tile.href}
               className="flex h-full min-h-32 flex-col justify-between gap-4 rounded-card bg-card p-4 shadow-(--card-shadow) has-focus-visible:outline-2"
             >
-              <Media3D
-                variant="icon"
-                fallback={<TileIcon icon={tileIcons[tile.id]} tone={tile.tone} />}
-              />
+              <Media3D variant="icon" fallback={<TileIcon icon={tileIcons[tile.id]} />} />
               <span className="flex flex-col gap-0.5">
                 <span className="type-body-strong">{tile.title}</span>
                 <span className="type-small text-text-secondary">{tile.count}</span>
@@ -111,8 +108,8 @@ export function HomeView({
         href={miniQuizPath}
         className="flex min-h-[104px] items-center gap-3 rounded-card bg-card p-4 shadow-(--card-shadow) has-focus-visible:outline-2"
       >
-        {/* the picture and the text are one block, top aligned; the block is centred in the row */}
-        <span className="flex min-w-0 flex-1 items-start gap-3">
+        {/* the picture and the text are one block, centred on each other; the block is centred in the row */}
+        <span className="flex min-w-0 flex-1 items-center gap-3">
           <Media3D variant="row" src={homeImages.iconMiniQuiz} artwork={homeArtwork.iconMiniQuiz} />
           <span className="flex min-w-0 flex-1 flex-col gap-0.5">
             <span className="type-body-strong">Mini-quiz</span>

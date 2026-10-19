@@ -156,7 +156,7 @@ describe("the hero card", () => {
     expect(card).toContain("rounded-[22px] bg-secondary-sand p-4");
   });
 
-  it("shows the hero picture in a fixed 76 by 60 frame at the right of the title: decorative, bare, no placeholder", () => {
+  it("shows the hero picture in a fixed 76 by 60 frame, vertically centred at the right of the title: decorative, bare, no placeholder", () => {
     const card = hero(render());
     const frame = card.slice(card.indexOf("<span"), card.indexOf(">", card.indexOf("<span")) + 1);
     expect(frame).toContain("data-picture-frame");
@@ -177,7 +177,7 @@ describe("the hero card", () => {
     expect(card).not.toContain(">3D<");
     // the text keeps 84px on the right (76px frame + 8px gap) and the frame adds no height
     expect(card).toContain("min-w-0 flex-col gap-1 pr-[84px]");
-    expect(card).toContain("absolute top-0 right-0");
+    expect(card).toContain("absolute inset-y-0 right-0 flex items-center");
     expect(card.indexOf("<h2")).toBeLessThan(card.indexOf("<img"));
   });
 
@@ -248,13 +248,13 @@ describe("the tiles", () => {
     expect(grid).not.toContain("data-media3d");
   });
 
-  it("are four cards in a two-column grid, each with its own pastel circle and a count line", () => {
+  it("are four cards in a two-column grid, each with a neutral circle and a count line", () => {
     expect(html).toContain("grid grid-cols-2 gap-3");
     const grid = html.slice(html.indexOf("grid-cols-2"), html.lastIndexOf("</ul>"));
     expect(grid.match(/<a /g)).toHaveLength(4);
-    for (const tone of ["yellow", "blue", "peach", "lilac"]) {
-      expect(grid).toContain(`bg-pastel-${tone}`);
-    }
+    // one neutral tile for all four: no pastel, the same pair as the bookmark
+    expect(grid).not.toContain("pastel");
+    expect(grid.match(/bg-neutral-tile-bg text-neutral-tile-ink/g)).toHaveLength(4);
     expect(grid.match(/h-9 w-9/g)).toHaveLength(4);
     expect(grid.match(/width="18"/g)).toHaveLength(4);
     expect(grid.match(/rounded-card bg-card/g)).toHaveLength(4);
@@ -312,7 +312,7 @@ describe("the Mini-quiz row", () => {
     expect(row).toContain("rounded-card bg-card");
   });
 
-  it("has the mini-quiz picture in a fixed 64 by 60 frame on the left, top aligned with the text (bare, decorative), the title, the description and the chevron on the right", () => {
+  it("has the mini-quiz picture in a fixed 64 by 60 frame on the left, centred on the text (bare, decorative), the title, the description and the chevron on the right", () => {
     const start = html.lastIndexOf("<a ", html.indexOf(">Mini-quiz<"));
     const row = html.slice(start, html.indexOf("</a>", start));
     const picture = row.slice(row.indexOf("<img"), row.indexOf(">", row.indexOf("<img")) + 1);
@@ -322,7 +322,7 @@ describe("the Mini-quiz row", () => {
     expect(picture).toContain('width="64"');
     expect(picture).toContain('height="60"');
     expect(row).toContain("width:64px;height:60px");
-    expect(row).toContain("flex min-w-0 flex-1 items-start gap-3");
+    expect(row).toContain("flex min-w-0 flex-1 items-center gap-3");
     expect(picture).not.toMatch(/bg-|border|rounded|shadow/);
     expect(row).not.toContain("data-media3d");
     expect(row).not.toContain(">3D<");

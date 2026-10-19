@@ -31,7 +31,7 @@ describe("one olive tint", () => {
   it("is no longer the background of a file-type tile (they use the icon tile tokens)", () => {
     for (const type of ["PDF", "Word document", "Link", "Image", "Text file"]) {
       const html = renderToStaticMarkup(<MaterialTile type={type} />);
-      expect(html).toContain("bg-icon-tile-bg");
+      expect(html).toContain("bg-neutral-tile-bg");
       expect(html).not.toContain("bg-olive-tint");
     }
   });

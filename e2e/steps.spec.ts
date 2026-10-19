@@ -65,7 +65,7 @@ test.describe("Steps", () => {
     const cards = page.locator("main ul li:visible a");
     await expect(cards).toHaveCount(3);
     expect((await cards.first().boundingBox())!.y - (box.y + box.height)).toBeCloseTo(16, 0);
-    // every card is 80px high, with a 44px rounded-square olive tile, the text after a 12px gap
+    // every card is 80px high, with a 44px rounded-square neutral tile, the text after a 12px gap
     const icons: string[] = [];
     for (let n = 0; n < 3; n++) {
       const card = cards.nth(n);
@@ -93,9 +93,9 @@ test.describe("Steps", () => {
         };
       });
       expect(look.height).toBe(80);
-      expect(look.tile).toEqual([44, 44, "12px", "rgb(234, 237, 223)"]);
+      expect(look.tile).toEqual([44, 44, "12px", "rgb(226, 222, 214)"]);
       // the icon is drawn in the icon ink
-      expect(look.ink).toEqual(["rgb(91, 105, 56)", "rgb(91, 105, 56)"]);
+      expect(look.ink).toEqual(["rgb(92, 90, 86)", "rgb(92, 90, 86)"]);
       expect(look.tileLeft).toBeCloseTo(17, 0);
       expect(look.gap).toBe(12);
       expect(Math.abs(look.tileCenter)).toBeLessThanOrEqual(1);
@@ -244,7 +244,7 @@ test.describe("Steps", () => {
           getComputedStyle(el.querySelector("svg")!).stroke,
         ];
       });
-    expect(tile).toEqual([48, 48, "12px", "rgb(234, 237, 223)", "rgb(91, 105, 56)"]);
+    expect(tile).toEqual([48, 48, "12px", "rgb(226, 222, 214)", "rgb(92, 90, 86)"]);
     // informational only: no progress, no done text, no checkbox, no done-circle
     await expect(page.getByRole("progressbar")).toHaveCount(0);
     await expect(page.locator("main")).not.toContainText(/done/i);

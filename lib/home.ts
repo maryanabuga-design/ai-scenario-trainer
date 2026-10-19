@@ -111,10 +111,9 @@ export type HomeTile = {
   /** The small count line under the title. */
   count: string;
   href: string;
-  tone: "yellow" | "blue" | "peach" | "lilac";
 };
 
-/** The four tiles, each with its own pastel, its count line and where it goes. */
+/** The four tiles (all in the one neutral tile), each with its count line and where it goes. */
 export function homeTiles(counts: HomeCounts): HomeTile[] {
   return [
     {
@@ -125,14 +124,12 @@ export function homeTiles(counts: HomeCounts): HomeTile[] {
           ? "Not taken yet"
           : `Best: ${counts.bestExam.correct} of ${counts.bestExam.questions}`,
       href: "/exam",
-      tone: "yellow",
     },
     {
       id: "steps",
       title: "Steps",
       count: plural(counts.checklists, "checklist", "checklists"),
       href: "/checklists",
-      tone: "blue",
     },
     {
       id: "weak",
@@ -142,14 +139,12 @@ export function homeTiles(counts: HomeCounts): HomeTile[] {
           ? "Nothing to repeat"
           : `${plural(counts.weakSections, "section", "sections")} to repeat`,
       href: "/weak-topics",
-      tone: "peach",
     },
     {
       id: "saved",
       title: "Saved questions",
       count: `${counts.saved} saved`,
       href: "/saved",
-      tone: "lilac",
     },
   ];
 }

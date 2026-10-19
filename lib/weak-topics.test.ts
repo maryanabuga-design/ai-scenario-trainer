@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getItem } from "@/lib/items";
 import { scoreSession, weakItemsFromHistory } from "@/lib/progress";
 import { repeatItemIds, toRepeatLabel, topicsToRepeat, weakTopics } from "@/lib/weak-topics";
-import { materialForSection, topicIcon, topicTint } from "@/lib/weak-topics";
+import { materialForSection, topicIcon } from "@/lib/weak-topics";
 import { currentWeakItems, scoreItem } from "@/lib/scoring";
 import type { FinishedSession } from "@/lib/session";
 
@@ -94,24 +94,5 @@ describe("topic look", () => {
     expect(topicIcon("F4")).toBe("Droplet");
     expect(topicIcon("X9")).toBe("FileText");
     expect(weakTopics(items).find((topic) => topic.sectionId === "S2")?.icon).toBe("DoorOpen");
-  });
-
-  it("takes the tile colour from the section, cycling yellow, blue, lilac, sage, peach", () => {
-    expect(["S1", "S2", "S3", "S4", "S5"].map(topicTint)).toEqual([
-      "yellow",
-      "blue",
-      "lilac",
-      "green",
-      "peach",
-    ]);
-    expect(topicTint("S6")).toBe("yellow");
-    expect(topicTint("S10")).toBe("peach");
-    expect(topicTint("F1")).toBe("yellow");
-    expect(topicTint("F7")).toBe("blue");
-  });
-
-  it("keeps the same colour for a topic every time and has a safe default", () => {
-    expect(topicTint("S3")).toBe(topicTint("S3"));
-    expect(topicTint("X")).toBe("yellow");
   });
 });
