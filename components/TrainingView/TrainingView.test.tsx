@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { TrainingView } from "@/components/TrainingView/TrainingView";
 import type { TrainingTopic } from "@/components/TrainingView/TrainingView";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
+import { deadlineText } from "@/lib/exam-deadline";
 import { modeStats, partState, recommendedPart, weakCount } from "@/lib/part-progress";
 import type { PartRecords } from "@/lib/part-progress";
 import { modeItems, partsFor, sectionsWithParts } from "@/lib/parts";
@@ -93,7 +94,7 @@ describe("Training layout", () => {
       'aria-label="Back to Home"',
       ">Training<",
       "Questions",
-      "Accuracy",
+      "Correct",
       "Scenario",
       "Title of S1",
     ].map((text) => html.indexOf(text));
@@ -108,10 +109,10 @@ describe("Training layout", () => {
 });
 
 describe("the stats card", () => {
-  it("shows two columns with a divider, olive icon tiles, the answered count and the accuracy", () => {
+  it("shows two columns with a divider, olive icon tiles, the answered count and the correct count", () => {
     const html = render("quiz");
     expect(html).toContain(`0/${modeItems("quiz").length}`);
-    expect(html).toContain(">0%<");
+    expect(html).toContain(">0/0<");
     expect(html.match(/bg-olive-tint/g)!.length).toBeGreaterThanOrEqual(2);
     expect(html).toContain("w-px");
     expect(html).toContain("rounded-[28px] bg-card");
@@ -192,8 +193,9 @@ describe("a topic card and its parts", () => {
       html.indexOf('aria-labelledby="topic-S2"'),
     );
     expect(s1).not.toContain("data-pill");
-    expect(s1).toContain('aria-label="Part 1: last result 100%"');
-    expect(s1).toContain('aria-label="Part 2: last result 100%"');
+    expect(s1).toMatch(/aria-label="Part 1: \d+ of \d+ correct last time"/);
+    expect(s1).toMatch(/aria-label="Part 2: \d+ of \d+ correct last time"/);
+    expect(s1.replace(/<[^>]+>/g, " ")).not.toContain("%");
     expect(s1).toContain("lucide-check");
     const s3 = html.slice(
       html.indexOf('aria-labelledby="topic-S3"'),
@@ -335,5 +337,51 @@ describe("the Training screen source", () => {
     expect(page).toContain('params.get("mode")');
     // a topic is no longer passed in: Practise this topic on the reading screen starts the part
     expect(page).not.toContain('params.get("topic")');
+  });
+});
+
+describe("the Exams section", () => {
+  const exams = [
+    {
+      id: "a",
+      title: "Evacuation basics exam",
+      deadline: deadlineText("2026-10-25", new Date(2026, 9, 19)),
+    },
+    { id: "b", title: "Overdue exam", deadline: deadlineText("2026-10-15", new Date(2026, 9, 19)) },
+  ];
+  const view = (list = exams) =>
+    renderToStaticMarkup(
+      <TrainingView
+        guideName="G"
+        mode="quiz"
+        onModeChange={noop}
+        stats={modeStats([], "quiz")}
+        topics={[]}
+        records={null}
+        exams={list}
+        onStartPart={noop}
+      />,
+    );
+
+  it("lists each exam with its title and deadline text, linking to its exam screen, with no number and no lock", () => {
+    const html = view();
+    const section = html.slice(
+      html.indexOf('aria-labelledby="training-exams"'),
+      html.indexOf("Your progress"),
+    );
+    expect(section).toContain(">Evacuation basics exam<");
+    expect(section).toContain("Due 25 Oct · 6 days left");
+    expect(section).toContain("Overdue since 15 Oct");
+    expect(section).toContain('href="/exam?id=a"');
+    expect(section).toContain('href="/exam?id=b"');
+    expect(section).toContain("lucide-clock");
+    expect(section.replace(/<[^>]+>/g, " ")).not.toMatch(/%|\d+\/\d+/);
+    expect(html).not.toMatch(/lucide-lock|locked|Locked/);
+  });
+
+  it("is above the stats card, and absent without an assigned exam", () => {
+    const html = view();
+    expect(html.indexOf("Exams")).toBeLessThan(html.indexOf("Your progress"));
+    expect(view([])).not.toContain("training-exams");
   });
 });

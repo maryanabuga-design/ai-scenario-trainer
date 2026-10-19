@@ -2,6 +2,7 @@ import { EXAM_MINUTES, EXAM_QUESTIONS, EXAM_WARNING_MINUTES } from "@/lib/config
 import type { Item } from "@/lib/items";
 import { modeItems, trainingSections } from "@/lib/parts";
 import { shuffled } from "@/lib/quiz-draw";
+import { findItem } from "@/lib/items";
 import type { ExamResult, FinishedSession } from "@/lib/session";
 
 /**
@@ -67,14 +68,27 @@ export function isTimeWarning(seconds: number): boolean {
 
 export const examDurationMs = EXAM_MINUTES * 60 * 1000;
 
+export type ExamAttempt = ExamResult & { finishedAt: number; correct: number };
+
+/** The number of correct answers of a finished exam (an unanswered question counts as wrong). */
+export function examCorrect(session: FinishedSession): number {
+  const answered = new Map(session.answers.map((answer) => [answer.itemId, answer.optionId]));
+  return session.itemIds.filter((id) => {
+    const item = findItem(id);
+    return item !== undefined && answered.get(id) === item.correctOptionId;
+  }).length;
+}
+
 /** The last and the best finished exam, from the history. The best is the highest percent, the latest on a tie. */
 export function examResults(history: FinishedSession[] | null): {
-  last: (ExamResult & { finishedAt: number }) | null;
-  best: (ExamResult & { finishedAt: number }) | null;
+  last: ExamAttempt | null;
+  best: ExamAttempt | null;
 } {
   const exams = (history ?? [])
     .flatMap((session) =>
-      session.exam ? [{ ...session.exam, finishedAt: session.finishedAt }] : [],
+      session.exam
+        ? [{ ...session.exam, finishedAt: session.finishedAt, correct: examCorrect(session) }]
+        : [],
     )
     .sort((a, b) => a.finishedAt - b.finishedAt);
   if (exams.length === 0) return { last: null, best: null };

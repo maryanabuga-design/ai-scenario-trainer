@@ -160,8 +160,18 @@ describe("part states and the recommended part", () => {
   });
 
   it("shows a grey empty ring when not started, the last result when done, a pass at the mark", () => {
-    expect(partRing(quizS1, null)).toEqual({ percent: 0, passed: false, started: false });
-    expect(partRing(quizS1, records)).toEqual({ percent: 60, passed: false, started: true });
+    expect(partRing(quizS1, null)).toEqual({
+      percent: 0,
+      correct: 0,
+      passed: false,
+      started: false,
+    });
+    expect(partRing(quizS1, records)).toEqual({
+      percent: 60,
+      correct: 0,
+      passed: false,
+      started: true,
+    });
     const passed = { [quizS1.id]: { ...records[quizS1.id], lastPercent: PASS_MARK } };
     expect(partRing(quizS1, passed).passed).toBe(true);
     const below = { [quizS1.id]: { ...records[quizS1.id], lastPercent: PASS_MARK - 1 } };

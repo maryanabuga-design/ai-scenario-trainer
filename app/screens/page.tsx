@@ -322,14 +322,19 @@ export default function Screens() {
           </PhoneFrame>
         </Group>
         <Group title="Exam">
-          <PhoneFrame label="Exam intro: first time">
+          <PhoneFrame label="Exam screen: readiness below 80% (Not ready yet)">
             <Screen>
-              <ExamIntroSample />
+              <ExamIntroSample readiness={62} />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Exam intro: after an attempt (last and best)">
+          <PhoneFrame label="Exam screen: readiness 80% or more (You're ready), after an attempt">
             <Screen>
-              <ExamIntroSample attempted />
+              <ExamIntroSample readiness={84} attempted />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Exam screen: overdue (clock icon, plain text)">
+            <Screen>
+              <ExamIntroSample readiness={0} overdue />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Exam question with the timer (no hint button)">

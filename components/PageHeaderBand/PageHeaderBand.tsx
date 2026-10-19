@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 
 type Back = { label: string } & ({ href: string } | { onClick: () => void });
@@ -15,7 +16,7 @@ export function PageHeaderBand({
   overlap = false,
 }: {
   title: string;
-  subtitle?: string;
+  subtitle?: ReactNode;
   back: Back;
   overlap?: boolean;
 }) {

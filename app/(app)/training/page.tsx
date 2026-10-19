@@ -5,6 +5,8 @@ import { Suspense, useEffect, useState } from "react";
 import { TrainingView } from "@/components/TrainingView/TrainingView";
 import type { TrainingTopic } from "@/components/TrainingView/TrainingView";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
+import { byDeadline, useExams } from "@/lib/assigned-exams";
+import { deadlineText } from "@/lib/exam-deadline";
 import { sampleMaterials } from "@/lib/materials";
 import {
   modeStats,
@@ -29,6 +31,7 @@ function Training({ initial }: { initial: TrainingMode }) {
   const history = useHistory();
   const records = usePartRecords();
   const session = useSession();
+  const assigned = useExams();
   const [mode, setMode] = useState<TrainingMode>(initial);
 
   // A mode from the link (the Home tiles) is remembered like one chosen here.
@@ -78,6 +81,15 @@ function Training({ initial }: { initial: TrainingMode }) {
       stats={modeStats(history, mode)}
       topics={topics}
       records={records}
+      exams={
+        assigned === "loading"
+          ? []
+          : byDeadline(assigned).map((exam) => ({
+              id: exam.id,
+              title: exam.title,
+              deadline: deadlineText(exam.deadline, new Date()),
+            }))
+      }
       onStartPart={start}
       resume={
         unfinished

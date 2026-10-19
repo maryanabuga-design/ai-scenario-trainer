@@ -143,6 +143,10 @@ describe("a secondary always comes with a primary above it", () => {
       )
       .sort();
     expect(withSecondary).toEqual([
+      // The exam screen: Start exam anyway, below the primary Repeat weak topics.
+      "components/ExamView/ExamView.tsx",
+      // Progress: the Exam readiness card's Repeat weak topics, its one action (documented exception).
+      "components/ProgressView/ProgressView.tsx",
       // The reading screen's quick-actions bar: Steps next to the primary Practise this topic.
       "components/QuickActionsBar/QuickActionsBar.tsx",
       // The reading screen: Steps for this topic, below the primary Practise this topic.

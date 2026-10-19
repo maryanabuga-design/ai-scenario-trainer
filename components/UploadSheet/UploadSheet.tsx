@@ -100,7 +100,6 @@ export function UploadPanel({
           >
             <div className="h-full bg-primary" style={{ width: `${stage.percent}%` }} />
           </div>
-          <p className="type-small tabular-nums">{stage.percent}%</p>
         </div>
       )}
 

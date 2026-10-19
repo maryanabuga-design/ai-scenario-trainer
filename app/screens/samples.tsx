@@ -15,7 +15,8 @@ import { Toggle } from "@/components/Toggle/Toggle";
 import { AnswerReview } from "@/components/AnswerReview/AnswerReview";
 import { SessionBar } from "@/components/SessionBar/SessionBar";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
-import { ExamIntroView } from "@/components/ExamIntroView/ExamIntroView";
+import { ExamView } from "@/components/ExamView/ExamView";
+import { deadlineText } from "@/lib/exam-deadline";
 import { ExamTimer } from "@/components/ExamTimer/ExamTimer";
 import { SessionTopBar } from "@/components/SessionTopBar/SessionTopBar";
 import { stripStates } from "@/components/StepStrip/StepStrip";
@@ -903,13 +904,36 @@ export function MiniQuizSample({ selected }: { selected?: string[] }) {
   );
 }
 
-/** The Exam intro: the first time, or after an attempt. */
-export function ExamIntroSample({ attempted = false }: { attempted?: boolean }) {
+/** The exam screen in a fixed state (the screen review page): readiness, deadline and attempts. */
+export function ExamIntroSample({
+  readiness = 0,
+  overdue = false,
+  attempted = false,
+}: {
+  readiness?: number;
+  overdue?: boolean;
+  attempted?: boolean;
+}) {
+  const now = new Date(2026, 9, 19, 10, 0);
   return (
-    <ExamIntroView
-      last={attempted ? { percent: 70, finishedAt: new Date(2026, 9, 14).getTime() } : null}
-      best={attempted ? { percent: 85, finishedAt: new Date(2026, 9, 12).getTime() } : null}
+    <ExamView
+      title="Evacuation basics exam"
+      assignedBy="Admin"
+      deadline={deadlineText(overdue ? "2026-10-15" : "2026-10-25", now)}
+      readiness={readiness}
+      canRepeat={readiness < 100}
+      last={
+        attempted
+          ? { correct: 14, questions: 20, finishedAt: new Date(2026, 9, 14).getTime() }
+          : null
+      }
+      best={
+        attempted
+          ? { correct: 17, questions: 20, finishedAt: new Date(2026, 9, 12).getTime() }
+          : null
+      }
       onStart={() => undefined}
+      onRepeat={() => undefined}
     />
   );
 }

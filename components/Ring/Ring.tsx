@@ -1,17 +1,21 @@
 import { Check } from "lucide-react";
 
-/** A ring with a percentage inside: an arc in `--primary` on a sand track. */
+/** A ring with a count inside ("7/10"; a percentage lives on exam screens only): an arc in `--primary` on a sand track. */
 export function Ring({
   percent,
+  text,
   size = 40,
   label,
   check = false,
   muted = false,
 }: {
+  /** The share drawn as the arc, 0 to 100. */
   percent: number;
+  /** What is written inside: a count such as "7/10". */
+  text: string;
   /** 40 for Session setup, 56 for the Home card. */
   size?: 40 | 56;
-  /** The accessible name, for example "32% of the guide practised". */
+  /** The accessible name, for example "Part 1: 7 of 10 correct last time". */
   label: string;
   /** A small check above the percentage (a part passed). */
   check?: boolean;
@@ -55,7 +59,7 @@ export function Ring({
         } ${muted ? "text-text-secondary" : ""}`}
       >
         {check && <Check size={9} strokeWidth={3} className="absolute top-[5px] text-primary" />}
-        {percent}%
+        {text}
       </span>
     </div>
   );

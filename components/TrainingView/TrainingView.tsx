@@ -1,6 +1,6 @@
 "use client";
 
-import { ListChecks, Target } from "lucide-react";
+import { Clock, ListChecks, Target } from "lucide-react";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { buttonClasses } from "@/components/Button/Button";
@@ -12,8 +12,12 @@ import { Ring } from "@/components/Ring/Ring";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
 import type { ModeStats, PartRecords, PartState } from "@/lib/part-progress";
 import { partRing } from "@/lib/part-progress";
+import type { Deadline } from "@/lib/exam-deadline";
 import type { Part, TrainingMode } from "@/lib/parts";
 import { questionCountLabel } from "@/lib/quiz-draw";
+
+/** An assigned exam as the Training screen lists it: its title and deadline text. */
+export type TrainingExam = { id: string; title: string; deadline: Deadline };
 
 export const miniQuizPath = "/mini-quiz?from=training";
 
@@ -60,6 +64,7 @@ export function TrainingView({
   records,
   onStartPart,
   resume,
+  exams = [],
 }: {
   guideName: string;
   mode: TrainingMode;
@@ -70,6 +75,8 @@ export function TrainingView({
   onStartPart: (part: Part) => void;
   /** An unfinished session: the one place Home sends people to pick it up again. */
   resume?: string;
+  /** The assigned exams, nearest deadline first: each opens its exam screen. No percentage here. */
+  exams?: TrainingExam[];
 }) {
   return (
     <div className="flex flex-col gap-4 pb-6">
@@ -92,13 +99,40 @@ export function TrainingView({
         </Link>
       )}
 
+      {exams.length > 0 && (
+        <section aria-labelledby="training-exams" className="flex flex-col gap-3">
+          <h2 id="training-exams" className="type-label text-text-secondary">
+            Exams
+          </h2>
+          <ul className="flex flex-col gap-3">
+            {exams.map((exam) => (
+              <li key={exam.id}>
+                <Link
+                  href={`/exam?id=${encodeURIComponent(exam.id)}`}
+                  className="flex min-h-16 items-center gap-3 rounded-card bg-card p-4 shadow-(--card-shadow) has-focus-visible:outline-2"
+                >
+                  <span className="flex min-w-0 flex-1 flex-col gap-1.5">
+                    <span className="type-body-strong">{exam.title}</span>
+                    <Chip tone="sand" size="caption">
+                      <Clock size={14} strokeWidth={2} aria-hidden="true" />
+                      {exam.deadline.label}
+                    </Chip>
+                  </span>
+                  <Chevron />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <section
         aria-label="Your progress"
         className="flex items-center gap-4 rounded-[28px] bg-card p-5 shadow-(--card-shadow)"
       >
         <StatTile icon={ListChecks} label="Questions" value={`${stats.answered}/${stats.total}`} />
         <span aria-hidden="true" className="h-10 w-px shrink-0 bg-border" />
-        <StatTile icon={Target} label="Accuracy" value={`${stats.accuracy}%`} />
+        <StatTile icon={Target} label="Correct" value={`${stats.correct}/${stats.answered}`} />
       </section>
 
       <SegmentedControl
@@ -180,11 +214,12 @@ export function TrainingView({
                     ) : (
                       <Ring
                         percent={ring.percent}
+                        text={`${ring.correct}/${part.itemIds.length}`}
                         check={ring.passed}
                         muted={!ring.started}
                         label={
                           ring.started
-                            ? `Part ${part.n}: last result ${ring.percent}%`
+                            ? `Part ${part.n}: ${ring.correct} of ${part.itemIds.length} correct last time`
                             : `Part ${part.n}: not started`
                         }
                       />

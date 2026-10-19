@@ -51,7 +51,7 @@ describe("the places that draw an icon in a tile", () => {
     for (const file of [
       "components/TopicTile/TopicTile.tsx",
       "components/TrainingCreate/TrainingCreate.tsx",
-      "components/ExamIntroView/ExamIntroView.tsx",
+      "components/ExamView/ExamView.tsx",
       "components/OnboardingView/OnboardingView.tsx",
       "components/MaterialTile/MaterialTile.tsx",
     ]) {

@@ -215,10 +215,11 @@ describe("the tiles", () => {
     expect(tiles.some((tile) => /materials|guide/i.test(tile.title + tile.href))).toBe(false);
   });
 
-  it("shows the best exam result once an exam was taken", () => {
+  it("shows the best exam result as a count once an exam was taken, never a percentage", () => {
     const history = [exam(1, 70), exam(2, 85), exam(3, 60)];
-    expect(homeCounts({ history, saved: null }).bestExam).toBe(85);
-    expect(homeTiles(homeCounts({ history, saved: null }))[0].count).toBe("Best: 85%");
+    // the fake exams answer one question correctly; the best percent decides which one is the best
+    expect(homeCounts({ history, saved: null }).bestExam).toEqual({ correct: 1, questions: 20 });
+    expect(homeTiles(homeCounts({ history, saved: null }))[0].count).toBe("Best: 1 of 20");
   });
 
   it("says how many sections are to repeat, in the singular too", () => {

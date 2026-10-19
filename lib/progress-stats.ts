@@ -38,21 +38,15 @@ export function trendSessions(history: FinishedSession[]): SessionResult[] {
 
 export type ProgressSummary = {
   sessions: number;
-  averagePercent: number | null;
-  correctPercent: number | null;
+  /** Correct answers over all answers given, as counts (a percentage is Readiness or Score only). */
+  correct: number;
+  answered: number;
 };
 
-/** Sessions, the mean result per session and the share of correct answers. Null without data. */
+/** Sessions and the correct answers over all answers, as counts. Zeros without data. */
 export function progressSummary(history: FinishedSession[]): ProgressSummary {
-  const results = sessionStats(history);
-  if (results.length === 0) return { sessions: 0, averagePercent: null, correctPercent: null };
   const items = history.flatMap(scoreSession);
-  const mean = results.reduce((sum, result) => sum + result.percent, 0) / results.length;
-  return {
-    sessions: results.length,
-    averagePercent: Math.round(mean),
-    correctPercent: percentOf(correctCount(items), items.length),
-  };
+  return { sessions: history.length, correct: correctCount(items), answered: items.length };
 }
 
 export type SectionStat = { id: string; correct: number; total: number };

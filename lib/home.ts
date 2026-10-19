@@ -52,7 +52,7 @@ export const homeImages: { heroTraining?: string; iconMiniQuiz?: string } = {};
 
 export type HomeCounts = {
   /** The best exam result in percent, or null when no exam was taken. */
-  bestExam: number | null;
+  bestExam: { correct: number; questions: number } | null;
   weakSections: number;
   saved: number;
   checklists: number;
@@ -75,7 +75,10 @@ export function homeTiles(counts: HomeCounts): HomeTile[] {
     {
       id: "exam",
       title: "Exam",
-      count: counts.bestExam === null ? "Not taken yet" : `Best: ${counts.bestExam}%`,
+      count:
+        counts.bestExam === null
+          ? "Not taken yet"
+          : `Best: ${counts.bestExam.correct} of ${counts.bestExam.questions}`,
       href: "/exam",
       tone: "yellow",
     },
@@ -115,8 +118,9 @@ export function homeCounts({
   saved: string[] | null;
 }): HomeCounts {
   const weak = weakItemsFromHistory(history);
+  const bestAttempt = examResults(history).best;
   return {
-    bestExam: examResults(history).best?.percent ?? null,
+    bestExam: bestAttempt && { correct: bestAttempt.correct, questions: bestAttempt.questions },
     weakSections: new Set(weak.map((item) => item.section)).size,
     saved: (saved ?? []).filter((id) => findItem(id) !== undefined).length,
     checklists: checklists.length,

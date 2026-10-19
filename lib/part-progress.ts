@@ -70,15 +70,16 @@ export function partState(
   return records?.[part.id] ? "done" : "not started";
 }
 
-/** The ring of a part: the last result in percent, an empty grey ring when not started. */
+/** The ring of a part: the arc is the last result, its text the count of correct answers; an empty grey ring when not started. */
 export function partRing(
   part: Part,
   records: PartRecords | null,
-): { percent: number; passed: boolean; started: boolean } {
+): { percent: number; correct: number; passed: boolean; started: boolean } {
   const record = records?.[part.id];
-  if (!record) return { percent: 0, passed: false, started: false };
+  if (!record) return { percent: 0, correct: 0, passed: false, started: false };
   return {
     percent: record.lastPercent,
+    correct: record.correctIds.length,
     passed: record.lastPercent >= PASS_MARK,
     started: true,
   };
@@ -94,7 +95,7 @@ export function recommendedPart(
 }
 
 /** The latest finished answer to every question, oldest session first. */
-function latestAnswers(history: FinishedSession[] | null): Map<string, boolean> {
+export function latestAnswers(history: FinishedSession[] | null): Map<string, boolean> {
   const latest = new Map<string, boolean>();
   [...(history ?? [])]
     .sort((a, b) => a.finishedAt - b.finishedAt)

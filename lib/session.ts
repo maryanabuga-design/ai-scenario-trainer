@@ -31,6 +31,10 @@ export type Session = {
   partId?: string;
   /** Where Back on Results goes: where the session was started from. Home when absent. */
   returnTo?: string;
+  /** An assigned exam this session practises ("Repeat weak topics"): its summary shows the readiness before and after. */
+  examId?: string;
+  /** The exam's readiness when the session started, in percent. */
+  readinessBefore?: number;
   /** Questions whose hint was opened; it moves onto the answer once there is one. */
   hintsOpened?: string[];
   finished: boolean;
@@ -90,9 +94,10 @@ export function sessionLabel(session: Pick<Session, "kind">) {
   return { scenario: "Scenario", quiz: "Quiz", repeat: "Repeat round", exam: "Exam" }[session.kind];
 }
 
-/** Where Leave on the Exit dialog goes: the reading screen the session was started from, else Home. */
+/** Where Leave on the Exit dialog goes: the reading screen or the exam screen the session was started from, else Home. */
 export function leaveHref(session: Pick<Session, "returnTo">): string {
-  return session.returnTo?.startsWith("/materials/read/") ? session.returnTo : "/";
+  const back = session.returnTo;
+  return back?.startsWith("/materials/read/") || back?.startsWith("/exam?id=") ? back : "/";
 }
 
 export function saveSession(session: Session) {
@@ -102,13 +107,21 @@ export function saveSession(session: Session) {
 export function startSession(
   kind: SessionKind,
   itemIds: string[],
-  options: { scenarioId?: string; partId?: string; returnTo?: string } = {},
+  options: {
+    scenarioId?: string;
+    partId?: string;
+    returnTo?: string;
+    examId?: string;
+    readinessBefore?: number;
+  } = {},
 ) {
   saveSession({
     kind,
     ...(options.scenarioId && { scenarioId: options.scenarioId }),
     ...(options.partId && { partId: options.partId }),
     ...(options.returnTo && { returnTo: options.returnTo }),
+    ...(options.examId && { examId: options.examId }),
+    ...(options.readinessBefore !== undefined && { readinessBefore: options.readinessBefore }),
     itemIds,
     answers: [],
     index: 0,

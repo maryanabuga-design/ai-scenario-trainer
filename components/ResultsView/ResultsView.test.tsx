@@ -2,12 +2,12 @@ import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
-import { ResultsActions, ResultsView } from "@/components/ResultsView/ResultsView";
+import { ResultsActions, ResultsButtons, ResultsView } from "@/components/ResultsView/ResultsView";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { PASS_MARK } from "@/lib/config";
 import { loadAllSections } from "@/lib/guide";
 import { getItem } from "@/lib/items";
-import { isPassed, resultPercent } from "@/lib/results";
+import { isPassed, passCount, resultPercent } from "@/lib/results";
 import { scoreItem } from "@/lib/scoring";
 import type { ScoredItem } from "@/lib/scoring";
 import { weakTopics } from "@/lib/weak-topics";
@@ -54,20 +54,23 @@ describe("Results", () => {
     expect(html).not.toContain("Time lost");
   });
 
-  it("starts with Back and the title Results, then the hero, headline, percentage and pass mark", () => {
+  it("starts with Back and the title Results, then the hero, headline, the count and the pass mark as a count", () => {
     const order = [
       'aria-label="Back to Home"',
       ">Results<",
       "data-media3d",
       "Not passed yet",
-      "33%",
+      "1 of 3 correct",
       'role="meter"',
-      "PASS MARK: 80%",
+      "PASS MARK: 3 of 3",
     ].map((text) => html.indexOf(text));
     expect(order.every((position) => position >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
-    expect(html).toContain(">0<");
-    expect(html).toContain(">100<");
+  });
+
+  it("shows no percentage character in the text of a practice session's results", () => {
+    expect(html.replace(/<[^>]+>/g, " ")).not.toContain("%");
+    expect(html).not.toMatch(/aria-label="[^"]*%/);
   });
 
   it("follows with one conclusion and the Weak topics card, and has no Your answers list", () => {
@@ -115,11 +118,18 @@ describe("the pass mark", () => {
     expect(isPassed(result(79, 100))).toBe(false);
     expect(below).toContain("Not passed yet");
     expect(below).toContain('aria-valuenow="79"');
+    expect(below).toContain("79 of 100 correct");
+    expect(below).toContain("PASS MARK: 80 of 100");
     const at = render(result(80, 100));
     expect(isPassed(result(80, 100))).toBe(true);
     expect(at).toContain(">Passed<");
     expect(at).not.toContain("Not passed yet");
     expect(at).toContain('aria-valuenow="80"');
+    expect(passCount(100)).toBe(80);
+    expect(passCount(10)).toBe(8);
+    expect(passCount(20)).toBe(16);
+    expect(passCount(3)).toBe(3);
+    expect(passCount(0)).toBe(0);
     expect(at).toContain('style="left:80%"');
   });
 });
@@ -190,5 +200,103 @@ describe("Back on Results", () => {
     expect(html).toContain('aria-label="Back to Training"');
     expect(html).toContain('href="/training?mode=quiz"');
     expect(html).not.toContain('aria-label="Back to Home"');
+  });
+});
+
+describe("exam results and the repeat-session summary", () => {
+  const draw = (right: number, total: number) => result(right, total);
+  const view = (
+    kind: "exam" | "repeat",
+    list: ScoredItem[],
+    extra: Partial<Parameters<typeof ResultsView>[0]> = {},
+  ) =>
+    renderToStaticMarkup(
+      <SourceSheetProvider sections={loadAllSections()}>
+        <ActionBarProvider>
+          <ResultsView
+            kind={kind}
+            items={list}
+            topics={weakTopics(list)}
+            backHref="/exam?id=e"
+            backLabel="Back to Exam"
+            onRepeat={() => undefined}
+            {...extra}
+          />
+        </ActionBarProvider>
+      </SourceSheetProvider>,
+    );
+  const text = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+
+  it("an exam shows 'Score 85%' as its only percentage, and the pass mark as a count", () => {
+    const html = view("exam", draw(17, 20));
+    expect(text(html)).toContain("Score 85%");
+    expect(text(html).match(/%/g)).toHaveLength(1);
+    expect(html).toContain("PASS MARK: 16 of 20");
+    expect(html).not.toMatch(/aria-label="[^"]*%[^"]*%/);
+  });
+
+  const buttons = (
+    kind: "exam" | "repeat",
+    passed: boolean,
+    extra: Partial<Parameters<typeof ResultsButtons>[0]> = {},
+  ) =>
+    renderToStaticMarkup(
+      <ResultsButtons
+        kind={kind}
+        passed={passed}
+        canRepeat
+        hasReadiness={false}
+        onRepeat={() => undefined}
+        doneHref="/exam?id=e"
+        {...extra}
+      />,
+    );
+
+  it("a passed exam has the Primary Done to the exam screen, and no repeat button", () => {
+    const html = buttons("exam", true);
+    expect(html).toContain(">Done<");
+    expect(html).not.toContain("Repeat weak topics");
+    expect(html).not.toContain("Back to exam");
+    const done = html.slice(0, html.indexOf(">Done<"));
+    const link = done.slice(done.lastIndexOf("<a "));
+    expect(link).toContain('href="/exam?id=e"');
+    expect(link).toContain("bg-primary");
+    expect(html).toContain(">Review answers<");
+  });
+
+  it("a failed exam has the Primary Repeat weak topics and the Secondary Back to exam", () => {
+    const html = buttons("exam", false);
+    expect(html.indexOf(">Repeat weak topics<")).toBeLessThan(html.indexOf(">Back to exam<"));
+    const repeat = html.slice(0, html.indexOf(">Repeat weak topics<"));
+    expect(repeat.slice(repeat.lastIndexOf("<button"))).toContain("bg-primary");
+    const back = html.slice(0, html.indexOf(">Back to exam<"));
+    expect(back.slice(back.lastIndexOf("<a "))).toContain("bg-olive-tint");
+    expect(html).not.toContain(">Done<");
+    expect(html).toContain(">Review answers<");
+  });
+
+  it("a repeat session for an exam has Done", () => {
+    const html = buttons("repeat", false, { hasReadiness: true });
+    expect(html).toContain(">Done<");
+    expect(html).not.toContain("Back to exam");
+  });
+
+  it("a plain repeat round keeps the Review / Repeat row", () => {
+    const html = buttons("repeat", false);
+    expect(html).toContain("flex flex-wrap-reverse");
+    expect(html).not.toContain(">Done<");
+  });
+
+  it("a repeat session for an exam shows the count and ONE percentage line, 'Readiness 62% → 71%'", () => {
+    const html = view("repeat", draw(7, 10), { readiness: { before: 62, after: 71 } });
+    expect(text(html)).toContain("7 of 10 correct");
+    expect(text(html)).toContain("Readiness 62% → 71%");
+    expect(text(html).match(/%/g)).toHaveLength(2);
+    expect(text(html).match(/Readiness/g)).toHaveLength(1);
+    expect(html).toContain("PASS MARK: 8 of 10");
+  });
+
+  it("a plain repeat round has no percentage at all", () => {
+    expect(text(view("repeat", draw(7, 10)))).not.toContain("%");
   });
 });

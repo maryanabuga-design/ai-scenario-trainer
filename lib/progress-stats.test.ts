@@ -50,21 +50,13 @@ describe("per-session results", () => {
 });
 
 describe("the summary", () => {
-  it("counts sessions, averages the percents and shares the correct answers", () => {
-    expect(progressSummary([bad, good])).toEqual({
-      sessions: 2,
-      averagePercent: 50,
-      correctPercent: 50,
-    });
+  it("counts sessions and the correct answers over all answers, never a percentage", () => {
+    expect(progressSummary([bad, good])).toEqual({ sessions: 2, correct: 3, answered: 6 });
   });
 
-  it("works with one session and has no numbers without sessions", () => {
-    expect(progressSummary([good])).toMatchObject({ sessions: 1, correctPercent: 100 });
-    expect(progressSummary([])).toEqual({
-      sessions: 0,
-      averagePercent: null,
-      correctPercent: null,
-    });
+  it("works with one session and has zeros without sessions", () => {
+    expect(progressSummary([good])).toEqual({ sessions: 1, correct: 3, answered: 3 });
+    expect(progressSummary([])).toEqual({ sessions: 0, correct: 0, answered: 0 });
   });
 });
 

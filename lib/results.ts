@@ -8,6 +8,11 @@ export function resultPercent(items: ScoredItem[]): number {
   return Math.floor((correctCount(items) / items.length) * 100 + 1e-9);
 }
 
+/** The fewest correct answers that pass: "8 of 10" at the 80% pass mark. */
+export function passCount(total: number): number {
+  return Math.max(0, Math.ceil((total * PASS_MARK) / 100 - 1e-9));
+}
+
 /** Passed at the pass mark or above. */
 export function isPassed(items: ScoredItem[]): boolean {
   return resultPercent(items) >= PASS_MARK;

@@ -155,8 +155,10 @@ test.describe("a running session", () => {
 
     await expect(page).toHaveURL(/\/session\/results$/);
     await expect(page.getByRole("heading", { name: "Not passed yet" })).toBeVisible();
-    await expect(page.getByText("PASS MARK: 80%")).toBeVisible();
-    await expect(page.getByText("33%")).toBeVisible();
+    await expect(page.getByText("PASS MARK: 3 of 3")).toBeVisible();
+    await expect(page.getByText("1 of 3 correct")).toBeVisible();
+    // counts only: no percentage character on a practice session's results
+    expect(await page.locator("main").innerText()).not.toContain("%");
     await expect(page.getByText("Your answers")).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Back to Home", exact: true })).toHaveCount(1);
     await expect(page.getByRole("button", { name: "Back to Home" })).toHaveCount(0);
@@ -665,7 +667,7 @@ test.describe("Training", () => {
   test("shows the stats, the switch, the topic cards and no settings", async ({ page }) => {
     await open(page);
     await expect(page.getByText(`0/${SCENARIO_TOTAL}`)).toBeVisible();
-    await expect(page.getByText("0%", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("0/0", { exact: true })).toBeVisible();
     await expect(page.getByRole("radio", { name: "Scenario" })).toBeChecked();
     await expect(page.locator("section[aria-labelledby^=topic-]")).toHaveCount(5);
     await expect(page.locator("section[aria-labelledby^=topic-] [data-pill]")).toHaveCount(5);
@@ -730,7 +732,9 @@ test.describe("Training", () => {
     await expect(page).toHaveURL(/\/training\?mode=quiz$/);
     await expect(page.getByRole("radio", { name: "Quiz" })).toBeChecked();
     await expect(page.getByText(`${s1Quiz.length}/${QUIZ_TOTAL}`)).toBeVisible();
-    await expect(page.getByRole("img", { name: /Part 1: last result \d+%/ }).first()).toBeVisible();
+    await expect(
+      page.getByRole("img", { name: /Part 1: \d+ of \d+ correct last time/ }).first(),
+    ).toBeVisible();
     // part 1 is done, so the Start pill moves to part 2 of S1
     await expect(page.locator("section[aria-labelledby=topic-S1] [data-pill]")).toHaveCount(1);
     await expect(page.getByText(/\d to repeat/).first()).toBeVisible();
@@ -765,7 +769,9 @@ test.describe("Training", () => {
     await expect(page.getByText("You stopped at question 2 of 4.")).toBeVisible();
     await page.getByRole("link", { name: "Choose a topic" }).click();
     await expect(page).toHaveURL(/\/training$/);
-    await page.getByRole("radio", { name: "Quiz" }).check({ force: true });
+    // the Exams section pushes the switch down on a small screen: tap its label, scrolling into view
+    await page.getByText("Quiz", { exact: true }).click();
+    await expect(page.getByRole("radio", { name: "Quiz" })).toBeChecked();
     await page.getByRole("button", { name: "Continue" }).click();
     await expect(page).toHaveURL(/\/session$/);
     await expect(page.getByText("Question 2 of 4").first()).toBeVisible();
@@ -914,18 +920,21 @@ test.describe("Exam", () => {
 
   test("shows the rules and no results the first time", async ({ page }) => {
     await open(page, "/exam");
-    await expect(page.getByRole("heading", { name: "Exam" })).toBeVisible();
-    await expect(page.getByText("A full check of your knowledge")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Evacuation basics exam", level: 1 }),
+    ).toBeVisible();
+    await expect(page.getByText(/^Assigned by Admin · Due /)).toBeVisible();
     for (const rule of [
       "20 questions from all topics",
       "20 minutes",
-      "No hints",
+      "No hints or feedback during the exam",
       "Pass mark 80%",
     ]) {
       await expect(page.getByText(rule)).toBeVisible();
     }
     await expect(page.getByText("You have not taken the exam yet")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Start exam" })).toBeVisible();
+    // a fresh learner is not ready: the exam can still be started
+    await expect(page.getByRole("button", { name: "Start exam anyway" })).toBeVisible();
   });
 
   test("runs a timed exam with no hints, then shows Results, and Back goes to the intro", async ({
@@ -947,12 +956,12 @@ test.describe("Exam", () => {
     await page.getByRole("link", { name: "Review answers" }).click();
     await expect(page).toHaveURL(/\/exam\/results\/review\/1$/);
     await page.getByRole("link", { name: "Back to results" }).first().click();
-    await page.getByRole("link", { name: "Back to Exam" }).click();
-    await expect(page).toHaveURL(/\/exam$/);
+    await page.getByRole("link", { name: "Back to Exam", exact: true }).first().click();
+    await expect(page).toHaveURL(/\/exam(\?id=.*)?$/);
     await expect(page.getByText(/^Last/)).toBeVisible();
     await expect(page.getByText(/^Best/)).toBeVisible();
     await page.getByRole("link", { name: "Back to Home" }).click();
-    await expect(page.getByRole("link", { name: /^Exam Best: \d+%/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /^Exam Best: \d+ of 20/ })).toBeVisible();
   });
 
   test("keeps the timer after a refresh", async ({ page }) => {

@@ -241,10 +241,11 @@ describe("the tiles", () => {
       <HomeView
         name={DEMO_USER.name}
         summary={homeSummary({ unfinished: null, history: [] })}
-        counts={{ ...counts, bestExam: 85 }}
+        counts={{ ...counts, bestExam: { correct: 17, questions: 20 } }}
       />,
     );
-    expect(withExam).toContain("Best: 85%");
+    expect(withExam).toContain("Best: 17 of 20");
+    expect(withExam).not.toMatch(/Best: \d+%/);
     expect(withExam).not.toContain("Not taken yet");
   });
 });

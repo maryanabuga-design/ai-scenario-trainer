@@ -59,7 +59,6 @@ export function TrainingGenerating({
         >
           <div className="h-full bg-primary" style={{ width: `${percent}%` }} />
         </div>
-        <p className="type-small tabular-nums">{percent}%</p>
       </div>
 
       <ol className="flex flex-col divide-y divide-border rounded-card bg-card shadow-(--card-shadow) px-4">

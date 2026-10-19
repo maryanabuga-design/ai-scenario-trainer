@@ -47,11 +47,13 @@ describe("Progress", () => {
     expect(html).not.toContain("See all");
   });
 
-  it("shows the three summary numbers first", () => {
+  it("shows the summary counts first: sessions and correct answers over all answers, no percentages", () => {
     const html = render(3);
     expect(html).toContain("Sessions");
-    expect(html).toContain("Average result");
     expect(html).toContain("Correct answers");
+    expect(html).toContain("3 of 6");
+    expect(html).not.toContain("Average result");
+    expect(html.replace(/<[^>]+>/g, " ")).not.toContain("%");
     expect(html).not.toMatch(/Secure|Guess|Misconception|Knowledge gap|Error types/);
     expect(html.indexOf("Sessions")).toBeLessThan(html.indexOf("Result by session"));
   });
@@ -59,7 +61,7 @@ describe("Progress", () => {
   it("orders the cards: summary, result by session, weak topics, guide sections, history", () => {
     const html = render(3);
     const order = [
-      "Average result",
+      "Correct answers",
       "Result by session",
       "Weak topics",
       "Guide sections",
@@ -71,8 +73,9 @@ describe("Progress", () => {
 
   it("draws the trend with a value and date per bar and a hidden table", () => {
     const html = render(3);
-    expect(html).toContain("50%");
+    expect(html).toContain("1/2");
     expect(html).toContain("2 Oct");
+    expect(html).not.toContain("50%");
     expect(html).toContain('<table class="sr-only">');
     expect(html).not.toContain("Complete two sessions to see your trend.");
   });
@@ -125,5 +128,56 @@ describe("Progress", () => {
     expect(html).toContain(">Start a scenario<");
     expect(html).not.toContain("Result by session");
     expect(html).not.toContain("Average result");
+  });
+});
+
+describe("the Exam readiness section", () => {
+  const exam = {
+    id: "e",
+    title: "Evacuation basics exam",
+    topicIds: ["S1", "S2", "S3", "S4"],
+    deadline: "2026-10-25",
+    assignedBy: "Admin",
+    assignedAt: 1,
+  };
+  const withExam = (count: number) =>
+    renderToStaticMarkup(
+      <SourceSheetProvider sections={loadAllSections()}>
+        <ProgressView
+          history={Array.from({ length: count }, (_, index) => session(index))}
+          exam={exam}
+        />
+      </SourceSheetProvider>,
+    );
+
+  it("comes first: the heading, the bar, the topics weakest first and the Secondary Repeat weak topics", () => {
+    const html = withExam(2);
+    const section = html.slice(
+      html.indexOf('aria-labelledby="exam-readiness"'),
+      html.indexOf("Correct answers"),
+    );
+    expect(section).toContain(">Exam readiness<");
+    expect(section).toContain("Evacuation basics exam");
+    expect(section).toContain('role="progressbar"');
+    // one row per exam topic, each with a percent, and the bar's 80% tick label
+    expect(section.match(/\d+%<\/span>/g)).toHaveLength(5);
+    expect(section).toContain(">Repeat weak topics<");
+    expect(
+      section.slice(0, section.indexOf(">Repeat weak topics<")).split("<button").pop(),
+    ).toContain("bg-olive-tint");
+    expect(html.indexOf("Exam readiness")).toBeLessThan(html.indexOf("Correct answers"));
+  });
+
+  it("also shows with no sessions yet, at 0%, above the empty state", () => {
+    const html = withExam(0);
+    expect(html).toContain(">Exam readiness<");
+    expect(html).toContain('aria-valuenow="0"');
+    expect(html.indexOf("Exam readiness")).toBeLessThan(html.indexOf("No sessions yet"));
+  });
+
+  it("is absent without an assigned exam, and the rest of Progress keeps its features", () => {
+    const html = render(3);
+    expect(html).not.toContain("Exam readiness");
+    expect(html).toContain("Session history");
   });
 });

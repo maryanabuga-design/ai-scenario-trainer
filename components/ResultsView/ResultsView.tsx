@@ -9,7 +9,8 @@ import { Chip } from "@/components/Chip/Chip";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { Media3D } from "@/components/Media3D/Media3D";
 import { PASS_MARK } from "@/lib/config";
-import { conclusion, isPassed, resultPercent } from "@/lib/results";
+import { conclusion, isPassed, passCount, resultPercent } from "@/lib/results";
+import { correctCount } from "@/lib/scoring";
 import type { ScoredItem } from "@/lib/scoring";
 import { sessionLabel } from "@/lib/session";
 import type { SessionKind } from "@/lib/session";
@@ -52,17 +53,32 @@ function useRestoredScroll() {
   }, []);
 }
 
-/** The result as a percentage on a bar with a marker at the pass mark. */
-function ResultBar({ percent }: { percent: number }) {
+/**
+ * The result on a bar with a marker at the pass mark. A practice session shows a count ("7 of 10
+ * correct") and the pass mark as a count; only an exam shows a percentage, the "Score" (DESIGN.md:
+ * the percentage vocabulary).
+ */
+function ResultBar({ items, kind }: { items: ScoredItem[]; kind: SessionKind }) {
+  const total = items.length;
+  const correct = correctCount(items);
+  const percent = resultPercent(items);
+  const needed = passCount(total);
+  const exam = kind === "exam";
   return (
     <div className="flex flex-col gap-2">
-      <p className="type-numeral text-center tabular-nums">{percent}%</p>
+      <p className="type-numeral text-center tabular-nums">
+        {exam ? `Score ${percent}%` : `${correct} of ${total} correct`}
+      </p>
       <div
         role="meter"
         aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={percent}
-        aria-label={`Result ${percent}%, pass mark ${PASS_MARK}%`}
+        aria-valuemax={total}
+        aria-valuenow={correct}
+        aria-label={
+          exam
+            ? `Score ${percent}%, pass mark ${needed} of ${total}`
+            : `${correct} of ${total} correct, pass mark ${needed} of ${total}`
+        }
         className="relative h-3 rounded-full bg-secondary-sand-pressed"
       >
         <div className="h-full rounded-full bg-primary" style={{ width: `${percent}%` }} />
@@ -72,16 +88,12 @@ function ResultBar({ percent }: { percent: number }) {
           style={{ left: `${PASS_MARK}%` }}
         />
       </div>
-      <div aria-hidden="true" className="type-caption flex justify-between text-text-secondary">
-        <span>0</span>
-        <span>100</span>
-      </div>
-      <p className="type-label relative -mt-1 h-4 text-text-secondary" aria-hidden="true">
+      <p className="type-label relative h-4 text-text-secondary" aria-hidden="true">
         <span
           className="absolute -translate-x-1/2 whitespace-nowrap"
           style={{ left: `${PASS_MARK}%` }}
         >
-          PASS MARK: {PASS_MARK}%
+          PASS MARK: {needed} of {total}
         </span>
       </p>
     </div>
@@ -148,8 +160,61 @@ export function ResultsActions({
 }
 
 /**
- * Results: hero, Passed or Not passed yet, the percentage against the pass mark, one conclusion
- * and the weak topics. Review answers and Repeat weak topics at the bottom.
+ * The Results buttons by situation. An exam that failed: Primary "Repeat weak topics" and Secondary
+ * "Back to exam"; an exam that passed, or a repeat session for an exam: Primary "Done" (to the exam
+ * screen); each with a tertiary "Review answers". Any other session keeps the Review / Repeat row.
+ */
+export function ResultsButtons({
+  kind,
+  passed,
+  canRepeat,
+  hasReadiness,
+  onRepeat,
+  reviewHref,
+  doneHref,
+}: {
+  kind: SessionKind;
+  passed: boolean;
+  canRepeat: boolean;
+  hasReadiness: boolean;
+  onRepeat: () => void;
+  reviewHref?: string;
+  doneHref: string;
+}) {
+  const exam = kind === "exam";
+  if (!exam && !hasReadiness) {
+    return (
+      <ResultsActions
+        canRepeat={canRepeat}
+        onRepeat={onRepeat}
+        onReview={rememberScroll}
+        reviewHref={reviewHref}
+      />
+    );
+  }
+  return (
+    <div className="flex flex-col gap-3">
+      {exam && !passed ? (
+        <>
+          <Button onClick={onRepeat}>Repeat weak topics</Button>
+          <ButtonLink href={doneHref} variant="secondary">
+            Back to exam
+          </ButtonLink>
+        </>
+      ) : (
+        <ButtonLink href={doneHref}>Done</ButtonLink>
+      )}
+      <ButtonLink href={reviewHref ?? reviewPath(1)} variant="tertiary" onClick={rememberScroll}>
+        Review answers
+      </ButtonLink>
+    </div>
+  );
+}
+
+/**
+ * Results: hero, Passed or Not passed yet, the result against the pass mark, one conclusion and the
+ * weak topics. A practice session shows counts; an exam shows its Score (the one percentage); a
+ * repeat session for an assigned exam adds ONE percentage line, "Readiness 62% → 71%".
  */
 export function ResultsView({
   kind,
@@ -159,6 +224,8 @@ export function ResultsView({
   backLabel,
   reviewHref,
   onRepeat,
+  readiness,
+  doneHref,
 }: {
   kind: SessionKind;
   items: ScoredItem[];
@@ -171,10 +238,13 @@ export function ResultsView({
   /** The first Answer review page; the normal session's by default. */
   reviewHref?: string;
   onRepeat: () => void;
+  /** A repeat session for an exam: its readiness before and after. */
+  readiness?: { before: number; after: number };
+  /** Where the Primary "Done" goes (the exam screen), for an exam or an exam repeat session. */
+  doneHref?: string;
 }) {
   useRestoredScroll();
   const passed = isPassed(items);
-
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-[44px_1fr_44px] items-center">
@@ -193,18 +263,27 @@ export function ResultsView({
         </h2>
       </section>
 
-      <ResultBar percent={resultPercent(items)} />
+      <ResultBar items={items} kind={kind} />
+
+      {readiness && (
+        <p className="type-body-strong text-center tabular-nums">
+          Readiness {readiness.before}% → {readiness.after}%
+        </p>
+      )}
 
       <p className="text-center text-text-secondary">{conclusion(items)}</p>
 
       {topics.length > 0 && <WeakTopicsCard topics={topics} />}
 
       <ActionBar>
-        <ResultsActions
+        <ResultsButtons
+          kind={kind}
+          passed={passed}
           canRepeat={topics.length > 0}
+          hasReadiness={readiness !== undefined}
           onRepeat={onRepeat}
-          onReview={rememberScroll}
           reviewHref={reviewHref}
+          doneHref={doneHref ?? backHref}
         />
       </ActionBar>
     </div>
