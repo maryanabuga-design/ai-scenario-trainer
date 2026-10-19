@@ -3,56 +3,57 @@ import { describe, expect, it } from "vitest";
 import { ProfileView } from "@/components/ProfileView/ProfileView";
 import { onboardingHref } from "@/lib/onboarding";
 import type { Role } from "@/lib/role";
-import { DEMO_USER } from "@/lib/user";
 
-const render = (role: Role) =>
+const account = (role: Role) => ({ name: "Maryana", email: "maryana@example.com", role });
+
+const render = (role: Role, dialog: "reset" | "delete" | null = null) =>
   renderToStaticMarkup(
     <ProfileView
-      role={role}
+      account={account(role)}
       onRoleChange={() => undefined}
       direction="building-evacuation"
       onDirectionChange={() => undefined}
-      confirming={false}
+      dialog={dialog}
       onAskReset={() => undefined}
-      onCancelReset={() => undefined}
+      onAskDelete={() => undefined}
+      onCancelDialog={() => undefined}
       onReset={() => undefined}
+      onDelete={() => undefined}
+      onSignOut={() => undefined}
       resetDone={false}
       dialogInline
     />,
-  );
+  ).replace(/<!-- -->/g, "");
 
 describe("Profile: the user card", () => {
   const html = render("student");
 
-  it("shows the same demo name as the Home greeting, then the role label", () => {
-    expect(html).toContain(`>${DEMO_USER.name}</span>`);
-    expect(html.indexOf(">Profile</h1>")).toBeLessThan(html.indexOf(DEMO_USER.name));
-    expect(html.indexOf(DEMO_USER.name)).toBeLessThan(html.indexOf(">Student</span>"));
-    expect(render("instructor")).toContain(">Instructor</span>");
+  it("is one tap target to Edit profile with the avatar, name, email, role label and a chevron", () => {
+    const start = html.lastIndexOf("<a ", html.indexOf("data-user-card"));
+    const card = html.slice(start, html.indexOf("</a>", start));
+    expect(card).toContain('href="/profile/edit"');
+    expect(card).toContain(">M</span>");
+    expect(card).toContain("rounded-full bg-olive-tint text-primary");
+    expect(card).toContain(">Maryana</span>");
+    expect(card).toContain(">maryana@example.com</span>");
+    expect(card).toContain(">Student</span>");
+    expect(card).toContain("lucide-chevron-right");
+    expect(card).toContain("rounded-card bg-card");
+    expect(html.indexOf(">Profile</h1>")).toBeLessThan(html.indexOf("data-user-card"));
   });
 
-  it("has the avatar with the initial and shows no email, because the data has none", () => {
-    expect(html).toContain(">M</span>");
-    expect(html).toContain("rounded-full bg-olive-tint text-primary");
-    expect(DEMO_USER.email).toBeUndefined();
-    expect(html).not.toContain("@");
+  it("shows the role label of an instructor", () => {
+    expect(render("instructor")).toContain(">Instructor</span>");
   });
 });
 
 describe("Profile: Demo mode", () => {
   for (const role of ["student", "instructor"] as const) {
-    it(`sits directly under the user card, with ${role} selected`, () => {
+    it(`has the switch with ${role} selected`, () => {
       const html = render(role);
       expect(html).toContain(">Demo mode</h2>");
-      expect(html.indexOf(">Demo mode</h2>")).toBeGreaterThan(html.indexOf("data-role-label"));
-      // nothing between the user card and Demo mode
-      expect(html.indexOf(">Demo mode</h2>")).toBeLessThan(
-        html.indexOf(">Direction<") === -1 ? Infinity : html.indexOf(">Direction<"),
-      );
       expect(html).toContain(">Switch role (demo)</legend>");
       expect(html).toContain('role="radiogroup"');
-      expect(html).toContain(">Student</label>");
-      expect(html).toContain(">Instructor</label>");
       const checked = [...html.matchAll(/<input[^>]*checked=""[^>]*>/g)]
         .map((m) => m[0])
         .filter((input) => input.includes('name="role-'));
@@ -69,17 +70,15 @@ describe("Profile: Demo mode", () => {
 describe("Profile for a student", () => {
   const html = render("student");
 
-  it("has Direction with three directions marked Coming soon, then Help, then Settings", () => {
-    expect(html).toContain(">Direction</legend>");
-    expect(html.match(/Coming soon/g)).toHaveLength(3);
-    expect(html).not.toContain("Not available in this prototype");
+  it("has Demo mode, Direction, Help and Settings in that order", () => {
     const order = [">Demo mode<", ">Direction<", ">Help</h2>", ">Settings</h2>"].map((text) =>
       html.indexOf(text),
     );
     expect([...order].sort((a, b) => a - b)).toEqual(order);
+    expect(html.match(/Coming soon/g)).toHaveLength(3);
   });
 
-  it("has the Help rows How the app works and About this prototype, each with a chevron", () => {
+  it("has the Help rows with a chevron", () => {
     for (const [label, href] of [
       ["How the app works", onboardingHref],
       ["About this prototype", "/about"],
@@ -87,41 +86,64 @@ describe("Profile for a student", () => {
       const start = html.lastIndexOf("<a ", html.indexOf(`>${label}<`));
       const row = html.slice(start, html.indexOf("</a>", start));
       expect(row).toContain(`href="${href}"`);
-      expect(row).toContain("rounded-card bg-card");
       expect(row).toContain("lucide-chevron-right");
     }
-    expect(onboardingHref).toBe("/onboarding");
-    expect(html.indexOf(">How the app works<")).toBeLessThan(
-      html.indexOf(">About this prototype<"),
-    );
   });
 
-  it("keeps Reset progress with its confirmation", () => {
-    expect(html).toContain(">Reset progress</h3>");
-    expect(html).toContain("Deletes your saved sessions");
+  it("has Settings: Reset progress, then Delete account (destructive), then Sign out last", () => {
+    const settings = html.slice(html.indexOf(">Settings</h2>"));
+    const order = [">Reset progress</h3>", "data-delete-account", "data-sign-out"].map((text) =>
+      settings.indexOf(text),
+    );
+    expect(order.every((position) => position >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+    const del = settings.slice(settings.indexOf("data-delete-account"));
+    expect(del.slice(0, del.indexOf("</button>"))).toContain("text-wrong");
+    expect(del.slice(0, del.indexOf("</button>"))).toContain(">Delete account<");
+    const out = settings.slice(settings.indexOf("data-sign-out"));
+    const outRow = out.slice(0, out.indexOf("</button>"));
+    expect(outRow).toContain(">Sign out<");
+    expect(outRow).not.toContain("text-wrong");
+    // Sign out is the last thing in Settings
+    expect(settings.indexOf("data-sign-out")).toBeGreaterThan(
+      settings.indexOf("data-delete-account"),
+    );
   });
 });
 
 describe("Profile for an instructor", () => {
   const html = render("instructor");
 
-  it("has no Direction and no Reset progress, but the Demo mode and Help rows", () => {
+  it("has the card, Demo mode, Help and Settings with only Delete account and Sign out", () => {
     expect(html).not.toContain("Direction");
-    expect(html).not.toContain("Coming soon");
     expect(html).not.toContain("Reset progress");
-    expect(html).not.toContain(">Settings</h2>");
     expect(html).toContain(">Demo mode</h2>");
-    expect(html).toContain(">How the app works<");
     expect(html).toContain(">About this prototype<");
+    expect(html).toContain(">Settings</h2>");
+    expect(html).toContain("data-delete-account");
+    expect(html).toContain("data-sign-out");
+  });
+});
+
+describe("Profile: the delete confirmation", () => {
+  it("asks the question with Cancel and Delete, inside the page, not a bottom sheet", () => {
+    const html = render("student", "delete");
+    expect(html).toContain("Delete account?");
+    expect(html).toContain(
+      "Delete this account and its progress from this device? This cannot be undone.",
+    );
+    expect(html).toContain(">Delete<");
+    expect(html).toContain(">Cancel<");
+    expect(html).not.toContain("Reset progress?");
   });
 
-  it("keeps the footer note", () => {
-    expect(html).toContain("AI behavior is simulated for this prototype");
+  it("is not shown while nothing is being deleted", () => {
+    expect(render("student")).not.toContain("Delete account?");
   });
 });
 
 describe("Profile: colours", () => {
-  it("uses registered tokens only, no hard-coded colour", () => {
+  it("uses registered tokens only", () => {
     for (const role of ["student", "instructor"] as const) {
       expect(render(role)).not.toMatch(/#[0-9a-fA-F]{3,8}\b|rgb\(/);
     }

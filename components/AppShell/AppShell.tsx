@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { ReactNode } from "react";
 import { ActionBarProvider, ActionBarSlot } from "@/components/ActionBar/ActionBar";
-import { RoleGate } from "@/components/RoleGate/RoleGate";
+import { AuthGate } from "@/components/AuthGate/AuthGate";
 import { NavigationTracker } from "@/components/NavigationTracker/NavigationTracker";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
@@ -17,7 +17,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <ActionBarProvider>
           <main className="flex flex-1 flex-col px-[var(--gutter,1rem)] pt-6">
             <Suspense fallback={null}>
-              <RoleGate>{children}</RoleGate>
+              <AuthGate>{children}</AuthGate>
             </Suspense>
           </main>
           <div

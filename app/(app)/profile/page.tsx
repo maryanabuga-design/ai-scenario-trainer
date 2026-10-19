@@ -1,24 +1,25 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { ProfileView } from "@/components/ProfileView/ProfileView";
+import { deleteAccount, setRole, signOut, useCurrentAccount } from "@/lib/auth";
 import { defaultDirection } from "@/lib/directions";
-import { roleHome, setRole, useRole } from "@/lib/role";
+import { roleHome } from "@/lib/role";
 import { resetProgress, saveProfile, useProfile } from "@/lib/session";
 
 export default function Profile() {
   const router = useRouter();
   const profile = useProfile();
-  const role = useRole();
-  const [confirming, setConfirming] = useState(false);
+  const account = useCurrentAccount();
+  const [dialog, setDialog] = useState<"reset" | "delete" | null>(null);
   const [resetDone, setResetDone] = useState(false);
 
-  if (profile === "loading" || role === "loading") return null;
+  if (profile === "loading" || account === "loading" || !account) return null;
 
   return (
     <ProfileView
-      role={role}
+      account={account}
       onRoleChange={(next) => {
         setRole(next);
         router.push(roleHome(next));
@@ -27,16 +28,26 @@ export default function Profile() {
       onDirectionChange={(direction) =>
         saveProfile({ direction, onboarded: profile?.onboarded ?? false })
       }
-      confirming={confirming}
+      dialog={dialog}
       onAskReset={() => {
         setResetDone(false);
-        setConfirming(true);
+        setDialog("reset");
       }}
-      onCancelReset={() => setConfirming(false)}
+      onAskDelete={() => setDialog("delete")}
+      onCancelDialog={() => setDialog(null)}
       onReset={() => {
         resetProgress();
-        setConfirming(false);
+        setDialog(null);
         setResetDone(true);
+      }}
+      onDelete={() => {
+        deleteAccount();
+        setDialog(null);
+        router.replace("/welcome");
+      }}
+      onSignOut={() => {
+        signOut();
+        router.replace("/welcome");
       }}
       resetDone={resetDone}
     />

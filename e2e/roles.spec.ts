@@ -1,24 +1,22 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
+import { authValue } from "./auth-seed";
 
 const profile = { direction: "building-evacuation", onboarded: true };
 
-type Seed = { role?: "student" | "instructor"; rawRole?: string };
+type Seed = { role?: "student" | "instructor"; rawAuth?: string };
 
-/** Opens a page with a profile and, optionally, a saved role (set once, so a switch is kept). */
+/** Opens a page with a profile and, optionally, an account with that role (set once, so a switch is kept). */
 async function open(page: Page, path: string, seed: Seed = {}) {
   await page.addInitScript(
-    ([p, s]) => {
+    ([p, s, student, instructor]) => {
       if (localStorage.getItem("ast.profile.v1")) return;
       localStorage.setItem("ast.profile.v1", JSON.stringify(p));
-      if (s.rawRole !== undefined) localStorage.setItem("ast.role.v1", s.rawRole);
-      else if (s.role)
-        localStorage.setItem(
-          "ast.role.v1",
-          JSON.stringify({ schema: 6, content: "x", value: { role: s.role } }),
-        );
+      if (s.rawAuth !== undefined) localStorage.setItem("ast.auth.v1", s.rawAuth);
+      else if (s.role === "instructor") localStorage.setItem("ast.auth.v1", instructor);
+      else if (s.role === "student") localStorage.setItem("ast.auth.v1", student);
     },
-    [profile, seed] as const,
+    [profile, seed, authValue("student"), authValue("instructor")] as const,
   );
   await page.goto(path);
 }
@@ -58,8 +56,8 @@ for (const width of [360, 430]) {
       const main = page.locator("main");
       await expect(main.locator("[data-role-label]")).toHaveText("Student");
       await expect(main.getByText("Maryana", { exact: true })).toBeVisible();
-      // no email is shown, because the data has none
-      expect(await main.innerText()).not.toContain("@");
+      // the email of the account is shown under the name
+      await expect(main.locator("[data-user-email]")).toHaveText("maryana@example.com");
       await expect(main.getByRole("heading", { name: "Demo mode" })).toBeVisible();
       const group = roleGroup(page);
       await expect(group).toBeVisible();
@@ -261,9 +259,11 @@ for (const width of [360, 430]) {
       await expect(page.locator("[data-role-label]")).toHaveText("Instructor");
     });
 
-    test("a broken saved role reads as Student, without errors", async ({ page }) => {
+    test("a broken saved account store starts over as the demo student account, without errors", async ({
+      page,
+    }) => {
       const errors = collectErrors(page);
-      await open(page, "/profile", { rawRole: "{not json" });
+      await open(page, "/profile", { rawAuth: "{not json" });
       await expect(page.locator("[data-role-label]")).toHaveText("Student");
       await expect(roleGroup(page).getByRole("radio", { name: "Student" })).toBeChecked();
       expect(errors()).toEqual([]);

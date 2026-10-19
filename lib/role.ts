@@ -1,10 +1,6 @@
-import { useMemo } from "react";
-import { createStore } from "@/lib/store";
-
 /**
- * The role of the person (DESIGN.md: Roles and Profile). CLIENT ONLY by the server/client rule: it
- * is saved in this browser. It is a DEMO: there is no account; Profile switches it, and a later
- * registration step will call `setRole`.
+ * The roles (DESIGN.md: Accounts, roles and Profile). Pure: the role of the signed-in account lives
+ * in `lib/auth.ts` (client only); this file has the names, the Home of each role and the role guard.
  */
 export type Role = "student" | "instructor";
 
@@ -33,7 +29,7 @@ export function roleFrom(value: unknown): Role {
 export const roleHome = (role: Role): string => (role === "instructor" ? "/instructor" : "/");
 
 /** The routes an instructor may open; every other route belongs to the student. */
-const INSTRUCTOR_ROUTES = ["/instructor", "/profile", "/about", "/onboarding"];
+const INSTRUCTOR_ROUTES = ["/instructor", "/profile", "/profile/edit", "/about", "/onboarding"];
 
 /**
  * Where a role is sent from a route it may not open, or null when it may stay: an instructor is
@@ -46,20 +42,4 @@ export function roleRedirect(role: Role, pathname: string): string | null {
   return pathname === "/instructor" || pathname.startsWith("/instructor/")
     ? roleHome("student")
     : null;
-}
-
-const store = createStore<RoleState>("ast.role.v1", { sanitize: cleanRole });
-
-/** The saved role (a student when nothing valid is saved). */
-export const readRole = (): Role => roleFrom(store.read());
-
-/** Saves the role. The one place a role is set: Profile now, registration later. */
-export function setRole(role: Role) {
-  store.write({ role });
-}
-
-/** The role, "loading" until the browser has been read, so nothing is drawn for the wrong role. */
-export function useRole(): Role | "loading" {
-  const stored = store.useValue();
-  return useMemo(() => (stored === "loading" ? "loading" : roleFrom(stored)), [stored]);
 }

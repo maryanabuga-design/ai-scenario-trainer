@@ -47,6 +47,11 @@ import {
   ProfileSample,
   InstructorHomeSample,
   AboutSample,
+  WelcomeSample,
+  SignUpSample,
+  SignInSample,
+  VerifySample,
+  EditProfileSample,
   ProgressSample,
   ResultsSample,
   ResultsButtonsSample,
@@ -647,6 +652,43 @@ export default function Screens() {
             </Screen>
           </PhoneFrame>
         </Group>
+        <Group title="Accounts (simulated)">
+          <PhoneFrame label="Welcome">
+            <Screen>
+              <WelcomeSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Create account: empty">
+            <Screen>
+              <SignUpSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Create account: errors">
+            <Screen>
+              <SignUpSample errors />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Sign in">
+            <Screen>
+              <SignInSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Verify: the demo code is always shown">
+            <Screen>
+              <VerifySample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Verify: wrong code">
+            <Screen>
+              <VerifySample wrong />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Edit profile">
+            <Screen>
+              <EditProfileSample />
+            </Screen>
+          </PhoneFrame>
+        </Group>
         <Group title="Profile">
           <PhoneFrame label="Profile: Student (Demo mode, Coming soon)">
             <Screen nav="/profile">
@@ -668,9 +710,14 @@ export default function Screens() {
               <InstructorHomeSample />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Delete account confirmation">
+            <Screen nav="/profile">
+              <ProfileSample dialog="delete" />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Reset progress dialog">
             <Screen nav="/profile">
-              <ProfileSample confirming />
+              <ProfileSample dialog="reset" />
             </Screen>
           </PhoneFrame>
         </Group>

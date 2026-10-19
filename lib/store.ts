@@ -3,6 +3,42 @@ import { contentFingerprint } from "@/lib/content-version";
 
 const SERVER = "server";
 
+/**
+ * The central key helper (DESIGN.md: Accounts): every stored value gets the suffix of the signed-in
+ * account (`:<email>`), so each account has its own progress in this browser. The suffix is set by
+ * `lib/auth.ts`; an empty suffix is the data the app had before accounts. Stores created with
+ * `shared: true` (the auth store itself) never get a suffix. Changing the suffix makes every store
+ * read its own key again.
+ */
+let namespace = "";
+const refreshers = new Set<() => void>();
+const SHARED_PREFIX = "ast.auth.";
+
+export function setStorageNamespace(next: string) {
+  if (next === namespace) return;
+  namespace = next;
+  refreshers.forEach((refresh) => refresh());
+}
+
+export const storageNamespace = () => namespace;
+
+/** Removes every saved value of one namespace (the data of an account). Shared values stay. */
+export function clearNamespaceData(suffix: string) {
+  try {
+    const keys: string[] = [];
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const key = window.localStorage.key(i);
+      if (!key || !key.startsWith("ast.") || key.startsWith(SHARED_PREFIX)) continue;
+      const own = suffix === "" ? !key.includes(":") : key.endsWith(suffix);
+      if (own) keys.push(key);
+    }
+    keys.forEach((key) => window.localStorage.removeItem(key));
+  } catch {
+    // Storage is unavailable: nothing was saved there.
+  }
+  refreshers.forEach((refresh) => refresh());
+}
+
 /** The version of everything saved in this browser. A saved value of another version is ignored. */
 export const SCHEMA_VERSION = 6;
 
@@ -23,9 +59,12 @@ export function createStore<T>(
   key: string,
   {
     versioned = true,
+    shared = false,
     sanitize,
   }: {
     versioned?: boolean;
+    /** Not per account: the one value of the whole device (the auth store). */
+    shared?: boolean;
     /**
      * Cleans a value that was saved for other content (its fingerprint differs or is missing):
      * unknown ids are dropped. It returns null for an empty state and never has to be called when
@@ -36,11 +75,16 @@ export function createStore<T>(
 ) {
   const listeners = new Set<() => void>();
   let memory: string | null | undefined;
+  const fullKey = () => (shared ? key : key + namespace);
+  refreshers.add(() => {
+    memory = undefined;
+    notify();
+  });
 
   function readRaw(): string | null {
     if (memory !== undefined) return memory;
     try {
-      memory = window.localStorage.getItem(key);
+      memory = window.localStorage.getItem(fullKey());
     } catch {
       memory = null;
     }
@@ -52,7 +96,7 @@ export function createStore<T>(
   }
 
   function onStorage(event: StorageEvent) {
-    if (event.key !== key && event.key !== null) return;
+    if (event.key !== fullKey() && event.key !== null) return;
     memory = undefined;
     notify();
   }
@@ -102,8 +146,8 @@ export function createStore<T>(
               versioned ? { schema: SCHEMA_VERSION, content: contentFingerprint, value } : value,
             );
       try {
-        if (memory === null) window.localStorage.removeItem(key);
-        else window.localStorage.setItem(key, memory);
+        if (memory === null) window.localStorage.removeItem(fullKey());
+        else window.localStorage.setItem(fullKey(), memory);
       } catch {
         // Storage is unavailable; the in-memory copy still works for this visit.
       }

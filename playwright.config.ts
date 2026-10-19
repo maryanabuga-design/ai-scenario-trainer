@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { signedInStudent } from "./e2e/auth-seed";
 
 /**
  * Phone-sized checks of the session flow (DESIGN.md: Session screens). Run with `npm run test:e2e`
@@ -14,7 +15,8 @@ export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
   reporter: "list",
-  use: { baseURL: "http://localhost:3100" },
+  // every test starts signed in as the demo student; the account tests start from an empty browser
+  use: { baseURL: "http://localhost:3100", storageState: signedInStudent },
   webServer: {
     command: "npm run build && npm run start -- -p 3100",
     url: "http://localhost:3100",

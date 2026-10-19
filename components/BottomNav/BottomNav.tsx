@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useRole } from "@/lib/role";
+import { useRole } from "@/lib/auth";
 import type { Role } from "@/lib/role";
 import { ChartNoAxesColumn, FileText, House, User } from "lucide-react";
 
@@ -23,7 +23,7 @@ const instructorItems = [
 const READING_PREFIX = "/materials/read/";
 
 function isCurrent(href: string, pathname: string) {
-  if (pathname.startsWith(READING_PREFIX)) return false;
+  if (pathname.startsWith(READING_PREFIX) || pathname === "/profile/edit") return false;
   // Training is a sub-screen of Home and keeps the Home item active.
   if (href === "/") return pathname === "/" || pathname === "/training";
   if (href === "/instructor") return pathname === "/instructor";

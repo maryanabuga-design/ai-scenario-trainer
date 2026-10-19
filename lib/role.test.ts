@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { cleanRole, roleFrom, roleHome, roleLabel, roleRedirect, ROLES } from "@/lib/role";
 
 describe("roles", () => {
@@ -49,6 +49,10 @@ describe("the route guard", () => {
     "/checklists",
   ];
 
+  it("lets an instructor open Edit profile too", () => {
+    expect(roleRedirect("instructor", "/profile/edit")).toBeNull();
+  });
+
   it("sends an instructor from every student-only route to Instructor Home", () => {
     for (const path of studentOnly)
       expect(roleRedirect("instructor", path), path).toBe("/instructor");
@@ -66,71 +70,5 @@ describe("the route guard", () => {
     for (const path of [...studentOnly, "/profile", "/about", "/onboarding"]) {
       expect(roleRedirect("student", path), path).toBeNull();
     }
-  });
-});
-
-describe("the saved role", () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-    vi.resetModules();
-  });
-
-  function fakeBrowser(initial: string | null) {
-    const data = new Map<string, string>();
-    if (initial !== null) data.set("ast.role.v1", initial);
-    vi.stubGlobal("window", {
-      localStorage: {
-        getItem: (key: string) => data.get(key) ?? null,
-        setItem: (key: string, value: string) => void data.set(key, value),
-        removeItem: (key: string) => void data.delete(key),
-      },
-      addEventListener: () => undefined,
-      removeEventListener: () => undefined,
-    });
-    return data;
-  }
-
-  it("is student when nothing is saved", async () => {
-    fakeBrowser(null);
-    vi.resetModules();
-    const { readRole } = await import("@/lib/role");
-    expect(readRole()).toBe("student");
-  });
-
-  it("saves a role with setRole and reads it back, versioned", async () => {
-    const data = fakeBrowser(null);
-    vi.resetModules();
-    const { readRole, setRole } = await import("@/lib/role");
-    setRole("instructor");
-    expect(readRole()).toBe("instructor");
-    expect(JSON.parse(data.get("ast.role.v1")!)).toMatchObject({
-      schema: expect.any(Number),
-      value: { role: "instructor" },
-    });
-    setRole("student");
-    expect(readRole()).toBe("student");
-  });
-
-  it("reads broken data as student without throwing", async () => {
-    for (const raw of [
-      "{not json",
-      "[]",
-      "null",
-      '{"schema":1,"value":{"role":"instructor"}}',
-      '{"schema":6,"value":{"role":"boss"}}',
-      '{"schema":6,"value":"instructor"}',
-    ]) {
-      fakeBrowser(raw);
-      vi.resetModules();
-      const { readRole } = await import("@/lib/role");
-      expect(readRole(), raw).toBe("student");
-    }
-  });
-
-  it("reads a role that was saved by the app", async () => {
-    fakeBrowser('{"schema":6,"content":"x","value":{"role":"instructor"}}');
-    vi.resetModules();
-    const { readRole } = await import("@/lib/role");
-    expect(readRole()).toBe("instructor");
   });
 });

@@ -1,5 +1,2 @@
-/**
- * The one demo user of this prototype: shown in the Home greeting and on Profile. There are no
- * accounts. `email` is absent on purpose: Profile shows an email line only when there is one.
- */
-export const DEMO_USER: { name: string; email?: string } = { name: "Maryana" };
+/** The initial of a name, for an avatar. */
+export const initialOf = (name: string): string => name.trim().charAt(0).toUpperCase();

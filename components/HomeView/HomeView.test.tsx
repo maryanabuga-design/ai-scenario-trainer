@@ -14,7 +14,6 @@ import {
   homeSummary,
 } from "@/lib/home";
 import type { FinishedSession, Session } from "@/lib/session";
-import { DEMO_USER } from "@/lib/user";
 
 const counts = homeCounts({ history: [], saved: [] });
 const NOW = new Date(2026, 9, 17, 15, 0);
@@ -62,7 +61,7 @@ function render(state: keyof typeof states = "first") {
   const { open, history } = states[state];
   return renderToStaticMarkup(
     <HomeView
-      name={DEMO_USER.name}
+      name={"Maryana"}
       summary={homeSummary({ unfinished: open, history })}
       counts={counts}
     />,
@@ -73,8 +72,7 @@ describe("Home layout", () => {
   const html = render();
 
   it("has the avatar, the greeting and the bell in one row, and the sentence full width below it", () => {
-    expect(html).toContain(`>Hi, ${DEMO_USER.name}</h1>`);
-    expect(DEMO_USER.name).toBe("Maryana");
+    expect(html).toContain(`>Hi, ${"Maryana"}</h1>`);
     const order = [
       'aria-label="Profile"',
       ">Hi, ",
@@ -92,7 +90,7 @@ describe("Home layout", () => {
     expect(avatar).toContain('href="/profile"');
     expect(avatar).toContain("h-11 w-11");
     expect(avatar).toContain("rounded-full bg-olive-tint text-primary");
-    expect(avatar.endsWith(`>${DEMO_USER.name.charAt(0)}`)).toBe(true);
+    expect(avatar.endsWith(`>${"Maryana".charAt(0)}`)).toBe(true);
     expect(avatar).not.toContain("<img");
     expect(avatar).not.toContain("<svg");
   });
@@ -313,7 +311,7 @@ describe("the tiles", () => {
   it("shows the best exam result on the Exam tile", () => {
     const withExam = renderToStaticMarkup(
       <HomeView
-        name={DEMO_USER.name}
+        name={"Maryana"}
         summary={homeSummary({ unfinished: null, history: [] })}
         counts={{ ...counts, bestExam: { correct: 17, questions: 20 } }}
       />,

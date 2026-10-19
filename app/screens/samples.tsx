@@ -76,13 +76,17 @@ import { toolbarActions } from "@/lib/selection-actions";
 import { homeArtwork, homeCounts, homeSummary } from "@/lib/home";
 import { NotificationsView } from "@/components/NotificationsView/NotificationsView";
 import { AboutView } from "@/components/AboutView/AboutView";
+import { EditProfileView } from "@/components/EditProfileView/EditProfileView";
+import { SignInView } from "@/components/SignInView/SignInView";
+import { SignUpView } from "@/components/SignUpView/SignUpView";
+import { VerifyView } from "@/components/VerifyView/VerifyView";
+import { WelcomeView } from "@/components/WelcomeView/WelcomeView";
 import { InstructorHomeView } from "@/components/InstructorHomeView/InstructorHomeView";
 import type { Role } from "@/lib/role";
 import { demoExam } from "@/lib/assigned-exams";
 import { markRead, seedNotifications } from "@/lib/notifications";
 import { readinessAfter, scopeItemIds } from "@/lib/readiness";
 import { topicIdsOf } from "@/lib/session";
-import { DEMO_USER } from "@/lib/user";
 
 /**
  * The Training screen: empty, or with some progress (the first part of a topic done, one passed,
@@ -374,7 +378,7 @@ export function HomeSample({
       : null;
   return (
     <HomeView
-      name={DEMO_USER.name}
+      name="Maryana"
       summary={homeSummary({ unfinished, history })}
       counts={homeCounts({
         history,
@@ -445,24 +449,27 @@ export function OnboardingSample({ start }: { start: OnboardingStep }) {
   );
 }
 
-/** Profile, or the reset confirmation drawn in place of the overlay. */
+/** Profile, or a confirmation (reset or delete) drawn in place of the overlay. */
 export function ProfileSample({
-  confirming = false,
+  dialog = null,
   role = "student",
 }: {
-  confirming?: boolean;
+  dialog?: "reset" | "delete" | null;
   role?: Role;
 }) {
   return (
     <ProfileView
-      role={role}
+      account={{ name: "Maryana", email: "maryana@example.com", role }}
       onRoleChange={() => undefined}
       direction={defaultDirection.id}
       onDirectionChange={() => undefined}
-      confirming={confirming}
+      dialog={dialog}
       onAskReset={() => undefined}
-      onCancelReset={() => undefined}
+      onAskDelete={() => undefined}
+      onCancelDialog={() => undefined}
       onReset={() => undefined}
+      onDelete={() => undefined}
+      onSignOut={() => undefined}
       resetDone={false}
       dialogInline
     />
@@ -1090,4 +1097,38 @@ export function InstructorHomeSample() {
 
 export function AboutSample() {
   return <AboutView />;
+}
+
+/** The signed-out and account screens for the screen review page. */
+export function WelcomeSample() {
+  return <WelcomeView />;
+}
+
+export function SignUpSample({ errors = false }: { errors?: boolean }) {
+  return <SignUpView onSubmit={() => "ok"} initialTouched={errors} />;
+}
+
+export function SignInSample() {
+  return <SignInView onSubmit={() => "ok"} />;
+}
+
+export function VerifySample({ wrong = false }: { wrong?: boolean }) {
+  return (
+    <VerifyView
+      email="ana@example.com"
+      now={() => 0}
+      onVerify={() => false}
+      onChangeEmail={() => undefined}
+      initialWrong={wrong}
+    />
+  );
+}
+
+export function EditProfileSample() {
+  return (
+    <EditProfileView
+      account={{ name: "Maryana", email: "maryana@example.com", role: "student" }}
+      onSave={() => undefined}
+    />
+  );
 }

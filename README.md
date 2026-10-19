@@ -65,8 +65,9 @@ Build order and decisions: `docs/build-plan.md`.
 
 ## Known limitations
 
-- Exam assignment is a single-browser simulation of an instructor feature; there is no server. The one assigned exam is demo data seeded on first load (S1 to S4, due in 7 days). The Student/Instructor switch on Profile is a demo (no accounts); the Instructor "Assign exam" screen is not built yet (Instructor Home is a stub).
+- Exam assignment is a single-browser simulation of an instructor feature; there is no server. The one assigned exam is demo data seeded on first load (S1 to S4, due in 7 days). The Student/Instructor switch on Profile is a demo; the Instructor "Assign exam" screen is not built yet (Instructor Home is a stub).
 - Notifications are demo data (four messages from `content/notifications.json`) and in-app events (a finished exam, the daily goal), kept in this browser. There is no backend, no push, no permission prompt and no network request.
+- Accounts are simulated on this device: registration, verification (the demo code is shown on the screen), sign in, edit profile, sign out and delete account all work in the browser. No email is sent, there is no server and no real authentication; accounts, the session and each account's progress stay in this browser's local storage. The Student/Instructor switch is a demo; the Instructor "Assign exam" tool is not built yet.
 
 - AI behavior is simulated. Every answer, chat reply and reference explanation comes from the prepared scenario. The check of a typed explanation is a simple keyword match (at least 3 words and one keyword of a key beat), so a good sentence in other words can be marked "Doesn't match the guide yet"; the trainee can then press "My explanation is still correct". Free questions in Ask AI are matched by keywords too, so rephrasing can change which prepared answer comes back.
 - The flood scenario has 3 decisions only (Full and Extended are not available for it) and no prepared Ask AI answers, so Ask AI is not offered on its steps. Its results show time lost and water level.
