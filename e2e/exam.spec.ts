@@ -199,7 +199,7 @@ test.describe("Exam readiness", () => {
     }
   });
 
-  test("Progress has the Exam readiness card on top, with the bar, the topics weakest first and Repeat weak topics", async ({
+  test("Progress has the Exam readiness card on top, with the bar, the topic cards in number order and Repeat weak topics", async ({
     page,
   }) => {
     await open(page, "/progress", [
@@ -214,11 +214,11 @@ test.describe("Exam readiness", () => {
       section.getByRole("progressbar", { name: /Readiness \d+%, pass mark 80%/ }),
     ).toBeVisible();
     await expect(section.getByRole("button", { name: "Repeat weak topics" })).toBeVisible();
-    // the topics are one list below it, weakest first: S2 is the only topic answered (all right)
+    // the topics are one list below it, in number order: S2 is the only topic answered (all right)
     const rows = page.locator("[data-topic-row]:visible");
     await expect(rows).toHaveCount(4);
-    await expect(rows.last()).toContainText("Checking the route");
-    await expect(rows.last()).toContainText("Ready");
+    await expect(rows.nth(1)).toContainText("Checking the route");
+    await expect(rows.nth(1)).toContainText(/(\d+) of \1 correct/);
     const top = (await section.boundingBox())!.y;
     const list = (await rows.first().boundingBox())!.y;
     expect(top).toBeLessThan(list);

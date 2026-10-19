@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { ProgressView, SessionsListView } from "@/components/ProgressView/ProgressView";
+import { ProgressView } from "@/components/ProgressView/ProgressView";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { demoExam } from "@/lib/assigned-exams";
 import { loadAllSections } from "@/lib/guide";
@@ -63,7 +63,6 @@ function render(history: FinishedSession[], props: { exam?: typeof exam | null }
         history={history}
         exam={props.exam === undefined ? exam : props.exam}
         now={NOW}
-        resultHref={(session) => (session.finishedAt === day(0) ? "/exam/results" : null)}
       />
     </SourceSheetProvider>,
   ).replace(/<!-- -->/g, "");
@@ -83,27 +82,37 @@ describe("Progress: the header and the order of the sections", () => {
     );
   });
 
-  it("goes Readiness card, By topic, Activity, Recent sessions", () => {
-    const order = ["Exam readiness", ">By topic<", "data-activity", ">Recent sessions<"].map(
-      (text) => html.indexOf(text),
+  it("goes Readiness card, then By topic, and nothing after the topics", () => {
+    const order = ["Exam readiness", ">By topic<", ">Other topics ("].map((text) =>
+      html.indexOf(text),
     );
     expect(order.every((position) => position >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
+    expect(html.slice(html.lastIndexOf("Other topics (")).split("</button>").pop()).not.toMatch(
+      /<section|<h2/,
+    );
   });
 
-  it("no longer has the bar chart, the Weak topics card, the Guide sections card or the history cards", () => {
+  it("no longer has the session blocks, the chart, the old cards or the status chips", () => {
     for (const gone of [
+      "Recent sessions",
+      "See all",
+      "See more",
+      "sessions ·",
+      "answers</",
+      "data-activity",
       "Result by session",
       "Weak topics",
       "Guide sections",
       "Session history",
-      "Complete two sessions",
-      "Correct answers",
-      "SCENARIO",
-      "Repeat round",
+      "Not started",
+      "Needs work",
+      ">Ready<",
+      "No sessions yet",
     ]) {
       expect(html).not.toContain(gone);
     }
+    expect(html).not.toContain("/progress/sessions");
   });
 
   it("keeps the bottom padding and the page rhythm", () => {
@@ -151,7 +160,7 @@ describe("Progress: the readiness card", () => {
 describe("Progress: By topic", () => {
   const html = render(seeded);
 
-  it("lists the four exam topics first, then Other topics (6) closed", () => {
+  it("lists the four exam topics, then Other topics (6) closed", () => {
     expect(html).toContain(">In your exam<");
     expect(html.indexOf(">In your exam<")).toBeLessThan(html.indexOf("Other topics (6)"));
     expect(html).toContain('aria-expanded="false"');
@@ -159,133 +168,72 @@ describe("Progress: By topic", () => {
     expect(html).not.toContain('data-topic-row="S6"');
   });
 
-  it("shows counts over ALL the topic's questions and a status word, never a percentage", () => {
+  it("is in number order inside the group", () => {
+    const ids = rowsOf(html).map((match) => /data-topic-row="(S\d+)"/.exec(match[0])![1]);
+    expect(ids).toEqual(["S1", "S2", "S3", "S4"]);
+  });
+
+  it("shows counts over ALL the topic's questions and no percentage, status or chip", () => {
     const rows = rowsOf(html).map((match) => match[0]);
     expect(rows.every((row) => /\d+ of \d+ correct/.test(row))).toBe(true);
     // the bar width is a style, not a shown number: look at the text only
     expect(rows.every((row) => !row.replace(/<[^>]+>/g, " ").includes("%"))).toBe(true);
-    const total = s1.length;
     const s1Row = rows.find((row) => row.includes('data-topic-row="S1"'))!;
-    expect(s1Row).toContain(`31 of ${total} correct`);
-    expect(s1Row).toContain(">Needs work<");
+    expect(s1Row).toContain(`31 of ${s1.length} correct`);
     const s2Row = rows.find((row) => row.includes('data-topic-row="S2"'))!;
     expect(s2Row).toContain(`${s2.length} of ${s2.length} correct`);
-    expect(s2Row).toContain(">Ready<");
-    expect(rows.find((row) => row.includes('data-topic-row="S4"'))).toContain(">Not started<");
+    expect(rows.join("")).not.toMatch(/rounded-full whitespace-nowrap|bg-status-|bg-pastel-/);
   });
 
-  it("sorts the weakest first inside the exam group", () => {
-    const ids = rowsOf(html).map((match) => /data-topic-row="(S\d+)"/.exec(match[0])![1]);
-    // S3 and S4 not started (guide order), then S1 (31 of 40) needs work, S2 is ready
-    expect(ids).toEqual(["S3", "S4", "S1", "S2"]);
-  });
-
-  it("uses the status tokens for the chips and no red", () => {
-    expect(html).toContain("bg-neutral-tile-bg text-neutral-tile-ink");
-    expect(html).toContain("bg-status-attention-bg text-status-attention-ink");
-    expect(html).toContain("bg-status-success-bg text-status-success-ink");
-    const rows = rowsOf(html)
-      .map((match) => match[0])
-      .join("");
-    expect(rows).not.toMatch(/wrong|rose|red/);
-  });
-
-  it("makes a row ONE tap target at least 56px high", () => {
+  it("makes each card exactly 80px high, with the title on one line cut by an ellipsis", () => {
     const row = rowsOf(html)[0][0];
     expect(row.startsWith("<button")).toBe(true);
-    expect(row).toContain("min-h-14");
     expect(row).toContain('type="button"');
+    expect(row).toContain("h-[var(--list-card-height,80px)]");
+    expect(row).toContain("items-center");
+    expect(row).not.toContain("min-h-14");
+    // the title: one line (truncate = nowrap + ellipsis), min-width 0 on its flex parent
+    expect(row).toMatch(/<span[^>]*data-topic-title[^>]*>/);
+    expect(row).toContain("type-body truncate");
+    expect(row).toContain("flex min-w-0 flex-1 flex-col");
+    // the complete title is in the text
+    expect(row).toContain("Responding to an alarm");
   });
 
-  it("lists all ten topics under Topics when there is no exam", () => {
+  it("has the shared chevron on the right of every card, and the bar inside the card", () => {
+    for (const match of rowsOf(html)) {
+      const row = match[0];
+      expect(row).toContain("lucide-chevron-right");
+      expect(row.indexOf("lucide-chevron-right")).toBeGreaterThan(row.indexOf("h-1.5"));
+      expect(row).toContain("h-1.5 overflow-hidden rounded-full bg-secondary-sand");
+    }
+  });
+
+  it("has Other topics as the shared underlined text button: no frame, no border, no background", () => {
+    const start = html.lastIndexOf("<button", html.indexOf("Other topics ("));
+    const control = html.slice(start, html.indexOf("</button>", start) + 9);
+    expect(control).toContain('aria-expanded="false"');
+    expect(control).toContain('aria-controls="other-topics"');
+    // the tertiary button: 44px tap area, the label underlined with a 4px offset
+    expect(control).toContain("type-action text-primary min-h-11");
+    expect(control).toContain("underline decoration-1 underline-offset-4");
+    expect(control).toContain("lucide-chevron-down");
+    expect(control.slice(0, control.indexOf(">"))).not.toMatch(/\bborder|\bbg-|shadow/);
+  });
+
+  it("lists all ten topics under Topics, in order, when there is no exam", () => {
     const noExam = render(seeded, { exam: null });
     expect(noExam).not.toContain(">In your exam<");
     expect(noExam).not.toContain("Other topics (");
-    expect(rowsOf(noExam)).toHaveLength(10);
-  });
-});
-
-describe("Progress: Activity and Recent sessions", () => {
-  const html = render(seeded);
-
-  it("has one compact line: sessions and answers", () => {
-    const distinct = new Set(seeded.flatMap((session) => session.answers.map((a) => a.itemId)))
-      .size;
-    expect(html).toContain(`4 sessions · ${distinct} answers`);
+    expect(noExam).toContain(">Topics<");
+    const ids = rowsOf(noExam).map((match) => /data-topic-row="(S\d+)"/.exec(match[0])![1]);
+    expect(ids).toEqual(Array.from({ length: 10 }, (_, i) => `S${i + 1}`));
   });
 
-  it("shows the last 3 sessions, newest first, with mode, topic, count and human date", () => {
-    const section = html.slice(html.indexOf(">Recent sessions<"));
-    expect(section.match(/<li/g)).toHaveLength(3);
-    expect(section.indexOf("Today, 10:37")).toBeLessThan(section.indexOf("Yesterday"));
-    expect(section).toContain("Exam");
-    expect(section).toContain("Practice");
-    expect(section).toContain("Mini-quiz");
-    expect(section).toContain("2 topics");
-    expect(section).toMatch(/\d+ of \d+ correct/);
-    expect(section).not.toContain("%");
-    // the oldest session is not in the list
-    expect(section).not.toContain("13 Oct");
-  });
-
-  it("gives a chevron and a link only to a session whose results screen exists", () => {
-    const section = html.slice(html.indexOf(">Recent sessions<"));
-    expect(section.match(/href="\/exam\/results"/g)).toHaveLength(1);
-    expect(section.match(/lucide-chevron-right/g)).toHaveLength(1);
-    expect(section.match(/data-session-row/g)).toHaveLength(2);
-  });
-
-  it("has See all, to the full list", () => {
-    expect(html).toContain('href="/progress/sessions"');
-    expect(html).toContain(">See all<");
-  });
-
-  it("shows records saved before mode and topics as Practice with no topic name", () => {
-    const old = render([entry(s1.slice(0, 4), 2, day(2))]);
-    const section = old.slice(old.indexOf(">Recent sessions<"));
-    expect(section).toContain("Practice");
-    expect(section).not.toContain("topics");
-    expect(section).toContain("2 of 4 correct");
-    expect(section).toContain("17 Oct");
-  });
-});
-
-describe("Progress: the empty state", () => {
-  const html = render([]);
-
-  it("says there are no sessions and offers Choose a topic, with no Activity line or Recent sessions", () => {
-    expect(html).toContain("No sessions yet. Start with Choose a topic.");
-    expect(html).toContain('href="/training"');
-    expect(html).toContain(">Choose a topic<");
-    expect(html).not.toContain("data-activity");
-    expect(html).not.toContain("Recent sessions");
-  });
-
-  it("still shows readiness and the topics", () => {
-    expect(html).toContain("Readiness 0%");
-    expect(rowsOf(html)).toHaveLength(4);
-    expect(html).toContain(">Not started<");
-  });
-});
-
-describe("the full session list", () => {
-  const many = Array.from({ length: 25 }, (_, index) => entry(s1.slice(0, 2), 1, day(0, 8, index)));
-  const list = (history: FinishedSession[]) =>
-    renderToStaticMarkup(
-      <SourceSheetProvider sections={loadAllSections()}>
-        <SessionsListView history={history} now={NOW} />
-      </SourceSheetProvider>,
-    );
-
-  it("has Back to Progress, the title and 10 rows with See more", () => {
-    const html = list(many);
-    expect(html).toContain('aria-label="Back to Progress"');
-    expect(html).toContain(">Sessions</h1>");
-    expect(html.match(/data-session-row/g)).toHaveLength(10);
-    expect(html).toContain(">See more<");
-  });
-
-  it("has no See more with 10 sessions or fewer", () => {
-    expect(list(many.slice(0, 10))).not.toContain("See more");
+  it("shows readiness and the topics with an empty history too", () => {
+    const empty = render([]);
+    expect(empty).toContain("Readiness 0%");
+    expect(rowsOf(empty)).toHaveLength(4);
+    expect(empty).not.toContain("No sessions yet");
   });
 });

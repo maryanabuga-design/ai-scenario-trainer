@@ -7,18 +7,7 @@ import type { ComponentProps, ReactNode } from "react";
  * status chips and Guide chips only choose a tone and a size; nothing else draws a chip.
  */
 export type ChipTone =
-  | "yellow"
-  | "peach"
-  | "blue"
-  | "lilac"
-  | "olive"
-  | "sand"
-  | "stone"
-  | "primary"
-  // the status tones of the Progress topic list: registered status tokens, never red
-  | "attention"
-  | "success"
-  | "neutral";
+  "yellow" | "peach" | "blue" | "lilac" | "olive" | "sand" | "stone" | "primary";
 
 /** The text or icon colour on a tone, when it is not the plain dark text. */
 export type ChipInk = "amber" | "grey";
@@ -32,13 +21,7 @@ const tones: Record<ChipTone, string> = {
   stone: "bg-secondary-sand-pressed",
   sand: "bg-pastel-sand",
   primary: "bg-primary",
-  attention: "bg-status-attention-bg text-status-attention-ink",
-  success: "bg-status-success-bg text-status-success-ink",
-  neutral: "bg-neutral-tile-bg text-neutral-tile-ink",
 };
-
-/** Tones that bring their own text colour. */
-const ownInk = new Set<ChipTone>(["primary", "attention", "success", "neutral"]);
 
 const inks: Record<ChipInk, string> = {
   amber: "text-caution",
@@ -64,7 +47,7 @@ type Props = {
 );
 
 export function Chip({ tone, ink, size = "label", className = "", children, ...rest }: Props) {
-  const look = `${tones[tone]} ${tone === "primary" ? "text-primary-text" : ownInk.has(tone) ? "" : ink ? inks[ink] : "text-text"}`;
+  const look = `${tones[tone]} ${tone === "primary" ? "text-primary-text" : ink ? inks[ink] : "text-text"}`;
   const classes = `inline-flex w-fit shrink-0 items-center gap-1.5 rounded-full whitespace-nowrap ${sizes[size]} ${look} ${className}`;
   if ("as" in rest && rest.as === "button") {
     const { as: _as, ...button } = rest;

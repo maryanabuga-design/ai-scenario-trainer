@@ -604,7 +604,7 @@ export default function Screens() {
               <WeakTopicsSample empty />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Progress: seeded sessions, the assigned exam, one percentage (Readiness)">
+          <PhoneFrame label="Progress: the assigned exam, one percentage (Readiness), topic cards in number order">
             <Screen nav="/progress">
               <ProgressSample />
             </Screen>
@@ -612,11 +612,6 @@ export default function Screens() {
           <PhoneFrame label="Progress: no exam assigned (Overall readiness)">
             <Screen nav="/progress">
               <ProgressSample state="no-exam" />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Progress: empty state">
-            <Screen nav="/progress">
-              <ProgressSample state="empty" />
             </Screen>
           </PhoneFrame>
         </Group>

@@ -381,8 +381,8 @@ export function HomeSample({
   );
 }
 
-/** Progress with no sessions, with seeded sessions and an assigned exam, or without an exam. */
-export function ProgressSample({ state = "seeded" }: { state?: "empty" | "seeded" | "no-exam" }) {
+/** Progress with seeded sessions and an assigned exam, or without an exam. */
+export function ProgressSample({ state = "seeded" }: { state?: "seeded" | "no-exam" }) {
   const now = new Date(2026, 9, 19, 14, 0);
   const day = (daysAgo: number, hour = 10, minute = 37) =>
     new Date(2026, 9, 19 - daysAgo, hour, minute).getTime();
@@ -412,15 +412,12 @@ export function ProgressSample({ state = "seeded" }: { state?: "empty" | "seeded
     finishedAt,
     ...extra,
   });
-  const history: FinishedSession[] =
-    state === "empty"
-      ? []
-      : [
-          entry(s1, s1.length - 1, day(6)),
-          entry(s2.slice(0, 10), 4, day(3)),
-          entry([...s3.slice(0, 3), ...s5.slice(0, 2)], 3, day(1, 18, 5), { mode: "mini-quiz" }),
-          entry(s2.slice(0, 10), 7, day(0), { kind: "repeat" }),
-        ];
+  const history: FinishedSession[] = [
+    entry(s1, s1.length - 1, day(6)),
+    entry(s2.slice(0, 10), 4, day(3)),
+    entry([...s3.slice(0, 3), ...s5.slice(0, 2)], 3, day(1, 18, 5), { mode: "mini-quiz" }),
+    entry(s2.slice(0, 10), 7, day(0), { kind: "repeat" }),
+  ];
   return (
     <ProgressView history={history} exam={state === "no-exam" ? null : demoExam(now)} now={now} />
   );

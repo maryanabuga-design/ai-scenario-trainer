@@ -1,48 +1,20 @@
 "use client";
 
-import { ChevronDown, History } from "lucide-react";
-import Link from "next/link";
+import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
-import { Chip } from "@/components/Chip/Chip";
-import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
-import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { HeaderRow } from "@/components/HeaderRow/HeaderRow";
 import { ReadinessBar } from "@/components/ReadinessBar/ReadinessBar";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { stepsCard } from "@/components/StepsView/StepCard";
 import type { AssignedExam } from "@/lib/assigned-exams";
-import { HISTORY_PAGE, seeMore, visibleHistory } from "@/lib/history";
-import {
-  activityLabel,
-  allTopicIds,
-  activitySummary,
-  readinessCard,
-  recentSessions,
-  sessionDate,
-  sessionModeLabel,
-  sessionResult,
-  sessionTopicIds,
-  topicGroups,
-} from "@/lib/progress-view";
-import type { TopicProgress, TopicStatus } from "@/lib/progress-view";
+import { allTopicIds, readinessCard, topicGroups } from "@/lib/progress-view";
+import type { TopicProgress } from "@/lib/progress-view";
 import { hasWeakTopics } from "@/lib/readiness";
 import type { FinishedSession } from "@/lib/session";
 import { examPath } from "@/lib/weak-session";
 
-/** How many sessions the Recent sessions list shows before "See all". */
-export const RECENT_SESSIONS = 3;
-
-export const sessionsPath = "/progress/sessions";
-
-const status: Record<TopicStatus, { label: string; tone: "neutral" | "attention" | "success" }> = {
-  "not-started": { label: "Not started", tone: "neutral" },
-  "needs-work": { label: "Needs work", tone: "attention" },
-  ready: { label: "Ready", tone: "success" },
-};
-
-const rowClass = `${stepsCard} flex min-h-14 w-full items-center gap-3 p-[var(--gutter,1rem)] text-left`;
 const focusClass =
   "active:bg-secondary-sand has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
@@ -93,7 +65,10 @@ function ReadinessSection({
   );
 }
 
-/** One topic: one tap target that practises it. Counts and a word, never a percentage. */
+/**
+ * One topic: a card of EXACTLY 80px (the Steps list card), one tap target that practises the topic.
+ * The title is one line, cut with an ellipsis; "X of N correct" and a thin bar tell the state.
+ */
 function TopicRow({
   row,
   title,
@@ -103,14 +78,13 @@ function TopicRow({
   title: string;
   onPractise: (topicId: string) => void;
 }) {
-  const { label, tone } = status[row.status];
   const share = row.total === 0 ? 0 : (row.correct / row.total) * 100;
   return (
     <button
       type="button"
       data-topic-row={row.sectionId}
       onClick={() => onPractise(row.sectionId)}
-      className={`${rowClass} ${focusClass}`}
+      className={`${stepsCard} flex h-[var(--list-card-height,80px)] w-full items-center gap-3 px-[var(--gutter,1rem)] text-left ${focusClass}`}
     >
       <span
         aria-hidden="true"
@@ -119,7 +93,7 @@ function TopicRow({
         {row.sectionId}
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="type-body">
+        <span data-topic-title className="type-body truncate">
           <span className="sr-only">{row.sectionId} </span>
           {title}
         </span>
@@ -130,9 +104,7 @@ function TopicRow({
           <span className="block h-full rounded-full bg-primary" style={{ width: `${share}%` }} />
         </span>
       </span>
-      <Chip tone={tone} size="caption">
-        {label}
-      </Chip>
+      <Chevron />
     </button>
   );
 }
@@ -158,8 +130,9 @@ function TopicList({
 }
 
 /**
- * "By topic": ONE list with the exam's topics first ("In your exam") and the others in a disclosure
- * that is closed until it is opened. Without an exam every topic is under "Topics".
+ * "By topic": ONE list in number order, the exam's topics first ("In your exam") and the others
+ * behind an underlined text button that is closed until it is opened. Without an exam every topic
+ * is listed under "Topics".
  */
 function TopicsSection({
   exam,
@@ -189,21 +162,24 @@ function TopicsSection({
         {inExam.length === 0 ? (
           <h3 className="type-label text-text-secondary">Topics</h3>
         ) : (
-          <button
-            type="button"
-            aria-expanded={open}
-            aria-controls="other-topics"
-            onClick={() => setOpen(!open)}
-            className={`${rowClass} ${focusClass} justify-between`}
-          >
-            <span className="type-body-strong">Other topics ({other.length})</span>
-            <ChevronDown
-              size={20}
-              strokeWidth={2}
-              aria-hidden="true"
-              className={`shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
-            />
-          </button>
+          <div className="-ml-3 self-start">
+            <Button
+              variant="tertiary"
+              aria-expanded={open}
+              aria-controls="other-topics"
+              onClick={() => setOpen(!open)}
+              trailing={
+                <ChevronDown
+                  size={16}
+                  strokeWidth={2}
+                  aria-hidden="true"
+                  className={`shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
+                />
+              }
+            >
+              Other topics ({other.length})
+            </Button>
+          </div>
         )}
         {(inExam.length === 0 || open) && (
           <div id="other-topics">
@@ -215,60 +191,9 @@ function TopicsSection({
   );
 }
 
-/** One finished session: mode, topic, "7 of 10 correct" and the date. A row with a screen to open has a chevron. */
-export function SessionRow({
-  session,
-  now,
-  titleOf,
-  href,
-}: {
-  session: FinishedSession;
-  now: Date;
-  titleOf: (id: string) => string;
-  href?: string | null;
-}) {
-  const topics = sessionTopicIds(session);
-  const topicName =
-    topics.length === 0
-      ? null
-      : topics.length === 1
-        ? titleOf(topics[0])
-        : `${topics.length} topics`;
-  const { correct, total } = sessionResult(session);
-  const content = (
-    <>
-      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="type-body-strong">
-          {sessionModeLabel(session)}
-          {topicName && <span className="type-body text-text-secondary"> · {topicName}</span>}
-        </span>
-        <span className="type-small text-text-secondary tabular-nums">
-          {correct} of {total} correct
-        </span>
-      </span>
-      <span className="type-caption shrink-0 self-start text-text-secondary tabular-nums">
-        {sessionDate(session.finishedAt, now)}
-      </span>
-      {href && <Chevron />}
-    </>
-  );
-  return href ? (
-    <Link href={href} className={`${rowClass} ${focusClass}`}>
-      {content}
-    </Link>
-  ) : (
-    <div
-      data-session-row
-      className={`${stepsCard} flex min-h-14 items-center gap-3 p-[var(--gutter,1rem)]`}
-    >
-      {content}
-    </div>
-  );
-}
-
 /**
- * Progress (DESIGN.md: Progress): how ready you are, what to do next, what you have done. Exactly
- * one measured percentage, "Readiness"; everywhere else counts and words.
+ * Progress (DESIGN.md: Progress): how ready you are and what to practise next. Exactly one measured
+ * percentage, "Readiness"; the topic list shows counts only.
  */
 export function ProgressView({
   history,
@@ -276,7 +201,6 @@ export function ProgressView({
   now,
   onRepeat = () => {},
   onPractise = () => {},
-  resultHref = () => null,
 }: {
   history: FinishedSession[];
   /** The assigned exam with the nearest deadline, if any. */
@@ -285,12 +209,9 @@ export function ProgressView({
   onRepeat?: () => void;
   /** Starts (or resumes) practice of a topic. */
   onPractise?: (topicId: string) => void;
-  /** The results screen a session can still open, or null. */
-  resultHref?: (session: FinishedSession) => string | null;
 }) {
   const { sections } = useSourceSheet();
   const titleOf = (id: string) => sections.find((section) => section.id === id)?.title ?? id;
-  const recent = recentSessions(history, RECENT_SESSIONS);
   return (
     <div className="flex flex-col gap-6 pb-4">
       <HeaderRow
@@ -300,93 +221,6 @@ export function ProgressView({
 
       <ReadinessSection exam={exam} history={history} now={now} onRepeat={onRepeat} />
       <TopicsSection exam={exam} history={history} titleOf={titleOf} onPractise={onPractise} />
-
-      {history.length === 0 ? (
-        <EmptyState
-          icon={History}
-          text="No sessions yet. Start with Choose a topic."
-          action={
-            <ButtonLink variant="secondary" href="/training">
-              Choose a topic
-            </ButtonLink>
-          }
-        />
-      ) : (
-        <>
-          <p className="type-small text-text-secondary tabular-nums" data-activity>
-            {activityLabel(activitySummary(history))}
-          </p>
-          <section aria-labelledby="recent-sessions" className="flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-3">
-              <h2 id="recent-sessions" className="type-item-title">
-                Recent sessions
-              </h2>
-              <div className="-mr-3">
-                <ButtonLink variant="tertiary" href={sessionsPath}>
-                  See all
-                </ButtonLink>
-              </div>
-            </div>
-            <ol className="flex flex-col gap-3">
-              {recent.map((session) => (
-                <li key={session.finishedAt}>
-                  <SessionRow
-                    session={session}
-                    now={now}
-                    titleOf={titleOf}
-                    href={resultHref(session)}
-                  />
-                </li>
-              ))}
-            </ol>
-          </section>
-        </>
-      )}
-    </div>
-  );
-}
-
-/** The full list of sessions, newest first, 10 at a time. */
-export function SessionsListView({
-  history,
-  now,
-  resultHref = () => null,
-}: {
-  history: FinishedSession[];
-  now: Date;
-  resultHref?: (session: FinishedSession) => string | null;
-}) {
-  const { sections } = useSourceSheet();
-  const titleOf = (id: string) => sections.find((section) => section.id === id)?.title ?? id;
-  const [shown, setShown] = useState(HISTORY_PAGE);
-  const { visible, hasMore } = visibleHistory(recentSessions(history, history.length), shown);
-  return (
-    <div className="flex flex-col gap-6 pb-4">
-      <CircleBackButton href="/progress" label="Back to Progress" />
-      <h1 className="type-page-title">Sessions</h1>
-      {history.length === 0 ? (
-        <EmptyState icon={History} text="No sessions yet. Start with Choose a topic." />
-      ) : (
-        <ol className="flex flex-col gap-3">
-          {visible.map((session) => (
-            <li key={session.finishedAt}>
-              <SessionRow
-                session={session}
-                now={now}
-                titleOf={titleOf}
-                href={resultHref(session)}
-              />
-            </li>
-          ))}
-        </ol>
-      )}
-      {hasMore && (
-        <div className="-ml-3">
-          <Button variant="tertiary" onClick={() => setShown(seeMore(shown))}>
-            See more
-          </Button>
-        </div>
-      )}
     </div>
   );
 }

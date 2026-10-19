@@ -239,7 +239,7 @@ test.describe("a running session", () => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await page.goto("/progress");
-    await expect(page.getByText("No sessions yet.")).toBeVisible();
+    await expect(page.locator("[data-readiness-number]")).toHaveText("Readiness 0%");
     await page.goto("/session/results");
     await expect(page.getByRole("heading", { name: "No results yet" })).toBeVisible();
   });

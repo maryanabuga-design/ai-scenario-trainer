@@ -39,8 +39,8 @@ const sessionOf = (
 });
 
 /**
- * Seeded progress: S1 all right (Ready), S2 half right (Needs work), S3 and S4 untouched (Not
- * started), S5 all right (Ready, in Other topics), a mini-quiz and an exam.
+ * Seeded progress: S1 all right, S2 half right, S3 and S4 untouched, S5 all right (in Other
+ * topics), a mini-quiz and an exam.
  */
 const seeded = () => [
   sessionOf(of("S1"), of("S1").length, 60 * 24 * 5),
@@ -78,40 +78,35 @@ for (const width of [360, 430]) {
   test.describe(`Progress at ${width}px`, () => {
     test.use({ viewport: { width, height: 800 } });
 
-    test("has the readiness card, By topic, Activity and Recent sessions in that order", async ({
-      page,
-    }) => {
+    test("has the readiness card, then By topic, and nothing about sessions", async ({ page }) => {
       await open(page, seeded());
       const main = page.locator("main");
-      const y = async (text: string | RegExp) =>
-        (await main
-          .getByText(text, { exact: typeof text === "string" })
-          .first()
-          .boundingBox())!.y;
-      const order = [
-        await y("Exam readiness"),
-        await y("By topic"),
-        await y(/^\d+ sessions? · \d+ answers?$/),
-        await y("Recent sessions"),
-      ];
+      const y = async (text: string) =>
+        (await main.getByText(text, { exact: true }).first().boundingBox())!.y;
+      const order = [await y("Exam readiness"), await y("By topic"), await y("In your exam")];
       expect([...order].sort((a, b) => a - b)).toEqual(order);
       await expect(
         main.getByText(/^Evacuation basics exam · Due \d+ \w+ · \d+ days left$/),
       ).toBeVisible();
-      await expect(main.getByText("4 sessions · ", { exact: false })).toBeVisible();
-      expect(await noSidewaysScroll(page)).toBe(true);
-      // the old cards are gone
       for (const gone of [
+        "Recent sessions",
+        "See all",
         "Result by session",
         "Guide sections",
         "Session history",
-        "Weak topics",
+        "No sessions yet",
+        "Not started",
+        "Needs work",
       ]) {
-        await expect(main.getByText(gone, { exact: true })).toHaveCount(0);
+        await expect(main.getByText(gone, { exact: false })).toHaveCount(0);
       }
+      await expect(main.getByText("Weak topics", { exact: true })).toHaveCount(0);
+      expect(await main.innerText()).not.toMatch(/\d+ sessions? · \d+ answers?/);
+      await expect(page.locator("a[href='/progress/sessions']")).toHaveCount(0);
+      expect(await noSidewaysScroll(page)).toBe(true);
     });
 
-    test("shows one measured percentage (Readiness); topic and session rows have none", async ({
+    test("shows one measured percentage (Readiness); the topic cards have none", async ({
       page,
     }) => {
       await open(page, seeded());
@@ -119,13 +114,10 @@ for (const width of [360, 430]) {
       await expect(main.locator("[data-readiness-number]")).toHaveText(/^Readiness \d+%$/);
       const text = await main.innerText();
       // the number, the 80% marker and the 80% in the sentence are the readiness vocabulary
-      const rest = text.replace(/Readiness \d+%/g, "").replace(/80%/g, "");
-      expect(rest).not.toContain("%");
+      expect(text.replace(/Readiness \d+%/g, "").replace(/80%/g, "")).not.toContain("%");
       for (const row of await main.locator("[data-topic-row]").all()) {
         expect(await row.innerText()).not.toContain("%");
       }
-      const recent = main.locator("section[aria-labelledby=recent-sessions]");
-      expect(await recent.innerText()).not.toContain("%");
     });
 
     test("the readiness card has the sentence and a full-width Primary button below it", async ({
@@ -149,124 +141,147 @@ for (const width of [360, 430]) {
       // the page gutter is 16px
       expect(Math.abs(c!.x - 16)).toBeLessThanOrEqual(0.5);
       expect(Math.abs(width - (c!.x + c!.width) - 16)).toBeLessThanOrEqual(0.5);
-      // the primary button is the olive fill
       const fill = await button.evaluate((el) => getComputedStyle(el).backgroundColor);
       expect(fill).toBe("rgb(63, 70, 56)");
-      // no red in the card
       for (const el of await card.locator("*").all()) {
         const { r, g, b: blue } = rgb(await el.evaluate((e) => getComputedStyle(e).color));
         expect(r > 170 && g < 90 && blue < 90).toBe(false);
       }
     });
 
-    test("topic rows: one tap target of at least 56px, weakest first, with counts over all questions", async ({
+    test("every topic card is exactly 80px high, with a chevron inside it and no chip", async ({
       page,
     }) => {
       await open(page, seeded());
+      await page.getByRole("button", { name: "Other topics (6)" }).click();
       const rows = page.locator("[data-topic-row]:visible");
-      await expect(rows).toHaveCount(4);
-      const ids = await rows.evaluateAll((els) =>
-        els.map((el) => el.getAttribute("data-topic-row")),
-      );
-      // Not started (S3, S4), Needs work (S2), Ready (S1)
-      expect(ids).toEqual(["S3", "S4", "S2", "S1"]);
+      await expect(rows).toHaveCount(10);
       for (const row of await rows.all()) {
         const box = (await row.boundingBox())!;
-        expect(box.height).toBeGreaterThanOrEqual(56);
+        expect(box.height).toBe(80);
         expect(await row.evaluate((el) => el.tagName)).toBe("BUTTON");
+        // the page gutter: the cards are 16px from both edges
+        expect(Math.abs(box.x - 16)).toBeLessThanOrEqual(0.5);
+        expect(Math.abs(width - (box.x + box.width) - 16)).toBeLessThanOrEqual(0.5);
+        // no status chip (a chip has horizontal padding and no fixed size)
+        await expect(row.locator("[class*='px-2.5']")).toHaveCount(0);
+        const text = await row.innerText();
+        expect(text).not.toMatch(/Not started|Needs work|Ready/);
+        // the chevron lies inside the card, vertically centred, with the card padding to its right
+        const chevron = (await row.locator("svg.lucide-chevron-right").boundingBox())!;
+        expect(chevron.x).toBeGreaterThan(box.x);
+        expect(chevron.x + chevron.width).toBeLessThanOrEqual(box.x + box.width);
+        expect(
+          Math.abs(chevron.y + chevron.height / 2 - (box.y + box.height / 2)),
+        ).toBeLessThanOrEqual(2);
+        // the bar sits fully inside the card
+        const bar = (await row.locator(".h-1\\.5").boundingBox())!;
+        expect(bar.y).toBeGreaterThanOrEqual(box.y);
+        expect(bar.y + bar.height).toBeLessThanOrEqual(box.y + box.height);
       }
+      expect(await noSidewaysScroll(page)).toBe(true);
+    });
+
+    test("a topic title is one line, cut with an ellipsis when it does not fit", async ({
+      page,
+    }) => {
+      await open(page, seeded());
+      await page.getByRole("button", { name: "Other topics (6)" }).click();
+      const titles = page.locator("[data-topic-title]:visible");
+      let truncated = 0;
+      for (const title of await titles.all()) {
+        const info = await title.evaluate((el) => {
+          const css = getComputedStyle(el);
+          return {
+            height: el.getBoundingClientRect().height,
+            line: parseFloat(css.lineHeight),
+            nowrap: css.whiteSpace,
+            ellipsis: css.textOverflow,
+            overflow: css.overflow,
+            cut: el.scrollWidth > el.clientWidth,
+            text: el.textContent,
+          };
+        });
+        expect(info.height, info.text!).toBeCloseTo(info.line, 0);
+        expect(info.nowrap).toBe("nowrap");
+        expect(info.ellipsis).toBe("ellipsis");
+        expect(info.overflow).toBe("hidden");
+        if (info.cut) truncated += 1;
+      }
+      // "Assembly point and headcount" does not fit at 360px: it is cut, and still 80px high
+      if (width === 360) expect(truncated).toBeGreaterThan(0);
+      const long = page.locator('[data-topic-row="S4"]');
+      expect((await long.boundingBox())!.height).toBe(80);
+      // the whole title is still in the text
+      await expect(long).toContainText("Assembly point and headcount");
+    });
+
+    test("topics are in number order: S1 to S4 in the exam group, S5 to S10 in the other", async ({
+      page,
+    }) => {
+      await open(page, seeded());
+      const ids = () =>
+        page
+          .locator("[data-topic-row]:visible")
+          .evaluateAll((els) => els.map((el) => el.getAttribute("data-topic-row")));
+      expect(await ids()).toEqual(["S1", "S2", "S3", "S4"]);
+      await page.getByRole("button", { name: "Other topics (6)" }).click();
+      expect(await ids()).toEqual(["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10"]);
+    });
+
+    test("the counts are over all the topic's questions and use the latest answer", async ({
+      page,
+    }) => {
+      await open(page, seeded());
       const s2 = of("S2");
       await expect(page.locator('[data-topic-row="S2"]')).toContainText(
         `${Math.floor(s2.length / 2)} of ${s2.length} correct`,
       );
-      await expect(page.locator('[data-topic-row="S2"]')).toContainText("Needs work");
-      await expect(page.locator('[data-topic-row="S3"]')).toContainText("Not started");
-      await expect(page.locator('[data-topic-row="S1"]')).toContainText("Ready");
-      expect(await noSidewaysScroll(page)).toBe(true);
+      await expect(page.locator('[data-topic-row="S3"]')).toContainText(
+        `0 of ${of("S3").length} correct`,
+      );
+      await expect(page.locator('[data-topic-row="S1"]')).toContainText(
+        `${of("S1").length} of ${of("S1").length} correct`,
+      );
     });
 
-    test("status chips read their colours from the registered tokens: not transparent, not black, never red", async ({
+    test("Other topics (6) is an underlined text button: collapsed by default, opens and closes", async ({
       page,
     }) => {
-      await open(page, seeded());
-      const expected = {
-        S3: ["rgb(226, 222, 214)", "rgb(92, 90, 86)"],
-        S2: ["rgb(241, 228, 200)", "rgb(111, 81, 32)"],
-        S1: ["rgb(225, 234, 218)", "rgb(68, 104, 58)"],
-      } as const;
-      for (const [id, [bg, ink]] of Object.entries(expected)) {
-        const chip = page
-          .locator(`[data-topic-row="${id}"]`)
-          .locator("span.rounded-full", { hasText: /Not started|Needs work|Ready/ });
-        const look = await chip.evaluate((el) => [
-          getComputedStyle(el).backgroundColor,
-          getComputedStyle(el).color,
-        ]);
-        expect(look[0]).toBe(bg);
-        expect(look[1]).toBe(ink);
-        expect(rgb(look[0]).a).toBeGreaterThan(0);
-        expect(look[1]).not.toBe("rgb(0, 0, 0)");
-        const { r, g, b } = rgb(look[0]);
-        expect(r > 170 && g < 90 && b < 90).toBe(false);
-      }
-    });
-
-    test("Other topics is collapsed by default and expands to the other six", async ({ page }) => {
       await open(page, seeded());
       const toggle = page.getByRole("button", { name: "Other topics (6)" });
       await expect(toggle).toHaveAttribute("aria-expanded", "false");
       await expect(page.locator('[data-topic-row="S5"]')).toHaveCount(0);
+      const look = await toggle.evaluate((el) => {
+        const css = getComputedStyle(el);
+        const label = el.querySelector("span")!;
+        return {
+          background: css.backgroundColor,
+          border: [css.borderTopWidth, css.borderLeftWidth],
+          shadow: css.boxShadow,
+          height: el.getBoundingClientRect().height,
+          underline: getComputedStyle(label).textDecorationLine,
+        };
+      });
+      expect(look.background).toBe("rgba(0, 0, 0, 0)");
+      expect(look.border).toEqual(["0px", "0px"]);
+      expect(look.shadow).toBe("none");
+      expect(look.height).toBeGreaterThanOrEqual(44);
+      expect(look.underline).toContain("underline");
       await toggle.click();
       await expect(toggle).toHaveAttribute("aria-expanded", "true");
       await expect(page.locator("[data-topic-row]:visible")).toHaveCount(10);
-      await expect(page.locator('[data-topic-row="S5"]')).toContainText("Ready");
-      expect(await noSidewaysScroll(page)).toBe(true);
+      await expect(page.locator('[data-topic-row="S5"]')).toBeVisible();
       await toggle.click();
+      await expect(toggle).toHaveAttribute("aria-expanded", "false");
       await expect(page.locator('[data-topic-row="S5"]')).toHaveCount(0);
     });
 
-    test("tapping a topic row starts a practice session of that topic", async ({ page }) => {
+    test("tapping a topic card starts a practice session of that topic", async ({ page }) => {
       await open(page, seeded());
       await page.locator('[data-topic-row="S3"]').click();
       await expect(page).toHaveURL(/\/session$/);
       await expect(page.getByText(/Question 1 of|Step 1 of/)).toBeVisible();
-    });
-
-    test("recent sessions: the last 3 with mode, topic, count and date; See all opens the list", async ({
-      page,
-    }) => {
-      await open(page, seeded());
-      const recent = page.locator("section[aria-labelledby=recent-sessions]");
-      const rows = recent.locator("ol > li");
-      await expect(rows).toHaveCount(3);
-      // newest first: the exam (20 minutes ago), the mini-quiz, then S2 practice
-      await expect(rows.nth(0)).toContainText("Exam");
-      await expect(rows.nth(0)).toContainText(/Today, \d{2}:\d{2}/);
-      await expect(rows.nth(1)).toContainText("Mini-quiz");
-      await expect(rows.nth(2)).toContainText("Practice");
-      await expect(rows.nth(2)).toContainText(/\d+ of \d+ correct/);
-      await expect(rows.nth(2)).toContainText(/\d{1,2} \w{3}|Yesterday/);
-      // no results screen for these (none was finished in this browser): no link, no chevron
-      await expect(recent.locator("ol a")).toHaveCount(0);
-      await recent.getByRole("link", { name: "See all" }).click();
-      await expect(page).toHaveURL(/\/progress\/sessions$/);
-      await expect(page.getByRole("heading", { name: "Sessions", level: 1 })).toBeVisible();
-      await expect(page.locator("main ol > li:visible")).toHaveCount(4);
-      await expect(page.getByRole("button", { name: "See more" })).toHaveCount(0);
-      await page.getByRole("link", { name: "Back to Progress" }).click();
-      await expect(page).toHaveURL(/\/progress$/);
-    });
-
-    test("the list of sessions shows 10 at a time with See more", async ({ page }) => {
-      const many = Array.from({ length: 23 }, (_, i) => sessionOf(of("S1").slice(0, 3), 2, i + 1));
-      await open(page, many);
-      await page.goto("/progress/sessions");
-      await expect(page.locator("main ol > li")).toHaveCount(10);
-      await page.getByRole("button", { name: "See more" }).click();
-      await expect(page.locator("main ol > li")).toHaveCount(20);
-      await page.getByRole("button", { name: "See more" }).click();
-      await expect(page.locator("main ol > li")).toHaveCount(23);
-      await expect(page.getByRole("button", { name: "See more" })).toHaveCount(0);
     });
 
     test("when ready, a Secondary Start exam replaces Repeat weak topics", async ({ page }) => {
@@ -280,37 +295,26 @@ for (const width of [360, 430]) {
       await expect(page).toHaveURL(/\/exam\?id=demo-evacuation-basics$/);
     });
 
-    test("the last element is not hidden behind the bottom navigation", async ({ page }) => {
+    test("the last card is not hidden behind the bottom navigation", async ({ page }) => {
       await open(page, seeded());
+      await page.getByRole("button", { name: "Other topics (6)" }).click();
       await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
       await page.waitForTimeout(300);
       const nav = (await page.getByRole("navigation", { name: "Main" }).boundingBox())!;
-      const last = (await page
-        .locator("section[aria-labelledby=recent-sessions] ol > li")
-        .last()
-        .boundingBox())!;
+      const last = (await page.locator("[data-topic-row]:visible").last().boundingBox())!;
       expect(last.y + last.height).toBeLessThanOrEqual(nav.y);
     });
 
-    test("an empty history shows the empty state with a Secondary button to Training", async ({
-      page,
-    }) => {
+    test("with no sessions it still shows readiness and the topics, in order", async ({ page }) => {
       await open(page, null);
       const main = page.locator("main");
-      await expect(main.getByText("No sessions yet. Start with Choose a topic.")).toBeVisible();
-      await expect(main.locator("[data-activity]")).toHaveCount(0);
-      await expect(main.getByText("Recent sessions")).toHaveCount(0);
       await expect(main.locator("[data-readiness-number]")).toHaveText("Readiness 0%");
-      const choose = main.getByRole("link", { name: "Choose a topic" });
-      await expect(choose).toBeVisible();
-      const fill = await choose.evaluate((el) => getComputedStyle(el).backgroundColor);
-      expect(fill).not.toBe("rgb(63, 70, 56)");
+      await expect(page.locator("[data-topic-row]:visible")).toHaveCount(4);
+      await expect(main.getByText("No sessions yet")).toHaveCount(0);
       expect(await noSidewaysScroll(page)).toBe(true);
-      await choose.click();
-      await expect(page).toHaveURL(/\/training$/);
     });
 
-    test("records saved before mode and topics show as Practice with no topic name", async ({
+    test("records saved before mode and topics still count in the topic cards", async ({
       page,
     }) => {
       const old = {
@@ -324,11 +328,9 @@ for (const width of [360, 430]) {
         finishedAt: Date.now() - 3 * 60_000,
       };
       await open(page, [old]);
-      const row = page.locator("section[aria-labelledby=recent-sessions] ol > li").first();
-      await expect(row).toContainText("Practice");
-      await expect(row).toContainText("3 of 4 correct");
-      await expect(row).not.toContainText("·  ");
-      await expect(row.locator("span.text-text-secondary").first()).not.toContainText("Responding");
+      await expect(page.locator('[data-topic-row="S1"]')).toContainText(
+        `3 of ${of("S1").length} correct`,
+      );
     });
   });
 }
