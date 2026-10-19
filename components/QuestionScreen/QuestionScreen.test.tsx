@@ -259,12 +259,14 @@ describe("the bookmark", () => {
       <QuestionScreen item={step} choice={null} onChoose={noop} {...extras} saved={saved} />,
     );
 
-  it("sits on the right of the question: a 40px white circle with a 1px stroke", () => {
+  it("sits on the right of the question: a 40px neutral warm grey circle with a 1px stroke", () => {
     const html = render(false);
     const button = html.slice(html.indexOf("<button"), html.indexOf("</button>"));
     expect(html.indexOf(step.question)).toBeLessThan(html.indexOf('aria-label="Save question"'));
     expect(button).toContain("h-10 w-10");
-    expect(button).toContain("rounded-full border border-arrow-stroke bg-surface");
+    expect(button).toContain(
+      "rounded-full border border-arrow-stroke bg-neutral-tile-bg text-neutral-tile-ink",
+    );
     expect(button).toContain('aria-pressed="false"');
   });
 

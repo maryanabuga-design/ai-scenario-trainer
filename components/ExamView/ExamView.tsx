@@ -116,7 +116,7 @@ export function ExamView({
         <ul className="flex flex-col gap-3">
           {examRules.map(({ icon: Icon, text }) => (
             <li key={text} className="flex items-center gap-3">
-              <IconTile className="h-9 w-9 rounded-full">
+              <IconTile tone="neutral" className="h-9 w-9 rounded-full">
                 <Icon size={18} strokeWidth={1.75} />
               </IconTile>
               <span>{text}</span>

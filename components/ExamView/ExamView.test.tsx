@@ -151,6 +151,11 @@ describe("the exam screen", () => {
     expect(html).toContain("No hints or feedback during the exam");
     expect(html).toContain(`Pass mark ${PASS_MARK}%`);
     expect(html.match(/h-9 w-9/g)).toHaveLength(4);
+    // the four rules sit in neutral warm grey circles, not the olive tile
+    const rules = html.slice(html.indexOf(">How it works<"), html.indexOf(">Your results<"));
+    expect(rules.match(/bg-neutral-tile-bg text-neutral-tile-ink/g)).toHaveLength(4);
+    expect(rules).not.toContain("bg-icon-tile-bg");
+    expect(rules.match(/rounded-full/g)).toHaveLength(4);
   });
 
   it("shows the last and best attempt as counts, never as a percentage", () => {

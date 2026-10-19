@@ -115,3 +115,33 @@ describe("the exam status tiles", () => {
     expect(html("success")).not.toContain("correct");
   });
 });
+
+describe("the neutral warm grey pair", () => {
+  it("is registered once, for the exam rules circles and the bookmark", () => {
+    expect(token("neutral-tile-bg")).toBe("#e2ded6");
+    expect(token("neutral-tile-ink")).toBe("#5c5a56");
+    expect(css).toContain("--color-neutral-tile-bg: var(--neutral-tile-bg);");
+    expect(css).toContain("--color-neutral-tile-ink: var(--neutral-tile-ink);");
+    expect(readFileSync("components/BookmarkButton/BookmarkButton.tsx", "utf8")).toContain(
+      "bg-neutral-tile-bg text-neutral-tile-ink",
+    );
+    expect(
+      renderToStaticMarkup(
+        <IconTile tone="neutral" className="h-9 w-9 rounded-full">
+          <svg />
+        </IconTile>,
+      ),
+    ).toContain("bg-neutral-tile-bg text-neutral-tile-ink");
+  });
+
+  it("keeps the icon at least 3:1 on the circle, computed from the registered tokens (about 4.9:1)", () => {
+    const ratio = contrastRatio(token("neutral-tile-ink"), token("neutral-tile-bg"));
+    expect(ratio).toBeGreaterThanOrEqual(GRAPHIC_CONTRAST);
+    expect(ratio).toBeCloseTo(4.9, 0);
+  });
+
+  it("leaves the olive icon tiles as they were", () => {
+    expect(token("icon-tile-bg")).toBe("#eaeddf");
+    expect(token("icon-ink")).toBe("#5b6938");
+  });
+});

@@ -21,6 +21,8 @@
   --wrong-text: #9b2c1f;
   --correct-bg: #e3f2e8;
   --wrong-bg: #fbe4e1;
+  --neutral-tile-bg: #e2ded6;
+  --neutral-tile-ink: #5c5a56;
   --status-attention-bg: #f1e4c8;
   --status-attention-ink: #6f5120;
   --status-success-bg: #e1eada;
@@ -78,6 +80,8 @@
   --color-correct-text: var(--correct-text);
   --color-wrong-text: var(--wrong-text);
   --color-correct-bg: var(--correct-bg);
+  --color-neutral-tile-bg: var(--neutral-tile-bg);
+  --color-neutral-tile-ink: var(--neutral-tile-ink);
   --color-status-attention-bg: var(--status-attention-bg);
   --color-status-attention-ink: var(--status-attention-ink);
   --color-status-success-bg: var(--status-success-bg);

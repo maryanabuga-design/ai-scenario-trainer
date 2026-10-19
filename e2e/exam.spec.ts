@@ -447,4 +447,67 @@ test.describe("Exam readiness", () => {
       expect(await noSidewaysScroll(page)).toBe(true);
     });
   }
+
+  test("the four rules sit in neutral warm grey circles, the same pair as the bookmark circle", async ({
+    page,
+  }) => {
+    await open(page, "/exam");
+    // the exam is seeded right after the first load: wait for the card before reading it
+    await expect(page.getByRole("heading", { name: "How it works" })).toBeVisible();
+    const circles = await page
+      .locator("main h2:text('How it works') ~ ul li span[aria-hidden]")
+      .evaluateAll((els) =>
+        els.map((el) => {
+          const css = getComputedStyle(el);
+          const box = el.getBoundingClientRect();
+          return [
+            css.backgroundColor,
+            css.color,
+            getComputedStyle(el.querySelector("svg")!).stroke,
+            box.width,
+            box.height,
+            css.borderTopLeftRadius,
+          ];
+        }),
+      );
+    expect(circles).toHaveLength(4);
+    for (const [background, ink, stroke, width, height, radius] of circles) {
+      expect(background).toBe("rgb(226, 222, 214)");
+      expect(ink).toBe("rgb(92, 90, 86)");
+      expect(stroke).toBe("rgb(92, 90, 86)");
+      expect([width, height]).toEqual([36, 36]);
+      expect(String(radius)).not.toBe("0px");
+    }
+  });
+
+  test("the bookmark circle beside a question has exactly the same two colours", async ({
+    page,
+  }) => {
+    await open(page, "/training?mode=quiz");
+    await page
+      .getByRole("button", { name: /Part 1/ })
+      .first()
+      .click();
+    const bookmark = page.getByRole("button", { name: "Save question" });
+    await expect(bookmark).toBeVisible();
+    expect(
+      await bookmark.evaluate((el) => [
+        getComputedStyle(el).backgroundColor,
+        getComputedStyle(el).color,
+        getComputedStyle(el.querySelector("svg")!).stroke,
+      ]),
+    ).toEqual(["rgb(226, 222, 214)", "rgb(92, 90, 86)", "rgb(92, 90, 86)"]);
+  });
+
+  test("the olive tiles elsewhere keep their colours (the Steps list)", async ({ page }) => {
+    await open(page, "/checklists");
+    const tile = page.locator("main ul li a span[aria-hidden]").first();
+    await expect(tile).toBeVisible();
+    expect(
+      await tile.evaluate((el) => [
+        getComputedStyle(el).backgroundColor,
+        getComputedStyle(el).color,
+      ]),
+    ).toEqual(["rgb(234, 237, 223)", "rgb(91, 105, 56)"]);
+  });
 });

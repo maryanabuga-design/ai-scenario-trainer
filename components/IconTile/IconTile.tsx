@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 
 const tones = {
   default: "bg-icon-tile-bg text-icon-ink",
+  /** Informational, non-navigational icons: the exam rules (DESIGN.md: neutral warm grey). */
+  neutral: "bg-neutral-tile-bg text-neutral-tile-ink",
   attention: "bg-status-attention-bg text-status-attention-ink",
   success: "bg-status-success-bg text-status-success-ink",
 } as const;
