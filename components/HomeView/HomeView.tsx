@@ -56,7 +56,7 @@ export function HomeView({
         className="relative rounded-[28px] bg-card p-2 shadow-(--card-shadow) has-focus-visible:outline-2"
       >
         <div className="flex flex-col gap-4 rounded-[22px] bg-secondary-sand p-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-start gap-3">
             <div className="flex min-w-0 flex-1 flex-col gap-1">
               <h2 className="type-card-title">{HERO_TITLE}</h2>
               <p className="type-small text-text-secondary">{HERO_SUBTITLE}</p>

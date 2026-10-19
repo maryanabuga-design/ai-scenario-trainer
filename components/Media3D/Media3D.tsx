@@ -13,19 +13,24 @@ const frames = {
 
 /**
  * The sizes of Home's two pictures, shown with no background, border or shadow: the hero card
- * picture (96px) and the Mini-quiz row picture (72px). The placeholders keep the frames above.
+ * picture (120px, 104px on narrow phones) and the Mini-quiz row picture (76px, 72px on narrow
+ * phones). The element fills its slot exactly; the placeholders keep the frames above.
  */
 const pictures = {
-  tile: { size: 96, className: "h-24 w-24" },
-  row: { size: 72, className: "h-[72px] w-[72px]" },
+  // the attributes carry the wide size; the classes set 104/72 below a 400px viewport
+  tile: {
+    size: 120,
+    className: "h-[104px] w-[104px] min-[400px]:h-[120px] min-[400px]:w-[120px]",
+  },
+  row: { size: 76, className: "h-[72px] w-[72px] min-[400px]:h-[76px] min-[400px]:w-[76px]" },
 } as const;
 
 /**
  * The one slot for 3D pictures. A hero (200px square, 28px radius) sits on Session setup and
  * Results; a step picture (full width, 4:3, 16px radius) sits above a question; an icon is the
  * existing icon tile, which stays the fallback. Hero and step show a dashed olive placeholder with
- * "3D" until a picture (`src`) is supplied. Home adds a `tile` (the hero card, 96px picture) and a
- * `row` icon (72px picture, Mini-quiz row); with a picture they are drawn bare (no background, border
+ * "3D" until a picture (`src`) is supplied. Home adds a `tile` (the hero card picture) and a
+ * `row` icon (the Mini-quiz row picture); with a picture they are drawn bare (no background, border
  * or shadow) and decorative; without one the dashed olive square with only the "3D" caption shows.
  */
 export function Media3D({
