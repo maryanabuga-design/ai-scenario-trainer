@@ -7,7 +7,7 @@ import type { FinishedSession } from "@/lib/session";
 import { readExam, saveExam } from "@/lib/exam-store";
 import type { ExamSession } from "@/lib/exam-store";
 import { findItem } from "@/lib/items";
-import { addToHistory, answerFor } from "@/lib/session";
+import { addToHistory, answerFor, topicIdsOf } from "@/lib/session";
 
 /** Starts a new exam now, replacing any earlier one. */
 export function startExam(now: number = Date.now(), random: () => number = Math.random) {
@@ -42,6 +42,8 @@ export function finishExam(exam: ExamSession, now: number = Date.now()) {
   saveExam({ ...exam, answers: ordered, finished: true, finishedAt, timeUsedSeconds });
   const entry: FinishedSession = {
     kind: "exam",
+    mode: "exam",
+    topicIds: topicIdsOf(exam.itemIds),
     itemIds: exam.itemIds,
     answers: ordered,
     finishedAt,

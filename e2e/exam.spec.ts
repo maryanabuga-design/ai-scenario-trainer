@@ -199,7 +199,7 @@ test.describe("Exam readiness", () => {
     }
   });
 
-  test("Progress has the Exam readiness section on top, with the bar, the topics weakest first and Repeat weak topics", async ({
+  test("Progress has the Exam readiness card on top, with the bar, the topics weakest first and Repeat weak topics", async ({
     page,
   }) => {
     await open(page, "/progress", [
@@ -213,18 +213,15 @@ test.describe("Exam readiness", () => {
     await expect(
       section.getByRole("progressbar", { name: /Readiness \d+%, pass mark 80%/ }),
     ).toBeVisible();
-    const rows = section.locator("ul li");
-    await expect(rows).toHaveCount(4);
-    // weakest first: S2 is the only topic answered, so it comes last
-    await expect(rows.last()).toContainText("Checking the route");
-    const percents = await rows.allInnerTexts();
-    const values = percents.map((row) => Number(/(\d+)%/.exec(row)![1]));
-    expect(values).toEqual([...values].sort((a, b) => a - b));
     await expect(section.getByRole("button", { name: "Repeat weak topics" })).toBeVisible();
-    // the section is above the rest of Progress
+    // the topics are one list below it, weakest first: S2 is the only topic answered (all right)
+    const rows = page.locator("[data-topic-row]:visible");
+    await expect(rows).toHaveCount(4);
+    await expect(rows.last()).toContainText("Checking the route");
+    await expect(rows.last()).toContainText("Ready");
     const top = (await section.boundingBox())!.y;
-    const summary = (await page.getByText("Correct answers").first().boundingBox())?.y ?? Infinity;
-    expect(top).toBeLessThan(summary);
+    const list = (await rows.first().boundingBox())!.y;
+    expect(top).toBeLessThan(list);
   });
 
   test("Materials, Home, Training, Steps and the question screens have no % character", async ({

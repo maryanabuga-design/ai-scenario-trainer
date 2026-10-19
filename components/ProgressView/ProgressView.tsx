@@ -1,246 +1,69 @@
 "use client";
 
-import { History } from "lucide-react";
+import { ChevronDown, History } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
-import { Card } from "@/components/Card/Card";
+import { Chevron } from "@/components/Chevron/Chevron";
+import { Chip } from "@/components/Chip/Chip";
+import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { HeaderRow } from "@/components/HeaderRow/HeaderRow";
-import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { ReadinessBar } from "@/components/ReadinessBar/ReadinessBar";
-import { Tag } from "@/components/Tag/Tag";
+import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
+import { stepsCard } from "@/components/StepsView/StepCard";
 import type { AssignedExam } from "@/lib/assigned-exams";
-import { examReadiness, hasWeakTopics, topicReadiness } from "@/lib/readiness";
-import type { FinishedSession } from "@/lib/session";
-import { sessionLabel } from "@/lib/session";
 import { HISTORY_PAGE, seeMore, visibleHistory } from "@/lib/history";
-import { scoreSession, weakItemsFromHistory } from "@/lib/progress";
-import { progressSummary, sectionStats, trendSessions } from "@/lib/progress-stats";
-import { correctCount, weakItems } from "@/lib/scoring";
-import { topicsToRepeat, weakTopics } from "@/lib/weak-topics";
+import {
+  activityLabel,
+  allTopicIds,
+  activitySummary,
+  readinessCard,
+  recentSessions,
+  sessionDate,
+  sessionModeLabel,
+  sessionResult,
+  sessionTopicIds,
+  topicGroups,
+} from "@/lib/progress-view";
+import type { TopicProgress, TopicStatus } from "@/lib/progress-view";
+import { hasWeakTopics } from "@/lib/readiness";
+import type { FinishedSession } from "@/lib/session";
+import { examPath } from "@/lib/weak-session";
 
-const dateFormat = new Intl.DateTimeFormat("en-GB", {
-  day: "numeric",
-  month: "short",
-  hour: "2-digit",
-  minute: "2-digit",
-});
+/** How many sessions the Recent sessions list shows before "See all". */
+export const RECENT_SESSIONS = 3;
 
-const shortDate = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short" });
+export const sessionsPath = "/progress/sessions";
 
-const BAR_OLDER = "var(--olive-tint)";
+const status: Record<TopicStatus, { label: string; tone: "neutral" | "attention" | "success" }> = {
+  "not-started": { label: "Not started", tone: "neutral" },
+  "needs-work": { label: "Needs work", tone: "attention" },
+  ready: { label: "Ready", tone: "success" },
+};
 
-const CHART_HEIGHT = 120;
-
-function SummaryCard({ history }: { history: FinishedSession[] }) {
-  const { sessions, correct, answered } = progressSummary(history);
-  const numbers = [
-    { label: "Sessions", value: String(sessions) },
-    { label: "Correct answers", value: `${correct} of ${answered}` },
-  ];
-  return (
-    <Card>
-      <dl className="grid grid-cols-2 gap-2">
-        {numbers.map((number) => (
-          <div key={number.label} className="flex flex-col gap-1">
-            <dd className="type-numeral order-1 tabular-nums">{number.value}</dd>
-            <dt className="type-small order-2 text-text-secondary">{number.label}</dt>
-          </div>
-        ))}
-      </dl>
-    </Card>
-  );
-}
-
-function TrendCard({ history }: { history: FinishedSession[] }) {
-  const results = trendSessions(history);
-  return (
-    <Card className="flex flex-col gap-4">
-      <h2 className="type-item-title">Result by session</h2>
-      {history.length < 2 ? (
-        <p className="type-small text-text-secondary">Complete two sessions to see your trend.</p>
-      ) : (
-        <>
-          <ol aria-hidden="true" className="flex items-end gap-2">
-            {results.map((result, index) => {
-              const latest = index === results.length - 1;
-              return (
-                <li
-                  key={result.finishedAt}
-                  className="flex min-w-0 flex-1 flex-col items-center gap-1"
-                >
-                  <span
-                    className="flex w-full flex-col items-center justify-end"
-                    style={{ height: CHART_HEIGHT }}
-                  >
-                    <span className="type-small tabular-nums">
-                      {result.correct}/{result.total}
-                    </span>
-                    <span
-                      className="mt-1 w-full max-w-10 rounded-t-lg"
-                      style={{
-                        height: `${Math.max(result.percent, 2) * 0.8}px`,
-                        backgroundColor: latest ? "var(--primary)" : BAR_OLDER,
-                      }}
-                    />
-                  </span>
-                  <span className="type-caption text-text-secondary tabular-nums">
-                    {shortDate.format(result.finishedAt)}
-                  </span>
-                </li>
-              );
-            })}
-          </ol>
-          <table className="sr-only">
-            <caption>Result by session</caption>
-            <thead>
-              <tr>
-                <th scope="col">Date</th>
-                <th scope="col">Correct</th>
-              </tr>
-            </thead>
-            <tbody>
-              {results.map((result) => (
-                <tr key={result.finishedAt}>
-                  <td>{shortDate.format(result.finishedAt)}</td>
-                  <td>{`${result.correct} of ${result.total} correct`}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </>
-      )}
-    </Card>
-  );
-}
-
-function TopicsCard({ history }: { history: FinishedSession[] }) {
-  const topics = weakTopics(weakItemsFromHistory(history)).length;
-  return (
-    <Card className="flex flex-col gap-2">
-      <h2 className="type-item-title">Weak topics</h2>
-      {topics === 0 ? (
-        <p className="type-small text-text-secondary">Nothing to repeat right now.</p>
-      ) : (
-        <div className="-ml-3 self-start">
-          <ButtonLink variant="tertiary" href="/weak-topics">
-            {topicsToRepeat(topics)} · Weak topics
-          </ButtonLink>
-        </div>
-      )}
-    </Card>
-  );
-}
-
-function SectionsCard({ history }: { history: FinishedSession[] }) {
-  const { sections } = useSourceSheet();
-  const practised = new Set(
-    sectionStats(
-      history,
-      sections.map((s) => s.id),
-    )
-      .filter((s) => s.total > 0)
-      .map((s) => s.id),
-  );
-  const rows = sectionStats(
-    history,
-    sections.filter((s) => /^S\d+$/.test(s.id) || practised.has(s.id)).map((s) => s.id),
-  );
-  return (
-    <Card className="flex flex-col gap-4">
-      <h2 className="type-item-title">Guide sections</h2>
-      <ul className="flex flex-col gap-4">
-        {rows.map((row) => {
-          const title = sections.find((section) => section.id === row.id)?.title ?? row.id;
-          return (
-            <li key={row.id} className="flex items-center gap-3">
-              <span
-                aria-hidden="true"
-                className="type-caption flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-olive-tint text-text"
-              >
-                {row.id}
-              </span>
-              <span className="flex min-w-0 flex-1 flex-col gap-1">
-                <span className="type-body">
-                  <span className="sr-only">{row.id} </span>
-                  {title}
-                </span>
-                <span
-                  aria-hidden="true"
-                  className="h-1.5 overflow-hidden rounded-full bg-secondary-sand"
-                >
-                  <span
-                    className="block h-full rounded-full"
-                    style={{
-                      width: `${row.total === 0 ? 0 : (row.correct / row.total) * 100}%`,
-                      backgroundColor: BAR_OLDER,
-                    }}
-                  />
-                </span>
-                <span className="type-small text-text-secondary tabular-nums">
-                  {row.total === 0 ? "Not practised yet" : `${row.correct} of ${row.total} correct`}
-                </span>
-              </span>
-            </li>
-          );
-        })}
-      </ul>
-    </Card>
-  );
-}
-
-function HistoryRow({ session }: { session: FinishedSession }) {
-  const scored = scoreSession(session);
-  const wrong = weakItems(scored).length;
-
-  return (
-    <Card className="flex flex-col gap-2">
-      <div className="flex items-center justify-between gap-3">
-        <Tag
-          tone={
-            { repeat: "yellow", quiz: "blue", scenario: "peach", exam: "lilac" }[session.kind] as
-              "yellow" | "blue" | "peach" | "lilac"
-          }
-        >
-          {sessionLabel(session)}
-        </Tag>
-        <span className="type-small text-text-secondary tabular-nums">
-          {dateFormat.format(session.finishedAt)}
-        </span>
-      </div>
-      <p className="type-item-title tabular-nums">
-        {correctCount(scored)} of {scored.length} correct
-      </p>
-      <p className="type-small text-text-secondary">
-        {wrong === 0 ? (
-          "Nothing to repeat."
-        ) : (
-          <>
-            <span className="tabular-nums">{wrong}</span> {wrong === 1 ? "answer" : "answers"}{" "}
-            wrong.
-          </>
-        )}
-      </p>
-    </Card>
-  );
-}
+const rowClass = `${stepsCard} flex min-h-14 w-full items-center gap-3 p-[var(--gutter,1rem)] text-left`;
+const focusClass =
+  "active:bg-secondary-sand has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
 /**
- * The "Exam readiness" section for the nearest-deadline exam: the bar, the readiness of each topic
- * (weakest first) and the Secondary "Repeat weak topics". Every percentage in it is Readiness and
- * they share the one heading.
+ * The readiness card: the ONE measured percentage of the screen ("Readiness"), the shared bar with
+ * its pass-mark marker, one plain sentence and one button (Repeat weak topics, or Start exam once
+ * ready). No red anywhere.
  */
-function ExamReadinessCard({
+function ReadinessSection({
   exam,
   history,
+  now,
   onRepeat,
 }: {
-  exam: AssignedExam;
+  exam: AssignedExam | null;
   history: FinishedSession[];
+  now: Date;
   onRepeat: () => void;
 }) {
-  const { sections } = useSourceSheet();
-  const rows = topicReadiness(exam.topicIds, history);
+  const topics = exam?.topicIds ?? null;
+  const card = readinessCard(topics, history, now, exam);
   return (
     <section
       aria-labelledby="exam-readiness"
@@ -248,103 +71,321 @@ function ExamReadinessCard({
     >
       <div className="flex flex-col gap-0.5">
         <h2 id="exam-readiness" className="type-item-title">
-          Exam readiness
+          {card.title}
         </h2>
-        <p className="type-small text-text-secondary">{exam.title}</p>
+        {card.subtitle && <p className="type-small text-text-secondary">{card.subtitle}</p>}
       </div>
-      <ReadinessBar percent={examReadiness(exam.topicIds, history)} />
-      <ul className="flex flex-col gap-3">
-        {rows.map((row) => {
-          const title =
-            sections.find((section) => section.id === row.sectionId)?.title ?? row.sectionId;
-          return (
-            <li key={row.sectionId} className="flex flex-col gap-1">
-              <span className="flex items-baseline justify-between gap-3">
-                <span className="type-body">
-                  <span className="sr-only">{row.sectionId} </span>
-                  {title}
-                </span>
-                <span className="type-small tabular-nums text-text-secondary">
-                  <span className="sr-only">Readiness </span>
-                  {row.readiness}%
-                </span>
-              </span>
-              <span
-                aria-hidden="true"
-                className="h-1.5 overflow-hidden rounded-full bg-secondary-sand"
-              >
-                <span
-                  className="block h-full rounded-full bg-primary"
-                  style={{ width: `${row.readiness}%` }}
-                />
-              </span>
-            </li>
-          );
-        })}
-      </ul>
-      {hasWeakTopics(exam.topicIds, history) && (
-        <Button variant="secondary" onClick={onRepeat}>
-          Repeat weak topics
-        </Button>
+      <p className="type-numeral tabular-nums" data-readiness-number>
+        Readiness {card.readiness}%
+      </p>
+      <ReadinessBar percent={card.readiness} />
+      <p className="type-body">{card.sentence}</p>
+      {card.ready ? (
+        <ButtonLink variant="secondary" href={exam ? examPath(exam.id) : "/exam"}>
+          Start exam
+        </ButtonLink>
+      ) : (
+        hasWeakTopics(topics ?? allTopicIds, history) && (
+          <Button onClick={onRepeat}>Repeat weak topics</Button>
+        )
       )}
     </section>
   );
 }
 
-/** Progress: how you are doing over time. Actions to repeat live on Home. */
+/** One topic: one tap target that practises it. Counts and a word, never a percentage. */
+function TopicRow({
+  row,
+  title,
+  onPractise,
+}: {
+  row: TopicProgress;
+  title: string;
+  onPractise: (topicId: string) => void;
+}) {
+  const { label, tone } = status[row.status];
+  const share = row.total === 0 ? 0 : (row.correct / row.total) * 100;
+  return (
+    <button
+      type="button"
+      data-topic-row={row.sectionId}
+      onClick={() => onPractise(row.sectionId)}
+      className={`${rowClass} ${focusClass}`}
+    >
+      <span
+        aria-hidden="true"
+        className="type-caption flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-olive-tint text-text"
+      >
+        {row.sectionId}
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col gap-1">
+        <span className="type-body">
+          <span className="sr-only">{row.sectionId} </span>
+          {title}
+        </span>
+        <span className="type-small text-text-secondary tabular-nums">
+          {row.correct} of {row.total} correct
+        </span>
+        <span aria-hidden="true" className="h-1.5 overflow-hidden rounded-full bg-secondary-sand">
+          <span className="block h-full rounded-full bg-primary" style={{ width: `${share}%` }} />
+        </span>
+      </span>
+      <Chip tone={tone} size="caption">
+        {label}
+      </Chip>
+    </button>
+  );
+}
+
+function TopicList({
+  rows,
+  titleOf,
+  onPractise,
+}: {
+  rows: TopicProgress[];
+  titleOf: (id: string) => string;
+  onPractise: (topicId: string) => void;
+}) {
+  return (
+    <ul className="flex flex-col gap-3">
+      {rows.map((row) => (
+        <li key={row.sectionId}>
+          <TopicRow row={row} title={titleOf(row.sectionId)} onPractise={onPractise} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/**
+ * "By topic": ONE list with the exam's topics first ("In your exam") and the others in a disclosure
+ * that is closed until it is opened. Without an exam every topic is under "Topics".
+ */
+function TopicsSection({
+  exam,
+  history,
+  titleOf,
+  onPractise,
+}: {
+  exam: AssignedExam | null;
+  history: FinishedSession[];
+  titleOf: (id: string) => string;
+  onPractise: (topicId: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const { inExam, other } = topicGroups(exam?.topicIds ?? null, history);
+  return (
+    <section aria-labelledby="by-topic" className="flex flex-col gap-4">
+      <h2 id="by-topic" className="type-item-title">
+        By topic
+      </h2>
+      {inExam.length > 0 && (
+        <div className="flex flex-col gap-3">
+          <h3 className="type-label text-text-secondary">In your exam</h3>
+          <TopicList rows={inExam} titleOf={titleOf} onPractise={onPractise} />
+        </div>
+      )}
+      <div className="flex flex-col gap-3">
+        {inExam.length === 0 ? (
+          <h3 className="type-label text-text-secondary">Topics</h3>
+        ) : (
+          <button
+            type="button"
+            aria-expanded={open}
+            aria-controls="other-topics"
+            onClick={() => setOpen(!open)}
+            className={`${rowClass} ${focusClass} justify-between`}
+          >
+            <span className="type-body-strong">Other topics ({other.length})</span>
+            <ChevronDown
+              size={20}
+              strokeWidth={2}
+              aria-hidden="true"
+              className={`shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
+            />
+          </button>
+        )}
+        {(inExam.length === 0 || open) && (
+          <div id="other-topics">
+            <TopicList rows={other} titleOf={titleOf} onPractise={onPractise} />
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+/** One finished session: mode, topic, "7 of 10 correct" and the date. A row with a screen to open has a chevron. */
+export function SessionRow({
+  session,
+  now,
+  titleOf,
+  href,
+}: {
+  session: FinishedSession;
+  now: Date;
+  titleOf: (id: string) => string;
+  href?: string | null;
+}) {
+  const topics = sessionTopicIds(session);
+  const topicName =
+    topics.length === 0
+      ? null
+      : topics.length === 1
+        ? titleOf(topics[0])
+        : `${topics.length} topics`;
+  const { correct, total } = sessionResult(session);
+  const content = (
+    <>
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="type-body-strong">
+          {sessionModeLabel(session)}
+          {topicName && <span className="type-body text-text-secondary"> · {topicName}</span>}
+        </span>
+        <span className="type-small text-text-secondary tabular-nums">
+          {correct} of {total} correct
+        </span>
+      </span>
+      <span className="type-caption shrink-0 self-start text-text-secondary tabular-nums">
+        {sessionDate(session.finishedAt, now)}
+      </span>
+      {href && <Chevron />}
+    </>
+  );
+  return href ? (
+    <Link href={href} className={`${rowClass} ${focusClass}`}>
+      {content}
+    </Link>
+  ) : (
+    <div
+      data-session-row
+      className={`${stepsCard} flex min-h-14 items-center gap-3 p-[var(--gutter,1rem)]`}
+    >
+      {content}
+    </div>
+  );
+}
+
+/**
+ * Progress (DESIGN.md: Progress): how ready you are, what to do next, what you have done. Exactly
+ * one measured percentage, "Readiness"; everywhere else counts and words.
+ */
 export function ProgressView({
   history,
   exam = null,
+  now,
   onRepeat = () => {},
+  onPractise = () => {},
+  resultHref = () => null,
 }: {
   history: FinishedSession[];
   /** The assigned exam with the nearest deadline, if any. */
   exam?: AssignedExam | null;
+  now: Date;
   onRepeat?: () => void;
+  /** Starts (or resumes) practice of a topic. */
+  onPractise?: (topicId: string) => void;
+  /** The results screen a session can still open, or null. */
+  resultHref?: (session: FinishedSession) => string | null;
 }) {
-  const [shown, setShown] = useState(HISTORY_PAGE);
-  const { visible, hasMore } = visibleHistory([...history].reverse(), shown);
+  const { sections } = useSourceSheet();
+  const titleOf = (id: string) => sections.find((section) => section.id === id)?.title ?? id;
+  const recent = recentSessions(history, RECENT_SESSIONS);
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 pb-4">
       <HeaderRow
         title={<h1 className="type-page-title">Progress</h1>}
         subtitle={<p className="type-small text-text-secondary">How you are doing over time.</p>}
       />
 
-      {exam && <ExamReadinessCard exam={exam} history={history} onRepeat={onRepeat} />}
+      <ReadinessSection exam={exam} history={history} now={now} onRepeat={onRepeat} />
+      <TopicsSection exam={exam} history={history} titleOf={titleOf} onPractise={onPractise} />
 
       {history.length === 0 ? (
         <EmptyState
           icon={History}
-          text="No sessions yet. Start a scenario to see your progress."
-          action={<ButtonLink href="/">Start a scenario</ButtonLink>}
+          text="No sessions yet. Start with Choose a topic."
+          action={
+            <ButtonLink variant="secondary" href="/training">
+              Choose a topic
+            </ButtonLink>
+          }
         />
       ) : (
         <>
-          <SummaryCard history={history} />
-          <TrendCard history={history} />
-          <TopicsCard history={history} />
-          <SectionsCard history={history} />
-          <section aria-labelledby="history-title" className="flex flex-col gap-3">
-            <h2 id="history-title" className="type-item-title">
-              Session history
-            </h2>
+          <p className="type-small text-text-secondary tabular-nums" data-activity>
+            {activityLabel(activitySummary(history))}
+          </p>
+          <section aria-labelledby="recent-sessions" className="flex flex-col gap-3">
+            <div className="flex items-center justify-between gap-3">
+              <h2 id="recent-sessions" className="type-item-title">
+                Recent sessions
+              </h2>
+              <div className="-mr-3">
+                <ButtonLink variant="tertiary" href={sessionsPath}>
+                  See all
+                </ButtonLink>
+              </div>
+            </div>
             <ol className="flex flex-col gap-3">
-              {visible.map((session) => (
+              {recent.map((session) => (
                 <li key={session.finishedAt}>
-                  <HistoryRow session={session} />
+                  <SessionRow
+                    session={session}
+                    now={now}
+                    titleOf={titleOf}
+                    href={resultHref(session)}
+                  />
                 </li>
               ))}
             </ol>
-            {hasMore && (
-              <div className="-ml-3">
-                <Button variant="tertiary" onClick={() => setShown(seeMore(shown))}>
-                  See more
-                </Button>
-              </div>
-            )}
           </section>
         </>
+      )}
+    </div>
+  );
+}
+
+/** The full list of sessions, newest first, 10 at a time. */
+export function SessionsListView({
+  history,
+  now,
+  resultHref = () => null,
+}: {
+  history: FinishedSession[];
+  now: Date;
+  resultHref?: (session: FinishedSession) => string | null;
+}) {
+  const { sections } = useSourceSheet();
+  const titleOf = (id: string) => sections.find((section) => section.id === id)?.title ?? id;
+  const [shown, setShown] = useState(HISTORY_PAGE);
+  const { visible, hasMore } = visibleHistory(recentSessions(history, history.length), shown);
+  return (
+    <div className="flex flex-col gap-6 pb-4">
+      <CircleBackButton href="/progress" label="Back to Progress" />
+      <h1 className="type-page-title">Sessions</h1>
+      {history.length === 0 ? (
+        <EmptyState icon={History} text="No sessions yet. Start with Choose a topic." />
+      ) : (
+        <ol className="flex flex-col gap-3">
+          {visible.map((session) => (
+            <li key={session.finishedAt}>
+              <SessionRow
+                session={session}
+                now={now}
+                titleOf={titleOf}
+                href={resultHref(session)}
+              />
+            </li>
+          ))}
+        </ol>
+      )}
+      {hasMore && (
+        <div className="-ml-3">
+          <Button variant="tertiary" onClick={() => setShown(seeMore(shown))}>
+            See more
+          </Button>
+        </div>
       )}
     </div>
   );

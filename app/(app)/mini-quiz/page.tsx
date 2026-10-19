@@ -42,7 +42,10 @@ function MiniQuiz() {
       onStart={() => {
         if (amount === null) return;
         // A new random draw and order on every start; no part, so no part ring changes.
-        startSession("quiz", drawMiniQuiz(selected, amount), { returnTo: from.href });
+        startSession("quiz", drawMiniQuiz(selected, amount), {
+          returnTo: from.href,
+          mode: "mini-quiz",
+        });
         router.push("/session");
       }}
     />

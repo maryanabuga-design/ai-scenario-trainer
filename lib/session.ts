@@ -1,4 +1,4 @@
-import { findItem } from "@/lib/items";
+import { findItem, sectionOrder } from "@/lib/items";
 import { clearPartRecords, recordPartResult } from "@/lib/part-progress";
 import { clearExam } from "@/lib/exam-store";
 import { notifyFinished, resetNotifications } from "@/lib/notifications";
@@ -28,6 +28,8 @@ export type Session = {
   answers: Answer[];
   /** The question on screen. Answers are saved as they are given. */
   index: number;
+  /** How it was started, for Progress: practice (a part, a topic, a repeat), a mini-quiz or the exam. */
+  mode?: "practice" | "mini-quiz" | "exam";
   /** The Training part this session plays (`<mode>:<section>:<n>`); absent for other sessions. */
   partId?: string;
   /** Where Back on Results goes: where the session was started from. Home when absent. */
@@ -45,9 +47,11 @@ export type Session = {
 
 export type FinishedSession = Pick<
   Session,
-  "kind" | "scenarioId" | "itemIds" | "answers" | "partId"
+  "kind" | "scenarioId" | "itemIds" | "answers" | "partId" | "mode"
 > & {
   finishedAt: number;
+  /** The guide topics of its questions (Progress shows the name). Records saved before it have none. */
+  topicIds?: string[];
   /** Only for an exam: its result, the number of questions and the time used. */
   exam?: ExamResult;
 };
@@ -98,7 +102,11 @@ export function sessionLabel(session: Pick<Session, "kind">) {
 /** Where Leave on the Exit dialog goes: the reading screen or the exam screen the session was started from, else Home. */
 export function leaveHref(session: Pick<Session, "returnTo">): string {
   const back = session.returnTo;
-  return back?.startsWith("/materials/read/") || back?.startsWith("/exam?id=") ? back : "/";
+  return back?.startsWith("/materials/read/") ||
+    back?.startsWith("/exam?id=") ||
+    back === "/progress"
+    ? back
+    : "/";
 }
 
 export function saveSession(session: Session) {
@@ -114,10 +122,12 @@ export function startSession(
     returnTo?: string;
     examId?: string;
     readinessBefore?: number;
+    mode?: Session["mode"];
   } = {},
 ) {
   saveSession({
     kind,
+    ...(options.mode && { mode: options.mode }),
     ...(options.scenarioId && { scenarioId: options.scenarioId }),
     ...(options.partId && { partId: options.partId }),
     ...(options.returnTo && { returnTo: options.returnTo }),
@@ -185,6 +195,12 @@ export function firstUnanswered(session: Pick<Session, "itemIds" | "answers">): 
   return session.itemIds.findIndex((id) => !answerFor(session, id));
 }
 
+/** The guide topics of a list of questions, in guide order. */
+export function topicIdsOf(itemIds: string[]): string[] {
+  const sections = new Set(itemIds.flatMap((id) => findItem(id)?.section ?? []));
+  return [...sections].sort((a, b) => sectionOrder(a) - sectionOrder(b));
+}
+
 /** Marks the session finished and adds it to the history used by Home and Progress. */
 export function finishSession(session: Session) {
   const finishedAt = Date.now();
@@ -194,6 +210,8 @@ export function finishSession(session: Session) {
     kind: session.kind,
     ...(session.scenarioId && { scenarioId: session.scenarioId }),
     ...(session.partId && { partId: session.partId }),
+    mode: session.mode ?? "practice",
+    topicIds: topicIdsOf(session.itemIds),
     itemIds: session.itemIds,
     answers: ordered,
     finishedAt,

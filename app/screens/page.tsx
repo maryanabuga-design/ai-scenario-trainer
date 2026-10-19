@@ -604,24 +604,19 @@ export default function Screens() {
               <WeakTopicsSample empty />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Progress: no data">
+          <PhoneFrame label="Progress: seeded sessions, the assigned exam, one percentage (Readiness)">
             <Screen nav="/progress">
               <ProgressSample />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Progress: exactly one session">
+          <PhoneFrame label="Progress: no exam assigned (Overall readiness)">
             <Screen nav="/progress">
-              <ProgressSample sessions={1} />
+              <ProgressSample state="no-exam" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Progress: with history">
+          <PhoneFrame label="Progress: empty state">
             <Screen nav="/progress">
-              <ProgressSample withHistory />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Progress: 12 sessions, 5 shown with See more">
-            <Screen nav="/progress">
-              <ProgressSample sessions={12} />
+              <ProgressSample state="empty" />
             </Screen>
           </PhoneFrame>
         </Group>

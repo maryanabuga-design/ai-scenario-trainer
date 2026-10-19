@@ -75,7 +75,10 @@ import { addHighlights, blockTexts } from "@/lib/highlights";
 import { toolbarActions } from "@/lib/selection-actions";
 import { homeArtwork, homeCounts, homeSummary } from "@/lib/home";
 import { NotificationsView } from "@/components/NotificationsView/NotificationsView";
+import { demoExam } from "@/lib/assigned-exams";
 import { markRead, seedNotifications } from "@/lib/notifications";
+import { scopeItemIds } from "@/lib/readiness";
+import { topicIdsOf } from "@/lib/session";
 import { DEMO_USER } from "@/lib/user";
 
 /**
@@ -378,45 +381,49 @@ export function HomeSample({
   );
 }
 
-/** Progress on a first visit, or after a short and a full session. */
-export function ProgressSample({
-  withHistory = false,
-  sessions,
-}: {
-  withHistory?: boolean;
-  /** Many short sessions, to show the history pages and See more. */
-  sessions?: number;
-}) {
-  const answers = (picks: [string, string][]) =>
-    picks.map(([itemId, optionId]) => ({ itemId, optionId }));
-  const short: FinishedSession = {
-    kind: "scenario",
-    itemIds: ["q-scn-s01-001", "s2", "s3"],
-    answers: answers([
-      ["q-scn-s01-001", "a"],
-      ["s2", "c"],
-      ["s3", "a"],
-    ]),
-    finishedAt: Date.UTC(2026, 9, 7, 9, 20),
-  };
-  const history: FinishedSession[] = withHistory
-    ? [
-        short,
-        {
-          kind: "scenario",
-          itemIds: sampleAnswers.map((item) => item.id),
-          answers: sampleAnswers.map((item) => ({
-            itemId: item.id,
-            optionId: item.chosenOptionId,
-          })),
-          finishedAt: Date.UTC(2026, 9, 8, 12, 5),
-        },
-      ]
-    : Array.from({ length: sessions ?? 0 }, (_, index) => ({
-        ...short,
-        finishedAt: Date.UTC(2026, 9, 1 + index, 9, 20),
-      }));
-  return <ProgressView history={history} />;
+/** Progress with no sessions, with seeded sessions and an assigned exam, or without an exam. */
+export function ProgressSample({ state = "seeded" }: { state?: "empty" | "seeded" | "no-exam" }) {
+  const now = new Date(2026, 9, 19, 14, 0);
+  const day = (daysAgo: number, hour = 10, minute = 37) =>
+    new Date(2026, 9, 19 - daysAgo, hour, minute).getTime();
+  const answers = (ids: string[], right: number) =>
+    ids.map((id, index) => ({
+      itemId: id,
+      optionId:
+        index < right
+          ? getItem(id).correctOptionId
+          : getItem(id).options.find((option) => option.id !== getItem(id).correctOptionId)!.id,
+    }));
+  const s1 = scopeItemIds(["S1"]);
+  const s2 = scopeItemIds(["S2"]);
+  const s3 = scopeItemIds(["S3"]);
+  const s5 = scopeItemIds(["S5"]);
+  const entry = (
+    ids: string[],
+    right: number,
+    finishedAt: number,
+    extra: Partial<FinishedSession> = {},
+  ): FinishedSession => ({
+    kind: "quiz",
+    mode: "practice",
+    topicIds: topicIdsOf(ids),
+    itemIds: ids,
+    answers: answers(ids, right),
+    finishedAt,
+    ...extra,
+  });
+  const history: FinishedSession[] =
+    state === "empty"
+      ? []
+      : [
+          entry(s1, s1.length - 1, day(6)),
+          entry(s2.slice(0, 10), 4, day(3)),
+          entry([...s3.slice(0, 3), ...s5.slice(0, 2)], 3, day(1, 18, 5), { mode: "mini-quiz" }),
+          entry(s2.slice(0, 10), 7, day(0), { kind: "repeat" }),
+        ];
+  return (
+    <ProgressView history={history} exam={state === "no-exam" ? null : demoExam(now)} now={now} />
+  );
 }
 
 export function OnboardingSample({ start }: { start: OnboardingStep }) {
