@@ -24,7 +24,7 @@ export const examRules: { icon: LucideIcon; text: string }[] = [
   { icon: Target, text: `Pass mark ${PASS_MARK}%` },
 ];
 
-/** The subtitle of the band: "Assigned by Admin · Due 25 Oct", with a clock when overdue. */
+/** The subtitle of the band: "Assigned by Instructor · Due 25 Oct", with a clock when overdue. */
 export function ExamSubtitle({ assignedBy, deadline }: { assignedBy: string; deadline: Deadline }) {
   return (
     <>
@@ -52,7 +52,7 @@ function AttemptRow({ label, attempt }: { label: string; attempt: ExamAttemptCou
 }
 
 /**
- * The exam screen: the band (title, "Assigned by Admin · Due 25 Oct"), the readiness card (neutral,
+ * The exam screen: the band (title, "Assigned by Instructor · Due 25 Oct"), the readiness card (neutral,
  * with the bar and its 80% tick), the rules, the last and best attempt as counts, and the buttons
  * in the page flow. The exam can always be started; below the pass mark "Repeat weak topics" is the
  * recommended action and "Start exam anyway" the secondary one.

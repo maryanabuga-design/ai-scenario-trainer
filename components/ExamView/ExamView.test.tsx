@@ -15,7 +15,7 @@ const render = (props: Partial<Parameters<typeof ExamView>[0]> = {}) =>
   renderToStaticMarkup(
     <ExamView
       title="Evacuation basics exam"
-      assignedBy="Admin"
+      assignedBy="Instructor"
       deadline={deadlineText("2026-10-25", now)}
       readiness={0}
       canRepeat
@@ -28,12 +28,12 @@ const render = (props: Partial<Parameters<typeof ExamView>[0]> = {}) =>
   );
 
 describe("the exam screen", () => {
-  it("has the band with Back to Home, the exam title and 'Assigned by Admin · Due 25 Oct'", () => {
+  it("has the band with Back to Home, the exam title and 'Assigned by Instructor · Due 25 Oct'", () => {
     const html = render();
     expect(html).toContain("data-page-header-band");
     expect(html).toContain('aria-label="Back to Home"');
     expect(html).toContain(">Evacuation basics exam</h1>");
-    expect(html.replace(/<[^>]+>/g, "")).toContain("Assigned by Admin · Due 25 Oct");
+    expect(html.replace(/<[^>]+>/g, "")).toContain("Assigned by Instructor · Due 25 Oct");
     // not overdue: no clock in the subtitle
     expect(html.slice(0, html.indexOf("<section"))).not.toContain("lucide-clock");
   });

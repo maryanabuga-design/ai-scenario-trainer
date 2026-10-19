@@ -75,6 +75,9 @@ import { addHighlights, blockTexts } from "@/lib/highlights";
 import { toolbarActions } from "@/lib/selection-actions";
 import { homeArtwork, homeCounts, homeSummary } from "@/lib/home";
 import { NotificationsView } from "@/components/NotificationsView/NotificationsView";
+import { AboutView } from "@/components/AboutView/AboutView";
+import { InstructorHomeView } from "@/components/InstructorHomeView/InstructorHomeView";
+import type { Role } from "@/lib/role";
 import { demoExam } from "@/lib/assigned-exams";
 import { markRead, seedNotifications } from "@/lib/notifications";
 import { readinessAfter, scopeItemIds } from "@/lib/readiness";
@@ -443,9 +446,17 @@ export function OnboardingSample({ start }: { start: OnboardingStep }) {
 }
 
 /** Profile, or the reset confirmation drawn in place of the overlay. */
-export function ProfileSample({ confirming = false }: { confirming?: boolean }) {
+export function ProfileSample({
+  confirming = false,
+  role = "student",
+}: {
+  confirming?: boolean;
+  role?: Role;
+}) {
   return (
     <ProfileView
+      role={role}
+      onRoleChange={() => undefined}
       direction={defaultDirection.id}
       onDirectionChange={() => undefined}
       confirming={confirming}
@@ -944,7 +955,7 @@ export function ExamIntroSample({
   return (
     <ExamView
       title="Evacuation basics exam"
-      assignedBy="Admin"
+      assignedBy="Instructor"
       deadline={deadlineText(overdue ? "2026-10-15" : "2026-10-25", now)}
       readiness={readiness}
       canRepeat={readiness < 100}
@@ -1070,4 +1081,13 @@ export function NotificationsSample({ state }: { state: "new" | "mixed" | "empty
         ? seeded
         : markRead(markRead(seeded, "welcome"), "new-material-s2");
   return <NotificationsView items={items} now={now} onOpen={() => {}} onMarkAll={() => {}} />;
+}
+
+/** The Instructor Home stub and the About screen, for the screen review page. */
+export function InstructorHomeSample() {
+  return <InstructorHomeView />;
+}
+
+export function AboutSample() {
+  return <AboutView />;
 }

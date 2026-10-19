@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { ReactNode } from "react";
 import { ActionBarProvider, ActionBarSlot } from "@/components/ActionBar/ActionBar";
+import { RoleGate } from "@/components/RoleGate/RoleGate";
 import { NavigationTracker } from "@/components/NavigationTracker/NavigationTracker";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
@@ -14,7 +15,11 @@ export function AppShell({ children }: { children: ReactNode }) {
       </Suspense>
       <SourceSheetProvider sections={loadAllSections()}>
         <ActionBarProvider>
-          <main className="flex flex-1 flex-col px-[var(--gutter,1rem)] pt-6">{children}</main>
+          <main className="flex flex-1 flex-col px-[var(--gutter,1rem)] pt-6">
+            <Suspense fallback={null}>
+              <RoleGate>{children}</RoleGate>
+            </Suspense>
+          </main>
           <div
             data-full-bleed
             className="sticky bottom-0 z-10 bg-bg pb-[env(safe-area-inset-bottom)]"

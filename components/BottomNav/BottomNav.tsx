@@ -2,12 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useRole } from "@/lib/role";
+import type { Role } from "@/lib/role";
 import { ChartNoAxesColumn, FileText, House, User } from "lucide-react";
 
-const items = [
+const studentItems = [
   { href: "/", label: "Home", Icon: House },
   { href: "/materials", label: "Materials", Icon: FileText },
   { href: "/progress", label: "Progress", Icon: ChartNoAxesColumn },
+  { href: "/profile", label: "Profile", Icon: User },
+];
+
+/** An instructor has only Home (Instructor Home) and Profile, in the same style. */
+const instructorItems = [
+  { href: "/instructor", label: "Home", Icon: House },
   { href: "/profile", label: "Profile", Icon: User },
 ];
 
@@ -17,12 +25,22 @@ const READING_PREFIX = "/materials/read/";
 function isCurrent(href: string, pathname: string) {
   if (pathname.startsWith(READING_PREFIX)) return false;
   // Training is a sub-screen of Home and keeps the Home item active.
-  return href === "/" ? pathname === "/" || pathname === "/training" : pathname.startsWith(href);
+  if (href === "/") return pathname === "/" || pathname === "/training";
+  if (href === "/instructor") return pathname === "/instructor";
+  return pathname.startsWith(href);
 }
 
-export function BottomNav({ activePath }: { activePath?: string }) {
+/**
+ * `role` is given by the screen review page; otherwise it is the saved role, and nothing is drawn
+ * until that has been read (so an instructor never sees the student's four items).
+ */
+export function BottomNav({ activePath, role }: { activePath?: string; role?: Role }) {
   const currentPath = usePathname();
+  const stored = useRole();
   const pathname = activePath ?? currentPath;
+  const current = role ?? (activePath !== undefined ? "student" : stored);
+  if (current === "loading") return null;
+  const items = current === "instructor" ? instructorItems : studentItems;
 
   if (!items.some((item) => isCurrent(item.href, pathname))) return null;
 

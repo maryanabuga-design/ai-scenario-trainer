@@ -28,7 +28,7 @@ describe("assigned exams", () => {
     vi.unstubAllGlobals();
   });
 
-  it("seeds the demo exam once: S1 to S4, due in 7 days, assigned by Admin", async () => {
+  it("seeds the demo exam once: S1 to S4, due in 7 days, assigned by Instructor", async () => {
     const data = stubStorage();
     const exams = await load();
     const seeded = exams.seedExams(NOW);
@@ -38,7 +38,7 @@ describe("assigned exams", () => {
       title: "Evacuation basics exam",
       topicIds: ["S1", "S2", "S3", "S4"],
       deadline: "2026-10-26",
-      assignedBy: "Admin",
+      assignedBy: "Instructor",
     });
     expect(data.has("ast.exams.v1")).toBe(true);
     // a second load keeps what is stored and does not seed again
@@ -53,7 +53,7 @@ describe("assigned exams", () => {
       title: "Exam A",
       topicIds: ["S2", "ghost", "S1"],
       deadline: "2026-10-25",
-      assignedBy: "Admin",
+      assignedBy: "Instructor",
       assignedAt: 5,
     };
     expect(cleanExams([good])![0].topicIds).toEqual(["S1", "S2"]);
@@ -93,7 +93,7 @@ describe("assigned exams", () => {
           title: "Old exam",
           topicIds: ["S1", "S99"],
           deadline: "2026-10-25",
-          assignedBy: "Admin",
+          assignedBy: "Instructor",
           assignedAt: 1,
         },
       ],
@@ -111,5 +111,21 @@ describe("assigned exams", () => {
     expect(byDeadline([a, c, b]).map((exam) => exam.id)).toEqual(["b", "c", "a"]);
     expect(nearestExam([a, b])?.id).toBe("b");
     expect(nearestExam([])).toBeNull();
+  });
+});
+
+describe("the Instructor wording", () => {
+  it("shows an exam saved before the rename as assigned by Instructor", async () => {
+    const { cleanExams } = await load();
+    const old = {
+      id: "a",
+      title: "Old exam",
+      topicIds: ["S1"],
+      deadline: "2026-10-25",
+      assignedBy: "Admin",
+      assignedAt: 1,
+    };
+    expect(cleanExams([old])![0].assignedBy).toBe("Instructor");
+    expect(cleanExams([{ ...old, assignedBy: undefined }])![0].assignedBy).toBe("Instructor");
   });
 });

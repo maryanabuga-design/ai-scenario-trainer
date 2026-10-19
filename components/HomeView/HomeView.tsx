@@ -28,7 +28,7 @@ const tileIcons: Record<HomeTileId, LucideIcon> = {
 };
 
 /**
- * Home, the learner view: an avatar (Profile), the greeting and the notification bell, then one sentence, the hero card (its
+ * Home, the student view: an avatar (Profile), the greeting and the notification bell, then one sentence, the hero card (its
  * one Primary button opens Training), four tiles and the Mini-quiz row. Nothing from Progress is
  * repeated here, and no readiness percentage.
  */

@@ -50,7 +50,7 @@ const noSidewaysScroll = (page: Page) =>
 test.describe("Exam readiness", () => {
   test.use({ viewport: { width: 360, height: 800 } });
 
-  test("a fresh learner sees the demo exam in Training with its deadline and no percentage", async ({
+  test("a fresh student sees the demo exam in Training with its deadline and no percentage", async ({
     page,
   }) => {
     await open(page, "/training");
@@ -77,7 +77,7 @@ test.describe("Exam readiness", () => {
     // the band, with the exam title and who assigned it
     const band = page.locator("[data-page-header-band]:visible");
     await expect(band.getByRole("heading", { name: "Evacuation basics exam" })).toBeVisible();
-    await expect(band).toContainText("Assigned by Admin · Due");
+    await expect(band).toContainText("Assigned by Instructor · Due");
     // a white card of the same family as the other two cards
     const card = page.getByRole("region", { name: "Readiness" }).locator("> div");
     expect(await card.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(

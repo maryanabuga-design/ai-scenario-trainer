@@ -27,9 +27,7 @@ export function DirectionPicker({
         >
           <span className="flex flex-col gap-0.5">
             <span>{direction.title}</span>
-            {!direction.available && (
-              <span className="type-small">Not available in this prototype</span>
-            )}
+            {!direction.available && <span className="type-small">Coming soon</span>}
           </span>
         </SelectableRow>
       ))}

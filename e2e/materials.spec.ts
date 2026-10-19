@@ -13,6 +13,8 @@ async function open(page: Page, path: string) {
     [profile],
   );
   await page.goto(path);
+  // the page is drawn once the role has been read in the browser (RoleGate)
+  await page.locator("main > *:not(script)").first().waitFor({ state: "attached" });
 }
 
 const noSidewaysScroll = (page: Page) =>

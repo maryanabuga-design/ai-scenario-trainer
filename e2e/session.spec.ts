@@ -925,7 +925,7 @@ test.describe("Exam", () => {
     await expect(
       page.getByRole("heading", { name: "Evacuation basics exam", level: 1 }),
     ).toBeVisible();
-    await expect(page.getByText(/^Assigned by Admin · Due /)).toBeVisible();
+    await expect(page.getByText(/^Assigned by Instructor · Due /)).toBeVisible();
     for (const rule of [
       "20 questions from all topics",
       "20 minutes",
@@ -935,7 +935,7 @@ test.describe("Exam", () => {
       await expect(page.getByText(rule)).toBeVisible();
     }
     await expect(page.getByText("You have not taken the exam yet")).toBeVisible();
-    // a fresh learner is not ready: the exam can still be started
+    // a fresh student is not ready: the exam can still be started
     await expect(page.getByRole("button", { name: "Start exam anyway" })).toBeVisible();
   });
 

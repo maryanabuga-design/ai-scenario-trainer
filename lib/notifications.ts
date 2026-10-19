@@ -7,7 +7,7 @@ import type { FinishedSession } from "@/lib/session";
 
 /**
  * Notifications. CLIENT ONLY (they are saved in this browser). They are demo data: four messages
- * "from your administrator" (`content/notifications.json`) and in-app events. There is no backend,
+ * "from your instructor" (`content/notifications.json`) and in-app events. There is no backend,
  * no push, no permission prompt and no network request (DESIGN.md: Notifications).
  */
 export type NotificationType = "reminder" | "result" | "message";

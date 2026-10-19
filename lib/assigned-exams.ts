@@ -5,7 +5,7 @@ import { createStore } from "@/lib/store";
 
 /**
  * An assigned exam. CLIENT ONLY (it is saved in this browser). Exam assignment is a single-browser
- * simulation of an admin feature; there is no server.
+ * simulation of an instructor feature; there is no server.
  */
 export type AssignedExam = {
   id: string;
@@ -27,7 +27,7 @@ export function demoExam(now: Date): AssignedExam {
     title: "Evacuation basics exam",
     topicIds: ["S1", "S2", "S3", "S4"],
     deadline: isoDay(now, DEMO_EXAM_DAYS),
-    assignedBy: "Admin",
+    assignedBy: "Instructor",
     assignedAt: now.getTime(),
   };
 }
@@ -54,7 +54,10 @@ export function cleanExams(value: unknown): AssignedExam[] | null {
         title,
         topicIds: topics,
         deadline,
-        assignedBy: typeof assignedBy === "string" && assignedBy !== "" ? assignedBy : "Admin",
+        assignedBy:
+          typeof assignedBy === "string" && assignedBy !== "" && assignedBy !== "Admin"
+            ? assignedBy
+            : "Instructor",
         assignedAt: typeof assignedAt === "number" ? assignedAt : 0,
       },
     ];

@@ -14,7 +14,7 @@ export type SessionKind = "scenario" | "quiz" | "repeat" | "exam";
 export type Answer = {
   itemId: string;
   optionId: string;
-  /** The hint of this question was opened (for the admin progress later). */
+  /** The hint of this question was opened (for the instructor's progress view later). */
   hintUsed?: boolean;
   /** Training modes: the answer was checked, so it is locked and its feedback shows. */
   checked?: boolean;

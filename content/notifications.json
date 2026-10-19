@@ -4,7 +4,7 @@
       "id": "welcome",
       "type": "message",
       "title": "Welcome to your training",
-      "text": "Your administrator has set up the evacuation and first aid course for you. Start whenever you are ready.",
+      "text": "Your instructor has set up the evacuation and first aid course for you. Start whenever you are ready.",
       "target": null,
       "minutesAgo": 2880
     },

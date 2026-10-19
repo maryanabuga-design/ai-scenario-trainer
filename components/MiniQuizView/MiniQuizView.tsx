@@ -12,7 +12,7 @@ import { questionCountLabel } from "@/lib/quiz-draw";
 export const noTopicHint = "Select at least one topic";
 
 /**
- * The Mini-quiz screen, the only place where the learner configures a session: the topics (all
+ * The Mini-quiz screen, the only place where the student configures a session: the topics (all
  * selected at first), how many questions (5, 10 or 15, limited by the pool of the selected topics)
  * and Start. The order is always random; there is no shuffle control.
  */

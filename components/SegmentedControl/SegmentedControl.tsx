@@ -26,7 +26,7 @@ export function SegmentedControl<T extends string>({
   // Pages kept for Back can share a name; a radio group is one per page.
   const group = useId();
   return (
-    <fieldset className="flex flex-col gap-3">
+    <fieldset role="radiogroup" className="flex flex-col gap-3">
       <legend className={hideLegend ? "sr-only" : "type-body-strong mb-3"}>{legend}</legend>
       <div className="flex gap-1 rounded-[14px] border border-secondary-sand-pressed bg-secondary-sand p-1">
         {options.map((option) => {

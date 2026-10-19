@@ -104,7 +104,7 @@ describe("the readiness card", () => {
       title: "Evacuation basics exam",
       topicIds: ["S1", "S2"],
       deadline: "2026-10-25",
-      assignedBy: "Admin",
+      assignedBy: "Instructor",
       assignedAt: 0,
     };
     const withExam = readinessCard(exam.topicIds, [], NOW, exam);

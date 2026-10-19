@@ -5,6 +5,7 @@ import { ActionBarProvider, ActionBarSlot } from "@/components/ActionBar/ActionB
 import { AskAiProvider } from "@/components/AskAi/AskAi";
 import { StepsList } from "@/components/StepsView/StepsList";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
+import type { Role } from "@/lib/role";
 import { Button } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
 import { ReadingView } from "@/components/ReadingView/ReadingView";
@@ -44,6 +45,8 @@ import {
   UploadSample,
   OnboardingSample,
   ProfileSample,
+  InstructorHomeSample,
+  AboutSample,
   ProgressSample,
   ResultsSample,
   ResultsButtonsSample,
@@ -87,7 +90,7 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
 }
 
 /** One app screen inside a frame: scrolling content, then the action bar slot and optional navigation. */
-function Screen({ nav, children }: { nav?: string; children: ReactNode }) {
+function Screen({ nav, role, children }: { nav?: string; role?: Role; children: ReactNode }) {
   return (
     <ActionBarProvider>
       <AskAiProvider inline>
@@ -99,7 +102,7 @@ function Screen({ nav, children }: { nav?: string; children: ReactNode }) {
         </div>
         <div className="bg-bg">
           <ActionBarSlot />
-          {nav && <BottomNav activePath={nav} />}
+          {nav && <BottomNav activePath={nav} role={role} />}
         </div>
       </AskAiProvider>
     </ActionBarProvider>
@@ -645,9 +648,24 @@ export default function Screens() {
           </PhoneFrame>
         </Group>
         <Group title="Profile">
-          <PhoneFrame label="Profile">
+          <PhoneFrame label="Profile: Student (Demo mode, Coming soon)">
             <Screen nav="/profile">
               <ProfileSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Profile: Instructor (no Direction, no Reset progress)">
+            <Screen nav="/profile" role="instructor">
+              <ProfileSample role="instructor" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="About this prototype">
+            <Screen>
+              <AboutSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor Home (stub), navigation with Home and Profile">
+            <Screen nav="/instructor" role="instructor">
+              <InstructorHomeSample />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Reset progress dialog">
