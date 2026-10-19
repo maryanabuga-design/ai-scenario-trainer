@@ -65,7 +65,8 @@ Build order and decisions: `docs/build-plan.md`.
 
 ## Known limitations
 
-- Exam assignment is a single-browser simulation of an admin feature; there is no server. The one assigned exam is demo data seeded on first load (S1 to S4, due in 7 days). The Learner/Admin switch, the Admin "Assign exam" screen and notifications are not built yet.
+- Exam assignment is a single-browser simulation of an admin feature; there is no server. The one assigned exam is demo data seeded on first load (S1 to S4, due in 7 days). The Learner/Admin switch and the Admin "Assign exam" screen are not built yet.
+- Notifications are demo data (four messages from `content/notifications.json`) and in-app events (a finished exam, the daily goal), kept in this browser. There is no backend, no push, no permission prompt and no network request.
 
 - AI behavior is simulated. Every answer, chat reply and reference explanation comes from the prepared scenario. The check of a typed explanation is a simple keyword match (at least 3 words and one keyword of a key beat), so a good sentence in other words can be marked "Doesn't match the guide yet"; the trainee can then press "My explanation is still correct". Free questions in Ask AI are matched by keywords too, so rephrasing can change which prepared answer comes back.
 - The flood scenario has 3 decisions only (Full and Extended are not available for it) and no prepared Ask AI answers, so Ask AI is not offered on its steps. Its results show time lost and water level.

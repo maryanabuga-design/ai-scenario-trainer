@@ -1,11 +1,12 @@
 "use client";
 
-import { Bookmark, ClipboardCheck, ListChecks, ListOrdered, User } from "lucide-react";
+import { Bookmark, ClipboardCheck, ListChecks, ListOrdered } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { buttonClasses } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { Media3D } from "@/components/Media3D/Media3D";
+import { NotificationBell } from "@/components/NotificationBell/NotificationBell";
 import { TileIcon } from "@/components/TileIcon/TileIcon";
 import {
   HERO_BUTTON_LABEL,
@@ -27,7 +28,7 @@ const tileIcons: Record<HomeTileId, LucideIcon> = {
 };
 
 /**
- * Home, the learner view: a greeting with one sentence and the profile button, the hero card (its
+ * Home, the learner view: an avatar (Profile), the greeting and the notification bell, then one sentence, the hero card (its
  * one Primary button opens Training), four tiles and the Mini-quiz row. Nothing from Progress is
  * repeated here, and no readiness percentage.
  */
@@ -44,18 +45,20 @@ export function HomeView({
 
   return (
     <div className="flex flex-col gap-4 pb-4">
-      <header className="flex items-start justify-between gap-3 pt-1">
-        <div className="flex min-w-0 flex-col gap-1">
-          <h1 className="type-page-title">Hi, {name}</h1>
-          <p className="type-body text-text-secondary">{summary.subtitle}</p>
+      <header className="flex flex-col gap-1 pt-1">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/profile"
+            aria-label="Profile"
+            data-avatar
+            className="type-body-strong flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-olive-tint text-primary active:bg-secondary-pressed"
+          >
+            {name.charAt(0)}
+          </Link>
+          <h1 className="type-page-title min-w-0 flex-1 truncate">Hi, {name}</h1>
+          <NotificationBell />
         </div>
-        <Link
-          href="/profile"
-          aria-label="Profile"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface text-text shadow-(--card-shadow) active:bg-surface-muted"
-        >
-          <User size={20} strokeWidth={2} aria-hidden="true" />
-        </Link>
+        <p className="type-body text-text-secondary">{summary.subtitle}</p>
       </header>
 
       <section

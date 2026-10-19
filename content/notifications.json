@@ -1,0 +1,36 @@
+{
+  "notifications": [
+    {
+      "id": "welcome",
+      "type": "message",
+      "title": "Welcome to your training",
+      "text": "Your administrator has set up the evacuation and first aid course for you. Start whenever you are ready.",
+      "target": null,
+      "minutesAgo": 2880
+    },
+    {
+      "id": "continue-part-1",
+      "type": "reminder",
+      "title": "Reminder: continue Part 1 of Responding to an alarm",
+      "text": "Ten questions are waiting for you in Part 1.",
+      "target": "/training",
+      "minutesAgo": 180
+    },
+    {
+      "id": "new-material-s2",
+      "type": "message",
+      "title": "New material available: Checking the route",
+      "text": "Read the guide section before you practise it.",
+      "target": "/materials/read/S2",
+      "minutesAgo": 1500
+    },
+    {
+      "id": "mock-exam",
+      "type": "reminder",
+      "title": "Reminder: take the mock exam this week",
+      "text": "The Evacuation basics exam is open until the end of the week.",
+      "target": "/exam",
+      "minutesAgo": 45
+    }
+  ]
+}

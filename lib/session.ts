@@ -1,6 +1,7 @@
 import { findItem } from "@/lib/items";
 import { clearPartRecords, recordPartResult } from "@/lib/part-progress";
 import { clearExam } from "@/lib/exam-store";
+import { notifyFinished, resetNotifications } from "@/lib/notifications";
 import { cleanHistory, cleanSession } from "@/lib/saved-data";
 import { createStore } from "@/lib/store";
 import { clearTrainings } from "@/lib/trainings";
@@ -203,7 +204,9 @@ export function finishSession(session: Session) {
 
 /** Adds a finished session to the history used by Home, Progress and the weak topics. */
 export function addToHistory(entry: FinishedSession) {
-  historyStore.write([...(historyStore.read() ?? []), entry]);
+  const history = [...(historyStore.read() ?? []), entry];
+  historyStore.write(history);
+  notifyFinished(entry, history);
 }
 
 export function saveProfile(profile: Profile) {
@@ -217,4 +220,5 @@ export function resetProgress() {
   historyStore.write(null);
   clearPartRecords();
   clearTrainings();
+  resetNotifications();
 }

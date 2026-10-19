@@ -9,3 +9,6 @@ export const EXAM_MINUTES = 20;
 
 /** In the last this-many minutes the exam timer turns rose. */
 export const EXAM_WARNING_MINUTES = 2;
+
+/** Questions answered in one local day that reach the daily goal (it adds one notification). */
+export const DAILY_GOAL = 5;

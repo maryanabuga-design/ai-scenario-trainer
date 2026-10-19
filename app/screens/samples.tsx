@@ -74,6 +74,8 @@ import { SelectionToolbar } from "@/components/SelectionToolbar/SelectionToolbar
 import { addHighlights, blockTexts } from "@/lib/highlights";
 import { toolbarActions } from "@/lib/selection-actions";
 import { homeArtwork, homeCounts, homeSummary } from "@/lib/home";
+import { NotificationsView } from "@/components/NotificationsView/NotificationsView";
+import { markRead, seedNotifications } from "@/lib/notifications";
 import { DEMO_USER } from "@/lib/user";
 
 /**
@@ -1045,4 +1047,17 @@ export function StepsTopicSample({
       onToggleOpen={() => {}}
     />
   );
+}
+
+/** The Notifications screen with the four demo messages: all new, new and earlier, and empty. */
+export function NotificationsSample({ state }: { state: "new" | "mixed" | "empty" }) {
+  const now = new Date(2026, 9, 19, 14, 0).getTime();
+  const seeded = seedNotifications(now);
+  const items =
+    state === "empty"
+      ? []
+      : state === "new"
+        ? seeded
+        : markRead(markRead(seeded, "welcome"), "new-material-s2");
+  return <NotificationsView items={items} now={now} onOpen={() => {}} onMarkAll={() => {}} />;
 }

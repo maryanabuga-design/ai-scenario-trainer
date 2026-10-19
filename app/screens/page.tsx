@@ -34,6 +34,7 @@ import {
   QuickBarSample,
   StepsTopicSample,
   HomeSample,
+  NotificationsSample,
   MaterialTypesSample,
   WeakTopicsSample,
   ReviewSample,
@@ -561,6 +562,21 @@ export default function Screens() {
           <PhoneFrame label="Home: nothing to repeat, ready">
             <Screen nav="/">
               <HomeSample state="goal" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Notifications: new messages (the Home header has the bell with a count)">
+            <Screen>
+              <NotificationsSample state="new" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Notifications: New and Earlier">
+            <Screen>
+              <NotificationsSample state="mixed" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Notifications: empty state">
+            <Screen>
+              <NotificationsSample state="empty" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Steps: the list">

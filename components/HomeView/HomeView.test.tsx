@@ -72,15 +72,40 @@ function render(state: keyof typeof states = "first") {
 describe("Home layout", () => {
   const html = render();
 
-  it("has the greeting with the demo name and a sentence on the left, the profile button on the right", () => {
+  it("has the avatar, the greeting and the bell in one row, and the sentence full width below it", () => {
     expect(html).toContain(`>Hi, ${DEMO_USER.name}</h1>`);
     expect(DEMO_USER.name).toBe("Maryana");
-    expect(html.indexOf(">Hi, ")).toBeLessThan(html.indexOf("Start with your first scenario."));
-    expect(html.indexOf("Start with your first scenario.")).toBeLessThan(
-      html.indexOf('aria-label="Profile"'),
-    );
-    expect(html).toContain('href="/profile"');
+    const order = [
+      'aria-label="Profile"',
+      ">Hi, ",
+      'href="/notifications"',
+      "Start with your first scenario.",
+    ].map((text) => html.indexOf(text));
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+    expect(order.every((position) => position >= 0)).toBe(true);
     expect(html).not.toContain(">Learn<");
+  });
+
+  it("has a 44px olive-tint avatar with the first initial, no photo, that opens Profile", () => {
+    const start = html.lastIndexOf("<a ", html.indexOf('aria-label="Profile"'));
+    const avatar = html.slice(start, html.indexOf("</a>", start));
+    expect(avatar).toContain('href="/profile"');
+    expect(avatar).toContain("h-11 w-11");
+    expect(avatar).toContain("rounded-full bg-olive-tint text-primary");
+    expect(avatar.endsWith(`>${DEMO_USER.name.charAt(0)}`)).toBe(true);
+    expect(avatar).not.toContain("<img");
+    expect(avatar).not.toContain("<svg");
+  });
+
+  it("has the bell, a 44px white circle like the Back buttons, named by its unread count", () => {
+    const start = html.lastIndexOf("<a ", html.indexOf('href="/notifications"'));
+    const bell = html.slice(start, html.indexOf("</a>", start));
+    expect(bell).toContain("h-11 w-11");
+    expect(bell).toContain("rounded-full bg-surface");
+    expect(bell).toContain("lucide-bell");
+    // nothing is known on the server: no badge, a name without a number
+    expect(bell).toContain('aria-label="Notifications, no unread"');
+    expect(bell).not.toContain("data-unread-badge");
   });
 
   it("goes greeting, hero card, four tiles, Mini-quiz", () => {
