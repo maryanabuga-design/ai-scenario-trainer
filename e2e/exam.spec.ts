@@ -331,6 +331,10 @@ test.describe("Exam readiness", () => {
     expect(backgrounds[1]).toEqual(backgrounds[2]);
     expect(backgrounds[0][0]).toBe("rgb(255, 255, 255)");
     const tile = await tileLook(page);
+    // never transparent, never plain black: a colour that was used but not registered draws neither
+    expect(tile.background).not.toBe("rgba(0, 0, 0, 0)");
+    expect(tile.ink).not.toBe("rgb(0, 0, 0)");
+    expect(tile.stroke).not.toBe("rgb(0, 0, 0)");
     expect(tile.background).toBe("rgb(251, 231, 181)");
     expect(tile.ink).toBe("rgb(122, 78, 0)");
     expect(tile.stroke).toBe("rgb(122, 78, 0)");
@@ -353,6 +357,9 @@ test.describe("Exam readiness", () => {
     await open(page, "/exam", [finished(scope, true)]);
     await expect(page.getByRole("heading", { name: "You're ready" })).toBeVisible();
     const tile = await tileLook(page);
+    expect(tile.background).not.toBe("rgba(0, 0, 0, 0)");
+    expect(tile.ink).not.toBe("rgb(0, 0, 0)");
+    expect(tile.stroke).not.toBe("rgb(0, 0, 0)");
     expect(tile.background).toBe("rgb(227, 242, 232)");
     expect(tile.ink).toBe("rgb(31, 107, 63)");
     expect(tile.stroke).toBe("rgb(31, 107, 63)");
