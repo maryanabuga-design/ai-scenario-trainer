@@ -1,6 +1,8 @@
 import { findItem, sectionOrder } from "@/lib/items";
 import { clearPartRecords, recordPartResult } from "@/lib/part-progress";
+import { nearestExam, readExams } from "@/lib/assigned-exams";
 import { clearExam } from "@/lib/exam-store";
+import { readinessAfter } from "@/lib/readiness";
 import { notifyFinished, resetNotifications } from "@/lib/notifications";
 import { cleanHistory, cleanSession } from "@/lib/saved-data";
 import { createStore } from "@/lib/store";
@@ -52,6 +54,8 @@ export type FinishedSession = Pick<
   finishedAt: number;
   /** The guide topics of its questions (Progress shows the name). Records saved before it have none. */
   topicIds?: string[];
+  /** The readiness of the assigned exam's scope at the end of this session (Progress's change line). */
+  readinessAfter?: number;
   /** Only for an exam: its result, the number of questions and the time used. */
   exam?: ExamResult;
 };
@@ -222,9 +226,15 @@ export function finishSession(session: Session) {
 
 /** Adds a finished session to the history used by Home, Progress and the weak topics. */
 export function addToHistory(entry: FinishedSession) {
-  const history = [...(historyStore.read() ?? []), entry];
+  const before = historyStore.read() ?? [];
+  const exam = nearestExam(readExams() ?? []);
+  const withReadiness: FinishedSession = {
+    ...entry,
+    readinessAfter: readinessAfter([...before, entry], exam?.topicIds ?? null),
+  };
+  const history = [...before, withReadiness];
   historyStore.write(history);
-  notifyFinished(entry, history);
+  notifyFinished(withReadiness, history);
 }
 
 export function saveProfile(profile: Profile) {

@@ -86,3 +86,23 @@ export function readinessCard(
       : `Not ready yet. ${remaining} more correct ${remaining === 1 ? "answer" : "answers"} to reach ${PASS_MARK}%.`,
   };
 }
+
+/**
+ * How readiness changed with the most recent session: the current readiness minus the readiness
+ * stored by the session before it. Null (no line) with fewer than two sessions, or when the earlier
+ * record has no stored value (a record saved before it, or a broken value).
+ */
+export function readinessChange(history: FinishedSession[], current: number): number | null {
+  if (history.length < 2) return null;
+  const sorted = [...history].sort((a, b) => a.finishedAt - b.finishedAt);
+  const previous: unknown = sorted[sorted.length - 2].readinessAfter;
+  if (typeof previous !== "number" || !Number.isFinite(previous)) return null;
+  return current - previous;
+}
+
+/** The change line: points, never a percent sign. "+1 point", "+9 points", "No change", "-4 points". */
+export function changeText(delta: number): string {
+  if (delta === 0) return "No change since your last session";
+  const points = Math.abs(delta);
+  return `${delta > 0 ? "+" : "-"}${points} ${points === 1 ? "point" : "points"} since your last session`;
+}

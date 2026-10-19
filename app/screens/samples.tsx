@@ -77,7 +77,7 @@ import { homeArtwork, homeCounts, homeSummary } from "@/lib/home";
 import { NotificationsView } from "@/components/NotificationsView/NotificationsView";
 import { demoExam } from "@/lib/assigned-exams";
 import { markRead, seedNotifications } from "@/lib/notifications";
-import { scopeItemIds } from "@/lib/readiness";
+import { readinessAfter, scopeItemIds } from "@/lib/readiness";
 import { topicIdsOf } from "@/lib/session";
 import { DEMO_USER } from "@/lib/user";
 
@@ -412,12 +412,18 @@ export function ProgressSample({ state = "seeded" }: { state?: "seeded" | "no-ex
     finishedAt,
     ...extra,
   });
-  const history: FinishedSession[] = [
+  const raw: FinishedSession[] = [
     entry(s1, s1.length - 1, day(6)),
     entry(s2.slice(0, 10), 4, day(3)),
     entry([...s3.slice(0, 3), ...s5.slice(0, 2)], 3, day(1, 18, 5), { mode: "mini-quiz" }),
     entry(s2.slice(0, 10), 7, day(0), { kind: "repeat" }),
   ];
+  // each record stores the readiness after it, as a finished session does (the change line reads it)
+  const scope = state === "no-exam" ? null : demoExam(now).topicIds;
+  const history = raw.map((record, index) => ({
+    ...record,
+    readinessAfter: readinessAfter(raw.slice(0, index + 1), scope),
+  }));
   return (
     <ProgressView history={history} exam={state === "no-exam" ? null : demoExam(now)} now={now} />
   );

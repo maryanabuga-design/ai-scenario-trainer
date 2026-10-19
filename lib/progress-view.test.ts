@@ -3,12 +3,14 @@ import { PASS_MARK } from "@/lib/config";
 import { getItem } from "@/lib/items";
 import {
   byNumber,
+  changeText,
+  readinessChange,
   readinessCard,
   remainingToTarget,
   topicGroups,
   topicProgress,
 } from "@/lib/progress-view";
-import { examReadiness, scopeItemIds } from "@/lib/readiness";
+import { examReadiness, readinessAfter, scopeItemIds } from "@/lib/readiness";
 import { cleanHistory } from "@/lib/saved-data";
 import { topicIdsOf } from "@/lib/session";
 import type { FinishedSession } from "@/lib/session";
@@ -171,5 +173,77 @@ describe("session records (stored, not shown on Progress)", () => {
     expect(loaded).toHaveLength(2);
     // they still count toward the topic counts
     expect(topicProgress("S1", loaded).correct).toBe(2);
+  });
+});
+
+describe("the change line", () => {
+  const stored = (after: number | undefined, minutesAgo: number) =>
+    ({
+      ...session(s1.slice(0, 2), 1, NOW.getTime() - minutesAgo * 60_000),
+      readinessAfter: after,
+    }) as FinishedSession;
+
+  it("is the current readiness minus the readiness stored by the session before the latest", () => {
+    expect(readinessChange([stored(10, 60), stored(19, 5)], 19)).toBe(9);
+    expect(readinessChange([stored(20, 60), stored(20, 5)], 20)).toBe(0);
+    expect(readinessChange([stored(30, 60), stored(26, 5)], 26)).toBe(-4);
+    expect(readinessChange([stored(30, 60), stored(31, 5)], 31)).toBe(1);
+  });
+
+  it("does not depend on the order the records are stored in", () => {
+    expect(readinessChange([stored(19, 5), stored(10, 60)], 19)).toBe(9);
+  });
+
+  it("uses the session before the latest of several", () => {
+    expect(readinessChange([stored(5, 120), stored(10, 60), stored(19, 5)], 19)).toBe(9);
+  });
+
+  it("has no line for the first session (no previous one) or for no sessions", () => {
+    expect(readinessChange([], 0)).toBeNull();
+    expect(readinessChange([stored(19, 5)], 19)).toBeNull();
+  });
+
+  it("has no line when the previous record has no stored readiness, or a broken one", () => {
+    expect(readinessChange([stored(undefined, 60), stored(19, 5)], 19)).toBeNull();
+    const broken = { ...stored(1, 60), readinessAfter: "ten" } as unknown as FinishedSession;
+    expect(readinessChange([broken, stored(19, 5)], 19)).toBeNull();
+    const nan = { ...stored(1, 60), readinessAfter: Number.NaN } as FinishedSession;
+    expect(readinessChange([nan, stored(19, 5)], 19)).toBeNull();
+  });
+
+  it("says points, never a percent sign, with the singular for one point", () => {
+    expect(changeText(9)).toBe("+9 points since your last session");
+    expect(changeText(1)).toBe("+1 point since your last session");
+    expect(changeText(0)).toBe("No change since your last session");
+    expect(changeText(-4)).toBe("-4 points since your last session");
+    expect(changeText(-1)).toBe("-1 point since your last session");
+    for (const delta of [9, 1, 0, -1, -4, 25]) expect(changeText(delta)).not.toContain("%");
+  });
+
+  it("stores the readiness of the exam's scope after the session (all topics without an exam)", () => {
+    const history = [session(s1, s1.length - 2), session(s2, 3)];
+    expect(readinessAfter(history, ["S1", "S2"])).toBe(examReadiness(["S1", "S2"], history));
+    expect(readinessAfter(history, null)).toBe(
+      examReadiness(
+        Array.from({ length: 10 }, (_, i) => `S${i + 1}`),
+        history,
+      ),
+    );
+    expect(readinessAfter([], ["S1"])).toBe(0);
+  });
+
+  it("loads records with a stored readiness, and drops a broken value without crashing", () => {
+    const good = { ...session(s1.slice(0, 3), 2), readinessAfter: 42 };
+    const bad = { ...session(s1.slice(0, 3), 2, at(1)), readinessAfter: "x" };
+    const out = { ...session(s1.slice(0, 3), 2, at(2)), readinessAfter: 140 };
+    const old = session(s1.slice(0, 3), 2, at(3));
+    const loaded = cleanHistory([good, bad, out, old])!;
+    expect(loaded).toHaveLength(4);
+    expect(loaded.map((entry) => entry.readinessAfter)).toEqual([
+      42,
+      undefined,
+      undefined,
+      undefined,
+    ]);
   });
 });

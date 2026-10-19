@@ -1,15 +1,22 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronDown, Minus } from "lucide-react";
 import { useState } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { HeaderRow } from "@/components/HeaderRow/HeaderRow";
+import { Media3D } from "@/components/Media3D/Media3D";
 import { ReadinessBar } from "@/components/ReadinessBar/ReadinessBar";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { stepsCard } from "@/components/StepsView/StepCard";
 import type { AssignedExam } from "@/lib/assigned-exams";
-import { allTopicIds, readinessCard, topicGroups } from "@/lib/progress-view";
+import {
+  allTopicIds,
+  changeText,
+  readinessChange,
+  readinessCard,
+  topicGroups,
+} from "@/lib/progress-view";
 import type { TopicProgress } from "@/lib/progress-view";
 import { hasWeakTopics } from "@/lib/readiness";
 import type { FinishedSession } from "@/lib/session";
@@ -17,6 +24,30 @@ import { examPath } from "@/lib/weak-session";
 
 const focusClass =
   "active:bg-secondary-sand has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
+
+/**
+ * The change line: how readiness moved with the last session, in points (no percent sign, so
+ * Readiness stays the one percentage). Up is the success colour on the icon; no change and down are
+ * neutral. Never red.
+ */
+function ChangeLine({ delta }: { delta: number }) {
+  const Icon = delta > 0 ? ArrowUp : delta < 0 ? ArrowDown : Minus;
+  return (
+    <p
+      data-readiness-change
+      className="type-small -mt-2 flex items-center gap-1.5 text-neutral-tile-ink"
+    >
+      <Icon
+        size={16}
+        strokeWidth={2}
+        aria-hidden="true"
+        data-change-icon={delta > 0 ? "up" : delta < 0 ? "down" : "none"}
+        className={`shrink-0 ${delta > 0 ? "text-status-success-ink" : "text-neutral-tile-ink"}`}
+      />
+      <span className="min-w-0 truncate">{changeText(delta)}</span>
+    </p>
+  );
+}
 
 /**
  * The readiness card: the ONE measured percentage of the screen ("Readiness"), the shared bar with
@@ -36,21 +67,38 @@ function ReadinessSection({
 }) {
   const topics = exam?.topicIds ?? null;
   const card = readinessCard(topics, history, now, exam);
+  const change = readinessChange(history, card.readiness);
   return (
     <section
       aria-labelledby="exam-readiness"
       className="flex flex-col gap-4 rounded-card bg-card p-4 shadow-(--card-shadow)"
     >
-      <div className="flex flex-col gap-0.5">
-        <h2 id="exam-readiness" className="type-item-title">
-          {card.title}
-        </h2>
-        {card.subtitle && <p className="type-small text-text-secondary">{card.subtitle}</p>}
+      {/* the 3D slot is placed at the top right and adds no height: the two text lines decide the row */}
+      <div className="relative">
+        <div className="flex min-w-0 flex-col gap-0.5 pr-[72px]">
+          <h2 id="exam-readiness" className="type-item-title">
+            {card.title}
+          </h2>
+          {card.subtitle && (
+            <p
+              data-readiness-exam
+              title={card.subtitle}
+              className="type-small truncate text-text-secondary"
+            >
+              {card.subtitle}
+            </p>
+          )}
+        </div>
+        <div data-gauge-slot className="absolute inset-y-0 right-0 flex items-center">
+          {/* the picture, public/heroes/icon-readiness.webp, arrives later: only the placeholder for now */}
+          <Media3D variant="gauge" />
+        </div>
       </div>
       <p className="type-numeral tabular-nums" data-readiness-number>
         Readiness {card.readiness}%
       </p>
       <ReadinessBar percent={card.readiness} />
+      {change !== null && <ChangeLine delta={change} />}
       <p className="type-body">{card.sentence}</p>
       {card.ready ? (
         <ButtonLink variant="secondary" href={exam ? examPath(exam.id) : "/exam"}>

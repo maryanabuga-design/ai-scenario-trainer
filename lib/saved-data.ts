@@ -62,7 +62,17 @@ export function cleanHistory(value: unknown): FinishedSession[] | null {
     const answers = knownAnswers(entry.answers);
     if (answers.length === 0) return [];
     const itemIds = Array.isArray(entry.itemIds) ? entry.itemIds.filter(isKnown) : [];
-    return [{ ...entry, answers, itemIds } as unknown as FinishedSession];
+    // a stored readiness is a number from 0 to 100; anything else is dropped (the change line then hides)
+    const { readinessAfter: after, ...rest } = entry;
+    const valid = typeof after === "number" && Number.isFinite(after) && after >= 0 && after <= 100;
+    return [
+      {
+        ...rest,
+        answers,
+        itemIds,
+        ...(valid && { readinessAfter: after }),
+      } as unknown as FinishedSession,
+    ];
   });
 }
 

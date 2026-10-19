@@ -53,6 +53,34 @@ const seeded = () => [
   }),
 ];
 
+/** The exam's readiness (S1 to S4) from a history: the latest answer per question over all of them. */
+function readinessOf(history: ReturnType<typeof seeded>) {
+  const scope = ["S1", "S2", "S3", "S4"].flatMap(of);
+  const latest = new Map<string, boolean>();
+  for (const entry of [...history].sort((a, b) => a.finishedAt - b.finishedAt)) {
+    for (const answer of entry.answers as { itemId: string; optionId: string }[]) {
+      const item = scope.find((candidate) => candidate.id === answer.itemId);
+      if (item) latest.set(item.id, answer.optionId === item.correctOptionId);
+    }
+  }
+  const correct = scope.filter((item) => latest.get(item.id) === true).length;
+  return Math.floor((correct / scope.length) * 100 + 1e-9);
+}
+
+/** Two sessions, the older one storing the readiness that makes the change `delta` points. */
+function withChange(delta: number | null) {
+  const older = sessionOf(of("S1"), of("S1").length - 6, 60 * 24);
+  const newer = sessionOf(of("S2"), Math.floor(of("S2").length / 2), 30);
+  const current = readinessOf([older, newer]);
+  return {
+    current,
+    history: [
+      delta === null ? older : { ...older, readinessAfter: current - delta },
+      { ...newer, readinessAfter: current },
+    ],
+  };
+}
+
 async function open(page: Page, history: object[] | null) {
   await page.addInitScript(
     ([p, h]) => {
@@ -147,6 +175,176 @@ for (const width of [360, 430]) {
         const { r, g, b: blue } = rgb(await el.evaluate((e) => getComputedStyle(e).color));
         expect(r > 170 && g < 90 && blue < 90).toBe(false);
       }
+    });
+
+    for (const [delta, text, icon] of [
+      [9, "+9 points since your last session", "up"],
+      [0, "No change since your last session", "none"],
+      [-4, "-4 points since your last session", "down"],
+      [1, "+1 point since your last session", "up"],
+    ] as const) {
+      test(`the change line says "${text}" and uses neutral or success colours, never red`, async ({
+        page,
+      }) => {
+        await open(page, withChange(delta).history);
+        const card = page.getByRole("region", { name: "Exam readiness" });
+        const line = card.locator("[data-readiness-change]");
+        await expect(line).toHaveText(text);
+        expect(await line.innerText()).not.toContain("%");
+        await expect(line.locator("[data-change-icon]")).toHaveAttribute("data-change-icon", icon);
+        const look = await line.evaluate((el) => {
+          const svg = el.querySelector("svg")!;
+          const label = el.querySelector("span")!;
+          const box = el.getBoundingClientRect();
+          return {
+            icon: getComputedStyle(svg).color,
+            text: getComputedStyle(el).color,
+            size: getComputedStyle(label).fontSize,
+            lineHeight: parseFloat(getComputedStyle(el).lineHeight),
+            height: box.height,
+            ellipsis: getComputedStyle(label).textOverflow,
+          };
+        });
+        // success ink for a rise, neutral ink otherwise; the text is always neutral
+        expect(look.icon).toBe(icon === "up" ? "rgb(68, 104, 58)" : "rgb(92, 90, 86)");
+        expect(look.text).toBe("rgb(92, 90, 86)");
+        for (const color of [look.icon, look.text]) {
+          const { r, g, b, a } = rgb(color);
+          expect(a).toBeGreaterThan(0);
+          expect(color).not.toBe("rgb(0, 0, 0)");
+          expect(r > 170 && g < 90 && b < 90).toBe(false);
+        }
+        // 14px, one line, cut with an ellipsis when too long
+        expect(look.size).toBe("14px");
+        expect(look.height).toBeLessThanOrEqual(look.lineHeight + 1);
+        expect(look.ellipsis).toBe("ellipsis");
+        // it sits between the bar and the sentence
+        const [bar, row, sentence] = [
+          await card.getByRole("progressbar").boundingBox(),
+          await line.boundingBox(),
+          await card.getByText(/^Not ready yet|^You are ready/).boundingBox(),
+        ];
+        expect(row!.y).toBeGreaterThanOrEqual(bar!.y + bar!.height - 1);
+        expect(row!.y + row!.height).toBeLessThanOrEqual(sentence!.y);
+        expect(await noSidewaysScroll(page)).toBe(true);
+      });
+    }
+
+    test("the change line is hidden with one session and with older records that have no stored readiness", async ({
+      page,
+    }) => {
+      await open(page, [sessionOf(of("S1"), 3, 30)]);
+      await expect(page.locator("[data-readiness-change]")).toHaveCount(0);
+      // old records: two sessions without readinessAfter load without errors, no line
+      const errors: string[] = [];
+      page.on("pageerror", (error) => errors.push(error.message));
+      await open(
+        page,
+        withChange(null).history.map((entry) =>
+          Object.fromEntries(Object.entries(entry).filter(([key]) => key !== "readinessAfter")),
+        ),
+      );
+      await expect(page.getByRole("region", { name: "Exam readiness" })).toBeVisible();
+      await expect(page.locator("[data-readiness-change]")).toHaveCount(0);
+      await expect(page.locator("[data-topic-row]:visible")).toHaveCount(4);
+      // (WebKit reports its own prefetch noise as page errors; those are not the app's)
+      expect(errors.filter((message) => !/access control checks/.test(message))).toEqual([]);
+    });
+
+    test("a broken stored readiness is ignored: no line, no crash", async ({ page }) => {
+      const { history } = withChange(5);
+      await open(page, [{ ...history[0], readinessAfter: "lots" }, history[1]]);
+      await expect(page.getByRole("region", { name: "Exam readiness" })).toBeVisible();
+      await expect(page.locator("[data-readiness-change]")).toHaveCount(0);
+    });
+
+    test("the 3D slot is a 64 by 64 frame at the top right, centred on the two text lines", async ({
+      page,
+    }) => {
+      await open(page, null);
+      const card = page.getByRole("region", { name: "Exam readiness" });
+      const frame = card.locator("[data-gauge-slot] [data-media3d]");
+      await expect(frame).toBeVisible();
+      await expect(frame).toHaveText("3D");
+      expect(await frame.getAttribute("aria-hidden")).toBe("true");
+      const f = (await frame.boundingBox())!;
+      expect([f.width, f.height]).toEqual([64, 64]);
+      const c = (await card.boundingBox())!;
+      const title = (await card.getByRole("heading", { name: "Exam readiness" }).boundingBox())!;
+      const exam = card.locator("[data-readiness-exam]");
+      const e = (await exam.boundingBox())!;
+      // centred on the block from the top of the title to the bottom of the exam line (2px)
+      const blockCentre = (title.y + (e.y + e.height)) / 2;
+      expect(Math.abs(f.y + f.height / 2 - blockCentre)).toBeLessThanOrEqual(2);
+      // top right: the right edge is the card's 16px padding
+      expect(Math.abs(c.x + c.width - 16 - (f.x + f.width))).toBeLessThanOrEqual(1);
+      expect(f.y).toBeGreaterThanOrEqual(c.y);
+      // no overlap, 8px kept clear of both text lines (1px for rounding)
+      expect(f.x - (title.x + title.width)).toBeGreaterThanOrEqual(7);
+      expect(f.x - (e.x + e.width)).toBeGreaterThanOrEqual(7);
+      // the exam line is one line, cut with an ellipsis when it does not fit
+      const info = await exam.evaluate((el) => ({
+        height: el.getBoundingClientRect().height,
+        line: parseFloat(getComputedStyle(el).lineHeight),
+        ellipsis: getComputedStyle(el).textOverflow,
+        nowrap: getComputedStyle(el).whiteSpace,
+        cut: el.scrollWidth > el.clientWidth,
+      }));
+      expect(info.height).toBeCloseTo(info.line, 0);
+      expect(info.ellipsis).toBe("ellipsis");
+      expect(info.nowrap).toBe("nowrap");
+      if (width === 360) expect(info.cut).toBe(true);
+      await expect(exam).toContainText("Evacuation basics exam");
+      // the bar, the sentence and the button are still full width below the frame
+      const bar = (await card.getByRole("progressbar").boundingBox())!;
+      expect(Math.abs(bar.width - (c.width - 32))).toBeLessThanOrEqual(1);
+      expect(bar.y).toBeGreaterThan(f.y + f.height);
+    });
+
+    test("the card is not taller than before the slot (it only has the change line when there is one)", async ({
+      page,
+    }) => {
+      // without a previous session there is no change line, so the card has its old height
+      await open(page, null);
+      const card = page.getByRole("region", { name: "Exam readiness" });
+      const before = width === 360 ? 335.17 : 315.17;
+      expect((await card.boundingBox())!.height).toBeLessThanOrEqual(before + 1);
+    });
+
+    test("a finished session stores the readiness after it, and the line appears for the next one", async ({
+      page,
+    }) => {
+      await open(page, [sessionOf(of("S1"), 20, 60)]);
+      await page.goto("/exam");
+      await page.getByRole("button", { name: /^Start exam/ }).click();
+      for (let n = 0; n < 20; n++) {
+        await page.locator("fieldset[aria-labelledby^=question-] label:visible").first().click();
+        await page.getByRole("button", { name: n < 19 ? "Next" : "Finish", exact: true }).click();
+      }
+      await expect(page).toHaveURL(/\/exam\/results$/);
+      const saved = await page.evaluate(() => {
+        const raw = JSON.parse(localStorage.getItem("ast.history.v1")!) as {
+          value: { kind: string; readinessAfter?: number }[];
+        };
+        return raw.value.map((entry) => [entry.kind, typeof entry.readinessAfter]);
+      });
+      // the seeded record has none (an old one); the finished exam stores a number
+      expect(saved).toEqual([
+        ["quiz", "undefined"],
+        ["exam", "number"],
+      ]);
+      // with two sessions but no stored value in the older one, there is no line yet
+      await page.goto("/progress");
+      await expect(page.locator("[data-readiness-number]")).toBeVisible();
+      await expect(page.locator("[data-readiness-change]")).toHaveCount(0);
+    });
+
+    test("there is still exactly one measured percentage: Readiness", async ({ page }) => {
+      await open(page, withChange(9).history);
+      const text = await page.locator("main").innerText();
+      expect((text.match(/\d+%/g) ?? []).sort()).toEqual(
+        [text.match(/Readiness (\d+%)/)![1], "80%", "80%"].sort(),
+      );
     });
 
     test("every topic card is exactly 80px high, with a chevron inside it and no chip", async ({

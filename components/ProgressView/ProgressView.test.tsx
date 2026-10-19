@@ -157,6 +157,79 @@ describe("Progress: the readiness card", () => {
   });
 });
 
+describe("Progress: the change line and the 3D slot", () => {
+  const withReadiness = (values: (number | undefined)[]) =>
+    values.map((readinessAfter, index) =>
+      entry(s1.slice(0, 3), 2, day(values.length - index), {
+        mode: "practice",
+        topicIds: ["S1"],
+        readinessAfter,
+      }),
+    );
+  const lineOf = (html: string) => {
+    const start = html.indexOf("data-readiness-change");
+    return start < 0 ? null : html.slice(start, html.indexOf("</p>", start));
+  };
+
+  it("sits between the bar and the sentence, one line, 14px, with a truncating text", () => {
+    const html = render(withReadiness([10, 18]));
+    const line = lineOf(html)!;
+    expect(line).toContain("type-small");
+    expect(line).toContain("truncate");
+    expect(html.indexOf('role="progressbar"')).toBeLessThan(html.indexOf("data-readiness-change"));
+    expect(html.indexOf("data-readiness-change")).toBeLessThan(html.indexOf("Not ready yet"));
+  });
+
+  it("shows an up arrow with the success token for a rise, and neutral for no change or a drop", () => {
+    // the current readiness is computed from the answers: the stored value only sets the delta
+    const rise = lineOf(render(withReadiness([0, 5])))!;
+    expect(/<svg[^>]*data-change-icon="up"[^>]*>/.exec(rise)![0]).toContain(
+      "text-status-success-ink",
+    );
+    expect(rise).toMatch(/\+\d+ points? since your last session/);
+    const drop = lineOf(render(withReadiness([99, 1])))!;
+    expect(drop).toContain('data-change-icon="down"');
+    expect(drop).toMatch(/-\d+ points? since your last session/);
+    expect(drop).not.toContain("text-status-success-ink");
+    for (const line of [rise, drop]) {
+      expect(line).toContain("text-neutral-tile-ink");
+      expect(line.replace(/<[^>]+>/g, "")).not.toContain("%");
+      expect(line).not.toMatch(/wrong|rose|red|correct-text/);
+    }
+  });
+
+  it("says No change with the dash icon", () => {
+    const html = render(withReadiness([0, 0]));
+    const current = /Readiness (\d+)%/.exec(html)![1];
+    const same = lineOf(render(withReadiness([Number(current), Number(current)])))!;
+    expect(same).toContain("No change since your last session");
+    expect(same).toContain('data-change-icon="none"');
+  });
+
+  it("is not shown with one session, or when the previous record has no stored readiness", () => {
+    expect(render(withReadiness([10]))).not.toContain("data-readiness-change");
+    expect(render([])).not.toContain("data-readiness-change");
+    expect(render(withReadiness([undefined, 12]))).not.toContain("data-readiness-change");
+  });
+
+  it("has the 64 by 64 dashed 3D placeholder at the top right, with the text kept 8px clear of it", () => {
+    const html = render(seeded);
+    const card = html.slice(html.indexOf('aria-labelledby="exam-readiness"'));
+    expect(card).toContain("data-gauge-slot");
+    expect(card).toContain("absolute inset-y-0 right-0 flex items-center");
+    expect(card).toContain('data-media3d="placeholder"');
+    expect(card).toContain("h-16 w-16");
+    expect(card).toContain(">3D<");
+    // the two lines keep 72px on the right (64px frame + 8px), and the exam line is one truncated line
+    expect(card).toContain("pr-[72px]");
+    expect(card).toMatch(/data-readiness-exam[^>]*class="type-small truncate/);
+    // decorative
+    expect(card.slice(card.indexOf('data-media3d="placeholder"') - 60)).toContain(
+      'aria-hidden="true"',
+    );
+  });
+});
+
 describe("Progress: By topic", () => {
   const html = render(seeded);
 

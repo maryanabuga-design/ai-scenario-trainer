@@ -115,3 +115,11 @@ export function weakSessionIds(
   }
   return picked;
 }
+
+/**
+ * The readiness a session record stores (`readinessAfter`): the readiness of the assigned exam's
+ * scope after the session, or of all topics when no exam is assigned. `history` includes the session.
+ */
+export function readinessAfter(history: FinishedSession[], examTopicIds: string[] | null): number {
+  return examReadiness(examTopicIds ?? trainingSections, history);
+}
