@@ -9,6 +9,7 @@ import {
   HERO_TITLE,
   artworkTransform,
   homeArtwork,
+  homeFrames,
   homeCounts,
   homeSummary,
 } from "@/lib/home";
@@ -155,17 +156,17 @@ describe("the hero card", () => {
     expect(card).toContain("rounded-[22px] bg-secondary-sand p-4");
   });
 
-  it("shows the hero picture in a fixed 80 by 80 frame at the right of the title: decorative, bare, no placeholder", () => {
+  it("shows the hero picture in a fixed 76 by 60 frame at the right of the title: decorative, bare, no placeholder", () => {
     const card = hero(render());
     const frame = card.slice(card.indexOf("<span"), card.indexOf(">", card.indexOf("<span")) + 1);
     expect(frame).toContain("data-picture-frame");
     expect(frame).toContain("overflow-hidden");
-    expect(frame).toContain("width:80px;height:80px");
+    expect(frame).toContain("width:76px;height:60px");
     const picture = card.slice(card.indexOf("<img"), card.indexOf(">", card.indexOf("<img")) + 1);
     expect(picture).toContain('alt=""');
     expect(picture).toContain('aria-hidden="true"');
-    expect(picture).toContain('width="80"');
-    expect(picture).toContain('height="80"');
+    expect(picture).toContain('width="76"');
+    expect(picture).toContain('height="60"');
     expect(picture).toContain("h-full w-full");
     expect(picture).not.toMatch(/\bp-|\bm-|-m[trbl]-/);
     expect(picture).toContain("object-contain");
@@ -174,20 +175,21 @@ describe("the hero card", () => {
     expect(`${frame}${picture}`).not.toMatch(/bg-|border|rounded|shadow/);
     expect(card).not.toContain("data-media3d");
     expect(card).not.toContain(">3D<");
-    // the text keeps 88px on the right (80px frame + 8px gap) and the frame adds no height
-    expect(card).toContain("min-h-[72px] min-w-0 flex-col gap-1 pr-[88px]");
+    // the text keeps 84px on the right (76px frame + 8px gap) and the frame adds no height
+    expect(card).toContain("min-w-0 flex-col gap-1 pr-[84px]");
     expect(card).toContain("absolute top-0 right-0");
     expect(card.indexOf("<h2")).toBeLessThan(card.indexOf("<img"));
   });
 
   it("scales the artwork to fill its frame: pure transform from the measured box", () => {
-    const books = artworkTransform(homeArtwork.heroTraining);
-    const clipboard = artworkTransform(homeArtwork.iconMiniQuiz);
-    // the larger side of the artwork ends at 99% of the frame
-    expect((books.scale * Math.max(945 - 312, 933 - 347)) / 1254).toBeCloseTo(0.99, 5);
-    expect((clipboard.scale * Math.max(984 - 297, 990 - 221)) / 1254).toBeCloseTo(0.99, 5);
-    expect(books.scale).toBeGreaterThan(1.5);
-    expect(clipboard.scale).toBeGreaterThan(1.2);
+    const books = artworkTransform(homeArtwork.heroTraining, homeFrames.tile);
+    const clipboard = artworkTransform(homeArtwork.iconMiniQuiz, homeFrames.row);
+    // the artwork is as tall as the frame (99%); the contained file is a 60px square
+    expect(books.scale * 60 * ((933 - 347) / 1254)).toBeCloseTo(0.99 * 60, 5);
+    expect(clipboard.scale * 60 * ((990 - 221) / 1254)).toBeCloseTo(0.99 * 60, 5);
+    // and it fits the frame's width
+    expect(books.scale * 60 * ((945 - 312) / 1254)).toBeLessThanOrEqual(76);
+    expect(clipboard.scale * 60 * ((984 - 297) / 1254)).toBeLessThanOrEqual(64);
   });
 
   it("keeps the dashed placeholder for a slot with no picture", () => {
@@ -310,16 +312,17 @@ describe("the Mini-quiz row", () => {
     expect(row).toContain("rounded-card bg-card");
   });
 
-  it("has the mini-quiz picture in a fixed 72 by 72 frame on the left (bare, decorative), the title, the description and the chevron on the right", () => {
+  it("has the mini-quiz picture in a fixed 64 by 60 frame on the left, top aligned with the text (bare, decorative), the title, the description and the chevron on the right", () => {
     const start = html.lastIndexOf("<a ", html.indexOf(">Mini-quiz<"));
     const row = html.slice(start, html.indexOf("</a>", start));
     const picture = row.slice(row.indexOf("<img"), row.indexOf(">", row.indexOf("<img")) + 1);
     expect(picture).toContain("/heroes/icon-miniquiz.webp");
     expect(picture).toContain('alt=""');
     expect(picture).toContain('aria-hidden="true"');
-    expect(picture).toContain('width="72"');
-    expect(picture).toContain('height="72"');
-    expect(row).toContain("width:72px;height:72px");
+    expect(picture).toContain('width="64"');
+    expect(picture).toContain('height="60"');
+    expect(row).toContain("width:64px;height:60px");
+    expect(row).toContain("flex min-w-0 flex-1 items-start gap-3");
     expect(picture).not.toMatch(/bg-|border|rounded|shadow/);
     expect(row).not.toContain("data-media3d");
     expect(row).not.toContain(">3D<");

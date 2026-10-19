@@ -28,15 +28,15 @@ for (const width of [360, 430]) {
   test.describe(`Home pictures at ${width}px`, () => {
     test.use({ viewport: { width, height: 800 } });
 
-    test("both pictures load, are decorative and fill fixed frames (80 and 72) with no background, border or shadow", async ({
+    test("both pictures load, are decorative and fill fixed frames (76 by 60 and 64 by 60) with no background, border or shadow", async ({
       page,
     }) => {
       await openHome(page);
       const hero = page.getByRole("region", { name: "Training materials" });
       const row = page.getByRole("link", { name: /Mini-quiz/ });
-      for (const [slot, size] of [
-        [hero, 80],
-        [row, 72],
+      for (const [slot, [frameW, frameH]] of [
+        [hero, [76, 60]],
+        [row, [64, 60]],
       ] as const) {
         const img = slot.locator("img");
         await expect(img).toHaveCount(1);
@@ -64,9 +64,9 @@ for (const width of [360, 430]) {
         expect(info.natural).toBeGreaterThan(0);
         expect(info.alt).toBe("");
         expect(info.hidden).toBe("true");
-        expect(info.attrs).toEqual([String(size), String(size)]);
-        expect(info.layout).toEqual([size, size]);
-        expect(info.frame).toEqual([size, size]);
+        expect(info.attrs).toEqual([String(frameW), String(frameH)]);
+        expect(info.layout).toEqual([frameW, frameH]);
+        expect(info.frame).toEqual([frameW, frameH]);
         expect(info.frameOverflow).toBe("hidden");
         expect(info.spacing).toEqual(["0px", "0px", "0px", "0px"]);
         expect(info.background).toBe("rgba(0, 0, 0, 0)");
@@ -78,13 +78,13 @@ for (const width of [360, 430]) {
       await expect(page.locator("[data-media3d]:visible")).toHaveCount(0);
     });
 
-    test("the visible artwork fills at least 90% of each frame (measured from the pixels)", async ({
+    test("the visible artwork fills at least 90% of each frame height and nothing is cropped (measured from the pixels)", async ({
       page,
     }) => {
       await openHome(page);
-      for (const [name, size] of [
-        ["Training materials", 80],
-        ["Mini-quiz", 72],
+      for (const [name, frameW, frameH] of [
+        ["Training materials", 76, 60],
+        ["Mini-quiz", 64, 60],
       ] as const) {
         const slot =
           name === "Mini-quiz"
@@ -95,45 +95,58 @@ for (const width of [360, 430]) {
         await expect
           .poll(() => slot.locator("img").evaluate((el) => (el as HTMLImageElement).naturalWidth))
           .toBeGreaterThan(0);
-        const visible = await slot.locator("img").evaluate((el, frameSize: number) => {
-          const image = el as HTMLImageElement;
-          // draw the file at the frame size with the same transform the page applies
-          const canvas = document.createElement("canvas");
-          canvas.width = frameSize;
-          canvas.height = frameSize;
-          const ctx = canvas.getContext("2d")!;
-          const match = /translate\(([-\d.e]+)%, ([-\d.e]+)%\) scale\(([-\d.e]+)\)/.exec(
-            image.style.transform,
-          )!;
-          const [tx, ty, scale] = [Number(match[1]), Number(match[2]), Number(match[3])];
-          ctx.translate(frameSize / 2, frameSize / 2);
-          ctx.translate((tx / 100) * frameSize, (ty / 100) * frameSize);
-          ctx.scale(scale, scale);
-          ctx.drawImage(image, -frameSize / 2, -frameSize / 2, frameSize, frameSize);
-          const data = ctx.getImageData(0, 0, frameSize, frameSize).data;
-          let top = frameSize;
-          let bottom = -1;
-          let left = frameSize;
-          let right = -1;
-          for (let y = 0; y < frameSize; y++) {
-            for (let x = 0; x < frameSize; x++) {
-              if (data[(y * frameSize + x) * 4 + 3] > 16) {
-                top = Math.min(top, y);
-                bottom = Math.max(bottom, y);
-                left = Math.min(left, x);
-                right = Math.max(right, x);
+        const visible = await slot.locator("img").evaluate(
+          (el, [w, h]: number[]) => {
+            const image = el as HTMLImageElement;
+            // draw the file the way the page shows it: contained (a square of the shorter side,
+            // centred), then the same transform; sample at 4x for a precise box
+            const k = 4;
+            const canvas = document.createElement("canvas");
+            canvas.width = w * k;
+            canvas.height = h * k;
+            const ctx = canvas.getContext("2d")!;
+            const match = /translate\(([-\d.e]+)px, ([-\d.e]+)px\) scale\(([-\d.e]+)\)/.exec(
+              image.style.transform,
+            )!;
+            const [tx, ty, scale] = [Number(match[1]), Number(match[2]), Number(match[3])];
+            const side = Math.min(w, h);
+            ctx.scale(k, k);
+            ctx.translate(w / 2, h / 2);
+            ctx.translate(tx, ty);
+            ctx.scale(scale, scale);
+            ctx.drawImage(image, -side / 2, -side / 2, side, side);
+            const data = ctx.getImageData(0, 0, w * k, h * k).data;
+            let top = h * k;
+            let bottom = -1;
+            let left = w * k;
+            let right = -1;
+            for (let y = 0; y < h * k; y++) {
+              for (let x = 0; x < w * k; x++) {
+                if (data[(y * w * k + x) * 4 + 3] > 16) {
+                  top = Math.min(top, y);
+                  bottom = Math.max(bottom, y);
+                  left = Math.min(left, x);
+                  right = Math.max(right, x);
+                }
               }
             }
-          }
-          return { height: bottom - top + 1, width: right - left + 1, top, left, bottom, right };
-        }, size);
-        const larger = Math.max(visible.width, visible.height);
-        expect(larger / size).toBeGreaterThanOrEqual(0.9);
-        // nothing is clipped by the frame
+            return {
+              height: (bottom - top + 1) / k,
+              width: (right - left + 1) / k,
+              top: top / k,
+              left: left / k,
+              bottom: (bottom + 1) / k,
+              right: (right + 1) / k,
+            };
+          },
+          [frameW, frameH],
+        );
+        expect(visible.height / frameH).toBeGreaterThanOrEqual(0.9);
+        // nothing is cropped: the whole artwork lies inside the frame
         expect(visible.top).toBeGreaterThanOrEqual(0);
         expect(visible.left).toBeGreaterThanOrEqual(0);
-        expect(visible.bottom).toBeLessThanOrEqual(size - 1);
-        expect(visible.right).toBeLessThanOrEqual(size - 1);
+        expect(visible.bottom).toBeLessThanOrEqual(frameH);
+        expect(visible.right).toBeLessThanOrEqual(frameW);
       }
     });
 
@@ -149,20 +162,33 @@ for (const width of [360, 430]) {
         hero.getByText("Practical scenarios and theory quizzes, by topic"),
       );
       const button = await box(hero.getByRole("link", { name: "Choose a topic" }));
-      expect([frame.width, frame.height]).toEqual([80, 80]);
-      // aligned to the top of the title block
-      expect(Math.abs(frame.y - title.y)).toBeLessThanOrEqual(8);
-      // the text never meets the frame: 8px gap at least, no intersection
+      expect([frame.width, frame.height]).toEqual([76, 60]);
+      // the top of the frame is the top of the title (4px)
+      expect(Math.abs(frame.y - title.y)).toBeLessThanOrEqual(4);
+      // the text never meets the frame: 8px gap at least (1px for rounding), no intersection
       expect(intersects(frame, title)).toBe(false);
       expect(intersects(frame, subtitle)).toBe(false);
       expect(frame.x - (title.x + title.width)).toBeGreaterThanOrEqual(8 - 1);
       expect(frame.x - (subtitle.x + subtitle.width)).toBeGreaterThanOrEqual(8 - 1);
       // the title keeps its left edge: card 8 + panel 16 + gutter 16
       expect(Math.abs(title.x - (16 + 8 + 16))).toBeLessThanOrEqual(1);
-      // text block to button: 16px (+-1); the frame stays 8px or more above the button
+      // two-line subtitle: the frame ends no lower than the subtitle's bottom (+4)
       const textBottom = Math.max(title.y + title.height, subtitle.y + subtitle.height);
+      const textHeight = textBottom - title.y;
+      const subtitleLines = Math.round(
+        subtitle.height /
+          (await hero
+            .getByText("Practical scenarios and theory quizzes, by topic")
+            .evaluate((el) => parseFloat(getComputedStyle(el).lineHeight))),
+      );
+      if (subtitleLines <= 2) {
+        expect(frame.y + frame.height).toBeLessThanOrEqual(subtitle.y + subtitle.height + 4);
+      }
+      // the frame is never taller than the text block and adds no height
+      expect(frame.height).toBeLessThanOrEqual(textHeight + 4);
+      // text block to button: 16px (+-1)
       expect(Math.abs(button.y - textBottom - 16)).toBeLessThanOrEqual(1);
-      expect(button.y - (frame.y + frame.height)).toBeGreaterThanOrEqual(8);
+      expect(button.y - (frame.y + frame.height)).toBeGreaterThanOrEqual(16 - 1);
       // card padding 16 above the text and below the button (inside the 8px card frame)
       expect(Math.abs(title.y - (card.y + 8 + 16))).toBeLessThanOrEqual(1);
       expect(
@@ -172,18 +198,14 @@ for (const width of [360, 430]) {
       expect(Math.abs(card.x + card.width - 24 - (frame.x + frame.width))).toBeLessThanOrEqual(1);
       // height: never taller than with the dashed placeholder (an 80px box in the same row):
       // 8 + 16 + max(text block, 80) + 16 + button + 16 + 8
-      const textHeight = textBottom - title.y;
       const placeholder = 8 + 16 + Math.max(textHeight, 80) + 16 + button.height + 16 + 8;
       expect(card.height).toBeLessThanOrEqual(placeholder + 1);
-      // the books (artwork 586 of 633 px) span the title-top to subtitle-bottom height (+-8)
-      const booksHeight = 80 * 0.99 * (586 / 633);
-      expect(Math.abs(booksHeight - textHeight)).toBeLessThanOrEqual(8);
       // gutters
       expect(Math.abs(card.x - 16)).toBeLessThanOrEqual(0.5);
       expect(Math.abs(width - (card.x + card.width) - 16)).toBeLessThanOrEqual(0.5);
     });
 
-    test("the Mini-quiz row: 72px frame at the left, centred, 12px to the text, no taller than before", async ({
+    test("the Mini-quiz row: 64 by 60 frame at the left, top aligned, 12px to the text, no taller than before", async ({
       page,
     }) => {
       await openHome(page);
@@ -192,23 +214,25 @@ for (const width of [360, 430]) {
       const frame = await box(row.locator("[data-picture-frame]"));
       const title = await box(row.getByText("Mini-quiz", { exact: true }));
       const description = await box(row.getByText("Pick topics and how many questions"));
-      expect([frame.width, frame.height]).toEqual([72, 72]);
+      expect([frame.width, frame.height]).toEqual([64, 60]);
       expect(intersects(frame, title)).toBe(false);
       expect(intersects(frame, description)).toBe(false);
       const textLeft = Math.min(title.x, description.x);
       expect(textLeft - (frame.x + frame.width)).toBeCloseTo(12, 0);
       // the text starts where it did with the 72px placeholder (16px padding + 72 + 12), +4 at most
       expect(textLeft).toBeLessThanOrEqual(16 + 16 + 72 + 12 + 4);
-      expect(
-        Math.abs(frame.y + frame.height / 2 - (rowBox.y + rowBox.height / 2)),
-      ).toBeLessThanOrEqual(2);
-      // the row is not taller than with the placeholder: 104px minimum, text decides above it
+      // top aligned with the title; the bottom no lower than the description's bottom (+4)
+      expect(Math.abs(frame.y - title.y)).toBeLessThanOrEqual(4);
+      // (only when the description has two lines; with one line the frame stays 60px, top aligned)
+      if (description.height > 30) {
+        expect(frame.y + frame.height).toBeLessThanOrEqual(description.y + description.height + 4);
+      }
+      // the row is not taller than with the placeholder (104px minimum), +4 at most
       expect(rowBox.height).toBeLessThanOrEqual(104 + 4);
-      // the clipboard is about as tall as the text block
-      const textHeight =
-        Math.max(title.y + title.height, description.y + description.height) -
-        Math.min(title.y, description.y);
-      expect(Math.abs(72 - textHeight)).toBeLessThanOrEqual(24);
+      // the chevron stays on the right
+      const chevron = await box(row.locator("svg").last());
+      expect(chevron.x).toBeGreaterThan(description.x + description.width - 1);
+      expect(chevron.x + chevron.width).toBeLessThanOrEqual(rowBox.x + rowBox.width);
       expect(Math.abs(rowBox.x - 16)).toBeLessThanOrEqual(0.5);
       expect(
         await page.evaluate(

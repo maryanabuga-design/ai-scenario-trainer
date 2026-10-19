@@ -1,7 +1,7 @@
 import { Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
 import type { ReactNode } from "react";
-import { artworkTransform } from "@/lib/home";
+import { artworkTransform, homeFrames } from "@/lib/home";
 import type { Artwork } from "@/lib/home";
 
 export type Media3DVariant = "hero" | "step" | "icon" | "tile" | "row";
@@ -14,11 +14,11 @@ const frames = {
 } as const;
 
 /**
- * Home's two pictures sit in FIXED square frames (the hero card 80px, the Mini-quiz row 72px): the
- * frame never changes size, the picture fills it and never pushes the text. The files have
- * transparent margins, so the picture is scaled inside the clipped frame until its artwork fills it.
+ * Home's two pictures sit in FIXED frames fitted to the text next to them (`homeFrames`: the hero
+ * card 76 by 60, the Mini-quiz row 64 by 60): the frame never changes size, the picture fills it and
+ * never pushes the text. The files have transparent margins, so the picture is scaled inside the
+ * clipped frame until its artwork fills it.
  */
-const pictures = { tile: 80, row: 72 } as const;
 
 /**
  * The one slot for 3D pictures. A hero (200px square, 28px radius) sits on Session setup and
@@ -52,25 +52,25 @@ export function Media3D({
   }
   const frame = frames[variant];
   if (variant === "tile" || variant === "row") {
-    const size = pictures[variant];
-    const fit = artwork ? artworkTransform(artwork) : null;
+    const size = homeFrames[variant];
+    const fit = artwork ? artworkTransform(artwork, size) : null;
     return src ? (
       <span
         data-picture-frame
         aria-hidden="true"
         className="block shrink-0 overflow-hidden"
-        style={{ width: size, height: size }}
+        style={{ width: size.width, height: size.height }}
       >
         <Image
           src={src}
           alt={alt}
-          width={size}
-          height={size}
+          width={size.width}
+          height={size.height}
           unoptimized
           aria-hidden={alt === "" ? true : undefined}
           className="block h-full w-full object-contain"
           style={
-            fit ? { transform: `translate(${fit.x}%, ${fit.y}%) scale(${fit.scale})` } : undefined
+            fit ? { transform: `translate(${fit.x}px, ${fit.y}px) scale(${fit.scale})` } : undefined
           }
         />
       </span>

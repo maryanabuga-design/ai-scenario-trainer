@@ -66,19 +66,33 @@ export const homeArtwork: Record<"heroTraining" | "iconMiniQuiz", Artwork> = {
   iconMiniQuiz: { x0: 297 / 1254, y0: 221 / 1254, x1: 984 / 1254, y1: 990 / 1254 },
 };
 
-/** The share of the frame the artwork may fill: 1% to spare so no edge is clipped. */
+/** The share of the frame the artwork may fill: 1% to spare so no edge is touched. */
 export const ARTWORK_FILL = 0.99;
 
+/** The fixed frames of Home's two pictures in px: 60px is a title with two small lines. */
+export const homeFrames = {
+  tile: { width: 76, height: 60 },
+  row: { width: 64, height: 60 },
+} as const;
+
 /**
- * The transform that makes the artwork fill its square frame without editing the file: scale about
- * the frame's centre until the larger side of the artwork fills the frame, and move the artwork's
- * centre to the frame's centre. Percentages are of the frame.
+ * The transform that makes the artwork fill its frame without editing the file. With
+ * `object-fit: contain` the file is drawn as a square of the frame's shorter side, centred; scale
+ * about the frame's centre until the artwork height fills the frame (or its width, when that comes
+ * first) and move the artwork's centre to the frame's centre. Offsets are in px.
  */
-export function artworkTransform(art: Artwork): { scale: number; x: number; y: number } {
-  const scale = ARTWORK_FILL / Math.max(art.x1 - art.x0, art.y1 - art.y0);
+export function artworkTransform(
+  art: Artwork,
+  frame: { width: number; height: number },
+): { scale: number; x: number; y: number } {
+  const side = Math.min(frame.width, frame.height);
+  const scale = Math.min(
+    (ARTWORK_FILL * frame.height) / ((art.y1 - art.y0) * side),
+    (ARTWORK_FILL * frame.width) / ((art.x1 - art.x0) * side),
+  );
   const centreX = (art.x0 + art.x1) / 2;
   const centreY = (art.y0 + art.y1) / 2;
-  return { scale, x: -(centreX - 0.5) * scale * 100, y: -(centreY - 0.5) * scale * 100 };
+  return { scale, x: -(centreX - 0.5) * side * scale, y: -(centreY - 0.5) * side * scale };
 }
 
 export type HomeCounts = {
