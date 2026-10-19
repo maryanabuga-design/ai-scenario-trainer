@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, Info, ListChecks, LightbulbOff, Target } from "lucide-react";
+import { CircleCheck, Clock, Info, ListChecks, LightbulbOff, Target } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
@@ -81,31 +81,34 @@ export function ExamView({
 }) {
   const ready = isReady(readiness);
   return (
-    <div className="flex flex-col gap-4 pb-[var(--gutter,1rem)]">
+    <div className="flex flex-1 flex-col gap-4 pb-[var(--gutter,1rem)]">
       <PageHeaderBand
         title={title}
         subtitle={<ExamSubtitle assignedBy={assignedBy} deadline={deadline} />}
         back={{ label: "Back to Home", href: "/" }}
       />
 
-      <section
-        aria-label="Readiness"
-        className="flex flex-col gap-3 rounded-card border border-selectable-stroke bg-secondary-sand p-[var(--gutter,1rem)]"
-      >
-        <div className="flex items-start gap-3">
-          <IconTile className="h-11 w-11 rounded-[12px]">
-            <Info size={22} strokeWidth={2} />
-          </IconTile>
-          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <h2 className="type-body-strong">{ready ? "You're ready" : "Not ready yet"}</h2>
-            <p className="type-body text-text-secondary">
-              {ready
-                ? `Your readiness is ${readiness}%.`
-                : `Your readiness is ${readiness}%. The pass mark is ${EXAM_PASS_MARK}%.`}
-            </p>
+      <section aria-label="Readiness">
+        <Card className="flex flex-col gap-3">
+          <div className="flex items-start gap-3">
+            <IconTile tone={ready ? "success" : "attention"} className="h-11 w-11 rounded-[12px]">
+              {ready ? (
+                <CircleCheck size={22} strokeWidth={2} />
+              ) : (
+                <Info size={22} strokeWidth={2} />
+              )}
+            </IconTile>
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <h2 className="type-body-strong">{ready ? "You're ready" : "Not ready yet"}</h2>
+              <p className="type-body text-text-secondary">
+                {ready
+                  ? `Your readiness is ${readiness}%.`
+                  : `Your readiness is ${readiness}%. The pass mark is ${EXAM_PASS_MARK}%.`}
+              </p>
+            </div>
           </div>
-        </div>
-        <ReadinessBar percent={readiness} />
+          <ReadinessBar percent={readiness} />
+        </Card>
       </section>
 
       <Card className="flex flex-col gap-4">
@@ -134,7 +137,8 @@ export function ExamView({
         )}
       </Card>
 
-      <div className="flex flex-col gap-3">
+      {/* the buttons end the column: at the bottom of a short screen, after the content on a tall one */}
+      <div className="mt-auto flex flex-col gap-3 pt-2">
         {ready || !canRepeat ? (
           <Button onClick={onStart}>Start exam</Button>
         ) : (

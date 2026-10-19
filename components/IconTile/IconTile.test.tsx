@@ -73,3 +73,37 @@ describe("the places that draw an icon in a tile", () => {
     expect(read("components/PageHeaderBand/PageHeaderBand.tsx")).not.toContain("icon-tile");
   });
 });
+
+describe("the exam status tiles", () => {
+  it("register the attention colours and reuse the correct-answer tokens for success", () => {
+    expect(token("status-attention-bg")).toBe("#fbe7b5");
+    expect(token("status-attention-ink")).toBe("#7a4e00");
+    expect(css).toContain("--color-status-attention-bg: var(--status-attention-bg);");
+    expect(css).toContain("--color-status-attention-ink: var(--status-attention-ink);");
+    // success is the existing green, not a copy of its values
+    expect(css).not.toMatch(/--status-success/);
+    expect(token("correct-bg")).toBe("#e3f2e8");
+    expect(token("correct-text")).toBe("#1f6b3f");
+  });
+
+  it("keep the icon at least 3:1 on each tile, computed from the registered tokens", () => {
+    const attention = contrastRatio(token("status-attention-ink"), token("status-attention-bg"));
+    const success = contrastRatio(token("correct-text"), token("correct-bg"));
+    expect(attention).toBeGreaterThanOrEqual(GRAPHIC_CONTRAST);
+    expect(success).toBeGreaterThanOrEqual(GRAPHIC_CONTRAST);
+    expect(attention).toBeCloseTo(5.6, 0);
+    expect(success).toBeCloseTo(5.6, 0);
+  });
+
+  it("draw the three tones", () => {
+    const html = (tone: "default" | "attention" | "success") =>
+      renderToStaticMarkup(
+        <IconTile tone={tone} className="h-11 w-11 rounded-[12px]">
+          <svg />
+        </IconTile>,
+      );
+    expect(html("default")).toContain("bg-icon-tile-bg text-icon-ink");
+    expect(html("attention")).toContain("bg-status-attention-bg text-status-attention-ink");
+    expect(html("success")).toContain("bg-correct-bg text-correct-text");
+  });
+});
