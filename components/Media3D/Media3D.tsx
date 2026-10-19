@@ -11,15 +11,22 @@ const frames = {
   row: "h-[72px] w-[72px] rounded-[16px]",
 } as const;
 
-/** Home's two small slots: the hero card tile (80px) and the Mini-quiz row icon (72px, no background). */
-const small = { tile: 80, row: 72 } as const;
+/**
+ * The sizes of Home's two pictures, shown with no background, border or shadow: the hero card
+ * picture (96px) and the Mini-quiz row picture (72px). The placeholders keep the frames above.
+ */
+const pictures = {
+  tile: { size: 96, className: "h-24 w-24" },
+  row: { size: 72, className: "h-[72px] w-[72px]" },
+} as const;
 
 /**
  * The one slot for 3D pictures. A hero (200px square, 28px radius) sits on Session setup and
  * Results; a step picture (full width, 4:3, 16px radius) sits above a question; an icon is the
  * existing icon tile, which stays the fallback. Hero and step show a dashed olive placeholder with
- * "3D" until a picture (`src`) is supplied. Home adds a `tile` (80px, hero card) and a `row` icon
- * (72px, Mini-quiz row); their placeholder is the same dashed olive square with only the "3D" caption.
+ * "3D" until a picture (`src`) is supplied. Home adds a `tile` (the hero card, 96px picture) and a
+ * `row` icon (72px picture, Mini-quiz row); with a picture they are drawn bare (no background, border
+ * or shadow) and decorative; without one the dashed olive square with only the "3D" caption shows.
  */
 export function Media3D({
   variant,
@@ -46,9 +53,10 @@ export function Media3D({
       <Image
         src={src}
         alt={alt}
-        width={small[variant]}
-        height={small[variant]}
-        className={`shrink-0 object-contain ${frame}`}
+        width={pictures[variant].size}
+        height={pictures[variant].size}
+        aria-hidden={alt === "" ? true : undefined}
+        className={`shrink-0 object-contain ${pictures[variant].className}`}
       />
     ) : (
       <div

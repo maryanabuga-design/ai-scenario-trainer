@@ -485,14 +485,16 @@ test.describe("Home", () => {
     await page.goto("/");
   }
 
-  test("the hero card has the title, the subtitle, the 3D slot and one button, and no progress numbers", async ({
+  test("the hero card has the title, the subtitle, the picture and one button, and no progress numbers", async ({
     page,
   }) => {
     await home(page, null);
     const hero = page.getByRole("region", { name: "Training materials" });
     await expect(hero.getByRole("heading", { name: "Training materials" })).toBeVisible();
     await expect(hero.getByText("Practical scenarios and theory quizzes, by topic")).toBeVisible();
-    await expect(hero.getByText("3D", { exact: true })).toBeVisible();
+    // the picture (no placeholder any more), and exactly one interactive element still
+    await expect(hero.locator("img")).toBeVisible();
+    await expect(hero.getByText("3D", { exact: true })).toHaveCount(0);
     // exactly one interactive element: the Primary button, opening Training as before
     expect(await hero.locator("a, button, input, select, textarea, [tabindex]").count()).toBe(1);
     await expect(hero.getByRole("link", { name: "Choose a topic" })).toHaveAttribute(

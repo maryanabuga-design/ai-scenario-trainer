@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { Media3D } from "@/components/Media3D/Media3D";
 import { HomeView } from "@/components/HomeView/HomeView";
 import { getItem } from "@/lib/items";
 import { HERO_BUTTON_LABEL, HERO_SUBTITLE, HERO_TITLE, homeCounts, homeSummary } from "@/lib/home";
@@ -146,19 +147,39 @@ describe("the hero card", () => {
     expect(card).toContain("rounded-[22px] bg-secondary-sand p-4");
   });
 
-  it("keeps the 3D tile placeholder next to the title", () => {
+  it("shows the hero picture next to the title: 96px, decorative, bare, no placeholder", () => {
     const card = hero(render());
-    expect(card).toContain('data-media3d="placeholder"');
-    expect(card).toContain("h-20 w-20");
-    expect(card).toContain(">3D<");
-    expect(card.indexOf("<h2")).toBeLessThan(card.indexOf("h-20 w-20"));
+    const picture = card.slice(card.indexOf("<img"), card.indexOf(">", card.indexOf("<img")) + 1);
+    expect(picture).toContain('alt=""');
+    expect(picture).toContain('aria-hidden="true"');
+    expect(picture).toContain('width="96"');
+    expect(picture).toContain('height="96"');
+    expect(picture).toContain("h-24 w-24");
+    expect(picture).toContain("object-contain");
+    expect(decodeURIComponent(picture)).toContain("/heroes/hero-training.webp");
+    // no tile, border, dashed outline, background or shadow around it
+    expect(picture).not.toMatch(/bg-|border|rounded|shadow/);
+    expect(card).not.toContain("data-media3d");
+    expect(card).not.toContain(">3D<");
+    expect(card.indexOf("<h2")).toBeLessThan(card.indexOf("<img"));
+  });
+
+  it("keeps the dashed placeholder for a slot with no picture", () => {
+    const html = renderToStaticMarkup(<Media3D variant="tile" />);
+    expect(html).toContain('data-media3d="placeholder"');
+    expect(html).toContain("h-20 w-20");
+    expect(html).toContain(">3D<");
+    const row = renderToStaticMarkup(<Media3D variant="row" />);
+    expect(row).toContain("h-[72px] w-[72px]");
+    expect(row).toContain(">3D<");
   });
 
   it("has no topic strip, no Topics or Today caption, no divider and no numbers or percentages", () => {
     for (const state of Object.keys(states) as (keyof typeof states)[]) {
       const card = hero(render(state));
       expect(card, state).not.toMatch(/<ul|<li|<hr|progressbar|data-state/);
-      expect(card, state).not.toMatch(/Topics|Today|\d+\/\d+|%/);
+      // the words on the card (the picture's URL is not text)
+      expect(card.replace(/<[^>]+>/g, " "), state).not.toMatch(/Topics|Today|\d+\/\d+|%/);
     }
   });
 
@@ -263,12 +284,18 @@ describe("the Mini-quiz row", () => {
     expect(row).toContain("rounded-card bg-card");
   });
 
-  it("has a 72px 3D row icon placeholder on the left, the title, the description and the chevron on the right", () => {
+  it("has the 72px mini-quiz picture on the left (bare, decorative), the title, the description and the chevron on the right", () => {
     const start = html.lastIndexOf("<a ", html.indexOf(">Mini-quiz<"));
     const row = html.slice(start, html.indexOf("</a>", start));
-    expect(row).toContain('data-media3d="placeholder"');
-    expect(row).toContain("h-[72px] w-[72px]");
-    expect(row).toContain(">3D<");
+    const picture = row.slice(row.indexOf("<img"), row.indexOf(">", row.indexOf("<img")) + 1);
+    expect(decodeURIComponent(picture)).toContain("/heroes/icon-miniquiz.webp");
+    expect(picture).toContain('alt=""');
+    expect(picture).toContain('aria-hidden="true"');
+    expect(picture).toContain('width="72"');
+    expect(picture).toContain('height="72"');
+    expect(picture).not.toMatch(/bg-|border|rounded|shadow/);
+    expect(row).not.toContain("data-media3d");
+    expect(row).not.toContain(">3D<");
     const order = ["h-[72px] w-[72px]", ">Mini-quiz<", "Pick topics", "lucide-chevron-right"].map(
       (text) => row.indexOf(text),
     );

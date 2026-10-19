@@ -799,12 +799,16 @@ export function Media3DSample() {
         <Media3D variant="icon" fallback={<TopicTile sectionId="S2" icon={topicIcon("S2")} />} />
       </section>
       <section className="flex flex-col items-start gap-2">
-        <h2 className="type-label text-text-secondary">tile (80px, Home hero card)</h2>
+        <h2 className="type-label text-text-secondary">tile (80px placeholder, Home hero card)</h2>
         <Media3D variant="tile" />
+        <h2 className="type-label text-text-secondary">tile with its picture (96px, bare)</h2>
+        <Media3D variant="tile" src="/heroes/hero-training.webp" />
       </section>
       <section className="flex flex-col items-start gap-2">
-        <h2 className="type-label text-text-secondary">row (72px, Mini-quiz row)</h2>
+        <h2 className="type-label text-text-secondary">row (72px placeholder, Mini-quiz row)</h2>
         <Media3D variant="row" />
+        <h2 className="type-label text-text-secondary">row with its picture (72px, bare)</h2>
+        <Media3D variant="row" src="/heroes/icon-miniquiz.webp" />
       </section>
       <section className="flex flex-col gap-2 rounded-card bg-card p-4 shadow-(--card-shadow)">
         <h2 className="type-label text-text-secondary">toggle</h2>

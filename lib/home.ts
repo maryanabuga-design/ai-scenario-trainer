@@ -45,10 +45,13 @@ export const HERO_SUBTITLE = "Practical scenarios and theory quizzes, by topic";
 export const HERO_BUTTON_LABEL = "Choose a topic";
 
 /**
- * The pictures of Home's hero tile and Mini-quiz row icon. Until a file is added to `public/heroes/`
- * (`hero-training.webp`, `icon-miniquiz.webp`) the placeholders show.
+ * The pictures of Home's hero card and Mini-quiz row (`public/heroes/hero-training.webp` and
+ * `icon-miniquiz.webp`). A slot with no picture shows the dashed "3D" placeholder.
  */
-export const homeImages: { heroTraining?: string; iconMiniQuiz?: string } = {};
+export const homeImages: { heroTraining?: string; iconMiniQuiz?: string } = {
+  heroTraining: "/heroes/hero-training.webp",
+  iconMiniQuiz: "/heroes/icon-miniquiz.webp",
+};
 
 export type HomeCounts = {
   /** The best exam result in percent, or null when no exam was taken. */
