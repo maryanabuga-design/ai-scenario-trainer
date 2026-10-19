@@ -4,7 +4,7 @@ import { examResults } from "@/lib/exam";
 import { findItem, getItem } from "@/lib/items";
 import { modeStats, readinessOf } from "@/lib/part-progress";
 import { scoreSession, weakItemsFromHistory } from "@/lib/progress";
-import { homeCounts, homeSummary, topicStrip } from "@/lib/home";
+import { homeCounts, homeSummary } from "@/lib/home";
 
 const storage = new Map<string, string>();
 beforeAll(() => {
@@ -49,7 +49,6 @@ const old = (key: string, value: unknown, schema = 5) =>
 
 const GONE = ["s1", "s7", "q-s1-1", "q-s1-4"];
 const right = (id: string) => ({ itemId: id, optionId: getItem(id).correctOptionId });
-const NOW = new Date(2026, 9, 17, 12, 0);
 
 describe("an unknown id never throws", () => {
   it("findItem returns nothing for an id that is gone", async () => {
@@ -162,7 +161,7 @@ describe("saved results (history)", () => {
       readinessOf(history);
       weakItemsFromHistory(history);
       homeCounts({ history, saved: app.readSaved() });
-      homeSummary({ unfinished: null, history, records: app.readPartRecords(), now: NOW });
+      homeSummary({ unfinished: null, history });
     }).not.toThrow();
     expect(modeStats(history, "scenario").answered).toBe(1);
   });
@@ -192,15 +191,6 @@ describe("part progress", () => {
   it("ignores a result for a part that does not exist", async () => {
     old("ast.parts.v1", { "quiz:S1:9": record(["q-quiz-s01-001"]) });
     expect((await load()).readPartRecords()).toEqual({});
-  });
-
-  it("shows a strip with no done topic from old part results", async () => {
-    old("ast.parts.v1", { "quiz:S1:1": record(["q-s1-1"]), "scenario:S1:1": record(["s1"]) });
-    expect(
-      topicStrip((await load()).readPartRecords()).every(
-        (segment) => segment.state === "not started",
-      ),
-    ).toBe(true);
   });
 });
 

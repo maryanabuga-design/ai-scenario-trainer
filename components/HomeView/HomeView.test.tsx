@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest";
 import { HomeView } from "@/components/HomeView/HomeView";
 import { getItem } from "@/lib/items";
 import { HERO_BUTTON_LABEL, HERO_SUBTITLE, HERO_TITLE, homeCounts, homeSummary } from "@/lib/home";
-import type { PartRecords } from "@/lib/part-progress";
 import type { FinishedSession, Session } from "@/lib/session";
 import { DEMO_USER } from "@/lib/user";
 
@@ -36,7 +35,7 @@ const states = {
   first: { open: null, history: [] as FinishedSession[] },
   continue: { open: unfinished, history: [] as FinishedSession[] },
   weak: { open: null, history: [finishedAt(today, [["q-quiz-s01-001", false]])] },
-  goal: {
+  ready: {
     open: null,
     history: [
       finishedAt(
@@ -49,24 +48,12 @@ const states = {
   },
 };
 
-const done = (percent: number) => ({
-  lastPercent: percent,
-  attempts: 1,
-  answeredIds: [],
-  correctIds: [],
-});
-
-function render(state: keyof typeof states = "first", records: PartRecords | null = null) {
+function render(state: keyof typeof states = "first") {
   const { open, history } = states[state];
   return renderToStaticMarkup(
     <HomeView
       name={DEMO_USER.name}
-      summary={homeSummary({
-        unfinished: open,
-        history,
-        records,
-        now: NOW,
-      })}
+      summary={homeSummary({ unfinished: open, history })}
       counts={counts}
     />,
   );
@@ -122,7 +109,7 @@ describe("the sentence under the greeting", () => {
     expect(render("first")).toContain("Start with your first scenario.");
     expect(render("continue")).toContain("You stopped at question 7 of 20.");
     expect(render("weak")).toContain("1 topic needs another look.");
-    expect(render("goal")).toContain("You are ready. Try a mini-quiz to stay sharp.");
+    expect(render("ready")).toContain("You are ready. Try a mini-quiz to stay sharp.");
   });
 });
 
@@ -149,7 +136,7 @@ describe("the hero card", () => {
     expect(card).not.toContain("10 topics");
     expect(card).not.toContain("rounded-full bg-surface");
     const panel = card.slice(card.indexOf("rounded-[22px]"));
-    expect(panel.indexOf("<h2")).toBeLessThan(panel.indexOf("<ul"));
+    expect(panel.indexOf("<h2")).toBeLessThan(panel.indexOf("<a "));
     expect(panel.slice(panel.indexOf(">") + 1, panel.indexOf("<h2"))).not.toContain("<span");
   });
 
@@ -167,32 +154,12 @@ describe("the hero card", () => {
     expect(card.indexOf("<h2")).toBeLessThan(card.indexOf("h-20 w-20"));
   });
 
-  it("has a strip of 10 segments with the right state colours", () => {
-    const records: PartRecords = {
-      "quiz:S3:1": done(100),
-      "quiz:S4:1": done(40),
-    };
-    const card = hero(render("first", records));
-    const segments = card.match(/<li data-state="[^"]+"[^>]*>/g) ?? [];
-    expect(segments).toHaveLength(10);
-    expect(segments.filter((s) => s.includes('data-state="done"'))).toHaveLength(1);
-    expect(segments.filter((s) => s.includes('data-state="in progress"'))).toHaveLength(1);
-    expect(segments.filter((s) => s.includes('data-state="not started"'))).toHaveLength(8);
-    expect(segments[2]).toContain("bg-primary");
-    expect(segments[3]).toContain("bg-olive-tint");
-    expect(segments[0]).toContain("bg-arrow-stroke");
-    segments.forEach((segment) => expect(segment).toContain("h-1.5 flex-1 rounded-[3px]"));
-    expect(card).toContain('<ul aria-label="Topics" class="flex gap-1">');
-  });
-
-  it("shows the captions Topics x/10 and Today x/5", () => {
-    const first = hero(render());
-    expect(first).toContain("Topics 0/10");
-    expect(first).toContain("Today 0/5");
-    const later = hero(render("goal", { "quiz:S3:1": done(100) }));
-    expect(later).toContain("Topics 1/10");
-    expect(later).toContain("Today 5/5");
-    expect(hero(render("weak"))).toContain("Today 1/5");
+  it("has no topic strip, no Topics or Today caption, no divider and no numbers or percentages", () => {
+    for (const state of Object.keys(states) as (keyof typeof states)[]) {
+      const card = hero(render(state));
+      expect(card, state).not.toMatch(/<ul|<li|<hr|progressbar|data-state/);
+      expect(card, state).not.toMatch(/Topics|Today|\d+\/\d+|%/);
+    }
   });
 
   it("has no readiness ring and no square button", () => {
@@ -204,10 +171,9 @@ describe("the hero card", () => {
     }
   });
 
-  it("has the divider and one full-width Primary button, Choose a topic, that opens Training in every state", () => {
+  it("has one full-width Primary button, Choose a topic, that opens Training in every state", () => {
     for (const state of Object.keys(states) as (keyof typeof states)[]) {
       const card = hero(render(state));
-      expect(card, state).toContain("<hr");
       expect(card.match(/<a /g), state).toHaveLength(1);
       expect(card, state).toContain('href="/training"');
       expect(card, state).toContain(`>${HERO_BUTTON_LABEL}</a>`);
@@ -274,7 +240,7 @@ describe("the tiles", () => {
     const withExam = renderToStaticMarkup(
       <HomeView
         name={DEMO_USER.name}
-        summary={homeSummary({ unfinished: null, history: [], records: null, now: NOW })}
+        summary={homeSummary({ unfinished: null, history: [] })}
         counts={{ ...counts, bestExam: 85 }}
       />,
     );

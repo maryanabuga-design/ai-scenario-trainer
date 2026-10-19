@@ -15,6 +15,9 @@ const s1Quiz = quizBank.filter((question) => question.section === "S1").slice(0,
 const SCENARIO_TOTAL = scenarioSteps.length;
 const quizOf = (section: string) => quizBank.filter((question) => question.section === section);
 
+const noSidewaysScroll = (page: Page) =>
+  page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
+
 const profile = { direction: "building-evacuation", onboarded: true };
 const scenario = {
   kind: "scenario",
@@ -480,13 +483,40 @@ test.describe("Home", () => {
     await page.goto("/");
   }
 
+  test("the hero card has the title, the subtitle, the 3D slot and one button, and no progress numbers", async ({
+    page,
+  }) => {
+    await home(page, null);
+    const hero = page.getByRole("region", { name: "Training materials" });
+    await expect(hero.getByRole("heading", { name: "Training materials" })).toBeVisible();
+    await expect(hero.getByText("Practical scenarios and theory quizzes, by topic")).toBeVisible();
+    await expect(hero.getByText("3D", { exact: true })).toBeVisible();
+    // exactly one interactive element: the Primary button, opening Training as before
+    expect(await hero.locator("a, button, input, select, textarea, [tabindex]").count()).toBe(1);
+    await expect(hero.getByRole("link", { name: "Choose a topic" })).toHaveAttribute(
+      "href",
+      "/training",
+    );
+    // no bar, no captions, no numbers or percentages, no divider
+    await expect(hero.getByRole("progressbar")).toHaveCount(0);
+    await expect(hero.locator("ul, li, hr")).toHaveCount(0);
+    expect(await hero.innerText()).not.toMatch(/Topics|Today|%|\d\/\d/);
+    // the page keeps its gutters (16px from the screen edge) and does not scroll sideways
+    const sides = await hero.evaluate((el) => {
+      const box = el.getBoundingClientRect();
+      return [box.left, document.documentElement.clientWidth - box.right];
+    });
+    expect(Math.abs(sides[0] - 16)).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(sides[1] - 16)).toBeLessThanOrEqual(0.5);
+    expect(await noSidewaysScroll(page)).toBe(true);
+  });
+
   test("opens Training from the hero card on a first visit, with the tiles and no Progress numbers", async ({
     page,
   }) => {
     await home(page, null);
     await expect(page.getByRole("heading", { name: "Hi, Maryana" })).toBeVisible();
     await expect(page.getByText("Start with your first scenario.")).toBeVisible();
-    await expect(page.getByText("Today 0/5")).toBeVisible();
     await expect(page.getByRole("link", { name: "Choose a topic" })).toBeVisible();
     await expect(page.getByText("Training materials")).toBeVisible();
     await expect(page.getByText("Practical scenarios and theory quizzes, by topic")).toBeVisible();
@@ -566,8 +596,6 @@ test.describe("Home", () => {
   test("opens Training from an empty area of the hero card", async ({ page }) => {
     await home(page, null);
     const hero = page.getByRole("region", { name: "Training materials" });
-    await expect(hero.getByText("Topics 0/10")).toBeVisible();
-    await expect(hero.getByText("Today 0/5")).toBeVisible();
     await page.evaluate(() => window.scrollTo(0, 0));
     const box = await hero.boundingBox();
     await page.mouse.click(box!.x + box!.width / 2, box!.y + 4);
@@ -925,7 +953,6 @@ test.describe("Exam", () => {
     await expect(page.getByText(/^Best/)).toBeVisible();
     await page.getByRole("link", { name: "Back to Home" }).click();
     await expect(page.getByRole("link", { name: /^Exam Best: \d+%/ })).toBeVisible();
-    await expect(page.getByText("Today 0/5")).toBeVisible();
   });
 
   test("keeps the timer after a refresh", async ({ page }) => {
@@ -980,7 +1007,7 @@ test.describe("Exam", () => {
     await expect(page.getByText("Continue your session")).toHaveCount(0);
   });
 
-  test("leaves the part rings and the Today goal alone", async ({ page }) => {
+  test("leaves the part rings alone", async ({ page }) => {
     await open(page, "/exam");
     await page.getByRole("button", { name: "Start exam" }).click();
     await takeExam(page);
@@ -988,7 +1015,7 @@ test.describe("Exam", () => {
     const parts = await page.evaluate(() => localStorage.getItem("ast.parts.v1"));
     expect(parts).toBeNull();
     await page.goto("/");
-    await expect(page.getByText("Today 0/5")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Hi, Maryana" })).toBeVisible();
   });
 
   test("does not touch an unfinished normal session", async ({ page }) => {

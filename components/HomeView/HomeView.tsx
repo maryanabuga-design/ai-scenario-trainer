@@ -8,7 +8,7 @@ import { Chevron } from "@/components/Chevron/Chevron";
 import { Media3D } from "@/components/Media3D/Media3D";
 import { TileIcon } from "@/components/TileIcon/TileIcon";
 import { HERO_BUTTON_LABEL, HERO_SUBTITLE, HERO_TITLE, homeImages, homeTiles } from "@/lib/home";
-import type { HomeCounts, HomeSummary, HomeTileId, SegmentState } from "@/lib/home";
+import type { HomeCounts, HomeSummary, HomeTileId } from "@/lib/home";
 
 const miniQuizPath = "/mini-quiz?from=home";
 
@@ -17,12 +17,6 @@ const tileIcons: Record<HomeTileId, LucideIcon> = {
   steps: ListOrdered,
   weak: ListChecks,
   saved: Bookmark,
-};
-
-const segmentTones: Record<SegmentState, string> = {
-  done: "bg-primary",
-  "in progress": "bg-olive-tint",
-  "not started": "bg-arrow-stroke",
 };
 
 /**
@@ -39,9 +33,7 @@ export function HomeView({
   summary: HomeSummary;
   counts: HomeCounts;
 }) {
-  const { goal, strip } = summary;
   const tiles = homeTiles(counts);
-  const topicsDone = strip.filter((segment) => segment.state === "done").length;
 
   return (
     <div className="flex flex-col gap-4 pb-4">
@@ -71,29 +63,6 @@ export function HomeView({
             </div>
             <Media3D variant="tile" src={homeImages.heroTraining} />
           </div>
-
-          <div className="flex flex-col gap-2">
-            <ul aria-label="Topics" className="flex gap-1">
-              {strip.map((segment) => (
-                <li
-                  key={segment.sectionId}
-                  data-state={segment.state}
-                  title={`${segment.sectionId}: ${segment.state}`}
-                  className={`h-1.5 flex-1 rounded-[3px] ${segmentTones[segment.state]}`}
-                />
-              ))}
-            </ul>
-            <p className="type-caption flex justify-between text-text-secondary">
-              <span>
-                Topics {topicsDone}/{strip.length}
-              </span>
-              <span>
-                Today {goal.done}/{goal.goal}
-              </span>
-            </p>
-          </div>
-
-          <hr className="border-t border-arrow-stroke" />
 
           <Link
             href="/training"

@@ -3,62 +3,28 @@ import { weakItemsFromHistory } from "@/lib/progress";
 import type { FinishedSession, Session } from "@/lib/session";
 import { checklists } from "@/lib/checklists";
 import { examResults } from "@/lib/exam";
-import { DAILY_GOAL, questionsToday } from "@/lib/daily-goal";
-import { PASS_MARK } from "@/lib/config";
-import type { PartRecords } from "@/lib/part-progress";
-import { partsFor, trainingSections } from "@/lib/parts";
 
 export { readinessOf as readiness } from "@/lib/part-progress";
-
-export type SegmentState = "done" | "in progress" | "not started";
 
 export type HomeSummary = {
   /** The one sentence under the greeting. */
   subtitle: string;
-  /** The daily goal: questions answered today (at most the goal) and the goal. */
-  goal: { done: number; goal: number };
-  /** One segment per guide section, in guide order. */
-  strip: { sectionId: string; state: SegmentState }[];
 };
 
 const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
 
 /**
- * The topic strip: done when every part of the section (both modes) has a latest result at or
- * above the pass mark, in progress when at least one part has a finished attempt, else not started.
- */
-export function topicStrip(records: PartRecords | null): HomeSummary["strip"] {
-  const parts = [...partsFor("scenario"), ...partsFor("quiz")];
-  return trainingSections.map((sectionId) => {
-    const own = parts.filter((part) => part.sectionId === sectionId);
-    const results = own.map((part) => records?.[part.id]);
-    const state: SegmentState =
-      own.length > 0 && results.every((record) => record && record.lastPercent >= PASS_MARK)
-        ? "done"
-        : results.some(Boolean)
-          ? "in progress"
-          : "not started";
-    return { sectionId, state };
-  });
-}
-
-/**
  * What Home says under the greeting, first match wins: an unfinished session, nothing started,
- * weak topics, the daily goal not reached, otherwise "ready".
+ * weak topics, otherwise "ready".
  */
 export function homeSummary({
   unfinished,
   history,
-  records,
-  now,
 }: {
   unfinished: Session | null;
   history: FinishedSession[] | null;
-  records: PartRecords | null;
-  now: Date;
 }): HomeSummary {
   const weakSections = new Set(weakItemsFromHistory(history).map((item) => item.section)).size;
-  const done = questionsToday(history, now);
 
   let subtitle: string;
   if (unfinished) {
@@ -67,16 +33,10 @@ export function homeSummary({
     subtitle = "Start with your first scenario.";
   } else if (weakSections > 0) {
     subtitle = `${plural(weakSections, "topic needs", "topics need")} another look.`;
-  } else if (done < DAILY_GOAL) {
-    subtitle = `${plural(DAILY_GOAL - done, "more question", "more questions")} to reach today's goal.`;
   } else {
     subtitle = "You are ready. Try a mini-quiz to stay sharp.";
   }
-  return {
-    subtitle,
-    goal: { done: Math.min(done, DAILY_GOAL), goal: DAILY_GOAL },
-    strip: topicStrip(records),
-  };
+  return { subtitle };
 }
 
 /** The hero card's texts: the title, the line under it and the label of its one button. */

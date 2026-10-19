@@ -776,7 +776,7 @@ test.describe("Materials", () => {
     expect(await noSidewaysScroll(page)).toBe(true);
   });
 
-  test("reading changes no progress and no Today counter", async ({ page }) => {
+  test("reading changes no progress", async ({ page }) => {
     await open(page, "/materials/read/S1");
     await page.getByRole("button", { name: "Next topic" }).click();
     await expect(page).toHaveURL(/\/materials\/read\/S2$/);
@@ -787,7 +787,7 @@ test.describe("Materials", () => {
     }));
     expect(stored).toEqual({ history: null, session: null, parts: null });
     await page.goto("/");
-    await expect(page.getByText("Today 0/5")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Hi, Maryana" })).toBeVisible();
   });
 
   test("an unknown topic is not found, and the old contents screen is gone", async ({ page }) => {

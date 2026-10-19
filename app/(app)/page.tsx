@@ -3,10 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { HomeView } from "@/components/HomeView/HomeView";
-import { systemClock } from "@/lib/daily-goal";
 import { homeCounts, homeSummary } from "@/lib/home";
 import { needsOnboarding, onboardingHref } from "@/lib/onboarding";
-import { usePartRecords } from "@/lib/part-progress";
 import { useSaved } from "@/lib/saved";
 import { useHistory, useProfile, useSession } from "@/lib/session";
 import { DEMO_USER } from "@/lib/user";
@@ -17,7 +15,6 @@ export default function Home() {
   const session = useSession();
   const history = useHistory();
   const saved = useSaved();
-  const records = usePartRecords();
   const showOnboarding = profile !== "loading" && needsOnboarding(profile);
 
   useEffect(() => {
@@ -29,7 +26,6 @@ export default function Home() {
     session === "loading" ||
     history === "loading" ||
     saved === "loading" ||
-    records === "loading" ||
     showOnboarding
   ) {
     return null;
@@ -40,12 +36,7 @@ export default function Home() {
   return (
     <HomeView
       name={DEMO_USER.name}
-      summary={homeSummary({
-        unfinished,
-        history,
-        records,
-        now: systemClock(),
-      })}
+      summary={homeSummary({ unfinished, history })}
       counts={homeCounts({ history, saved })}
     />
   );

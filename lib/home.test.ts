@@ -1,11 +1,9 @@
+import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { PASS_MARK } from "@/lib/config";
-import { DAILY_GOAL, questionsToday } from "@/lib/daily-goal";
-import { homeCounts, homeSummary, homeTiles, readiness, topicStrip } from "@/lib/home";
+import { homeCounts, homeSummary, homeTiles, readiness } from "@/lib/home";
 import { getItem } from "@/lib/items";
 import { modeStats } from "@/lib/part-progress";
-import type { PartRecords } from "@/lib/part-progress";
-import { modeItems, trainingSections } from "@/lib/parts";
+import { modeItems } from "@/lib/parts";
 import { questions } from "@/lib/quiz";
 import type { FinishedSession, Session } from "@/lib/session";
 
@@ -31,14 +29,9 @@ function finished(at: number, picks: [string, boolean][]): FinishedSession {
   };
 }
 
-const NOW = new Date(2026, 9, 17, 15, 0);
 const at = (day: number, hour = 10) => new Date(2026, 9, day, hour).getTime();
-const summary = (
-  unfinished: Session | null,
-  history: FinishedSession[] | null,
-  records: PartRecords | null = null,
-  now = NOW,
-) => homeSummary({ unfinished, history, records, now });
+const summary = (unfinished: Session | null, history: FinishedSession[] | null) =>
+  homeSummary({ unfinished, history });
 
 /** A finished session of right answers ended at `time`. */
 const rightAnswers = (time: number, ids: string[]) =>
@@ -54,48 +47,8 @@ const fiveRight = [
   "q-s2-1",
 ];
 
-const record = (lastPercent: number) => ({
-  lastPercent,
-  attempts: 1,
-  answeredIds: [],
-  correctIds: [],
-});
-
-describe("the topic strip", () => {
-  const states = (records: PartRecords | null) => topicStrip(records).map((s) => s.state);
-
-  it("has one segment per guide section, all not started at the start", () => {
-    const strip = topicStrip(null);
-    expect(strip.map((segment) => segment.sectionId)).toEqual(trainingSections);
-    expect(strip).toHaveLength(10);
-    expect(states(null).every((state) => state === "not started")).toBe(true);
-    expect(states({})).toEqual(states(null));
-  });
-
-  it("is in progress once any part of the section has a finished attempt", () => {
-    expect(states({ "quiz:S3:1": record(40) })[2]).toBe("in progress");
-    expect(states({ "quiz:S3:1": record(40) }).filter((s) => s !== "not started")).toHaveLength(1);
-  });
-
-  it("is done only when every part of the section, in both modes, is at or above the pass mark", () => {
-    // S1 has two scenario parts and two quiz parts.
-    const s1 = ["scenario:S1:1", "scenario:S1:2", "quiz:S1:1", "quiz:S1:2"];
-    const all = (percent: number) => Object.fromEntries(s1.map((id) => [id, record(percent)]));
-    expect(states({ "quiz:S1:1": record(100) })[0]).toBe("in progress");
-    expect(states({ ...all(100), "scenario:S1:2": record(PASS_MARK - 1) })[0]).toBe("in progress");
-    expect(states({ ...all(100), "scenario:S1:2": record(PASS_MARK) })[0]).toBe("done");
-    expect(states(all(PASS_MARK))[0]).toBe("done");
-    // S3 has no scenario part: its quiz part alone decides.
-    expect(states({ "quiz:S3:1": record(PASS_MARK) })[2]).toBe("done");
-  });
-
-  it("feeds the summary", () => {
-    expect(summary(null, [], { "quiz:S3:1": record(100) }).strip[2].state).toBe("done");
-  });
-});
-
 describe("the sentence under the greeting", () => {
-  it("1 says where an unfinished session stopped, even with weak topics and a reached goal", () => {
+  it("1 says where an unfinished session stopped, even with weak topics", () => {
     const history = [finished(at(17), [["q-quiz-s01-001", false]])];
     expect(summary(session("scenario", 6), history).subtitle).toBe(
       "You stopped at question 7 of 20.",
@@ -106,7 +59,7 @@ describe("the sentence under the greeting", () => {
     expect(summary(null, []).subtitle).toBe("Start with your first scenario.");
   });
 
-  it("3 counts the topics that need another look, in the singular too, before the daily goal", () => {
+  it("3 counts the topics that need another look, in the singular too", () => {
     const one = [finished(at(17), [["q-quiz-s01-001", false]])];
     expect(summary(null, one).subtitle).toBe("1 topic needs another look.");
     const two = [
@@ -118,61 +71,30 @@ describe("the sentence under the greeting", () => {
     expect(summary(null, two).subtitle).toBe("2 topics need another look.");
   });
 
-  it("4 counts the questions left to the daily goal", () => {
-    const three = [rightAnswers(at(17), fiveRight.slice(0, 3))];
-    expect(summary(null, three).subtitle).toBe("2 more questions to reach today's goal.");
-    const four = [rightAnswers(at(17), fiveRight.slice(0, 4))];
-    expect(summary(null, four).subtitle).toBe("1 more question to reach today's goal.");
+  it("4 says ready when nothing is weak, and never mentions a daily goal", () => {
+    for (const history of [
+      [rightAnswers(at(17), fiveRight)],
+      [rightAnswers(at(17), fiveRight.slice(0, 3))],
+      [rightAnswers(at(16), fiveRight)],
+    ]) {
+      expect(summary(null, history).subtitle).toBe("You are ready. Try a mini-quiz to stay sharp.");
+    }
   });
 
-  it("5 says ready when the goal is reached and nothing is weak", () => {
-    expect(summary(null, [rightAnswers(at(17), fiveRight)]).subtitle).toBe(
-      "You are ready. Try a mini-quiz to stay sharp.",
-    );
-  });
-
-  it("follows the priority order with fake data and a fake date", () => {
-    const old = [rightAnswers(at(16), fiveRight)];
-    expect(summary(null, old).subtitle).toBe("5 more questions to reach today's goal.");
-    expect(summary(null, old, null, new Date(2026, 9, 16, 23, 0)).subtitle).toBe(
-      "You are ready. Try a mini-quiz to stay sharp.",
-    );
+  it("follows the priority order", () => {
+    const weak = [finished(at(17), [["q-quiz-s01-001", false]])];
+    expect(summary(session("quiz", 2, 5), weak).subtitle).toBe("You stopped at question 3 of 5.");
+    expect(summary(null, []).subtitle).toBe("Start with your first scenario.");
+    expect(summary(null, weak).subtitle).toBe("1 topic needs another look.");
   });
 });
 
-describe("the daily goal", () => {
-  it("is 5 questions", () => {
-    expect(DAILY_GOAL).toBe(5);
-  });
-
-  it("counts the answers of finished sessions of the local day only", () => {
-    const history = [
-      rightAnswers(at(17, 8), ["q-quiz-s01-001", "q-quiz-s01-002"]),
-      rightAnswers(at(17, 12), ["q-quiz-s01-003"]),
-      rightAnswers(at(16, 23), ["q-quiz-s01-004", "q-s2-1"]),
-    ];
-    expect(questionsToday(history, NOW)).toBe(3);
-    expect(questionsToday(null, NOW)).toBe(0);
-    expect(summary(null, history).goal).toEqual({ done: 3, goal: 5 });
-  });
-
-  it("starts again at local midnight", () => {
-    const history = [rightAnswers(new Date(2026, 9, 17, 23, 59).getTime(), fiveRight)];
-    expect(questionsToday(history, new Date(2026, 9, 17, 23, 59))).toBe(5);
-    expect(questionsToday(history, new Date(2026, 9, 18, 0, 1))).toBe(0);
-  });
-
-  it("counts nothing from an unfinished session", () => {
-    const open = {
-      ...session("quiz", 3, 5),
-      answers: [{ itemId: "q-quiz-s01-001", optionId: "a" }],
-    };
-    expect(summary(open, []).goal.done).toBe(0);
-  });
-
-  it("shows at most the goal", () => {
-    const more = [rightAnswers(at(17), [...fiveRight, "q-s2-2", "q-s2-3"])];
-    expect(summary(null, more).goal).toEqual({ done: 5, goal: 5 });
+describe("the removed topic strip and daily goal", () => {
+  it("are no longer part of the Home summary or the code", () => {
+    expect(Object.keys(summary(null, []))).toEqual(["subtitle"]);
+    expect(existsSync("lib/daily-goal.ts")).toBe(false);
+    const home = readFileSync("lib/home.ts", "utf8");
+    expect(home).not.toMatch(/DAILY_GOAL|questionsToday|topicStrip|SegmentState/);
   });
 });
 

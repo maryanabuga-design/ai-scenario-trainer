@@ -102,6 +102,7 @@ One commit per screen group, in this order. Steps 1 to 82 are built (step 81, th
 103. Icon tiles (18 Oct 2026): one shared `IconTile` with `--icon-tile-bg` #EAEDDF and `--icon-ink` #5B6938 (3:1 tested) for the Steps cards and summary, the Materials rows, the Weak topics rows, the Training stats, the Create training options, the Exam rules, onboarding and the file-type tile; Home tiles, buttons, chips and the band keep their colours. Screenshots: `docs/screens/94-*`.
 104. Band colour again (18 Oct 2026): the page header band got another colour; superseded by step 105. Screenshots: `docs/screens/95-*`.
 105. Band in the hero-card colour (18 Oct 2026): the page header band uses `--secondary-sand`, the same token as the Home hero card (no token of its own), with a 1px `--selectable-stroke` bottom line; the summary card sits above it. Screenshots: `docs/screens/96-*`.
+106. Home hero card simplified (19 Oct 2026): the topic strip, the "Topics x/10" and "Today x/5" captions, the divider and the daily-goal logic (`lib/daily-goal.ts`, its constants and tests) are removed; the card keeps its title, subtitle, 3D slot and the Primary "Choose a topic" button. The greeting sentence no longer has a daily-goal case. Screenshots: `docs/screens/97-*`.
 
 ## Screen review page
 `/screens` is a development-only page (404 in production, not linked from the navigation) that shows every planned screen at 390 by 844. Screens that are not built are dashed frames. Each screen commit replaces its frame with the real screen using sample data.

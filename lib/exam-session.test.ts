@@ -1,6 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { EXAM_MINUTES } from "@/lib/config";
-import { questionsToday } from "@/lib/daily-goal";
 import { examResults, secondsLeft } from "@/lib/exam";
 import { finishExam, scoreExam, startExam } from "@/lib/exam-session";
 import { clearExam, readExam } from "@/lib/exam-store";
@@ -97,7 +96,7 @@ describe("finishing an exam", () => {
     expect(history()).toHaveLength(1);
   });
 
-  it("counts toward answered, accuracy and readiness, but not part rings or the Today goal", () => {
+  it("counts toward answered, accuracy and readiness, but not part rings", () => {
     startExam(START);
     const exam = answered(20);
     finishExam(exam, START + 60_000);
@@ -107,7 +106,6 @@ describe("finishing an exam", () => {
     expect(modeStats(all, "quiz").accuracy).toBe(100);
     expect(readinessOf(all)).toBeGreaterThan(0);
     expect(createStore<PartRecords>("ast.parts.v1").read()).toBeNull();
-    expect(questionsToday(all, new Date(START))).toBe(0);
   });
 
   it("updates the best result of the Home tile", () => {

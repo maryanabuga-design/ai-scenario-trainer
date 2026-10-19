@@ -363,30 +363,10 @@ export function HomeSample({
           finished: false,
         }
       : null;
-  const record = (lastPercent: number) => ({
-    lastPercent,
-    attempts: 1,
-    answeredIds: [],
-    correctIds: [],
-  });
-  // Some topics done and some in progress, so the strip shows its three states.
-  const records: PartRecords | null =
-    state === "first"
-      ? null
-      : state === "goal"
-        ? {
-            "scenario:S1:1": record(100),
-            "quiz:S1:1": record(100),
-            "quiz:S2:1": record(100),
-            "scenario:S2:1": record(100),
-            "quiz:S3:1": record(100),
-            "quiz:S4:1": record(60),
-          }
-        : { "quiz:S1:1": record(60), "quiz:S2:1": record(100) };
   return (
     <HomeView
       name={DEMO_USER.name}
-      summary={homeSummary({ unfinished, history, records, now })}
+      summary={homeSummary({ unfinished, history })}
       counts={homeCounts({
         history,
         saved: state === "first" ? [] : ["s3", "q-s2-1", "q-s7-3", "s5"],

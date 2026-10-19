@@ -553,7 +553,7 @@ export default function Screens() {
               <HomeSample state="weak" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Home: daily goal reached, next part">
+          <PhoneFrame label="Home: nothing to repeat, ready">
             <Screen nav="/">
               <HomeSample state="goal" />
             </Screen>
