@@ -71,20 +71,22 @@ describe("the exam screen", () => {
     expect(html).not.toMatch(/text-wrong|bg-wrong|border-wrong/);
   });
 
-  it("not ready: a warm yellow 44px rounded-square tile with the info icon", () => {
+  it("not ready: a muted sand-gold 44px rounded-square tile with the info icon", () => {
     const html = render({ readiness: 30 });
     const card = html.slice(html.indexOf('aria-label="Readiness"'), html.indexOf(">How it works<"));
     expect(card).toContain("bg-status-attention-bg text-status-attention-ink");
     expect(card).toContain("h-11 w-11 rounded-[12px]");
     expect(card).toContain("lucide-info");
     expect(card).not.toContain("lucide-circle-check");
-    expect(card).not.toContain("bg-correct-bg");
+    expect(card).not.toContain("status-success");
+    expect(card).not.toContain("correct");
   });
 
-  it("ready: a green tile (the correct-answer tokens) with a check-circle icon", () => {
+  it("ready: a muted sage tile (its own status tokens, not the answer green) with a check-circle icon", () => {
     const html = render({ readiness: 84 });
     const card = html.slice(html.indexOf('aria-label="Readiness"'), html.indexOf(">How it works<"));
-    expect(card).toContain("bg-correct-bg text-correct-text");
+    expect(card).toContain("bg-status-success-bg text-status-success-ink");
+    expect(card).not.toContain("correct");
     expect(card).toContain("h-11 w-11 rounded-[12px]");
     expect(card).toContain("lucide-circle-check");
     expect(card).not.toContain("lucide-info");

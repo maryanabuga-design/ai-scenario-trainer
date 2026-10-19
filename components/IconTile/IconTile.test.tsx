@@ -75,24 +75,31 @@ describe("the places that draw an icon in a tile", () => {
 });
 
 describe("the exam status tiles", () => {
-  it("register the attention colours and reuse the correct-answer tokens for success", () => {
-    expect(token("status-attention-bg")).toBe("#fbe7b5");
-    expect(token("status-attention-ink")).toBe("#7a4e00");
+  it("register the attention and success colours as their own muted tokens", () => {
+    expect(token("status-attention-bg")).toBe("#f1e4c8");
+    expect(token("status-attention-ink")).toBe("#6f5120");
+    expect(token("status-success-bg")).toBe("#e1eada");
+    expect(token("status-success-ink")).toBe("#44683a");
     expect(css).toContain("--color-status-attention-bg: var(--status-attention-bg);");
     expect(css).toContain("--color-status-attention-ink: var(--status-attention-ink);");
-    // success is the existing green, not a copy of its values
-    expect(css).not.toMatch(/--status-success/);
+    expect(css).toContain("--color-status-success-bg: var(--status-success-bg);");
+    expect(css).toContain("--color-status-success-ink: var(--status-success-ink);");
+    // the bright answer green stays as it was and is not reused for status tiles
     expect(token("correct-bg")).toBe("#e3f2e8");
     expect(token("correct-text")).toBe("#1f6b3f");
+    expect(token("correct")).toBe("#2e7d4f");
+    const status = [token("status-success-bg"), token("status-success-ink")];
+    expect(status).not.toContain(token("correct-bg"));
+    expect(status).not.toContain(token("correct-text"));
   });
 
   it("keep the icon at least 3:1 on each tile, computed from the registered tokens", () => {
     const attention = contrastRatio(token("status-attention-ink"), token("status-attention-bg"));
-    const success = contrastRatio(token("correct-text"), token("correct-bg"));
+    const success = contrastRatio(token("status-success-ink"), token("status-success-bg"));
     expect(attention).toBeGreaterThanOrEqual(GRAPHIC_CONTRAST);
     expect(success).toBeGreaterThanOrEqual(GRAPHIC_CONTRAST);
-    expect(attention).toBeCloseTo(5.6, 0);
-    expect(success).toBeCloseTo(5.6, 0);
+    expect(attention).toBeCloseTo(5.8, 0);
+    expect(success).toBeCloseTo(5.2, 0);
   });
 
   it("draw the three tones", () => {
@@ -104,6 +111,7 @@ describe("the exam status tiles", () => {
       );
     expect(html("default")).toContain("bg-icon-tile-bg text-icon-ink");
     expect(html("attention")).toContain("bg-status-attention-bg text-status-attention-ink");
-    expect(html("success")).toContain("bg-correct-bg text-correct-text");
+    expect(html("success")).toContain("bg-status-success-bg text-status-success-ink");
+    expect(html("success")).not.toContain("correct");
   });
 });

@@ -21,8 +21,10 @@
   --wrong-text: #9b2c1f;
   --correct-bg: #e3f2e8;
   --wrong-bg: #fbe4e1;
-  --status-attention-bg: #fbe7b5;
-  --status-attention-ink: #7a4e00;
+  --status-attention-bg: #f1e4c8;
+  --status-attention-ink: #6f5120;
+  --status-success-bg: #e1eada;
+  --status-success-ink: #44683a;
   --caution: #8a5a00;
 
   /* Results screen (soft surface), measured from the reference screens */
@@ -78,6 +80,8 @@
   --color-correct-bg: var(--correct-bg);
   --color-status-attention-bg: var(--status-attention-bg);
   --color-status-attention-ink: var(--status-attention-ink);
+  --color-status-success-bg: var(--status-success-bg);
+  --color-status-success-ink: var(--status-success-ink);
   --color-wrong-bg: var(--wrong-bg);
   --color-wrong: var(--wrong);
   --color-caution: var(--caution);

@@ -3,14 +3,14 @@ import type { ReactNode } from "react";
 const tones = {
   default: "bg-icon-tile-bg text-icon-ink",
   attention: "bg-status-attention-bg text-status-attention-ink",
-  success: "bg-correct-bg text-correct-text",
+  success: "bg-status-success-bg text-status-success-ink",
 } as const;
 
 /**
  * The one icon tile (DESIGN.md: Icon tiles): `--icon-tile-bg` behind an icon drawn in `--icon-ink`.
  * It sets only the colours and the centring; `className` gives the size and the shape (for example
  * "h-11 w-11 rounded-[12px]" or "h-9 w-9 rounded-full"), so no tile changes size or radius. The
- * "attention" (warm yellow) and "success" (green) tones are the exam status tiles (DESIGN.md:
+ * "attention" (muted sand-gold) and "success" (muted sage) tones are the exam status tiles (DESIGN.md:
  * status colours). Decorative: the name of the thing is next to it.
  */
 export function IconTile({

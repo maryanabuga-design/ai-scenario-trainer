@@ -85,6 +85,28 @@ describe("the theme tokens", () => {
     }
   });
 
+  it("registers the exam status tile colours, and every theme colour points at a defined variable with a real value", () => {
+    const status = [
+      "status-attention-bg",
+      "status-attention-ink",
+      "status-success-bg",
+      "status-success-ink",
+      "correct-bg",
+      "correct-text",
+    ];
+    for (const name of status) expect(theme.has(name), `--color-${name}`).toBe(true);
+    // a theme colour whose variable is missing would draw nothing (no background, black text)
+    const variables = new Set([...css.matchAll(/--([a-z0-9-]+):/g)].map((match) => match[1]));
+    const dangling = [...css.matchAll(/--color-([a-z0-9-]+):\s*var\(--([a-z0-9-]+)\)/g)]
+      .filter((match) => !variables.has(match[2]))
+      .map((match) => `--color-${match[1]} -> --${match[2]}`);
+    expect(dangling).toEqual([]);
+    const root = css.slice(css.indexOf(":root"), css.indexOf("@theme"));
+    for (const name of status) {
+      expect(root, name).toMatch(new RegExp(`--${name}:\\s*#[0-9a-f]{6};`, "i"));
+    }
+  });
+
   it("has no band token of its own and one step caption colour", () => {
     const names = [...css.matchAll(/--((?:band|step)-[a-z0-9-]+):/g)].map((match) => match[1]);
     expect(new Set(names)).toEqual(new Set(["step-caption"]));

@@ -303,7 +303,7 @@ test.describe("Exam readiness", () => {
         };
       });
 
-  test("the status card is white with a warm yellow tile and the info icon when not ready", async ({
+  test("the status card is white with a muted sand-gold tile and the info icon when not ready", async ({
     page,
   }) => {
     await open(page, "/exam", [finished(scope.slice(0, Math.ceil(scope.length * 0.3)), true)]);
@@ -335,9 +335,9 @@ test.describe("Exam readiness", () => {
     expect(tile.background).not.toBe("rgba(0, 0, 0, 0)");
     expect(tile.ink).not.toBe("rgb(0, 0, 0)");
     expect(tile.stroke).not.toBe("rgb(0, 0, 0)");
-    expect(tile.background).toBe("rgb(251, 231, 181)");
-    expect(tile.ink).toBe("rgb(122, 78, 0)");
-    expect(tile.stroke).toBe("rgb(122, 78, 0)");
+    expect(tile.background).toBe("rgb(241, 228, 200)");
+    expect(tile.ink).toBe("rgb(111, 81, 32)");
+    expect(tile.stroke).toBe("rgb(111, 81, 32)");
     expect(tile.size).toEqual([44, 44]);
     expect(tile.radius).toBe("12px");
     expect(tile.icon).toBe("lucide-info");
@@ -353,16 +353,18 @@ test.describe("Exam readiness", () => {
     expect(red).toBe(false);
   });
 
-  test("ready: a green tile with the check-circle icon, not the info icon", async ({ page }) => {
+  test("ready: a muted sage tile with the check-circle icon, not the info icon", async ({
+    page,
+  }) => {
     await open(page, "/exam", [finished(scope, true)]);
     await expect(page.getByRole("heading", { name: "You're ready" })).toBeVisible();
     const tile = await tileLook(page);
     expect(tile.background).not.toBe("rgba(0, 0, 0, 0)");
     expect(tile.ink).not.toBe("rgb(0, 0, 0)");
     expect(tile.stroke).not.toBe("rgb(0, 0, 0)");
-    expect(tile.background).toBe("rgb(227, 242, 232)");
-    expect(tile.ink).toBe("rgb(31, 107, 63)");
-    expect(tile.stroke).toBe("rgb(31, 107, 63)");
+    expect(tile.background).toBe("rgb(225, 234, 218)");
+    expect(tile.ink).toBe("rgb(68, 104, 58)");
+    expect(tile.stroke).toBe("rgb(68, 104, 58)");
     expect(tile.size).toEqual([44, 44]);
     expect(tile.radius).toBe("12px");
     expect(tile.icon).toBe("lucide-circle-check");
