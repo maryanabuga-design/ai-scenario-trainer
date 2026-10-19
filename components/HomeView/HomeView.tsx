@@ -7,7 +7,14 @@ import { buttonClasses } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { Media3D } from "@/components/Media3D/Media3D";
 import { TileIcon } from "@/components/TileIcon/TileIcon";
-import { HERO_BUTTON_LABEL, HERO_SUBTITLE, HERO_TITLE, homeImages, homeTiles } from "@/lib/home";
+import {
+  HERO_BUTTON_LABEL,
+  HERO_SUBTITLE,
+  HERO_TITLE,
+  homeArtwork,
+  homeImages,
+  homeTiles,
+} from "@/lib/home";
 import type { HomeCounts, HomeSummary, HomeTileId } from "@/lib/home";
 
 const miniQuizPath = "/mini-quiz?from=home";
@@ -56,12 +63,19 @@ export function HomeView({
         className="relative rounded-[28px] bg-card p-2 shadow-(--card-shadow) has-focus-visible:outline-2"
       >
         <div className="flex flex-col gap-4 rounded-[22px] bg-secondary-sand p-4">
-          <div className="flex items-start gap-3">
-            <div className="flex min-w-0 flex-1 flex-col gap-1">
+          {/* the frame is placed at the right and adds no height: the text decides the row */}
+          <div className="relative">
+            <div className="flex min-h-[72px] min-w-0 flex-col gap-1 pr-[88px]">
               <h2 className="type-card-title">{HERO_TITLE}</h2>
               <p className="type-small text-text-secondary">{HERO_SUBTITLE}</p>
             </div>
-            <Media3D variant="tile" src={homeImages.heroTraining} />
+            <div className="absolute top-0 right-0">
+              <Media3D
+                variant="tile"
+                src={homeImages.heroTraining}
+                artwork={homeArtwork.heroTraining}
+              />
+            </div>
           </div>
 
           <Link
@@ -97,7 +111,7 @@ export function HomeView({
         href={miniQuizPath}
         className="flex min-h-[104px] items-center gap-3 rounded-card bg-card p-4 shadow-(--card-shadow) has-focus-visible:outline-2"
       >
-        <Media3D variant="row" src={homeImages.iconMiniQuiz} />
+        <Media3D variant="row" src={homeImages.iconMiniQuiz} artwork={homeArtwork.iconMiniQuiz} />
         <span className="flex min-w-0 flex-1 flex-col gap-0.5">
           <span className="type-body-strong">Mini-quiz</span>
           <span className="type-small line-clamp-2 text-text-secondary">

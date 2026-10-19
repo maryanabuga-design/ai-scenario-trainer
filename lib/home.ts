@@ -53,6 +53,34 @@ export const homeImages: { heroTraining?: string; iconMiniQuiz?: string } = {
   iconMiniQuiz: "/heroes/icon-miniquiz.webp",
 };
 
+/** The non-transparent box of a picture, as fractions of its file (x0, y0, x1, y1 from 0 to 1). */
+export type Artwork = { x0: number; y0: number; x1: number; y1: number };
+
+/**
+ * Where the artwork sits inside each Home picture's file, measured from the pixels (both files are
+ * 1254 by 1254 with transparent margins): the books 312..945 by 347..933, the clipboard 297..984
+ * by 221..990. A test measures the files again and fails if these drift.
+ */
+export const homeArtwork: Record<"heroTraining" | "iconMiniQuiz", Artwork> = {
+  heroTraining: { x0: 312 / 1254, y0: 347 / 1254, x1: 945 / 1254, y1: 933 / 1254 },
+  iconMiniQuiz: { x0: 297 / 1254, y0: 221 / 1254, x1: 984 / 1254, y1: 990 / 1254 },
+};
+
+/** The share of the frame the artwork may fill: 1% to spare so no edge is clipped. */
+export const ARTWORK_FILL = 0.99;
+
+/**
+ * The transform that makes the artwork fill its square frame without editing the file: scale about
+ * the frame's centre until the larger side of the artwork fills the frame, and move the artwork's
+ * centre to the frame's centre. Percentages are of the frame.
+ */
+export function artworkTransform(art: Artwork): { scale: number; x: number; y: number } {
+  const scale = ARTWORK_FILL / Math.max(art.x1 - art.x0, art.y1 - art.y0);
+  const centreX = (art.x0 + art.x1) / 2;
+  const centreY = (art.y0 + art.y1) / 2;
+  return { scale, x: -(centreX - 0.5) * scale * 100, y: -(centreY - 0.5) * scale * 100 };
+}
+
 export type HomeCounts = {
   /** The best exam result in percent, or null when no exam was taken. */
   bestExam: { correct: number; questions: number } | null;

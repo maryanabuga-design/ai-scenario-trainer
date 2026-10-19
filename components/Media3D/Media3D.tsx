@@ -1,6 +1,8 @@
 import { Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
 import type { ReactNode } from "react";
+import { artworkTransform } from "@/lib/home";
+import type { Artwork } from "@/lib/home";
 
 export type Media3DVariant = "hero" | "step" | "icon" | "tile" | "row";
 
@@ -12,18 +14,11 @@ const frames = {
 } as const;
 
 /**
- * The sizes of Home's two pictures, shown with no background, border or shadow: the hero card
- * picture (120px, 104px on narrow phones) and the Mini-quiz row picture (76px, 72px on narrow
- * phones). The element fills its slot exactly; the placeholders keep the frames above.
+ * Home's two pictures sit in FIXED square frames (the hero card 80px, the Mini-quiz row 72px): the
+ * frame never changes size, the picture fills it and never pushes the text. The files have
+ * transparent margins, so the picture is scaled inside the clipped frame until its artwork fills it.
  */
-const pictures = {
-  // the attributes carry the wide size; the classes set 104/72 below a 400px viewport
-  tile: {
-    size: 120,
-    className: "h-[104px] w-[104px] min-[400px]:h-[120px] min-[400px]:w-[120px]",
-  },
-  row: { size: 76, className: "h-[72px] w-[72px] min-[400px]:h-[76px] min-[400px]:w-[76px]" },
-} as const;
+const pictures = { tile: 80, row: 72 } as const;
 
 /**
  * The one slot for 3D pictures. A hero (200px square, 28px radius) sits on Session setup and
@@ -38,10 +33,13 @@ export function Media3D({
   src,
   alt = "",
   fallback,
+  artwork,
 }: {
   variant: Media3DVariant;
   src?: string;
   alt?: string;
+  /** Where the artwork sits in the file; the picture is scaled so it fills the frame. */
+  artwork?: Artwork;
   /** The flat icon tile an icon slot shows until it has a picture. */
   fallback?: ReactNode;
 }) {
@@ -54,15 +52,28 @@ export function Media3D({
   }
   const frame = frames[variant];
   if (variant === "tile" || variant === "row") {
+    const size = pictures[variant];
+    const fit = artwork ? artworkTransform(artwork) : null;
     return src ? (
-      <Image
-        src={src}
-        alt={alt}
-        width={pictures[variant].size}
-        height={pictures[variant].size}
-        aria-hidden={alt === "" ? true : undefined}
-        className={`shrink-0 object-contain ${pictures[variant].className}`}
-      />
+      <span
+        data-picture-frame
+        aria-hidden="true"
+        className="block shrink-0 overflow-hidden"
+        style={{ width: size, height: size }}
+      >
+        <Image
+          src={src}
+          alt={alt}
+          width={size}
+          height={size}
+          unoptimized
+          aria-hidden={alt === "" ? true : undefined}
+          className="block h-full w-full object-contain"
+          style={
+            fit ? { transform: `translate(${fit.x}%, ${fit.y}%) scale(${fit.scale})` } : undefined
+          }
+        />
+      </span>
     ) : (
       <div
         data-media3d="placeholder"

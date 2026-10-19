@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 
 const profile = { direction: "building-evacuation", onboarded: true };
 
@@ -14,124 +14,201 @@ async function openHome(page: Page) {
   );
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Training materials" })).toBeVisible();
-  // wait until both pictures have loaded
   await page.waitForFunction(() =>
     [...document.querySelectorAll("main img")].every((img) => (img as HTMLImageElement).complete),
   );
 }
 
+type Rect = { x: number; y: number; width: number; height: number };
+const box = async (locator: Locator): Promise<Rect> => (await locator.boundingBox())!;
+const intersects = (a: Rect, b: Rect) =>
+  a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+
 for (const width of [360, 430]) {
   test.describe(`Home pictures at ${width}px`, () => {
     test.use({ viewport: { width, height: 800 } });
 
-    test("both pictures load, are decorative, have fixed sizes and no background, border or shadow", async ({
+    test("both pictures load, are decorative and fill fixed frames (80 and 72) with no background, border or shadow", async ({
       page,
     }) => {
       await openHome(page);
       const hero = page.getByRole("region", { name: "Training materials" });
       const row = page.getByRole("link", { name: /Mini-quiz/ });
-      // 400px and wider: 120 and 76; narrower: 104 and 72 (the attributes carry the wide size)
-      const wide = width >= 400;
-      for (const [slot, size, attr] of [
-        [hero, wide ? 120 : 104, 120],
-        [row, wide ? 76 : 72, 76],
+      for (const [slot, size] of [
+        [hero, 80],
+        [row, 72],
       ] as const) {
         const img = slot.locator("img");
         await expect(img).toHaveCount(1);
         const info = await img.evaluate((el) => {
           const image = el as HTMLImageElement;
           const css = getComputedStyle(image);
-          const box = image.getBoundingClientRect();
+          const frame = image.parentElement!;
+          const frameCss = getComputedStyle(frame);
           return {
             natural: image.naturalWidth,
             alt: image.getAttribute("alt"),
             hidden: image.getAttribute("aria-hidden"),
-            widthAttr: image.getAttribute("width"),
-            heightAttr: image.getAttribute("height"),
-            box: [box.width, box.height],
+            attrs: [image.getAttribute("width"), image.getAttribute("height")],
+            layout: [image.offsetWidth, image.offsetHeight],
+            frame: [frame.offsetWidth, frame.offsetHeight],
+            frameOverflow: frameCss.overflow,
+            spacing: [css.paddingTop, css.marginTop, css.paddingLeft, css.marginLeft],
             background: css.backgroundColor,
-            border: [css.borderTopWidth, css.borderTopStyle],
-            shadow: css.boxShadow,
+            frameBackground: frameCss.backgroundColor,
+            border: [css.borderTopWidth, frameCss.borderTopWidth],
+            shadow: [css.boxShadow, frameCss.boxShadow],
             fit: css.objectFit,
-            parentBackground: getComputedStyle(image.parentElement!).backgroundColor,
           };
         });
         expect(info.natural).toBeGreaterThan(0);
         expect(info.alt).toBe("");
         expect(info.hidden).toBe("true");
-        expect(info.widthAttr).toBe(String(attr));
-        expect(info.heightAttr).toBe(String(attr));
-        expect(info.box).toEqual([size, size]);
+        expect(info.attrs).toEqual([String(size), String(size)]);
+        expect(info.layout).toEqual([size, size]);
+        expect(info.frame).toEqual([size, size]);
+        expect(info.frameOverflow).toBe("hidden");
+        expect(info.spacing).toEqual(["0px", "0px", "0px", "0px"]);
         expect(info.background).toBe("rgba(0, 0, 0, 0)");
-        expect(info.border[0]).toBe("0px");
-        expect(info.shadow).toBe("none");
+        expect(info.frameBackground).toBe("rgba(0, 0, 0, 0)");
+        expect(info.border).toEqual(["0px", "0px"]);
+        expect(info.shadow).toEqual(["none", "none"]);
         expect(info.fit).toBe("contain");
       }
-      // the dashed placeholder text is gone from both slots
-      await expect(hero.getByText("3D", { exact: true })).toHaveCount(0);
-      await expect(row.getByText("3D", { exact: true })).toHaveCount(0);
       await expect(page.locator("[data-media3d]:visible")).toHaveCount(0);
     });
 
-    test("the pictures fill their slots, never touch the text or the button, and stay inside their cards", async ({
+    test("the visible artwork fills at least 90% of each frame (measured from the pixels)", async ({
       page,
     }) => {
       await openHome(page);
-      const box = async (locator: ReturnType<Page["locator"]>) => (await locator.boundingBox())!;
-      const intersects = (
-        a: { x: number; y: number; width: number; height: number },
-        b: { x: number; y: number; width: number; height: number },
-      ) =>
-        a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+      for (const [name, size] of [
+        ["Training materials", 80],
+        ["Mini-quiz", 72],
+      ] as const) {
+        const slot =
+          name === "Mini-quiz"
+            ? page.getByRole("link", { name: /Mini-quiz/ })
+            : page.getByRole("region", { name });
+        // lazy pictures below a short screen load only when scrolled to
+        await slot.locator("img").scrollIntoViewIfNeeded();
+        await expect
+          .poll(() => slot.locator("img").evaluate((el) => (el as HTMLImageElement).naturalWidth))
+          .toBeGreaterThan(0);
+        const visible = await slot.locator("img").evaluate((el, frameSize: number) => {
+          const image = el as HTMLImageElement;
+          // draw the file at the frame size with the same transform the page applies
+          const canvas = document.createElement("canvas");
+          canvas.width = frameSize;
+          canvas.height = frameSize;
+          const ctx = canvas.getContext("2d")!;
+          const match = /translate\(([-\d.e]+)%, ([-\d.e]+)%\) scale\(([-\d.e]+)\)/.exec(
+            image.style.transform,
+          )!;
+          const [tx, ty, scale] = [Number(match[1]), Number(match[2]), Number(match[3])];
+          ctx.translate(frameSize / 2, frameSize / 2);
+          ctx.translate((tx / 100) * frameSize, (ty / 100) * frameSize);
+          ctx.scale(scale, scale);
+          ctx.drawImage(image, -frameSize / 2, -frameSize / 2, frameSize, frameSize);
+          const data = ctx.getImageData(0, 0, frameSize, frameSize).data;
+          let top = frameSize;
+          let bottom = -1;
+          let left = frameSize;
+          let right = -1;
+          for (let y = 0; y < frameSize; y++) {
+            for (let x = 0; x < frameSize; x++) {
+              if (data[(y * frameSize + x) * 4 + 3] > 16) {
+                top = Math.min(top, y);
+                bottom = Math.max(bottom, y);
+                left = Math.min(left, x);
+                right = Math.max(right, x);
+              }
+            }
+          }
+          return { height: bottom - top + 1, width: right - left + 1, top, left, bottom, right };
+        }, size);
+        const larger = Math.max(visible.width, visible.height);
+        expect(larger / size).toBeGreaterThanOrEqual(0.9);
+        // nothing is clipped by the frame
+        expect(visible.top).toBeGreaterThanOrEqual(0);
+        expect(visible.left).toBeGreaterThanOrEqual(0);
+        expect(visible.bottom).toBeLessThanOrEqual(size - 1);
+        expect(visible.right).toBeLessThanOrEqual(size - 1);
+      }
+    });
+
+    test("the hero card: text and button where they were, 16px spacing, frame never pushes anything", async ({
+      page,
+    }) => {
+      await openHome(page);
       const hero = page.getByRole("region", { name: "Training materials" });
-      const img = await box(hero.locator("img"));
+      const frame = await box(hero.locator("[data-picture-frame]"));
       const card = await box(hero);
       const title = await box(hero.getByRole("heading", { name: "Training materials" }));
       const subtitle = await box(
         hero.getByText("Practical scenarios and theory quizzes, by topic"),
       );
       const button = await box(hero.getByRole("link", { name: "Choose a topic" }));
-      const size = width >= 400 ? 120 : 104;
-      expect([img.width, img.height]).toEqual([size, size]);
-      // no overlap, and at least 8px between the text and the picture
-      expect(intersects(img, title)).toBe(false);
-      expect(intersects(img, subtitle)).toBe(false);
-      expect(img.x - (title.x + title.width)).toBeGreaterThanOrEqual(8);
-      expect(img.x - (subtitle.x + subtitle.width)).toBeGreaterThanOrEqual(8);
-      // at least 12px above the button
-      expect(button.y - (img.y + img.height)).toBeGreaterThanOrEqual(12);
-      // top aligned with the title block (at most 8px above it), inside the card
-      expect(Math.abs(img.y - title.y)).toBeLessThanOrEqual(8);
-      expect(img.y).toBeGreaterThanOrEqual(card.y);
-      expect(img.x + img.width).toBeLessThanOrEqual(card.x + card.width);
-      // the right edge is at the card's inner padding: 8px card padding + 16px panel padding
-      expect(Math.abs(card.x + card.width - 24 - (img.x + img.width))).toBeLessThanOrEqual(1);
-      // the card keeps the page gutter
+      expect([frame.width, frame.height]).toEqual([80, 80]);
+      // aligned to the top of the title block
+      expect(Math.abs(frame.y - title.y)).toBeLessThanOrEqual(8);
+      // the text never meets the frame: 8px gap at least, no intersection
+      expect(intersects(frame, title)).toBe(false);
+      expect(intersects(frame, subtitle)).toBe(false);
+      expect(frame.x - (title.x + title.width)).toBeGreaterThanOrEqual(8 - 1);
+      expect(frame.x - (subtitle.x + subtitle.width)).toBeGreaterThanOrEqual(8 - 1);
+      // the title keeps its left edge: card 8 + panel 16 + gutter 16
+      expect(Math.abs(title.x - (16 + 8 + 16))).toBeLessThanOrEqual(1);
+      // text block to button: 16px (+-1); the frame stays 8px or more above the button
+      const textBottom = Math.max(title.y + title.height, subtitle.y + subtitle.height);
+      expect(Math.abs(button.y - textBottom - 16)).toBeLessThanOrEqual(1);
+      expect(button.y - (frame.y + frame.height)).toBeGreaterThanOrEqual(8);
+      // card padding 16 above the text and below the button (inside the 8px card frame)
+      expect(Math.abs(title.y - (card.y + 8 + 16))).toBeLessThanOrEqual(1);
+      expect(
+        Math.abs(card.y + card.height - 8 - 16 - (button.y + button.height)),
+      ).toBeLessThanOrEqual(1);
+      // right edge at the panel's inner padding, inside the card
+      expect(Math.abs(card.x + card.width - 24 - (frame.x + frame.width))).toBeLessThanOrEqual(1);
+      // height: never taller than with the dashed placeholder (an 80px box in the same row):
+      // 8 + 16 + max(text block, 80) + 16 + button + 16 + 8
+      const textHeight = textBottom - title.y;
+      const placeholder = 8 + 16 + Math.max(textHeight, 80) + 16 + button.height + 16 + 8;
+      expect(card.height).toBeLessThanOrEqual(placeholder + 1);
+      // the books (artwork 586 of 633 px) span the title-top to subtitle-bottom height (+-8)
+      const booksHeight = 80 * 0.99 * (586 / 633);
+      expect(Math.abs(booksHeight - textHeight)).toBeLessThanOrEqual(8);
+      // gutters
       expect(Math.abs(card.x - 16)).toBeLessThanOrEqual(0.5);
       expect(Math.abs(width - (card.x + card.width) - 16)).toBeLessThanOrEqual(0.5);
-      // the title and subtitle are fully inside the card (nothing cut off)
-      for (const text of [title, subtitle]) {
-        expect(text.x).toBeGreaterThanOrEqual(card.x);
-        expect(text.x + text.width).toBeLessThanOrEqual(img.x);
-      }
+    });
 
-      // the Mini-quiz row: picture on the left, centred, 12px to the text, inside the row
+    test("the Mini-quiz row: 72px frame at the left, centred, 12px to the text, no taller than before", async ({
+      page,
+    }) => {
+      await openHome(page);
       const row = page.getByRole("link", { name: /Mini-quiz/ });
       const rowBox = await box(row);
-      const rowImg = await box(row.locator("img"));
-      const text = await box(row.getByText("Mini-quiz", { exact: true }));
+      const frame = await box(row.locator("[data-picture-frame]"));
+      const title = await box(row.getByText("Mini-quiz", { exact: true }));
       const description = await box(row.getByText("Pick topics and how many questions"));
-      const small = width >= 400 ? 76 : 72;
-      expect([rowImg.width, rowImg.height]).toEqual([small, small]);
-      expect(intersects(rowImg, text)).toBe(false);
-      expect(intersects(rowImg, description)).toBe(false);
-      expect(Math.min(text.x, description.x) - (rowImg.x + rowImg.width)).toBeCloseTo(12, 0);
+      expect([frame.width, frame.height]).toEqual([72, 72]);
+      expect(intersects(frame, title)).toBe(false);
+      expect(intersects(frame, description)).toBe(false);
+      const textLeft = Math.min(title.x, description.x);
+      expect(textLeft - (frame.x + frame.width)).toBeCloseTo(12, 0);
+      // the text starts where it did with the 72px placeholder (16px padding + 72 + 12), +4 at most
+      expect(textLeft).toBeLessThanOrEqual(16 + 16 + 72 + 12 + 4);
       expect(
-        Math.abs(rowImg.y + rowImg.height / 2 - (rowBox.y + rowBox.height / 2)),
-      ).toBeLessThanOrEqual(1);
-      expect(rowImg.x).toBeGreaterThanOrEqual(rowBox.x + 16 - 1);
-      expect(rowImg.y).toBeGreaterThanOrEqual(rowBox.y + 16 - 1);
-      expect(rowImg.y + rowImg.height).toBeLessThanOrEqual(rowBox.y + rowBox.height - 16 + 1);
+        Math.abs(frame.y + frame.height / 2 - (rowBox.y + rowBox.height / 2)),
+      ).toBeLessThanOrEqual(2);
+      // the row is not taller than with the placeholder: 104px minimum, text decides above it
+      expect(rowBox.height).toBeLessThanOrEqual(104 + 4);
+      // the clipboard is about as tall as the text block
+      const textHeight =
+        Math.max(title.y + title.height, description.y + description.height) -
+        Math.min(title.y, description.y);
+      expect(Math.abs(72 - textHeight)).toBeLessThanOrEqual(24);
       expect(Math.abs(rowBox.x - 16)).toBeLessThanOrEqual(0.5);
       expect(
         await page.evaluate(

@@ -73,7 +73,7 @@ import { GuideText } from "@/components/GuideText/GuideText";
 import { SelectionToolbar } from "@/components/SelectionToolbar/SelectionToolbar";
 import { addHighlights, blockTexts } from "@/lib/highlights";
 import { toolbarActions } from "@/lib/selection-actions";
-import { homeCounts, homeSummary } from "@/lib/home";
+import { homeArtwork, homeCounts, homeSummary } from "@/lib/home";
 import { DEMO_USER } from "@/lib/user";
 
 /**
@@ -801,14 +801,22 @@ export function Media3DSample() {
       <section className="flex flex-col items-start gap-2">
         <h2 className="type-label text-text-secondary">tile (80px placeholder, Home hero card)</h2>
         <Media3D variant="tile" />
-        <h2 className="type-label text-text-secondary">tile with its picture (96px, bare)</h2>
-        <Media3D variant="tile" src="/heroes/hero-training.webp" />
+        <h2 className="type-label text-text-secondary">tile with its picture (fixed 80px frame)</h2>
+        <Media3D
+          variant="tile"
+          src="/heroes/hero-training.webp"
+          artwork={homeArtwork.heroTraining}
+        />
       </section>
       <section className="flex flex-col items-start gap-2">
         <h2 className="type-label text-text-secondary">row (72px placeholder, Mini-quiz row)</h2>
         <Media3D variant="row" />
-        <h2 className="type-label text-text-secondary">row with its picture (72px, bare)</h2>
-        <Media3D variant="row" src="/heroes/icon-miniquiz.webp" />
+        <h2 className="type-label text-text-secondary">row with its picture (fixed 72px frame)</h2>
+        <Media3D
+          variant="row"
+          src="/heroes/icon-miniquiz.webp"
+          artwork={homeArtwork.iconMiniQuiz}
+        />
       </section>
       <section className="flex flex-col gap-2 rounded-card bg-card p-4 shadow-(--card-shadow)">
         <h2 className="type-label text-text-secondary">toggle</h2>

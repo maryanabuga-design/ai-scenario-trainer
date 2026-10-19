@@ -3,7 +3,15 @@ import { describe, expect, it } from "vitest";
 import { Media3D } from "@/components/Media3D/Media3D";
 import { HomeView } from "@/components/HomeView/HomeView";
 import { getItem } from "@/lib/items";
-import { HERO_BUTTON_LABEL, HERO_SUBTITLE, HERO_TITLE, homeCounts, homeSummary } from "@/lib/home";
+import {
+  HERO_BUTTON_LABEL,
+  HERO_SUBTITLE,
+  HERO_TITLE,
+  artworkTransform,
+  homeArtwork,
+  homeCounts,
+  homeSummary,
+} from "@/lib/home";
 import type { FinishedSession, Session } from "@/lib/session";
 import { DEMO_USER } from "@/lib/user";
 
@@ -147,23 +155,39 @@ describe("the hero card", () => {
     expect(card).toContain("rounded-[22px] bg-secondary-sand p-4");
   });
 
-  it("shows the hero picture next to the title: 120px (104px on narrow phones), decorative, bare, no placeholder", () => {
+  it("shows the hero picture in a fixed 80 by 80 frame at the right of the title: decorative, bare, no placeholder", () => {
     const card = hero(render());
+    const frame = card.slice(card.indexOf("<span"), card.indexOf(">", card.indexOf("<span")) + 1);
+    expect(frame).toContain("data-picture-frame");
+    expect(frame).toContain("overflow-hidden");
+    expect(frame).toContain("width:80px;height:80px");
     const picture = card.slice(card.indexOf("<img"), card.indexOf(">", card.indexOf("<img")) + 1);
     expect(picture).toContain('alt=""');
     expect(picture).toContain('aria-hidden="true"');
-    // the attributes carry the wide size; the classes give 104px below a 400px viewport
-    expect(picture).toContain('width="120"');
-    expect(picture).toContain('height="120"');
-    expect(picture).toContain("h-[104px] w-[104px] min-[400px]:h-[120px] min-[400px]:w-[120px]");
+    expect(picture).toContain('width="80"');
+    expect(picture).toContain('height="80"');
+    expect(picture).toContain("h-full w-full");
     expect(picture).not.toMatch(/\bp-|\bm-|-m[trbl]-/);
     expect(picture).toContain("object-contain");
-    expect(decodeURIComponent(picture)).toContain("/heroes/hero-training.webp");
+    expect(picture).toContain("/heroes/hero-training.webp");
     // no tile, border, dashed outline, background or shadow around it
-    expect(picture).not.toMatch(/bg-|border|rounded|shadow/);
+    expect(`${frame}${picture}`).not.toMatch(/bg-|border|rounded|shadow/);
     expect(card).not.toContain("data-media3d");
     expect(card).not.toContain(">3D<");
+    // the text keeps 88px on the right (80px frame + 8px gap) and the frame adds no height
+    expect(card).toContain("min-h-[72px] min-w-0 flex-col gap-1 pr-[88px]");
+    expect(card).toContain("absolute top-0 right-0");
     expect(card.indexOf("<h2")).toBeLessThan(card.indexOf("<img"));
+  });
+
+  it("scales the artwork to fill its frame: pure transform from the measured box", () => {
+    const books = artworkTransform(homeArtwork.heroTraining);
+    const clipboard = artworkTransform(homeArtwork.iconMiniQuiz);
+    // the larger side of the artwork ends at 99% of the frame
+    expect((books.scale * Math.max(945 - 312, 933 - 347)) / 1254).toBeCloseTo(0.99, 5);
+    expect((clipboard.scale * Math.max(984 - 297, 990 - 221)) / 1254).toBeCloseTo(0.99, 5);
+    expect(books.scale).toBeGreaterThan(1.5);
+    expect(clipboard.scale).toBeGreaterThan(1.2);
   });
 
   it("keeps the dashed placeholder for a slot with no picture", () => {
@@ -286,21 +310,21 @@ describe("the Mini-quiz row", () => {
     expect(row).toContain("rounded-card bg-card");
   });
 
-  it("has the 76px (72px on narrow phones) mini-quiz picture on the left (bare, decorative), the title, the description and the chevron on the right", () => {
+  it("has the mini-quiz picture in a fixed 72 by 72 frame on the left (bare, decorative), the title, the description and the chevron on the right", () => {
     const start = html.lastIndexOf("<a ", html.indexOf(">Mini-quiz<"));
     const row = html.slice(start, html.indexOf("</a>", start));
     const picture = row.slice(row.indexOf("<img"), row.indexOf(">", row.indexOf("<img")) + 1);
-    expect(decodeURIComponent(picture)).toContain("/heroes/icon-miniquiz.webp");
+    expect(picture).toContain("/heroes/icon-miniquiz.webp");
     expect(picture).toContain('alt=""');
     expect(picture).toContain('aria-hidden="true"');
-    expect(picture).toContain('width="76"');
-    expect(picture).toContain('height="76"');
-    expect(picture).toContain("h-[72px] w-[72px] min-[400px]:h-[76px] min-[400px]:w-[76px]");
+    expect(picture).toContain('width="72"');
+    expect(picture).toContain('height="72"');
+    expect(row).toContain("width:72px;height:72px");
     expect(picture).not.toMatch(/bg-|border|rounded|shadow/);
     expect(row).not.toContain("data-media3d");
     expect(row).not.toContain(">3D<");
-    const order = ["h-[72px] w-[72px]", ">Mini-quiz<", "Pick topics", "lucide-chevron-right"].map(
-      (text) => row.indexOf(text),
+    const order = ["<img", ">Mini-quiz<", "Pick topics", "lucide-chevron-right"].map((text) =>
+      row.indexOf(text),
     );
     expect([...order].sort((a, b) => a - b)).toEqual(order);
     expect(row).toContain("line-clamp-2");
