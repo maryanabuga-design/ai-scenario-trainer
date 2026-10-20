@@ -7,7 +7,6 @@ import { Button } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { DirectionPicker } from "@/components/DirectionPicker/DirectionPicker";
-import { IconTile } from "@/components/IconTile/IconTile";
 import { FooterNote } from "@/components/Footer/Footer";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
@@ -19,12 +18,15 @@ import { initialOf } from "@/lib/user";
 export const DEMO_HELPER =
   "Demo only. In the real product your role comes from your organisation account.";
 
-/** The icon tile on the left of a Profile row: the neutral tile, 40px circle, 20px icon (DESIGN.md: Sand scale, touch fixes and Profile icons). */
+/** The bare 24px icon on the left of a Profile row, no tile behind it (DESIGN.md: Sand scale, touch fixes and Profile icons). */
 function RowIcon({ icon: Icon, destructive = false }: { icon: LucideIcon; destructive?: boolean }) {
   return (
-    <IconTile className="h-10 w-10 rounded-full">
-      <Icon size={20} strokeWidth={1.75} className={destructive ? "text-wrong" : undefined} />
-    </IconTile>
+    <span
+      aria-hidden="true"
+      className={`flex h-6 w-6 shrink-0 items-center justify-center ${destructive ? "text-wrong" : "text-neutral-tile-ink"}`}
+    >
+      <Icon size={24} strokeWidth={1.75} />
+    </span>
   );
 }
 

@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 import { authValue } from "./auth-seed";
 
-const SAND_200 = "rgb(228, 214, 188)";
+const SAND_100 = "rgb(240, 232, 216)";
 const SAND_900 = "rgb(77, 63, 45)";
 const YELLOW = "rgb(248, 242, 204)";
 
@@ -45,7 +45,7 @@ async function checkActive(page: Page, path: string, label: string) {
       icon: getComputedStyle(icon).color,
     };
   });
-  expect(look.bg, `${label} pill`).toBe(SAND_200);
+  expect(look.bg, `${label} pill`).toBe(SAND_100);
   expect(look.bg).not.toBe("rgba(0, 0, 0, 0)");
   expect(look.bg).not.toBe(YELLOW);
   expect(look.color).toBe(SAND_900);

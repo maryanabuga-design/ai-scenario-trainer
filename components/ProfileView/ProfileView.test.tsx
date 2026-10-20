@@ -150,9 +150,9 @@ describe("Profile: colours", () => {
   });
 });
 
-describe("Profile: the icon tiles on four rows", () => {
+describe("Profile: the bare icons on four rows", () => {
   for (const role of ["student", "instructor"] as const) {
-    it(`has the neutral 40px icon tile on the help, delete and sign out rows (${role})`, () => {
+    it(`has a bare 24px icon, no tile, on the help, delete and sign out rows (${role})`, () => {
       const html = render(role);
       const rowOf = (label: string) => {
         const end = html.indexOf(`>${label}<`);
@@ -166,10 +166,14 @@ describe("Profile: the icon tiles on four rows", () => {
         ["Sign out", "lucide-log-out"],
       ]) {
         const row = rowOf(label);
-        expect(row, label).toContain("bg-neutral-tile-bg text-neutral-tile-ink");
-        expect(row, label).toContain("h-10 w-10 rounded-full");
+        expect(row, label).not.toMatch(/bg-neutral-tile-bg|rounded-full|h-10 w-10/);
+        expect(row, label).toContain(
+          label === "Delete account"
+            ? "h-6 w-6"
+            : "h-6 w-6 shrink-0 items-center justify-center text-neutral-tile-ink",
+        );
         expect(row, label).toMatch(new RegExp(icon.replace("trash2", "trash-?2")));
-        expect(row, label).toContain('width="20"');
+        expect(row, label).toContain('width="24"');
       }
       expect(rowOf("Delete account")).toContain("text-wrong");
       expect(rowOf("Sign out")).not.toContain("lucide-chevron-right");

@@ -59,7 +59,7 @@ export function BottomNav({ activePath, role }: { activePath?: string; role?: Ro
                 aria-current={current ? "page" : undefined}
                 className={`flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-full ${
                   current
-                    ? "type-caption-strong bg-sand-200 text-sand-900"
+                    ? "type-caption-strong bg-sand-100 text-sand-900"
                     : "type-caption text-text-secondary"
                 }`}
               >

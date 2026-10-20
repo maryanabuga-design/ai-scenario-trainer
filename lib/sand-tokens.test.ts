@@ -27,8 +27,8 @@ describe("the sand scale", () => {
     });
   }
 
-  it("reads the active navigation item (sand-900 on sand-200) at 4.5:1 or more", () => {
-    expect(contrastRatio(scale[900], scale[200])).toBeGreaterThanOrEqual(TEXT_CONTRAST);
+  it("reads the active navigation item (sand-900 on sand-100) at 4.5:1 or more", () => {
+    expect(contrastRatio(scale[900], scale[100])).toBeGreaterThanOrEqual(TEXT_CONTRAST);
   });
 
   it("explains why sand-700 is never text on white (below 4.5:1)", () => {
