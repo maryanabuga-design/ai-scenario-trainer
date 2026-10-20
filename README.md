@@ -65,6 +65,8 @@ Build order and decisions: `docs/build-plan.md`.
 
 ## Known limitations
 
+- The Instructor demo uses simulated group data: Group A is 14 invented students (`content/demo-cohort.json`) plus the accounts of this browser. Exams, results and notices are kept in this browser only; there is no server, no real group and no real people.
+
 - Certificates are simulated: a prototype certificate is made on this device when an exam is passed. It is not an official document and nothing is verified or sent.
 
 - Exam assignment is a single-browser simulation of an instructor feature; there is no server. The one assigned exam is demo data seeded on first load (S1 to S4, due in 7 days). The Student/Instructor switch on Profile is a demo; the Instructor "Assign exam" screen is not built yet (Instructor Home is a stub).

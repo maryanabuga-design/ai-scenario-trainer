@@ -11,7 +11,9 @@ import { addNotice, closeGroupExam, useAttempts, useGroupExams } from "@/lib/gro
 
 function Detail() {
   const params = useParams<{ id: string }>();
-  const assigned = useSearchParams().get("assigned") === "1";
+  const query = useSearchParams();
+  const assigned = query.get("assigned") === "1";
+  const fromOverview = query.get("from") === "overview";
   const exams = useGroupExams();
   const attempts = useAttempts();
   const auth = useAuth();
@@ -40,6 +42,7 @@ function Detail() {
       rows={studentRows(people, exam, context)}
       titleOf={titleOf}
       message={message}
+      fromOverview={fromOverview}
       confirmingClose={confirming}
       onRemind={() => {
         const at = Date.now();

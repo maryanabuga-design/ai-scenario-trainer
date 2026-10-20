@@ -116,7 +116,7 @@ for (const width of [360, 430]) {
     test("signing up as an instructor reaches Instructor Home", async ({ page }) => {
       await signUp(page, "Ines Instructor", "ines@example.com", "Instructor");
       await finishOnboarding(page, "Instructor");
-      await expect(page.getByRole("heading", { name: "Instructor", level: 1 })).toBeVisible();
+      await expect(page.locator("[data-group-readiness]")).toBeVisible();
       await expect(nav(page).getByRole("link")).toHaveCount(4);
     });
 

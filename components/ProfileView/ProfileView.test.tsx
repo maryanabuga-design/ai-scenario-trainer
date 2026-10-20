@@ -114,6 +114,13 @@ describe("Profile for a student", () => {
 describe("Profile for an instructor", () => {
   const html = render("instructor");
 
+  it("has the read-only Group A row (no link, no chevron)", () => {
+    const row = html.slice(html.indexOf("data-group-row"), html.indexOf("data-group-row") + 300);
+    expect(row).toContain("Group A");
+    expect(row).not.toContain("<a ");
+    expect(render("student")).not.toContain("data-group-row");
+  });
+
   it("has the card, Demo mode, Help and Settings with only Delete account and Sign out", () => {
     expect(html).not.toContain("Direction");
     expect(html).not.toContain("Reset progress");

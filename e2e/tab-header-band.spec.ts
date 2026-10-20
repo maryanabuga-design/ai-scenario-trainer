@@ -14,7 +14,12 @@ const instructor = {
 
 const rgb = (value: string) => {
   const match = /rgba?\((\d+), (\d+), (\d+)(?:, ([\d.]+))?\)/.exec(value)!;
-  return { r: +match[1], g: +match[2], b: +match[3], a: match[4] === undefined ? 1 : +match[4] };
+  return {
+    r: +match[1],
+    g: +match[2],
+    b: +match[3],
+    a: match[4] === undefined ? 1 : +match[4],
+  };
 };
 
 const noSidewaysScroll = (page: Page) =>
@@ -144,10 +149,13 @@ for (const width of [360, 430]) {
   test.describe(`Tab header band at ${width}px (Instructor)`, () => {
     test.use({ viewport: { width, height: 800 }, storageState: instructor });
 
-    test("Instructor Home and Profile have the band", async ({ page }) => {
+    test("Instructor Overview has the greeting header and Profile has the band", async ({
+      page,
+    }) => {
       await page.goto("/instructor");
-      const top = await checkBand(page, width, "Instructor");
-      await expect(page.getByText("No exams yet. Exam tools are coming next.")).toBeVisible();
+      await expect(page.locator("[data-page-header-band]")).toHaveCount(0);
+      await expect(page.locator("[data-group-readiness]")).toBeVisible();
+      const top = 0;
       await page.goto("/profile");
       // Profile has the band with its Back to Home (so its title sits lower than a tab's)
       const profileTop = await checkBand(page, width, "Profile", "Your account and settings", true);

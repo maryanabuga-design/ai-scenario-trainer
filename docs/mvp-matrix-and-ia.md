@@ -72,12 +72,17 @@ Assumption to confirm with the user: four sections live in the bottom navigation
 - Welcome / Create account / Verify / Sign in (Вхід, simulated, no email): signed-out screens with no navigation; after verification a Student goes to Home, an Instructor to Instructor Home
 - Ask AI (23 Oct 2026): `/ask-ai` history + suggested questions + pinned input · `/ask-ai/<id>` thread (Back, messages, source pills, quick actions) · a row "Ask AI about this question" on Answer review and Saved question.
 - Certificates (23 Oct 2026, Student): Results (exam, passed) card "Certificate earned" · Profile row "Certificates" · `/profile/certificates` list · `/profile/certificates/<id>` certificate with Save as PDF and Share
-- Instructor (24 Oct 2026): bottom navigation Overview · Exams · Students · Profile; Students list (All / Needs attention / Certified, readiness status) and read-only Student detail (readiness, By topic, Exams); the Exam detail rows open it; Exams list (Assign exam, Active, Closed toggle) · Assign exam screen · Exam detail (counts, student list, remind, close); a seeded demo group of 14 students plus local student accounts; Student Home "Assigned exam" card and notifications. Students screens come next.
+- Instructor map (24 Oct 2026, final): bottom navigation Overview · Exams · Students · Profile.
+  - Overview `/instructor`: greeting · Group readiness (one percentage) · Needs attention (up to 3, See all → Students filter) · Weakest topics (3, not tappable) · the nearest active exam + Assign exam (Primary only when no exam is active) · demo note.
+  - Exams `/instructor/exams`: Assign exam · Active · Closed (toggle) → Exam detail `/instructor/exams/<id>` (counts, students → Student detail, Remind, Close) · Assign exam `/instructor/exams/new`.
+  - Students `/instructor/students` (All / Needs attention / Certified) → Student detail `/instructor/students/<id>` (readiness, By topic, Exams → read-only certificate `/instructor/students/<id>/certificate/<exam>`).
+  - Profile (user card → Edit profile, Group read-only, Demo mode, How the app works, About, Delete account, Sign out).
+  - Flow: Assign exam → students get a notification and the Assigned exam card on Home → a student passes (Certified, certificate) → Overview, Exam detail and Student detail show the same counts.
 - Navigation rule (23 Oct 2026): Back on Profile always goes to the Home of the current role (never the browser history); Back on Edit profile, About and the Certificates list goes to Profile.
 - Profile (Профіль): tappable user card (opens Edit profile) · Demo mode (Student | Instructor) · Direction (Student only) · Help: How the app works (opens onboarding), About this prototype · Settings: Reset progress (Student only), Delete account, Sign out
 - About this prototype (from Profile): four info lines, Restart demo (confirmation; clears every demo key and returns to Welcome; /welcome?restart=1 does it without a dialog)
 - Edit profile: name editable, email and role read-only, Save changes
-- Instructor Home (Інструктор): stub with the empty state "No exams yet. Exam tools are coming next."; navigation Home and Profile only
+- Instructor Home (Інструктор) is the Overview, see the Instructor map below.
 - Notifications (Сповіщення): bell on Home → New / Earlier list · tap marks as read and opens the target · Mark all as read · empty state (demo data, no backend or push)
 - Saved questions (Збережені): Saved list · single saved question · Repeat saved (from the Saved tile on Home)
 - Steps (Кроки): Home tile → list of topics → informational topic screen with accordion steps (no completion tracking) · Reading → Steps for this topic → topic screen

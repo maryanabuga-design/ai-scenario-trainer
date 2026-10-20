@@ -93,13 +93,14 @@ import { addHighlights, blockTexts } from "@/lib/highlights";
 import { toolbarActions } from "@/lib/selection-actions";
 import { homeArtwork, homeCounts, homeSummary } from "@/lib/home";
 import { NotificationsView } from "@/components/NotificationsView/NotificationsView";
+import { InstructorOverviewView } from "@/components/InstructorOverview/InstructorOverviewView";
+import { nearestActiveExam } from "@/lib/overview";
 import { AboutView } from "@/components/AboutView/AboutView";
 import { EditProfileView } from "@/components/EditProfileView/EditProfileView";
 import { SignInView } from "@/components/SignInView/SignInView";
 import { SignUpView } from "@/components/SignUpView/SignUpView";
 import { VerifyView } from "@/components/VerifyView/VerifyView";
 import { WelcomeView } from "@/components/WelcomeView/WelcomeView";
-import { InstructorHomeView } from "@/components/InstructorHomeView/InstructorHomeView";
 import type { Role } from "@/lib/role";
 import { demoExam } from "@/lib/assigned-exams";
 import { markRead, seedNotifications } from "@/lib/notifications";
@@ -267,7 +268,13 @@ export function SessionSample({
         last={index === total - 1}
         disabled={picked === null}
         hint={
-          hint ? { open: open && !done, onToggle: () => setOpen(!open), disabled: done } : undefined
+          hint
+            ? {
+                open: open && !done,
+                onToggle: () => setOpen(!open),
+                disabled: done,
+              }
+            : undefined
         }
         onNext={() => setDone(true)}
       />
@@ -486,7 +493,9 @@ export function ProgressSample({
   const raw: FinishedSession[] = [
     entry(s1, s1.length - 1, day(6)),
     entry(s2.slice(0, 10), 4, day(3)),
-    entry([...s3.slice(0, 3), ...s5.slice(0, 2)], 3, day(1, 18, 5), { mode: "mini-quiz" }),
+    entry([...s3.slice(0, 3), ...s5.slice(0, 2)], 3, day(1, 18, 5), {
+      mode: "mini-quiz",
+    }),
     entry(s2.slice(0, 10), 7, day(0), { kind: "repeat" }),
   ];
   // each record stores the readiness after it, as a finished session does (the change line reads it)
@@ -1101,12 +1110,20 @@ export function ExamIntroSample({
       canRepeat={readiness < 100}
       last={
         attempted
-          ? { correct: 14, questions: 20, finishedAt: new Date(2026, 9, 14).getTime() }
+          ? {
+              correct: 14,
+              questions: 20,
+              finishedAt: new Date(2026, 9, 14).getTime(),
+            }
           : null
       }
       best={
         attempted
-          ? { correct: 17, questions: 20, finishedAt: new Date(2026, 9, 12).getTime() }
+          ? {
+              correct: 17,
+              questions: 20,
+              finishedAt: new Date(2026, 9, 12).getTime(),
+            }
           : null
       }
       onStart={() => undefined}
@@ -1267,9 +1284,35 @@ export function NotificationsSample({ state }: { state: "new" | "mixed" | "empty
   return <NotificationsView items={items} now={now} onOpen={() => {}} onMarkAll={() => {}} />;
 }
 
-/** The Instructor Home stub and the About screen, for the screen review page. */
-export function InstructorHomeSample() {
-  return <InstructorHomeView />;
+/** The Instructor Overview for the screen review page (the seeded demo group, a fixed date). */
+export function InstructorHomeSample({
+  state = "default",
+}: {
+  state?: "default" | "few" | "on-track" | "no-exam";
+}) {
+  const { sections } = useSourceSheet();
+  const titleOf = (id: string) => sections.find((section) => section.id === id)?.title ?? id;
+  const now = new Date(2026, 9, 24, 10, 0).getTime();
+  const exams = state === "no-exam" ? [] : seedGroupExams(now);
+  const people = participants([{ name: "Maryana", email: "maryana@example.com" }]);
+  const everyone = profiles(people, { "maryana@example.com": null });
+  const needs = (p: (typeof everyone)[number]) => studentStatus(readinessOf(p)) === "needs";
+  const list =
+    state === "on-track"
+      ? everyone.filter((p) => !needs(p))
+      : state === "few"
+        ? [...everyone.filter(needs).slice(0, 2), ...everyone.filter((p) => !needs(p))]
+        : everyone;
+  const exam = nearestActiveExam(exams, now);
+  return (
+    <InstructorOverviewView
+      name="Maryana"
+      list={list}
+      exam={exam}
+      counts={exam ? groupCounts(people, exam, { attempts: [], active: true }) : null}
+      titleOf={titleOf}
+    />
+  );
 }
 
 /** The Instructor exams screens for the screen review page (the seeded demo group, a fixed date). */
@@ -1404,7 +1447,11 @@ export function SignUpSample({
     <SignUpView
       onSubmit={() => "ok"}
       initialTouched={errors}
-      initial={{ name: "", email: "", role: instructor ? "instructor" : "student" }}
+      initial={{
+        name: "",
+        email: "",
+        role: instructor ? "instructor" : "student",
+      }}
     />
   );
 }
@@ -1441,7 +1488,11 @@ export function VerifySample({
 export function EditProfileSample() {
   return (
     <EditProfileView
-      account={{ name: "Maryana", email: "maryana@example.com", role: "student" }}
+      account={{
+        name: "Maryana",
+        email: "maryana@example.com",
+        role: "student",
+      }}
       onSave={() => undefined}
     />
   );

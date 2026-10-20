@@ -236,7 +236,7 @@ for (const width of [360, 430]) {
       }
       await page.getByRole("button", { name: "Get started" }).click();
       await expect(page).toHaveURL(/\/instructor$/);
-      await expect(page.getByRole("heading", { name: "Instructor", level: 1 })).toBeVisible();
+      await expect(page.locator("[data-group-readiness]")).toBeVisible();
     });
 
     test("Skip on an instructor slide opens Instructor Home", async ({ page }) => {

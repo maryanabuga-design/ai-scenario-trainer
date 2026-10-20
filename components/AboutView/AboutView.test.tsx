@@ -8,7 +8,6 @@ import {
   RESTART_TITLE,
   aboutLines,
 } from "@/components/AboutView/AboutView";
-import { InstructorHomeView } from "@/components/InstructorHomeView/InstructorHomeView";
 
 describe("About this prototype", () => {
   const html = renderToStaticMarkup(<AboutView />);
@@ -59,16 +58,5 @@ describe("Restart demo on About this prototype", () => {
     expect(open).toContain(RESTART_TEXT);
     expect(open).toContain(">Restart<");
     expect(open).toContain(">Cancel<");
-  });
-});
-
-describe("Instructor Home", () => {
-  const html = renderToStaticMarkup(<InstructorHomeView />);
-
-  it("is a title and an empty state, with no buttons or links", () => {
-    expect(html).toContain(">Instructor</h1>");
-    expect(html).toContain("No exams yet. Exam tools are coming next.");
-    expect(html).not.toContain("<button");
-    expect(html).not.toContain("<a ");
   });
 });

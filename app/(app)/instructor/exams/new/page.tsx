@@ -1,14 +1,16 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { AssignExamView } from "@/components/InstructorExams/AssignExamView";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { createExam, shortDate } from "@/lib/group-exams";
 import { addNotice, saveGroupExam } from "@/lib/group-store";
 
-export default function AssignExamPage() {
+function AssignExam() {
   const router = useRouter();
+  const fromOverview = useSearchParams().get("from") === "overview";
+  const home = fromOverview ? "/instructor" : "/instructor/exams";
   const { sections } = useSourceSheet();
   const [now] = useState(() => Date.now());
   const titleOf = (id: string) => sections.find((section) => section.id === id)?.title ?? id;
@@ -17,7 +19,8 @@ export default function AssignExamPage() {
     <AssignExamView
       titleOf={titleOf}
       now={now}
-      onCancel={() => router.push("/instructor/exams")}
+      fromOverview={fromOverview}
+      onCancel={() => router.push(home)}
       onAssign={(values) => {
         const at = Date.now();
         const exam = createExam(values, at);
@@ -30,8 +33,18 @@ export default function AssignExamPage() {
           target: `/exam?id=${exam.id}`,
           createdAt: at,
         });
-        router.push(`/instructor/exams/${exam.id}?assigned=1`);
+        router.push(
+          `/instructor/exams/${exam.id}?assigned=1${fromOverview ? "&from=overview" : ""}`,
+        );
       }}
     />
+  );
+}
+
+export default function AssignExamPage() {
+  return (
+    <Suspense fallback={null}>
+      <AssignExam />
+    </Suspense>
   );
 }

@@ -34,12 +34,19 @@ function Detail() {
   // Back: to the Exam detail when opened from there, otherwise to the list with its filter
   const fromExam = query.get("from") === "exam" ? query.get("exam") : null;
   const filter = filterFrom(query.get("filter"));
-  const backHref = fromExam
-    ? `/instructor/exams/${fromExam}`
-    : filter === "all"
-      ? "/instructor/students"
-      : `/instructor/students?filter=${filter}`;
-  const backLabel = fromExam ? "Back to exam" : "Back to students";
+  const fromOverview = query.get("from") === "overview";
+  const backHref = fromOverview
+    ? "/instructor"
+    : fromExam
+      ? `/instructor/exams/${fromExam}`
+      : filter === "all"
+        ? "/instructor/students"
+        : `/instructor/students?filter=${filter}`;
+  const backLabel = fromOverview
+    ? "Back to Overview"
+    : fromExam
+      ? "Back to exam"
+      : "Back to students";
 
   return (
     <StudentDetailView

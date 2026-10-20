@@ -14,14 +14,17 @@ export function ExamCard({
   exam,
   passed,
   total,
+  from,
 }: {
   exam: GroupExam;
   passed: number;
   total: number;
+  /** Where the card is shown, so the detail's Back returns there (the Overview). */
+  from?: "overview";
 }) {
   return (
     <Link
-      href={`/instructor/exams/${exam.id}`}
+      href={`/instructor/exams/${exam.id}${from ? `?from=${from}` : ""}`}
       data-exam-card={exam.id}
       className="flex h-[88px] items-center gap-3 rounded-card bg-card px-3 shadow-(--card-shadow) has-focus-visible:outline-2"
     >

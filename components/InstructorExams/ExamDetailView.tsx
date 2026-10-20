@@ -18,9 +18,21 @@ const statusLook: Record<
   ExamStatus["kind"],
   { icon: LucideIcon; ink: string; tone: "success" | "attention" | "neutral" }
 > = {
-  certified: { icon: CircleCheck, ink: "text-status-success-ink", tone: "success" },
-  "not-passed": { icon: RotateCcw, ink: "text-status-attention-ink", tone: "attention" },
-  "not-started": { icon: CircleDashed, ink: "text-text-secondary", tone: "neutral" },
+  certified: {
+    icon: CircleCheck,
+    ink: "text-status-success-ink",
+    tone: "success",
+  },
+  "not-passed": {
+    icon: RotateCcw,
+    ink: "text-status-attention-ink",
+    tone: "attention",
+  },
+  "not-started": {
+    icon: CircleDashed,
+    ink: "text-text-secondary",
+    tone: "neutral",
+  },
 };
 
 function CountTile({
@@ -67,6 +79,7 @@ export function ExamDetailView({
   onRemind,
   onAskClose,
   onCancelClose,
+  fromOverview = false,
   onClose,
   dialogInline = false,
 }: {
@@ -81,6 +94,8 @@ export function ExamDetailView({
   onRemind: () => void;
   onAskClose: () => void;
   onCancelClose: () => void;
+  /** Opened from the Overview: Back returns there. */
+  fromOverview?: boolean;
   onClose: () => void;
   dialogInline?: boolean;
 }) {
@@ -88,7 +103,11 @@ export function ExamDetailView({
     <div className="flex flex-col gap-4 pb-4">
       <PageHeaderBand
         title={exam.title}
-        back={{ label: "Back to Exams", href: "/instructor/exams" }}
+        back={
+          fromOverview
+            ? { label: "Back to Overview", href: "/instructor" }
+            : { label: "Back to Exams", href: "/instructor/exams" }
+        }
       />
       <p role="status" data-message className="type-body text-center not-empty:py-1">
         {message}

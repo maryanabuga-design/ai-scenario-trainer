@@ -10,6 +10,7 @@ import { DirectionPicker } from "@/components/DirectionPicker/DirectionPicker";
 import { FooterNote } from "@/components/Footer/Footer";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
+import { GROUP_NAME } from "@/lib/cohort";
 import { onboardingHref } from "@/lib/onboarding";
 import { ROLES, roleLabel } from "@/lib/role";
 import type { Role } from "@/lib/role";
@@ -134,6 +135,18 @@ export function ProfileView({
             </span>
             <Chevron />
           </Link>
+        )}
+
+        {!student && (
+          <div
+            data-group-row
+            className="flex h-14 items-center gap-3 rounded-card bg-card px-4 shadow-(--card-shadow)"
+          >
+            <span className="type-body-strong min-w-0 flex-1">Group</span>
+            <span data-group-name className="type-body text-text-secondary">
+              {GROUP_NAME}
+            </span>
+          </div>
         )}
 
         <section aria-labelledby="help-title" className="flex flex-col gap-3">

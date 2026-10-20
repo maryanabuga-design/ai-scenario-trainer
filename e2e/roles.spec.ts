@@ -26,7 +26,12 @@ const noSidewaysScroll = (page: Page) =>
 
 const rgb = (value: string) => {
   const match = /rgba?\((\d+), (\d+), (\d+)(?:, ([\d.]+))?\)/.exec(value)!;
-  return { r: +match[1], g: +match[2], b: +match[3], a: match[4] === undefined ? 1 : +match[4] };
+  return {
+    r: +match[1],
+    g: +match[2],
+    b: +match[3],
+    a: match[4] === undefined ? 1 : +match[4],
+  };
 };
 
 /** Page errors that are the app's (WebKit reports its own prefetch noise as errors). */
@@ -152,11 +157,13 @@ for (const width of [360, 430]) {
       await student.focus();
       await page.keyboard.press("ArrowRight");
       await expect(page).toHaveURL(/\/instructor$/);
-      await expect(page.getByRole("heading", { name: "Instructor", level: 1 })).toBeVisible();
+      await expect(page.locator("[data-group-readiness]")).toBeVisible();
       // and back with the keyboard from the instructor Profile
       await page.getByRole("link", { name: "Profile" }).click();
       await expect(page).toHaveURL(/\/profile$/);
-      const instructor = roleGroup(page).getByRole("radio", { name: "Instructor" });
+      const instructor = roleGroup(page).getByRole("radio", {
+        name: "Instructor",
+      });
       await expect(instructor).toBeChecked();
       await instructor.focus();
       await page.keyboard.press("ArrowLeft");
@@ -171,11 +178,8 @@ for (const width of [360, 430]) {
       await roleGroup(page).locator("label", { hasText: "Instructor" }).click();
       await expect(page).toHaveURL(/\/instructor$/);
       const main = page.locator("main");
-      await expect(main.getByRole("heading", { name: "Instructor", level: 1 })).toBeVisible();
-      await expect(main.getByText("No exams yet. Exam tools are coming next.")).toBeVisible();
-      // no fake buttons or links on the stub
-      await expect(main.getByRole("button")).toHaveCount(0);
-      await expect(main.getByRole("link")).toHaveCount(0);
+      await expect(main.getByRole("heading", { level: 1 })).toContainText("Hi, ");
+      await expect(main.locator("[data-group-readiness]")).toBeVisible();
       const links = nav(page).getByRole("link");
       await expect(links).toHaveCount(4);
       await expect(links.nth(0)).toHaveText("Overview");
@@ -223,7 +227,7 @@ for (const width of [360, 430]) {
       for (const path of ["/training", "/materials", "/progress", "/exam", "/notifications"]) {
         await page.goto(path);
         await expect(page, path).toHaveURL(/\/instructor$/);
-        await expect(page.getByRole("heading", { name: "Instructor", level: 1 })).toBeVisible();
+        await expect(page.locator("[data-group-readiness]")).toBeVisible();
       }
       // and may open Profile, About and the introduction
       for (const [path, pattern] of [

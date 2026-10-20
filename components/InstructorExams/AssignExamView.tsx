@@ -22,7 +22,11 @@ import type { DeadlinePreset } from "@/lib/group-exams";
 import { isoDay } from "@/lib/exam-deadline";
 import { trainingSections as allTopics } from "@/lib/parts";
 
-export type AssignValues = { title: string; topicIds: string[]; deadline: string };
+export type AssignValues = {
+  title: string;
+  topicIds: string[];
+  deadline: string;
+};
 
 /**
  * Assign exam (DESIGN.md: Instructor, Assign exam): ONE scrolling screen with a title, topics,
@@ -34,6 +38,7 @@ export function AssignExamView({
   now,
   onAssign,
   onCancel,
+  fromOverview = false,
   initial,
   confirmingInitially = false,
   dialogInline = false,
@@ -42,8 +47,15 @@ export function AssignExamView({
   now: number;
   onAssign: (values: AssignValues) => void;
   onCancel: () => void;
+  /** Opened from the Overview: Back returns there. */
+  fromOverview?: boolean;
   /** Only for the screen review page: a filled form. */
-  initial?: { topics?: string[]; title?: string; preset?: DeadlinePreset | null; date?: string };
+  initial?: {
+    topics?: string[];
+    title?: string;
+    preset?: DeadlinePreset | null;
+    date?: string;
+  };
   confirmingInitially?: boolean;
   dialogInline?: boolean;
 }) {
@@ -71,7 +83,11 @@ export function AssignExamView({
     <div className="flex flex-col gap-6 pb-4">
       <PageHeaderBand
         title="Assign exam"
-        back={{ label: "Back to Exams", href: "/instructor/exams" }}
+        back={
+          fromOverview
+            ? { label: "Back to Overview", href: "/instructor" }
+            : { label: "Back to Exams", href: "/instructor/exams" }
+        }
       />
 
       <section aria-labelledby="title-label" className="flex flex-col gap-2">
@@ -171,7 +187,11 @@ export function AssignExamView({
         <Button
           disabled={problems.length > 0}
           onClick={() =>
-            onAssign({ title: shownTitle.trim(), topicIds: topics, deadline: deadline! })
+            onAssign({
+              title: shownTitle.trim(),
+              topicIds: topics,
+              deadline: deadline!,
+            })
           }
         >
           Assign exam

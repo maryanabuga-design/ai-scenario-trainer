@@ -795,9 +795,24 @@ export default function Screens() {
               <AboutSample confirming />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor Home (stub), navigation Overview, Exams, Profile">
+          <PhoneFrame label="Instructor: Overview (Group readiness, Needs attention with See all, Weakest topics, Exams)">
             <Screen nav="/instructor" role="instructor">
               <InstructorHomeSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Overview, few students need attention">
+            <Screen nav="/instructor" role="instructor">
+              <InstructorHomeSample state="few" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Overview, everyone on track">
+            <Screen nav="/instructor" role="instructor">
+              <InstructorHomeSample state="on-track" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Overview, no active exam">
+            <Screen nav="/instructor" role="instructor">
+              <InstructorHomeSample state="no-exam" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Instructor: Exams list (Assign exam, ACTIVE, Show closed exams)">
