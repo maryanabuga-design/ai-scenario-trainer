@@ -6,6 +6,7 @@ import { Chevron } from "@/components/Chevron/Chevron";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { DirectionPicker } from "@/components/DirectionPicker/DirectionPicker";
 import { FooterNote } from "@/components/Footer/Footer";
+import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
 import { onboardingHref } from "@/lib/onboarding";
 import { ROLES, roleLabel } from "@/lib/role";
@@ -55,129 +56,130 @@ export function ProfileView({
   const { role } = account;
   const student = role === "student";
   return (
-    <div className="flex flex-col gap-8">
-      <h1 className="type-page-title">Profile</h1>
-
-      <Link href="/profile/edit" data-user-card className={rowClass}>
-        <span
-          aria-hidden="true"
-          className="type-body-strong flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-olive-tint text-primary"
-        >
-          {initialOf(account.name)}
-        </span>
-        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span data-user-name className="type-body-strong truncate">
-            {account.name}
+    <div className="flex flex-col gap-4">
+      <PageHeaderBand title="Profile" subtitle="Your account and settings" />
+      <div className="flex flex-col gap-8">
+        <Link href="/profile/edit" data-user-card className={rowClass}>
+          <span
+            aria-hidden="true"
+            className="type-body-strong flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-olive-tint text-primary"
+          >
+            {initialOf(account.name)}
           </span>
-          <span data-user-email className="type-small truncate text-text-secondary">
-            {account.email}
+          <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <span data-user-name className="type-body-strong truncate">
+              {account.name}
+            </span>
+            <span data-user-email className="type-small truncate text-text-secondary">
+              {account.email}
+            </span>
+            <span data-role-label className="type-small text-text-secondary">
+              {roleLabel[role]}
+            </span>
           </span>
-          <span data-role-label className="type-small text-text-secondary">
-            {roleLabel[role]}
-          </span>
-        </span>
-        <Chevron />
-      </Link>
-
-      <section aria-labelledby="demo-title" className="flex flex-col gap-3">
-        <h2 id="demo-title" className="type-body-strong">
-          Demo mode
-        </h2>
-        <SegmentedControl
-          name="role"
-          legend="Switch role (demo)"
-          options={ROLES.map((value) => ({ value, label: roleLabel[value] }))}
-          value={role}
-          onChange={onRoleChange}
-        />
-        <p className="type-small text-text-secondary">{DEMO_HELPER}</p>
-      </section>
-
-      {student && (
-        <DirectionPicker value={direction} onChange={onDirectionChange} legend="Direction" />
-      )}
-
-      <section aria-labelledby="help-title" className="flex flex-col gap-3">
-        <h2 id="help-title" className="type-body-strong">
-          Help
-        </h2>
-        <Link href={onboardingHref} className={rowClass}>
-          <span className="type-body-strong min-w-0 flex-1">How the app works</span>
           <Chevron />
         </Link>
-        <Link href="/about" className={rowClass}>
-          <span className="type-body-strong min-w-0 flex-1">About this prototype</span>
-          <Chevron />
-        </Link>
-      </section>
 
-      <section aria-labelledby="settings-title" className="flex flex-col gap-3">
-        <h2 id="settings-title" className="type-body-strong">
-          Settings
-        </h2>
+        <section aria-labelledby="demo-title" className="flex flex-col gap-3">
+          <h2 id="demo-title" className="type-body-strong">
+            Demo mode
+          </h2>
+          <SegmentedControl
+            name="role"
+            legend="Switch role (demo)"
+            options={ROLES.map((value) => ({ value, label: roleLabel[value] }))}
+            value={role}
+            onChange={onRoleChange}
+          />
+          <p className="type-small text-text-secondary">{DEMO_HELPER}</p>
+        </section>
+
         {student && (
-          <div className="flex flex-col gap-3 rounded-card bg-card shadow-(--card-shadow) p-4">
-            <div className="flex flex-col gap-1">
-              <h3 className="type-body-strong">Reset progress</h3>
-              <p className="type-small text-text-secondary">
-                Deletes your saved sessions, weak topics and created trainings on this device. Your
-                direction and uploaded files stay.
-              </p>
-            </div>
-            <div className="-ml-3">
-              <Button variant="tertiary" onClick={onAskReset}>
-                Reset progress
-              </Button>
-            </div>
-            {resetDone && (
-              <p role="status" className="type-small">
-                Progress reset. Your sessions, weak topics and created trainings are deleted.
-              </p>
-            )}
-          </div>
+          <DirectionPicker value={direction} onChange={onDirectionChange} legend="Direction" />
         )}
-        <button
-          type="button"
-          data-delete-account
-          onClick={onAskDelete}
-          className={`${rowClass} min-h-14 w-full text-left`}
-        >
-          <span className="type-body-strong min-w-0 flex-1 text-wrong">Delete account</span>
-        </button>
-        <button
-          type="button"
-          data-sign-out
-          onClick={onSignOut}
-          className={`${rowClass} min-h-14 w-full text-left`}
-        >
-          <span className="type-body-strong min-w-0 flex-1">Sign out</span>
-        </button>
-      </section>
 
-      <FooterNote />
+        <section aria-labelledby="help-title" className="flex flex-col gap-3">
+          <h2 id="help-title" className="type-body-strong">
+            Help
+          </h2>
+          <Link href={onboardingHref} className={rowClass}>
+            <span className="type-body-strong min-w-0 flex-1">How the app works</span>
+            <Chevron />
+          </Link>
+          <Link href="/about" className={rowClass}>
+            <span className="type-body-strong min-w-0 flex-1">About this prototype</span>
+            <Chevron />
+          </Link>
+        </section>
 
-      {(dialog === "reset" || !dialogInline) && student && (
-        <ConfirmDialog
-          open={dialog === "reset"}
-          inline={dialogInline}
-          title="Reset progress?"
-          description="This deletes your saved sessions, weak topics and created trainings on this device. It cannot be undone."
-          confirmLabel="Reset progress"
-          onConfirm={onReset}
-          onCancel={onCancelDialog}
-        />
-      )}
-      {(dialog === "delete" || !dialogInline) && (
-        <ConfirmDialog
-          open={dialog === "delete"}
-          inline={dialogInline}
-          title="Delete account?"
-          description="Delete this account and its progress from this device? This cannot be undone."
-          confirmLabel="Delete"
-          onConfirm={onDelete}
-          onCancel={onCancelDialog}
-        />
-      )}
+        <section aria-labelledby="settings-title" className="flex flex-col gap-3">
+          <h2 id="settings-title" className="type-body-strong">
+            Settings
+          </h2>
+          {student && (
+            <div className="flex flex-col gap-3 rounded-card bg-card shadow-(--card-shadow) p-4">
+              <div className="flex flex-col gap-1">
+                <h3 className="type-body-strong">Reset progress</h3>
+                <p className="type-small text-text-secondary">
+                  Deletes your saved sessions, weak topics and created trainings on this device.
+                  Your direction and uploaded files stay.
+                </p>
+              </div>
+              <div className="-ml-3">
+                <Button variant="tertiary" onClick={onAskReset}>
+                  Reset progress
+                </Button>
+              </div>
+              {resetDone && (
+                <p role="status" className="type-small">
+                  Progress reset. Your sessions, weak topics and created trainings are deleted.
+                </p>
+              )}
+            </div>
+          )}
+          <button
+            type="button"
+            data-delete-account
+            onClick={onAskDelete}
+            className={`${rowClass} min-h-14 w-full text-left`}
+          >
+            <span className="type-body-strong min-w-0 flex-1 text-wrong">Delete account</span>
+          </button>
+          <button
+            type="button"
+            data-sign-out
+            onClick={onSignOut}
+            className={`${rowClass} min-h-14 w-full text-left`}
+          >
+            <span className="type-body-strong min-w-0 flex-1">Sign out</span>
+          </button>
+        </section>
+
+        <FooterNote />
+
+        {(dialog === "reset" || !dialogInline) && student && (
+          <ConfirmDialog
+            open={dialog === "reset"}
+            inline={dialogInline}
+            title="Reset progress?"
+            description="This deletes your saved sessions, weak topics and created trainings on this device. It cannot be undone."
+            confirmLabel="Reset progress"
+            onConfirm={onReset}
+            onCancel={onCancelDialog}
+          />
+        )}
+        {(dialog === "delete" || !dialogInline) && (
+          <ConfirmDialog
+            open={dialog === "delete"}
+            inline={dialogInline}
+            title="Delete account?"
+            description="Delete this account and its progress from this device? This cannot be undone."
+            confirmLabel="Delete"
+            onConfirm={onDelete}
+            onCancel={onCancelDialog}
+          />
+        )}
+      </div>
     </div>
   );
 }

@@ -51,6 +51,18 @@ describe("the page header band", () => {
     expect(render({ subtitle: undefined })).not.toMatch(/<p[ >]/);
   });
 
+  it("has a tab root variant without the Back button: just the title and the subtitle", () => {
+    const html = render({ back: undefined, title: "Progress", subtitle: "How you are doing." });
+    expect(html).toContain("data-page-header-band");
+    expect(html).toContain("bg-secondary-sand");
+    expect(html).toContain("env(safe-area-inset-top)");
+    expect(html).not.toMatch(/<a |<button|aria-label="Back/);
+    expect(html).toContain('<h1 class="type-page-title text-text line-clamp-2">Progress</h1>');
+    expect(html).toContain("How you are doing.");
+    // not sticky: it scrolls away with the page
+    expect(html).not.toMatch(/sticky|fixed/);
+  });
+
   it("has the page gutter below it, or 56px where a card overlaps its edge", () => {
     expect(render()).toContain("pb-[var(--gutter,1rem)]");
     expect(render({ overlap: true })).toContain("pb-14");

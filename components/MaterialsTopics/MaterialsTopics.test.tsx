@@ -5,6 +5,8 @@ import { allTopics } from "@/lib/materials-topics";
 import { readingPath } from "@/lib/reading";
 
 const html = renderToStaticMarkup(<MaterialsTopics />);
+/** The list under the header band. */
+const list = html.slice(html.indexOf("<section"));
 /** The row's link, found by the topic it opens. */
 const card = (id: string) => {
   const start = html.lastIndexOf("<a ", html.indexOf(`href="${readingPath(id)}"`));
@@ -12,13 +14,12 @@ const card = (id: string) => {
 };
 
 describe("the Materials list", () => {
-  it("has the title and the subtitle", () => {
+  it("has the title and the subtitle in the page header band (tab root variant, no Back)", () => {
+    expect(html).toContain("data-page-header-band");
     expect(html).toContain(">Materials</h1>");
-    expect(html).toContain("Read the training guides, then practise what you read.");
-  });
-
-  it("has the subtitle as regular muted body text", () => {
-    expect(html).toContain('<p class="type-body text-text-secondary">Read the training guides');
+    expect(html).toContain('<p class="type-body text-text">Read the training guides, then');
+    expect(html).not.toContain("Back to");
+    expect(html.match(/<h1/g)).toHaveLength(1);
   });
 
   it("groups the topics by guide, each group with a clear heading and an olive count chip", () => {
@@ -72,7 +73,8 @@ describe("the Materials list", () => {
   });
 
   it("has no card around a row: no fill, border, radius or shadow", () => {
-    expect(html).not.toMatch(
+    // (the header band above the list has its own hairline border and fill)
+    expect(list).not.toMatch(
       /rounded-card|bg-card|shadow-\(--card-shadow\)|border-selectable-stroke bg/,
     );
     const s1 = card("S1");
@@ -96,7 +98,7 @@ describe("the Materials list", () => {
     expect(lastF7.startsWith('<li class="border-b')).toBe(false);
     const firstS1 = html.slice(html.lastIndexOf("<li", html.indexOf('href="/materials/read/S1"')));
     expect(firstS1.startsWith('<li class="border-b border-selectable-stroke')).toBe(true);
-    expect(html).not.toMatch(/mt-|mb-|-mx-/);
+    expect(list).not.toMatch(/mt-|mb-|-mx-/);
   });
 
   it("gives reading times of at least 1 minute", () => {

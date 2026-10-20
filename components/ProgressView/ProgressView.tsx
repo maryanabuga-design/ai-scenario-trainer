@@ -4,7 +4,7 @@ import { ArrowDown, ArrowUp, ChevronDown, Minus } from "lucide-react";
 import { useState } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
-import { HeaderRow } from "@/components/HeaderRow/HeaderRow";
+import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { ReadinessBar } from "@/components/ReadinessBar/ReadinessBar";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { stepsCard } from "@/components/StepsView/StepCard";
@@ -253,14 +253,12 @@ export function ProgressView({
   const { sections } = useSourceSheet();
   const titleOf = (id: string) => sections.find((section) => section.id === id)?.title ?? id;
   return (
-    <div className="flex flex-col gap-6 pb-4">
-      <HeaderRow
-        title={<h1 className="type-page-title">Progress</h1>}
-        subtitle={<p className="type-small text-text-secondary">How you are doing over time.</p>}
-      />
-
-      <ReadinessSection exam={exam} history={history} now={now} onRepeat={onRepeat} />
-      <TopicsSection exam={exam} history={history} titleOf={titleOf} onPractise={onPractise} />
+    <div className="flex flex-col gap-4 pb-4">
+      <PageHeaderBand title="Progress" subtitle="How you are doing over time." />
+      <div className="flex flex-col gap-6">
+        <ReadinessSection exam={exam} history={history} now={now} onRepeat={onRepeat} />
+        <TopicsSection exam={exam} history={history} titleOf={titleOf} onPractise={onPractise} />
+      </div>
     </div>
   );
 }

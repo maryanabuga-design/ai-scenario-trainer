@@ -75,11 +75,12 @@ const rowsOf = (html: string) => [
 describe("Progress: the header and the order of the sections", () => {
   const html = render(seeded);
 
-  it("has the title and the grey subtitle", () => {
+  it("has the title and the subtitle in the page header band (tab root variant, no Back)", () => {
+    expect(html).toContain("data-page-header-band");
     expect(html).toContain(">Progress</h1>");
-    expect(html).toContain(
-      '<p class="type-small text-text-secondary">How you are doing over time.</p>',
-    );
+    expect(html).toContain('<p class="type-body text-text">How you are doing over time.</p>');
+    expect(html).not.toContain("Back to");
+    expect(html.match(/<h1/g)).toHaveLength(1);
   });
 
   it("goes Readiness card, then By topic, and nothing after the topics", () => {
@@ -116,7 +117,11 @@ describe("Progress: the header and the order of the sections", () => {
   });
 
   it("keeps the bottom padding and the page rhythm", () => {
-    expect(html).toContain("flex flex-col gap-6 pb-4");
+    // the content starts 16px below the band; the cards keep their 24px rhythm
+    expect(html).toContain("flex flex-col gap-4 pb-4");
+    expect(html).toContain(
+      '<div class="flex flex-col gap-6"><section aria-labelledby="exam-readiness"',
+    );
   });
 });
 
