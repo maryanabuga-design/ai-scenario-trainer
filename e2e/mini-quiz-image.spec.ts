@@ -3,8 +3,8 @@ import type { Page } from "@playwright/test";
 
 const profile = { direction: "building-evacuation", onboarded: true };
 
-async function measure(page: Page) {
-  const link = page.locator("a[data-mini-quiz]:visible");
+async function measure(page: Page, selector = "a[data-mini-quiz]:visible") {
+  const link = page.locator(selector);
   await expect(link).toBeVisible();
   const image = link.locator("img");
   await expect
@@ -12,7 +12,7 @@ async function measure(page: Page) {
     .toBeGreaterThan(0);
   await expect(image).toHaveAttribute("src", "/heroes/icon-miniquiz.webp");
   const frame = (await link.locator("[data-picture-frame]").boundingBox())!;
-  const text = (await link.locator("[data-mini-quiz-text]").boundingBox())!;
+  const text = (await link.locator("[data-mini-quiz-text], [data-todays-text]").first().boundingBox())!;
   const row = (await link.boundingBox())!;
   return { frame, text, row };
 }
@@ -32,7 +32,7 @@ for (const width of [360, 430]) {
         [profile],
       );
       await page.goto("/");
-      const home = await measure(page);
+      const home = await measure(page, "[data-todays]:visible");
       await page.getByRole("link", { name: "Choose a topic" }).click();
       await expect(page).toHaveURL(/\/training$/);
       await page.getByRole("radio", { name: "Quiz" }).check({ force: true });

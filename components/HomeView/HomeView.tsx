@@ -4,7 +4,7 @@ import { Bookmark, ClipboardCheck, ListChecks, ListOrdered } from "lucide-react"
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { buttonClasses } from "@/components/Button/Button";
-import { MiniQuizLink } from "@/components/MiniQuizLink/MiniQuizLink";
+import { TodaysPractice } from "@/components/TodaysPractice/TodaysPractice";
 import { Media3D } from "@/components/Media3D/Media3D";
 import { NotificationBell } from "@/components/NotificationBell/NotificationBell";
 import { TileIcon } from "@/components/TileIcon/TileIcon";
@@ -18,8 +18,6 @@ import {
 } from "@/lib/home";
 import type { HomeCounts, HomeSummary, HomeTileId } from "@/lib/home";
 
-const miniQuizPath = "/mini-quiz?from=home";
-
 const tileIcons: Record<HomeTileId, LucideIcon> = {
   exam: ClipboardCheck,
   steps: ListOrdered,
@@ -29,17 +27,23 @@ const tileIcons: Record<HomeTileId, LucideIcon> = {
 
 /**
  * Home, the student view: an avatar (Profile), the greeting and the notification bell, then one sentence, the hero card (its
- * one Primary button opens Training), four tiles and the Mini-quiz row. Nothing from Progress is
+ * one Primary button opens Training), four tiles and the Today's practice card. Nothing from Progress is
  * repeated here, and no readiness percentage.
  */
 export function HomeView({
   name,
   summary,
   counts,
+  todays = null,
+  onStartToday = () => undefined,
 }: {
   name: string;
   summary: HomeSummary;
   counts: HomeCounts;
+  /** Today's count once the 5 questions are done; null is the start state. */
+  todays?: { correct: number; total: number } | null;
+  /** "Start practice". */
+  onStartToday?: () => void;
 }) {
   const tiles = homeTiles(counts);
 
@@ -107,12 +111,7 @@ export function HomeView({
         ))}
       </ul>
 
-      <MiniQuizLink
-        href={miniQuizPath}
-        subtitle="Pick topics and how many questions"
-        minHeight="min-h-[104px]"
-        clampSubtitle
-      />
+      <TodaysPractice result={todays} onStart={onStartToday} />
     </div>
   );
 }

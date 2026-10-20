@@ -57,13 +57,17 @@ const states = {
   },
 };
 
-function render(state: keyof typeof states = "first") {
+function render(
+  state: keyof typeof states = "first",
+  todays: { correct: number; total: number } | null = null,
+) {
   const { open, history } = states[state];
   return renderToStaticMarkup(
     <HomeView
       name={"Maryana"}
       summary={homeSummary({ unfinished: open, history })}
       counts={counts}
+      todays={todays}
     />,
   );
 }
@@ -106,13 +110,13 @@ describe("Home layout", () => {
     expect(bell).not.toContain("data-unread-badge");
   });
 
-  it("goes greeting, hero card, four tiles, Mini-quiz", () => {
+  it("goes greeting, hero card, four tiles, Today's practice", () => {
     const order = [
       'aria-label="Profile"',
       "Training materials",
       ">Exam<",
       ">Saved questions<",
-      "Mini-quiz",
+      "Today&#x27;s practice",
     ].map((text) => html.indexOf(text));
     expect(order.every((position) => position >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
@@ -322,38 +326,45 @@ describe("the tiles", () => {
   });
 });
 
-describe("the Mini-quiz row", () => {
+describe("Today's practice", () => {
   const html = render();
+  const card = html.slice(html.lastIndexOf("<section", html.indexOf("data-todays")));
 
-  it("is a full-width card with a chevron that opens the Mini-quiz screen from Home", () => {
-    const start = html.lastIndexOf("<a ", html.indexOf(">Mini-quiz<"));
-    const row = html.slice(start, html.indexOf("</a>", start));
-    expect(row).toContain('href="/mini-quiz?from=home"');
-    expect(row).toContain("Pick topics and how many questions");
-    expect(row).toContain("lucide-chevron-right");
-    expect(row).toContain("min-h-[104px]");
-    expect(row).toContain("rounded-card bg-card");
+  it("is a card with the title, '5 questions', a Primary Start practice and a Choose length link", () => {
+    expect(card).toContain('data-todays="start"');
+    expect(card).toContain("rounded-card bg-card");
+    expect(card).toContain(">Today&#x27;s practice</h2>");
+    expect(card).toContain(">5 questions<");
+    const start = card.slice(0, card.indexOf(">Start practice<"));
+    expect(start.slice(start.lastIndexOf("<button"))).toContain("bg-primary");
+    const link = card.slice(0, card.indexOf(">Choose length<"));
+    expect(link.slice(link.lastIndexOf("<a "))).toContain('href="/mini-quiz?from=home"');
+    expect(card.indexOf(">Start practice<")).toBeLessThan(card.indexOf(">Choose length<"));
+    expect(card).not.toMatch(/%|streak|Done for today|Practise more/);
   });
 
-  it("has the mini-quiz picture in a fixed 64 by 60 frame on the left, centred on the text (bare, decorative), the title, the description and the chevron on the right", () => {
-    const start = html.lastIndexOf("<a ", html.indexOf(">Mini-quiz<"));
-    const row = html.slice(start, html.indexOf("</a>", start));
-    const picture = row.slice(row.indexOf("<img"), row.indexOf(">", row.indexOf("<img")) + 1);
+  it("keeps the clipboard picture in its fixed 64 by 60 frame, decorative, beside the text", () => {
+    const picture = card.slice(card.indexOf("<img"), card.indexOf(">", card.indexOf("<img")) + 1);
     expect(picture).toContain("/heroes/icon-miniquiz.webp");
     expect(picture).toContain('alt=""');
     expect(picture).toContain('aria-hidden="true"');
     expect(picture).toContain('width="64"');
     expect(picture).toContain('height="60"');
-    expect(row).toContain("width:64px;height:60px");
-    expect(row).toContain("flex min-w-0 flex-1 items-center gap-3");
-    expect(picture).not.toMatch(/bg-|border|rounded|shadow/);
-    expect(row).not.toContain("data-media3d");
-    expect(row).not.toContain(">3D<");
-    const order = ["<img", ">Mini-quiz<", "Pick topics", "lucide-chevron-right"].map((text) =>
-      row.indexOf(text),
-    );
-    expect([...order].sort((a, b) => a - b)).toEqual(order);
-    expect(row).toContain("line-clamp-2");
+    expect(card.indexOf("<img")).toBeLessThan(card.indexOf("Today&#x27;s practice</h2>"));
+  });
+
+  it("says 'Done for today', 'n of 5 correct' (no percent sign) and a Secondary Practise more when done", () => {
+    const done = render("first", { correct: 3, total: 5 });
+    const doneCard = done.slice(done.lastIndexOf("<section", done.indexOf("data-todays")));
+    expect(doneCard).toContain('data-todays="done"');
+    expect(doneCard).toContain(">Done for today</h2>");
+    expect(doneCard).toContain(">3 of 5 correct<");
+    expect(doneCard).not.toContain("%");
+    const more = doneCard.slice(0, doneCard.indexOf(">Practise more<"));
+    const link = more.slice(more.lastIndexOf("<a "));
+    expect(link).toContain("bg-olive-tint");
+    expect(link).toContain('href="/mini-quiz?from=home"');
+    expect(doneCard).not.toMatch(/Start practice|Choose length/);
   });
 
   it("no longer starts an instant session of 5 questions", () => {
