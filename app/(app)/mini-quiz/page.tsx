@@ -19,8 +19,7 @@ function MiniQuiz() {
   const { sections } = useSourceSheet();
   const from = origin(useSearchParams().get("from"));
   const [selected, setSelected] = useState<string[]>(miniQuizSections);
-  // the recommended length, 5, is selected when the picker opens
-  const [chosen, setChosen] = useState<number | null>(5);
+  const [chosen, setChosen] = useState<number | null>(null);
 
   const pool = miniQuizPool(selected).length;
   const amount = fitAmount(chosen, pool);

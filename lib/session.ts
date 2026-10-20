@@ -31,7 +31,7 @@ export type Session = {
   /** The question on screen. Answers are saved as they are given. */
   index: number;
   /** How it was started, for Progress: practice (a part, a topic, a repeat), a mini-quiz or the exam. */
-  mode?: "practice" | "mini-quiz" | "today" | "exam";
+  mode?: "practice" | "mini-quiz" | "exam";
   /** The Training part this session plays (`<mode>:<section>:<n>`); absent for other sessions. */
   partId?: string;
   /** Where Back on Results goes: where the session was started from. Home when absent. */

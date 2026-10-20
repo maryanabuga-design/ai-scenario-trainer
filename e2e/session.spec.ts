@@ -630,9 +630,9 @@ test.describe("Home", () => {
     await expect(page).toHaveURL(/\/materials$/);
   });
 
-  test("opens the Mini-quiz screen from Choose length on Home", async ({ page }) => {
+  test("opens the Mini-quiz screen from the Home row", async ({ page }) => {
     await home(page, null);
-    await page.getByRole("link", { name: "Choose length" }).click();
+    await page.getByRole("link", { name: /Mini-quiz/ }).click();
     await expect(page).toHaveURL(/\/mini-quiz\?from=home$/);
     await expect(page.getByRole("heading", { name: "Mini-quiz" })).toBeVisible();
     await page.getByRole("link", { name: "Back to Home" }).click();
@@ -797,12 +797,12 @@ test.describe("Mini-quiz", () => {
   }
   const amounts = (page: Page) => page.locator("fieldset input[type=radio]");
 
-  test("selects every topic and the recommended amount, 5, by default", async ({ page }) => {
+  test("selects every topic and the largest amount by default", async ({ page }) => {
     await open(page, "/mini-quiz?from=training");
     await expect(page.getByText("Pick topics and how many questions")).toBeVisible();
     await expect(page.locator("input[name=mini-topics]:checked")).toHaveCount(10);
     await expect(amounts(page)).toHaveCount(3);
-    await expect(page.getByLabel("5", { exact: true })).toBeChecked();
+    await expect(page.getByLabel("15", { exact: true })).toBeChecked();
     await expect(
       page.getByText(`${QUIZ_TOTAL} questions available in your selected topics`),
     ).toBeVisible();
@@ -829,8 +829,7 @@ test.describe("Mini-quiz", () => {
     await expect(page.getByLabel("5", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Select all" }).click();
     await expect(amounts(page)).toHaveCount(3);
-    // the recommended 5 stays selected
-    await expect(page.getByLabel("5", { exact: true })).toBeChecked();
+    await expect(page.getByLabel("15", { exact: true })).toBeChecked();
   });
 
   test("starts the chosen number of distinct questions from the selected topics only", async ({
@@ -862,7 +861,6 @@ test.describe("Mini-quiz", () => {
     page,
   }) => {
     await open(page, "/mini-quiz?from=training");
-    await page.getByLabel("15", { exact: true }).check({ force: true });
     await page.getByRole("button", { name: "Start mini-quiz" }).click();
     for (let n = 0; n < 15; n++) {
       await page.locator("fieldset[aria-labelledby^=question-] label:visible").first().click();

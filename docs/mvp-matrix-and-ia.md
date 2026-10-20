@@ -75,7 +75,6 @@ Assumption to confirm with the user: four sections live in the bottom navigation
 - Notifications (Сповіщення): bell on Home → New / Earlier list · tap marks as read and opens the target · Mark all as read · empty state (demo data, no backend or push)
 - Saved questions (Збережені): Saved list · single saved question · Repeat saved (from the Saved tile on Home)
 - Steps (Кроки): Home tile → list of topics → informational topic screen with accordion steps (no completion tracking) · Reading → Steps for this topic → topic screen
-- Today's practice (23 Oct 2026, Home card): 5 questions chosen from wrong, never answered, then the rest, spread over topics · Start practice · Choose length (the picker) · Done for today state · next day reset
 - Mini-quiz (Міні-квіз): topics · 5, 10 or 15 questions · start (from Training and Home)
 - Exam (Іспит): exam screen (readiness, deadline, rules, last and best result) · timed question session · results and answer review (from the Exam tile on Home)
 - Training (Тренування): stats · Scenario/Quiz switch · Mini-quiz card (Quiz mode) · topic cards with parts (a part starts at once) · one question screen with the step strip and Next or Finish · Exit confirmation · Source sheet (Should). There is no feedback, confidence, explanation or Ask AI during the session
