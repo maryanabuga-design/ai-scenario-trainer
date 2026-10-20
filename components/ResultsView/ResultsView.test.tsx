@@ -58,7 +58,7 @@ describe("Results", () => {
     const order = [
       'aria-label="Back to Home"',
       ">Results<",
-      "data-media3d",
+      "data-picture-frame",
       "Not passed yet",
       "1 of 3 correct",
       'role="meter"',

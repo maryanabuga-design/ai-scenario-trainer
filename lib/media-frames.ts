@@ -26,6 +26,9 @@ export const homeFrames = {
   /** The 3D slot (Welcome, onboarding: it shrinks with the screen height, never below 200px) and the Verify slot. */
   panel: { width: 280, height: 280 },
   verify: { width: 120, height: 120 },
+  /** The slot on the Training cards, and the Results hero. */
+  card: { width: 56, height: 56 },
+  hero: { width: 200, height: 200 },
 } as const;
 
 /**
@@ -55,6 +58,14 @@ export const heroSlotFiles = {
   "onboarding-mistakes": "/heroes/onboarding-mistakes.webp",
   "onboarding-exam": "/heroes/onboarding-exam.webp",
   verify: "/heroes/verify.webp",
+} as const;
+
+/** The pictures of the Training cards (56px) and the Results hero (200px). */
+export const cardPictureFiles = {
+  continueSession: "/heroes/continue-session.webp",
+  examCard: "/heroes/exam-card.webp",
+  resultPass: "/heroes/result-pass.webp",
+  resultRetry: "/heroes/result-retry.webp",
 } as const;
 
 export type HeroSlot = keyof typeof heroSlotFiles;

@@ -6,12 +6,14 @@ import type { LucideIcon } from "lucide-react";
 import { buttonClasses } from "@/components/Button/Button";
 import { IconTile } from "@/components/IconTile/IconTile";
 import { Chevron } from "@/components/Chevron/Chevron";
+import { Media3D } from "@/components/Media3D/Media3D";
 import { Chip } from "@/components/Chip/Chip";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { Ring } from "@/components/Ring/Ring";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
 import type { ModeStats, PartRecords, PartState } from "@/lib/part-progress";
 import { partRing } from "@/lib/part-progress";
+import { cardPictureFiles } from "@/lib/media-frames";
 import type { Deadline } from "@/lib/exam-deadline";
 import type { Part, TrainingMode } from "@/lib/parts";
 import { questionCountLabel } from "@/lib/quiz-draw";
@@ -91,6 +93,7 @@ export function TrainingView({
           href="/session"
           className="flex min-h-16 items-center gap-3 rounded-card bg-card p-4 shadow-(--card-shadow) has-focus-visible:outline-2"
         >
+          <Media3D variant="card" src={cardPictureFiles.continueSession} priority />
           <span className="flex min-w-0 flex-1 flex-col gap-0.5">
             <span className="type-body-strong">Continue your session</span>
             <span className="type-small text-text-secondary">{resume}</span>
@@ -111,6 +114,7 @@ export function TrainingView({
                   href={`/exam?id=${encodeURIComponent(exam.id)}`}
                   className="flex min-h-16 items-center gap-3 rounded-card bg-card p-4 shadow-(--card-shadow) has-focus-visible:outline-2"
                 >
+                  <Media3D variant="card" src={cardPictureFiles.examCard} priority />
                   <span className="flex min-w-0 flex-1 flex-col gap-1.5">
                     <span className="type-body-strong">{exam.title}</span>
                     <Chip tone="sand" size="caption">

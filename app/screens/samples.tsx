@@ -94,9 +94,12 @@ import { topicIdsOf } from "@/lib/session";
 export function TrainingSample({
   mode = "scenario",
   progress = false,
+  cards = false,
 }: {
   mode?: TrainingMode;
   progress?: boolean;
+  /** Show the Continue card and an assigned exam, with their pictures. */
+  cards?: boolean;
 }) {
   const { sections } = useSourceSheet();
   const [current, setCurrent] = useState<TrainingMode>(mode);
@@ -126,6 +129,18 @@ export function TrainingSample({
       topics={topics}
       records={done.records}
       onStartPart={() => undefined}
+      resume={cards ? "Scenario · Question 2 of 3" : undefined}
+      exams={
+        cards
+          ? [
+              {
+                id: "demo",
+                title: "Evacuation basics exam",
+                deadline: deadlineText("2026-10-25", new Date(2026, 9, 19)),
+              },
+            ]
+          : []
+      }
     />
   );
 }

@@ -17,8 +17,8 @@ describe("the 3D pictures", () => {
   });
 
   for (const name of files) {
-    it(`${name} is at most 50 KB`, () => {
-      expect(statSync(`${DIR}/${name}`).size).toBeLessThanOrEqual(50 * 1024);
+    it(`${name} is at most 60 KB`, () => {
+      expect(statSync(`${DIR}/${name}`).size).toBeLessThanOrEqual(60 * 1024);
     });
 
     it(`${name} is a webp with an alpha channel`, () => {

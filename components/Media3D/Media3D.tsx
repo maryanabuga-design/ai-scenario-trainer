@@ -4,7 +4,8 @@ import type { ReactNode } from "react";
 import { artworkTransform, homeFrames } from "@/lib/media-frames";
 import type { Artwork } from "@/lib/media-frames";
 
-export type Media3DVariant = "hero" | "step" | "icon" | "tile" | "row" | "panel" | "verify";
+export type Media3DVariant =
+  "hero" | "step" | "icon" | "tile" | "row" | "panel" | "verify" | "card";
 
 const frames = {
   hero: "h-[200px] w-[200px] rounded-[28px]",
@@ -15,6 +16,7 @@ const frames = {
   // down to 200px, 35dvh), and the Verify slot
   panel: "aspect-square w-[max(200px,min(280px,35dvh))] rounded-[28px]",
   verify: "h-[120px] w-[120px] rounded-[28px]",
+  card: "h-14 w-14 rounded-[16px]",
 } as const;
 
 /**
@@ -58,7 +60,14 @@ export function Media3D({
     );
   }
   const frame = frames[variant];
-  if (variant === "tile" || variant === "row" || variant === "panel" || variant === "verify") {
+  const bare =
+    variant === "tile" ||
+    variant === "row" ||
+    variant === "panel" ||
+    variant === "verify" ||
+    variant === "card";
+  // the Results hero with a picture is bare too (200px, no tile); without one it keeps the placeholder
+  if (bare || (variant === "hero" && src)) {
     const size = homeFrames[variant];
     const fit = artwork ? artworkTransform(artwork, size) : null;
     return src ? (

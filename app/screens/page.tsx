@@ -319,6 +319,11 @@ export default function Screens() {
               <TrainingSample />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Training: top, with the Continue card and an exam card (3D pictures)">
+            <Screen nav="/">
+              <TrainingSample cards />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Training: Scenario, with some progress">
             <Screen nav="/">
               <TrainingSample progress />

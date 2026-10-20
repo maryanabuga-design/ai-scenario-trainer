@@ -8,6 +8,7 @@ import { Button, ButtonLink } from "@/components/Button/Button";
 import { Chip } from "@/components/Chip/Chip";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { Media3D } from "@/components/Media3D/Media3D";
+import { cardPictureFiles } from "@/lib/media-frames";
 import { PASS_MARK } from "@/lib/config";
 import { conclusion, isPassed, passCount, resultPercent } from "@/lib/results";
 import { correctCount } from "@/lib/scoring";
@@ -256,7 +257,11 @@ export function ResultsView({
       </div>
 
       <section aria-labelledby="result-title" className="flex flex-col items-center gap-3">
-        <Media3D variant="hero" />
+        <Media3D
+          variant="hero"
+          src={passed ? cardPictureFiles.resultPass : cardPictureFiles.resultRetry}
+          priority
+        />
         <p className="type-label text-text-secondary">{sessionLabel({ kind })}</p>
         <h2 id="result-title" className="type-display text-center">
           {passed ? "Passed" : "Not passed yet"}
