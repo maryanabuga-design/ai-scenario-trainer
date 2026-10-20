@@ -37,6 +37,7 @@ export function Media3D({
   alt = "",
   fallback,
   artwork,
+  priority = false,
 }: {
   variant: Media3DVariant;
   src?: string;
@@ -45,6 +46,8 @@ export function Media3D({
   artwork?: Artwork;
   /** The flat icon tile an icon slot shows until it has a picture. */
   fallback?: ReactNode;
+  /** Load at once (the first visible screen of a flow); otherwise the picture loads lazily. */
+  priority?: boolean;
 }) {
   if (variant === "icon") {
     return src ? (
@@ -70,6 +73,7 @@ export function Media3D({
           width={size.width}
           height={size.height}
           unoptimized
+          loading={priority ? "eager" : "lazy"}
           aria-hidden={alt === "" ? true : undefined}
           className="block h-full w-full object-contain"
           style={

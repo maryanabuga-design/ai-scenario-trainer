@@ -15,6 +15,7 @@ import {
   resendRemaining,
 } from "@/lib/auth-code";
 import { WRONG_CODE_MESSAGE } from "@/lib/auth-validation";
+import { heroSlotFiles } from "@/lib/media-frames";
 
 const empty = () => Array.from({ length: CODE_LENGTH }, () => "");
 
@@ -138,7 +139,7 @@ export function VerifyView({
       <FormHeader step={2} label="Back" onBack={onChangeEmail} />
 
       <div className="flex flex-col items-start gap-3">
-        <Media3D variant="verify" />
+        <Media3D variant="verify" src={heroSlotFiles.verify} priority />
         <h1 className="type-page-title">Check your email</h1>
         <p className="type-body text-text-secondary">
           We sent a 6-digit code to <span className="type-body-strong text-text">{email}</span>.

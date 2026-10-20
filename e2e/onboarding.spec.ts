@@ -39,7 +39,7 @@ for (const width of [360, 430]) {
       expect([panel.x, panel.y, panel.width]).toEqual([0, 0, width]);
       expect(panel.height).toBeGreaterThanOrEqual(280);
       expect(panel.height).toBeLessThanOrEqual(380);
-      const slot = (await page.locator("[data-hero-panel] [data-media3d]").boundingBox())!;
+      const slot = (await page.locator("[data-hero-panel] [data-picture-frame]").boundingBox())!;
       expect([slot.width, slot.height]).toEqual([220, 220]);
       expect(Math.abs(slot.x + slot.width / 2 - width / 2)).toBeLessThanOrEqual(2);
       expect(Math.abs(slot.y + slot.height / 2 - (panel.y + panel.height / 2))).toBeLessThanOrEqual(

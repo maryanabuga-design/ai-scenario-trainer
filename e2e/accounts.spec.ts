@@ -553,13 +553,12 @@ for (const width of [360, 430]) {
       expect(look.border).toEqual(["1px", "rgb(228, 223, 213)"]);
       expect(look.radius).toEqual(["32px", "32px", "0px"]);
       // the 3D slot: exactly 220 by 220, centred in the panel (2px), a dashed decorative placeholder
-      const slot = page.locator("[data-hero-panel] [data-media3d]");
+      const slot = page.locator("[data-hero-panel] [data-picture-frame]");
       const s = (await slot.boundingBox())!;
       expect([s.width, s.height]).toEqual([220, 220]);
       expect(Math.abs(s.x + s.width / 2 - (box.x + box.width / 2))).toBeLessThanOrEqual(2);
       expect(Math.abs(s.y + s.height / 2 - (box.y + box.height / 2))).toBeLessThanOrEqual(2);
       expect(await slot.getAttribute("aria-hidden")).toBe("true");
-      await expect(slot).toHaveText("3D");
       // the text is centred, the eyebrow above the title, no header and no navigation
       const eyebrow = (await page.locator("[data-eyebrow]").boundingBox())!;
       const title = (await page.getByRole("heading", { level: 1 }).boundingBox())!;
@@ -652,9 +651,7 @@ for (const width of [360, 430]) {
       const verify = page.getByRole("button", { name: "Verify" });
       await expect(verify).toBeDisabled();
       // the 80 by 80 slot sits left aligned above the title
-      const slot = (await page
-        .locator("main [data-media3d]:visible:not([data-hero-panel] *)")
-        .boundingBox())!;
+      const slot = (await page.locator("main [data-picture-frame]:visible").boundingBox())!;
       expect([slot.width, slot.height]).toEqual([80, 80]);
       expect(Math.abs(slot.x - 16)).toBeLessThanOrEqual(0.5);
       const title = (await page.getByRole("heading", { name: "Check your email" }).boundingBox())!;

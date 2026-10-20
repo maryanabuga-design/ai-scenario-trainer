@@ -11,6 +11,7 @@ import { Media3D } from "@/components/Media3D/Media3D";
 export function HeroPanel({
   slot,
   action,
+  priority = false,
   slotKey,
   slotClassName = "",
   children,
@@ -18,6 +19,8 @@ export function HeroPanel({
   /** The picture file of the slot, when it exists; without one the dashed placeholder shows. */
   slot?: string;
   action?: ReactNode;
+  /** The picture loads at once (the first visible screen of a flow). */
+  priority?: boolean;
   /** A new key replays the slot's entrance (the onboarding slides). */
   slotKey?: string | number;
   slotClassName?: string;
@@ -37,7 +40,7 @@ export function HeroPanel({
         key={slotKey}
         className={`pointer-events-none absolute inset-0 flex items-center justify-center ${slotClassName}`}
       >
-        <Media3D variant="panel" src={slot} />
+        <Media3D variant="panel" src={slot} priority={priority} />
       </div>
       {children}
     </div>

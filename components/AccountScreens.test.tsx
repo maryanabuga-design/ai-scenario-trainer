@@ -17,7 +17,7 @@ const html = (node: React.ReactElement) => renderToStaticMarkup(node).replace(/<
 describe("Welcome", () => {
   const out = html(<WelcomeView />);
 
-  it("has no header and no navigation, and the hero panel with its dashed 220 by 220 slot", () => {
+  it("has no header and no navigation, and the hero panel with its 220 by 220 picture", () => {
     expect(out).not.toContain("<header");
     expect(out).not.toContain("data-form-step");
     expect(out).toContain("data-hero-panel");
@@ -25,9 +25,18 @@ describe("Welcome", () => {
     expect(out).toContain("rounded-b-[32px] border-b border-selectable-stroke bg-secondary-sand");
     expect(out).toContain("-mx-[var(--gutter,1rem)]");
     expect(out).toContain("env(safe-area-inset-top)");
-    expect(out).toContain('data-media3d="placeholder"');
-    expect(out).toContain("h-[220px] w-[220px]");
-    expect(out).toContain(">3D<");
+    // the picture: decorative, explicit size, contained, loaded at once, no placeholder
+    const img = out.slice(out.indexOf("<img"), out.indexOf(">", out.indexOf("<img")) + 1);
+    expect(img).toContain('src="/heroes/welcome.webp"');
+    expect(img).toContain('alt=""');
+    expect(img).toContain('aria-hidden="true"');
+    expect(img).toContain('width="220"');
+    expect(img).toContain('height="220"');
+    expect(img).toContain('loading="eager"');
+    expect(img).toContain("object-contain");
+    expect(img).not.toMatch(/shadow|bg-/);
+    expect(out).not.toContain('data-media3d="placeholder"');
+    expect(out).not.toContain(">3D<");
   });
 
   it("has the eyebrow, the title and the subtitle, centred", () => {
@@ -40,11 +49,13 @@ describe("Welcome", () => {
     expect(out).toContain(">Train for real situations</h1>");
     expect(out).toContain(WELCOME_SUBTITLE);
     expect(out).toContain("max-w-[320px]");
-    expect(out).toContain("px-2 pt-8 text-center");
+    // centred vertically in the free space above the buttons, 16px clear at least
+    expect(out).toContain(
+      "flex flex-1 flex-col items-center justify-center gap-2 px-2 py-4 text-center",
+    );
   });
 
   it("has the pinned buttons: Primary, the olive-tint Secondary 12px below, and the note", () => {
-    expect(out).toContain("mt-auto");
     expect(out).toContain("pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]");
     expect(out).toContain('href="/sign-up"');
     expect(out).toContain(">Create account<");
@@ -153,10 +164,15 @@ describe("Verify", () => {
   it("has the Step 2 of 2 header, the 80 by 80 slot and the title", () => {
     expect(out).toContain(">Step 2 of 2<");
     expect(out).toContain('aria-label="Back"');
-    expect(out).toContain("h-20 w-20");
-    expect(out).toContain('data-media3d="placeholder"');
+    const img = out.slice(out.indexOf("<img"), out.indexOf(">", out.indexOf("<img")) + 1);
+    expect(img).toContain('src="/heroes/verify.webp"');
+    expect(img).toContain('width="80"');
+    expect(img).toContain('height="80"');
+    expect(img).toContain('alt=""');
+    expect(img).toContain('aria-hidden="true"');
+    expect(img).toContain('loading="eager"');
     expect(out).not.toContain("data-hero-panel");
-    expect(out.indexOf("h-20 w-20")).toBeLessThan(out.indexOf(">Check your email</h1>"));
+    expect(out.indexOf("<img")).toBeLessThan(out.indexOf(">Check your email</h1>"));
     expect(out).toContain("items-start");
   });
 

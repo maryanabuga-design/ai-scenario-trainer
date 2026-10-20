@@ -47,3 +47,14 @@ export function artworkTransform(
   const centreY = (art.y0 + art.y1) / 2;
   return { scale, x: -(centreX - 0.5) * side * scale, y: -(centreY - 0.5) * side * scale };
 }
+
+/** The pictures of the Welcome, onboarding and Verify slots (public/heroes), by slot name. */
+export const heroSlotFiles = {
+  welcome: "/heroes/welcome.webp",
+  "onboarding-practise": "/heroes/onboarding-practise.webp",
+  "onboarding-mistakes": "/heroes/onboarding-mistakes.webp",
+  "onboarding-exam": "/heroes/onboarding-exam.webp",
+  verify: "/heroes/verify.webp",
+} as const;
+
+export type HeroSlot = keyof typeof heroSlotFiles;

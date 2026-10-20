@@ -18,11 +18,13 @@ const render = (role: Role, index: number) =>
   ).replace(/<!-- -->/g, "");
 
 describe("the onboarding slides", () => {
-  it("show the hero panel with the dashed 220 by 220 slot, the title and the subtitle", () => {
+  it("show the hero panel with the 220 by 220 picture, the title and the subtitle", () => {
     const out = render("student", 0);
     expect(out).toContain("data-hero-panel");
-    expect(out).toContain('data-media3d="placeholder"');
-    expect(out).toContain("h-[220px] w-[220px]");
+    expect(out).not.toContain('data-media3d="placeholder"');
+    expect(out).toContain('src="/heroes/onboarding-practise.webp"');
+    expect(out).toContain('width="220"');
+    expect(out).toContain('height="220"');
     expect(out).toContain(">Practise real situations</h1>");
     expect(out).toContain("Short scenarios and quizzes you can do in a few minutes.");
     expect(out).toContain("type-slide-title");
@@ -63,7 +65,6 @@ describe("the onboarding slides", () => {
       out.indexOf("</div>", out.indexOf("data-hero-panel")) + 400,
     );
     expect(out).toContain("absolute top-[calc(env(safe-area-inset-top)+16px)] right-4");
-    expect(out).toContain("mt-auto");
     expect(out).toContain("pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]");
     expect(out.indexOf("data-dot")).toBeLessThan(out.lastIndexOf(">Next<"));
   });
@@ -77,6 +78,38 @@ describe("the onboarding slides", () => {
       expect(out).toContain("h-2 rounded-full w-6 bg-primary");
       expect(out).toContain("w-2 bg-olive-tint-pressed");
     }
+  });
+
+  it("use the right picture on every slide, for both roles, eager on the first and lazy after", () => {
+    const pictures = (role: Role) =>
+      [0, 1, 2].map((index) => {
+        const out = render(role, index);
+        const img = out.slice(out.indexOf("<img"), out.indexOf(">", out.indexOf("<img")) + 1);
+        return [
+          /src="([^"]+)"/.exec(img)![1],
+          /loading="(\w+)"/.exec(img)![1],
+          img.includes('alt=""'),
+        ];
+      });
+    expect(pictures("student")).toEqual([
+      ["/heroes/onboarding-practise.webp", "eager", true],
+      ["/heroes/onboarding-mistakes.webp", "lazy", true],
+      ["/heroes/onboarding-exam.webp", "lazy", true],
+    ]);
+    expect(pictures("instructor")).toEqual([
+      ["/heroes/onboarding-practise.webp", "eager", true],
+      ["/heroes/onboarding-exam.webp", "lazy", true],
+      ["/heroes/onboarding-mistakes.webp", "lazy", true],
+    ]);
+  });
+
+  it("centre the text vertically in the free space above the dots, 16px clear at least", () => {
+    const out = render("student", 0);
+    expect(out).toContain('class="flex flex-1 flex-col justify-center py-4"');
+    expect(out.indexOf("flex-1 flex-col justify-center py-4")).toBeLessThan(
+      out.indexOf("data-slide"),
+    );
+    expect(out.indexOf("data-slide")).toBeLessThan(out.indexOf('role="img"'));
   });
 
   it("have no Back button, and no link or control that is not the slide's", () => {
