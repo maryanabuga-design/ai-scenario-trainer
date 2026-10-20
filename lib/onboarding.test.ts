@@ -1,120 +1,112 @@
-import { readFileSync } from "node:fs";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
-  FINAL_STEP,
-  finishOnboarding,
-  needsOnboarding,
-  nextStep,
+  SWIPE_THRESHOLD,
+  instructorSlides,
+  mainLabel,
+  nextIndex,
   onboardingHref,
-  onboardingSteps,
-  previousStep,
+  previousIndex,
   replayReturnHref,
+  showsSkip,
+  slideLabel,
+  slidesFor,
   stepLabel,
+  studentSlides,
+  swipeDirection,
 } from "@/lib/onboarding";
-import type { OnboardingStep } from "@/lib/onboarding";
-import type { Profile } from "@/lib/session";
-import { createStore } from "@/lib/store";
 
-describe("first visit", () => {
-  it("shows the introduction when nothing is saved yet", () => {
-    expect(needsOnboarding(null)).toBe(true);
-    expect(needsOnboarding({ direction: "building-evacuation", onboarded: false })).toBe(true);
-  });
-
-  it("has three steps and a final screen", () => {
-    expect(onboardingSteps.map((step) => step.title)).toEqual([
-      "Practise a decision",
-      "Answer, then check it",
-      "See what to repeat",
+describe("the slides", () => {
+  it("are three per role with the fixed copy", () => {
+    expect(studentSlides.map((s) => [s.slot, s.title, s.body])).toEqual([
+      [
+        "onboarding-practise",
+        "Practise real situations",
+        "Short scenarios and quizzes you can do in a few minutes.",
+      ],
+      [
+        "onboarding-mistakes",
+        "Learn from your mistakes",
+        "See why an answer is right, and ask AI to explain it.",
+      ],
+      [
+        "onboarding-exam",
+        "Get ready for your exam",
+        "Track your readiness and repeat the topics that need work.",
+      ],
     ]);
-    expect(FINAL_STEP).toBe(3);
-  });
-});
-
-describe("moving between steps", () => {
-  it("goes 1 → 2 → 3 → final with Next, and stays on the final screen", () => {
-    const seen: OnboardingStep[] = [0];
-    for (let i = 0; i < 4; i++) seen.push(nextStep(seen[seen.length - 1]));
-    expect(seen).toEqual([0, 1, 2, 3, 3]);
-  });
-
-  it("goes back one step at a time and never before step 1", () => {
-    expect(previousStep(3)).toBe(2);
-    expect(previousStep(2)).toBe(1);
-    expect(previousStep(1)).toBe(0);
-    expect(previousStep(0)).toBe(0);
-  });
-
-  it("names the position for the dots", () => {
-    expect(stepLabel(1)).toBe("Step 2 of 3");
-  });
-});
-
-describe("Skip and Get started", () => {
-  it("save the flag so Home does not show the introduction again", () => {
-    const saved = finishOnboarding(null);
-    expect(saved).toEqual({ direction: "building-evacuation", onboarded: true });
-    expect(needsOnboarding(saved)).toBe(false);
+    expect(instructorSlides.map((s) => [s.slot, s.title, s.body])).toEqual([
+      [
+        "onboarding-practise",
+        "Build an exam from topics",
+        "Choose the topics your students need to know.",
+      ],
+      [
+        "onboarding-exam",
+        "Assign it with a deadline",
+        "Students see the exam and the due date straight away.",
+      ],
+      [
+        "onboarding-mistakes",
+        "Students get notified",
+        "A new exam appears in their notifications.",
+      ],
+    ]);
   });
 
-  it("keep a direction chosen in Profile", () => {
-    expect(finishOnboarding({ direction: "other", onboarded: false })?.direction).toBe("other");
-  });
-});
-
-describe("How it works", () => {
-  it("replays the introduction from Home without changing saved data", () => {
-    expect(onboardingHref).toBe("/onboarding");
-    expect(finishOnboarding({ direction: "building-evacuation", onboarded: true })).toBeNull();
-  });
-});
-
-describe("when localStorage throws", () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
+  it("are picked by role", () => {
+    expect(slidesFor("student")).toBe(studentSlides);
+    expect(slidesFor("instructor")).toBe(instructorSlides);
   });
 
-  it("shows the introduction, saves for this visit only and never crashes", () => {
-    const fail = () => {
-      throw new Error("blocked");
-    };
-    vi.stubGlobal("window", {
-      get localStorage(): Storage {
-        throw new Error("blocked");
-      },
-      addEventListener: () => undefined,
-      removeEventListener: () => undefined,
-    });
-    const store = createStore<Profile>("ast.profile.test");
-    expect(needsOnboarding(store.read())).toBe(true);
-    const saved = finishOnboarding(store.read());
-    expect(() => saved && store.write(saved)).not.toThrow();
-    expect(needsOnboarding(store.read())).toBe(false);
-
-    // The next visit starts with nothing saved, so the introduction shows again.
-    vi.stubGlobal("window", {
-      localStorage: { getItem: fail, setItem: fail, removeItem: fail },
-    });
-    const next = createStore<Profile>("ast.profile.test");
-    expect(needsOnboarding(next.read())).toBe(true);
+  it("have a short title and a short body, and name no weapon, harm or combat", () => {
+    for (const slide of [...studentSlides, ...instructorSlides]) {
+      expect(slide.title.length).toBeLessThanOrEqual(40);
+      expect(slide.body.length).toBeLessThanOrEqual(80);
+      expect(`${slide.title} ${slide.body}`).not.toMatch(/weapon|combat|kill|attack|gun/i);
+    }
   });
-});
 
-describe("replaying the introduction from Profile", () => {
-  it("returns to Profile, and the first visit still goes to Home", () => {
+  it("live at /onboarding and a replay returns to Profile", () => {
     expect(onboardingHref).toBe("/onboarding");
     expect(replayReturnHref).toBe("/profile");
-    // a first visit (not onboarded) still needs the introduction; a replay saves nothing
-    expect(needsOnboarding(null)).toBe(true);
-    expect(needsOnboarding({ direction: "building-evacuation", onboarded: true })).toBe(false);
-    expect(finishOnboarding({ direction: "building-evacuation", onboarded: true })).toBeNull();
+  });
+});
+
+describe("the slide index", () => {
+  it("moves on and back but never leaves 0 to 2", () => {
+    expect(nextIndex(0, 3)).toBe(1);
+    expect(nextIndex(1, 3)).toBe(2);
+    expect(nextIndex(2, 3)).toBe(2);
+    expect(previousIndex(2)).toBe(1);
+    expect(previousIndex(0)).toBe(0);
   });
 
-  it("shows Back on the first step of a replay and names Profile", () => {
-    const source = readFileSync("components/OnboardingView/OnboardingView.tsx", "utf8");
-    expect(source).toContain('"Back to Profile"');
-    const page = readFileSync("app/(app)/onboarding/page.tsx", "utf8");
-    expect(page).toContain('router.replace(replay ? replayReturnHref : "/")');
-    expect(page).toContain("router.push(replayReturnHref)");
+  it("has the labels for the dots and the slide", () => {
+    expect(stepLabel(0, 3)).toBe("Step 1 of 3");
+    expect(stepLabel(2, 3)).toBe("Step 3 of 3");
+    expect(slideLabel(1, 3)).toBe("2 of 3");
+  });
+
+  it("says Next on slides 1 and 2 and Get started on 3; Skip shows only before the last", () => {
+    expect([0, 1, 2].map((i) => mainLabel(i, 3))).toEqual(["Next", "Next", "Get started"]);
+    expect([0, 1, 2].map((i) => showsSkip(i, 3))).toEqual([true, true, false]);
+  });
+});
+
+describe("the swipe", () => {
+  it("needs the threshold: 40px", () => {
+    expect(SWIPE_THRESHOLD).toBe(40);
+    expect(swipeDirection(-39, 0)).toBeNull();
+    expect(swipeDirection(39, 0)).toBeNull();
+    expect(swipeDirection(-40, 0)).toBe("next");
+    expect(swipeDirection(40, 0)).toBe("previous");
+    expect(swipeDirection(-120, 10)).toBe("next");
+  });
+
+  it("never reacts to a vertical scroll, or a movement that is mostly vertical", () => {
+    expect(swipeDirection(0, -200)).toBeNull();
+    expect(swipeDirection(-50, 80)).toBeNull();
+    expect(swipeDirection(50, -50)).toBeNull();
+    expect(swipeDirection(-60, 59)).toBe("next");
   });
 });

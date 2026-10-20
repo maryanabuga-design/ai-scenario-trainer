@@ -42,8 +42,7 @@ import { UploadPanel } from "@/components/UploadSheet/UploadSheet";
 import type { Stage } from "@/components/UploadSheet/UploadSheet";
 import { OnboardingView } from "@/components/OnboardingView/OnboardingView";
 import { ProfileView } from "@/components/ProfileView/ProfileView";
-import { nextStep, previousStep } from "@/lib/onboarding";
-import type { OnboardingStep } from "@/lib/onboarding";
+import { nextIndex, previousIndex } from "@/lib/onboarding";
 import { ProgressView } from "@/components/ProgressView/ProgressView";
 import { ResultsActions, ResultsView } from "@/components/ResultsView/ResultsView";
 import { notCoveredId, replyToChip } from "@/lib/chat";
@@ -436,13 +435,15 @@ export function ProgressSample({ state = "seeded" }: { state?: "seeded" | "no-ex
   );
 }
 
-export function OnboardingSample({ start }: { start: OnboardingStep }) {
-  const [step, setStep] = useState<OnboardingStep>(start);
+export function OnboardingSample({ role = "student", start }: { role?: Role; start: number }) {
+  const [index, setIndex] = useState(start);
   return (
     <OnboardingView
-      step={step}
-      onNext={() => setStep(nextStep(step))}
-      onBack={() => setStep(previousStep(step))}
+      role={role}
+      index={index}
+      direction="next"
+      onNext={() => setIndex(nextIndex(index, 3))}
+      onPrevious={() => setIndex(previousIndex(index))}
       onSkip={() => undefined}
       onFinish={() => undefined}
     />
@@ -1104,15 +1105,39 @@ export function WelcomeSample() {
   return <WelcomeView />;
 }
 
-export function SignUpSample({ errors = false }: { errors?: boolean }) {
-  return <SignUpView onSubmit={() => "ok"} initialTouched={errors} />;
+export function SignUpSample({
+  errors = false,
+  instructor = false,
+}: {
+  errors?: boolean;
+  instructor?: boolean;
+}) {
+  return (
+    <SignUpView
+      onSubmit={() => "ok"}
+      initialTouched={errors}
+      initial={{ name: "", email: "", role: instructor ? "instructor" : "student" }}
+    />
+  );
 }
 
-export function SignInSample() {
-  return <SignInView onSubmit={() => "ok"} />;
+export function SignInSample({ unknown = false }: { unknown?: boolean }) {
+  return (
+    <SignInView
+      onSubmit={() => "unknown"}
+      initialEmail={unknown ? "nobody@example.com" : ""}
+      initialUnknown={unknown}
+    />
+  );
 }
 
-export function VerifySample({ wrong = false }: { wrong?: boolean }) {
+export function VerifySample({
+  wrong = false,
+  filled = false,
+}: {
+  wrong?: boolean;
+  filled?: boolean;
+}) {
   return (
     <VerifyView
       email="ana@example.com"
@@ -1120,6 +1145,7 @@ export function VerifySample({ wrong = false }: { wrong?: boolean }) {
       onVerify={() => false}
       onChangeEmail={() => undefined}
       initialWrong={wrong}
+      initialDigits={wrong ? "000000" : filled ? "482913" : ""}
     />
   );
 }

@@ -15,6 +15,8 @@ export type Account = {
   email: string;
   role: Role;
   createdAt: number;
+  /** The onboarding was finished or skipped (a new account sees it once, right after verification). */
+  onboardingDone: boolean;
   /** The account made from data the app already had: it keeps the old device keys (no suffix). */
   legacy?: boolean;
 };
@@ -46,7 +48,7 @@ const isRole = (value: unknown): value is Role =>
 
 function cleanAccount(value: unknown): Account | null {
   if (!isObject(value)) return null;
-  const { name, email, role, createdAt, legacy } = value;
+  const { name, email, role, createdAt, legacy, onboardingDone } = value;
   if (typeof name !== "string" || name.trim() === "") return null;
   if (typeof email !== "string" || !isEmailFormat(email)) return null;
   if (!isRole(role)) return null;
@@ -55,6 +57,8 @@ function cleanAccount(value: unknown): Account | null {
     email: normaliseEmail(email),
     role,
     createdAt: typeof createdAt === "number" && Number.isFinite(createdAt) ? createdAt : 0,
+    // an account saved before the flag existed counts as done: it never sees the onboarding again
+    onboardingDone: onboardingDone !== false,
     ...(legacy === true && { legacy: true }),
   };
 }
@@ -120,7 +124,16 @@ export function migrateLegacy(
     // a broken old value reads as a student
   }
   return {
-    accounts: [{ name: MIGRATED_NAME, email: MIGRATED_EMAIL, role, createdAt: now, legacy: true }],
+    accounts: [
+      {
+        name: MIGRATED_NAME,
+        email: MIGRATED_EMAIL,
+        role,
+        createdAt: now,
+        onboardingDone: true,
+        legacy: true,
+      },
+    ],
     session: { email: MIGRATED_EMAIL },
     pending: null,
   };
@@ -173,7 +186,13 @@ export function completeVerification(state: AuthState, code: string, now: number
   let accounts = state.accounts;
   let account = accountFor(state, pending.email);
   if (pending.mode === "sign-up" && !account) {
-    account = { name: pending.name, email: pending.email, role: pending.role, createdAt: now };
+    account = {
+      name: pending.name,
+      email: pending.email,
+      role: pending.role,
+      createdAt: now,
+      onboardingDone: false,
+    };
     accounts = [...accounts, account];
   }
   if (!account) return { state, result: "none" };
@@ -191,7 +210,10 @@ export const signOutState = (state: AuthState): AuthState => ({
   pending: null,
 });
 
-function updateCurrent(state: AuthState, change: Partial<Pick<Account, "name" | "role">>) {
+function updateCurrent(
+  state: AuthState,
+  change: Partial<Pick<Account, "name" | "role" | "onboardingDone">>,
+) {
   const current = currentAccount(state);
   if (!current) return state;
   return {
@@ -208,6 +230,10 @@ export const renameState = (state: AuthState, name: string): AuthState =>
 export const setRoleState = (state: AuthState, role: Role): AuthState =>
   updateCurrent(state, { role });
 
+/** The onboarding was finished or skipped. */
+export const finishOnboardingState = (state: AuthState): AuthState =>
+  updateCurrent(state, { onboardingDone: true });
+
 /** The state without the current account and without the session. */
 export function deleteCurrentState(state: AuthState): AuthState {
   const current = currentAccount(state);
@@ -219,8 +245,9 @@ export function deleteCurrentState(state: AuthState): AuthState {
   };
 }
 
-/** Where a person goes after a correct code: the Home of the role (the introduction comes first for a new student). */
-export const homeAfterVerification = (account: Account): string => roleHome(account.role);
+/** Where a person goes after a correct code: the onboarding until it was done, then the Home of the role. */
+export const homeAfterVerification = (account: Account): string =>
+  account.onboardingDone ? roleHome(account.role) : "/onboarding";
 
 // ---- the saved state ----
 
@@ -323,6 +350,11 @@ export function renameAccount(name: string) {
 /** The one place a role is set: Demo mode now, registration chooses it too. */
 export function setRole(role: Role) {
   save(setRoleState(readAuth(), role));
+}
+
+/** Marks the onboarding as done for the signed-in account (Skip or Get started). */
+export function finishOnboarding() {
+  save(finishOnboardingState(readAuth()));
 }
 
 /** Deletes the signed-in account and the data stored for it on this device. */

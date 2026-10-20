@@ -631,24 +631,24 @@ export default function Screens() {
           </PhoneFrame>
         </Group>
         <Group title="Onboarding">
-          <PhoneFrame label="Onboarding: step 1, practise a decision">
+          <PhoneFrame label="Onboarding, student: slide 1">
             <Screen>
               <OnboardingSample start={0} />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Onboarding: step 2, explain it">
+          <PhoneFrame label="Onboarding, student: slide 2">
             <Screen>
               <OnboardingSample start={1} />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Onboarding: step 3, see what to repeat">
+          <PhoneFrame label="Onboarding, student: slide 3 (Get started, no Skip)">
             <Screen>
               <OnboardingSample start={2} />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Onboarding: ready to start">
+          <PhoneFrame label="Onboarding, instructor: slide 1">
             <Screen>
-              <OnboardingSample start={3} />
+              <OnboardingSample role="instructor" start={0} />
             </Screen>
           </PhoneFrame>
         </Group>
@@ -663,6 +663,11 @@ export default function Screens() {
               <SignUpSample />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Create account: Instructor selected">
+            <Screen>
+              <SignUpSample instructor />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Create account: errors">
             <Screen>
               <SignUpSample errors />
@@ -673,9 +678,19 @@ export default function Screens() {
               <SignInSample />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Sign in: unknown email">
+            <Screen>
+              <SignInSample unknown />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Verify: the demo code is always shown">
             <Screen>
               <VerifySample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Verify: filled">
+            <Screen>
+              <VerifySample filled />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Verify: wrong code">

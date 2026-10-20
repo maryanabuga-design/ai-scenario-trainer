@@ -68,7 +68,6 @@ export type ExamResult = {
 
 export type Profile = {
   direction: string;
-  onboarded: boolean;
 };
 
 const sessionStore = createStore<Session>("ast.session.v1", { sanitize: cleanSession });

@@ -47,10 +47,10 @@ const rgb = (value: string) => {
 
 const nav = (page: Page) => page.getByRole("navigation", { name: "Main" });
 
-async function finishOnboarding(page: Page) {
+async function finishOnboarding(page: Page, role: Role = "Student") {
   await expect(page).toHaveURL(/\/onboarding$/);
-  await page.getByText("Skip", { exact: true }).first().click();
-  await expect(page).toHaveURL(/\/$/);
+  await page.getByRole("button", { name: "Skip" }).click();
+  await expect(page).toHaveURL(role === "Student" ? /\/$/ : /\/instructor$/);
 }
 
 test.use({ storageState: emptyBrowser });
@@ -72,12 +72,10 @@ for (const width of [360, 430]) {
         await expect(page, path).toHaveURL(/\/welcome$/);
       }
       await expect(
-        page.getByRole("heading", { name: "AI Scenario Trainer", level: 1 }),
+        page.getByRole("heading", { name: "Train for real situations", level: 1 }),
       ).toBeVisible();
       await expect(
-        page.getByText(
-          "Practise decisions in a scenario built from a study guide, then review your errors with links to the source.",
-        ),
+        page.getByText("Short scenarios, quizzes and exams for building evacuation and first aid."),
       ).toBeVisible();
       await expect(page.getByRole("link", { name: "Create account" })).toBeVisible();
       await expect(page.getByRole("link", { name: "I already have an account" })).toBeVisible();
@@ -89,20 +87,18 @@ for (const width of [360, 430]) {
       page,
     }) => {
       await startSignUp(page, "Ana Test", "Ana@Example.com");
-      await expect(page.getByText("We sent a 6-digit code to ana@example.com")).toBeVisible();
+      await expect(page.getByText("We sent a 6-digit code to ana@example.com.")).toBeVisible();
       // a wrong code, typed: the sixth digit submits at once
       await typeCode(page, "000000");
       await expect(
-        page.getByText("That code is not correct. Check the code shown above."),
+        page.getByText("That code is not correct. Check the code shown below."),
       ).toBeVisible();
       await expect(page).toHaveURL(/\/verify$/);
       // the demo code card is still there
-      await expect(page.getByText("Demo: no email is sent. Your code is 482 913.")).toBeVisible();
-      // fix the last digit: the right code
-      await page.getByLabel("Digit 6 of 6").focus();
-      await page.keyboard.press("Backspace");
-      await page.keyboard.type("0".replace("0", "0"));
-      for (let n = 1; n <= 6; n++) await page.getByLabel(`Digit ${n} of 6`).fill("");
+      await expect(page.locator("[data-demo-code]")).toContainText("482 913");
+      // the boxes keep their digits, selected for retyping: the first box has the focus
+      await expect(page.getByLabel("Digit 1 of 6")).toBeFocused();
+      await expect(page.getByLabel("Digit 6 of 6")).toHaveValue("0");
       await typeCode(page, CODE);
       await finishOnboarding(page);
       await expect(page.getByRole("heading", { name: "Hi, Ana Test" })).toBeVisible();
@@ -111,7 +107,7 @@ for (const width of [360, 430]) {
 
     test("signing up as an instructor reaches Instructor Home", async ({ page }) => {
       await signUp(page, "Ines Instructor", "ines@example.com", "Instructor");
-      await expect(page).toHaveURL(/\/instructor$/);
+      await finishOnboarding(page, "Instructor");
       await expect(page.getByRole("heading", { name: "Instructor", level: 1 })).toBeVisible();
       await expect(nav(page).getByRole("link")).toHaveCount(2);
     });
@@ -255,6 +251,7 @@ for (const width of [360, 430]) {
       page,
     }) => {
       await signUp(page, "Ines Instructor", "ines@example.com", "Instructor");
+      await finishOnboarding(page, "Instructor");
       await page.getByRole("link", { name: "Profile" }).click();
       await expect(page.locator("[data-delete-account]")).toBeVisible();
       await expect(page.locator("[data-sign-out]")).toBeVisible();
@@ -265,8 +262,8 @@ for (const width of [360, 430]) {
         .getByRole("radiogroup", { name: "Switch role (demo)" })
         .locator("label", { hasText: "Student" })
         .click();
-      // a new student has not seen the introduction yet
-      await expect(page).toHaveURL(/\/onboarding$/);
+      // she has seen the introduction: Home of a student
+      await expect(page).toHaveURL(/\/$/);
     });
 
     test("the guards: a signed-in person is sent from the auth routes to their Home", async ({
@@ -315,18 +312,19 @@ for (const width of [360, 430]) {
       await startSignUp(page, "Ana Test", "ana@example.com");
       const card = page.locator("[data-demo-code]");
       await expect(card).toBeVisible();
-      await expect(card).toContainText("Demo: no email is sent. Your code is 482 913.");
+      await expect(card).toContainText("Demo: no email is sent");
+      await expect(card).toContainText("482 913");
       const resend = page.getByRole("button", { name: /^Resend code/ });
       await expect(resend).toBeDisabled();
-      await expect(resend).toHaveText("Resend code in 30 s");
+      await expect(resend).toHaveText("Resend code (0:30)");
       await page.clock.runFor(10_000);
-      await expect(resend).toHaveText("Resend code in 20 s");
+      await expect(resend).toHaveText("Resend code (0:20)");
       await page.clock.runFor(21_000);
       await expect(resend).toHaveText("Resend code");
       await expect(resend).toBeEnabled();
       await resend.click();
       await expect(page.getByText("A new code was sent")).toBeVisible();
-      await expect(page.getByRole("button", { name: /^Resend code in/ })).toBeDisabled();
+      await expect(page.getByRole("button", { name: /^Resend code \(/ })).toBeDisabled();
       await expect(card).toBeVisible();
     });
 
@@ -399,7 +397,7 @@ for (const width of [360, 430]) {
     test("layout: no sideways scroll, 16px gutters, 52px Primary pinned at the bottom, 44px tap targets, visible labels", async ({
       page,
     }) => {
-      const check = async (path: string, primary: string | null) => {
+      const check = async (path: string, primary: string | null, bottomMax = 24) => {
         await page.goto(path);
         await page.waitForTimeout(300);
         expect(await noSidewaysScroll(page), path).toBe(true);
@@ -410,7 +408,7 @@ for (const width of [360, 430]) {
           if (box.width > 100) {
             expect(Math.abs(box.x - 16), path).toBeLessThanOrEqual(0.5);
             expect(Math.abs(width - (box.x + box.width) - 16), path).toBeLessThanOrEqual(0.5);
-            expect(box.height).toBeGreaterThanOrEqual(48);
+            expect(box.height).toBe(52);
           }
         }
         // every field has a visible label
@@ -423,27 +421,51 @@ for (const width of [360, 430]) {
           expect(box.height).toBe(52);
           expect(Math.abs(box.x - 16)).toBeLessThanOrEqual(0.5);
           expect(Math.abs(width - (box.x + box.width) - 16)).toBeLessThanOrEqual(0.5);
-          // pinned: the gutter below it (the safe area is 0 here)
-          const below = 800 - (box.y + box.height);
-          expect(below, path).toBeGreaterThanOrEqual(16);
-          expect(below, path).toBeLessThanOrEqual(24);
         }
-        for (const control of await page.locator("main button:visible, main a:visible").all()) {
-          expect((await control.boundingBox())!.height, path).toBeGreaterThanOrEqual(40);
+        // pinned: the last control sits one gutter above the bottom (the safe area is 0 here)
+        const controls = await page.locator("main button:visible, main a:visible").all();
+        const last = (await controls[controls.length - 1].boundingBox())!;
+        // (a long page scrolls: look at the bottom of the page then)
+        await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+        const scrolled = (await controls[controls.length - 1].boundingBox())!;
+        const below = 800 - (scrolled.y + scrolled.height);
+        void last;
+        expect(below, path).toBeGreaterThanOrEqual(0);
+        expect(below, path).toBeLessThanOrEqual(bottomMax);
+        // tap targets are at least 44px (the 40px round Back of the header is the one exception)
+        for (const control of controls) {
+          const label = (await control.getAttribute("aria-label")) ?? "";
+          if (label.startsWith("Back")) continue;
+          expect((await control.boundingBox())!.height, `${path} ${label}`).toBeGreaterThanOrEqual(
+            44,
+          );
         }
       };
-      await check("/welcome", null);
+      // (Welcome ends with the 12px note under the buttons)
+      await check("/welcome", null, 64);
       await check("/sign-up", "Continue");
       await check("/sign-in", "Continue");
       await startSignUp(page, "Ana Test", "ana@example.com");
       expect(await noSidewaysScroll(page)).toBe(true);
-      for (const box of await page.locator("main input[aria-label^=Digit]").all()) {
+      const boxes = await page.locator("main input[aria-label^=Digit]").all();
+      expect(boxes).toHaveLength(6);
+      const first = (await boxes[0].boundingBox())!;
+      const lastBox = (await boxes[5].boundingBox())!;
+      // six boxes in one row, 56px high, 8px apart, inside the gutters (no overflow at 360px)
+      for (const box of boxes) {
         const size = (await box.boundingBox())!;
-        expect(size.height).toBeGreaterThanOrEqual(48);
-        expect(size.width).toBeGreaterThanOrEqual(40);
+        expect(size.height).toBe(56);
+        expect(size.width).toBeLessThanOrEqual(52);
+        expect(size.width).toBeGreaterThanOrEqual(44);
+        expect(size.y).toBe(first.y);
       }
-      // the role cards are tall enough to tap
-      await page.goBack();
+      expect(first.x).toBeGreaterThanOrEqual(16 - 0.5);
+      expect(lastBox.x + lastBox.width).toBeLessThanOrEqual(width - 16 + 0.5);
+      const second = (await boxes[1].boundingBox())!;
+      expect(Math.abs(second.x - (first.x + first.width) - 8)).toBeLessThanOrEqual(0.5);
+      const verify = (await page.getByRole("button", { name: "Verify" }).boundingBox())!;
+      expect(verify.height).toBe(52);
+      expect(Math.abs(verify.x - 16)).toBeLessThanOrEqual(0.5);
     });
 
     test("layout: Edit profile and Profile keep the gutters, the pinned Save is 52px high", async ({
@@ -498,6 +520,187 @@ for (const width of [360, 430]) {
       await signIn(page, "ana@example.com");
       const outside = requests.filter((url) => !url.startsWith("http://localhost:3100"));
       expect(outside).toEqual([]);
+    });
+
+    test("Welcome: the hero panel, the 220 by 220 slot, the centred text and the pinned buttons", async ({
+      page,
+    }) => {
+      await page.goto("/welcome");
+      const panel = page.locator("[data-hero-panel]");
+      await expect(panel).toBeVisible();
+      const box = (await panel.boundingBox())!;
+      // full-bleed to the top and both sides, the height within clamp(280px, 46dvh, 380px)
+      expect(box.x).toBe(0);
+      expect(box.y).toBe(0);
+      expect(box.width).toBe(width);
+      const wanted = Math.min(380, Math.max(280, 0.46 * 800));
+      expect(Math.abs(box.height - wanted)).toBeLessThanOrEqual(1);
+      expect(box.height).toBeGreaterThanOrEqual(280);
+      expect(box.height).toBeLessThanOrEqual(380);
+      const look = await panel.evaluate((el) => {
+        const css = getComputedStyle(el);
+        return {
+          bg: css.backgroundColor,
+          border: [css.borderBottomWidth, css.borderBottomColor],
+          radius: [
+            css.borderBottomLeftRadius,
+            css.borderBottomRightRadius,
+            css.borderTopLeftRadius,
+          ],
+        };
+      });
+      expect(look.bg).toBe("rgb(240, 236, 230)");
+      expect(look.border).toEqual(["1px", "rgb(228, 223, 213)"]);
+      expect(look.radius).toEqual(["32px", "32px", "0px"]);
+      // the 3D slot: exactly 220 by 220, centred in the panel (2px), a dashed decorative placeholder
+      const slot = page.locator("[data-hero-panel] [data-media3d]");
+      const s = (await slot.boundingBox())!;
+      expect([s.width, s.height]).toEqual([220, 220]);
+      expect(Math.abs(s.x + s.width / 2 - (box.x + box.width / 2))).toBeLessThanOrEqual(2);
+      expect(Math.abs(s.y + s.height / 2 - (box.y + box.height / 2))).toBeLessThanOrEqual(2);
+      expect(await slot.getAttribute("aria-hidden")).toBe("true");
+      await expect(slot).toHaveText("3D");
+      // the text is centred, the eyebrow above the title, no header and no navigation
+      const eyebrow = (await page.locator("[data-eyebrow]").boundingBox())!;
+      const title = (await page.getByRole("heading", { level: 1 }).boundingBox())!;
+      expect(eyebrow.y).toBeLessThan(title.y);
+      for (const el of [eyebrow, title]) {
+        expect(Math.abs(el.x + el.width / 2 - width / 2)).toBeLessThanOrEqual(1);
+      }
+      const subtitle = page.getByText("Short scenarios, quizzes and exams");
+      const sub = (await subtitle.boundingBox())!;
+      expect(sub.width).toBeLessThanOrEqual(320);
+      expect(Math.abs(sub.x + sub.width / 2 - width / 2)).toBeLessThanOrEqual(1);
+      await expect(page.getByRole("banner")).toHaveCount(0);
+      await expect(nav(page)).toHaveCount(0);
+      // both buttons are 52px high and pinned, 12px apart
+      const create = (await page.getByRole("link", { name: "Create account" }).boundingBox())!;
+      const have = (await page
+        .getByRole("link", { name: "I already have an account" })
+        .boundingBox())!;
+      expect([create.height, have.height]).toEqual([52, 52]);
+      expect(Math.abs(have.y - (create.y + create.height) - 12)).toBeLessThanOrEqual(0.5);
+      expect(Math.abs(create.x - 16)).toBeLessThanOrEqual(0.5);
+      const note = (await page
+        .getByText("For educational use. Demo data stays on this device.")
+        .boundingBox())!;
+      expect(note.y).toBeGreaterThan(have.y + have.height);
+      expect(800 - (note.y + note.height)).toBeLessThanOrEqual(24 + 4);
+      expect(await noSidewaysScroll(page)).toBe(true);
+      // the secondary is the olive tint, the primary the deep olive
+      expect(
+        await page
+          .getByRole("link", { name: "I already have an account" })
+          .evaluate((el) => getComputedStyle(el).backgroundColor),
+      ).toBe("rgb(224, 230, 214)");
+      expect(
+        await page
+          .getByRole("link", { name: "Create account" })
+          .evaluate((el) => getComputedStyle(el).backgroundColor),
+      ).toBe("rgb(63, 70, 56)");
+    });
+
+    test("Create account: no autofocus, the header, the Student card preselected, keyboard selectable", async ({
+      page,
+    }) => {
+      await page.goto("/sign-up");
+      await expect(
+        page.getByRole("heading", { name: "Create your account", level: 1 }),
+      ).toBeVisible();
+      await expect(page.getByText("It takes less than a minute.")).toBeVisible();
+      await expect(page.locator("[data-form-step]:visible")).toHaveText("Step 1 of 2");
+      expect(await page.evaluate(() => document.activeElement?.tagName)).toBe("BODY");
+      const back = (await page.getByRole("link", { name: "Back to Welcome" }).boundingBox())!;
+      expect([back.width, back.height]).toEqual([40, 40]);
+      // the role cards: 72px high, Student preselected, Arrow keys move the choice
+      const student = page.getByRole("radio", { name: /Student/ });
+      const instructor = page.getByRole("radio", { name: /Instructor/ });
+      await expect(student).toBeChecked();
+      for (const card of await page
+        .locator("label", { hasText: /Learn, practise|Create exams/ })
+        .all()) {
+        expect((await card.boundingBox())!.height).toBeGreaterThanOrEqual(72);
+      }
+      await student.focus();
+      await page.keyboard.press("ArrowDown");
+      await expect(instructor).toBeChecked();
+      await page.keyboard.press("ArrowUp");
+      await expect(student).toBeChecked();
+      // the link under the button
+      await expect(
+        page.getByRole("link", { name: "Already have an account? Sign in" }),
+      ).toBeVisible();
+    });
+
+    test("Sign in: the header, the title, the subtitle and the link to Create account", async ({
+      page,
+    }) => {
+      await page.goto("/sign-in");
+      await expect(page.getByRole("heading", { name: "Welcome back", level: 1 })).toBeVisible();
+      await expect(page.getByText("Enter your work email. We will send you a code.")).toBeVisible();
+      await expect(page.locator("[data-form-step]:visible")).toHaveText("Step 1 of 2");
+      await page.getByRole("link", { name: "New here? Create an account" }).click();
+      await expect(page).toHaveURL(/\/sign-up$/);
+    });
+
+    test("Verify: the first box has the focus, Fill in code fills and signs in, Verify needs six digits", async ({
+      page,
+    }) => {
+      await startSignUp(page, "Ana Test", "ana@example.com");
+      await expect(page.getByLabel("Digit 1 of 6")).toBeFocused();
+      await expect(page.locator("[data-form-step]:visible")).toHaveText("Step 2 of 2");
+      const verify = page.getByRole("button", { name: "Verify" });
+      await expect(verify).toBeDisabled();
+      // the 80 by 80 slot sits left aligned above the title
+      const slot = (await page
+        .locator("main [data-media3d]:visible:not([data-hero-panel] *)")
+        .boundingBox())!;
+      expect([slot.width, slot.height]).toEqual([80, 80]);
+      expect(Math.abs(slot.x - 16)).toBeLessThanOrEqual(0.5);
+      const title = (await page.getByRole("heading", { name: "Check your email" }).boundingBox())!;
+      expect(slot.y + slot.height).toBeLessThanOrEqual(title.y);
+      // some digits: still disabled; Fill in code fills all six and submits
+      await page.keyboard.type("48");
+      await expect(verify).toBeDisabled();
+      const fillButton = page.getByRole("button", { name: "Fill in code" });
+      expect((await fillButton.boundingBox())!.height).toBe(44);
+      await fillButton.click();
+      await expect(page).toHaveURL(/\/onboarding$/);
+    });
+
+    test("Verify: the Verify button submits the typed digits", async ({ page }) => {
+      await startSignUp(page, "Ana Test", "ana@example.com");
+      await page.getByLabel("Digit 1 of 6").focus();
+      await page.keyboard.type("48291");
+      await expect(page.getByRole("button", { name: "Verify" })).toBeDisabled();
+      await page.getByLabel("Digit 6 of 6").fill("4");
+      await expect(
+        page.getByText("That code is not correct. Check the code shown below."),
+      ).toBeVisible();
+      for (let n = 1; n <= 6; n++) {
+        await expect(page.getByLabel(`Digit ${n} of 6`)).toHaveAttribute("aria-invalid", "true");
+      }
+      // the error state uses the registered wrong border, an icon with the text
+      const border = await page
+        .getByLabel("Digit 1 of 6")
+        .evaluate((el) => getComputedStyle(el).borderTopColor);
+      expect(rgb(border).a).toBeGreaterThan(0);
+      expect(border).not.toBe("rgb(0, 0, 0)");
+      await expect(page.locator("#code-error svg")).toBeVisible();
+    });
+
+    test("Verify: filled digits have the olive border", async ({ page }) => {
+      await startSignUp(page, "Ana Test", "ana@example.com");
+      await page.getByLabel("Digit 1 of 6").focus();
+      await page.keyboard.type("48");
+      const filled = await page
+        .getByLabel("Digit 1 of 6")
+        .evaluate((el) => getComputedStyle(el).borderTopColor);
+      const empty = await page
+        .getByLabel("Digit 4 of 6")
+        .evaluate((el) => getComputedStyle(el).borderTopColor);
+      expect(filled).toBe("rgb(63, 70, 56)");
+      expect(empty).not.toBe(filled);
     });
 
     test("no console errors in the flow", async ({ page }) => {

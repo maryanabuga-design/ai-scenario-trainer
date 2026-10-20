@@ -1,16 +1,19 @@
 import { Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
 import type { ReactNode } from "react";
-import { artworkTransform, homeFrames } from "@/lib/home";
-import type { Artwork } from "@/lib/home";
+import { artworkTransform, homeFrames } from "@/lib/media-frames";
+import type { Artwork } from "@/lib/media-frames";
 
-export type Media3DVariant = "hero" | "step" | "icon" | "tile" | "row";
+export type Media3DVariant = "hero" | "step" | "icon" | "tile" | "row" | "panel" | "verify";
 
 const frames = {
   hero: "h-[200px] w-[200px] rounded-[28px]",
   step: "aspect-[4/3] w-full rounded-[16px]",
   tile: "h-20 w-20 rounded-[16px]",
   row: "h-[72px] w-[72px] rounded-[16px]",
+  // the hero panel slot of Welcome and the onboarding slides, and the Verify slot
+  panel: "h-[220px] w-[220px] rounded-[28px]",
+  verify: "h-20 w-20 rounded-[20px]",
 } as const;
 
 /**
@@ -51,7 +54,7 @@ export function Media3D({
     );
   }
   const frame = frames[variant];
-  if (variant === "tile" || variant === "row") {
+  if (variant === "tile" || variant === "row" || variant === "panel" || variant === "verify") {
     const size = homeFrames[variant];
     const fit = artwork ? artworkTransform(artwork, size) : null;
     return src ? (

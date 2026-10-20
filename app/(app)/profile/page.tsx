@@ -25,9 +25,7 @@ export default function Profile() {
         router.push(roleHome(next));
       }}
       direction={profile?.direction ?? defaultDirection.id}
-      onDirectionChange={(direction) =>
-        saveProfile({ direction, onboarded: profile?.onboarded ?? false })
-      }
+      onDirectionChange={(direction) => saveProfile({ direction })}
       dialog={dialog}
       onAskReset={() => {
         setResetDone(false);

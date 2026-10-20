@@ -3,37 +3,46 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { OnboardingView } from "@/components/OnboardingView/OnboardingView";
-import { finishOnboarding, nextStep, previousStep, replayReturnHref } from "@/lib/onboarding";
-import type { OnboardingStep } from "@/lib/onboarding";
-import { saveProfile, useProfile } from "@/lib/session";
+import { finishOnboarding, useCurrentAccount } from "@/lib/auth";
+import type { Account } from "@/lib/auth";
+import { nextIndex, previousIndex, replayReturnHref, slidesFor } from "@/lib/onboarding";
+import { roleHome } from "@/lib/role";
 
-export default function Onboarding() {
+function Loaded({ account }: { account: Account }) {
   const router = useRouter();
-  const profile = useProfile();
-  const [step, setStep] = useState<OnboardingStep>(0);
+  const count = slidesFor(account.role).length;
+  const [index, setIndex] = useState(0);
+  const [direction, setDirection] = useState<"next" | "previous">("next");
+  // seen already: Profile, Help, "How the app works" shows it again and returns to Profile
+  const [replay] = useState(account.onboardingDone);
 
-  function go(next: OnboardingStep) {
-    setStep(next);
-    window.scrollTo(0, 0);
-  }
-
-  const replay = profile !== "loading" && profile?.onboarded === true;
-
-  // Skip and Get started mark it done and open Home; a replay saves nothing and returns to Profile.
+  // Skip and Get started set it done and open the Home of the role (Profile on a replay)
   function finish() {
-    const saved = finishOnboarding(profile === "loading" ? null : profile);
-    if (saved) saveProfile(saved);
-    router.replace(replay ? replayReturnHref : "/");
+    if (!replay) finishOnboarding();
+    router.replace(replay ? replayReturnHref : roleHome(account.role));
   }
 
   return (
     <OnboardingView
-      step={step}
-      replay={replay}
-      onNext={() => go(nextStep(step))}
-      onBack={() => (step === 0 ? router.push(replayReturnHref) : go(previousStep(step)))}
+      role={account.role}
+      index={index}
+      direction={direction}
+      onNext={() => {
+        setDirection("next");
+        setIndex((now) => nextIndex(now, count));
+      }}
+      onPrevious={() => {
+        setDirection("previous");
+        setIndex((now) => previousIndex(now));
+      }}
       onSkip={finish}
       onFinish={finish}
     />
   );
+}
+
+export default function Onboarding() {
+  const account = useCurrentAccount();
+  if (account === "loading" || !account) return null;
+  return <Loaded account={account} />;
 }

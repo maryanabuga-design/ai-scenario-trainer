@@ -157,6 +157,10 @@ describe("a secondary always comes with a primary above it", () => {
       "components/TrainingReview/TrainingReview.tsx",
       // The page-header "Upload a file" on Materials: the one documented exception.
       "components/UploadSheet/UploadSheet.tsx",
+      // Verify: "Fill in code" in the demo card, next to the pinned primary "Verify".
+      "components/VerifyView/VerifyView.tsx",
+      // Welcome: the secondary "I already have an account" under the primary "Create account".
+      "components/WelcomeView/WelcomeView.tsx",
     ]);
   });
 

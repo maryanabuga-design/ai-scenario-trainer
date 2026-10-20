@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
-import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
+import { FormHeader } from "@/components/FormHeader/FormHeader";
 import { TextField } from "@/components/TextField/TextField";
 import { UNKNOWN_LINK, UNKNOWN_MESSAGE, validateEmail } from "@/lib/auth-validation";
 
@@ -14,13 +14,16 @@ import { UNKNOWN_LINK, UNKNOWN_MESSAGE, validateEmail } from "@/lib/auth-validat
 export function SignInView({
   initialEmail = "",
   onSubmit,
+  initialUnknown = false,
 }: {
   initialEmail?: string;
+  /** Only for the screen review page: start with the unknown-email message showing. */
+  initialUnknown?: boolean;
   onSubmit: (email: string) => "ok" | "unknown";
 }) {
   const [email, setEmail] = useState(initialEmail);
   const [touched, setTouched] = useState(false);
-  const [unknown, setUnknown] = useState(false);
+  const [unknown, setUnknown] = useState(initialUnknown);
   const formatError = touched ? validateEmail(email) : null;
 
   function submit(event: FormEvent) {
@@ -36,8 +39,13 @@ export function SignInView({
       onSubmit={submit}
       className="flex flex-1 flex-col gap-6 pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]"
     >
-      <CircleBackButton href="/welcome" label="Back to Welcome" />
-      <h1 className="type-page-title">Sign in</h1>
+      <FormHeader step={1} />
+      <div className="flex flex-col gap-2">
+        <h1 className="type-page-title">Welcome back</h1>
+        <p className="type-body text-text-secondary">
+          Enter your work email. We will send you a code.
+        </p>
+      </div>
       <TextField
         label="Work email"
         name="email"
@@ -59,8 +67,11 @@ export function SignInView({
         }
         autoComplete="email"
       />
-      <div className="mt-auto pt-2">
+      <div className="mt-auto flex flex-col items-center gap-1 pt-2">
         <Button type="submit">Continue</Button>
+        <ButtonLink variant="tertiary" href="/sign-up">
+          New here? Create an account
+        </ButtonLink>
       </div>
     </form>
   );

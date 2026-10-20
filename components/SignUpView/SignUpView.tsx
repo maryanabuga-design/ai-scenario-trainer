@@ -1,9 +1,11 @@
 "use client";
 
+import { ClipboardList, GraduationCap } from "lucide-react";
 import { useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
-import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
+import { FormHeader } from "@/components/FormHeader/FormHeader";
+import { IconTile } from "@/components/IconTile/IconTile";
 import { SelectableRow } from "@/components/SelectableRow/SelectableRow";
 import { TextField } from "@/components/TextField/TextField";
 import { EXISTS_LINK, EXISTS_MESSAGE, validateEmail, validateName } from "@/lib/auth-validation";
@@ -65,8 +67,11 @@ export function SignUpView({
       onSubmit={submit}
       className="flex flex-1 flex-col gap-6 pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]"
     >
-      <CircleBackButton href="/welcome" label="Back to Welcome" />
-      <h1 className="type-page-title">Create account</h1>
+      <FormHeader step={1} />
+      <div className="flex flex-col gap-2">
+        <h1 className="type-page-title">Create your account</h1>
+        <p className="type-body text-text-secondary">It takes less than a minute.</p>
+      </div>
       <TextField
         label="Full name"
         name="name"
@@ -106,7 +111,15 @@ export function SignUpView({
             value={role}
             checked={values.role === role}
             onChange={() => setValues({ ...values, role })}
+            tall
           >
+            <IconTile className="h-10 w-10 rounded-full">
+              {role === "student" ? (
+                <GraduationCap size={20} strokeWidth={1.75} />
+              ) : (
+                <ClipboardList size={20} strokeWidth={1.75} />
+              )}
+            </IconTile>
             <span className="flex flex-col gap-0.5">
               <span className="type-body-strong">{roleLabel[role]}</span>
               <span className="type-small text-text-secondary">{roleHelper[role]}</span>
@@ -115,8 +128,11 @@ export function SignUpView({
         ))}
       </fieldset>
       <p className="type-small text-text-secondary">{DEMO_DATA_NOTE}</p>
-      <div className="mt-auto pt-2">
+      <div className="mt-auto flex flex-col items-center gap-1 pt-2">
         <Button type="submit">Continue</Button>
+        <ButtonLink variant="tertiary" href="/sign-in">
+          Already have an account? Sign in
+        </ButtonLink>
       </div>
     </form>
   );

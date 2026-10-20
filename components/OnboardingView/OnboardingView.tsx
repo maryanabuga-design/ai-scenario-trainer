@@ -1,118 +1,134 @@
 "use client";
 
-import { FileCheck2, RefreshCw, Target } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { IconTile } from "@/components/IconTile/IconTile";
-import { ActionBar } from "@/components/ActionBar/ActionBar";
+import type { PointerEvent } from "react";
 import { Button } from "@/components/Button/Button";
-import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
-import { FINAL_STEP, onboardingSteps, stepLabel } from "@/lib/onboarding";
-import type { OnboardingStep } from "@/lib/onboarding";
+import { HeroPanel } from "@/components/HeroPanel/HeroPanel";
+import {
+  mainLabel,
+  showsSkip,
+  slideLabel,
+  slidesFor,
+  stepLabel,
+  swipeDirection,
+} from "@/lib/onboarding";
+import type { Role } from "@/lib/role";
 
-const icons = [Target, FileCheck2, RefreshCw];
-
-/** A horizontal swipe of at least this many pixels moves one step. */
-const SWIPE = 50;
-
-/** The first-run introduction: three short steps, then "Ready to start?". */
+/**
+ * The onboarding (DESIGN.md: Onboarding screen): three slides in the hero panel layout, Skip in the
+ * panel corner (slides 1 and 2), the position dots and the pinned Primary. Next, a horizontal swipe
+ * and the arrow keys change the slide; focus moves to the title after a change. The slide enters
+ * with a 250ms translate and fade, which the global reduced-motion rule turns off.
+ */
 export function OnboardingView({
-  step,
-  replay = false,
+  role,
+  index,
+  direction,
   onNext,
-  onBack,
+  onPrevious,
   onSkip,
   onFinish,
 }: {
-  step: OnboardingStep;
-  /** A replay from Profile: the first step has a Back button to Profile too. */
-  replay?: boolean;
+  role: Role;
+  index: number;
+  /** The way the last change went, for the entrance. */
+  direction: "next" | "previous";
   onNext: () => void;
-  onBack: () => void;
+  onPrevious: () => void;
   onSkip: () => void;
   onFinish: () => void;
 }) {
-  const headingRef = useRef<HTMLHeadingElement>(null);
-  const firstRender = useRef(true);
-  const touchStart = useRef<number | null>(null);
-  const final = step === FINAL_STEP;
-  const content = final ? null : onboardingSteps[step as 0 | 1 | 2];
-  const Icon = icons[step];
+  const slides = slidesFor(role);
+  const slide = slides[index];
+  const last = index === slides.length - 1;
+  const title = useRef<HTMLHeadingElement>(null);
+  const start = useRef<{ x: number; y: number } | null>(null);
+  const first = useRef(true);
 
-  // Focus moves to the new headline when the step changes, not on the first screen.
+  // focus moves to the new title when the slide changes (not when the screen opens)
   useEffect(() => {
-    if (firstRender.current) {
-      firstRender.current = false;
+    if (first.current) {
+      first.current = false;
       return;
     }
-    headingRef.current?.focus();
-  }, [step]);
+    title.current?.focus();
+  }, [index]);
+
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "ArrowRight" && !last) onNext();
+      if (event.key === "ArrowLeft" && index > 0) onPrevious();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [index, last, onNext, onPrevious]);
+
+  function pointerDown(event: PointerEvent) {
+    start.current = { x: event.clientX, y: event.clientY };
+  }
+
+  function pointerUp(event: PointerEvent) {
+    const from = start.current;
+    start.current = null;
+    if (!from) return;
+    const move = swipeDirection(event.clientX - from.x, event.clientY - from.y);
+    if (move === "next" && !last) onNext();
+    if (move === "previous" && index > 0) onPrevious();
+  }
+
+  const entrance = direction === "next" ? "slide-in-next" : "slide-in-previous";
 
   return (
     <div
-      className="flex min-h-[calc(100dvh-11rem)] flex-col"
-      onTouchStart={(event) => {
-        touchStart.current = event.touches[0].clientX;
-      }}
-      onTouchEnd={(event) => {
-        if (touchStart.current === null) return;
-        const distance = event.changedTouches[0].clientX - touchStart.current;
-        touchStart.current = null;
-        if (distance < -SWIPE && !final) onNext();
-        if (distance > SWIPE && step > 0) onBack();
+      data-onboarding
+      className="flex flex-1 touch-pan-y flex-col"
+      onPointerDown={pointerDown}
+      onPointerUp={pointerUp}
+      onPointerCancel={() => {
+        start.current = null;
       }}
     >
-      <div className="flex min-h-11 items-center justify-between">
-        <div>
-          {(step > 0 || replay) && (
-            <CircleBackButton
-              label={step > 0 ? "Previous step" : "Back to Profile"}
-              onClick={onBack}
-            />
-          )}
-        </div>
-        {!final && (
-          <div className="-mr-3">
+      <HeroPanel
+        slotKey={index}
+        slotClassName={entrance}
+        action={
+          showsSkip(index, slides.length) ? (
             <Button variant="tertiary" onClick={onSkip}>
               Skip
             </Button>
-          </div>
-        )}
-      </div>
-
-      <div className="flex flex-1 flex-col justify-center gap-3 py-8">
-        {content && (
-          <>
-            <IconTile className="mb-3 h-22 w-22 rounded-full">
-              <Icon size={40} strokeWidth={1.75} />
-            </IconTile>
-            <p className="type-label text-text-secondary">{stepLabel(step)}</p>
-          </>
-        )}
-        <h1 ref={headingRef} tabIndex={-1} className="type-display">
-          {content ? content.title : "Ready to start?"}
+          ) : undefined
+        }
+      />
+      <section
+        key={index}
+        role="group"
+        aria-roledescription="slide"
+        aria-label={slideLabel(index, slides.length)}
+        data-slide={slide.slot}
+        className={`flex flex-col items-center gap-3 px-2 pt-8 text-center ${entrance}`}
+      >
+        <h1 ref={title} tabIndex={-1} className="type-slide-title outline-none">
+          {slide.title}
         </h1>
-        <p className="text-text-secondary">
-          {content ? content.body : "Upload a guide or try the sample materials."}
-        </p>
+        <p className="type-body line-clamp-3 max-w-[320px] text-text-secondary">{slide.body}</p>
+      </section>
+      <div className="mt-auto flex flex-col gap-6 pt-6 pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]">
+        <div
+          role="img"
+          aria-label={stepLabel(index, slides.length)}
+          className="flex items-center justify-center gap-2"
+        >
+          {slides.map((_, dot) => (
+            <span
+              key={dot}
+              aria-hidden="true"
+              data-dot={dot === index ? "active" : "inactive"}
+              className={`h-2 rounded-full ${dot === index ? "w-6 bg-primary" : "w-2 bg-olive-tint-pressed"}`}
+            />
+          ))}
+        </div>
+        <Button onClick={last ? onFinish : onNext}>{mainLabel(index, slides.length)}</Button>
       </div>
-
-      <ActionBar>
-        {!final && (
-          <div role="img" aria-label={stepLabel(step)} className="flex justify-center gap-2 pb-2">
-            {onboardingSteps.map((item, index) => (
-              <span
-                key={item.title}
-                className={`h-2 w-2 rounded-full ${index === step ? "bg-primary" : "bg-secondary-sand-pressed"}`}
-              />
-            ))}
-          </div>
-        )}
-        {final ? (
-          <Button onClick={onFinish}>Get started</Button>
-        ) : (
-          <Button onClick={onNext}>{step === 2 ? "Continue" : "Next"}</Button>
-        )}
-      </ActionBar>
     </div>
   );
 }

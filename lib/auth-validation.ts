@@ -28,4 +28,4 @@ export const EXISTS_MESSAGE = "An account with this email already exists on this
 export const EXISTS_LINK = "Sign in instead.";
 export const UNKNOWN_MESSAGE = "No account found on this device.";
 export const UNKNOWN_LINK = "Create one.";
-export const WRONG_CODE_MESSAGE = "That code is not correct. Check the code shown above.";
+export const WRONG_CODE_MESSAGE = "That code is not correct. Check the code shown below.";

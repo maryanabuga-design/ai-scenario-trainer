@@ -46,7 +46,7 @@ describe("the places that draw an icon in a tile", () => {
       "components/TopicTile/TopicTile.tsx",
       "components/TrainingCreate/TrainingCreate.tsx",
       "components/ExamView/ExamView.tsx",
-      "components/OnboardingView/OnboardingView.tsx",
+      "components/SignUpView/SignUpView.tsx",
       "components/MaterialTile/MaterialTile.tsx",
     ]) {
       const code = read(file);

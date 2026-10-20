@@ -5,12 +5,14 @@
  */
 export const DEMO_EMAIL = "maryana@example.com";
 
-export function authValue(role: "student" | "instructor" = "student") {
+export function authValue(role: "student" | "instructor" = "student", onboardingDone = true) {
   return JSON.stringify({
     schema: 6,
     content: "seed",
     value: {
-      accounts: [{ name: "Maryana", email: DEMO_EMAIL, role, createdAt: 1, legacy: true }],
+      accounts: [
+        { name: "Maryana", email: DEMO_EMAIL, role, createdAt: 1, onboardingDone, legacy: true },
+      ],
       session: { email: DEMO_EMAIL },
       pending: null,
     },
@@ -29,3 +31,14 @@ export const signedInStudent = {
 
 /** An empty browser: a new visitor, signed out. */
 export const emptyBrowser = { cookies: [], origins: [] };
+
+/** A signed-in account that has not seen the onboarding yet. */
+export const newAccount = (role: "student" | "instructor" = "student") => ({
+  cookies: [],
+  origins: [
+    {
+      origin: "http://localhost:3100",
+      localStorage: [{ name: "ast.auth.v1", value: authValue(role, false) }],
+    },
+  ],
+});

@@ -91,7 +91,6 @@ describe("no leftover grey-beige for inactive states", () => {
   it("uses the olive, never the neutral panel colour, for inactive dots, tracks and disabled fills", () => {
     const inactive = [
       "components/StepStrip/StepStrip.tsx",
-      "components/OnboardingView/OnboardingView.tsx",
       "components/SegmentedControl/SegmentedControl.tsx",
       "components/Button/Button.tsx",
       "components/ResultsView/ResultsView.tsx",
@@ -101,6 +100,14 @@ describe("no leftover grey-beige for inactive states", () => {
       expect(code, file).toMatch(/secondary-sand/);
       expect(code, file).not.toMatch(/surface-muted|bg-border\b/);
     }
+  });
+});
+
+describe("the onboarding dots", () => {
+  it("use the olive tint scale for the inactive dots and never the neutral panel colour", () => {
+    const code = readFileSync("components/OnboardingView/OnboardingView.tsx", "utf8");
+    expect(code).toMatch(/bg-olive-tint-pressed/);
+    expect(code).not.toMatch(/surface-muted|bg-border\b|secondary-sand/);
   });
 });
 

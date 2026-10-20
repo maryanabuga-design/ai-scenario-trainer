@@ -16,8 +16,14 @@ export function AuthGate({ children }: { children: ReactNode }) {
   const auth = useAuth();
   const pathname = usePathname();
   const router = useRouter();
+  const account = auth === "loading" ? null : currentAccount(auth);
   const target =
-    auth === "loading" ? null : guardRedirect(currentAccount(auth)?.role ?? null, pathname);
+    auth === "loading"
+      ? null
+      : guardRedirect(
+          account ? { role: account.role, onboardingDone: account.onboardingDone } : null,
+          pathname,
+        );
 
   useEffect(() => {
     if (target) router.replace(target);

@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
+import { newAccount } from "./auth-seed";
 
 /** The content counts, read from the content files so the tests follow the content. */
 const quizBank: { id: string; section: string }[] = JSON.parse(
@@ -1180,41 +1181,36 @@ test.describe("old saved data", () => {
 });
 
 test.describe("the onboarding entry", () => {
-  test("is not on Home, and a new visitor still sees the introduction first", async ({ page }) => {
-    await page.goto("/");
-    await expect(page).toHaveURL(/\/onboarding$/);
-    await expect(page.getByRole("heading", { name: "Practise a decision" })).toBeVisible();
-    await page.getByRole("button", { name: "Skip" }).click();
-    await expect(page).toHaveURL(/\/$/);
-    await expect(page.getByRole("heading", { name: "Hi, Maryana" })).toBeVisible();
-    await expect(page.getByText(/How it works|How the app works/)).toHaveCount(0);
+  test.describe("a new account", () => {
+    test.use({ storageState: newAccount() });
+
+    test("sees the introduction first, from any route, and Skip opens Home", async ({ page }) => {
+      await page.goto("/progress");
+      await expect(page).toHaveURL(/\/onboarding$/);
+      await expect(page.getByRole("heading", { name: "Practise real situations" })).toBeVisible();
+      await page.getByRole("button", { name: "Skip" }).click();
+      await expect(page).toHaveURL(/\/$/);
+      await expect(page.getByRole("heading", { name: "Hi, Maryana" })).toBeVisible();
+      await expect(page.getByText(/How it works|How the app works/)).toHaveCount(0);
+      // seen once: Home stays Home
+      await page.goto("/");
+      await expect(page).toHaveURL(/\/$/);
+    });
   });
 
-  test("is a row in Profile that opens the introduction, and Back returns to Profile", async ({
+  test("is a row in Profile that opens the introduction again, and Skip returns to Profile", async ({
     page,
   }) => {
-    await page.addInitScript(
-      ([p]) => {
-        if (!localStorage.getItem("ast.profile.v1")) {
-          localStorage.setItem("ast.profile.v1", JSON.stringify(p));
-        }
-      },
-      [profile],
-    );
     await page.goto("/profile");
     await expect(page.getByRole("heading", { name: "Help" })).toBeVisible();
     await page.getByRole("link", { name: "How the app works" }).click();
     await expect(page).toHaveURL(/\/onboarding$/);
-    await expect(page.getByRole("heading", { name: "Practise a decision" })).toBeVisible();
-    await page.getByRole("button", { name: "Back to Profile" }).click();
-    await expect(page).toHaveURL(/\/profile$/);
-    // Skip on a later step also returns to Profile and changes nothing saved
-    await page.getByRole("link", { name: "How the app works" }).click();
-    await page.getByRole("button", { name: "Next" }).click();
+    await expect(page.getByRole("heading", { name: "Practise real situations" })).toBeVisible();
     await page.getByRole("button", { name: "Skip" }).click();
     await expect(page).toHaveURL(/\/profile$/);
-    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.profile.v1")!));
-    expect(saved).toEqual(profile);
+    // a replay changes nothing: it is still done
+    await page.goto("/");
+    await expect(page).toHaveURL(/\/$/);
   });
 });
 

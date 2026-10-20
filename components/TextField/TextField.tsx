@@ -46,7 +46,7 @@ export function TextField({
   const describedBy = [error ? errorId : null, helper ? helperId : null].filter(Boolean).join(" ");
   return (
     <div className="flex flex-col">
-      <label htmlFor={id} className="type-body-strong mb-1.5">
+      <label htmlFor={id} className="type-small-strong mb-1.5">
         {label}
       </label>
       <input
@@ -65,7 +65,7 @@ export function TextField({
         value={value}
         onChange={(event) => onChange?.(event.target.value)}
         onBlur={onBlur}
-        className={`type-body min-h-12 w-full rounded-[14px] border px-[var(--gutter,1rem)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
+        className={`type-body h-[52px] w-full rounded-[14px] border px-[var(--gutter,1rem)] focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primary ${
           readOnly
             ? "border-secondary-sand-pressed bg-secondary-sand text-text-secondary"
             : `bg-card text-text ${error ? "border-wrong" : "border-selectable-stroke"}`

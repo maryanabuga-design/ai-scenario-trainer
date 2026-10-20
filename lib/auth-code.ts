@@ -24,3 +24,7 @@ export function resendRemaining(sentAt: number, now: number): number {
 export function digitsFrom(text: string): string {
   return text.replace(/\D/g, "").slice(0, CODE_LENGTH);
 }
+
+/** "0:30": the seconds left as minutes and seconds, for the Resend countdown. */
+export const formatCountdown = (seconds: number): string =>
+  `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;

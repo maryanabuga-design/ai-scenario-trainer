@@ -9,6 +9,8 @@ import {
   currentAccount,
   deleteCurrentState,
   emptyAuth,
+  finishOnboardingState,
+  homeAfterVerification,
   migrateLegacy,
   namespaceFor,
   renameState,
@@ -86,7 +88,14 @@ describe("migration of people who already used the app", () => {
       NOW,
     )!;
     expect(state.accounts).toEqual([
-      { name: "Maryana", email: MIGRATED_EMAIL, role: "instructor", createdAt: NOW, legacy: true },
+      {
+        name: "Maryana",
+        email: MIGRATED_EMAIL,
+        role: "instructor",
+        createdAt: NOW,
+        onboardingDone: true,
+        legacy: true,
+      },
     ]);
     expect(state.session).toEqual({ email: MIGRATED_EMAIL });
     expect(namespaceFor(currentAccount(state))).toBe("");
@@ -125,6 +134,35 @@ describe("creating an account", () => {
     expect(right.state.accounts).toHaveLength(1);
     expect(right.state.session).toEqual({ email: "ana@example.com" });
     expect(right.state.pending).toBeNull();
+  });
+
+  it("makes a new account with the onboarding still to do, and sends it there after the code", () => {
+    const done = signedUp();
+    expect(done.result === "ok" && done.account.onboardingDone).toBe(false);
+    expect(done.result === "ok" && homeAfterVerification(done.account)).toBe("/onboarding");
+    const finished = finishOnboardingState(done.state);
+    expect(currentAccount(finished)!.onboardingDone).toBe(true);
+    const account = currentAccount(finished)!;
+    expect(homeAfterVerification(account)).toBe("/");
+    expect(homeAfterVerification({ ...account, role: "instructor" })).toBe("/instructor");
+    // signing in again does not bring the onboarding back
+    const again = completeVerification(
+      beginSignIn(signOutState(finished), "ana@example.com").state,
+      DEMO_CODE,
+      NOW,
+    );
+    expect(again.result === "ok" && homeAfterVerification(again.account)).toBe("/");
+  });
+
+  it("counts an account saved before the flag existed as done, and keeps an explicit false", () => {
+    const base = { name: "Ana", email: "ana@example.com", role: "student", createdAt: 1 };
+    expect(cleanAuth({ accounts: [base] })!.accounts[0].onboardingDone).toBe(true);
+    expect(
+      cleanAuth({ accounts: [{ ...base, onboardingDone: false }] })!.accounts[0].onboardingDone,
+    ).toBe(false);
+    expect(
+      cleanAuth({ accounts: [{ ...base, onboardingDone: "no" }] })!.accounts[0].onboardingDone,
+    ).toBe(true);
   });
 
   it("stores the email normalised and the chosen role", () => {
@@ -254,7 +292,7 @@ describe("the saved store and its data", () => {
     expect(auth.startSignUp({ name: "Ana Test", email: "ana@example.com", role: "student" })).toBe(
       "ok",
     );
-    expect(auth.verifyCode(DEMO_CODE)).toEqual({ ok: true, destination: "/" });
+    expect(auth.verifyCode(DEMO_CODE)).toEqual({ ok: true, destination: "/onboarding" });
     history.write(["ana-data"]);
     expect([...data.keys()].sort()).toEqual(["ast.auth.v1", "ast.history.v1:ana@example.com"]);
 
@@ -264,7 +302,7 @@ describe("the saved store and its data", () => {
     expect(
       auth.startSignUp({ name: "Ines Test", email: "ines@example.com", role: "instructor" }),
     ).toBe("ok");
-    expect(auth.verifyCode(DEMO_CODE)).toEqual({ ok: true, destination: "/instructor" });
+    expect(auth.verifyCode(DEMO_CODE)).toEqual({ ok: true, destination: "/onboarding" });
     expect(history.read()).toBeNull();
     history.write(["ines-data"]);
 
