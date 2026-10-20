@@ -37,7 +37,7 @@ describe("the 3D pictures", () => {
       ["onboarding-practise.webp", 640, 60],
       ["onboarding-mistakes.webp", 640, 60],
       ["onboarding-exam.webp", 640, 60],
-      ["verify.webp", 256, 20],
+      ["verify.webp", 384, 30],
     ] as const;
     for (const [name, pixels, kb] of wanted) {
       expect(files, name).toContain(name);

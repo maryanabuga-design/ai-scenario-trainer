@@ -138,13 +138,13 @@ export function VerifyView({
     <div className="flex flex-1 flex-col gap-6 pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]">
       <FormHeader step={2} label="Back" onBack={onChangeEmail} />
 
-      <div className="flex flex-col items-start gap-3">
+      <div className="flex flex-col items-center gap-3 text-center">
         <Media3D variant="verify" src={heroSlotFiles.verify} priority />
         <h1 className="type-page-title">Check your email</h1>
         <p className="type-body text-text-secondary">
           We sent a 6-digit code to <span className="type-body-strong text-text">{email}</span>.
         </p>
-        <div className="-mt-2 -ml-3">
+        <div className="-mt-2">
           <Button variant="tertiary" onClick={onChangeEmail}>
             Change email
           </Button>
@@ -171,13 +171,17 @@ export function VerifyView({
               onKeyDown={(event) => onKeyDown(index, event)}
               onPaste={(event) => onPaste(index, event)}
               onFocus={(event) => event.target.select()}
-              className={`type-card-title h-14 max-w-[52px] min-w-0 flex-1 rounded-[12px] border bg-card text-center text-text focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primary ${
+              className={`type-card-title h-14 min-w-0 flex-1 basis-0 rounded-[12px] border bg-card text-center text-text focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primary ${
                 wrong ? "border-wrong" : digit ? "border-primary" : "border-selectable-stroke"
               }`}
             />
           ))}
         </div>
-        <p id="code-error" role="alert" className="type-small flex items-start gap-1.5 text-wrong">
+        <p
+          id="code-error"
+          role="alert"
+          className="type-small flex items-start justify-center gap-1.5 text-center text-wrong"
+        >
           {wrong && (
             <>
               <CircleAlert
@@ -213,8 +217,8 @@ export function VerifyView({
         </Button>
       </div>
 
-      <div className="flex flex-col items-start">
-        <div className="flex flex-wrap items-center gap-x-1">
+      <div className="flex flex-col items-center text-center">
+        <div className="flex flex-wrap items-center justify-center gap-x-1">
           <p className="type-small text-text-secondary">Did not get a code?</p>
           <Button variant="tertiary" onClick={resend} disabled={remaining > 0}>
             {remaining > 0 ? `Resend code (${formatCountdown(remaining)})` : "Resend code"}

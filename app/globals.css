@@ -165,6 +165,20 @@ dialog:focus-visible,
   }
 }
 
+/* The browser's autofill tint is switched off: a field stays white with dark text. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--card) inset;
+  box-shadow: 0 0 0 1000px var(--card) inset;
+  -webkit-text-fill-color: var(--text);
+  caret-color: var(--text);
+  transition:
+    background-color 600000s 0s,
+    color 600000s 0s;
+}
+
 @keyframes slide-in-next {
   from {
     opacity: 0;

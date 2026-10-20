@@ -18,13 +18,13 @@ const render = (role: Role, index: number) =>
   ).replace(/<!-- -->/g, "");
 
 describe("the onboarding slides", () => {
-  it("show the hero panel with the 220 by 220 picture, the title and the subtitle", () => {
+  it("show the hero panel with the 280 by 280 picture, the title and the subtitle", () => {
     const out = render("student", 0);
     expect(out).toContain("data-hero-panel");
     expect(out).not.toContain('data-media3d="placeholder"');
     expect(out).toContain('src="/heroes/onboarding-practise.webp"');
-    expect(out).toContain('width="220"');
-    expect(out).toContain('height="220"');
+    expect(out).toContain('width="280"');
+    expect(out).toContain('height="280"');
     expect(out).toContain(">Practise real situations</h1>");
     expect(out).toContain("Short scenarios and quizzes you can do in a few minutes.");
     expect(out).toContain("type-slide-title");
@@ -103,12 +103,26 @@ describe("the onboarding slides", () => {
     ]);
   });
 
-  it("centre the text vertically in the free space above the dots, 16px clear at least", () => {
+  it("lay out as a column: the panel takes the free height, 32px, the text, 32px, the dots, 24px, the button", () => {
     const out = render("student", 0);
-    expect(out).toContain('class="flex flex-1 flex-col justify-center py-4"');
-    expect(out.indexOf("flex-1 flex-col justify-center py-4")).toBeLessThan(
-      out.indexOf("data-slide"),
+    expect(out).toContain("flex flex-1 touch-pan-y flex-col");
+    expect(out).toContain("min-h-[calc(max(200px,min(280px,36dvh))+64px)] flex-1 basis-auto");
+    // the text block: 32px below the panel, a fixed minimum height, content from the top
+    expect(out).toMatch(
+      /<section[^>]*class="mt-8 flex min-h-\[154px\] flex-col items-center justify-start/,
     );
+    // the dots 32px below the text, the button 24px below the dots
+    expect(out).toContain(
+      'class="mt-8 flex flex-col gap-6 pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]"',
+    );
+    expect(out).not.toContain("justify-center py-4");
+    // the same on every slide, for both roles
+    for (const role of ["student", "instructor"] as const) {
+      for (const index of [0, 1, 2]) {
+        expect(render(role, index)).toContain("mt-8 flex min-h-[154px]");
+      }
+    }
+    expect(out.indexOf("data-hero-panel")).toBeLessThan(out.indexOf("data-slide"));
     expect(out.indexOf("data-slide")).toBeLessThan(out.indexOf('role="img"'));
   });
 

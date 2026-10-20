@@ -28,7 +28,7 @@ for (const width of [360, 430]) {
   test.describe(`Onboarding at ${width}px`, () => {
     test.use({ viewport: { width, height: 800 }, storageState: newAccount() });
 
-    test("slide 1: the hero panel with the 220 by 220 slot, Skip in the corner, the text, the dots and the pinned Next", async ({
+    test("slide 1: the hero panel with the 280 by 280 slot, Skip in the corner, the text, the dots and the pinned Next", async ({
       page,
     }) => {
       await page.goto("/onboarding");
@@ -37,10 +37,9 @@ for (const width of [360, 430]) {
       await page.waitForTimeout(400);
       const panel = (await page.locator("[data-hero-panel]").boundingBox())!;
       expect([panel.x, panel.y, panel.width]).toEqual([0, 0, width]);
-      expect(panel.height).toBeGreaterThanOrEqual(280);
-      expect(panel.height).toBeLessThanOrEqual(380);
+      expect(panel.height).toBeGreaterThanOrEqual(280 + 64);
       const slot = (await page.locator("[data-hero-panel] [data-picture-frame]").boundingBox())!;
-      expect([slot.width, slot.height]).toEqual([220, 220]);
+      expect([slot.width, slot.height]).toEqual([280, 280]);
       expect(Math.abs(slot.x + slot.width / 2 - width / 2)).toBeLessThanOrEqual(2);
       expect(Math.abs(slot.y + slot.height / 2 - (panel.y + panel.height / 2))).toBeLessThanOrEqual(
         2,

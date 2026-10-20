@@ -451,14 +451,18 @@ for (const width of [360, 430]) {
       expect(boxes).toHaveLength(6);
       const first = (await boxes[0].boundingBox())!;
       const lastBox = (await boxes[5].boundingBox())!;
-      // six boxes in one row, 56px high, 8px apart, inside the gutters (no overflow at 360px)
+      // six equal boxes that fill the container: widths plus gaps equal the container width
+      const container = (await page.getByRole("group", { name: "6-digit code" }).boundingBox())!;
+      let sum = 0;
       for (const box of boxes) {
         const size = (await box.boundingBox())!;
         expect(size.height).toBe(56);
-        expect(size.width).toBeLessThanOrEqual(52);
         expect(size.width).toBeGreaterThanOrEqual(44);
         expect(size.y).toBe(first.y);
+        sum += size.width;
       }
+      expect(Math.abs(sum + 5 * 8 - container.width)).toBeLessThanOrEqual(1);
+      expect(Math.abs(container.x - 16)).toBeLessThanOrEqual(0.5);
       expect(first.x).toBeGreaterThanOrEqual(16 - 0.5);
       expect(lastBox.x + lastBox.width).toBeLessThanOrEqual(width - 16 + 0.5);
       const second = (await boxes[1].boundingBox())!;
@@ -522,21 +526,18 @@ for (const width of [360, 430]) {
       expect(outside).toEqual([]);
     });
 
-    test("Welcome: the hero panel, the 220 by 220 slot, the centred text and the pinned buttons", async ({
+    test("Welcome: the hero panel, the 280 by 280 slot, the centred text and the pinned buttons", async ({
       page,
     }) => {
       await page.goto("/welcome");
       const panel = page.locator("[data-hero-panel]");
       await expect(panel).toBeVisible();
       const box = (await panel.boundingBox())!;
-      // full-bleed to the top and both sides, the height within clamp(280px, 46dvh, 380px)
+      // full-bleed to the top and both sides; the panel takes all the free height
       expect(box.x).toBe(0);
       expect(box.y).toBe(0);
       expect(box.width).toBe(width);
-      const wanted = Math.min(380, Math.max(280, 0.46 * 800));
-      expect(Math.abs(box.height - wanted)).toBeLessThanOrEqual(1);
-      expect(box.height).toBeGreaterThanOrEqual(280);
-      expect(box.height).toBeLessThanOrEqual(380);
+      expect(box.height).toBeGreaterThanOrEqual(280 + 64);
       const look = await panel.evaluate((el) => {
         const css = getComputedStyle(el);
         return {
@@ -552,10 +553,10 @@ for (const width of [360, 430]) {
       expect(look.bg).toBe("rgb(240, 236, 230)");
       expect(look.border).toEqual(["1px", "rgb(228, 223, 213)"]);
       expect(look.radius).toEqual(["32px", "32px", "0px"]);
-      // the 3D slot: exactly 220 by 220, centred in the panel (2px), a dashed decorative placeholder
+      // the 3D slot: exactly 280 by 280 at this height, centred in the panel (2px), decorative
       const slot = page.locator("[data-hero-panel] [data-picture-frame]");
       const s = (await slot.boundingBox())!;
-      expect([s.width, s.height]).toEqual([220, 220]);
+      expect([s.width, s.height]).toEqual([280, 280]);
       expect(Math.abs(s.x + s.width / 2 - (box.x + box.width / 2))).toBeLessThanOrEqual(2);
       expect(Math.abs(s.y + s.height / 2 - (box.y + box.height / 2))).toBeLessThanOrEqual(2);
       expect(await slot.getAttribute("aria-hidden")).toBe("true");
@@ -615,10 +616,20 @@ for (const width of [360, 430]) {
       const student = page.getByRole("radio", { name: /Student/ });
       const instructor = page.getByRole("radio", { name: /Instructor/ });
       await expect(student).toBeChecked();
-      for (const card of await page
-        .locator("label", { hasText: /Learn, practise|Create exams/ })
-        .all()) {
-        expect((await card.boundingBox())!.height).toBeGreaterThanOrEqual(72);
+      for (const [card, helper] of [
+        ["Practise and take exams", "Student"],
+        ["Create and assign exams", "Instructor"],
+      ] as const) {
+        const label = page.locator("label", { hasText: card });
+        expect((await label.boundingBox())!.height, helper).toBe(72);
+        // the helper is one line: not cut, and as high as one line
+        const info = await page.getByText(card, { exact: true }).evaluate((el) => ({
+          cut: el.scrollWidth > el.clientWidth,
+          height: el.getBoundingClientRect().height,
+          line: parseFloat(getComputedStyle(el).lineHeight),
+        }));
+        expect(info.cut, helper).toBe(false);
+        expect(info.height, helper).toBeCloseTo(info.line, 0);
       }
       await student.focus();
       await page.keyboard.press("ArrowDown");
@@ -650,10 +661,10 @@ for (const width of [360, 430]) {
       await expect(page.locator("[data-form-step]:visible")).toHaveText("Step 2 of 2");
       const verify = page.getByRole("button", { name: "Verify" });
       await expect(verify).toBeDisabled();
-      // the 80 by 80 slot sits left aligned above the title
+      // the 120 by 120 slot is centred above the title
       const slot = (await page.locator("main [data-picture-frame]:visible").boundingBox())!;
-      expect([slot.width, slot.height]).toEqual([80, 80]);
-      expect(Math.abs(slot.x - 16)).toBeLessThanOrEqual(0.5);
+      expect([slot.width, slot.height]).toEqual([120, 120]);
+      expect(Math.abs(slot.x + slot.width / 2 - width / 2)).toBeLessThanOrEqual(2);
       const title = (await page.getByRole("heading", { name: "Check your email" }).boundingBox())!;
       expect(slot.y + slot.height).toBeLessThanOrEqual(title.y);
       // some digits: still disabled; Fill in code fills all six and submits

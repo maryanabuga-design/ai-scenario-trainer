@@ -17,11 +17,14 @@ const html = (node: React.ReactElement) => renderToStaticMarkup(node).replace(/<
 describe("Welcome", () => {
   const out = html(<WelcomeView />);
 
-  it("has no header and no navigation, and the hero panel with its 220 by 220 picture", () => {
+  it("has no header and no navigation, and the hero panel with its 280 by 280 picture", () => {
     expect(out).not.toContain("<header");
     expect(out).not.toContain("data-form-step");
     expect(out).toContain("data-hero-panel");
-    expect(out).toContain("h-[clamp(280px,46dvh,380px)]");
+    // the panel takes all the free height; its minimum is the slot plus 64px
+    expect(out).toContain("min-h-[calc(max(200px,min(280px,36dvh))+64px)] flex-1 basis-auto");
+    expect(out).toContain("flex flex-1 flex-col");
+    expect(out).not.toContain("clamp(280px,46dvh,380px)");
     expect(out).toContain("rounded-b-[32px] border-b border-selectable-stroke bg-secondary-sand");
     expect(out).toContain("-mx-[var(--gutter,1rem)]");
     expect(out).toContain("env(safe-area-inset-top)");
@@ -30,8 +33,9 @@ describe("Welcome", () => {
     expect(img).toContain('src="/heroes/welcome.webp"');
     expect(img).toContain('alt=""');
     expect(img).toContain('aria-hidden="true"');
-    expect(img).toContain('width="220"');
-    expect(img).toContain('height="220"');
+    expect(img).toContain('width="280"');
+    expect(img).toContain('height="280"');
+    expect(out).toContain("max(200px, min(280px, 36dvh))");
     expect(img).toContain('loading="eager"');
     expect(img).toContain("object-contain");
     expect(img).not.toMatch(/shadow|bg-/);
@@ -49,10 +53,11 @@ describe("Welcome", () => {
     expect(out).toContain(">Train for real situations</h1>");
     expect(out).toContain(WELCOME_SUBTITLE);
     expect(out).toContain("max-w-[320px]");
-    // centred vertically in the free space above the buttons, 16px clear at least
+    // 32px below the panel, a fixed minimum height, content from the top (no vertical centring)
     expect(out).toContain(
-      "flex flex-1 flex-col items-center justify-center gap-2 px-2 py-4 text-center",
+      "mt-8 flex min-h-[184px] flex-col items-center justify-start gap-2 px-2 text-center",
     );
+    expect(out).not.toContain("justify-center gap-2 px-2 py-4");
   });
 
   it("has the pinned buttons: Primary, the olive-tint Secondary 12px below, and the note", () => {
@@ -92,13 +97,16 @@ describe("Create account", () => {
 
   it("has the two role cards with their helpers, Student preselected", () => {
     expect(out).toContain(">I am a</legend>");
-    expect(out).toContain("Learn, practise and take exams assigned to you");
-    expect(out).toContain("Create exams and assign them to students");
+    expect(out).toContain(">Practise and take exams<");
+    expect(out).toContain(">Create and assign exams<");
+    expect(out).not.toContain("assigned to you");
+    // each helper is one line, cut with an ellipsis as a safety net; the cards are exactly 72px high
+    expect(out.match(/type-small truncate text-text-secondary/g)).toHaveLength(2);
     const checked = [...out.matchAll(/<input[^>]*checked=""[^>]*>/g)].map((m) => m[0]);
     expect(checked).toHaveLength(1);
     expect(checked[0]).toContain('value="student"');
     // 72px cards, each with a 40px neutral icon tile
-    expect(out.match(/min-h-\[72px\]/g)).toHaveLength(2);
+    expect(out.match(/h-\[72px\]/g)).toHaveLength(2);
     expect(out.match(/h-10 w-10 rounded-full/g)).toHaveLength(2);
     expect(out.match(/bg-neutral-tile-bg text-neutral-tile-ink/g)).toHaveLength(2);
   });
@@ -166,14 +174,16 @@ describe("Verify", () => {
     expect(out).toContain('aria-label="Back"');
     const img = out.slice(out.indexOf("<img"), out.indexOf(">", out.indexOf("<img")) + 1);
     expect(img).toContain('src="/heroes/verify.webp"');
-    expect(img).toContain('width="80"');
-    expect(img).toContain('height="80"');
+    expect(img).toContain('width="120"');
+    expect(img).toContain('height="120"');
     expect(img).toContain('alt=""');
     expect(img).toContain('aria-hidden="true"');
     expect(img).toContain('loading="eager"');
     expect(out).not.toContain("data-hero-panel");
     expect(out.indexOf("<img")).toBeLessThan(out.indexOf(">Check your email</h1>"));
-    expect(out).toContain("items-start");
+    // everything under the header is centred
+    expect(out).toContain("flex flex-col items-center gap-3 text-center");
+    expect(out).toContain("flex flex-wrap items-center justify-center gap-x-1");
   });
 
   it("has the subtitle with the email in semibold and the text button Change email", () => {
@@ -187,7 +197,8 @@ describe("Verify", () => {
     expect(out.match(/inputMode="numeric"/g)).toHaveLength(6);
     for (let n = 1; n <= 6; n++) expect(out).toContain(`aria-label="Digit ${n} of 6"`);
     expect(out).toContain('role="group" aria-label="6-digit code" class="flex gap-2"');
-    expect(out.match(/h-14 max-w-\[52px\] min-w-0 flex-1 rounded-\[12px\]/g)).toHaveLength(6);
+    expect(out.match(/h-14 min-w-0 flex-1 basis-0 rounded-\[12px\]/g)).toHaveLength(6);
+    expect(out).not.toContain("max-w-[52px]");
     expect(out).toContain("border-selectable-stroke");
     expect(out).toContain("focus-visible:outline-primary");
   });

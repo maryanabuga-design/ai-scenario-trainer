@@ -16,8 +16,8 @@ export const DEMO_DATA_NOTE =
   "Demo: data stays on this device. Please do not enter real personal data.";
 
 const roleHelper: Record<Role, string> = {
-  student: "Learn, practise and take exams assigned to you",
-  instructor: "Create exams and assign them to students",
+  student: "Practise and take exams",
+  instructor: "Create and assign exams",
 };
 
 export type SignUpValues = { name: string; email: string; role: Role };
@@ -120,9 +120,9 @@ export function SignUpView({
                 <ClipboardList size={20} strokeWidth={1.75} />
               )}
             </IconTile>
-            <span className="flex flex-col gap-0.5">
+            <span className="flex min-w-0 flex-1 flex-col gap-0.5">
               <span className="type-body-strong">{roleLabel[role]}</span>
-              <span className="type-small text-text-secondary">{roleHelper[role]}</span>
+              <span className="type-small truncate text-text-secondary">{roleHelper[role]}</span>
             </span>
           </SelectableRow>
         ))}

@@ -102,23 +102,22 @@ export function OnboardingView({
           ) : undefined
         }
       />
-      {/* the text is centred vertically in the free space above the dots, 16px clear at least */}
-      <div className="flex flex-1 flex-col justify-center py-4">
-        <section
-          key={index}
-          role="group"
-          aria-roledescription="slide"
-          aria-label={slideLabel(index, slides.length)}
-          data-slide={slide.slot}
-          className={`flex flex-col items-center gap-3 px-2 text-center ${entrance}`}
-        >
-          <h1 ref={title} tabIndex={-1} className="type-slide-title outline-none">
-            {slide.title}
-          </h1>
-          <p className="type-body line-clamp-3 max-w-[320px] text-text-secondary">{slide.body}</p>
-        </section>
-      </div>
-      <div className="flex flex-col gap-6 pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]">
+      {/* 32px below the panel; a fixed minimum height (a two-line title, a three-line subtitle) so
+          the panel is as high on every slide */}
+      <section
+        key={index}
+        role="group"
+        aria-roledescription="slide"
+        aria-label={slideLabel(index, slides.length)}
+        data-slide={slide.slot}
+        className={`mt-8 flex min-h-[154px] flex-col items-center justify-start gap-3 px-2 text-center ${entrance}`}
+      >
+        <h1 ref={title} tabIndex={-1} className="type-slide-title line-clamp-2 outline-none">
+          {slide.title}
+        </h1>
+        <p className="type-body line-clamp-3 max-w-[320px] text-text-secondary">{slide.body}</p>
+      </section>
+      <div className="mt-8 flex flex-col gap-6 pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]">
         <div
           role="img"
           aria-label={stepLabel(index, slides.length)}

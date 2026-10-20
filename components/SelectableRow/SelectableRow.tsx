@@ -9,7 +9,7 @@ type Props = {
   disabled?: boolean;
   /** A radio for a single choice, a check box for several. */
   type?: "radio" | "checkbox";
-  /** 72px high, for the cards with an icon tile (Create account: the role cards). */
+  /** Exactly 72px high, for the cards with an icon tile (Create account: the role cards). */
   tall?: boolean;
   /** A letter badge before the content (A, B, C), for answer options. */
   letter?: string;
@@ -38,7 +38,7 @@ export function SelectableRow({
     : "cursor-pointer border border-selectable-stroke bg-card active:bg-secondary-sand";
   return (
     <label
-      className={`flex ${tall ? "min-h-[72px]" : "min-h-11"} items-center gap-3 rounded-card p-[var(--gutter,1rem)] has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${state}`}
+      className={`flex ${tall ? "h-[72px] px-[var(--gutter,1rem)]" : "min-h-11 p-[var(--gutter,1rem)]"} items-center gap-3 rounded-card has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${state}`}
     >
       <input
         type={type}

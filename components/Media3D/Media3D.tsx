@@ -11,9 +11,10 @@ const frames = {
   step: "aspect-[4/3] w-full rounded-[16px]",
   tile: "h-20 w-20 rounded-[16px]",
   row: "h-[72px] w-[72px] rounded-[16px]",
-  // the hero panel slot of Welcome and the onboarding slides, and the Verify slot
-  panel: "h-[220px] w-[220px] rounded-[28px]",
-  verify: "h-20 w-20 rounded-[20px]",
+  // the hero panel slot of Welcome and the onboarding slides (280px, shrinking with the screen height
+  // down to 200px), and the Verify slot
+  panel: "aspect-square w-[max(200px,min(280px,36dvh))] rounded-[28px]",
+  verify: "h-[120px] w-[120px] rounded-[28px]",
 } as const;
 
 /**
@@ -65,7 +66,11 @@ export function Media3D({
         data-picture-frame
         aria-hidden="true"
         className="block shrink-0 overflow-hidden"
-        style={{ width: size.width, height: size.height }}
+        style={
+          variant === "panel"
+            ? { width: "max(200px, min(280px, 36dvh))", aspectRatio: "1" }
+            : { width: size.width, height: size.height }
+        }
       >
         <Image
           src={src}
