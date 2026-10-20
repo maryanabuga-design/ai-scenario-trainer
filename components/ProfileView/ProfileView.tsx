@@ -52,6 +52,7 @@ export function ProfileView({
   resetDone,
   dialogInline = false,
   onBack,
+  certificates = 0,
 }: {
   account: { name: string; email: string; role: Role };
   onRoleChange: (role: Role) => void;
@@ -69,6 +70,8 @@ export function ProfileView({
   dialogInline?: boolean;
   /** A student opens Profile from the avatar button and gets Back; an instructor has the Profile tab. */
   onBack?: () => void;
+  /** The number of certificates (a Student's row "Certificates"). */
+  certificates?: number;
 }) {
   const { role } = account;
   const student = role === "student";
@@ -117,6 +120,20 @@ export function ProfileView({
 
         {student && (
           <DirectionPicker value={direction} onChange={onDirectionChange} legend="Direction" />
+        )}
+
+        {student && (
+          <Link
+            href="/profile/certificates"
+            data-certificates-row
+            className="flex h-14 items-center gap-3 rounded-card bg-card px-4 shadow-(--card-shadow) has-focus-visible:outline-2"
+          >
+            <span className="type-body-strong min-w-0 flex-1">Certificates</span>
+            <span data-certificates-count className="type-body text-text-secondary tabular-nums">
+              {certificates}
+            </span>
+            <Chevron />
+          </Link>
         )}
 
         <section aria-labelledby="help-title" className="flex flex-col gap-3">

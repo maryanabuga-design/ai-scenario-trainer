@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ProfileView } from "@/components/ProfileView/ProfileView";
+import { useCertificates } from "@/lib/certificates-store";
 import { deleteAccount, setRole, signOut, useCurrentAccount } from "@/lib/auth";
 import { defaultDirection } from "@/lib/directions";
 import { roleHome } from "@/lib/role";
@@ -12,10 +13,12 @@ export default function Profile() {
   const router = useRouter();
   const profile = useProfile();
   const account = useCurrentAccount();
+  const certificates = useCertificates();
   const [dialog, setDialog] = useState<"reset" | "delete" | null>(null);
   const [resetDone, setResetDone] = useState(false);
 
-  if (profile === "loading" || account === "loading" || !account) return null;
+  if (profile === "loading" || account === "loading" || !account || certificates === "loading")
+    return null;
 
   return (
     <ProfileView
@@ -48,6 +51,7 @@ export default function Profile() {
         router.replace("/welcome");
       }}
       resetDone={resetDone}
+      certificates={certificates.length}
       onBack={
         account.role === "student"
           ? () => (window.history.length > 1 ? router.back() : router.push("/"))

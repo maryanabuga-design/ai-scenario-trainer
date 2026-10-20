@@ -227,6 +227,7 @@ export function ResultsView({
   onRepeat,
   examRepeat = false,
   doneHref,
+  certificateHref,
 }: {
   kind: SessionKind;
   items: ScoredItem[];
@@ -243,6 +244,8 @@ export function ResultsView({
   examRepeat?: boolean;
   /** Where the Primary "Done" goes (the exam screen), for an exam or an exam repeat session. */
   doneHref?: string;
+  /** A passed exam: where its certificate is. The card "Certificate earned" shows when it is given. */
+  certificateHref?: string;
 }) {
   useRestoredScroll();
   const passed = isPassed(items);
@@ -273,6 +276,26 @@ export function ResultsView({
       <p className="text-center text-text-secondary">{conclusion(items)}</p>
 
       {topics.length > 0 && <WeakTopicsCard topics={topics} />}
+
+      {certificateHref && passed && (
+        <section
+          aria-labelledby="certificate-title"
+          data-certificate-card
+          className="flex flex-col gap-3 rounded-card bg-card p-4 shadow-(--card-shadow)"
+        >
+          <div className="flex flex-col gap-1">
+            <h2 id="certificate-title" className="type-card-title">
+              Certificate earned
+            </h2>
+            <p className="type-small text-text-secondary">
+              Your result is saved as a prototype certificate.
+            </p>
+          </div>
+          <ButtonLink href={certificateHref} variant="secondary">
+            View certificate
+          </ButtonLink>
+        </section>
+      )}
 
       <ActionBar>
         <ResultsButtons

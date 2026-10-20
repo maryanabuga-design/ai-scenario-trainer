@@ -187,3 +187,16 @@ describe("Profile: the bare icons on four rows", () => {
     expect(help.match(/lucide-chevron-right/g)).toHaveLength(2);
   });
 });
+
+describe("Profile: the Certificates row", () => {
+  it("is a 56px row with the count as muted text and a chevron, for a student only", () => {
+    const student = render("student");
+    const row = student.slice(student.indexOf("data-certificates-row"));
+    expect(row).toContain("h-14");
+    expect(row).toContain(">Certificates<");
+    expect(row.slice(0, row.indexOf("</a>"))).toContain("lucide-chevron-right");
+    expect(row).toContain('href="/profile/certificates"');
+    expect(row).toContain("data-certificates-count");
+    expect(render("instructor")).not.toContain("data-certificates-row");
+  });
+});

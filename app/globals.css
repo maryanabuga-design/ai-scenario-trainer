@@ -343,3 +343,30 @@ dialog[data-sheet]::backdrop,
   line-height: 20px;
   font-weight: 500;
 }
+
+/* Printing a certificate (DESIGN.md: Completion certificates): A4, only the card. */
+@media print {
+  @page {
+    size: A4;
+    margin: 16mm;
+  }
+  body * {
+    visibility: hidden;
+  }
+  [data-certificate],
+  [data-certificate] * {
+    visibility: visible;
+  }
+  [data-certificate] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    box-shadow: none;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  [data-print-hide] {
+    display: none !important;
+  }
+}

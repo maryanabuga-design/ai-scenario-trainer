@@ -1,6 +1,9 @@
 import { EXAM_QUESTIONS } from "@/lib/config";
 import { drawExam, examDurationMs } from "@/lib/exam";
-import { scoreItem } from "@/lib/scoring";
+import { demoExam, nearestExam, readExams } from "@/lib/assigned-exams";
+import { currentAccount, readAuth } from "@/lib/auth";
+import { recordCertificate } from "@/lib/certificates-store";
+import { correctCount, scoreItem } from "@/lib/scoring";
 import type { ScoredItem } from "@/lib/scoring";
 import { resultPercent } from "@/lib/results";
 import type { FinishedSession } from "@/lib/session";
@@ -54,4 +57,19 @@ export function finishExam(exam: ExamSession, now: number = Date.now()) {
     },
   };
   addToHistory(entry);
+  // a passed attempt earns its (simulated) certificate: one per attempt, none on a fail
+  const account = currentAccount(readAuth());
+  if (account) {
+    const scored = scoreExam({ itemIds: exam.itemIds, answers: ordered });
+    recordCertificate({
+      accountId: account.email,
+      // the assigned exam, or the demo exam the app shows when nothing is assigned yet
+      examTitle:
+        nearestExam(readExams() ?? [demoExam(new Date(finishedAt))])?.title ?? "Training exam",
+      correct: correctCount(scored),
+      total: exam.itemIds.length,
+      attemptAt: finishedAt,
+      now: finishedAt,
+    });
+  }
 }

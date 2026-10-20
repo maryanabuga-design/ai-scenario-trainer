@@ -150,6 +150,8 @@ describe("a secondary always comes with a primary above it", () => {
       // Ask AI: the suggested questions of a fallback reply, the quick actions and Clear history.
       "components/AskAiThread/AskAiThread.tsx",
       "components/AskAiView/AskAiView.tsx",
+      // The certificate screen: Share, below the primary Save as PDF.
+      "components/CertificateView/CertificateView.tsx",
       // Dialogs: the second action (Cancel, Leave) under the first.
       "components/ConfirmDialog/ConfirmDialog.tsx",
       // The exam screen: Start exam anyway, below the primary Repeat weak topics.

@@ -29,6 +29,7 @@ import {
   ExamIntroSample,
   ExamLeaveSample,
   ExamResultsSample,
+  CertificateSample,
   HighlightSample,
   QuickBarSample,
   StepsTopicSample,
@@ -377,9 +378,24 @@ export default function Screens() {
               <ExamLeaveSample />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Exam results">
+          <PhoneFrame label="Exam results (passed): the Certificate earned card">
             <Screen>
               <ExamResultsSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Certificate: the card, Save as PDF, Share">
+            <Screen>
+              <CertificateSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Certificates: the list (72px rows)">
+            <Screen>
+              <CertificateSample state="list" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Certificates: empty">
+            <Screen>
+              <CertificateSample state="empty" />
             </Screen>
           </PhoneFrame>
         </Group>

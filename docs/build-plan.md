@@ -135,3 +135,4 @@ One commit per screen group, in this order. Steps 1 to 82 are built (step 81, th
 133. Profile icons without a tile and a lighter sand-100 navigation pill (22 Oct 2026). Screenshots: `docs/screens/124-*`.
 134. Ask AI (23 Oct 2026): a Student tab with history and threads, the avatar button on the tab header bands, "Ask AI about this question" rows on the review and Saved screens, `content/ask-ai.json`; the bottom sheet is removed. Screenshots: `docs/screens/125-*`.
 135. Today's practice was tried and reverted (23 Oct 2026): the Home Mini-quiz row and the Training Quiz card are as in step 132; the picker opens with the largest length again. Screenshots: `docs/screens/127-*`.
+136. Completion certificates (23 Oct 2026): a passed exam creates a simulated certificate in this browser; Results card, Profile row, list, certificate screen with print to A4 and share. Screenshots: `docs/screens/128-*`.

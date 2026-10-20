@@ -16,6 +16,8 @@ import { AskAiThread } from "@/components/AskAiThread/AskAiThread";
 import { AskAiView } from "@/components/AskAiView/AskAiView";
 import { answerTo, followUp, newThread, questionThread, userMessage } from "@/lib/ask-ai";
 import type { AiMessage, Thread } from "@/lib/ask-ai";
+import { CertificateView } from "@/components/CertificateView/CertificateView";
+import { CertificatesList } from "@/components/CertificatesList/CertificatesList";
 import { AnswerReview } from "@/components/AnswerReview/AnswerReview";
 import { SessionBar } from "@/components/SessionBar/SessionBar";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
@@ -516,6 +518,8 @@ export function ProfileSample({
   return (
     <>
       <ProfileView
+        certificates={1}
+        onBack={role === "student" ? () => undefined : undefined}
         account={{ name: "Maryana", email: "maryana@example.com", role }}
         onRoleChange={() => undefined}
         direction={defaultDirection.id}
@@ -1128,6 +1132,50 @@ export function ExamResultsSample() {
       backLabel="Back to Exam"
       reviewHref="/exam/results/review/1"
       onRepeat={() => undefined}
+      certificateHref="#certificate"
+    />
+  );
+}
+
+/** A sample certificate for the screen review page. */
+const sampleCertificate = {
+  id: "QT-2026-0042",
+  accountId: "maryana@example.com",
+  examTitle: "Evacuation basics exam",
+  date: new Date(2026, 9, 23, 12, 0).getTime(),
+  correct: 17,
+  total: 20,
+  passMark: 80,
+  attemptAt: 1,
+};
+
+/** The certificate screen, or the list of certificates (or its empty state). */
+export function CertificateSample({
+  state = "certificate",
+}: {
+  state?: "certificate" | "list" | "empty";
+}) {
+  if (state === "certificate") {
+    return (
+      <CertificateView certificate={sampleCertificate} name="Maryana" onBack={() => undefined} />
+    );
+  }
+  return (
+    <CertificatesList
+      certificates={
+        state === "empty"
+          ? []
+          : [
+              sampleCertificate,
+              {
+                ...sampleCertificate,
+                id: "QT-2026-0041",
+                date: new Date(2026, 9, 18).getTime(),
+                examTitle: "Flood preparedness exam",
+              },
+            ]
+      }
+      onBack={() => undefined}
     />
   );
 }

@@ -65,6 +65,8 @@ Build order and decisions: `docs/build-plan.md`.
 
 ## Known limitations
 
+- Certificates are simulated: a prototype certificate is made on this device when an exam is passed. It is not an official document and nothing is verified or sent.
+
 - Exam assignment is a single-browser simulation of an instructor feature; there is no server. The one assigned exam is demo data seeded on first load (S1 to S4, due in 7 days). The Student/Instructor switch on Profile is a demo; the Instructor "Assign exam" screen is not built yet (Instructor Home is a stub).
 - Notifications are demo data (four messages from `content/notifications.json`) and in-app events (a finished exam, the daily goal), kept in this browser. There is no backend, no push, no permission prompt and no network request.
 - Accounts are simulated on this device: registration, verification (the demo code is shown on the screen), sign in, edit profile, sign out and delete account all work in the browser. No email is sent, there is no server and no real authentication; accounts, the session and each account's progress stay in this browser's local storage. The Student/Instructor switch is a demo; the Instructor "Assign exam" tool is not built yet.
