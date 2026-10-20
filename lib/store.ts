@@ -22,6 +22,32 @@ export function setStorageNamespace(next: string) {
 
 export const storageNamespace = () => namespace;
 
+/** Every key this app writes starts with this prefix (localStorage and sessionStorage alike). */
+export const APP_KEY_PREFIX = "ast.";
+
+/**
+ * Restart demo (DESIGN.md: Restart demo): removes EVERY storage key the app uses, whatever account
+ * it belongs to (the accounts, the session, all progress, onboarding flags, exams, notifications,
+ * saved questions, highlights, trainings, uploads, and anything added later with the prefix).
+ * The next page load starts from nothing.
+ */
+export function clearAllAppData() {
+  for (const storage of ["localStorage", "sessionStorage"] as const) {
+    try {
+      const area = window[storage];
+      const keys: string[] = [];
+      for (let i = 0; i < area.length; i++) {
+        const key = area.key(i);
+        if (key && key.startsWith(APP_KEY_PREFIX)) keys.push(key);
+      }
+      keys.forEach((key) => area.removeItem(key));
+    } catch {
+      // Storage is unavailable: nothing was saved there.
+    }
+  }
+  refreshers.forEach((refresh) => refresh());
+}
+
 /** Removes every saved value of one namespace (the data of an account). Shared values stay. */
 export function clearNamespaceData(suffix: string) {
   try {

@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { ReactNode } from "react";
 import { ActionBarProvider, ActionBarSlot } from "@/components/ActionBar/ActionBar";
 import { AuthGate } from "@/components/AuthGate/AuthGate";
+import { RestartShortcut } from "@/components/RestartShortcut/RestartShortcut";
 import { NavigationTracker } from "@/components/NavigationTracker/NavigationTracker";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
@@ -12,6 +13,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col border-border bg-bg min-[431px]:border-x pt-[env(safe-area-inset-top)]">
       <Suspense fallback={null}>
         <NavigationTracker />
+        <RestartShortcut />
       </Suspense>
       <SourceSheetProvider sections={loadAllSections()}>
         <ActionBarProvider>

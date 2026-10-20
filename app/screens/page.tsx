@@ -715,9 +715,14 @@ export default function Screens() {
               <ProfileSample role="instructor" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="About this prototype">
+          <PhoneFrame label="About this prototype, with Restart demo">
             <Screen>
               <AboutSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Restart the demo? confirmation">
+            <Screen>
+              <AboutSample confirming />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Instructor Home (stub), navigation with Home and Profile">

@@ -1096,8 +1096,8 @@ export function InstructorHomeSample() {
   return <InstructorHomeView />;
 }
 
-export function AboutSample() {
-  return <AboutView />;
+export function AboutSample({ confirming = false }: { confirming?: boolean }) {
+  return <AboutView confirming={confirming} dialogInline />;
 }
 
 /** The signed-out and account screens for the screen review page. */
