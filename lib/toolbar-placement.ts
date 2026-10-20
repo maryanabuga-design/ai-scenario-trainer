@@ -2,6 +2,8 @@
 
 export const TOOLBAR_HEIGHT = 40;
 const GAP = 8;
+/** On a touch screen the system's selection handles hang under the selection: the toolbar clears them. */
+const HANDLE_CLEARANCE = 20;
 
 export type Placement = { left: number; top: number; side: "below" | "above" };
 
@@ -35,7 +37,7 @@ export function placeToolbar({
     Math.max(centre - width / 2, gutter),
     Math.max(gutter, viewport.width - gutter - width),
   );
-  const below = rect.bottom + GAP;
+  const below = rect.bottom + GAP + (touch ? HANDLE_CLEARANCE : 0);
   const above = rect.top - GAP - TOOLBAR_HEIGHT;
   const fitsBelow = below + TOOLBAR_HEIGHT <= bottomLimit - GAP;
   const fitsAbove = above >= topLimit + GAP;

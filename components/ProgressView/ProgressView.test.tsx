@@ -68,6 +68,9 @@ function render(history: FinishedSession[], props: { exam?: typeof exam | null }
   ).replace(/<!-- -->/g, "");
 }
 
+/** The part of the page before the closed "other topics" group: the exam's own cards. */
+const beforeOther = (html: string) =>
+  html.includes('id="other-topics"') ? html.slice(0, html.indexOf('id="other-topics"')) : html;
 const rowsOf = (html: string) => [
   ...html.matchAll(/<button[^>]*data-topic-row[\s\S]*?<\/button>/g),
 ];
@@ -84,14 +87,14 @@ describe("Progress: the header and the order of the sections", () => {
   });
 
   it("goes Readiness card, then By topic, and nothing after the topics", () => {
-    const order = ["Exam readiness", ">By topic<", ">Other topics ("].map((text) =>
-      html.indexOf(text),
+    const order = ["Exam readiness", ">By topic<", ">In your exam<", "Show other topics ("].map(
+      (text) => html.indexOf(text),
     );
     expect(order.every((position) => position >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
-    expect(html.slice(html.lastIndexOf("Other topics (")).split("</button>").pop()).not.toMatch(
-      /<section|<h2/,
-    );
+    expect(
+      html.slice(html.lastIndexOf("Show other topics (")).split("</button>").pop(),
+    ).not.toMatch(/<section|<h2/);
   });
 
   it("no longer has the session blocks, the chart, the old cards or the status chips", () => {
@@ -230,17 +233,30 @@ describe("Progress: the change line", () => {
 describe("Progress: By topic", () => {
   const html = render(seeded);
 
-  it("lists the four exam topics, then Other topics (6) closed", () => {
+  it("lists the four exam topics, then the closed group, then ONE toggle 'Show other topics (6)'", () => {
     expect(html).toContain(">In your exam<");
-    expect(html.indexOf(">In your exam<")).toBeLessThan(html.indexOf("Other topics (6)"));
+    const group = html.indexOf('id="other-topics"');
+    const toggle = html.indexOf("Show other topics (6)");
+    expect(html.indexOf(">In your exam<")).toBeLessThan(group);
+    expect(group).toBeLessThan(toggle);
+    expect(html.match(/aria-controls="other-topics"/g)).toHaveLength(1);
     expect(html).toContain('aria-expanded="false"');
-    expect(rowsOf(html)).toHaveLength(4);
-    expect(html).not.toContain('data-topic-row="S6"');
+    expect(rowsOf(beforeOther(html))).toHaveLength(4);
+    // the six other cards are in the page (so they can animate) but inert while closed, under a caption
+    const hidden = html.slice(group, toggle);
+    expect(hidden).toContain("inert");
+    expect(hidden).toContain(">Other topics</h3>");
+    expect(rowsOf(hidden)).toHaveLength(6);
+    expect(hidden).toContain('data-topic-row="S6"');
+    // closed: no height, 200ms transition, none under reduced motion
+    expect(hidden).toContain("invisible grid-rows-[0fr]");
+    expect(hidden).toContain("duration-200 motion-reduce:transition-none");
+    expect(html).not.toContain("Hide other topics");
   });
 
   it("is in number order inside the group", () => {
     const ids = rowsOf(html).map((match) => /data-topic-row="(S\d+)"/.exec(match[0])![1]);
-    expect(ids).toEqual(["S1", "S2", "S3", "S4"]);
+    expect(ids).toEqual(["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10"]);
   });
 
   it("shows counts over ALL the topic's questions and no percentage, status or chip", () => {
@@ -279,8 +295,8 @@ describe("Progress: By topic", () => {
     }
   });
 
-  it("has Other topics as the shared underlined text button: no frame, no border, no background", () => {
-    const start = html.lastIndexOf("<button", html.indexOf("Other topics ("));
+  it("has the toggle as the shared underlined text button: no frame, no border, no background", () => {
+    const start = html.lastIndexOf("<button", html.indexOf("Show other topics ("));
     const control = html.slice(start, html.indexOf("</button>", start) + 9);
     expect(control).toContain('aria-expanded="false"');
     expect(control).toContain('aria-controls="other-topics"');
@@ -294,7 +310,8 @@ describe("Progress: By topic", () => {
   it("lists all ten topics under Topics, in order, when there is no exam", () => {
     const noExam = render(seeded, { exam: null });
     expect(noExam).not.toContain(">In your exam<");
-    expect(noExam).not.toContain("Other topics (");
+    expect(noExam).not.toContain("other topics (");
+    expect(noExam).not.toContain("other-topics");
     expect(noExam).toContain(">Topics<");
     const ids = rowsOf(noExam).map((match) => /data-topic-row="(S\d+)"/.exec(match[0])![1]);
     expect(ids).toEqual(Array.from({ length: 10 }, (_, i) => `S${i + 1}`));
@@ -303,7 +320,7 @@ describe("Progress: By topic", () => {
   it("shows readiness and the topics with an empty history too", () => {
     const empty = render([]);
     expect(empty).toContain("Readiness 0%");
-    expect(rowsOf(empty)).toHaveLength(4);
+    expect(rowsOf(beforeOther(empty))).toHaveLength(4);
     expect(empty).not.toContain("No sessions yet");
   });
 });

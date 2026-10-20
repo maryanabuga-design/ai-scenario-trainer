@@ -50,6 +50,15 @@ export function QuestionScreen({
     }
     wasShown.current = shown;
   }, [shown]);
+  // The hint opens under the options, often below the fold on a phone: it scrolls into view (above
+  // the bottom bar), otherwise a tap on the lightbulb seems to do nothing.
+  const hintRef = useRef<HTMLDivElement>(null);
+  const hintOpen = hint !== null;
+  useEffect(() => {
+    if (!hintOpen) return;
+    const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    hintRef.current?.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "nearest" });
+  }, [hintOpen]);
   const scenario = item.kind === "step";
   const image = item.image ?? (scenario ? { src: "", alt: "" } : undefined);
   return (
@@ -103,7 +112,11 @@ export function QuestionScreen({
           </section>
         </>
       )}
-      {hint && <HintCard hint={hint} />}
+      {hint && (
+        <div ref={hintRef} className="scroll-mb-40">
+          <HintCard hint={hint} />
+        </div>
+      )}
     </div>
   );
 }

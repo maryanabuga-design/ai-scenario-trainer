@@ -34,6 +34,18 @@
   --soft-divider: #eae8e7;
   --soft-shadow: var(--card-shadow);
 
+  /* The sand scale (DESIGN.md: Sand scale); sand-700 is never text on white (4.2:1) */
+  --sand-50: #f8f5ed;
+  --sand-100: #f0e8d8;
+  --sand-200: #e4d6bc;
+  --sand-300: #d7c4a0;
+  --sand-400: #cbb58e;
+  --sand-500: #c5b28a;
+  --sand-600: #ac956a;
+  --sand-700: #907851;
+  --sand-800: #705b3d;
+  --sand-900: #4d3f2d;
+
   /* The one shared pastel palette (DESIGN.md: Pastel palette) */
   --pastel-yellow: #f8f2cc;
   --pastel-rose: #f8e4e2;
@@ -89,6 +101,16 @@
   --color-caution: var(--caution);
   --color-soft-card: var(--soft-card);
   --color-soft-divider: var(--soft-divider);
+  --color-sand-50: var(--sand-50);
+  --color-sand-100: var(--sand-100);
+  --color-sand-200: var(--sand-200);
+  --color-sand-300: var(--sand-300);
+  --color-sand-400: var(--sand-400);
+  --color-sand-500: var(--sand-500);
+  --color-sand-600: var(--sand-600);
+  --color-sand-700: var(--sand-700);
+  --color-sand-800: var(--sand-800);
+  --color-sand-900: var(--sand-900);
   --color-pastel-yellow: var(--pastel-yellow);
   --color-pastel-rose: var(--pastel-rose);
   --color-pastel-blue: var(--pastel-blue);
@@ -308,6 +330,11 @@ dialog[data-sheet]::backdrop,
   font-size: 12px;
   line-height: 16px;
   font-weight: 500;
+}
+@utility type-caption-strong {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
 }
 
 /* Tertiary buttons: small underlined actions. */

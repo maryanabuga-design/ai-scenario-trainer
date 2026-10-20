@@ -4,7 +4,7 @@ import { Bookmark, ClipboardCheck, ListChecks, ListOrdered } from "lucide-react"
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { buttonClasses } from "@/components/Button/Button";
-import { Chevron } from "@/components/Chevron/Chevron";
+import { MiniQuizLink } from "@/components/MiniQuizLink/MiniQuizLink";
 import { Media3D } from "@/components/Media3D/Media3D";
 import { NotificationBell } from "@/components/NotificationBell/NotificationBell";
 import { TileIcon } from "@/components/TileIcon/TileIcon";
@@ -107,22 +107,12 @@ export function HomeView({
         ))}
       </ul>
 
-      <Link
+      <MiniQuizLink
         href={miniQuizPath}
-        className="flex min-h-[104px] items-center gap-3 rounded-card bg-card p-4 shadow-(--card-shadow) has-focus-visible:outline-2"
-      >
-        {/* the picture and the text are one block, centred on each other; the block is centred in the row */}
-        <span className="flex min-w-0 flex-1 items-center gap-3">
-          <Media3D variant="row" src={homeImages.iconMiniQuiz} artwork={homeArtwork.iconMiniQuiz} />
-          <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <span className="type-body-strong">Mini-quiz</span>
-            <span className="type-small line-clamp-2 text-text-secondary">
-              Pick topics and how many questions
-            </span>
-          </span>
-        </span>
-        <Chevron />
-      </Link>
+        subtitle="Pick topics and how many questions"
+        minHeight="min-h-[104px]"
+        clampSubtitle
+      />
     </div>
   );
 }

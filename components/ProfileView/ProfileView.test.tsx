@@ -149,3 +149,37 @@ describe("Profile: colours", () => {
     }
   });
 });
+
+describe("Profile: the icon tiles on four rows", () => {
+  for (const role of ["student", "instructor"] as const) {
+    it(`has the neutral 40px icon tile on the help, delete and sign out rows (${role})`, () => {
+      const html = render(role);
+      const rowOf = (label: string) => {
+        const end = html.indexOf(`>${label}<`);
+        const start = Math.max(html.lastIndexOf("<a ", end), html.lastIndexOf("<button", end));
+        return html.slice(start, end);
+      };
+      for (const [label, icon] of [
+        ["How the app works", "lucide-circle-question-mark"],
+        ["About this prototype", "lucide-info"],
+        ["Delete account", "lucide-trash2"],
+        ["Sign out", "lucide-log-out"],
+      ]) {
+        const row = rowOf(label);
+        expect(row, label).toContain("bg-neutral-tile-bg text-neutral-tile-ink");
+        expect(row, label).toContain("h-10 w-10 rounded-full");
+        expect(row, label).toMatch(new RegExp(icon.replace("trash2", "trash-?2")));
+        expect(row, label).toContain('width="20"');
+      }
+      expect(rowOf("Delete account")).toContain("text-wrong");
+      expect(rowOf("Sign out")).not.toContain("lucide-chevron-right");
+      expect(rowOf("Delete account")).not.toContain("lucide-chevron-right");
+    });
+  }
+
+  it("keeps the chevron on the two Help rows", () => {
+    const html = render("student");
+    const help = html.slice(html.indexOf(">How the app works<"), html.indexOf(">Settings<"));
+    expect(help.match(/lucide-chevron-right/g)).toHaveLength(2);
+  });
+});

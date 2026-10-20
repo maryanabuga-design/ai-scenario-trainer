@@ -57,8 +57,10 @@ export function BottomNav({ activePath, role }: { activePath?: string; role?: Ro
               <Link
                 href={item.href}
                 aria-current={current ? "page" : undefined}
-                className={`flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-full type-caption ${
-                  current ? "bg-pastel-yellow text-text" : "text-text-secondary"
+                className={`flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-full ${
+                  current
+                    ? "type-caption-strong bg-sand-200 text-sand-900"
+                    : "type-caption text-text-secondary"
                 }`}
               >
                 <item.Icon size={22} strokeWidth={2} aria-hidden="true" />

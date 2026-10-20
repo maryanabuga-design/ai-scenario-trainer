@@ -1,7 +1,8 @@
 "use client";
 
 import { ArrowDown, ArrowUp, ChevronDown, Minus } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import type { MouseEvent } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
@@ -171,7 +172,8 @@ function TopicList({
 
 /**
  * "By topic": ONE list in number order, the exam's topics first ("In your exam") and the others
- * behind an underlined text button that is closed until it is opened. Without an exam every topic
+ * behind ONE underlined text toggle at the end of the list ("Show other topics (N)" / "Hide other
+ * topics"), closed until it is opened. Without an exam every topic
  * is listed under "Topics".
  */
 function TopicsSection({
@@ -179,14 +181,30 @@ function TopicsSection({
   history,
   titleOf,
   onPractise,
+  initiallyOpen,
 }: {
   exam: AssignedExam | null;
   history: FinishedSession[];
   titleOf: (id: string) => string;
   onPractise: (topicId: string) => void;
+  initiallyOpen: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(initiallyOpen);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const { inExam, other } = topicGroups(exam?.topicIds ?? null, history);
+
+  function toggle(event: MouseEvent<HTMLButtonElement>) {
+    // Safari does not focus a button on click: keep the focus on the toggle, which stays in place
+    event.currentTarget.focus();
+    const closing = open;
+    setOpen(!open);
+    if (!closing) return;
+    // Hide: the page gets shorter; once the transition has run the toggle is brought back into view
+    // if it ended up outside the screen.
+    window.setTimeout(() => {
+      wrapperRef.current?.querySelector("button")?.scrollIntoView({ block: "nearest" });
+    }, 220);
+  }
   return (
     <section aria-labelledby="by-topic" className="flex flex-col gap-4">
       <h2 id="by-topic" className="type-item-title">
@@ -198,35 +216,46 @@ function TopicsSection({
           <TopicList rows={inExam} titleOf={titleOf} onPractise={onPractise} />
         </div>
       )}
-      <div className="flex flex-col gap-3">
-        {inExam.length === 0 ? (
+      {inExam.length === 0 ? (
+        <div className="flex flex-col gap-3">
           <h3 className="type-label text-text-secondary">Topics</h3>
-        ) : (
+          <TopicList rows={other} titleOf={titleOf} onPractise={onPractise} />
+        </div>
+      ) : (
+        <div ref={wrapperRef} className="flex flex-col">
+          {/* the group opens and closes with a height transition; closed, it is inert (not focusable) */}
+          <div
+            id="other-topics"
+            inert={!open}
+            className={`grid transition-[grid-template-rows,visibility] duration-200 motion-reduce:transition-none ${open ? "visible grid-rows-[1fr]" : "invisible grid-rows-[0fr]"}`}
+          >
+            <div className="min-h-0 overflow-hidden">
+              <div className="flex flex-col gap-3 pb-3">
+                <h3 className="type-label text-text-secondary">Other topics</h3>
+                <TopicList rows={other} titleOf={titleOf} onPractise={onPractise} />
+              </div>
+            </div>
+          </div>
           <div className="-ml-3 self-start">
             <Button
               variant="tertiary"
               aria-expanded={open}
               aria-controls="other-topics"
-              onClick={() => setOpen(!open)}
+              onClick={toggle}
               trailing={
                 <ChevronDown
                   size={16}
                   strokeWidth={2}
                   aria-hidden="true"
-                  className={`shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
+                  className={`shrink-0 transition-transform duration-200 motion-reduce:transition-none ${open ? "rotate-180" : ""}`}
                 />
               }
             >
-              Other topics ({other.length})
+              {open ? "Hide other topics" : `Show other topics (${other.length})`}
             </Button>
           </div>
-        )}
-        {(inExam.length === 0 || open) && (
-          <div id="other-topics">
-            <TopicList rows={other} titleOf={titleOf} onPractise={onPractise} />
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </section>
   );
 }
@@ -241,6 +270,7 @@ export function ProgressView({
   now,
   onRepeat = () => {},
   onPractise = () => {},
+  otherOpen = false,
 }: {
   history: FinishedSession[];
   /** The assigned exam with the nearest deadline, if any. */
@@ -249,6 +279,8 @@ export function ProgressView({
   onRepeat?: () => void;
   /** Starts (or resumes) practice of a topic. */
   onPractise?: (topicId: string) => void;
+  /** Only for the screen review page: the other topics start open. */
+  otherOpen?: boolean;
 }) {
   const { sections } = useSourceSheet();
   const titleOf = (id: string) => sections.find((section) => section.id === id)?.title ?? id;
@@ -257,7 +289,13 @@ export function ProgressView({
       <PageHeaderBand title="Progress" subtitle="How you are doing over time." />
       <div className="flex flex-col gap-6">
         <ReadinessSection exam={exam} history={history} now={now} onRepeat={onRepeat} />
-        <TopicsSection exam={exam} history={history} titleOf={titleOf} onPractise={onPractise} />
+        <TopicsSection
+          exam={exam}
+          history={history}
+          titleOf={titleOf}
+          onPractise={onPractise}
+          initiallyOpen={otherOpen}
+        />
       </div>
     </div>
   );

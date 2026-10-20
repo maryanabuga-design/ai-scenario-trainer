@@ -419,7 +419,18 @@ export function HomeSample({
 }
 
 /** Progress with seeded sessions and an assigned exam, or without an exam. */
-export function ProgressSample({ state = "seeded" }: { state?: "seeded" | "no-exam" }) {
+export function ProgressSample({
+  state = "seeded",
+  open = false,
+  scrolled = false,
+}: {
+  state?: "seeded" | "no-exam";
+  /** The other topics are open. */
+  open?: boolean;
+  /** The frame is scrolled to its end. */
+  scrolled?: boolean;
+}) {
+  const endRef = useScrollFrameToEnd(scrolled);
   const now = new Date(2026, 9, 19, 14, 0);
   const day = (daysAgo: number, hour = 10, minute = 37) =>
     new Date(2026, 9, 19 - daysAgo, hour, minute).getTime();
@@ -462,7 +473,15 @@ export function ProgressSample({ state = "seeded" }: { state?: "seeded" | "no-ex
     readinessAfter: readinessAfter(raw.slice(0, index + 1), scope),
   }));
   return (
-    <ProgressView history={history} exam={state === "no-exam" ? null : demoExam(now)} now={now} />
+    <>
+      <ProgressView
+        history={history}
+        exam={state === "no-exam" ? null : demoExam(now)}
+        now={now}
+        otherOpen={open}
+      />
+      <div ref={endRef} />
+    </>
   );
 }
 
@@ -485,26 +504,33 @@ export function OnboardingSample({ role = "student", start }: { role?: Role; sta
 export function ProfileSample({
   dialog = null,
   role = "student",
+  scrolled = false,
 }: {
   dialog?: "reset" | "delete" | null;
   role?: Role;
+  /** The frame is scrolled to its end. */
+  scrolled?: boolean;
 }) {
+  const endRef = useScrollFrameToEnd(scrolled);
   return (
-    <ProfileView
-      account={{ name: "Maryana", email: "maryana@example.com", role }}
-      onRoleChange={() => undefined}
-      direction={defaultDirection.id}
-      onDirectionChange={() => undefined}
-      dialog={dialog}
-      onAskReset={() => undefined}
-      onAskDelete={() => undefined}
-      onCancelDialog={() => undefined}
-      onReset={() => undefined}
-      onDelete={() => undefined}
-      onSignOut={() => undefined}
-      resetDone={false}
-      dialogInline
-    />
+    <>
+      <ProfileView
+        account={{ name: "Maryana", email: "maryana@example.com", role }}
+        onRoleChange={() => undefined}
+        direction={defaultDirection.id}
+        onDirectionChange={() => undefined}
+        dialog={dialog}
+        onAskReset={() => undefined}
+        onAskDelete={() => undefined}
+        onCancelDialog={() => undefined}
+        onReset={() => undefined}
+        onDelete={() => undefined}
+        onSignOut={() => undefined}
+        resetDone={false}
+        dialogInline
+      />
+      <div ref={endRef} />
+    </>
   );
 }
 

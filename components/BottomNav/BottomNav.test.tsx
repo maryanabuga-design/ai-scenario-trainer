@@ -37,7 +37,8 @@ describe("the bottom navigation", () => {
     expect(home).toContain('href="/instructor"');
     expect(home).toContain('href="/profile"');
     expect(home).not.toContain('href="/materials"');
-    expect(home).toContain("bg-pastel-yellow");
+    expect(home).toContain("type-caption-strong bg-sand-200 text-sand-900");
+    expect(home).not.toContain("pastel-yellow");
     expect(home).toContain("min-h-14");
     // Home is the current item on Instructor Home, Profile on Profile
     expect(home).toMatch(/aria-current="page"[^>]*>(?:<svg.*?<\/svg>)Home/);

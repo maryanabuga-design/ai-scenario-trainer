@@ -6,6 +6,7 @@ import type { LucideIcon } from "lucide-react";
 import { buttonClasses } from "@/components/Button/Button";
 import { IconTile } from "@/components/IconTile/IconTile";
 import { Chevron } from "@/components/Chevron/Chevron";
+import { MiniQuizLink } from "@/components/MiniQuizLink/MiniQuizLink";
 import { Media3D } from "@/components/Media3D/Media3D";
 import { Chip } from "@/components/Chip/Chip";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
@@ -152,18 +153,11 @@ export function TrainingView({
       />
 
       {mode === "quiz" && (
-        <Link
+        <MiniQuizLink
           href={miniQuizPath}
-          className="flex min-h-16 items-center gap-3 rounded-card bg-card p-4 shadow-(--card-shadow) has-focus-visible:outline-2"
-        >
-          <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <span className="type-body-strong">Mini-quiz</span>
-            <span className="type-small text-text-secondary">
-              Choose topics and 5, 10 or 15 questions
-            </span>
-          </span>
-          <Chevron />
-        </Link>
+          subtitle="Choose topics and 5, 10 or 15 questions"
+          minHeight="min-h-16"
+        />
       )}
 
       {topics.map((topic) => (

@@ -14,7 +14,8 @@ describe("placing the toolbar", () => {
   it("goes below the selection on a touch device, centred on it", () => {
     const place = placeToolbar({ ...base, rect: rect(300, 320) });
     expect(place.side).toBe("below");
-    expect(place.top).toBe(328);
+    // 8px gap plus 20px for the system selection handles
+    expect(place.top).toBe(348);
     expect(place.left).toBe(60);
   });
 

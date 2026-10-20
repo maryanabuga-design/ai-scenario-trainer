@@ -335,7 +335,7 @@ for (const width of [360, 430]) {
       page,
     }) => {
       await open(page, seeded());
-      await page.getByRole("button", { name: "Other topics (6)" }).click();
+      await page.getByRole("button", { name: "Show other topics (6)" }).click();
       const rows = page.locator("[data-topic-row]:visible");
       await expect(rows).toHaveCount(10);
       for (const row of await rows.all()) {
@@ -368,7 +368,7 @@ for (const width of [360, 430]) {
       page,
     }) => {
       await open(page, seeded());
-      await page.getByRole("button", { name: "Other topics (6)" }).click();
+      await page.getByRole("button", { name: "Show other topics (6)" }).click();
       const titles = page.locator("[data-topic-title]:visible");
       let truncated = 0;
       for (const title of await titles.all()) {
@@ -407,7 +407,8 @@ for (const width of [360, 430]) {
           .locator("[data-topic-row]:visible")
           .evaluateAll((els) => els.map((el) => el.getAttribute("data-topic-row")));
       expect(await ids()).toEqual(["S1", "S2", "S3", "S4"]);
-      await page.getByRole("button", { name: "Other topics (6)" }).click();
+      await page.getByRole("button", { name: "Show other topics (6)" }).click();
+      await page.waitForTimeout(300);
       expect(await ids()).toEqual(["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10"]);
     });
 
@@ -427,13 +428,13 @@ for (const width of [360, 430]) {
       );
     });
 
-    test("Other topics (6) is an underlined text button: collapsed by default, opens and closes", async ({
+    test("The other-topics toggle is an underlined text button: collapsed by default, opens and closes", async ({
       page,
     }) => {
       await open(page, seeded());
-      const toggle = page.getByRole("button", { name: "Other topics (6)" });
+      const toggle = page.getByRole("button", { name: "Show other topics (6)" });
       await expect(toggle).toHaveAttribute("aria-expanded", "false");
-      await expect(page.locator('[data-topic-row="S5"]')).toHaveCount(0);
+      await expect(page.locator('[data-topic-row="S5"]')).toBeHidden();
       const look = await toggle.evaluate((el) => {
         const css = getComputedStyle(el);
         const label = el.querySelector("span")!;
@@ -451,12 +452,18 @@ for (const width of [360, 430]) {
       expect(look.height).toBeGreaterThanOrEqual(44);
       expect(look.underline).toContain("underline");
       await toggle.click();
-      await expect(toggle).toHaveAttribute("aria-expanded", "true");
+      await expect(page.getByRole("button", { name: "Hide other topics" })).toHaveAttribute(
+        "aria-expanded",
+        "true",
+      );
       await expect(page.locator("[data-topic-row]:visible")).toHaveCount(10);
       await expect(page.locator('[data-topic-row="S5"]')).toBeVisible();
-      await toggle.click();
-      await expect(toggle).toHaveAttribute("aria-expanded", "false");
-      await expect(page.locator('[data-topic-row="S5"]')).toHaveCount(0);
+      await page.getByRole("button", { name: "Hide other topics" }).click();
+      await expect(page.getByRole("button", { name: "Show other topics (6)" })).toHaveAttribute(
+        "aria-expanded",
+        "false",
+      );
+      await expect(page.locator('[data-topic-row="S5"]')).toBeHidden();
     });
 
     test("tapping a topic card starts a practice session of that topic", async ({ page }) => {
@@ -479,12 +486,18 @@ for (const width of [360, 430]) {
 
     test("the last card is not hidden behind the bottom navigation", async ({ page }) => {
       await open(page, seeded());
-      await page.getByRole("button", { name: "Other topics (6)" }).click();
+      await page.getByRole("button", { name: "Show other topics (6)" }).click();
+      // (the group opens with a 200ms height transition)
+      await page.waitForTimeout(300);
       await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
       await page.waitForTimeout(300);
       const nav = (await page.getByRole("navigation", { name: "Main" }).boundingBox())!;
       const last = (await page.locator("[data-topic-row]:visible").last().boundingBox())!;
       expect(last.y + last.height).toBeLessThanOrEqual(nav.y);
+      // the toggle is after the last card, and also clear of the navigation
+      const toggle = (await page.getByRole("button", { name: "Hide other topics" }).boundingBox())!;
+      expect(toggle.y).toBeGreaterThanOrEqual(last.y + last.height);
+      expect(toggle.y + toggle.height).toBeLessThanOrEqual(nav.y);
     });
 
     test("with no sessions it still shows readiness and the topics, in order", async ({ page }) => {

@@ -1,10 +1,13 @@
 "use client";
 
+import { CircleHelp, Info, LogOut, Trash2 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { DirectionPicker } from "@/components/DirectionPicker/DirectionPicker";
+import { IconTile } from "@/components/IconTile/IconTile";
 import { FooterNote } from "@/components/Footer/Footer";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
@@ -15,6 +18,15 @@ import { initialOf } from "@/lib/user";
 
 export const DEMO_HELPER =
   "Demo only. In the real product your role comes from your organisation account.";
+
+/** The icon tile on the left of a Profile row: the neutral tile, 40px circle, 20px icon (DESIGN.md: Sand scale, touch fixes and Profile icons). */
+function RowIcon({ icon: Icon, destructive = false }: { icon: LucideIcon; destructive?: boolean }) {
+  return (
+    <IconTile className="h-10 w-10 rounded-full">
+      <Icon size={20} strokeWidth={1.75} className={destructive ? "text-wrong" : undefined} />
+    </IconTile>
+  );
+}
 
 const rowClass =
   "flex min-h-16 items-center gap-3 rounded-card bg-card p-4 shadow-(--card-shadow) has-focus-visible:outline-2";
@@ -103,10 +115,12 @@ export function ProfileView({
             Help
           </h2>
           <Link href={onboardingHref} className={rowClass}>
+            <RowIcon icon={CircleHelp} />
             <span className="type-body-strong min-w-0 flex-1">How the app works</span>
             <Chevron />
           </Link>
           <Link href="/about" className={rowClass}>
+            <RowIcon icon={Info} />
             <span className="type-body-strong min-w-0 flex-1">About this prototype</span>
             <Chevron />
           </Link>
@@ -143,6 +157,7 @@ export function ProfileView({
             onClick={onAskDelete}
             className={`${rowClass} min-h-14 w-full text-left`}
           >
+            <RowIcon icon={Trash2} destructive />
             <span className="type-body-strong min-w-0 flex-1 text-wrong">Delete account</span>
           </button>
           <button
@@ -151,6 +166,7 @@ export function ProfileView({
             onClick={onSignOut}
             className={`${rowClass} min-h-14 w-full text-left`}
           >
+            <RowIcon icon={LogOut} />
             <span className="type-body-strong min-w-0 flex-1">Sign out</span>
           </button>
         </section>

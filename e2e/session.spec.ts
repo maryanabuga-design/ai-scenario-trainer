@@ -270,7 +270,8 @@ test.describe("the question screen: hint and bookmark", () => {
       "Think about what the sound of an alarm can and cannot tell you.",
     );
     await expect(card.getByRole("button", { name: /Guide · S1/ })).toBeVisible();
-    // under the options, in the page, not a sheet
+    // under the options, in the page, not a sheet (the page scrolls the card into view first)
+    await page.waitForTimeout(700);
     const optionBox = await page.locator("fieldset label").last().boundingBox();
     const cardBox = await card.boundingBox();
     expect(cardBox!.y).toBeGreaterThan(optionBox!.y + optionBox!.height - 1);

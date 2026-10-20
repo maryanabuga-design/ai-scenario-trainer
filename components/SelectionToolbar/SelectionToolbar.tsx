@@ -42,10 +42,24 @@ export function SelectionToolbar({
           ) : (
             <button
               type="button"
-              // keep the selection: pressing the button must not clear it
+              // Keep the selection: pressing the button must not clear it. This pointerdown
+              // preventDefault ALSO stops WebKit from sending the click after a touch tap, so the
+              // action runs on pointerup (inside the button); a click with no pointer (the
+              // keyboard, detail 0) runs it too.
               onPointerDown={(event) => event.preventDefault()}
-              onClick={() => onRun?.(action.id)}
-              className="type-action flex min-w-11 items-center justify-center px-3 whitespace-nowrap active:bg-primary-pressed"
+              onPointerUp={(event) => {
+                const box = event.currentTarget.getBoundingClientRect();
+                const inside =
+                  event.clientX >= box.left &&
+                  event.clientX <= box.right &&
+                  event.clientY >= box.top &&
+                  event.clientY <= box.bottom;
+                if (inside) onRun?.(action.id);
+              }}
+              onClick={(event) => {
+                if (event.detail === 0) onRun?.(action.id);
+              }}
+              className="type-action flex min-w-11 select-none items-center justify-center px-3 whitespace-nowrap active:bg-primary-pressed"
             >
               {action.id === "copy" && copied ? COPIED_LABEL : action.label}
             </button>

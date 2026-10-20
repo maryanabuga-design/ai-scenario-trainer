@@ -637,6 +637,16 @@ export default function Screens() {
               <ProgressSample />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Progress: other topics closed, scrolled to the end (Show other topics)">
+            <Screen nav="/progress">
+              <ProgressSample scrolled />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Progress: other topics open, scrolled to the end (Hide other topics after the last card)">
+            <Screen nav="/progress">
+              <ProgressSample open scrolled />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Progress: no exam assigned (Overall readiness)">
             <Screen nav="/progress">
               <ProgressSample state="no-exam" />
@@ -727,12 +737,12 @@ export default function Screens() {
         <Group title="Profile">
           <PhoneFrame label="Profile: Student (Demo mode, Coming soon)">
             <Screen nav="/profile">
-              <ProfileSample />
+              <ProfileSample scrolled />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Profile: Instructor (no Direction, no Reset progress)">
             <Screen nav="/profile" role="instructor">
-              <ProfileSample role="instructor" />
+              <ProfileSample role="instructor" scrolled />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="About this prototype, with Restart demo">

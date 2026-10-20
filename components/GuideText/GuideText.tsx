@@ -17,7 +17,7 @@ function Text({ inlines, highlights }: { inlines: Inline[]; highlights: Highligh
           <mark
             key={index}
             data-highlight={segment.mark}
-            className="rounded-[3px] bg-highlight text-text [box-decoration-break:clone]"
+            className="cursor-pointer rounded-[3px] bg-highlight text-text [box-decoration-break:clone]"
           >
             {node}
           </mark>
