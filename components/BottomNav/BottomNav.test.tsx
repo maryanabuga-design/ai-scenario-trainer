@@ -33,17 +33,28 @@ describe("the bottom navigation", () => {
     ]);
   });
 
-  it("has only Home and Profile for an instructor, in the same style, Home being Instructor Home", () => {
+  it("has Overview, Exams and Profile for an instructor, in the same style, Overview being Instructor Home", () => {
     const home = renderToStaticMarkup(<BottomNav activePath="/instructor" role="instructor" />);
-    expect(labels(home)).toEqual(["Home", "Profile"]);
+    expect(labels(home)).toEqual(["Overview", "Exams", "Profile"]);
+    expect(home).toContain('href="/instructor/exams"');
     expect(home).toContain('href="/instructor"');
     expect(home).toContain('href="/profile"');
     expect(home).not.toContain('href="/materials"');
     expect(home).toContain("type-caption-strong bg-sand-100 text-sand-900");
     expect(home).not.toContain("pastel-yellow");
     expect(home).toContain("min-h-14");
-    // Home is the current item on Instructor Home, Profile on Profile
-    expect(home).toMatch(/aria-current="page"[^>]*>(?:<svg.*?<\/svg>)Home/);
+    // Overview is the current item on Instructor Home, Exams on the list, Profile on Profile
+    expect(home).toMatch(/aria-current="page"[^>]*>(?:<svg.*?<\/svg>)Overview/);
+    const exams = renderToStaticMarkup(
+      <BottomNav activePath="/instructor/exams" role="instructor" />,
+    );
+    expect(exams).toMatch(/aria-current="page"[^>]*>(?:<svg.*?<\/svg>)Exams/);
+    // a detail screen is a sub-screen with Back: no navigation
+    for (const path of ["/instructor/exams/new", "/instructor/exams/grp-1"]) {
+      expect(renderToStaticMarkup(<BottomNav activePath={path} role="instructor" />), path).toBe(
+        "",
+      );
+    }
     const profile = renderToStaticMarkup(<BottomNav activePath="/profile" role="instructor" />);
     expect(profile).toMatch(/aria-current="page"[^>]*>(?:<svg.*?<\/svg>)Profile/);
     // an instructor has no navigation on a student-only screen

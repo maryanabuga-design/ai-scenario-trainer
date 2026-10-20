@@ -2,6 +2,8 @@ import { useEffect, useMemo } from "react";
 import seed from "@/content/notifications.json";
 import { DAILY_GOAL, PASS_MARK } from "@/lib/config";
 import { isoDay } from "@/lib/exam-deadline";
+import { useNotices } from "@/lib/group-store";
+import type { Notice } from "@/lib/group-store";
 import { createStore } from "@/lib/store";
 import type { FinishedSession } from "@/lib/session";
 
@@ -43,7 +45,11 @@ const STATIC_TARGETS = [
 
 /** A screen a notification may open: a known route, or the reading screen of a topic. */
 export function isValidTarget(target: string): boolean {
-  return STATIC_TARGETS.includes(target) || /^\/materials\/read\/[A-Za-z0-9-]+$/.test(target);
+  return (
+    STATIC_TARGETS.includes(target) ||
+    /^\/materials\/read\/[A-Za-z0-9-]+$/.test(target) ||
+    /^\/exam\?id=[A-Za-z0-9-]+$/.test(target)
+  );
 }
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
@@ -101,6 +107,23 @@ export function seedNotifications(now: number): AppNotification[] {
     read: false,
   }));
   return tidy(list);
+}
+
+/** The list with the instructor's notices added once each (an id already in the list is never added again). */
+export function withNotices(list: AppNotification[], notices: Notice[]): AppNotification[] {
+  return notices.reduce(
+    (current, notice) =>
+      addNotification(current, {
+        id: notice.id,
+        type: "message",
+        title: notice.title,
+        text: notice.text,
+        target: isValidTarget(notice.target) ? notice.target : null,
+        createdAt: notice.createdAt,
+        read: false,
+      }),
+    list,
+  );
 }
 
 export const unreadCount = (list: AppNotification[]) => list.filter((n) => !n.read).length;
@@ -222,9 +245,16 @@ export function useNotifications(): AppNotification[] | "loading" {
     () => (stored === "loading" ? "loading" : cleanNotifications(stored)),
     [stored],
   );
+  const notices = useNotices();
   useEffect(() => {
     if (list === null) readOrSeed(Date.now());
   }, [list]);
+  // the instructor's notices reach this account once each
+  useEffect(() => {
+    if (list === null || list === "loading" || notices === "loading") return;
+    const merged = withNotices(list, notices);
+    if (merged !== list) store.write(merged);
+  }, [list, notices]);
   return list === null ? "loading" : list;
 }
 

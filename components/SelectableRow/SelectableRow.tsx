@@ -11,6 +11,8 @@ type Props = {
   type?: "radio" | "checkbox";
   /** Exactly 72px high, for the cards with an icon tile (Create account: the role cards). */
   tall?: boolean;
+  /** Exactly 64px high (the topic rows of Assign exam). */
+  compact?: boolean;
   /** A letter badge before the content (A, B, C), for answer options. */
   letter?: string;
   children: ReactNode;
@@ -30,6 +32,7 @@ export function SelectableRow({
   disabled = false,
   type = "radio",
   tall = false,
+  compact = false,
   letter,
   children,
 }: Props) {
@@ -38,7 +41,7 @@ export function SelectableRow({
     : "cursor-pointer border border-selectable-stroke bg-card active:bg-secondary-sand";
   return (
     <label
-      className={`flex ${tall ? "h-[72px] px-[var(--gutter,1rem)]" : "min-h-11 p-[var(--gutter,1rem)]"} items-center gap-3 rounded-card has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${state}`}
+      className={`flex ${tall ? "h-[72px] px-[var(--gutter,1rem)]" : compact ? "h-16 px-[var(--gutter,1rem)]" : "min-h-11 p-[var(--gutter,1rem)]"} items-center gap-3 rounded-card has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${state}`}
     >
       <input
         type={type}

@@ -1,0 +1,728 @@
+{
+  "note": "Demo group for the Instructor side. Fictional students, invented names. Simulated data.",
+  "group": {
+    "id": "group-a",
+    "name": "Group A"
+  },
+  "fields": [
+    "rescue",
+    "paramedic",
+    "military",
+    "civil",
+    "other"
+  ],
+  "students": [
+    {
+      "id": "stu-01",
+      "name": "Mira Halden",
+      "initials": "MH",
+      "field": "rescue",
+      "topics": {
+        "S1": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S2": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S3": {
+          "answered": 6,
+          "correct": 3
+        },
+        "S4": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S5": {
+          "answered": 4,
+          "correct": 2
+        },
+        "S6": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S7": {
+          "answered": 1,
+          "correct": 1
+        },
+        "S8": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S9": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S10": {
+          "answered": 0,
+          "correct": 0
+        }
+      },
+      "lastActiveDaysAgo": 3
+    },
+    {
+      "id": "stu-02",
+      "name": "Tomas Verel",
+      "initials": "TV",
+      "field": "paramedic",
+      "topics": {
+        "S1": {
+          "answered": 6,
+          "correct": 4
+        },
+        "S2": {
+          "answered": 3,
+          "correct": 3
+        },
+        "S3": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S4": {
+          "answered": 4,
+          "correct": 3
+        },
+        "S5": {
+          "answered": 5,
+          "correct": 3
+        },
+        "S6": {
+          "answered": 1,
+          "correct": 0
+        },
+        "S7": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S8": {
+          "answered": 1,
+          "correct": 1
+        },
+        "S9": {
+          "answered": 3,
+          "correct": 3
+        },
+        "S10": {
+          "answered": 4,
+          "correct": 3
+        }
+      },
+      "lastActiveDaysAgo": 9
+    },
+    {
+      "id": "stu-03",
+      "name": "Ines Korvath",
+      "initials": "IK",
+      "field": "civil",
+      "topics": {
+        "S1": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S2": {
+          "answered": 4,
+          "correct": 3
+        },
+        "S3": {
+          "answered": 2,
+          "correct": 1
+        },
+        "S4": {
+          "answered": 5,
+          "correct": 4
+        },
+        "S5": {
+          "answered": 2,
+          "correct": 2
+        },
+        "S6": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S7": {
+          "answered": 2,
+          "correct": 1
+        },
+        "S8": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S9": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S10": {
+          "answered": 0,
+          "correct": 0
+        }
+      },
+      "lastActiveDaysAgo": 2
+    },
+    {
+      "id": "stu-04",
+      "name": "Dario Pell",
+      "initials": "DP",
+      "field": "military",
+      "topics": {
+        "S1": {
+          "answered": 6,
+          "correct": 5
+        },
+        "S2": {
+          "answered": 2,
+          "correct": 2
+        },
+        "S3": {
+          "answered": 5,
+          "correct": 3
+        },
+        "S4": {
+          "answered": 2,
+          "correct": 1
+        },
+        "S5": {
+          "answered": 6,
+          "correct": 5
+        },
+        "S6": {
+          "answered": 4,
+          "correct": 3
+        },
+        "S7": {
+          "answered": 1,
+          "correct": 1
+        },
+        "S8": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S9": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S10": {
+          "answered": 4,
+          "correct": 2
+        }
+      },
+      "lastActiveDaysAgo": 10
+    },
+    {
+      "id": "stu-05",
+      "name": "Lena Ostrow",
+      "initials": "LO",
+      "field": "rescue",
+      "topics": {
+        "S1": {
+          "answered": 2,
+          "correct": 2
+        },
+        "S2": {
+          "answered": 4,
+          "correct": 4
+        },
+        "S3": {
+          "answered": 1,
+          "correct": 1
+        },
+        "S4": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S5": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S6": {
+          "answered": 2,
+          "correct": 1
+        },
+        "S7": {
+          "answered": 2,
+          "correct": 2
+        },
+        "S8": {
+          "answered": 2,
+          "correct": 1
+        },
+        "S9": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S10": {
+          "answered": 0,
+          "correct": 0
+        }
+      },
+      "lastActiveDaysAgo": 5
+    },
+    {
+      "id": "stu-06",
+      "name": "Kofi Bremer",
+      "initials": "KB",
+      "field": "other",
+      "topics": {
+        "S1": {
+          "answered": 5,
+          "correct": 3
+        },
+        "S2": {
+          "answered": 2,
+          "correct": 2
+        },
+        "S3": {
+          "answered": 1,
+          "correct": 0
+        },
+        "S4": {
+          "answered": 6,
+          "correct": 3
+        },
+        "S5": {
+          "answered": 3,
+          "correct": 3
+        },
+        "S6": {
+          "answered": 5,
+          "correct": 3
+        },
+        "S7": {
+          "answered": 5,
+          "correct": 2
+        },
+        "S8": {
+          "answered": 4,
+          "correct": 3
+        },
+        "S9": {
+          "answered": 4,
+          "correct": 3
+        },
+        "S10": {
+          "answered": 2,
+          "correct": 1
+        }
+      },
+      "lastActiveDaysAgo": 1
+    },
+    {
+      "id": "stu-07",
+      "name": "Sana Idris",
+      "initials": "SI",
+      "field": "paramedic",
+      "topics": {
+        "S1": {
+          "answered": 8,
+          "correct": 5
+        },
+        "S2": {
+          "answered": 2,
+          "correct": 2
+        },
+        "S3": {
+          "answered": 1,
+          "correct": 1
+        },
+        "S4": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S5": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S6": {
+          "answered": 2,
+          "correct": 2
+        },
+        "S7": {
+          "answered": 4,
+          "correct": 3
+        },
+        "S8": {
+          "answered": 2,
+          "correct": 1
+        },
+        "S9": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S10": {
+          "answered": 1,
+          "correct": 1
+        }
+      },
+      "lastActiveDaysAgo": 4
+    },
+    {
+      "id": "stu-08",
+      "name": "Jonas Weiss",
+      "initials": "JW",
+      "field": "civil",
+      "topics": {
+        "S1": {
+          "answered": 1,
+          "correct": 1
+        },
+        "S2": {
+          "answered": 5,
+          "correct": 3
+        },
+        "S3": {
+          "answered": 4,
+          "correct": 2
+        },
+        "S4": {
+          "answered": 4,
+          "correct": 3
+        },
+        "S5": {
+          "answered": 2,
+          "correct": 2
+        },
+        "S6": {
+          "answered": 5,
+          "correct": 3
+        },
+        "S7": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S8": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S9": {
+          "answered": 2,
+          "correct": 1
+        },
+        "S10": {
+          "answered": 2,
+          "correct": 2
+        }
+      },
+      "lastActiveDaysAgo": 3
+    },
+    {
+      "id": "stu-09",
+      "name": "Alva Renn",
+      "initials": "AR",
+      "field": "rescue",
+      "topics": {
+        "S1": {
+          "answered": 3,
+          "correct": 1
+        },
+        "S2": {
+          "answered": 1,
+          "correct": 1
+        },
+        "S3": {
+          "answered": 4,
+          "correct": 3
+        },
+        "S4": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S5": {
+          "answered": 4,
+          "correct": 3
+        },
+        "S6": {
+          "answered": 2,
+          "correct": 2
+        },
+        "S7": {
+          "answered": 2,
+          "correct": 1
+        },
+        "S8": {
+          "answered": 4,
+          "correct": 3
+        },
+        "S9": {
+          "answered": 1,
+          "correct": 1
+        },
+        "S10": {
+          "answered": 0,
+          "correct": 0
+        }
+      },
+      "lastActiveDaysAgo": 1
+    },
+    {
+      "id": "stu-10",
+      "name": "Pavel Drum",
+      "initials": "PD",
+      "field": "military",
+      "topics": {
+        "S1": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S2": {
+          "answered": 6,
+          "correct": 3
+        },
+        "S3": {
+          "answered": 1,
+          "correct": 1
+        },
+        "S4": {
+          "answered": 2,
+          "correct": 1
+        },
+        "S5": {
+          "answered": 4,
+          "correct": 3
+        },
+        "S6": {
+          "answered": 2,
+          "correct": 1
+        },
+        "S7": {
+          "answered": 1,
+          "correct": 1
+        },
+        "S8": {
+          "answered": 1,
+          "correct": 1
+        },
+        "S9": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S10": {
+          "answered": 1,
+          "correct": 1
+        }
+      },
+      "lastActiveDaysAgo": 10
+    },
+    {
+      "id": "stu-11",
+      "name": "Noor Falk",
+      "initials": "NF",
+      "field": "paramedic",
+      "topics": {
+        "S1": {
+          "answered": 7,
+          "correct": 6
+        },
+        "S2": {
+          "answered": 6,
+          "correct": 3
+        },
+        "S3": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S4": {
+          "answered": 5,
+          "correct": 4
+        },
+        "S5": {
+          "answered": 7,
+          "correct": 4
+        },
+        "S6": {
+          "answered": 2,
+          "correct": 2
+        },
+        "S7": {
+          "answered": 5,
+          "correct": 4
+        },
+        "S8": {
+          "answered": 1,
+          "correct": 1
+        },
+        "S9": {
+          "answered": 1,
+          "correct": 1
+        },
+        "S10": {
+          "answered": 0,
+          "correct": 0
+        }
+      },
+      "lastActiveDaysAgo": 7
+    },
+    {
+      "id": "stu-12",
+      "name": "Elio Marsh",
+      "initials": "EM",
+      "field": "other",
+      "topics": {
+        "S1": {
+          "answered": 7,
+          "correct": 6
+        },
+        "S2": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S3": {
+          "answered": 5,
+          "correct": 3
+        },
+        "S4": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S5": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S6": {
+          "answered": 4,
+          "correct": 3
+        },
+        "S7": {
+          "answered": 1,
+          "correct": 1
+        },
+        "S8": {
+          "answered": 2,
+          "correct": 2
+        },
+        "S9": {
+          "answered": 1,
+          "correct": 1
+        },
+        "S10": {
+          "answered": 3,
+          "correct": 2
+        }
+      },
+      "lastActiveDaysAgo": 1
+    },
+    {
+      "id": "stu-13",
+      "name": "Hana Quill",
+      "initials": "HQ",
+      "field": "civil",
+      "topics": {
+        "S1": {
+          "answered": 7,
+          "correct": 6
+        },
+        "S2": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S3": {
+          "answered": 2,
+          "correct": 1
+        },
+        "S4": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S5": {
+          "answered": 4,
+          "correct": 4
+        },
+        "S6": {
+          "answered": 4,
+          "correct": 3
+        },
+        "S7": {
+          "answered": 2,
+          "correct": 1
+        },
+        "S8": {
+          "answered": 2,
+          "correct": 1
+        },
+        "S9": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S10": {
+          "answered": 4,
+          "correct": 4
+        }
+      },
+      "lastActiveDaysAgo": 10
+    },
+    {
+      "id": "stu-14",
+      "name": "Ravi Tolle",
+      "initials": "RT",
+      "field": "rescue",
+      "topics": {
+        "S1": {
+          "answered": 6,
+          "correct": 4
+        },
+        "S2": {
+          "answered": 7,
+          "correct": 5
+        },
+        "S3": {
+          "answered": 2,
+          "correct": 2
+        },
+        "S4": {
+          "answered": 2,
+          "correct": 2
+        },
+        "S5": {
+          "answered": 2,
+          "correct": 2
+        },
+        "S6": {
+          "answered": 1,
+          "correct": 1
+        },
+        "S7": {
+          "answered": 3,
+          "correct": 3
+        },
+        "S8": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S9": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S10": {
+          "answered": 2,
+          "correct": 2
+        }
+      },
+      "lastActiveDaysAgo": 8
+    }
+  ],
+  "exams": [
+    {
+      "id": "seed-active",
+      "title": "Alarm and escape routes exam",
+      "topicIds": [
+        "S1",
+        "S2",
+        "S3",
+        "S5"
+      ],
+      "deadlineOffsetDays": 6,
+      "createdDaysAgo": 2
+    },
+    {
+      "id": "seed-closed",
+      "title": "First aid basics exam",
+      "topicIds": [
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "deadlineOffsetDays": -6,
+      "createdDaysAgo": 14
+    }
+  ]
+}

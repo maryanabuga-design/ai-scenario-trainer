@@ -143,6 +143,8 @@ describe("a secondary always comes with a primary above it", () => {
       )
       .sort();
     expect(withSecondary).toEqual([
+      // The exam intro of a closed group exam: Back to Home.
+      "app/(app)/exam/page.tsx",
       // About this prototype: "Restart demo" under the info lines (one clearly separate action).
       "components/AboutView/AboutView.tsx",
       // Answer review: Back to results, below the primary Next question.
@@ -156,6 +158,9 @@ describe("a secondary always comes with a primary above it", () => {
       "components/ConfirmDialog/ConfirmDialog.tsx",
       // The exam screen: Start exam anyway, below the primary Repeat weak topics.
       "components/ExamView/ExamView.tsx",
+      // Instructor Assign exam: Cancel and Select all; Exam detail: Remind and Close exam, Exam not found.
+      "components/InstructorExams/AssignExamView.tsx",
+      "components/InstructorExams/ExamDetailView.tsx",
       // Material page: Create again and Read the sample guide, below the primary action.
       "components/MaterialView/MaterialView.tsx",
       // Progress: the Exam readiness card's Repeat weak topics, its one action (documented exception).

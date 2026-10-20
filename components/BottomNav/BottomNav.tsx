@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRole } from "@/lib/auth";
 import type { Role } from "@/lib/role";
-import { ChartNoAxesColumn, FileText, House, Sparkles, User } from "lucide-react";
+import { ChartNoAxesColumn, ClipboardList, FileText, House, Sparkles, User } from "lucide-react";
 
 const studentItems = [
   { href: "/", label: "Home", Icon: House },
@@ -13,9 +13,10 @@ const studentItems = [
   { href: "/ask-ai", label: "Ask AI", Icon: Sparkles },
 ];
 
-/** An instructor has only Home (Instructor Home) and Profile, in the same style. */
+/** An instructor has Overview (Instructor Home), Exams and Profile, in the same style. */
 const instructorItems = [
-  { href: "/instructor", label: "Home", Icon: House },
+  { href: "/instructor", label: "Overview", Icon: House },
+  { href: "/instructor/exams", label: "Exams", Icon: ClipboardList },
   { href: "/profile", label: "Profile", Icon: User },
 ];
 
@@ -27,6 +28,8 @@ function isCurrent(href: string, pathname: string) {
   // Training is a sub-screen of Home and keeps the Home item active.
   if (href === "/") return pathname === "/" || pathname === "/training";
   if (href === "/instructor") return pathname === "/instructor";
+  // the exams list is a tab; its detail screens (new, <id>) are sub-screens with Back: no navigation
+  if (href === "/instructor/exams") return pathname === "/instructor/exams";
   // a thread (/ask-ai/<id>) is a sub-screen with Back: no navigation
   if (href === "/ask-ai") return pathname === "/ask-ai";
   return pathname.startsWith(href);

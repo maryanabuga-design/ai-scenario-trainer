@@ -18,6 +18,7 @@ export function TextField({
   error,
   helper,
   type = "text",
+  min,
   inputMode,
   autoComplete,
   readOnly = false,
@@ -32,7 +33,9 @@ export function TextField({
   /** The message under the field, or null when the value is fine. */
   error?: ReactNode;
   helper?: string;
-  type?: "text" | "email";
+  type?: "text" | "email" | "date";
+  /** The earliest date of a date field (YYYY-MM-DD). */
+  min?: string;
   inputMode?: "text" | "email";
   autoComplete?: string;
   readOnly?: boolean;
@@ -53,6 +56,7 @@ export function TextField({
         id={id}
         name={name}
         type={type}
+        min={min}
         inputMode={inputMode}
         autoComplete={autoComplete}
         autoFocus={autoFocus}

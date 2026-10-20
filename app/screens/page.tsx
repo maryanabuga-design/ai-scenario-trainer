@@ -46,6 +46,7 @@ import {
   OnboardingSample,
   ProfileSample,
   InstructorHomeSample,
+  InstructorExamsSample,
   AboutSample,
   WelcomeSample,
   SignUpSample,
@@ -793,9 +794,54 @@ export default function Screens() {
               <AboutSample confirming />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor Home (stub), navigation with Home and Profile">
+          <PhoneFrame label="Instructor Home (stub), navigation Overview, Exams, Profile">
             <Screen nav="/instructor" role="instructor">
               <InstructorHomeSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Exams list (Assign exam, ACTIVE, Show closed exams)">
+            <Screen nav="/instructor/exams" role="instructor">
+              <InstructorExamsSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Exams list with the closed exams open">
+            <Screen nav="/instructor/exams" role="instructor">
+              <InstructorExamsSample state="closed" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Exams list, empty">
+            <Screen nav="/instructor/exams" role="instructor">
+              <InstructorExamsSample state="empty" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Assign exam, empty">
+            <Screen>
+              <InstructorExamsSample state="assign" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Assign exam, filled">
+            <Screen>
+              <InstructorExamsSample state="assign-filled" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Assign exam, Discard confirmation">
+            <Screen>
+              <InstructorExamsSample state="discard" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Exam detail (active)">
+            <Screen>
+              <InstructorExamsSample state="detail" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Exam detail (closed)">
+            <Screen>
+              <InstructorExamsSample state="detail-closed" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Student Home with the Assigned exam card">
+            <Screen nav="/">
+              <HomeSample state="first" assigned />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Delete account confirmation">

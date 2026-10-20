@@ -3,6 +3,8 @@
 import { Bookmark, ClipboardCheck, ListChecks, ListOrdered } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
+import { AssignedExamCard } from "@/components/AssignedExamCard/AssignedExamCard";
+import type { GroupExam } from "@/lib/group-exams";
 import { buttonClasses } from "@/components/Button/Button";
 import { MiniQuizLink } from "@/components/MiniQuizLink/MiniQuizLink";
 import { Media3D } from "@/components/Media3D/Media3D";
@@ -36,10 +38,13 @@ export function HomeView({
   name,
   summary,
   counts,
+  assigned = [],
 }: {
   name: string;
   summary: HomeSummary;
   counts: HomeCounts;
+  /** An Active group exam the student has not passed yet: its card shows above the hero card. */
+  assigned?: GroupExam[];
 }) {
   const tiles = homeTiles(counts);
 
@@ -60,6 +65,10 @@ export function HomeView({
         </div>
         <p className="type-body text-text-secondary">{summary.subtitle}</p>
       </header>
+
+      {assigned.map((exam) => (
+        <AssignedExamCard key={exam.id} exam={exam} />
+      ))}
 
       <section
         aria-label={HERO_TITLE}

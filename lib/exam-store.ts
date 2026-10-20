@@ -12,6 +12,8 @@ export type ExamSession = {
   answers: Answer[];
   /** The question on screen. */
   index: number;
+  /** The group exam this attempt is for (the Instructor side); absent for the generic exam. */
+  examId?: string;
   startedAt: number;
   /** When the time is up: stored, so a refresh keeps the timer. */
   endsAt: number;

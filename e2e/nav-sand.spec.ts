@@ -79,7 +79,8 @@ for (const width of [360, 430]) {
     test.use({ viewport: { width, height: 800 }, storageState: instructor });
 
     for (const [path, label] of [
-      ["/instructor", "Home"],
+      ["/instructor", "Overview"],
+      ["/instructor/exams", "Exams"],
       ["/profile", "Profile"],
     ]) {
       test(`Instructor: ${label} is a sand pill`, async ({ page }) => {

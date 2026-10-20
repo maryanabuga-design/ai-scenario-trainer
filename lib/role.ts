@@ -31,13 +31,17 @@ export const roleHome = (role: Role): string => (role === "instructor" ? "/instr
 /** The routes an instructor may open; every other route belongs to the student. */
 const INSTRUCTOR_ROUTES = ["/instructor", "/profile", "/profile/edit", "/about", "/onboarding"];
 
+/** An instructor route: Instructor Home or anything under /instructor/. */
+const isInstructorRoute = (pathname: string) =>
+  INSTRUCTOR_ROUTES.includes(pathname) || pathname.startsWith("/instructor/");
+
 /**
  * Where a role is sent from a route it may not open, or null when it may stay: an instructor is
  * sent from a student-only route to Instructor Home, a student from Instructor Home to Home.
  */
 export function roleRedirect(role: Role, pathname: string): string | null {
   if (role === "instructor") {
-    return INSTRUCTOR_ROUTES.includes(pathname) ? null : roleHome("instructor");
+    return isInstructorRoute(pathname) ? null : roleHome("instructor");
   }
   return pathname === "/instructor" || pathname.startsWith("/instructor/")
     ? roleHome("student")

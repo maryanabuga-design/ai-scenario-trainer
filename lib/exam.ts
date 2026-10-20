@@ -10,9 +10,14 @@ import type { ExamResult, FinishedSession } from "@/lib/session";
  * questions (half and half when both exist), at least one of every topic when possible, the rest
  * random without repeats, in random order. With fewer questions than `count` all of them are used.
  */
-export function drawExam(random: () => number, count: number = EXAM_QUESTIONS): string[] {
-  const scenario = modeItems("scenario");
-  const quiz = modeItems("quiz");
+export function drawExam(
+  random: () => number,
+  count: number = EXAM_QUESTIONS,
+  topicIds?: string[],
+): string[] {
+  const inTopics = (item: Item) => !topicIds || topicIds.includes(item.section);
+  const scenario = modeItems("scenario").filter(inTopics);
+  const quiz = modeItems("quiz").filter(inTopics);
   if (scenario.length + quiz.length <= count) {
     return shuffled([...scenario, ...quiz], random).map((item) => item.id);
   }
@@ -34,7 +39,10 @@ export function drawExam(random: () => number, count: number = EXAM_QUESTIONS): 
   ];
 
   // One question of every topic first, as long as there is room.
-  for (const section of shuffled([...trainingSections], random)) {
+  for (const section of shuffled(
+    trainingSections.filter((id) => !topicIds || topicIds.includes(id)),
+    random,
+  )) {
     if (chosen.length >= count) break;
     const options = pool.filter((entry) => entry.item.section === section && room[entry.mode] > 0);
     if (options.length === 0) continue;

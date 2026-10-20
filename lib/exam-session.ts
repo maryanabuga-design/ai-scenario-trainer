@@ -3,6 +3,7 @@ import { drawExam, examDurationMs } from "@/lib/exam";
 import { demoExam, nearestExam, readExams } from "@/lib/assigned-exams";
 import { currentAccount, readAuth } from "@/lib/auth";
 import { recordCertificate } from "@/lib/certificates-store";
+import { readGroupExams, recordAttempt } from "@/lib/group-store";
 import { correctCount, scoreItem } from "@/lib/scoring";
 import type { ScoredItem } from "@/lib/scoring";
 import { resultPercent } from "@/lib/results";
@@ -13,9 +14,15 @@ import { findItem } from "@/lib/items";
 import { addToHistory, answerFor, topicIdsOf } from "@/lib/session";
 
 /** Starts a new exam now, replacing any earlier one. */
-export function startExam(now: number = Date.now(), random: () => number = Math.random) {
+export function startExam(
+  now: number = Date.now(),
+  random: () => number = Math.random,
+  /** A group exam: its topics and question count, and the id the attempt is recorded against. */
+  group?: { id: string; topicIds: string[]; questionCount: number },
+) {
   saveExam({
-    itemIds: drawExam(random, EXAM_QUESTIONS),
+    ...(group && { examId: group.id }),
+    itemIds: drawExam(random, group?.questionCount ?? EXAM_QUESTIONS, group?.topicIds),
     answers: [],
     index: 0,
     startedAt: now,
@@ -61,15 +68,30 @@ export function finishExam(exam: ExamSession, now: number = Date.now()) {
   const account = currentAccount(readAuth());
   if (account) {
     const scored = scoreExam({ itemIds: exam.itemIds, answers: ordered });
-    recordCertificate({
+    const correct = correctCount(scored);
+    const group = exam.examId ? readGroupExams().find((e) => e.id === exam.examId) : undefined;
+    const certificate = recordCertificate({
       accountId: account.email,
-      // the assigned exam, or the demo exam the app shows when nothing is assigned yet
+      // the group exam, the assigned exam, or the demo exam the app shows when nothing is assigned yet
       examTitle:
-        nearestExam(readExams() ?? [demoExam(new Date(finishedAt))])?.title ?? "Training exam",
-      correct: correctCount(scored),
+        group?.title ??
+        nearestExam(readExams() ?? [demoExam(new Date(finishedAt))])?.title ??
+        "Training exam",
+      correct,
       total: exam.itemIds.length,
       attemptAt: finishedAt,
       now: finishedAt,
     });
+    // an attempt at a group exam is recorded against its id (the instructor's lists read it)
+    if (exam.examId) {
+      recordAttempt({
+        examId: exam.examId,
+        studentId: account.email,
+        correct,
+        total: exam.itemIds.length,
+        finishedAt,
+        ...(certificate && { certificateId: certificate.id }),
+      });
+    }
   }
 }

@@ -72,3 +72,27 @@ describe("the route guard", () => {
     }
   });
 });
+
+describe("the instructor routes", () => {
+  it("lets an instructor open every /instructor route and sends a student away from them", () => {
+    for (const path of [
+      "/instructor",
+      "/instructor/exams",
+      "/instructor/exams/new",
+      "/instructor/exams/grp-1",
+    ]) {
+      expect(roleRedirect("instructor", path), path).toBeNull();
+      expect(roleRedirect("student", path), path).toBe("/");
+    }
+    // an instructor is still sent away from student-only screens
+    for (const path of [
+      "/exam",
+      "/training",
+      "/ask-ai",
+      "/profile/certificates",
+      "/notifications",
+    ]) {
+      expect(roleRedirect("instructor", path), path).toBe("/instructor");
+    }
+  });
+});

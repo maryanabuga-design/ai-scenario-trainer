@@ -18,6 +18,12 @@ import { answerTo, followUp, newThread, questionThread, userMessage } from "@/li
 import type { AiMessage, Thread } from "@/lib/ask-ai";
 import { CertificateView } from "@/components/CertificateView/CertificateView";
 import { CertificatesList } from "@/components/CertificatesList/CertificatesList";
+import { AssignExamView } from "@/components/InstructorExams/AssignExamView";
+import { ExamDetailView } from "@/components/InstructorExams/ExamDetailView";
+import { InstructorExamsView } from "@/components/InstructorExams/InstructorExamsView";
+import { groupCounts, participants, studentRows } from "@/lib/cohort";
+import type { Attempt } from "@/lib/cohort";
+import { seedGroupExams } from "@/lib/group-exams";
 import { AnswerReview } from "@/components/AnswerReview/AnswerReview";
 import { SessionBar } from "@/components/SessionBar/SessionBar";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
@@ -367,8 +373,11 @@ const passedAnswers = [
 /** Home in its four states, with fake data and a fixed date. */
 export function HomeSample({
   state = "first",
+  assigned = false,
 }: {
   state?: "first" | "continue" | "weak" | "goal";
+  /** Show the Assigned exam card. */
+  assigned?: boolean;
 }) {
   const now = new Date(2026, 9, 17, 15, 0);
   const right = (ids: string[]) =>
@@ -411,6 +420,7 @@ export function HomeSample({
       : null;
   return (
     <HomeView
+      assigned={assigned ? seedGroupExams(new Date(2026, 9, 24).getTime()).slice(0, 1) : []}
       name="Maryana"
       summary={homeSummary({ unfinished, history })}
       counts={homeCounts({
@@ -1250,6 +1260,79 @@ export function NotificationsSample({ state }: { state: "new" | "mixed" | "empty
 /** The Instructor Home stub and the About screen, for the screen review page. */
 export function InstructorHomeSample() {
   return <InstructorHomeView />;
+}
+
+/** The Instructor exams screens for the screen review page (the seeded demo group, a fixed date). */
+export function InstructorExamsSample({
+  state = "list",
+}: {
+  state?:
+    | "list"
+    | "closed"
+    | "empty"
+    | "assign"
+    | "assign-filled"
+    | "discard"
+    | "detail"
+    | "detail-closed";
+}) {
+  const { sections } = useSourceSheet();
+  const titleOf = (id: string) => sections.find((section) => section.id === id)?.title ?? id;
+  const now = new Date(2026, 9, 24, 10, 0).getTime();
+  const exams = seedGroupExams(now);
+  const people = participants([{ name: "Maryana", email: "maryana@example.com" }]);
+  const attempts: Attempt[] = [];
+  if (state === "list" || state === "closed" || state === "empty") {
+    return (
+      <InstructorExamsView
+        exams={state === "empty" ? [] : exams}
+        people={people}
+        attempts={attempts}
+        now={now}
+        initiallyOpen={state === "closed"}
+      />
+    );
+  }
+  if (state === "assign" || state === "assign-filled" || state === "discard") {
+    return (
+      <AssignExamView
+        titleOf={titleOf}
+        now={now}
+        onAssign={() => undefined}
+        onCancel={() => undefined}
+        initial={
+          state === "assign"
+            ? undefined
+            : {
+                topics: ["S1", "S2", "S3"],
+                preset: "1w",
+                ...(state === "discard" && { title: "Exam: Alarm" }),
+              }
+        }
+        confirmingInitially={state === "discard"}
+        dialogInline
+      />
+    );
+  }
+  const closed = state === "detail-closed";
+  const exam = closed ? exams[1] : exams[0];
+  const context = { attempts, active: !closed };
+  return (
+    <ExamDetailView
+      exam={exam}
+      active={!closed}
+      counts={groupCounts(people, exam, context)}
+      rows={studentRows(people, exam, context)}
+      titleOf={titleOf}
+      message=""
+      confirmingClose={false}
+      onRemind={() => undefined}
+      onAskClose={() => undefined}
+      onCancelClose={() => undefined}
+      onClose={() => undefined}
+      dialogInline
+    />
+  );
 }
 
 export function AboutSample({ confirming = false }: { confirming?: boolean }) {
