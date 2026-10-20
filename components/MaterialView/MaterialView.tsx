@@ -148,7 +148,7 @@ export function MaterialView({
             >
               Start training
             </Button>
-            <ButtonLink href={`/training/${material.id}`} variant="tertiary">
+            <ButtonLink href={`/training/${material.id}`} variant="secondary">
               Create again
             </ButtonLink>
           </>
@@ -161,7 +161,7 @@ export function MaterialView({
               only.
             </p>
             <Button disabled>Create training</Button>
-            <ButtonLink href="/materials/read/S1" variant="tertiary">
+            <ButtonLink href="/materials/read/S1" variant="secondary">
               Read the sample guide
             </ButtonLink>
           </>

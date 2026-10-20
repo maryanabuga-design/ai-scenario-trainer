@@ -36,10 +36,8 @@ export type Session = {
   partId?: string;
   /** Where Back on Results goes: where the session was started from. Home when absent. */
   returnTo?: string;
-  /** An assigned exam this session practises ("Repeat weak topics"): its summary shows the readiness before and after. */
+  /** An assigned exam this session practises ("Repeat weak topics"): its Results ends with Done. */
   examId?: string;
-  /** The exam's readiness when the session started, in percent. */
-  readinessBefore?: number;
   /** Questions whose hint was opened; it moves onto the answer once there is one. */
   hintsOpened?: string[];
   finished: boolean;
@@ -124,7 +122,6 @@ export function startSession(
     partId?: string;
     returnTo?: string;
     examId?: string;
-    readinessBefore?: number;
     mode?: Session["mode"];
   } = {},
 ) {
@@ -135,7 +132,6 @@ export function startSession(
     ...(options.partId && { partId: options.partId }),
     ...(options.returnTo && { returnTo: options.returnTo }),
     ...(options.examId && { examId: options.examId }),
-    ...(options.readinessBefore !== undefined && { readinessBefore: options.readinessBefore }),
     itemIds,
     answers: [],
     index: 0,

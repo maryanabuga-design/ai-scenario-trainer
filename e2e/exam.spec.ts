@@ -131,9 +131,9 @@ test.describe("Exam readiness", () => {
     await expect(page).toHaveURL(/\/session\/results$/);
     const after = Math.floor((10 / scope.length) * 100);
     await expect(page.getByText("10 of 10 correct")).toBeVisible();
-    await expect(page.getByText(`Readiness 0% → ${after}%`)).toBeVisible();
-    // exactly two percentages: the one Readiness line
-    expect(((await page.locator("main").innerText()).match(/%/g) ?? []).length).toBe(2);
+    // no readiness line and no percentage at all on this Results screen
+    await expect(page.getByText(/Readiness/)).toHaveCount(0);
+    expect(((await page.locator("main").innerText()).match(/%/g) ?? []).length).toBe(0);
     await page.getByRole("link", { name: "Done", exact: true }).click();
     await expect(page).toHaveURL(/\/exam\?id=demo-evacuation-basics$/);
     await expect(

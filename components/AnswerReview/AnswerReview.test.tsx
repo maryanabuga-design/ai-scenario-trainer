@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { AnswerReview } from "@/components/AnswerReview/AnswerReview";
+import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
 import { AskAiProvider } from "@/components/AskAi/AskAi";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { loadAllSections } from "@/lib/guide";
@@ -10,19 +11,21 @@ function render(itemId: string, choice: string | null, position = 2, total = 5) 
   return renderToStaticMarkup(
     <SourceSheetProvider sections={loadAllSections()}>
       <AskAiProvider>
-        <AnswerReview
-          item={getItem(itemId)}
-          choice={choice}
-          position={position}
-          total={total}
-          backHref="/session/results"
-          backLabel="Back to results"
-          hrefFor={(next) => `/session/results/review/${next}`}
-          marks={["correct", "incorrect", "correct", "correct", "incorrect"]}
-          onJump={() => undefined}
-          saved={false}
-          onToggleSaved={() => undefined}
-        />
+        <ActionBarProvider>
+          <AnswerReview
+            item={getItem(itemId)}
+            choice={choice}
+            position={position}
+            total={total}
+            backHref="/session/results"
+            backLabel="Back to results"
+            hrefFor={(next) => `/session/results/review/${next}`}
+            marks={["correct", "wrong", "correct", "correct", "wrong"]}
+            onJump={() => undefined}
+            saved={false}
+            onToggleSaved={() => undefined}
+          />
+        </ActionBarProvider>
       </AskAiProvider>
     </SourceSheetProvider>,
   );
@@ -98,20 +101,10 @@ describe("Answer review", () => {
     expect(html).not.toMatch(/Matches the guide|Doesn&#x27;t match|Your explanation|What happened/);
   });
 
-  it("ends with Back to results first, then Previous and Next question", () => {
+  it("has no Previous or Next question text link (the pinned buttons are checked in the browser)", () => {
     const html = render("q-scn-s01-001", "a", 2, 5);
-    const order = [">Back to results<", ">Previous question<", ">Next question<"].map((part) =>
-      html.indexOf(part),
-    );
-    expect(order.every((position) => position >= 0)).toBe(true);
-    expect([...order].sort((a, b) => a - b)).toEqual(order);
-    expect(html).toContain('href="/session/results/review/1"');
-    expect(html).toContain('href="/session/results/review/3"');
-  });
-
-  it("hides Previous on the first question and Next on the last", () => {
-    expect(render("q-scn-s01-001", "a", 1, 5)).not.toContain("Previous question");
-    expect(render("q-scn-s01-001", "a", 5, 5)).not.toContain("Next question");
+    expect(html).not.toContain("Previous question");
+    expect(html).not.toMatch(/type-action/);
     expect(render("q-scn-s01-001", "a", 1, 5)).toContain("Question 1 of 5");
   });
 
@@ -123,32 +116,27 @@ describe("Answer review", () => {
     expect(html.match(/data-state=/g)).toHaveLength(question.options.length);
   });
 
-  it("offers Ask AI about this step on a scenario step with prepared answers", () => {
-    expect(render("q-scn-s01-001", "a")).toContain("Ask AI about this step");
+  it("does not offer Ask AI about this step, even on a scenario step with prepared answers", () => {
+    expect(render("q-scn-s01-001", "a")).not.toContain("Ask AI");
   });
 
-  it("has the review strip under the top row, one square per question, current marked", () => {
+  it("puts the situation in the shared white card", () => {
+    const html = render("q-scn-s01-001", "a");
+    const card = html.slice(html.indexOf("data-situation-card"));
+    expect(card.slice(0, card.indexOf("</section>"))).toContain(step.situation!);
+    expect(html).toContain("rounded-card bg-card p-4 shadow-(--card-shadow)");
+  });
+
+  it("has the pager under the top row, one chip per question, current marked, no icons", () => {
     const html = render("q-scn-s01-001", "a", 2, 5);
-    const strip = html.slice(html.indexOf("<ol"), html.indexOf("</ol>"));
+    const pager = html.slice(html.indexOf("<ol"), html.indexOf("</ol>"));
     expect(html.indexOf("Question 2 of 5")).toBeLessThan(html.indexOf("<ol"));
     expect(html.indexOf("</ol>")).toBeLessThan(html.indexOf(getItem("q-scn-s01-001").question));
-    expect(strip.match(/<button/g)).toHaveLength(5);
-    expect(strip).toContain('aria-label="Question 1, correct"');
-    expect(strip).toContain('aria-label="Question 2, incorrect"');
-    expect(strip).toContain('aria-current="step"');
-    expect(strip.match(/outline-primary/g)).toHaveLength(1);
-  });
-
-  it("shows a check on a correct square and a cross on an incorrect one, in the green and rose tints", () => {
-    const strip = render("q-scn-s01-001", "a", 1, 5);
-    const squares = strip.slice(strip.indexOf("<ol"), strip.indexOf("</ol>"));
-    expect(squares.match(/lucide-check/g)).toHaveLength(3);
-    expect(squares.match(/lucide-x/g)).toHaveLength(2);
-    expect(squares.match(/bg-correct-bg/g)).toHaveLength(3);
-    expect(squares.match(/bg-wrong-bg/g)).toHaveLength(2);
-  });
-
-  it("has the bookmark on the question, to save it from the review", () => {
-    expect(render("q-scn-s01-001", "a")).toContain('aria-label="Save question"');
+    expect(pager.match(/<button/g)).toHaveLength(5);
+    expect(pager).toContain('aria-label="Question 1, correct"');
+    expect(pager).toContain('aria-label="Question 2, wrong"');
+    expect(pager).toContain('aria-current="step"');
+    expect(pager.match(/outline-primary/g)).toHaveLength(1);
+    expect(pager).not.toMatch(/lucide|<svg/);
   });
 });

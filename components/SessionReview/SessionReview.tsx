@@ -2,7 +2,6 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { AnswerReview } from "@/components/AnswerReview/AnswerReview";
-import { AskAiProvider } from "@/components/AskAi/AskAi";
 import { NoResults } from "@/components/NoResults/NoResults";
 import { findItem } from "@/lib/items";
 import { isSaved, toggleSaved, useSaved } from "@/lib/saved";
@@ -32,24 +31,20 @@ export function SessionReview({
   if (!item) return <NoResults />;
 
   return (
-    <AskAiProvider>
-      <AnswerReview
-        item={item}
-        choice={answerFor(session, item.id)?.optionId ?? null}
-        position={position}
-        total={session.itemIds.length}
-        backHref={base}
-        backLabel={backLabel}
-        hrefFor={(next) => `${base}/review/${next}`}
-        marks={session.itemIds.map((id) =>
-          answerFor(session, id)?.optionId === findItem(id)?.correctOptionId
-            ? "correct"
-            : "incorrect",
-        )}
-        saved={isSaved(saved, item.id)}
-        onToggleSaved={() => toggleSaved(item.id)}
-        onJump={(index) => router.push(`${base}/review/${index + 1}`)}
-      />
-    </AskAiProvider>
+    <AnswerReview
+      item={item}
+      choice={answerFor(session, item.id)?.optionId ?? null}
+      position={position}
+      total={session.itemIds.length}
+      backHref={base}
+      backLabel={backLabel}
+      hrefFor={(next) => `${base}/review/${next}`}
+      marks={session.itemIds.map((id) =>
+        answerFor(session, id)?.optionId === findItem(id)?.correctOptionId ? "correct" : "wrong",
+      )}
+      saved={isSaved(saved, item.id)}
+      onToggleSaved={() => toggleSaved(item.id)}
+      onJump={(index) => router.push(`${base}/review/${index + 1}`)}
+    />
   );
 }

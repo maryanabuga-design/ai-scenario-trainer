@@ -10,7 +10,7 @@ type Props = {
   confirmLabel: string;
   /** The label of the other action (default Cancel). */
   cancelLabel?: string;
-  /** Which action is the primary button; the other is the underlined text button. */
+  /** Which action is the Primary button; the other is a Secondary button. */
   emphasis?: "confirm" | "cancel";
   onConfirm: () => void;
   onCancel: () => void;
@@ -33,18 +33,18 @@ function DialogCard({
         {title}
       </h2>
       <p className="text-text-secondary">{description}</p>
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-col gap-3">
         {emphasis === "confirm" ? (
           <>
             <Button onClick={onConfirm}>{confirmLabel}</Button>
-            <Button variant="tertiary" onClick={onCancel}>
+            <Button variant="secondary" onClick={onCancel}>
               {cancelLabel}
             </Button>
           </>
         ) : (
           <>
             <Button onClick={onCancel}>{cancelLabel}</Button>
-            <Button variant="tertiary" onClick={onConfirm}>
+            <Button variant="secondary" onClick={onConfirm}>
               {confirmLabel}
             </Button>
           </>
@@ -54,7 +54,7 @@ function DialogCard({
   );
 }
 
-/** A modal confirmation: title, one sentence, a black confirm pill and a text cancel. */
+/** A modal confirmation: title, one sentence, a Primary action and a Secondary one. */
 export function ConfirmDialog({ open, inline = false, ...card }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 

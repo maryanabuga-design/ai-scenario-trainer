@@ -1,16 +1,18 @@
 "use client";
 
+import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { ButtonLink } from "@/components/Button/Button";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
+import { ReviewPager } from "@/components/ReviewPager/ReviewPager";
+import type { Mark } from "@/components/ReviewPager/ReviewPager";
 import { ReviewQuestion } from "@/components/ReviewQuestion/ReviewQuestion";
-import { StepStrip } from "@/components/StepStrip/StepStrip";
-import type { Mark, StripState } from "@/components/StepStrip/StepStrip";
 import type { Item } from "@/lib/items";
 
 /**
- * The Answer review of one question after Finish: the situation and question, every option with
- * the right one marked and the person's choice marked, then Why and the Guide chips. No verdict
- * line. The page ends with Back to results and Previous and Next question.
+ * The Answer review of one question after Finish: the pager, the situation and question, every
+ * option with the right one marked and the person's choice marked, then Why and the Guide chips. No
+ * verdict line and no Ask AI link for now. The pinned bottom area has Next question (Primary) over
+ * Back to results (Secondary); on the last question only Back to results, as Primary.
  */
 export function AnswerReview({
   item,
@@ -35,16 +37,14 @@ export function AnswerReview({
   backLabel: string;
   /** The review page of another position. */
   hrefFor: (position: number) => string;
-  /** Whether each question of the session was answered right, in order: the strip shows it. */
+  /** Whether each question of the session was answered right, in order: the pager shows it. */
   marks: Mark[];
   /** Opens the review of the question at this 0-based position. */
   onJump: (index: number) => void;
   saved: boolean;
   onToggleSaved: () => void;
 }) {
-  const states: StripState[] = marks.map((_, index) =>
-    index === position - 1 ? "current" : "answered",
-  );
+  const last = position >= total;
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-[44px_1fr_44px] items-center">
@@ -54,27 +54,28 @@ export function AnswerReview({
         </span>
       </div>
 
-      <StepStrip unit="Question" states={states} marks={marks} onSelect={onJump} />
+      <ReviewPager marks={marks} current={position - 1} onSelect={onJump} />
 
-      <ReviewQuestion item={item} choice={choice} saved={saved} onToggleSaved={onToggleSaved} />
+      <ReviewQuestion
+        item={item}
+        choice={choice}
+        saved={saved}
+        onToggleSaved={onToggleSaved}
+        showAskAi={false}
+      />
 
-      <div className="flex flex-col gap-3 pb-6">
-        <ButtonLink href="/session/results">Back to results</ButtonLink>
-        <div className="flex items-center justify-between">
-          {position > 1 ? (
-            <ButtonLink href={hrefFor(position - 1)} variant="tertiary">
-              Previous question
+      <ActionBar>
+        {last ? (
+          <ButtonLink href="/session/results">Back to results</ButtonLink>
+        ) : (
+          <>
+            <ButtonLink href={hrefFor(position + 1)}>Next question</ButtonLink>
+            <ButtonLink href="/session/results" variant="secondary">
+              Back to results
             </ButtonLink>
-          ) : (
-            <span />
-          )}
-          {position < total && (
-            <ButtonLink href={hrefFor(position + 1)} variant="tertiary">
-              Next question
-            </ButtonLink>
-          )}
-        </div>
-      </div>
+          </>
+        )}
+      </ActionBar>
     </div>
   );
 }

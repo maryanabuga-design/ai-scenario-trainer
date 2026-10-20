@@ -163,13 +163,13 @@ export function ResultsActions({
 /**
  * The Results buttons by situation. An exam that failed: Primary "Repeat weak topics" and Secondary
  * "Back to exam"; an exam that passed, or a repeat session for an exam: Primary "Done" (to the exam
- * screen); each with a tertiary "Review answers". Any other session keeps the Review / Repeat row.
+ * screen); each with a Secondary "Review answers". Any other session keeps the Review / Repeat row.
  */
 export function ResultsButtons({
   kind,
   passed,
   canRepeat,
-  hasReadiness,
+  examRepeat,
   onRepeat,
   reviewHref,
   doneHref,
@@ -177,13 +177,14 @@ export function ResultsButtons({
   kind: SessionKind;
   passed: boolean;
   canRepeat: boolean;
-  hasReadiness: boolean;
+  /** A repeat session for an assigned exam: it ends with Done (to the exam screen). */
+  examRepeat: boolean;
   onRepeat: () => void;
   reviewHref?: string;
   doneHref: string;
 }) {
   const exam = kind === "exam";
-  if (!exam && !hasReadiness) {
+  if (!exam && !examRepeat) {
     return (
       <ResultsActions
         canRepeat={canRepeat}
@@ -205,7 +206,7 @@ export function ResultsButtons({
       ) : (
         <ButtonLink href={doneHref}>Done</ButtonLink>
       )}
-      <ButtonLink href={reviewHref ?? reviewPath(1)} variant="tertiary" onClick={rememberScroll}>
+      <ButtonLink href={reviewHref ?? reviewPath(1)} variant="secondary" onClick={rememberScroll}>
         Review answers
       </ButtonLink>
     </div>
@@ -214,8 +215,7 @@ export function ResultsButtons({
 
 /**
  * Results: hero, Passed or Not passed yet, the result against the pass mark, one conclusion and the
- * weak topics. A practice session shows counts; an exam shows its Score (the one percentage); a
- * repeat session for an assigned exam adds ONE percentage line, "Readiness 62% → 71%".
+ * weak topics. A practice session shows counts; an exam shows its Score (the one percentage).
  */
 export function ResultsView({
   kind,
@@ -225,7 +225,7 @@ export function ResultsView({
   backLabel,
   reviewHref,
   onRepeat,
-  readiness,
+  examRepeat = false,
   doneHref,
 }: {
   kind: SessionKind;
@@ -239,8 +239,8 @@ export function ResultsView({
   /** The first Answer review page; the normal session's by default. */
   reviewHref?: string;
   onRepeat: () => void;
-  /** A repeat session for an exam: its readiness before and after. */
-  readiness?: { before: number; after: number };
+  /** A repeat session for an assigned exam: Done goes to the exam screen. */
+  examRepeat?: boolean;
   /** Where the Primary "Done" goes (the exam screen), for an exam or an exam repeat session. */
   doneHref?: string;
 }) {
@@ -270,12 +270,6 @@ export function ResultsView({
 
       <ResultBar items={items} kind={kind} />
 
-      {readiness && (
-        <p className="type-body-strong text-center tabular-nums">
-          Readiness {readiness.before}% → {readiness.after}%
-        </p>
-      )}
-
       <p className="text-center text-text-secondary">{conclusion(items)}</p>
 
       {topics.length > 0 && <WeakTopicsCard topics={topics} />}
@@ -285,7 +279,7 @@ export function ResultsView({
           kind={kind}
           passed={passed}
           canRepeat={topics.length > 0}
-          hasReadiness={readiness !== undefined}
+          examRepeat={examRepeat}
           onRepeat={onRepeat}
           reviewHref={reviewHref}
           doneHref={doneHref ?? backHref}

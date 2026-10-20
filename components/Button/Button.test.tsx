@@ -145,8 +145,14 @@ describe("a secondary always comes with a primary above it", () => {
     expect(withSecondary).toEqual([
       // About this prototype: "Restart demo" under the info lines (one clearly separate action).
       "components/AboutView/AboutView.tsx",
+      // Answer review: Back to results, below the primary Next question.
+      "components/AnswerReview/AnswerReview.tsx",
+      // Dialogs: the second action (Cancel, Leave) under the first.
+      "components/ConfirmDialog/ConfirmDialog.tsx",
       // The exam screen: Start exam anyway, below the primary Repeat weak topics.
       "components/ExamView/ExamView.tsx",
+      // Material page: Create again and Read the sample guide, below the primary action.
+      "components/MaterialView/MaterialView.tsx",
       // Progress: the Exam readiness card's Repeat weak topics, its one action (documented exception).
       "components/ProgressView/ProgressView.tsx",
       // The reading screen's quick-actions bar: Steps next to the primary Practise this topic.

@@ -492,6 +492,16 @@ export default function Screens() {
               <AnswerReviewSample itemId="q-scn-s01-001" choice="d" />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Review: every question wrong, so the pager is neutral">
+            <Screen>
+              <AnswerReviewSample itemId="q-scn-s01-001" choice="d" results="allWrong" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Review: the last question, only Back to results (Primary)">
+            <Screen>
+              <AnswerReviewSample itemId="q-s3-3" choice="a" position={6} total={6} />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Review: a quiz question, wrong">
             <Screen>
               <AnswerReviewSample itemId="q-s3-3" choice="a" position={4} />
@@ -502,6 +512,11 @@ export default function Screens() {
           <PhoneFrame label="Results: Not passed yet">
             <Screen>
               <ResultsSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Results: repeat session for an exam (Done over Review answers, no readiness line)">
+            <Screen>
+              <ResultsSample examRepeat />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Results: Passed">

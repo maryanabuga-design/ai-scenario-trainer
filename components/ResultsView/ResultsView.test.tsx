@@ -245,7 +245,7 @@ describe("exam results and the repeat-session summary", () => {
         kind={kind}
         passed={passed}
         canRepeat
-        hasReadiness={false}
+        examRepeat={false}
         onRepeat={() => undefined}
         doneHref="/exam?id=e"
         {...extra}
@@ -276,7 +276,7 @@ describe("exam results and the repeat-session summary", () => {
   });
 
   it("a repeat session for an exam has Done", () => {
-    const html = buttons("repeat", false, { hasReadiness: true });
+    const html = buttons("repeat", false, { examRepeat: true });
     expect(html).toContain(">Done<");
     expect(html).not.toContain("Back to exam");
   });
@@ -287,13 +287,25 @@ describe("exam results and the repeat-session summary", () => {
     expect(html).not.toContain(">Done<");
   });
 
-  it("a repeat session for an exam shows the count and ONE percentage line, 'Readiness 62% → 71%'", () => {
-    const html = view("repeat", draw(7, 10), { readiness: { before: 62, after: 71 } });
+  it("a repeat session for an exam shows the count and no readiness line or percentage", () => {
+    const html = view("repeat", draw(7, 10), { examRepeat: true });
     expect(text(html)).toContain("7 of 10 correct");
-    expect(text(html)).toContain("Readiness 62% → 71%");
-    expect(text(html).match(/%/g)).toHaveLength(2);
-    expect(text(html).match(/Readiness/g)).toHaveLength(1);
+    expect(text(html)).not.toMatch(/Readiness|%|→/);
     expect(html).toContain("PASS MARK: 8 of 10");
+  });
+
+  it("Review answers is a Secondary button next to Done, never a text link", () => {
+    for (const html of [
+      buttons("exam", true),
+      buttons("exam", false),
+      buttons("repeat", false, { examRepeat: true }),
+    ]) {
+      const review = html.slice(0, html.indexOf(">Review answers<"));
+      const link = review.slice(review.lastIndexOf("<a "));
+      expect(link).toContain("bg-olive-tint");
+      expect(link).not.toContain("underline");
+      expect(html).not.toContain("type-action");
+    }
   });
 
   it("a plain repeat round has no percentage at all", () => {

@@ -4,6 +4,7 @@ import { AskAiButton } from "@/components/AskAi/AskAi";
 import { BookmarkButton } from "@/components/BookmarkButton/BookmarkButton";
 import { GuideChip } from "@/components/GuideChip/GuideChip";
 import { Media3D } from "@/components/Media3D/Media3D";
+import { SituationCard } from "@/components/SituationCard/SituationCard";
 import { OptionResult } from "@/components/OptionCard/OptionCard";
 import type { Item } from "@/lib/items";
 import { optionState } from "@/lib/option-state";
@@ -18,12 +19,15 @@ export function ReviewQuestion({
   choice,
   saved,
   onToggleSaved,
+  showAskAi = true,
 }: {
   item: Item;
   /** The option the person chose; null in Saved, where there is no choice. */
   choice: string | null;
   saved: boolean;
   onToggleSaved: () => void;
+  /** The "Ask AI about this step" link: hidden in the Answer review for now, shown in Saved. */
+  showAskAi?: boolean;
 }) {
   return (
     <>
@@ -31,7 +35,7 @@ export function ReviewQuestion({
         {item.image && (
           <Media3D variant="step" src={item.image.src || undefined} alt={item.image.alt} />
         )}
-        {item.situation && <p className="type-body">{item.situation}</p>}
+        {item.situation && <SituationCard text={item.situation} />}
         <div className="flex items-start justify-between gap-3">
           <h1 className="type-item-title pt-1.5">{item.question}</h1>
           <BookmarkButton saved={saved} onToggle={onToggleSaved} />
@@ -65,7 +69,7 @@ export function ReviewQuestion({
         </div>
       </section>
 
-      {item.kind === "step" && <AskAiButton step={item} />}
+      {showAskAi && item.kind === "step" && <AskAiButton step={item} />}
     </>
   );
 }

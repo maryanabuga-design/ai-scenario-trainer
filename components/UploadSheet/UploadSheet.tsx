@@ -118,7 +118,7 @@ export function UploadPanel({
             <>
               <p className="text-text-secondary">The file is in your materials, under Ready.</p>
               <Button onClick={() => onCreateTraining(stage.material.id)}>Create training</Button>
-              <Button variant="tertiary" onClick={() => onOpenMaterial(stage.material.id)}>
+              <Button variant="secondary" onClick={() => onOpenMaterial(stage.material.id)}>
                 Open material
               </Button>
             </>

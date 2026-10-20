@@ -167,21 +167,21 @@ test.describe("a running session", () => {
     await expect(page.getByRole("button", { name: "Repeat weak topics" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Review answers" })).toBeVisible();
 
-    // (B) Review answers → Answer review → Previous / Next → Back to results.
+    // (B) Review answers → Answer review → Next question / the pager → Back to results.
     await page.getByRole("link", { name: "Review answers" }).click();
     await expect(page).toHaveURL(/\/review\/1$/);
     await expect(page.getByText("Question 1 of 3")).toBeVisible();
     // The strip marks every question right or wrong and jumps.
-    await expect(page.getByRole("button", { name: "Question 1, incorrect" })).toHaveAttribute(
+    await expect(page.getByRole("button", { name: "Question 1, wrong" })).toHaveAttribute(
       "aria-current",
       "step",
     );
     await expect(page.getByRole("button", { name: "Question 2, correct" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Question 3, incorrect" })).toBeVisible();
-    await page.getByRole("button", { name: "Question 3, incorrect" }).click();
+    await expect(page.getByRole("button", { name: "Question 3, wrong" })).toBeVisible();
+    await page.getByRole("button", { name: "Question 3, wrong" }).click();
     await expect(page).toHaveURL(/\/review\/3$/);
     await expect(page.getByText("Question 3 of 3").first()).toBeVisible();
-    await page.getByRole("button", { name: "Question 1, incorrect" }).click();
+    await page.getByRole("button", { name: "Question 1, wrong" }).click();
     await expect(page).toHaveURL(/\/review\/1$/);
     await expect(page.locator("li[data-state=revealed-correct]:visible")).toHaveCount(1);
     await expect(page.locator("li[data-state=revealed-correct]:visible")).toContainText(
@@ -191,7 +191,8 @@ test.describe("a running session", () => {
     await page.getByRole("link", { name: "Next question" }).click();
     await expect(page).toHaveURL(/\/review\/2$/);
     await expect(page.locator("li[data-state=wrong]:visible")).toHaveCount(0);
-    await page.getByRole("link", { name: "Previous question" }).click();
+    await expect(page.getByRole("link", { name: "Previous question" })).toHaveCount(0);
+    await page.getByRole("button", { name: "Question 1, wrong" }).click();
     await expect(page).toHaveURL(/\/review\/1$/);
     await page.getByRole("link", { name: "Back to results", exact: true }).last().click();
     await expect(page).toHaveURL(/\/session\/results$/);

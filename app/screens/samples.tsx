@@ -275,12 +275,15 @@ export function AnswerReviewSample({
   itemId,
   choice,
   position = 1,
-  total = 10,
+  total = 6,
+  results = "mixed",
 }: {
   itemId: string;
   choice: string;
   position?: number;
   total?: number;
+  /** The pager: a mixed list (the sample session), or every question wrong or right. */
+  results?: "mixed" | "allWrong" | "allCorrect";
 }) {
   return (
     <AnswerReview
@@ -291,7 +294,15 @@ export function AnswerReviewSample({
       backHref="#results"
       backLabel="Back to results"
       hrefFor={() => "#review"}
-      marks={sampleAnswers.map((item) => (item.correct ? "correct" : "incorrect"))}
+      marks={sampleAnswers.map((item) =>
+        results === "allWrong"
+          ? "wrong"
+          : results === "allCorrect"
+            ? "correct"
+            : item.correct
+              ? "correct"
+              : "wrong",
+      )}
       onJump={() => undefined}
       saved={false}
       onToggleSaved={() => undefined}
@@ -317,19 +328,24 @@ const floodAnswers = [pick("flood-s1", "c"), pick("flood-s2", "a"), pick("flood-
 export function ResultsSample({
   scrolled = false,
   passed = false,
+  examRepeat = false,
 }: {
   scrolled?: boolean;
   passed?: boolean;
+  /** A repeat session for an assigned exam: Done over Review answers. */
+  examRepeat?: boolean;
 }) {
   const endRef = useScrollFrameToEnd(scrolled);
   const items = passed ? passedAnswers : sampleAnswers;
   return (
     <>
       <ResultsView
-        kind="scenario"
+        kind={examRepeat ? "repeat" : "scenario"}
         items={items}
         topics={weakTopics(currentWeakItems(items))}
         onRepeat={() => undefined}
+        examRepeat={examRepeat}
+        doneHref={examRepeat ? "#exam" : undefined}
       />
       <div ref={endRef} />
     </>

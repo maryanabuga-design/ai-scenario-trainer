@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { BookmarkButton } from "@/components/BookmarkButton/BookmarkButton";
 import { HintCard } from "@/components/HintCard/HintCard";
 import { Media3D } from "@/components/Media3D/Media3D";
+import { SituationCard } from "@/components/SituationCard/SituationCard";
 import { OptionCard } from "@/components/OptionCard/OptionCard";
 import type { Hint, Item } from "@/lib/items";
 import { checkAnnouncement, optionState } from "@/lib/option-state";
@@ -54,11 +55,7 @@ export function QuestionScreen({
   return (
     <div className="flex flex-col gap-4">
       {image && <Media3D variant="step" src={image.src || undefined} alt={image.alt} />}
-      {item.situation && (
-        <section className="rounded-card bg-card p-4 shadow-(--card-shadow)">
-          <p className="type-body">{item.situation}</p>
-        </section>
-      )}
+      {item.situation && <SituationCard text={item.situation} />}
       <div className="flex items-start justify-between gap-3">
         <h1 id={`question-${item.id}`} className="type-item-title pt-1.5">
           {item.question}
