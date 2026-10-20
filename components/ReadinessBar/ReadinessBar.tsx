@@ -9,11 +9,14 @@ export function ReadinessBar({
   percent,
   passMark = EXAM_PASS_MARK,
   label = "Readiness",
+  markText,
 }: {
   percent: number;
   passMark?: number;
   /** The accessible name: "Readiness 62%, pass mark 80%" is built from it. */
   label?: string;
+  /** The text under the tick; "80%" by default. The Instructor's Student detail passes "80" (its one percentage is the readiness). */
+  markText?: string;
 }) {
   return (
     <div className="flex flex-col gap-1">
@@ -43,7 +46,7 @@ export function ReadinessBar({
           className="absolute -translate-x-1/2 whitespace-nowrap"
           style={{ left: `${passMark}%` }}
         >
-          {passMark}%
+          {markText ?? `${passMark}%`}
         </span>
       </p>
     </div>

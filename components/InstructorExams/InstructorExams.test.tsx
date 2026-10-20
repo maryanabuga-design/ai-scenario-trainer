@@ -103,7 +103,7 @@ describe("the Exam detail", () => {
       />,
     );
 
-  it("has Back to Exams, the title, the rules, three count tiles and 72px rows without a chevron", () => {
+  it("has Back to Exams, the title, the rules, three count tiles and 72px rows that open the Student detail", () => {
     const html = render();
     expect(html).toContain('aria-label="Back to Exams"');
     expect(html).toContain(
@@ -115,9 +115,11 @@ describe("the Exam detail", () => {
     expect(html).toContain("Not started");
     expect(html.match(/data-student-row=/g)).toHaveLength(15);
     expect(html.match(/h-\[72px\]/g)).toHaveLength(15);
-    expect(html.slice(html.indexOf("STUDENTS"))).not.toContain("lucide-chevron-right");
+    // each row opens the Student detail (and Back there returns to this exam)
+    expect(html.slice(html.indexOf("STUDENTS")).match(/lucide-chevron-right/g)).toHaveLength(15);
+    expect(html).toContain(`?from=exam&amp;exam=${exam.id}`);
     expect(html).toContain("Your demo account");
-    expect(html).not.toContain("%");
+    expect(html.replace(/<[^>]+>/g, " ")).not.toContain("%");
   });
 
   it("has Secondary Remind and Close exam while Active, and a dialog with Primary and Secondary", () => {

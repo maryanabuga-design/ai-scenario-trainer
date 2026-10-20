@@ -161,6 +161,9 @@ describe("a secondary always comes with a primary above it", () => {
       // Instructor Assign exam: Cancel and Select all; Exam detail: Remind and Close exam, Exam not found.
       "components/InstructorExams/AssignExamView.tsx",
       "components/InstructorExams/ExamDetailView.tsx",
+      // Instructor Students: Show all (empty filter) and Back to students (unknown id).
+      "components/InstructorStudents/StudentDetailView.tsx",
+      "components/InstructorStudents/StudentsListView.tsx",
       // Material page: Create again and Read the sample guide, below the primary action.
       "components/MaterialView/MaterialView.tsx",
       // Progress: the Exam readiness card's Repeat weak topics, its one action (documented exception).

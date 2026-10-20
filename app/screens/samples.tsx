@@ -18,6 +18,16 @@ import { answerTo, followUp, newThread, questionThread, userMessage } from "@/li
 import type { AiMessage, Thread } from "@/lib/ask-ai";
 import { CertificateView } from "@/components/CertificateView/CertificateView";
 import { CertificatesList } from "@/components/CertificatesList/CertificatesList";
+import { StudentDetailView } from "@/components/InstructorStudents/StudentDetailView";
+import { StudentsListView } from "@/components/InstructorStudents/StudentsListView";
+import {
+  examRowsFor,
+  profiles,
+  readinessOf,
+  sortProfiles,
+  studentStatus,
+  visibleStudents,
+} from "@/lib/students";
 import { AssignExamView } from "@/components/InstructorExams/AssignExamView";
 import { ExamDetailView } from "@/components/InstructorExams/ExamDetailView";
 import { InstructorExamsView } from "@/components/InstructorExams/InstructorExamsView";
@@ -1331,6 +1341,45 @@ export function InstructorExamsSample({
       onCancelClose={() => undefined}
       onClose={() => undefined}
       dialogInline
+    />
+  );
+}
+
+/** The Instructor Students screens for the screen review page (the demo group, a fixed date). */
+export function InstructorStudentsSample({
+  state = "all",
+}: {
+  state?: "all" | "needs" | "certified" | "empty" | "detail-needs" | "detail-ready";
+}) {
+  const { sections } = useSourceSheet();
+  const titleOf = (id: string) => sections.find((section) => section.id === id)?.title ?? id;
+  const now = new Date(2026, 9, 24, 10, 0).getTime();
+  const exams = seedGroupExams(now);
+  const people = participants([{ name: "Maryana", email: "maryana@example.com" }]);
+  const all = profiles(people, { "maryana@example.com": null });
+  if (state === "detail-needs" || state === "detail-ready") {
+    const wanted = state === "detail-needs" ? "needs" : "ready";
+    const profile = sortProfiles(all).find(
+      (p) => !p.participant.local && studentStatus(readinessOf(p)) === wanted,
+    )!;
+    return (
+      <StudentDetailView
+        profile={profile}
+        backHref="#students"
+        backLabel="Back to students"
+        rows={examRowsFor(profile.participant, exams, [], now)}
+        titleOf={titleOf}
+        certificateHref={() => null}
+      />
+    );
+  }
+  const filter = state === "empty" ? "certified" : state;
+  return (
+    <StudentsListView
+      shown={state === "empty" ? [] : visibleStudents(all, filter, exams, [], now)}
+      count={people.length}
+      filter={filter}
+      onFilter={() => undefined}
     />
   );
 }

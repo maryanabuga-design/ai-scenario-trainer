@@ -117,7 +117,7 @@ for (const width of [360, 430]) {
       await signUp(page, "Ines Instructor", "ines@example.com", "Instructor");
       await finishOnboarding(page, "Instructor");
       await expect(page.getByRole("heading", { name: "Instructor", level: 1 })).toBeVisible();
-      await expect(nav(page).getByRole("link")).toHaveCount(3);
+      await expect(nav(page).getByRole("link")).toHaveCount(4);
     });
 
     test("editing the name shows it on Profile and on Home", async ({ page }) => {

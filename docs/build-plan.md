@@ -137,3 +137,4 @@ One commit per screen group, in this order. Steps 1 to 82 are built (step 81, th
 135. Today's practice was tried and reverted (23 Oct 2026): the Home Mini-quiz row and the Training Quiz card are as in step 132; the picker opens with the largest length again. Screenshots: `docs/screens/127-*`.
 136. Completion certificates (23 Oct 2026): a passed exam creates a simulated certificate in this browser; Results card, Profile row, list, certificate screen with print to A4 and share. Screenshots: `docs/screens/128-*`.
 137. Instructor: navigation (Overview, Exams, Profile), the demo Group A, Exams list, Assign exam, Exam detail, and the Student side (notice, Assigned exam card, attempts) (24 Oct 2026). Screenshots: `docs/screens/129-*`.
+138. Instructor Students (24 Oct 2026): the Students tab (All / Needs attention / Certified), the read-only Student detail (readiness, By topic, Exams) and the link-up from the Exam detail. Screenshots: `docs/screens/130-*`.

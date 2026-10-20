@@ -17,10 +17,13 @@ export function CertificateView({
   certificate,
   name,
   onBack,
+  readOnly = false,
 }: {
   certificate: Certificate;
   name: string;
   onBack: () => void;
+  /** The Instructor's read-only view: no Save as PDF and no Share. */
+  readOnly?: boolean;
 }) {
   const [message, setMessage] = useState("");
 
@@ -70,15 +73,17 @@ export function CertificateView({
         </dl>
         <p className="type-small text-text-secondary">{CERTIFICATE_FOOTER}</p>
       </article>
-      <div data-print-hide className="flex flex-col gap-3">
-        <Button onClick={() => window.print()}>Save as PDF</Button>
-        <Button variant="secondary" onClick={() => void share()}>
-          Share
-        </Button>
-        <p role="status" className="type-small text-center text-text-secondary">
-          {message}
-        </p>
-      </div>
+      {!readOnly && (
+        <div data-print-hide className="flex flex-col gap-3">
+          <Button onClick={() => window.print()}>Save as PDF</Button>
+          <Button variant="secondary" onClick={() => void share()}>
+            Share
+          </Button>
+          <p role="status" className="type-small text-center text-text-secondary">
+            {message}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

@@ -33,9 +33,10 @@ describe("the bottom navigation", () => {
     ]);
   });
 
-  it("has Overview, Exams and Profile for an instructor, in the same style, Overview being Instructor Home", () => {
+  it("has Overview, Exams, Students and Profile for an instructor, in the same style, Overview being Instructor Home", () => {
     const home = renderToStaticMarkup(<BottomNav activePath="/instructor" role="instructor" />);
-    expect(labels(home)).toEqual(["Overview", "Exams", "Profile"]);
+    expect(labels(home)).toEqual(["Overview", "Exams", "Students", "Profile"]);
+    expect(home).toContain('href="/instructor/students"');
     expect(home).toContain('href="/instructor/exams"');
     expect(home).toContain('href="/instructor"');
     expect(home).toContain('href="/profile"');
@@ -50,7 +51,11 @@ describe("the bottom navigation", () => {
     );
     expect(exams).toMatch(/aria-current="page"[^>]*>(?:<svg.*?<\/svg>)Exams/);
     // a detail screen is a sub-screen with Back: no navigation
-    for (const path of ["/instructor/exams/new", "/instructor/exams/grp-1"]) {
+    for (const path of [
+      "/instructor/exams/new",
+      "/instructor/exams/grp-1",
+      "/instructor/students/stu-01",
+    ]) {
       expect(renderToStaticMarkup(<BottomNav activePath={path} role="instructor" />), path).toBe(
         "",
       );

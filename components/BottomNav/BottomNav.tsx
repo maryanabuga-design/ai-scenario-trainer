@@ -4,7 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRole } from "@/lib/auth";
 import type { Role } from "@/lib/role";
-import { ChartNoAxesColumn, ClipboardList, FileText, House, Sparkles, User } from "lucide-react";
+import {
+  ChartNoAxesColumn,
+  ClipboardList,
+  FileText,
+  House,
+  Sparkles,
+  User,
+  Users,
+} from "lucide-react";
 
 const studentItems = [
   { href: "/", label: "Home", Icon: House },
@@ -17,6 +25,7 @@ const studentItems = [
 const instructorItems = [
   { href: "/instructor", label: "Overview", Icon: House },
   { href: "/instructor/exams", label: "Exams", Icon: ClipboardList },
+  { href: "/instructor/students", label: "Students", Icon: Users },
   { href: "/profile", label: "Profile", Icon: User },
 ];
 
@@ -30,6 +39,7 @@ function isCurrent(href: string, pathname: string) {
   if (href === "/instructor") return pathname === "/instructor";
   // the exams list is a tab; its detail screens (new, <id>) are sub-screens with Back: no navigation
   if (href === "/instructor/exams") return pathname === "/instructor/exams";
+  if (href === "/instructor/students") return pathname === "/instructor/students";
   // a thread (/ask-ai/<id>) is a sub-screen with Back: no navigation
   if (href === "/ask-ai") return pathname === "/ask-ai";
   return pathname.startsWith(href);

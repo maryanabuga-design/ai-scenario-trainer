@@ -81,6 +81,7 @@ for (const width of [360, 430]) {
     for (const [path, label] of [
       ["/instructor", "Overview"],
       ["/instructor/exams", "Exams"],
+      ["/instructor/students", "Students"],
       ["/profile", "Profile"],
     ]) {
       test(`Instructor: ${label} is a sand pill`, async ({ page }) => {

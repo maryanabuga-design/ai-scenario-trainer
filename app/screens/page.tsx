@@ -47,6 +47,7 @@ import {
   ProfileSample,
   InstructorHomeSample,
   InstructorExamsSample,
+  InstructorStudentsSample,
   AboutSample,
   WelcomeSample,
   SignUpSample,
@@ -837,6 +838,36 @@ export default function Screens() {
           <PhoneFrame label="Instructor: Exam detail (closed)">
             <Screen>
               <InstructorExamsSample state="detail-closed" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Students list (All)">
+            <Screen nav="/instructor/students" role="instructor">
+              <InstructorStudentsSample state="all" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Students list (Needs attention)">
+            <Screen nav="/instructor/students" role="instructor">
+              <InstructorStudentsSample state="needs" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Students list (Certified)">
+            <Screen nav="/instructor/students" role="instructor">
+              <InstructorStudentsSample state="certified" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Students list, empty filter">
+            <Screen nav="/instructor/students" role="instructor">
+              <InstructorStudentsSample state="empty" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Student detail, Needs attention">
+            <Screen>
+              <InstructorStudentsSample state="detail-needs" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Student detail, Ready">
+            <Screen>
+              <InstructorStudentsSample state="detail-ready" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Student Home with the Assigned exam card">

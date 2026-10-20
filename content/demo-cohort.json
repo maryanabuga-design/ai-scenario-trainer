@@ -19,44 +19,44 @@
       "field": "rescue",
       "topics": {
         "S1": {
-          "answered": 3,
-          "correct": 2
+          "answered": 39,
+          "correct": 38
         },
         "S2": {
-          "answered": 0,
-          "correct": 0
+          "answered": 6,
+          "correct": 6
         },
         "S3": {
-          "answered": 6,
+          "answered": 3,
           "correct": 3
         },
         "S4": {
-          "answered": 3,
-          "correct": 2
+          "answered": 4,
+          "correct": 4
         },
         "S5": {
-          "answered": 4,
-          "correct": 2
+          "answered": 5,
+          "correct": 5
         },
         "S6": {
-          "answered": 0,
-          "correct": 0
+          "answered": 3,
+          "correct": 3
         },
         "S7": {
-          "answered": 1,
-          "correct": 1
+          "answered": 3,
+          "correct": 3
         },
         "S8": {
-          "answered": 0,
-          "correct": 0
+          "answered": 3,
+          "correct": 3
         },
         "S9": {
-          "answered": 0,
-          "correct": 0
+          "answered": 2,
+          "correct": 2
         },
         "S10": {
-          "answered": 0,
-          "correct": 0
+          "answered": 3,
+          "correct": 3
         }
       },
       "lastActiveDaysAgo": 3
@@ -68,43 +68,43 @@
       "field": "paramedic",
       "topics": {
         "S1": {
-          "answered": 6,
-          "correct": 4
+          "answered": 35,
+          "correct": 35
         },
         "S2": {
-          "answered": 3,
-          "correct": 3
+          "answered": 5,
+          "correct": 5
         },
         "S3": {
           "answered": 3,
-          "correct": 2
+          "correct": 3
         },
         "S4": {
           "answered": 4,
-          "correct": 3
+          "correct": 4
         },
         "S5": {
           "answered": 5,
-          "correct": 3
+          "correct": 4
         },
         "S6": {
-          "answered": 1,
-          "correct": 0
-        },
-        "S7": {
-          "answered": 0,
-          "correct": 0
-        },
-        "S8": {
-          "answered": 1,
-          "correct": 1
-        },
-        "S9": {
           "answered": 3,
           "correct": 3
         },
-        "S10": {
+        "S7": {
           "answered": 4,
+          "correct": 4
+        },
+        "S8": {
+          "answered": 3,
+          "correct": 3
+        },
+        "S9": {
+          "answered": 2,
+          "correct": 2
+        },
+        "S10": {
+          "answered": 3,
           "correct": 3
         }
       },
@@ -117,44 +117,44 @@
       "field": "civil",
       "topics": {
         "S1": {
-          "answered": 3,
-          "correct": 2
+          "answered": 32,
+          "correct": 24
         },
         "S2": {
-          "answered": 4,
-          "correct": 3
+          "answered": 5,
+          "correct": 5
         },
         "S3": {
-          "answered": 2,
-          "correct": 1
+          "answered": 3,
+          "correct": 3
         },
         "S4": {
-          "answered": 5,
+          "answered": 4,
           "correct": 4
         },
         "S5": {
-          "answered": 2,
-          "correct": 2
+          "answered": 4,
+          "correct": 4
         },
         "S6": {
           "answered": 3,
-          "correct": 2
+          "correct": 3
         },
         "S7": {
-          "answered": 2,
-          "correct": 1
+          "answered": 4,
+          "correct": 3
         },
         "S8": {
-          "answered": 0,
-          "correct": 0
+          "answered": 2,
+          "correct": 2
         },
         "S9": {
-          "answered": 3,
+          "answered": 2,
           "correct": 2
         },
         "S10": {
-          "answered": 0,
-          "correct": 0
+          "answered": 2,
+          "correct": 2
         }
       },
       "lastActiveDaysAgo": 2
@@ -166,43 +166,43 @@
       "field": "military",
       "topics": {
         "S1": {
-          "answered": 6,
-          "correct": 5
+          "answered": 22,
+          "correct": 19
         },
         "S2": {
-          "answered": 2,
-          "correct": 2
-        },
-        "S3": {
-          "answered": 5,
-          "correct": 3
-        },
-        "S4": {
-          "answered": 2,
-          "correct": 1
-        },
-        "S5": {
-          "answered": 6,
-          "correct": 5
-        },
-        "S6": {
           "answered": 4,
           "correct": 3
         },
+        "S3": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S4": {
+          "answered": 3,
+          "correct": 3
+        },
+        "S5": {
+          "answered": 3,
+          "correct": 3
+        },
+        "S6": {
+          "answered": 3,
+          "correct": 2
+        },
         "S7": {
+          "answered": 3,
+          "correct": 3
+        },
+        "S8": {
           "answered": 1,
           "correct": 1
         },
-        "S8": {
-          "answered": 0,
-          "correct": 0
-        },
         "S9": {
-          "answered": 0,
-          "correct": 0
+          "answered": 2,
+          "correct": 1
         },
         "S10": {
-          "answered": 4,
+          "answered": 2,
           "correct": 2
         }
       },
@@ -215,44 +215,44 @@
       "field": "rescue",
       "topics": {
         "S1": {
-          "answered": 2,
-          "correct": 2
+          "answered": 40,
+          "correct": 40
         },
         "S2": {
+          "answered": 6,
+          "correct": 6
+        },
+        "S3": {
+          "answered": 3,
+          "correct": 3
+        },
+        "S4": {
           "answered": 4,
           "correct": 4
         },
-        "S3": {
-          "answered": 1,
-          "correct": 1
-        },
-        "S4": {
-          "answered": 0,
-          "correct": 0
-        },
         "S5": {
-          "answered": 3,
-          "correct": 2
+          "answered": 5,
+          "correct": 5
         },
         "S6": {
-          "answered": 2,
-          "correct": 1
+          "answered": 4,
+          "correct": 4
         },
         "S7": {
-          "answered": 2,
-          "correct": 2
+          "answered": 4,
+          "correct": 4
         },
         "S8": {
-          "answered": 2,
-          "correct": 1
+          "answered": 3,
+          "correct": 3
         },
         "S9": {
           "answered": 3,
-          "correct": 2
+          "correct": 3
         },
         "S10": {
-          "answered": 0,
-          "correct": 0
+          "answered": 3,
+          "correct": 3
         }
       },
       "lastActiveDaysAgo": 5
@@ -264,43 +264,43 @@
       "field": "other",
       "topics": {
         "S1": {
-          "answered": 5,
-          "correct": 3
+          "answered": 15,
+          "correct": 13
         },
         "S2": {
+          "answered": 4,
+          "correct": 3
+        },
+        "S3": {
           "answered": 2,
           "correct": 2
         },
-        "S3": {
-          "answered": 1,
-          "correct": 0
-        },
         "S4": {
-          "answered": 6,
-          "correct": 3
+          "answered": 3,
+          "correct": 2
         },
         "S5": {
-          "answered": 3,
+          "answered": 4,
           "correct": 3
         },
         "S6": {
-          "answered": 5,
-          "correct": 3
-        },
-        "S7": {
-          "answered": 5,
+          "answered": 3,
           "correct": 2
         },
+        "S7": {
+          "answered": 2,
+          "correct": 1
+        },
         "S8": {
-          "answered": 4,
-          "correct": 3
+          "answered": 1,
+          "correct": 1
         },
         "S9": {
-          "answered": 4,
-          "correct": 3
+          "answered": 1,
+          "correct": 1
         },
         "S10": {
-          "answered": 2,
+          "answered": 1,
           "correct": 1
         }
       },
@@ -313,44 +313,44 @@
       "field": "paramedic",
       "topics": {
         "S1": {
-          "answered": 8,
-          "correct": 5
+          "answered": 31,
+          "correct": 22
         },
         "S2": {
-          "answered": 2,
-          "correct": 2
+          "answered": 4,
+          "correct": 4
         },
         "S3": {
-          "answered": 1,
-          "correct": 1
+          "answered": 3,
+          "correct": 3
         },
         "S4": {
-          "answered": 0,
-          "correct": 0
+          "answered": 4,
+          "correct": 4
         },
         "S5": {
-          "answered": 0,
-          "correct": 0
+          "answered": 4,
+          "correct": 4
         },
         "S6": {
-          "answered": 2,
-          "correct": 2
+          "answered": 3,
+          "correct": 3
         },
         "S7": {
-          "answered": 4,
+          "answered": 3,
           "correct": 3
         },
         "S8": {
-          "answered": 2,
-          "correct": 1
-        },
-        "S9": {
           "answered": 3,
           "correct": 2
         },
+        "S9": {
+          "answered": 2,
+          "correct": 2
+        },
         "S10": {
-          "answered": 1,
-          "correct": 1
+          "answered": 2,
+          "correct": 2
         }
       },
       "lastActiveDaysAgo": 4
@@ -362,44 +362,44 @@
       "field": "civil",
       "topics": {
         "S1": {
-          "answered": 1,
-          "correct": 1
+          "answered": 31,
+          "correct": 30
         },
         "S2": {
           "answered": 5,
-          "correct": 3
+          "correct": 5
         },
         "S3": {
-          "answered": 4,
-          "correct": 2
+          "answered": 3,
+          "correct": 3
         },
         "S4": {
-          "answered": 4,
+          "answered": 3,
           "correct": 3
         },
         "S5": {
-          "answered": 2,
-          "correct": 2
+          "answered": 4,
+          "correct": 4
         },
         "S6": {
-          "answered": 5,
-          "correct": 3
+          "answered": 4,
+          "correct": 4
         },
         "S7": {
-          "answered": 0,
-          "correct": 0
+          "answered": 3,
+          "correct": 3
         },
         "S8": {
           "answered": 3,
-          "correct": 2
+          "correct": 3
         },
         "S9": {
-          "answered": 2,
-          "correct": 1
+          "answered": 3,
+          "correct": 3
         },
         "S10": {
-          "answered": 2,
-          "correct": 2
+          "answered": 3,
+          "correct": 3
         }
       },
       "lastActiveDaysAgo": 3
@@ -411,44 +411,44 @@
       "field": "rescue",
       "topics": {
         "S1": {
-          "answered": 3,
-          "correct": 1
+          "answered": 20,
+          "correct": 20
         },
         "S2": {
-          "answered": 1,
-          "correct": 1
+          "answered": 3,
+          "correct": 2
         },
         "S3": {
-          "answered": 4,
-          "correct": 3
+          "answered": 2,
+          "correct": 2
         },
         "S4": {
-          "answered": 0,
-          "correct": 0
+          "answered": 4,
+          "correct": 3
         },
         "S5": {
           "answered": 4,
           "correct": 3
         },
         "S6": {
-          "answered": 2,
+          "answered": 3,
           "correct": 2
         },
         "S7": {
           "answered": 2,
-          "correct": 1
+          "correct": 2
         },
         "S8": {
-          "answered": 4,
-          "correct": 3
-        },
-        "S9": {
           "answered": 1,
           "correct": 1
         },
+        "S9": {
+          "answered": 2,
+          "correct": 1
+        },
         "S10": {
-          "answered": 0,
-          "correct": 0
+          "answered": 2,
+          "correct": 2
         }
       },
       "lastActiveDaysAgo": 1
@@ -460,44 +460,44 @@
       "field": "military",
       "topics": {
         "S1": {
-          "answered": 3,
-          "correct": 2
+          "answered": 39,
+          "correct": 39
         },
         "S2": {
           "answered": 6,
-          "correct": 3
+          "correct": 6
         },
         "S3": {
-          "answered": 1,
-          "correct": 1
+          "answered": 3,
+          "correct": 3
         },
         "S4": {
-          "answered": 2,
-          "correct": 1
+          "answered": 5,
+          "correct": 5
         },
         "S5": {
           "answered": 4,
-          "correct": 3
+          "correct": 4
         },
         "S6": {
-          "answered": 2,
-          "correct": 1
+          "answered": 4,
+          "correct": 4
         },
         "S7": {
-          "answered": 1,
-          "correct": 1
+          "answered": 3,
+          "correct": 3
         },
         "S8": {
-          "answered": 1,
-          "correct": 1
+          "answered": 3,
+          "correct": 3
         },
         "S9": {
-          "answered": 0,
-          "correct": 0
+          "answered": 3,
+          "correct": 3
         },
         "S10": {
-          "answered": 1,
-          "correct": 1
+          "answered": 3,
+          "correct": 3
         }
       },
       "lastActiveDaysAgo": 10
@@ -509,44 +509,44 @@
       "field": "paramedic",
       "topics": {
         "S1": {
-          "answered": 7,
-          "correct": 6
+          "answered": 30,
+          "correct": 27
         },
         "S2": {
-          "answered": 6,
-          "correct": 3
+          "answered": 5,
+          "correct": 4
         },
         "S3": {
           "answered": 3,
           "correct": 2
         },
         "S4": {
-          "answered": 5,
-          "correct": 4
-        },
-        "S5": {
-          "answered": 7,
-          "correct": 4
-        },
-        "S6": {
           "answered": 2,
           "correct": 2
         },
-        "S7": {
+        "S5": {
           "answered": 5,
           "correct": 4
         },
+        "S6": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S7": {
+          "answered": 3,
+          "correct": 3
+        },
         "S8": {
-          "answered": 1,
-          "correct": 1
+          "answered": 2,
+          "correct": 2
         },
         "S9": {
-          "answered": 1,
-          "correct": 1
+          "answered": 2,
+          "correct": 2
         },
         "S10": {
-          "answered": 0,
-          "correct": 0
+          "answered": 1,
+          "correct": 1
         }
       },
       "lastActiveDaysAgo": 7
@@ -558,44 +558,44 @@
       "field": "other",
       "topics": {
         "S1": {
-          "answered": 7,
-          "correct": 6
+          "answered": 24,
+          "correct": 15
         },
         "S2": {
-          "answered": 0,
-          "correct": 0
-        },
-        "S3": {
-          "answered": 5,
-          "correct": 3
-        },
-        "S4": {
-          "answered": 3,
-          "correct": 2
-        },
-        "S5": {
-          "answered": 0,
-          "correct": 0
-        },
-        "S6": {
           "answered": 4,
           "correct": 3
         },
-        "S7": {
-          "answered": 1,
-          "correct": 1
-        },
-        "S8": {
+        "S3": {
           "answered": 2,
           "correct": 2
         },
-        "S9": {
+        "S4": {
+          "answered": 2,
+          "correct": 2
+        },
+        "S5": {
+          "answered": 2,
+          "correct": 2
+        },
+        "S6": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S7": {
+          "answered": 2,
+          "correct": 2
+        },
+        "S8": {
           "answered": 1,
           "correct": 1
         },
+        "S9": {
+          "answered": 2,
+          "correct": 1
+        },
         "S10": {
-          "answered": 3,
-          "correct": 2
+          "answered": 2,
+          "correct": 1
         }
       },
       "lastActiveDaysAgo": 1
@@ -607,20 +607,20 @@
       "field": "civil",
       "topics": {
         "S1": {
-          "answered": 7,
-          "correct": 6
+          "answered": 37,
+          "correct": 33
         },
         "S2": {
-          "answered": 3,
-          "correct": 2
+          "answered": 6,
+          "correct": 5
         },
         "S3": {
-          "answered": 2,
-          "correct": 1
+          "answered": 3,
+          "correct": 3
         },
         "S4": {
-          "answered": 3,
-          "correct": 2
+          "answered": 4,
+          "correct": 4
         },
         "S5": {
           "answered": 4,
@@ -628,23 +628,23 @@
         },
         "S6": {
           "answered": 4,
-          "correct": 3
+          "correct": 4
         },
         "S7": {
-          "answered": 2,
-          "correct": 1
+          "answered": 4,
+          "correct": 4
         },
         "S8": {
           "answered": 2,
-          "correct": 1
+          "correct": 2
         },
         "S9": {
-          "answered": 3,
+          "answered": 2,
           "correct": 2
         },
         "S10": {
-          "answered": 4,
-          "correct": 4
+          "answered": 2,
+          "correct": 2
         }
       },
       "lastActiveDaysAgo": 10
@@ -656,35 +656,35 @@
       "field": "rescue",
       "topics": {
         "S1": {
-          "answered": 6,
-          "correct": 4
+          "answered": 33,
+          "correct": 28
         },
         "S2": {
-          "answered": 7,
-          "correct": 5
+          "answered": 5,
+          "correct": 4
         },
         "S3": {
-          "answered": 2,
-          "correct": 2
+          "answered": 3,
+          "correct": 3
         },
         "S4": {
-          "answered": 2,
-          "correct": 2
+          "answered": 4,
+          "correct": 3
         },
         "S5": {
-          "answered": 2,
-          "correct": 2
+          "answered": 4,
+          "correct": 4
         },
         "S6": {
-          "answered": 1,
-          "correct": 1
+          "answered": 3,
+          "correct": 3
         },
         "S7": {
           "answered": 3,
           "correct": 3
         },
         "S8": {
-          "answered": 3,
+          "answered": 2,
           "correct": 2
         },
         "S9": {
@@ -692,7 +692,7 @@
           "correct": 2
         },
         "S10": {
-          "answered": 2,
+          "answered": 3,
           "correct": 2
         }
       },

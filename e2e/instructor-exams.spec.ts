@@ -56,12 +56,12 @@ for (const width of [360, 430]) {
   test.describe(`Instructor exams at ${width}px`, () => {
     test.use({ viewport: { width, height: 800 }, storageState: instructor });
 
-    test("the navigation is Overview, Exams, Profile; the detail screens have no navigation", async ({
+    test("the navigation is Overview, Exams, Students, Profile; the detail screens have no navigation", async ({
       page,
     }) => {
       await page.goto("/instructor");
-      await expect(navLinks(page)).toHaveCount(3);
-      await expect(navLinks(page)).toHaveText(["Overview", "Exams", "Profile"]);
+      await expect(navLinks(page)).toHaveCount(4);
+      await expect(navLinks(page)).toHaveText(["Overview", "Exams", "Students", "Profile"]);
       await page
         .getByRole("navigation", { name: "Main" })
         .getByRole("link", { name: "Exams" })
@@ -241,7 +241,7 @@ for (const width of [360, 430]) {
       );
     });
 
-    test("the detail: three count tiles, 72px student rows without a chevron, sorted, tokens", async ({
+    test("the detail: three count tiles, 72px student rows that open the student (chevron), sorted, tokens", async ({
       page,
     }) => {
       await page.goto("/instructor/exams");
@@ -264,7 +264,7 @@ for (const width of [360, 430]) {
         expect((await row.boundingBox())!.height).toBe(72);
         expect(
           await row.evaluate((el) => el.querySelectorAll("svg.lucide-chevron-right").length),
-        ).toBe(0);
+        ).toBe(1);
       }
       // the rows match the tiles, and are sorted Not passed, Not started, Certified
       const kinds = await rows.evaluateAll((els) =>
@@ -281,7 +281,8 @@ for (const width of [360, 430]) {
       const notPassed = page.locator('[data-status="not-passed"]').first();
       if ((await notPassed.count()) > 0) {
         await expect(notPassed).toContainText(/Not passed · \d+ of \d+ correct/);
-        expect(await notPassed.evaluate((el) => el.querySelectorAll("svg").length)).toBe(1);
+        // the status icon, and the chevron of the row that opens the student
+        expect(await notPassed.evaluate((el) => el.querySelectorAll("svg").length)).toBe(2);
       }
       await expect(page.locator('[data-student-row="maryana@example.com"]')).toContainText(
         "Your demo account",
