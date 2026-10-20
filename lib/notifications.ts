@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react";
 import seed from "@/content/notifications.json";
 import { DAILY_GOAL, PASS_MARK } from "@/lib/config";
 import { isoDay } from "@/lib/exam-deadline";
-import { useNotices } from "@/lib/group-store";
+import { collapseReminders, useNotices } from "@/lib/group-store";
 import type { Notice } from "@/lib/group-store";
 import { createStore } from "@/lib/store";
 import type { FinishedSession } from "@/lib/session";
@@ -57,10 +57,10 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
 
 const newestFirst = (a: AppNotification, b: AppNotification) => b.createdAt - a.createdAt;
 
-/** Newest first, no repeated ids (the first one wins), at most MAX_NOTIFICATIONS. */
+/** Newest first, one reminder per exam, no repeated ids (the first one wins), at most MAX_NOTIFICATIONS. */
 function tidy(list: AppNotification[]): AppNotification[] {
   const seen = new Set<string>();
-  return [...list]
+  return collapseReminders([...list])
     .sort(newestFirst)
     .filter((n) => (seen.has(n.id) ? false : (seen.add(n.id), true)))
     .slice(0, MAX_NOTIFICATIONS);
@@ -111,19 +111,31 @@ export function seedNotifications(now: number): AppNotification[] {
 
 /** The list with the instructor's notices added once each (an id already in the list is never added again). */
 export function withNotices(list: AppNotification[], notices: Notice[]): AppNotification[] {
-  return notices.reduce(
-    (current, notice) =>
-      addNotification(current, {
-        id: notice.id,
-        type: "message",
-        title: notice.title,
-        text: notice.text,
-        target: isValidTarget(notice.target) ? notice.target : null,
-        createdAt: notice.createdAt,
-        read: false,
-      }),
-    list,
-  );
+  return notices.reduce((current, notice) => {
+    // a repeated reminder updates the one already there: a new date, unread again
+    const old = current.find((n) => n.id === notice.id);
+    if (old && notice.createdAt > old.createdAt) {
+      return tidy([
+        {
+          ...old,
+          title: notice.title,
+          text: notice.text,
+          createdAt: notice.createdAt,
+          read: false,
+        },
+        ...current.filter((n) => n.id !== notice.id),
+      ]);
+    }
+    return addNotification(current, {
+      id: notice.id,
+      type: "message",
+      title: notice.title,
+      text: notice.text,
+      target: isValidTarget(notice.target) ? notice.target : null,
+      createdAt: notice.createdAt,
+      read: false,
+    });
+  }, list);
 }
 
 export const unreadCount = (list: AppNotification[]) => list.filter((n) => !n.read).length;

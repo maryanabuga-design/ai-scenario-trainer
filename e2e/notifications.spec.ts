@@ -73,15 +73,19 @@ test.describe("Notifications (demo data, no backend)", () => {
     await expect(page.getByRole("heading", { name: "Profile", level: 1 })).toBeVisible();
   });
 
-  test("the bell opens Notifications with the four demo messages under New", async ({ page }) => {
+  test("the bell opens Notifications: Exams to take, then the four demo messages under Earlier", async ({
+    page,
+  }) => {
     await open(page, "/");
     await bell(page).click();
     await expect(page).toHaveURL(/\/notifications$/);
     await expect(page.getByRole("heading", { name: "Notifications", level: 1 })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "New", level: 2 })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Earlier", level: 2 })).toHaveCount(0);
-    const cards = page.locator("main ul li:visible");
-    await expect(cards).toHaveCount(4);
+    await expect(page.getByRole("heading", { name: "EXAMS TO TAKE", level: 2 })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "EARLIER", level: 2 })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "New", level: 2 })).toHaveCount(0);
+    const rows = page.locator("[data-history-row]:visible");
+    await expect(rows).toHaveCount(4);
+    // the dots of this visit stay while the screen is open
     await expect(page.locator("[data-unread-dot]:visible")).toHaveCount(4);
     await expect(page.getByText("Welcome to your training")).toBeVisible();
     await expect(
@@ -90,100 +94,90 @@ test.describe("Notifications (demo data, no backend)", () => {
     await expect(page.getByText("New material available: Checking the route")).toBeVisible();
     await expect(page.getByText("Reminder: take the mock exam this week")).toBeVisible();
     // newest first: the exam reminder (45 min ago) is on top
-    await expect(cards.first()).toContainText("take the mock exam");
-    await expect(cards.first()).toContainText("45 min ago");
-    // no bottom navigation, no sideways scroll, the card padding is the 16px gutter
+    await expect(rows.first()).toContainText("take the mock exam");
+    await expect(rows.first()).toContainText("45 min ago");
+    // no bottom navigation, no sideways scroll, rows of 72px, no Mark all as read
     await expect(page.getByRole("navigation", { name: "Main" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Mark all as read" })).toHaveCount(0);
     expect(await noSidewaysScroll(page)).toBe(true);
-    const card = cards.first().locator("a, button").first();
-    const style = await card.evaluate((el) => {
+    for (const row of await rows.all()) expect((await row.boundingBox())!.height).toBe(72);
+    const style = await rows.first().evaluate((el) => {
       const css = getComputedStyle(el);
       return {
         bg: css.backgroundColor,
-        border: [css.borderTopWidth, css.borderTopColor],
-        padding: [css.paddingTop, css.paddingRight, css.paddingBottom, css.paddingLeft],
+        radius: css.borderTopLeftRadius,
+        x: el.getBoundingClientRect().x,
       };
     });
-    expect(style.bg).toBe("rgb(250, 247, 244)");
-    expect(style.border).toEqual(["1px", "rgb(228, 223, 213)"]);
-    expect(style.padding).toEqual(["16px", "16px", "16px", "16px"]);
+    expect(style.bg).toBe("rgb(255, 255, 255)");
+    expect(style.x).toBe(16);
     // the back button is the 40px white circle
     const back = (await page.getByRole("link", { name: "Back to Home" }).boundingBox())!;
     expect([back.width, back.height]).toEqual([40, 40]);
   });
 
-  test("tapping a card removes its dot and opens its target; the read state is kept", async ({
+  test("opening Notifications marks everything read: the bell clears, the dots go on the next visit", async ({
     page,
   }) => {
     await open(page, "/notifications");
-    const unreadBg = await page
-      .locator("main ul li a")
-      .first()
-      .evaluate((el) => [
-        getComputedStyle(el).backgroundColor,
-        getComputedStyle(el).borderTopColor,
-      ]);
-    await page.getByRole("link", { name: /take the mock exam/ }).click();
-    await expect(page).toHaveURL(/\/exam$/);
-    await page.goto("/notifications");
-    await expect(page.locator("[data-unread-dot]:visible")).toHaveCount(3);
-    await expect(page.getByRole("heading", { name: "Earlier", level: 2 })).toBeVisible();
-    // a read card has the same background and border as an unread one
-    const readCard = page.getByRole("region", { name: "Earlier" }).locator("a").first();
-    expect(
-      await readCard.evaluate((el) => [
-        getComputedStyle(el).backgroundColor,
-        getComputedStyle(el).borderTopColor,
-      ]),
-    ).toEqual(unreadBg);
-    // the bell on Home counts 3 now
+    await expect(page.locator("[data-unread-dot]:visible")).toHaveCount(4);
     await page.getByRole("link", { name: "Back to Home" }).click();
-    await expect(bell(page)).toHaveAttribute("aria-label", "Notifications, 3 unread");
+    await expect(bell(page)).toHaveAttribute("aria-label", "Notifications, no unread");
+    await expect(page.locator("[data-unread-badge]:visible")).toHaveCount(0);
+    await page.reload();
+    await expect(bell(page)).toHaveAttribute("aria-label", "Notifications, no unread");
+    await page.goto("/notifications");
+    await expect(page.locator("[data-unread-dot]:visible")).toHaveCount(0);
+    // the exam card is still there: reading never removes it
+    await expect(page.locator("[data-assigned-exam]")).toHaveCount(1);
   });
 
-  test("other targets open the Training screen and a Materials reading screen", async ({
+  test("a row with a target opens it (with a chevron); a row without one is not tappable", async ({
     page,
   }) => {
     await open(page, "/notifications");
-    await page.getByRole("link", { name: /continue Part 1/ }).click();
+    const welcome = page.locator('[data-history-row="welcome"]');
+    expect(await welcome.evaluate((el) => el.tagName)).toBe("DIV");
+    await expect(welcome.locator("svg.lucide-chevron-right")).toHaveCount(0);
+    const part = page.getByRole("link", { name: /continue Part 1/ });
+    await expect(part.locator("svg.lucide-chevron-right")).toHaveCount(1);
+    await part.click();
     await expect(page).toHaveURL(/\/training$/);
     await page.goto("/notifications");
     await page.getByRole("link", { name: /Checking the route/ }).click();
     await expect(page).toHaveURL(/\/materials\/read\/S2$/);
+    await page.goto("/notifications");
+    await page.getByRole("link", { name: /take the mock exam/ }).click();
+    await expect(page).toHaveURL(/\/exam$/);
   });
 
-  test("a card with no target only marks itself as read and stays on the page", async ({
-    page,
-  }) => {
-    await open(page, "/notifications");
-    await page.getByRole("button", { name: /Welcome to your training/ }).click();
-    await expect(page).toHaveURL(/\/notifications$/);
-    await expect(page.locator("[data-unread-dot]:visible")).toHaveCount(3);
-    await expect(
-      page.getByRole("region", { name: "Earlier" }).getByText("Welcome to your training"),
-    ).toBeVisible();
-  });
-
-  test("Mark all as read clears the dots and the indicator on Home", async ({ page }) => {
-    await open(page, "/notifications");
-    await page.getByRole("button", { name: "Mark all as read" }).click();
-    await expect(page.locator("[data-unread-dot]:visible")).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Mark all as read" })).toHaveCount(0);
-    await expect(page.getByRole("heading", { name: "New", level: 2 })).toHaveCount(0);
-    await expect(page.getByRole("heading", { name: "Earlier", level: 2 })).toBeVisible();
-    await page.getByRole("link", { name: "Back to Home" }).click();
-    await expect(bell(page)).toHaveAttribute("aria-label", "Notifications, no unread");
-    await expect(page.locator("[data-unread-badge]:visible")).toHaveCount(0);
-    // it is saved: a reload keeps it
-    await page.reload();
-    await expect(bell(page)).toHaveAttribute("aria-label", "Notifications, no unread");
-  });
-
-  test("an empty list shows the friendly empty state", async ({ page }) => {
+  test("an empty history with no exam to take shows the friendly empty state", async ({ page }) => {
+    await page.addInitScript(() => {
+      // the group exams of this device: one closed exam, so nothing is left to take
+      localStorage.setItem(
+        "ast.group-exams.v1",
+        JSON.stringify({
+          schema: 6,
+          content: "other",
+          value: [
+            {
+              id: "old",
+              title: "Old exam",
+              topicIds: ["S1", "S2"],
+              questionCount: 20,
+              timeLimit: 20,
+              passMark: 80,
+              deadline: "2020-01-01",
+              createdAt: 1,
+              createdBy: "Instructor",
+            },
+          ],
+        }),
+      );
+    });
     await open(page, "/notifications", { empty: true });
     await expect(page.getByText("No notifications yet")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Mark all as read" })).toHaveCount(0);
-    await expect(page.locator("main ul li:visible")).toHaveCount(0);
+    await expect(page.locator("[data-history-row]:visible")).toHaveCount(0);
     expect(await noSidewaysScroll(page)).toBe(true);
   });
 
@@ -200,14 +194,14 @@ test.describe("Notifications (demo data, no backend)", () => {
     await page.goto("/");
     await expect(bell(page)).toHaveAttribute("aria-label", "Notifications, 5 unread");
     await bell(page).click();
-    const cards = page.locator("main ul li:visible");
-    await expect(cards).toHaveCount(5);
-    await expect(cards.first()).toContainText(/Exam result: \d+% · (passed|not passed)/);
-    await cards.first().getByRole("link").click();
+    const rows = page.locator("[data-history-row]:visible");
+    await expect(rows).toHaveCount(5);
+    await expect(rows.first()).toContainText(/Exam result: \d+% · (passed|not passed)/);
+    await rows.first().click();
     await expect(page).toHaveURL(/\/exam\/results$/);
     // visiting the results again does not add another one
     await page.goto("/notifications");
-    await expect(page.locator("main ul li:visible")).toHaveCount(5);
+    await expect(page.locator("[data-history-row]:visible")).toHaveCount(5);
   });
 
   test("a broken saved value never crashes: the demo messages come back", async ({ page }) => {
@@ -219,6 +213,6 @@ test.describe("Notifications (demo data, no backend)", () => {
       [profile],
     );
     await page.goto("/notifications");
-    await expect(page.locator("main ul li:visible")).toHaveCount(4);
+    await expect(page.locator("[data-history-row]:visible")).toHaveCount(4);
   });
 });

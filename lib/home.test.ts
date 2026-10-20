@@ -181,7 +181,13 @@ describe("the tiles", () => {
   });
 
   it("counts exam, saved questions, weak sections and checklists", () => {
-    expect(counts).toEqual({ bestExam: null, weakSections: 0, saved: 2, checklists: 3 });
+    expect(counts).toEqual({
+      assigned: null,
+      bestExam: null,
+      weakSections: 0,
+      saved: 2,
+      checklists: 3,
+    });
   });
 
   it("counts the sections to repeat from the latest wrong answers", () => {

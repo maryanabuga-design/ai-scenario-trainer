@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { HomeView } from "@/components/HomeView/HomeView";
-import { localStatus } from "@/lib/cohort";
-import { splitExams } from "@/lib/group-exams";
+import { assignedLine, examsToTake } from "@/lib/exams-to-take";
 import { useAttempts, useGroupExams } from "@/lib/group-store";
 import { homeCounts, homeSummary } from "@/lib/home";
 import { useSaved } from "@/lib/saved";
@@ -32,17 +31,14 @@ function Loaded({
 }) {
   const [now] = useState(() => Date.now());
   const unfinished = session && !session.finished ? session : null;
-  // the Active group exams this student has not passed yet (nearest deadline first, at most three)
-  const assigned = splitExams(exams, now)
-    .active.filter((exam) => localStatus(attempts, account.email, exam.id).kind !== "certified")
-    .slice(0, 3);
+  // the Tile shows the count and the nearest due date; the cards live in Notifications
+  const assigned = assignedLine(examsToTake(exams, attempts, account.email, now));
 
   return (
     <HomeView
       name={account.name}
       summary={homeSummary({ unfinished, history })}
-      counts={homeCounts({ history, saved })}
-      assigned={assigned}
+      counts={homeCounts({ history, saved, assigned })}
     />
   );
 }

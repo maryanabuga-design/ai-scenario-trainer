@@ -28,8 +28,8 @@ function AssignExam() {
         // every local student account gets the notification once
         addNotice({
           id: `notice-${exam.id}`,
-          title: `New exam assigned: ${exam.title}, due ${shortDate(exam.deadline)}`,
-          text: "Open the exam to see the rules and start.",
+          title: `New exam assigned: ${exam.title}`,
+          text: `Due ${shortDate(exam.deadline)}. Open the exam to see the rules and start.`,
           target: `/exam?id=${exam.id}`,
           createdAt: at,
         });

@@ -529,7 +529,9 @@ test.describe("Home", () => {
     await expect(page.getByText("Practical scenarios and theory quizzes, by topic")).toBeVisible();
     await expect(page.getByRole("img")).toHaveCount(0);
     await expect(page.getByText(/Readiness|How it works|How the app works/)).toHaveCount(0);
-    for (const text of ["Not taken yet", "Nothing to repeat", "0 saved", "3 checklists"]) {
+    // the seeded group exam is waiting, so the Exam tile shows the assigned line
+    await expect(page.getByText(/^1 assigned · due \d{1,2} \w{3}$/)).toBeVisible();
+    for (const text of ["Nothing to repeat", "0 saved", "3 checklists"]) {
       await expect(page.getByText(text, { exact: true })).toBeVisible();
     }
     await expect(page.getByText(/Average result|Session history|Sessions/)).toHaveCount(0);
@@ -935,7 +937,7 @@ test.describe("Exam", () => {
       "No hints or feedback during the exam",
       "Pass mark 80%",
     ]) {
-      await expect(page.getByText(rule)).toBeVisible();
+      await expect(page.getByText(rule, { exact: true })).toBeVisible();
     }
     await expect(page.getByText("You have not taken the exam yet")).toBeVisible();
     // a fresh student is not ready: the exam can still be started
@@ -966,7 +968,7 @@ test.describe("Exam", () => {
     await expect(page.getByText(/^Last/)).toBeVisible();
     await expect(page.getByText(/^Best/)).toBeVisible();
     await page.getByRole("link", { name: "Back to Home" }).click();
-    await expect(page.getByRole("link", { name: /^Exam Best: \d+ of 20/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /^Exam 1 assigned · due / })).toBeVisible();
   });
 
   test("keeps the timer after a refresh", async ({ page }) => {
@@ -1132,7 +1134,7 @@ test.describe("old saved data", () => {
     // the broken unfinished session is gone, so Home does not offer to continue it
     await expect(page.getByText(/You stopped at/)).toHaveCount(0);
     // the one valid answer (q-s2-1) is still there: 1 right is not 0%
-    await expect(page.getByText("Not taken yet")).toBeVisible();
+    await expect(page.getByText(/^1 assigned · due /)).toBeVisible();
     await expect(page.getByText("1 saved")).toBeVisible();
 
     await page.goto("/training");

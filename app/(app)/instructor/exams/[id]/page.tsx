@@ -47,8 +47,8 @@ function Detail() {
       onRemind={() => {
         const at = Date.now();
         addNotice({
-          id: `remind-${exam.id}-${at}`,
-          title: `Reminder: ${exam.title}, due ${shortDate(exam.deadline)}`,
+          id: `remind-${exam.id}`,
+          title: `Reminder: ${exam.title} is due ${shortDate(exam.deadline)}`,
           text: "You have not started this exam yet.",
           target: `/exam?id=${exam.id}`,
           createdAt: at,

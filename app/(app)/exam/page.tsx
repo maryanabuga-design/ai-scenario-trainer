@@ -7,7 +7,9 @@ import { ExamView } from "@/components/ExamView/ExamView";
 import { byDeadline, nearestExam, useExams } from "@/lib/assigned-exams";
 import type { AssignedExam } from "@/lib/assigned-exams";
 import { isActive } from "@/lib/group-exams";
-import { useGroupExams } from "@/lib/group-store";
+import { useAttempts, useGroupExams } from "@/lib/group-store";
+import { examsToTake } from "@/lib/exams-to-take";
+import { useCurrentAccount } from "@/lib/auth";
 import { deadlineText } from "@/lib/exam-deadline";
 import { examResults } from "@/lib/exam";
 import { startExam } from "@/lib/exam-session";
@@ -21,8 +23,17 @@ function ExamScreen() {
   const exams = useExams();
   const history = useHistory();
   const groupExams = useGroupExams();
+  const attempts = useAttempts();
+  const account = useCurrentAccount();
   const [now] = useState(() => Date.now());
-  if (exams === "loading" || history === "loading" || groupExams === "loading") return null;
+  if (
+    exams === "loading" ||
+    history === "loading" ||
+    groupExams === "loading" ||
+    attempts === "loading" ||
+    account === "loading"
+  )
+    return null;
   // an exam assigned by the instructor (the Instructor side): its topics, its question count
   const group = groupExams.find((entry) => entry.id === params.get("id"));
   if (group && !isActive(group, now)) {
@@ -61,6 +72,9 @@ function ExamScreen() {
   return (
     <ExamView
       title={exam.title}
+      assigned={
+        params.get("id") || !account ? [] : examsToTake(groupExams, attempts, account.email, now)
+      }
       assignedBy={exam.assignedBy}
       deadline={deadlineText(exam.deadline, new Date())}
       readiness={examReadiness(exam.topicIds, history)}

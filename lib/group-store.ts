@@ -125,7 +125,32 @@ export function cleanNotices(value: unknown): Notice[] | null {
       createdAt,
     });
   }
-  return list.length > 0 ? list.slice(-50) : null;
+  return list.length > 0 ? collapseReminders(list).slice(-50) : null;
+}
+
+/** The exam id of a reminder id ("remind-<examId>", or the older "remind-<examId>-<time>"), else null. */
+export function reminderExam(id: string): string | null {
+  const match = /^remind-(.+?)(?:-\d{10,})?$/.exec(id);
+  return match ? match[1] : null;
+}
+
+/** At most one reminder per exam: the newest wins and takes the id "remind-<examId>". */
+export function collapseReminders<T extends { id: string; createdAt: number }>(list: T[]): T[] {
+  const newest = new Map<string, T>();
+  for (const entry of list) {
+    const exam = reminderExam(entry.id);
+    if (exam === null) continue;
+    const kept = newest.get(exam);
+    if (!kept || entry.createdAt >= kept.createdAt) newest.set(exam, entry);
+  }
+  const done = new Set<string>();
+  return list.flatMap((entry) => {
+    const exam = reminderExam(entry.id);
+    if (exam === null) return [entry];
+    if (done.has(exam) || newest.get(exam) !== entry) return [];
+    done.add(exam);
+    return [{ ...entry, id: `remind-${exam}` }];
+  });
 }
 
 const noticeStore = createStore<Notice[]>("ast.group-notices.v1", {
@@ -140,8 +165,15 @@ export const useNotices = () => {
 
 export const readNotices = (): Notice[] => cleanNotices(noticeStore.read()) ?? [];
 
+/** Adds a notice once per id. A reminder (id "remind-<examId>") replaces the earlier one instead. */
 export function addNotice(notice: Notice) {
   const list = readNotices();
+  const exam = reminderExam(notice.id);
+  if (exam !== null) {
+    const others = list.filter((entry) => reminderExam(entry.id) !== exam);
+    noticeStore.write([...others, notice].slice(-50));
+    return;
+  }
   if (list.some((entry) => entry.id === notice.id)) return;
   noticeStore.write([...list, notice].slice(-50));
 }

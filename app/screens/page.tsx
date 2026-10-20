@@ -341,6 +341,11 @@ export default function Screens() {
               <ExamIntroSample readiness={62} />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Exam screen: Assigned by your instructor (two cards) above the exam">
+            <Screen>
+              <ExamIntroSample readiness={62} assigned />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Exam screen: readiness 80% or more (You're ready), after an attempt">
             <Screen>
               <ExamIntroSample readiness={84} attempted />
@@ -632,14 +637,14 @@ export default function Screens() {
               <HomeSample state="goal" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Notifications: new messages (the Home header has the bell with a count)">
+          <PhoneFrame label="Notifications: Exams to take (two) and Earlier">
             <Screen>
-              <NotificationsSample state="new" />
+              <NotificationsSample state="exams" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Notifications: New and Earlier">
+          <PhoneFrame label="Notifications: Earlier only (all read)">
             <Screen>
-              <NotificationsSample state="mixed" />
+              <NotificationsSample state="read" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Notifications: empty state">
@@ -885,7 +890,7 @@ export default function Screens() {
               <InstructorStudentsSample state="detail-ready" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Student Home with the Assigned exam card">
+          <PhoneFrame label="Student Home: the Exam tile with an assigned exam (no cards)">
             <Screen nav="/">
               <HomeSample state="first" assigned />
             </Screen>

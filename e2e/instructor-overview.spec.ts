@@ -240,10 +240,9 @@ for (const width of [360, 430]) {
 
       // as a student: the notification and the Assigned exam card, then pass it
       await switchRole(page, "Student");
-      await expect(page.locator(`[data-assigned-exam="${examId}"]`)).toBeVisible();
+      await expect(page.locator("[data-assigned-exam]")).toHaveCount(0);
       await page.getByRole("link", { name: /^Notifications, \d+ unread$/ }).click();
-      await expect(page.getByText(/New exam assigned: Exam: Journey, due/)).toBeVisible();
-      await page.goto("/");
+      await expect(page.getByText("New exam assigned: Exam: Journey")).toBeVisible();
       await page.locator(`[data-assigned-exam="${examId}"]`).click();
       await page
         .getByRole("button", { name: /^Start exam/ })

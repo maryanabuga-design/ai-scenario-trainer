@@ -102,8 +102,9 @@ import { SignUpView } from "@/components/SignUpView/SignUpView";
 import { VerifyView } from "@/components/VerifyView/VerifyView";
 import { WelcomeView } from "@/components/WelcomeView/WelcomeView";
 import type { Role } from "@/lib/role";
+import { assignedLine } from "@/lib/exams-to-take";
 import { demoExam } from "@/lib/assigned-exams";
-import { markRead, seedNotifications } from "@/lib/notifications";
+import { seedNotifications } from "@/lib/notifications";
 import { readinessAfter, scopeItemIds } from "@/lib/readiness";
 import { topicIdsOf } from "@/lib/session";
 
@@ -393,7 +394,7 @@ export function HomeSample({
   assigned = false,
 }: {
   state?: "first" | "continue" | "weak" | "goal";
-  /** Show the Assigned exam card. */
+  /** The Exam tile with an assigned exam ("1 assigned · due 26 Oct"). */
   assigned?: boolean;
 }) {
   const now = new Date(2026, 9, 17, 15, 0);
@@ -437,12 +438,14 @@ export function HomeSample({
       : null;
   return (
     <HomeView
-      assigned={assigned ? seedGroupExams(new Date(2026, 9, 24).getTime()).slice(0, 1) : []}
       name="Maryana"
       summary={homeSummary({ unfinished, history })}
       counts={homeCounts({
         history,
         saved: state === "first" ? [] : ["s3", "q-s2-1", "q-s7-3", "s5"],
+        assigned: assigned
+          ? assignedLine(seedGroupExams(new Date(2026, 9, 24).getTime()).slice(0, 1))
+          : null,
       })}
     />
   );
@@ -1095,14 +1098,31 @@ export function ExamIntroSample({
   readiness = 0,
   overdue = false,
   attempted = false,
+  assigned = false,
 }: {
   readiness?: number;
   overdue?: boolean;
   attempted?: boolean;
+  /** The "Assigned by your instructor" section (two exams to take). */
+  assigned?: boolean;
 }) {
   const now = new Date(2026, 9, 19, 10, 0);
+  const groupExams = seedGroupExams(new Date(2026, 9, 24).getTime());
   return (
     <ExamView
+      assigned={
+        assigned
+          ? [
+              groupExams[0],
+              {
+                ...groupExams[0],
+                id: "journey",
+                title: "Exam: Responding to an alarm",
+                deadline: "2026-10-27",
+              },
+            ]
+          : []
+      }
       title="Evacuation basics exam"
       assignedBy="Instructor"
       deadline={deadlineText(overdue ? "2026-10-15" : "2026-10-25", now)}
@@ -1271,17 +1291,45 @@ export function StepsTopicSample({
   );
 }
 
-/** The Notifications screen with the four demo messages: all new, new and earlier, and empty. */
-export function NotificationsSample({ state }: { state: "new" | "mixed" | "empty" }) {
-  const now = new Date(2026, 9, 19, 14, 0).getTime();
+/** The Notifications screen: with two exams to take, read history only, and empty. */
+export function NotificationsSample({ state }: { state: "exams" | "read" | "empty" }) {
+  const now = new Date(2026, 9, 24, 14, 0).getTime();
   const seeded = seedNotifications(now);
+  const exams = seedGroupExams(now);
+  const second = {
+    ...exams[0],
+    id: "journey",
+    title: "Exam: Responding to an alarm",
+    deadline: "2026-10-27",
+  };
+  const toTake =
+    state === "exams"
+      ? [exams[0], second].sort((x, y) => x.deadline.localeCompare(y.deadline))
+      : [];
   const items =
     state === "empty"
       ? []
-      : state === "new"
-        ? seeded
-        : markRead(markRead(seeded, "welcome"), "new-material-s2");
-  return <NotificationsView items={items} now={now} onOpen={() => {}} onMarkAll={() => {}} />;
+      : state === "exams"
+        ? [
+            {
+              id: "notice-journey",
+              type: "message" as const,
+              title: `New exam assigned: ${second.title}`,
+              text: "",
+              target: "/exam?id=journey",
+              createdAt: now - 10 * 60_000,
+              read: false,
+            },
+            ...seeded,
+          ]
+        : seeded.map((n) => ({ ...n, read: true }));
+  const fresh = new Set(
+    items
+      .filter((n) => !n.read)
+      .slice(0, 2)
+      .map((n) => n.id),
+  );
+  return <NotificationsView items={items} toTake={toTake} now={now} freshIds={fresh} />;
 }
 
 /** The Instructor Overview for the screen review page (the seeded demo group, a fixed date). */

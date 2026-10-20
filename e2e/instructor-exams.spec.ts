@@ -236,9 +236,7 @@ for (const width of [360, 430]) {
         () =>
           JSON.parse(localStorage.getItem("ast.group-notices.v1")!).value as { title: string }[],
       );
-      expect(notices[0].title).toMatch(
-        /^New exam assigned: Exam: Alarm and routes, due \d{1,2} \w{3}$/,
-      );
+      expect(notices[0].title).toMatch(/^New exam assigned: Exam: Alarm and routes$/);
     });
 
     test("the detail: three count tiles, 72px student rows that open the student (chevron), sorted, tokens", async ({
@@ -366,6 +364,10 @@ for (const width of [360, 430]) {
       await expect(bell).toBeVisible();
       expect((await bell.boundingBox())!.height).toBeGreaterThanOrEqual(44);
       await expect(page.locator("[data-unread-badge]")).toBeVisible();
+      // Home has no exam cards; the card is under EXAMS TO TAKE on Notifications
+      await expect(page.locator("[data-assigned-exam]")).toHaveCount(0);
+      await bell.click();
+      await expect(page).toHaveURL(/\/notifications$/);
       const card = page.locator(`[data-assigned-exam="${examId}"]`);
       await expect(card).toBeVisible();
       expect((await card.boundingBox())!.height).toBe(88);
@@ -373,11 +375,8 @@ for (const width of [360, 430]) {
       await expect(card).toContainText(/Due \d{1,2} \w{3}/);
       await expect(card).toContainText("20 questions · 20 minutes");
       await expect(page.getByRole("button", { name: "Start exam" })).toHaveCount(0);
-      await bell.click();
-      await expect(page).toHaveURL(/\/notifications$/);
-      await expect(page.getByText(/New exam assigned: Exam: Alarm and routes, due/)).toBeVisible();
+      await expect(page.getByText("New exam assigned: Exam: Alarm and routes")).toBeVisible();
       // the card opens the exam intro, where the Primary Start exam lives
-      await page.goto("/");
       await card.click();
       await expect(page).toHaveURL(new RegExp(`/exam\\?id=${examId}$`));
       await page
@@ -408,8 +407,8 @@ for (const width of [360, 430]) {
       await page.getByRole("button", { name: "Finish", exact: true }).click();
       await expect(page).toHaveURL(/\/exam\/results$/);
       await expect(page.getByRole("heading", { name: "Passed" })).toBeVisible();
-      // the Assigned exam card is gone from Home once it is passed
-      await page.goto("/");
+      // the card is gone from Notifications once it is passed
+      await page.goto("/notifications");
       await expect(page.locator(`[data-assigned-exam="${examId}"]`)).toHaveCount(0);
       // back as the instructor: this account is Certified for the exam, and the counts followed
       await switchRole(page, "Instructor");
@@ -456,7 +455,7 @@ for (const width of [360, 430]) {
       await page.getByRole("button", { name: "Finish", exact: true }).click();
       await expect(page.getByRole("heading", { name: "Not passed yet" })).toBeVisible();
       // still assigned: the card stays and the exam can be started again
-      await page.goto("/");
+      await page.goto("/notifications");
       await expect(page.locator(`[data-assigned-exam="${examId}"]`)).toBeVisible();
       await switchRole(page, "Instructor");
       await page.goto(`/instructor/exams/${examId}`);
@@ -470,6 +469,7 @@ for (const width of [360, 430]) {
       await page.getByRole("button", { name: "Close exam now" }).click();
       await page.locator("dialog[open]").getByRole("button", { name: "Close exam" }).click();
       await switchRole(page, "Student");
+      await page.goto("/notifications");
       await expect(page.locator('[data-assigned-exam="seed-active"]')).toHaveCount(0);
       await page.goto("/exam?id=seed-active");
       await expect(page.getByRole("heading", { name: "This exam is closed" })).toBeVisible();

@@ -59,6 +59,8 @@ export type { Artwork } from "@/lib/media-frames";
 export type HomeCounts = {
   /** The best exam result in percent, or null when no exam was taken. */
   bestExam: { correct: number; questions: number } | null;
+  /** "1 assigned · due 23 Oct" when a group exam is waiting for this student. */
+  assigned?: string | null;
   weakSections: number;
   saved: number;
   checklists: number;
@@ -81,9 +83,10 @@ export function homeTiles(counts: HomeCounts): HomeTile[] {
       id: "exam",
       title: "Exam",
       count:
-        counts.bestExam === null
+        counts.assigned ??
+        (counts.bestExam === null
           ? "Not taken yet"
-          : `Best: ${counts.bestExam.correct} of ${counts.bestExam.questions}`,
+          : `Best: ${counts.bestExam.correct} of ${counts.bestExam.questions}`),
       href: "/exam",
     },
     {
@@ -114,13 +117,16 @@ export function homeTiles(counts: HomeCounts): HomeTile[] {
 export function homeCounts({
   history,
   saved,
+  assigned = null,
 }: {
   history: FinishedSession[] | null;
   saved: string[] | null;
+  assigned?: string | null;
 }): HomeCounts {
   const weak = weakItemsFromHistory(history);
   const bestAttempt = examResults(history).best;
   return {
+    assigned,
     bestExam: bestAttempt && { correct: bestAttempt.correct, questions: bestAttempt.questions },
     weakSections: new Set(weak.map((item) => item.section)).size,
     saved: (saved ?? []).filter((id) => findItem(id) !== undefined).length,

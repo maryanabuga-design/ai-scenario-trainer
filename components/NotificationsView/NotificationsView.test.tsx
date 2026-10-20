@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { badgeText, bellLabel } from "@/components/NotificationBell/NotificationBell";
 import { NotificationsView } from "@/components/NotificationsView/NotificationsView";
+import { seedGroupExams } from "@/lib/group-exams";
 import type { AppNotification } from "@/lib/notifications";
 
 const NOW = new Date(2026, 9, 19, 14, 0, 0).getTime();
@@ -17,9 +18,10 @@ const make = (id: string, extra: Partial<AppNotification> = {}): AppNotification
   ...extra,
 });
 
-const render = (items: AppNotification[]) =>
+const exams = seedGroupExams(NOW);
+const render = (items: AppNotification[], toTake = exams.slice(0, 1), fresh: string[] = []) =>
   renderToStaticMarkup(
-    <NotificationsView items={items} now={NOW} onOpen={() => {}} onMarkAll={() => {}} />,
+    <NotificationsView items={items} toTake={toTake} now={NOW} freshIds={new Set(fresh)} />,
   );
 
 describe("the bell", () => {
@@ -34,57 +36,65 @@ describe("the bell", () => {
 });
 
 describe("the Notifications screen", () => {
-  const items = [
-    make("a", { read: false }),
-    make("b", { read: true, target: null, createdAt: NOW - 30 * 60 * 60_000 }),
-  ];
-  const html = render(items);
+  const items = [make("a"), make("b", { target: null, createdAt: NOW - 30 * 60 * 60_000 })];
+  const html = render(items, exams, ["a"]);
 
-  it("has the small Back, the title and Mark all as read while something is unread", () => {
+  it("has the small Back and the title, and no Mark all as read", () => {
     expect(html).toContain('aria-label="Back to Home"');
     expect(html).toContain("h-10 w-10");
     expect(html).toContain(">Notifications</h1>");
-    expect(html).toContain("Mark all as read");
-    expect(html.indexOf('aria-label="Back to Home"')).toBeLessThan(
-      html.indexOf("Mark all as read"),
-    );
+    expect(html).not.toContain("Mark all as read");
   });
 
-  it("hides Mark all as read when nothing is unread", () => {
-    expect(render([make("a", { read: true })])).not.toContain("Mark all as read");
+  it("has EXAMS TO TAKE first, then EARLIER", () => {
+    expect(html.indexOf("EXAMS TO TAKE")).toBeGreaterThan(-1);
+    expect(html.indexOf("EXAMS TO TAKE")).toBeLessThan(html.indexOf("EARLIER"));
+    expect(html).not.toContain(">New<");
   });
 
-  it("groups New and Earlier, and leaves out a group with nothing in it", () => {
-    expect(html.indexOf(">New<")).toBeGreaterThan(-1);
-    expect(html.indexOf(">New<")).toBeLessThan(html.indexOf(">Earlier<"));
-    expect(render([make("a")])).not.toContain(">Earlier<");
-    expect(render([make("a", { read: true })])).not.toContain(">New<");
+  it("leaves out EXAMS TO TAKE when there is none, and EARLIER when the history is empty", () => {
+    expect(render(items, [])).not.toContain("EXAMS TO TAKE");
+    expect(render([], exams)).not.toContain("EARLIER");
   });
 
-  it("shows the title, up to two lines of text and the relative time", () => {
-    expect(html).toContain("Title a");
-    expect(html).toContain("line-clamp-2");
+  it("shows one 88px card per exam to take, each opening the exam intro", () => {
+    expect(html.match(/data-assigned-exam=/g)).toHaveLength(exams.length);
+    expect(html.match(/h-\[88px\]/g)).toHaveLength(exams.length);
+    expect(html).toContain(`href="/exam?id=${exams[0].id}"`);
+    expect(html).toContain("questions · ");
+    expect(html).not.toContain("Start exam");
+  });
+
+  it("shows history rows of a fixed 72px with the title, the relative time and a dot only when new", () => {
+    expect(html.match(/h-\[72px\]/g)).toHaveLength(2);
     expect(html).toContain("2 h ago");
     expect(html).toContain("Yesterday");
-  });
-
-  it("marks only unread cards with a dot, and the card looks the same read or unread", () => {
     expect(html.match(/data-unread-dot/g)).toHaveLength(1);
     expect(html).toContain("Unread: ");
-    const card = (read: boolean) => {
-      const out = render([make("x", { read })]);
-      const start = out.lastIndexOf("<a ", out.indexOf('href="/training"'));
-      return out.slice(start, out.indexOf(">", start) + 1);
-    };
-    expect(card(false)).toBe(card(true));
-    expect(card(false)).toContain("rounded-card border border-selectable-stroke bg-list-card");
-    expect(card(false)).toContain("p-[var(--gutter,1rem)]");
-    expect(card(false)).not.toMatch(/bg-primary|border-primary|bg-olive/);
+    expect(html).toContain("line-clamp-2");
   });
 
-  it("opens the target with a link and only marks a card without a target (a button)", () => {
-    expect(html).toContain('href="/training"');
-    expect(html).toContain('<button type="button"');
+  it("gives a chevron only to a row that opens something", () => {
+    const row = (out: string, id: string) => {
+      const start = out.indexOf(`data-history-row="${id}"`);
+      return out.slice(start, out.indexOf("</li>", start));
+    };
+    expect(row(html, "a")).toContain("lucide-chevron-right");
+    expect(row(html, "a")).toContain('href="/training"');
+    expect(row(html, "b")).not.toContain("lucide-chevron-right");
+    expect(row(html, "b")).not.toContain("<a ");
+  });
+
+  it("opens an exam row only while that exam is active", () => {
+    const row = make("e", { target: `/exam?id=${exams[0].id}`, type: "message" });
+    const open = render([row], exams.slice(0, 1));
+    expect(open).toContain(`data-history-row="e"`);
+    const start = open.indexOf('data-history-row="e"');
+    expect(open.slice(start - 200, start)).toContain("<a ");
+    const closed = render([row], []);
+    const at = closed.indexOf('data-history-row="e"');
+    expect(closed.slice(at - 200, at)).not.toContain("<a ");
+    expect(closed.slice(at, closed.indexOf("</li>", at))).not.toContain("lucide-chevron-right");
   });
 
   it("draws the type icon in the one neutral tile", () => {
@@ -94,11 +104,12 @@ describe("the Notifications screen", () => {
     expect(render([make("r", { type: "result" })])).toContain("lucide-clipboard-check");
   });
 
-  it("has an empty state", () => {
-    const empty = render([]);
+  it("has an empty state only when both sections are empty", () => {
+    const empty = render([], []);
     expect(empty).toContain("No notifications yet");
     expect(empty).toContain("lucide-bell");
-    expect(empty).not.toContain("Mark all as read");
+    expect(render([], exams)).not.toContain("No notifications yet");
+    expect(render(items, [])).not.toContain("No notifications yet");
   });
 
   it("lives on its own screen with no bottom navigation item", () => {

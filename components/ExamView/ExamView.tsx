@@ -2,6 +2,7 @@
 
 import { CircleCheck, Clock, Info, ListChecks, LightbulbOff, Target } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { AssignedExamCard } from "@/components/AssignedExamCard/AssignedExamCard";
 import { Button } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
 import { IconTile } from "@/components/IconTile/IconTile";
@@ -9,6 +10,7 @@ import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { ReadinessBar } from "@/components/ReadinessBar/ReadinessBar";
 import { EXAM_MINUTES, EXAM_QUESTIONS, PASS_MARK } from "@/lib/config";
 import type { Deadline } from "@/lib/exam-deadline";
+import type { GroupExam } from "@/lib/group-exams";
 import { EXAM_PASS_MARK, isReady } from "@/lib/readiness";
 
 const shortDate = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short" });
@@ -67,6 +69,7 @@ export function ExamView({
   best,
   onStart,
   onRepeat,
+  assigned = [],
 }: {
   title: string;
   assignedBy: string;
@@ -78,6 +81,8 @@ export function ExamView({
   best: ExamAttemptCount | null;
   onStart: () => void;
   onRepeat: () => void;
+  /** The exams to take, shown first on the plain Exam screen (not on the intro of one exam). */
+  assigned?: GroupExam[];
 }) {
   const ready = isReady(readiness);
   return (
@@ -87,6 +92,21 @@ export function ExamView({
         subtitle={<ExamSubtitle assignedBy={assignedBy} deadline={deadline} />}
         back={{ label: "Back to Home", href: "/" }}
       />
+
+      {assigned.length > 0 && (
+        <section aria-labelledby="assigned-title" className="flex flex-col gap-3">
+          <h2 id="assigned-title" className="type-label text-text-secondary">
+            ASSIGNED BY YOUR INSTRUCTOR
+          </h2>
+          <ul className="flex flex-col gap-3">
+            {assigned.map((exam) => (
+              <li key={exam.id}>
+                <AssignedExamCard exam={exam} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section aria-label="Readiness">
         <Card className="flex flex-col gap-3">
