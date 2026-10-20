@@ -33,9 +33,10 @@ describe("the bottom navigation", () => {
     ]);
   });
 
-  it("has Overview, Exams, Students and Profile for an instructor, in the same style, Overview being Instructor Home", () => {
+  it("has Overview, Exams, Students, Content and Profile for an instructor, in the same style, Overview being Instructor Home", () => {
     const home = renderToStaticMarkup(<BottomNav activePath="/instructor" role="instructor" />);
-    expect(labels(home)).toEqual(["Overview", "Exams", "Students", "Profile"]);
+    expect(labels(home)).toEqual(["Overview", "Exams", "Students", "Content", "Profile"]);
+    expect(home).toContain('href="/instructor/content"');
     expect(home).toContain('href="/instructor/students"');
     expect(home).toContain('href="/instructor/exams"');
     expect(home).toContain('href="/instructor"');

@@ -1,3 +1,4 @@
+import "@/lib/content-sets"; // registers where the questions of a published instructor set are found
 import { findItem, sectionOrder } from "@/lib/items";
 import { clearPartRecords, recordPartResult } from "@/lib/part-progress";
 import { nearestExam, readExams } from "@/lib/assigned-exams";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, ListChecks, Target } from "lucide-react";
+import { Clock, FileText, ListChecks, Target } from "lucide-react";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { buttonClasses } from "@/components/Button/Button";
@@ -23,6 +23,9 @@ import { questionCountLabel } from "@/lib/quiz-draw";
 export type TrainingExam = { id: string; title: string; deadline: Deadline };
 
 export const miniQuizPath = "/mini-quiz?from=training";
+
+/** A published set of the instructor: an extra card at the end of the Quiz list. */
+export type InstructorSet = { id: string; title: string; topicTitle: string; count: number };
 
 export type TrainingTopic = {
   sectionId: string;
@@ -68,6 +71,8 @@ export function TrainingView({
   onStartPart,
   resume,
   exams = [],
+  instructorSets = [],
+  onStartSet,
 }: {
   guideName: string;
   mode: TrainingMode;
@@ -80,6 +85,9 @@ export function TrainingView({
   resume?: string;
   /** The assigned exams, nearest deadline first: each opens its exam screen. No percentage here. */
   exams?: TrainingExam[];
+  /** Published sets of the instructor (Quiz mode only): practice, never part of readiness or the exam. */
+  instructorSets?: InstructorSet[];
+  onStartSet?: (id: string) => void;
 }) {
   return (
     <div className="flex flex-col gap-4 pb-6">
@@ -229,6 +237,41 @@ export function TrainingView({
           </ul>
         </section>
       ))}
+      {mode === "quiz" &&
+        instructorSets.map((set) => (
+          <section
+            key={set.id}
+            data-instructor-set={set.id}
+            aria-labelledby={`set-${set.id}`}
+            className="flex flex-col rounded-card bg-card shadow-(--card-shadow)"
+          >
+            <header className="flex items-center gap-3 p-4">
+              <IconTile className="h-8 w-8 rounded-full">
+                <FileText size={16} strokeWidth={2} />
+              </IconTile>
+              <h2 id={`set-${set.id}`} className="type-label min-w-0 flex-1 text-text-secondary">
+                From your instructor: {set.title}
+              </h2>
+            </header>
+            <ul className="flex flex-col border-t border-border">
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onStartSet?.(set.id)}
+                  className="flex min-h-16 w-full items-center justify-between gap-3 px-4 py-3 text-left active:bg-surface-muted"
+                >
+                  <span className="flex min-w-0 flex-col">
+                    <span className="type-body-strong">Practise</span>
+                    <span className="type-small truncate text-text-secondary">
+                      {set.topicTitle} · {questionCountLabel(set.count)}
+                    </span>
+                  </span>
+                  <Chevron />
+                </button>
+              </li>
+            </ul>
+          </section>
+        ))}
     </div>
   );
 }

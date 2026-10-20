@@ -160,7 +160,7 @@ for (const width of [360, 430]) {
       // Profile has the band with its Back to Home (so its title sits lower than a tab's)
       const profileTop = await checkBand(page, width, "Profile", "Your account and settings", true);
       expect(profileTop).toBeGreaterThan(top);
-      await expect(page.getByRole("navigation").getByRole("link")).toHaveCount(4);
+      await expect(page.getByRole("navigation").getByRole("link")).toHaveCount(5);
     });
   });
 }

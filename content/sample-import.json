@@ -1,0 +1,244 @@
+{
+  "questions": [
+    {
+      "options": [
+        "It is real until it is officially confirmed otherwise.",
+        "It is a drill unless smoke is visible.",
+        "It is a fault if the alarm is short.",
+        ""
+      ],
+      "correct": "A",
+      "explanation": "The cause cannot be known from the sound, so an alarm is treated as real until it is confirmed otherwise.",
+      "guideRef": "",
+      "text": "Which statement describes the safest assumption when an alarm sounds?"
+    },
+    {
+      "options": [
+        "Wait to see what others do.",
+        "Stop what you are doing and leave by the marked route.",
+        "Collect all your belongings first.",
+        ""
+      ],
+      "correct": "B",
+      "explanation": "Leaving at once by the marked route saves time and keeps routes clear.",
+      "guideRef": "",
+      "text": "What should you do first when you hear the evacuation alarm?"
+    },
+    {
+      "options": [
+        "Walking is always faster.",
+        "Running is not allowed outdoors.",
+        "Running can cause falls and crowding.",
+        ""
+      ],
+      "correct": "C",
+      "explanation": "A calm, steady pace keeps everyone safe on stairs and in corridors.",
+      "guideRef": "",
+      "text": "Why do you walk and not run when you leave a building?"
+    },
+    {
+      "options": [
+        "The nearest marked exit that is clear.",
+        "The main entrance only.",
+        "The exit you used this morning.",
+        ""
+      ],
+      "correct": "A",
+      "explanation": "The nearest clear marked exit is the quickest safe way out.",
+      "guideRef": "",
+      "text": "Which exit should you prefer during an evacuation?"
+    },
+    {
+      "options": [
+        "Wait next to it.",
+        "Do not open it and use another route.",
+        "Open it quickly and run through.",
+        ""
+      ],
+      "correct": "B",
+      "explanation": "A hot door can mean danger behind it, so another route is chosen.",
+      "guideRef": "",
+      "text": "What do you do if a door feels hot?"
+    },
+    {
+      "options": [
+        "Back inside to check.",
+        "To your car.",
+        "To the assembly point.",
+        ""
+      ],
+      "correct": "C",
+      "explanation": "The assembly point lets the person in charge account for everyone.",
+      "guideRef": "",
+      "text": "Where do you go after you have left the building?"
+    },
+    {
+      "options": [
+        "It can stop or fail and trap people.",
+        "It is too slow to call.",
+        "It is only for visitors.",
+        ""
+      ],
+      "correct": "A",
+      "explanation": "Stairs are the safe choice because a lift can stop working.",
+      "guideRef": "",
+      "text": "Why is the lift not used during an evacuation?"
+    },
+    {
+      "options": [
+        "Asking them to hurry.",
+        "Offering help and telling the person in charge.",
+        "Leaving them behind to save time.",
+        ""
+      ],
+      "correct": "B",
+      "explanation": "",
+      "guideRef": "",
+      "text": "What helps people who need extra time to leave?"
+    },
+    {
+      "options": [
+        "Move them at once.",
+        "Give them water.",
+        "Check that the area is safe, then check for a response.",
+        ""
+      ],
+      "correct": "C",
+      "explanation": "Your own safety comes first, then the check for a response.",
+      "guideRef": "",
+      "text": "What is the first step when you find a person who does not respond?"
+    },
+    {
+      "options": [
+        "Call for emergency help and start chest compressions.",
+        "Wait for them to wake up.",
+        "Place them in a chair.",
+        ""
+      ],
+      "correct": "A",
+      "explanation": "Fast help and compressions give the person the best chance.",
+      "guideRef": "",
+      "text": "What do you do after you confirm the person is not breathing normally?"
+    },
+    {
+      "options": [
+        "Lift the limb and wait.",
+        "Press firmly on the wound with a clean pad.",
+        "Wash the wound for several minutes.",
+        ""
+      ],
+      "correct": "B",
+      "explanation": "Firm direct pressure is the first step to control bleeding.",
+      "guideRef": "",
+      "text": "How do you treat heavy bleeding from a limb?"
+    },
+    {
+      "options": [
+        "When they are awake and talking.",
+        "When they are not breathing.",
+        "When they are unresponsive but breathing normally.",
+        ""
+      ],
+      "correct": "C",
+      "explanation": "The position keeps the airway open for a person who is breathing.",
+      "guideRef": "",
+      "text": "When is a person placed in the recovery position?"
+    },
+    {
+      "options": [
+        "Where you are and what has happened.",
+        "Only your name.",
+        "Nothing until help arrives.",
+        ""
+      ],
+      "correct": "",
+      "explanation": "Place and situation let the right help be sent quickly.",
+      "guideRef": "",
+      "text": "What should you tell the emergency call taker?"
+    },
+    {
+      "options": [
+        "It keeps them warm.",
+        "Movement can cause more harm.",
+        "They need to sleep.",
+        ""
+      ],
+      "correct": "B",
+      "explanation": "Keeping the limb still lowers pain and the risk of further injury.",
+      "guideRef": "",
+      "text": "Why do you keep a person with a suspected broken bone still?"
+    },
+    {
+      "options": [
+        "Ask them to walk it off.",
+        "Give them a large meal.",
+        "Let them sit or lie down and stay with them.",
+        ""
+      ],
+      "correct": "C",
+      "explanation": "Lying or sitting down lowers the risk of a fall.",
+      "guideRef": "",
+      "text": "What helps a person who feels faint?"
+    },
+    {
+      "options": [
+        "Short, calm and with one instruction.",
+        "Long and detailed.",
+        "Loud and repeated with new details.",
+        ""
+      ],
+      "correct": "A",
+      "explanation": "Short, calm messages are easier to follow under stress.",
+      "guideRef": "",
+      "text": "Which message is clear in a crisis?"
+    },
+    {
+      "options": [
+        "To ask for a day off.",
+        "So that everyone can be accounted for.",
+        "To receive a certificate.",
+        ""
+      ],
+      "correct": "B",
+      "explanation": "Reporting lets the person in charge know who is safe.",
+      "guideRef": "",
+      "text": "Why do you report to the person in charge at the assembly point?"
+    },
+    {
+      "options": [
+        "Leave it and say nothing.",
+        "Block it more.",
+        "Tell the person in charge and use another route.",
+        ""
+      ],
+      "correct": "C",
+      "explanation": "Reporting a blocked route protects the people who come after you.",
+      "guideRef": "",
+      "text": "What do you do when you notice a blocked exit route?"
+    },
+    {
+      "options": [
+        "Wait until you are told it is safe.",
+        "Go in to collect your coat.",
+        "Check it yourself.",
+        ""
+      ],
+      "correct": "A",
+      "explanation": "Only an official all-clear means the building is safe.",
+      "guideRef": "",
+      "text": "What should you do before you re-enter a building after an evacuation?"
+    },
+    {
+      "options": [
+        "It makes the evacuation slower.",
+        "Calm helpers are easier to follow and think more clearly.",
+        "It is not important.",
+        ""
+      ],
+      "correct": "B",
+      "explanation": "A calm voice and steady actions help others stay calm too.",
+      "guideRef": "",
+      "text": "Why do you stay calm when helping others?"
+    }
+  ]
+}

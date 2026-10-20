@@ -21,11 +21,12 @@ const studentItems = [
   { href: "/ask-ai", label: "Ask AI", Icon: Sparkles },
 ];
 
-/** An instructor has Overview (Instructor Home), Exams and Profile, in the same style. */
+/** An instructor has Overview, Exams, Students, Content and Profile, in the same style. */
 const instructorItems = [
   { href: "/instructor", label: "Overview", Icon: House },
   { href: "/instructor/exams", label: "Exams", Icon: ClipboardList },
   { href: "/instructor/students", label: "Students", Icon: Users },
+  { href: "/instructor/content", label: "Content", Icon: FileText },
   { href: "/profile", label: "Profile", Icon: User },
 ];
 
@@ -40,6 +41,7 @@ function isCurrent(href: string, pathname: string) {
   // the exams list is a tab; its detail screens (new, <id>) are sub-screens with Back: no navigation
   if (href === "/instructor/exams") return pathname === "/instructor/exams";
   if (href === "/instructor/students") return pathname === "/instructor/students";
+  if (href === "/instructor/content") return pathname === "/instructor/content";
   // a thread (/ask-ai/<id>) is a sub-screen with Back: no navigation
   if (href === "/ask-ai") return pathname === "/ask-ai";
   return pathname.startsWith(href);

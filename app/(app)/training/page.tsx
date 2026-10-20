@@ -6,6 +6,7 @@ import { TrainingView } from "@/components/TrainingView/TrainingView";
 import type { TrainingTopic } from "@/components/TrainingView/TrainingView";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { byDeadline, useExams } from "@/lib/assigned-exams";
+import { itemsOf, useContentSets } from "@/lib/content-sets";
 import { deadlineText } from "@/lib/exam-deadline";
 import { sampleMaterials } from "@/lib/materials";
 import {
@@ -32,12 +33,17 @@ function Training({ initial }: { initial: TrainingMode }) {
   const records = usePartRecords();
   const session = useSession();
   const assigned = useExams();
+  const contentSets = useContentSets();
   const [mode, setMode] = useState<TrainingMode>(initial);
 
   // A mode from the link (the Home tiles) is remembered like one chosen here.
   useEffect(() => saveTrainingMode(initial), [initial]);
 
-  const ready = history !== "loading" && records !== "loading" && session !== "loading";
+  const ready =
+    history !== "loading" &&
+    records !== "loading" &&
+    session !== "loading" &&
+    contentSets !== "loading";
 
   if (!ready) return null;
   const unfinished = session && !session.finished ? session : null;
@@ -57,6 +63,21 @@ function Training({ initial }: { initial: TrainingMode }) {
       })),
     };
   });
+
+  const published = contentSets.filter(
+    (set) => set.status === "published" && set.questions.length > 0,
+  );
+
+  function startSet(id: string) {
+    const set = published.find((entry) => entry.id === id);
+    if (!set) return;
+    startSession(
+      "quiz",
+      itemsOf(set).map((item) => item.id),
+      { returnTo: "/training?mode=quiz" },
+    );
+    router.push("/session");
+  }
 
   function start(part: Part) {
     // The same unfinished part is resumed, not started again.
@@ -90,6 +111,13 @@ function Training({ initial }: { initial: TrainingMode }) {
               deadline: deadlineText(exam.deadline, new Date()),
             }))
       }
+      instructorSets={published.map((set) => ({
+        id: set.id,
+        title: set.title,
+        topicTitle: sections.find((section) => section.id === set.topic)?.title ?? set.topic,
+        count: set.questions.length,
+      }))}
+      onStartSet={startSet}
       onStartPart={start}
       resume={
         unfinished

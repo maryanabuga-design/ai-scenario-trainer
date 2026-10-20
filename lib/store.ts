@@ -164,7 +164,13 @@ export function createStore<T>(
     read(): T | null {
       return parse(readRaw());
     },
-    write(value: T | null) {
+    /** The saved text as it is, for callers that cache what they build from it. */
+    raw(): string | null {
+      return readRaw();
+    },
+    /** Saves the value. False when the browser could not keep it (storage full or blocked): it still works for this visit. */
+    write(value: T | null): boolean {
+      let saved = true;
       memory =
         value === null
           ? null
@@ -176,8 +182,10 @@ export function createStore<T>(
         else window.localStorage.setItem(fullKey(), memory);
       } catch {
         // Storage is unavailable; the in-memory copy still works for this visit.
+        saved = false;
       }
       notify();
+      return saved;
     },
     /** The saved value. "loading" until the browser has been read, so pages never redirect too early. */
     useValue(): T | null | "loading" {

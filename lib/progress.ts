@@ -15,6 +15,8 @@ export function scoreSession(session: Pick<Session, "answers"> | FinishedSession
 export function weakItemsFromHistory(history: FinishedSession[] | null): ScoredItem[] {
   const all = [...(history ?? [])]
     .sort((a, b) => a.finishedAt - b.finishedAt)
-    .flatMap(scoreSession);
+    .flatMap(scoreSession)
+    // questions of a published instructor set are practice only: never a weak topic
+    .filter((scored) => !findItem(scored.id)?.imported);
   return currentWeakItems(all);
 }

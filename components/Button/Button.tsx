@@ -99,13 +99,28 @@ export function ButtonLink({
   icon,
   trailing,
   onClick,
+  download,
   children,
-}: ButtonLook & { href: string; onClick?: () => void; children: ReactNode }) {
-  return (
-    <Link href={href} onClick={onClick} className={buttonClasses({ variant, wide, compact, snug })}>
-      <Content variant={variant} icon={icon} trailing={trailing}>
-        {children}
-      </Content>
+}: ButtonLook & {
+  href: string;
+  onClick?: () => void;
+  /** A file to save (a plain link, not a page change): the name it is saved under. */
+  download?: string;
+  children: ReactNode;
+}) {
+  const content = (
+    <Content variant={variant} icon={icon} trailing={trailing}>
+      {children}
+    </Content>
+  );
+  const className = buttonClasses({ variant, wide, compact, snug });
+  return download ? (
+    <a href={href} download={download} className={className}>
+      {content}
+    </a>
+  ) : (
+    <Link href={href} onClick={onClick} className={className}>
+      {content}
     </Link>
   );
 }

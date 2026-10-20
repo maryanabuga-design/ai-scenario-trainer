@@ -145,6 +145,9 @@ describe("a secondary always comes with a primary above it", () => {
     expect(withSecondary).toEqual([
       // The exam intro of a closed group exam: Back to Home.
       "app/(app)/exam/page.tsx",
+      // Content: the friendly not-found screens (Back to Content, Back to Review).
+      "app/(app)/instructor/content/[id]/[n]/page.tsx",
+      "app/(app)/instructor/content/[id]/page.tsx",
       // About this prototype: "Restart demo" under the info lines (one clearly separate action).
       "components/AboutView/AboutView.tsx",
       // Answer review: Back to results, below the primary Next question.
@@ -159,6 +162,11 @@ describe("a secondary always comes with a primary above it", () => {
       // The exam screen: Start exam anyway, below the primary Repeat weak topics.
       "components/ExamView/ExamView.tsx",
       // Instructor Assign exam: Cancel and Select all; Exam detail: Remind and Close exam, Exam not found.
+      // Content: Import (Cancel, Choose file, Remove), Review (Delete set, Unpublish) and Edit question
+      // (Delete question, Add image, Remove image), each under at most one Primary.
+      "components/InstructorContent/EditQuestionView.tsx",
+      "components/InstructorContent/ImportView.tsx",
+      "components/InstructorContent/ReviewView.tsx",
       "components/InstructorExams/AssignExamView.tsx",
       "components/InstructorExams/ExamDetailView.tsx",
       // Overview: the nearest exam has a Secondary Assign exam under its card (the Primary is for "No active exam").

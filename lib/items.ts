@@ -1,4 +1,5 @@
 import { getStep } from "@/lib/scenario";
+import { findImported } from "@/lib/imported-registry";
 import { getQuestion } from "@/lib/quiz";
 
 /** A picture for a question: files live in public/scenarios/. An empty `src` shows the placeholder. */
@@ -50,6 +51,8 @@ export type Item = {
   /** Prepared Ask AI answers (scenario steps of the evacuation guide only). */
   chat?: ChatEntry[];
   suggestedQuestion?: SuggestedQuestion;
+  /** A question from a published instructor set: never part of the bank, readiness, the exam or Weak topics. */
+  imported?: boolean;
 };
 
 /** The step or question with this id, or undefined (for example in an old saved session). */
@@ -66,6 +69,8 @@ export function getItem(id: string): Item {
   try {
     return getStep(id);
   } catch {
+    const imported = findImported(id);
+    if (imported) return imported;
     return getQuestion(id);
   }
 }

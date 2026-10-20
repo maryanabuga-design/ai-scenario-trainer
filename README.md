@@ -65,6 +65,8 @@ Build order and decisions: `docs/build-plan.md`.
 
 ## Known limitations
 
+- Content import (Instructor): only CSV files are read (locally, nothing is uploaded). Word files are not parsed in this prototype and a prepared sample result is shown instead; a live product would parse Word and always ask a person to review before publishing. Imported sets stay in this browser, and publishing is a human decision. Published sets appear in Training only and never change readiness or the exam.
+
 - The Instructor demo uses simulated group data: Group A is 14 invented students (`content/demo-cohort.json`) plus the accounts of this browser. Exams, results and notices are kept in this browser only; there is no server, no real group and no real people.
 
 - Certificates are simulated: a prototype certificate is made on this device when an exam is passed. It is not an official document and nothing is verified or sent.

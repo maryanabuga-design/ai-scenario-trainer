@@ -169,7 +169,8 @@ describe("every choice uses SelectableRow", () => {
 
   it("draws no other radio or check box rows", () => {
     // Allowed: the shared row itself, the answer option card and the segmented control.
-    const allowed = ["SelectableRow", "SegmentedControl", "OptionCard"];
+    // (and the Edit question form of the Instructor, where each answer is a text input with its own circle)
+    const allowed = ["SelectableRow", "SegmentedControl", "OptionCard", "EditQuestionView"];
     const own = [...files("components"), ...files("app")].filter((file) => {
       if (allowed.some((name) => file.includes(name))) return false;
       const code = readFileSync(file, "utf8");

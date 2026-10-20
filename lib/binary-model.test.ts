@@ -35,7 +35,12 @@ describe("one binary pattern: right or wrong, nothing else", () => {
     expect(containing(/explanationCheck|checkExplanation|Better explanation/)).toEqual([]);
     expect(containing(/Matches the guide|Doesn't match the guide/)).toEqual([]);
     expect(containing(/still correct|MarkCorrect|markedCorrect|Marked correct/)).toEqual([]);
-    expect(containing(/Explain your choice|<textarea/)).toEqual([]);
+    // (the Instructor's Edit question form has the question and explanation fields: Content, not a session)
+    expect(
+      containing(/Explain your choice|<textarea/).filter(
+        (file) => file !== "components/InstructorContent/EditQuestionView.tsx",
+      ),
+    ).toEqual([]);
   });
 
   it("has no error types, chips, card, details or analysis pages", () => {

@@ -28,6 +28,14 @@ import {
   studentStatus,
   visibleStudents,
 } from "@/lib/students";
+import { ContentView } from "@/components/InstructorContent/ContentView";
+import { EditQuestionView } from "@/components/InstructorContent/EditQuestionView";
+import { ImportView } from "@/components/InstructorContent/ImportView";
+import { ReviewView } from "@/components/InstructorContent/ReviewView";
+import { sampleQuestions } from "@/lib/content-import";
+import type { ContentSet } from "@/lib/content-sets";
+import { trainingSections } from "@/lib/parts";
+import { topicQuestionCount } from "@/lib/group-exams";
 import { AssignExamView } from "@/components/InstructorExams/AssignExamView";
 import { ExamDetailView } from "@/components/InstructorExams/ExamDetailView";
 import { InstructorExamsView } from "@/components/InstructorExams/InstructorExamsView";
@@ -1471,6 +1479,125 @@ export function InstructorStudentsSample({
       count={people.length}
       filter={filter}
       onFilter={() => undefined}
+    />
+  );
+}
+
+/** The Instructor Content screens for the screen review page (a prepared set, fixed text). */
+export function InstructorContentSample({
+  state = "sets",
+}: {
+  state?:
+    | "empty"
+    | "sets"
+    | "built-in"
+    | "import"
+    | "import-filled"
+    | "import-error"
+    | "review-flags"
+    | "review-ready"
+    | "review-published"
+    | "publish-dialog"
+    | "edit"
+    | "edit-ok";
+}) {
+  const { sections } = useSourceSheet();
+  const titleOf = (id: string) => sections.find((section) => section.id === id)?.title ?? id;
+  const base = sampleQuestions("cdemo");
+  const fixed = base.map((q) => ({
+    ...q,
+    correct: q.correct ?? ("a" as const),
+    explanation: q.explanation || "It keeps the route clear.",
+  }));
+  const make = (
+    status: ContentSet["status"],
+    questions = base,
+    id = "cdemo",
+    title = "Evacuation routes",
+  ): ContentSet => ({
+    id,
+    title,
+    topic: "S2",
+    status,
+    source: "sample",
+    fileName: "notes.docx",
+    createdAt: 1,
+    dropped: 0,
+    questions,
+  });
+  const builtIn = trainingSections.map((id) => ({
+    id,
+    title: titleOf(id),
+    count: topicQuestionCount(id),
+  }));
+  if (state === "empty" || state === "sets" || state === "built-in") {
+    return (
+      <ContentView
+        sets={
+          state === "empty"
+            ? []
+            : [
+                make("draft", base, "c1", "Evacuation routes"),
+                make("published", fixed, "c2", "Alarm and first steps"),
+              ]
+        }
+        builtIn={builtIn}
+        topicTitle={titleOf}
+        initiallyOpen={state === "built-in"}
+      />
+    );
+  }
+  if (state === "import" || state === "import-filled" || state === "import-error") {
+    return (
+      <ImportView
+        titleOf={titleOf}
+        onRead={() => undefined}
+        onCancel={() => undefined}
+        readError={
+          state === "import-error"
+            ? "The file is larger than 1 MB. Split it into smaller files."
+            : ""
+        }
+        initial={
+          state === "import"
+            ? undefined
+            : {
+                title: "Evacuation routes",
+                topic: "S2",
+                ...(state === "import-filled" && { file: { name: "questions.csv", size: 18_400 } }),
+              }
+        }
+        dialogInline
+      />
+    );
+  }
+  if (state === "edit" || state === "edit-ok") {
+    return (
+      <EditQuestionView
+        set={make("draft")}
+        index={state === "edit" ? 7 : 0}
+        topicTitle={titleOf("S2")}
+        onSave={() => undefined}
+        onDelete={() => undefined}
+        dialogInline
+      />
+    );
+  }
+  const set =
+    state === "review-flags"
+      ? make("draft")
+      : state === "review-published"
+        ? make("published", fixed)
+        : make("draft", fixed);
+  return (
+    <ReviewView
+      set={set}
+      topicTitle={titleOf("S2")}
+      onPublish={() => undefined}
+      onUnpublish={() => undefined}
+      onDelete={() => undefined}
+      confirmingInitially={state === "publish-dialog" ? "publish" : null}
+      dialogInline
     />
   );
 }

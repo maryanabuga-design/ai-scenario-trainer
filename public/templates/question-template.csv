@@ -1,0 +1,3 @@
+topic,question,option_a,option_b,option_c,option_d,correct,explanation,guide_reference,image_url
+S1,Which statement describes the safest assumption when an alarm sounds?,It is real until it is officially confirmed otherwise.,It is a drill unless smoke is visible.,It is a fault if the alarm is short.,It is real only if other people are leaving.,A,The cause cannot be known from the sound so every alarm is treated as real.,S1,
+S2,Why should you check the route before you leave?,To be sure it is clear and safe to use.,To find your belongings.,To wait for others to decide.,,A,A blocked route can put people in danger.,S2,

@@ -50,7 +50,13 @@ for (const width of [360, 430]) {
       page,
     }) => {
       await page.goto("/instructor/students");
-      await expect(navLinks(page)).toHaveText(["Overview", "Exams", "Students", "Profile"]);
+      await expect(navLinks(page)).toHaveText([
+        "Overview",
+        "Exams",
+        "Students",
+        "Content",
+        "Profile",
+      ]);
       await expect(
         page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Students" }),
       ).toHaveAttribute("aria-current", "page");

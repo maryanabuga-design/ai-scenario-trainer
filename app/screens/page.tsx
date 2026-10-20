@@ -47,6 +47,7 @@ import {
   ProfileSample,
   InstructorHomeSample,
   InstructorExamsSample,
+  InstructorContentSample,
   InstructorStudentsSample,
   AboutSample,
   WelcomeSample,
@@ -818,6 +819,66 @@ export default function Screens() {
           <PhoneFrame label="Instructor: Overview, no active exam">
             <Screen nav="/instructor" role="instructor">
               <InstructorHomeSample state="no-exam" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Content: empty">
+            <Screen nav="/instructor/content" role="instructor">
+              <InstructorContentSample state="empty" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Content: a Draft and a Published set">
+            <Screen nav="/instructor/content" role="instructor">
+              <InstructorContentSample state="sets" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Content: built-in topics open">
+            <Screen role="instructor">
+              <InstructorContentSample state="built-in" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Import: empty">
+            <Screen role="instructor">
+              <InstructorContentSample state="import" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Import: filled">
+            <Screen role="instructor">
+              <InstructorContentSample state="import-filled" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Import: a file problem (amber)">
+            <Screen role="instructor">
+              <InstructorContentSample state="import-error" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Review: 18 ready, 2 need attention">
+            <Screen role="instructor">
+              <InstructorContentSample state="review-flags" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Review: all ready, Publish enabled">
+            <Screen role="instructor">
+              <InstructorContentSample state="review-ready" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Review: the Publish dialog">
+            <Screen role="instructor">
+              <InstructorContentSample state="publish-dialog" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Review: Published (read-only, Unpublish)">
+            <Screen role="instructor">
+              <InstructorContentSample state="review-published" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Edit question: problems found">
+            <Screen role="instructor">
+              <InstructorContentSample state="edit" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Edit question">
+            <Screen role="instructor">
+              <InstructorContentSample state="edit-ok" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Instructor: Exams list (Assign exam, ACTIVE, Show closed exams)">

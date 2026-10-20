@@ -97,6 +97,7 @@ for (const width of [360, 430]) {
         "Overview",
         "Exams",
         "Students",
+        "Content",
         "Profile",
       ]);
       await expect(nav(page).getByRole("link", { name: "Overview" })).toHaveAttribute(

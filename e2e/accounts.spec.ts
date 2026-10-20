@@ -117,7 +117,7 @@ for (const width of [360, 430]) {
       await signUp(page, "Ines Instructor", "ines@example.com", "Instructor");
       await finishOnboarding(page, "Instructor");
       await expect(page.locator("[data-group-readiness]")).toBeVisible();
-      await expect(nav(page).getByRole("link")).toHaveCount(4);
+      await expect(nav(page).getByRole("link")).toHaveCount(5);
     });
 
     test("editing the name shows it on Profile and on Home", async ({ page }) => {
