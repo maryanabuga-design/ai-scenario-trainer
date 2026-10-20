@@ -85,8 +85,9 @@ for (const width of [360, 430]) {
       await expect(page).toHaveURL(/\/profile$/);
       await expect(page.getByRole("heading", { name: "Profile", level: 1 })).toBeVisible();
       await expect(page.getByRole("navigation", { name: "Main" })).toHaveCount(0);
-      await page.getByRole("button", { name: "Back" }).click();
-      await expect(page).toHaveURL(/\/ask-ai$/);
+      await page.getByRole("link", { name: "Back to Home" }).click();
+      // Back on Profile always goes to Home, not to where it was opened from
+      await expect(page).toHaveURL(/\/$/);
     });
 
     test("the avatar is in the header band of Materials and Progress too", async ({ page }) => {

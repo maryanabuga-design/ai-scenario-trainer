@@ -52,11 +52,7 @@ export default function Profile() {
       }}
       resetDone={resetDone}
       certificates={certificates.length}
-      onBack={
-        account.role === "student"
-          ? () => (window.history.length > 1 ? router.back() : router.push("/"))
-          : undefined
-      }
+      backHref={roleHome(account.role)}
     />
   );
 }

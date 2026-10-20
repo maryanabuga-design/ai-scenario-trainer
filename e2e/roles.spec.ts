@@ -73,7 +73,7 @@ for (const width of [360, 430]) {
       await expect(main.getByRole("heading", { name: "Reset progress" })).toBeVisible();
       // a student opens Profile from the avatar: Back, no navigation
       await expect(nav(page)).toHaveCount(0);
-      await expect(page.getByRole("button", { name: "Back" })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Back to Home" })).toBeVisible();
       expect(await noSidewaysScroll(page)).toBe(true);
       expect(errors()).toEqual([]);
     });

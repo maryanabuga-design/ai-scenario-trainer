@@ -149,9 +149,8 @@ for (const width of [360, 430]) {
       await expect(page).toHaveURL(/\/profile$/);
       await expect(page.locator("[data-user-name]")).toHaveText("Ana Maria");
       // a student has no Profile tab: Profile is a sub-screen with Back (no navigation)
-      await expect(page.getByRole("button", { name: "Back" })).toBeVisible();
-      await page.getByRole("button", { name: "Back" }).click();
-      await page.goto("/");
+      await expect(page.getByRole("link", { name: "Back to Home" })).toBeVisible();
+      await page.getByRole("link", { name: "Back to Home" }).click();
       await expect(page.getByRole("heading", { name: "Hi, Ana Maria" })).toBeVisible();
     });
 

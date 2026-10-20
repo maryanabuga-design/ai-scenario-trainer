@@ -51,7 +51,7 @@ export function ProfileView({
   onSignOut,
   resetDone,
   dialogInline = false,
-  onBack,
+  backHref,
   certificates = 0,
 }: {
   account: { name: string; email: string; role: Role };
@@ -68,8 +68,8 @@ export function ProfileView({
   onSignOut: () => void;
   resetDone: boolean;
   dialogInline?: boolean;
-  /** A student opens Profile from the avatar button and gets Back; an instructor has the Profile tab. */
-  onBack?: () => void;
+  /** Back on Profile always goes to the Home of the role (never the browser history). */
+  backHref?: string;
   /** The number of certificates (a Student's row "Certificates"). */
   certificates?: number;
 }) {
@@ -80,7 +80,7 @@ export function ProfileView({
       <PageHeaderBand
         title="Profile"
         subtitle="Your account and settings"
-        back={onBack ? { label: "Back", onClick: onBack } : undefined}
+        back={backHref ? { label: "Back to Home", href: backHref } : undefined}
       />
       <div className="flex flex-col gap-8">
         <Link href="/profile/edit" data-user-card className={rowClass}>

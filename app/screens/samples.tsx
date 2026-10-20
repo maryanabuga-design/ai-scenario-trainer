@@ -519,7 +519,7 @@ export function ProfileSample({
     <>
       <ProfileView
         certificates={1}
-        onBack={role === "student" ? () => undefined : undefined}
+        backHref={role === "student" ? "/" : "/instructor"}
         account={{ name: "Maryana", email: "maryana@example.com", role }}
         onRoleChange={() => undefined}
         direction={defaultDirection.id}

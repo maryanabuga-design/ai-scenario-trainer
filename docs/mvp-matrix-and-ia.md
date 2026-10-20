@@ -70,6 +70,7 @@ Assumption to confirm with the user: four sections live in the bottom navigation
 - Welcome / Create account / Verify / Sign in (Вхід, simulated, no email): signed-out screens with no navigation; after verification a Student goes to Home, an Instructor to Instructor Home
 - Ask AI (23 Oct 2026): `/ask-ai` history + suggested questions + pinned input · `/ask-ai/<id>` thread (Back, messages, source pills, quick actions) · a row "Ask AI about this question" on Answer review and Saved question.
 - Certificates (23 Oct 2026, Student): Results (exam, passed) card "Certificate earned" · Profile row "Certificates" · `/profile/certificates` list · `/profile/certificates/<id>` certificate with Save as PDF and Share
+- Navigation rule (23 Oct 2026): Back on Profile always goes to the Home of the current role (never the browser history); Back on Edit profile, About and the Certificates list goes to Profile.
 - Profile (Профіль): tappable user card (opens Edit profile) · Demo mode (Student | Instructor) · Direction (Student only) · Help: How the app works (opens onboarding), About this prototype · Settings: Reset progress (Student only), Delete account, Sign out
 - About this prototype (from Profile): four info lines, Restart demo (confirmation; clears every demo key and returns to Welcome; /welcome?restart=1 does it without a dialog)
 - Edit profile: name editable, email and role read-only, Save changes

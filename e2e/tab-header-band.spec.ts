@@ -23,7 +23,13 @@ const noSidewaysScroll = (page: Page) =>
 const band = (page: Page) => page.locator("[data-page-header-band]:visible");
 
 /** The band's own look, read from the computed styles (not transparent, not black). */
-async function checkBand(page: Page, width: number, title: string, subtitle?: string) {
+async function checkBand(
+  page: Page,
+  width: number,
+  title: string,
+  subtitle?: string,
+  withBack = false,
+) {
   await expect(band(page)).toHaveCount(1);
   const box = (await band(page).boundingBox())!;
   expect(box.x).toBe(0);
@@ -58,7 +64,8 @@ async function checkBand(page: Page, width: number, title: string, subtitle?: st
     expect(s.x).toBe(16);
   }
   // no Back button, exactly one h1 on the page
-  await expect(band(page).locator("a:not([data-avatar]), button")).toHaveCount(0);
+  // (Profile has a Back to Home, a real link; the other tab bands have none)
+  await expect(band(page).locator("a:not([data-avatar]), button")).toHaveCount(withBack ? 1 : 0);
   await expect(page.locator("main h1:visible")).toHaveCount(1);
   // the content starts 16px below the band
   const below = await band(page).evaluate((el) => {
@@ -142,8 +149,9 @@ for (const width of [360, 430]) {
       const top = await checkBand(page, width, "Instructor");
       await expect(page.getByText("No exams yet. Exam tools are coming next.")).toBeVisible();
       await page.goto("/profile");
-      const profileTop = await checkBand(page, width, "Profile", "Your account and settings");
-      expect(Math.abs(profileTop - top)).toBeLessThanOrEqual(2);
+      // Profile has the band with its Back to Home (so its title sits lower than a tab's)
+      const profileTop = await checkBand(page, width, "Profile", "Your account and settings", true);
+      expect(profileTop).toBeGreaterThan(top);
       await expect(page.getByRole("navigation").getByRole("link")).toHaveCount(2);
     });
   });
