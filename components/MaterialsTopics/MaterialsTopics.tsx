@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { Chip } from "@/components/Chip/Chip";
 import { ListScroll } from "@/components/MaterialsTopics/ListScroll";
+import { ProfileAvatar } from "@/components/ProfileAvatar/ProfileAvatar";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { TopicTile } from "@/components/TopicTile/TopicTile";
 import { allTopics } from "@/lib/materials-topics";
@@ -41,7 +42,11 @@ export function MaterialsTopics({ topics = allTopics() }: { topics?: Topic[] }) 
   return (
     <div className="flex flex-col gap-4 pb-6">
       <ListScroll />
-      <PageHeaderBand title={MATERIALS_TITLE} subtitle={MATERIALS_SUBTITLE} />
+      <PageHeaderBand
+        title={MATERIALS_TITLE}
+        subtitle={MATERIALS_SUBTITLE}
+        action={<ProfileAvatar />}
+      />
       <div className="flex flex-col gap-8">
         {guides.map((guide) => (
           <section

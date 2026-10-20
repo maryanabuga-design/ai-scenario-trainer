@@ -4,13 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRole } from "@/lib/auth";
 import type { Role } from "@/lib/role";
-import { ChartNoAxesColumn, FileText, House, User } from "lucide-react";
+import { ChartNoAxesColumn, FileText, House, Sparkles, User } from "lucide-react";
 
 const studentItems = [
   { href: "/", label: "Home", Icon: House },
   { href: "/materials", label: "Materials", Icon: FileText },
   { href: "/progress", label: "Progress", Icon: ChartNoAxesColumn },
-  { href: "/profile", label: "Profile", Icon: User },
+  { href: "/ask-ai", label: "Ask AI", Icon: Sparkles },
 ];
 
 /** An instructor has only Home (Instructor Home) and Profile, in the same style. */
@@ -27,6 +27,8 @@ function isCurrent(href: string, pathname: string) {
   // Training is a sub-screen of Home and keeps the Home item active.
   if (href === "/") return pathname === "/" || pathname === "/training";
   if (href === "/instructor") return pathname === "/instructor";
+  // a thread (/ask-ai/<id>) is a sub-screen with Back: no navigation
+  if (href === "/ask-ai") return pathname === "/ask-ai";
   return pathname.startsWith(href);
 }
 

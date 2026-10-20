@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import Materials from "@/app/(app)/materials/page";
 import { ActionBarProvider, ActionBarSlot } from "@/components/ActionBar/ActionBar";
-import { AskAiProvider } from "@/components/AskAi/AskAi";
 import { StepsList } from "@/components/StepsView/StepsList";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
 import type { Role } from "@/lib/role";
@@ -16,7 +15,6 @@ import { loadAllSections, loadGuides } from "@/lib/guide";
 import { stepsFor, topicFor } from "@/lib/materials-topics";
 import { canPractise } from "@/lib/parts";
 import {
-  ChatFeedbackSample,
   SessionSample,
   SavedSample,
   SavedQuestionSample,
@@ -40,6 +38,7 @@ import {
   WeakTopicsSample,
   ReviewSample,
   AnswerReviewSample,
+  AskAiSample,
   Media3DSample,
   NotesMaterialSample,
   UploadSample,
@@ -98,18 +97,16 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
 function Screen({ nav, role, children }: { nav?: string; role?: Role; children: ReactNode }) {
   return (
     <ActionBarProvider>
-      <AskAiProvider inline>
-        <div
-          data-frame-scroll
-          className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-6 pb-6"
-        >
-          {children}
-        </div>
-        <div className="bg-bg">
-          <ActionBarSlot />
-          {nav && <BottomNav activePath={nav} role={role} />}
-        </div>
-      </AskAiProvider>
+      <div
+        data-frame-scroll
+        className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-6 pb-6"
+      >
+        {children}
+      </div>
+      <div className="bg-bg">
+        <ActionBarSlot />
+        {nav && <BottomNav activePath={nav} role={role} />}
+      </div>
     </ActionBarProvider>
   );
 }
@@ -565,9 +562,34 @@ export default function Screens() {
           </PhoneFrame>
         </Group>
         <Group title="Ask AI">
-          <PhoneFrame label="Ask AI: in the Answer review">
+          <PhoneFrame label="Ask AI: empty history with the suggested questions">
+            <Screen nav="/ask-ai">
+              <AskAiSample state="empty" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Ask AI: history, suggested questions, Clear history">
+            <Screen nav="/ask-ai">
+              <AskAiSample state="history" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Ask AI: Clear history confirmation (Primary Clear, Secondary Cancel)">
+            <Screen nav="/ask-ai">
+              <AskAiSample state="clear" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Ask AI: a thread with the source pill, the prototype line and the quick actions">
             <Screen>
-              <ChatFeedbackSample />
+              <AskAiSample state="thread" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Ask AI: the typing indicator">
+            <Screen>
+              <AskAiSample state="typing" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Ask AI: no prepared answer, three suggestions">
+            <Screen>
+              <AskAiSample state="fallback" />
             </Screen>
           </PhoneFrame>
         </Group>

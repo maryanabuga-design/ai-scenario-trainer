@@ -12,6 +12,10 @@ import { useEffect, useRef, useState } from "react";
 import { QuestionScreen } from "@/components/QuestionScreen/QuestionScreen";
 import { Media3D } from "@/components/Media3D/Media3D";
 import { Toggle } from "@/components/Toggle/Toggle";
+import { AskAiThread } from "@/components/AskAiThread/AskAiThread";
+import { AskAiView } from "@/components/AskAiView/AskAiView";
+import { answerTo, followUp, newThread, questionThread, userMessage } from "@/lib/ask-ai";
+import type { AiMessage, Thread } from "@/lib/ask-ai";
 import { AnswerReview } from "@/components/AnswerReview/AnswerReview";
 import { SessionBar } from "@/components/SessionBar/SessionBar";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
@@ -20,8 +24,6 @@ import { deadlineText } from "@/lib/exam-deadline";
 import { ExamTimer } from "@/components/ExamTimer/ExamTimer";
 import { SessionTopBar } from "@/components/SessionTopBar/SessionTopBar";
 import { stripStates } from "@/components/StepStrip/StepStrip";
-import { AskAiProvider } from "@/components/AskAi/AskAi";
-import type { ChatMessage } from "@/components/AskAi/AskAi";
 import { ButtonPreview } from "@/components/Button/Button";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { HomeView } from "@/components/HomeView/HomeView";
@@ -45,7 +47,6 @@ import { ProfileView } from "@/components/ProfileView/ProfileView";
 import { nextIndex, previousIndex } from "@/lib/onboarding";
 import { ProgressView } from "@/components/ProgressView/ProgressView";
 import { ResultsActions, ResultsView } from "@/components/ResultsView/ResultsView";
-import { notCoveredId, replyToChip } from "@/lib/chat";
 import { getItem, hintFor } from "@/lib/items";
 import { MiniQuizView } from "@/components/MiniQuizView/MiniQuizView";
 import { fitAmount, miniQuizPool, miniQuizSections } from "@/lib/mini-quiz";
@@ -534,24 +535,74 @@ export function ProfileSample({
   );
 }
 
-/** The Ask AI sheet over the smoke step's Answer review: a "why not" answer, the not-covered answer, typing. */
-export function ChatFeedbackSample() {
-  const step = getItem("s3");
-  const messages: ChatMessage[] = [
-    { role: "trainee", text: "Why not run upright?", chipId: "s3-upright" },
-    { role: "ai", reply: replyToChip(step, "s3-upright") },
-    {
-      role: "trainee",
-      text: "Which type of cloth filters smoke best?",
-      chipId: notCoveredId(step),
-    },
-    { role: "ai", reply: replyToChip(step, notCoveredId(step)) },
-    { role: "trainee", text: "Why not break a window?", chipId: "s3-window" },
+/** Ask AI in fixed states for the screen review page. */
+export function AskAiSample({
+  state = "history",
+}: {
+  state?: "empty" | "history" | "thread" | "fallback" | "typing" | "clear";
+}) {
+  const now = new Date(2026, 9, 23, 14, 0).getTime();
+  const minutes = (n: number) => now - n * 60_000;
+  const at = (thread: Thread, updatedAt: number): Thread => ({
+    ...thread,
+    updatedAt,
+    createdAt: updatedAt,
+  });
+  const { sections } = useSourceSheet();
+  const titleOf = (id: string) => sections.find((section) => section.id === id)?.title;
+  const smoke = newThread("How do I move through smoke?", answerTo("smoke", now), titleOf, now);
+  const burn = newThread("What should I do for a burn?", answerTo("burn", now), titleOf, now);
+  const item = getItem("q-scn-s01-001");
+  const question = questionThread(item, 1, "a", titleOf, now);
+  const history = [
+    at(smoke, minutes(4)),
+    at(question, minutes(95)),
+    at(burn, new Date(2026, 9, 21, 9, 0).getTime()),
   ];
+  const answered = (t: Thread): Thread => ({
+    ...t,
+    messages: t.messages.flatMap((m) => (m.reply ? [{ ...m, reply: undefined }, m.reply] : [m])),
+  });
+  if (state === "empty" || state === "history" || state === "clear") {
+    return (
+      <AskAiView
+        threads={state === "empty" ? [] : history}
+        now={now}
+        onSend={() => undefined}
+        onSuggested={() => undefined}
+        confirming={state === "clear"}
+        onAskClear={() => undefined}
+        onCancelClear={() => undefined}
+        onClear={() => undefined}
+        dialogInline
+      />
+    );
+  }
+  const base = answered(at(smoke, minutes(4)));
+  const withReply = (t: Thread, text: string, reply: AiMessage, waiting: boolean): Thread => ({
+    ...t,
+    messages: [
+      ...t.messages,
+      waiting
+        ? userMessage(text, reply, now)
+        : { ...userMessage(text, reply, now), reply: undefined },
+      ...(waiting ? [] : [reply]),
+    ],
+  });
+  const thread: Thread =
+    state === "fallback"
+      ? withReply(base, "Who won the match?", answerTo("zzz", now), false)
+      : state === "typing"
+        ? withReply(base, "Give an example", followUp("example", "S3", now), true)
+        : base;
   return (
-    <AskAiProvider inline initial={{ chat: { step }, messages, typing: true }}>
-      <AnswerReviewSample itemId="s3" choice="a" position={3} />
-    </AskAiProvider>
+    <AskAiThread
+      thread={thread}
+      typing={state === "typing"}
+      onSend={() => undefined}
+      onAction={() => undefined}
+      onSuggested={() => undefined}
+    />
   );
 }
 

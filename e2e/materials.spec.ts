@@ -563,6 +563,8 @@ test.describe("Materials", () => {
       await scrollTo(page, 1800);
       await scrollTo(page, 1700);
       await expect(bar(page)).toBeVisible();
+      // (the bar slides in over 160ms: measure it once it has settled)
+      await page.waitForTimeout(300);
       const look = await page.evaluate(() => {
         const rect = (el: Element) => el.getBoundingClientRect();
         const root = document.querySelector("[data-quick-bar]")!;

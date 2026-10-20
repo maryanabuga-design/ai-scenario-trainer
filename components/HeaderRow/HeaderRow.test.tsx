@@ -48,7 +48,6 @@ describe("header with an action", () => {
     expect(page).toMatch(/^<div class="flex flex-col gap-6"><div class="flex flex-col gap-3">/);
     for (const file of [
       "components/UploadSheet/UploadSheet.tsx",
-      "components/AskAi/AskAi.tsx",
       "components/SourceSheet/SourceSheet.tsx",
       "components/SoftCard/SoftCard.tsx",
     ]) {

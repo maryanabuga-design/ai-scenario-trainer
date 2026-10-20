@@ -81,6 +81,7 @@ for (const width of [360, 430]) {
       ["Question session", "/session", session(false)],
       ["Materials: material page", "/materials/evacuation-guide", null],
       ["Mini-quiz", "/mini-quiz", null],
+      ["Ask AI", "/ask-ai", null],
     ];
     for (const [name, path, value] of pinned) {
       test(`${name}: the pinned bottom action area has only filled buttons`, async ({ page }) => {

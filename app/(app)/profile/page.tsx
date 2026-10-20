@@ -48,6 +48,11 @@ export default function Profile() {
         router.replace("/welcome");
       }}
       resetDone={resetDone}
+      onBack={
+        account.role === "student"
+          ? () => (window.history.length > 1 ? router.back() : router.push("/"))
+          : undefined
+      }
     />
   );
 }

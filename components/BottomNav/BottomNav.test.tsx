@@ -7,8 +7,10 @@ const labels = (html: string) => [...html.matchAll(/<\/svg>([^<]+)<\/a>/g)].map(
 
 describe("the bottom navigation", () => {
   it("shows on the four sections and keeps Materials active on its other screens", () => {
-    for (const path of ["/", "/training", "/materials", "/progress", "/profile"])
+    for (const path of ["/", "/training", "/materials", "/progress", "/ask-ai"])
       expect(shown(path), path).toBe(true);
+    // a thread and a student's Profile are sub-screens with Back: no navigation
+    for (const path of ["/ask-ai/t-1", "/profile"]) expect(shown(path), path).toBe(false);
     expect(renderToStaticMarkup(<BottomNav activePath="/materials" />)).toContain(
       'aria-current="page"',
     );
@@ -22,12 +24,12 @@ describe("the bottom navigation", () => {
       expect(shown(path), path).toBe(false);
   });
 
-  it("has four items for a student", () => {
+  it("has four items for a student: Home, Materials, Progress, Ask AI (Profile is behind the avatar)", () => {
     expect(labels(renderToStaticMarkup(<BottomNav activePath="/" role="student" />))).toEqual([
       "Home",
       "Materials",
       "Progress",
-      "Profile",
+      "Ask AI",
     ]);
   });
 

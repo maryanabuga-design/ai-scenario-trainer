@@ -58,7 +58,7 @@ async function checkBand(page: Page, width: number, title: string, subtitle?: st
     expect(s.x).toBe(16);
   }
   // no Back button, exactly one h1 on the page
-  await expect(band(page).locator("a, button")).toHaveCount(0);
+  await expect(band(page).locator("a:not([data-avatar]), button")).toHaveCount(0);
   await expect(page.locator("main h1:visible")).toHaveCount(1);
   // the content starts 16px below the band
   const below = await band(page).evaluate((el) => {
@@ -74,7 +74,7 @@ for (const width of [360, 430]) {
   test.describe(`Tab header band at ${width}px (Student)`, () => {
     test.use({ viewport: { width, height: 800 } });
 
-    test("Materials, Progress and Profile have the band, with the title at the same height", async ({
+    test("Materials, Progress and Ask AI have the band, with the title at the same height", async ({
       page,
     }) => {
       const tops: number[] = [];
@@ -84,13 +84,13 @@ for (const width of [360, 430]) {
       );
       await page.goto("/progress");
       tops.push(await checkBand(page, width, "Progress", "How you are doing over time."));
-      await page.goto("/profile");
-      tops.push(await checkBand(page, width, "Profile", "Your account and settings"));
+      await page.goto("/ask-ai");
+      tops.push(await checkBand(page, width, "Ask AI", "Prototype answers from the guides"));
       for (const top of tops) expect(Math.abs(top - tops[0])).toBeLessThanOrEqual(2);
     });
 
     test("the bottom navigation is unchanged and Student Home has no band", async ({ page }) => {
-      for (const path of ["/materials", "/progress", "/profile"]) {
+      for (const path of ["/materials", "/progress", "/ask-ai"]) {
         await page.goto(path);
         const nav = page.getByRole("navigation");
         await expect(nav.getByRole("link")).toHaveCount(4);

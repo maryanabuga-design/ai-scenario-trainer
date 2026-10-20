@@ -71,12 +71,14 @@ for (const width of [360, 430]) {
       await expect(main.getByText("Coming soon", { exact: true })).toHaveCount(3);
       await expect(main.getByText("Not available in this prototype")).toHaveCount(0);
       await expect(main.getByRole("heading", { name: "Reset progress" })).toBeVisible();
-      await expect(nav(page).getByRole("link")).toHaveCount(4);
+      // a student opens Profile from the avatar: Back, no navigation
+      await expect(nav(page)).toHaveCount(0);
+      await expect(page.getByRole("button", { name: "Back" })).toBeVisible();
       expect(await noSidewaysScroll(page)).toBe(true);
       expect(errors()).toEqual([]);
     });
 
-    test("the cards keep the page gutter and the last element is not behind the navigation", async ({
+    test("the cards keep the page gutter and the last element ends inside the page", async ({
       page,
     }) => {
       await open(page, "/profile");
@@ -88,9 +90,8 @@ for (const width of [360, 430]) {
       }
       await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
       await page.waitForTimeout(300);
-      const navBox = (await nav(page).boundingBox())!;
       const footer = (await page.locator("main footer").boundingBox())!;
-      expect(footer.y + footer.height).toBeLessThanOrEqual(navBox.y);
+      expect(footer.y + footer.height).toBeLessThanOrEqual(page.viewportSize()!.height + 1);
     });
 
     test("the About row opens the four-line screen and Back returns to Profile", async ({

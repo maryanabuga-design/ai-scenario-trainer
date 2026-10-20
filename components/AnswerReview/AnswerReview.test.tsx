@@ -2,7 +2,6 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { AnswerReview } from "@/components/AnswerReview/AnswerReview";
 import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
-import { AskAiProvider } from "@/components/AskAi/AskAi";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { loadAllSections } from "@/lib/guide";
 import { getItem } from "@/lib/items";
@@ -10,23 +9,21 @@ import { getItem } from "@/lib/items";
 function render(itemId: string, choice: string | null, position = 2, total = 5) {
   return renderToStaticMarkup(
     <SourceSheetProvider sections={loadAllSections()}>
-      <AskAiProvider>
-        <ActionBarProvider>
-          <AnswerReview
-            item={getItem(itemId)}
-            choice={choice}
-            position={position}
-            total={total}
-            backHref="/session/results"
-            backLabel="Back to results"
-            hrefFor={(next) => `/session/results/review/${next}`}
-            marks={["correct", "wrong", "correct", "correct", "wrong"]}
-            onJump={() => undefined}
-            saved={false}
-            onToggleSaved={() => undefined}
-          />
-        </ActionBarProvider>
-      </AskAiProvider>
+      <ActionBarProvider>
+        <AnswerReview
+          item={getItem(itemId)}
+          choice={choice}
+          position={position}
+          total={total}
+          backHref="/session/results"
+          backLabel="Back to results"
+          hrefFor={(next) => `/session/results/review/${next}`}
+          marks={["correct", "wrong", "correct", "correct", "wrong"]}
+          onJump={() => undefined}
+          saved={false}
+          onToggleSaved={() => undefined}
+        />
+      </ActionBarProvider>
     </SourceSheetProvider>,
   );
 }
@@ -116,8 +113,14 @@ describe("Answer review", () => {
     expect(html.match(/data-state=/g)).toHaveLength(question.options.length);
   });
 
-  it("does not offer Ask AI about this step, even on a scenario step with prepared answers", () => {
-    expect(render("q-scn-s01-001", "a")).not.toContain("Ask AI");
+  it("offers the row 'Ask AI about this question' (a link to this question's thread), not the old step link", () => {
+    for (const id of ["q-scn-s01-001", "q-s3-3"]) {
+      const html = render(id, "a", 2, 5);
+      expect(html).toContain("Ask AI about this question");
+      expect(html).toContain(`href="/ask-ai/q-${id}"`);
+      expect(html).toContain("h-14");
+      expect(html).not.toContain("Ask AI about this step");
+    }
   });
 
   it("puts the situation in the shared white card", () => {

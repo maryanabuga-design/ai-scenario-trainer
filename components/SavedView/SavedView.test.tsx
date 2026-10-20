@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
-import { AskAiProvider } from "@/components/AskAi/AskAi";
 import { ReviewQuestion } from "@/components/ReviewQuestion/ReviewQuestion";
 import { SavedView } from "@/components/SavedView/SavedView";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
@@ -57,14 +56,12 @@ describe("a saved question on its own", () => {
   const view = (saved: boolean) =>
     renderToStaticMarkup(
       <SourceSheetProvider sections={loadAllSections()}>
-        <AskAiProvider>
-          <ReviewQuestion
-            item={getItem("q-scn-s01-001")}
-            choice={null}
-            saved={saved}
-            onToggleSaved={noop}
-          />
-        </AskAiProvider>
+        <ReviewQuestion
+          item={getItem("q-scn-s01-001")}
+          choice={null}
+          saved={saved}
+          onToggleSaved={noop}
+        />
       </SourceSheetProvider>,
     );
 

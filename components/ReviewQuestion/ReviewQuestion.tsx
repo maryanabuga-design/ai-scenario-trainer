@@ -1,6 +1,6 @@
 "use client";
 
-import { AskAiButton } from "@/components/AskAi/AskAi";
+import { AskAiRow } from "@/components/AskAiRow/AskAiRow";
 import { BookmarkButton } from "@/components/BookmarkButton/BookmarkButton";
 import { GuideChip } from "@/components/GuideChip/GuideChip";
 import { Media3D } from "@/components/Media3D/Media3D";
@@ -19,15 +19,15 @@ export function ReviewQuestion({
   choice,
   saved,
   onToggleSaved,
-  showAskAi = true,
+  askNumber,
 }: {
   item: Item;
   /** The option the person chose; null in Saved, where there is no choice. */
   choice: string | null;
   saved: boolean;
   onToggleSaved: () => void;
-  /** The "Ask AI about this step" link: hidden in the Answer review for now, shown in Saved. */
-  showAskAi?: boolean;
+  /** The number in the question thread's title; the row "Ask AI about this question" shows when it is given. */
+  askNumber?: number;
 }) {
   return (
     <>
@@ -69,7 +69,7 @@ export function ReviewQuestion({
         </div>
       </section>
 
-      {showAskAi && item.kind === "step" && <AskAiButton step={item} />}
+      {askNumber !== undefined && <AskAiRow item={item} number={askNumber} choice={choice} />}
     </>
   );
 }

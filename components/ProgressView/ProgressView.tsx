@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import type { MouseEvent } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
+import { ProfileAvatar } from "@/components/ProfileAvatar/ProfileAvatar";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { ReadinessBar } from "@/components/ReadinessBar/ReadinessBar";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
@@ -286,7 +287,11 @@ export function ProgressView({
   const titleOf = (id: string) => sections.find((section) => section.id === id)?.title ?? id;
   return (
     <div className="flex flex-col gap-4 pb-4">
-      <PageHeaderBand title="Progress" subtitle="How you are doing over time." />
+      <PageHeaderBand
+        title="Progress"
+        subtitle="How you are doing over time."
+        action={<ProfileAvatar />}
+      />
       <div className="flex flex-col gap-6">
         <ReadinessSection exam={exam} history={history} now={now} onRepeat={onRepeat} />
         <TopicsSection

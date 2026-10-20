@@ -11,7 +11,7 @@ import type { Item } from "@/lib/items";
 /**
  * The Answer review of one question after Finish: the pager, the situation and question, every
  * option with the right one marked and the person's choice marked, then Why and the Guide chips. No
- * verdict line and no Ask AI link for now. The pinned bottom area has Next question (Primary) over
+ * verdict line, then the row "Ask AI about this question". The pinned bottom area has Next question (Primary) over
  * Back to results (Secondary); on the last question only Back to results, as Primary.
  */
 export function AnswerReview({
@@ -61,7 +61,7 @@ export function AnswerReview({
         choice={choice}
         saved={saved}
         onToggleSaved={onToggleSaved}
-        showAskAi={false}
+        askNumber={position}
       />
 
       <ActionBar>
