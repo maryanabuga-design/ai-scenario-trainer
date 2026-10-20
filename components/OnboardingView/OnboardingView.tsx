@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import type { PointerEvent } from "react";
 import { Button } from "@/components/Button/Button";
-import { HeroPanel } from "@/components/HeroPanel/HeroPanel";
+import { IntroStage } from "@/components/IntroStage/IntroStage";
 import {
   mainLabel,
   showsSkip,
@@ -16,8 +16,8 @@ import { heroSlotFiles } from "@/lib/media-frames";
 import type { Role } from "@/lib/role";
 
 /**
- * The onboarding (DESIGN.md: Onboarding screen): three slides in the hero panel layout, Skip in the
- * panel corner (slides 1 and 2), the position dots and the pinned Primary. Next, a horizontal swipe
+ * The onboarding (DESIGN.md: Onboarding screen): three slides on the plain page, Skip in the
+ * top row (slides 1 and 2), the position dots and the pinned Primary. Next, a horizontal swipe
  * and the arrow keys change the slide; focus moves to the title after a change. The slide enters
  * with a 250ms translate and fade, which the global reduced-motion rule turns off.
  */
@@ -89,7 +89,7 @@ export function OnboardingView({
         start.current = null;
       }}
     >
-      <HeroPanel
+      <IntroStage
         slot={heroSlotFiles[slide.slot]}
         priority={index === 0}
         slotKey={index}
@@ -101,39 +101,42 @@ export function OnboardingView({
             </Button>
           ) : undefined
         }
-      />
-      {/* 32px below the panel; a fixed minimum height (a two-line title, a three-line subtitle) so
-          the panel is as high on every slide */}
-      <section
-        key={index}
-        role="group"
-        aria-roledescription="slide"
-        aria-label={slideLabel(index, slides.length)}
-        data-slide={slide.slot}
-        className={`mt-8 flex min-h-[154px] flex-col items-center justify-start gap-3 px-2 text-center ${entrance}`}
+        bottom={
+          <div className="flex flex-col gap-6">
+            <div
+              role="img"
+              aria-label={stepLabel(index, slides.length)}
+              className="flex items-center justify-center gap-2"
+            >
+              {slides.map((_, dot) => (
+                <span
+                  key={dot}
+                  aria-hidden="true"
+                  data-dot={dot === index ? "active" : "inactive"}
+                  className={`h-2 rounded-full ${dot === index ? "w-6 bg-primary" : "w-2 bg-olive-tint-pressed"}`}
+                />
+              ))}
+            </div>
+            <Button onClick={last ? onFinish : onNext}>{mainLabel(index, slides.length)}</Button>
+          </div>
+        }
       >
-        <h1 ref={title} tabIndex={-1} className="type-slide-title line-clamp-2 outline-none">
-          {slide.title}
-        </h1>
-        <p className="type-body line-clamp-3 max-w-[320px] text-text-secondary">{slide.body}</p>
-      </section>
-      <div className="mt-8 flex flex-col gap-6 pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]">
-        <div
-          role="img"
-          aria-label={stepLabel(index, slides.length)}
-          className="flex items-center justify-center gap-2"
+        {/* a fixed minimum height (a two-line title, a three-line subtitle) so the picture and the
+            text sit at the same place on every slide */}
+        <section
+          key={index}
+          role="group"
+          aria-roledescription="slide"
+          aria-label={slideLabel(index, slides.length)}
+          data-slide={slide.slot}
+          className={`flex min-h-[154px] flex-col items-center justify-start gap-3 px-2 text-center ${entrance}`}
         >
-          {slides.map((_, dot) => (
-            <span
-              key={dot}
-              aria-hidden="true"
-              data-dot={dot === index ? "active" : "inactive"}
-              className={`h-2 rounded-full ${dot === index ? "w-6 bg-primary" : "w-2 bg-olive-tint-pressed"}`}
-            />
-          ))}
-        </div>
-        <Button onClick={last ? onFinish : onNext}>{mainLabel(index, slides.length)}</Button>
-      </div>
+          <h1 ref={title} tabIndex={-1} className="type-slide-title line-clamp-2 outline-none">
+            {slide.title}
+          </h1>
+          <p className="type-body line-clamp-3 max-w-[320px] text-text-secondary">{slide.body}</p>
+        </section>
+      </IntroStage>
     </div>
   );
 }

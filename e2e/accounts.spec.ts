@@ -42,7 +42,12 @@ const noSidewaysScroll = (page: Page) =>
 
 const rgb = (value: string) => {
   const match = /rgba?\((\d+), (\d+), (\d+)(?:, ([\d.]+))?\)/.exec(value)!;
-  return { r: +match[1], g: +match[2], b: +match[3], a: match[4] === undefined ? 1 : +match[4] };
+  return {
+    r: +match[1],
+    g: +match[2],
+    b: +match[3],
+    a: match[4] === undefined ? 1 : +match[4],
+  };
 };
 
 const nav = (page: Page) => page.getByRole("navigation", { name: "Main" });
@@ -72,7 +77,10 @@ for (const width of [360, 430]) {
         await expect(page, path).toHaveURL(/\/welcome$/);
       }
       await expect(
-        page.getByRole("heading", { name: "Train for real situations", level: 1 }),
+        page.getByRole("heading", {
+          name: "Train for real situations",
+          level: 1,
+        }),
       ).toBeVisible();
       await expect(
         page.getByText("Short scenarios, quizzes and exams for building evacuation and first aid."),
@@ -287,7 +295,11 @@ for (const width of [360, 430]) {
         const data = new DataTransfer();
         data.setData("text", code);
         box.dispatchEvent(
-          new ClipboardEvent("paste", { clipboardData: data, bubbles: true, cancelable: true }),
+          new ClipboardEvent("paste", {
+            clipboardData: data,
+            bubbles: true,
+            cancelable: true,
+          }),
         );
       }, CODE);
       await expect(page).toHaveURL(/\/onboarding$/);
@@ -364,7 +376,9 @@ for (const width of [360, 430]) {
       await expect(page.getByText("Enter a valid email, like name@company.com.")).toBeVisible();
       await expect(email).toHaveAttribute("aria-invalid", "true");
       // the message has an icon (not colour alone) and a visible, non-black, non-transparent colour
-      const message = page.locator("p[aria-live=polite]", { hasText: "valid email" });
+      const message = page.locator("p[aria-live=polite]", {
+        hasText: "valid email",
+      });
       await expect(message.locator("svg")).toBeVisible();
       const colour = await message.evaluate((el) => getComputedStyle(el).color);
       expect(rgb(colour).a).toBeGreaterThan(0);
@@ -526,39 +540,16 @@ for (const width of [360, 430]) {
       expect(outside).toEqual([]);
     });
 
-    test("Welcome: the hero panel, the 280 by 280 slot, the centred text and the pinned buttons", async ({
+    test("Welcome: the 280 by 280 slot, the centred text and the pinned buttons", async ({
       page,
     }) => {
       await page.goto("/welcome");
-      const panel = page.locator("[data-hero-panel]");
-      await expect(panel).toBeVisible();
-      const box = (await panel.boundingBox())!;
-      // full-bleed to the top and both sides; the panel takes all the free height
-      expect(box.x).toBe(0);
-      expect(box.y).toBe(0);
-      expect(box.width).toBe(width);
-      expect(box.height).toBeGreaterThanOrEqual(280 + 64);
-      const look = await panel.evaluate((el) => {
-        const css = getComputedStyle(el);
-        return {
-          bg: css.backgroundColor,
-          border: [css.borderBottomWidth, css.borderBottomColor],
-          radius: [
-            css.borderBottomLeftRadius,
-            css.borderBottomRightRadius,
-            css.borderTopLeftRadius,
-          ],
-        };
-      });
-      expect(look.bg).toBe("rgb(240, 236, 230)");
-      expect(look.border).toEqual(["1px", "rgb(228, 223, 213)"]);
-      expect(look.radius).toEqual(["32px", "32px", "0px"]);
-      // the 3D slot: exactly 280 by 280 at this height, centred in the panel (2px), decorative
-      const slot = page.locator("[data-hero-panel] [data-picture-frame]");
+      // the 3D slot: exactly 280 by 280 at this height, centred horizontally, decorative
+      const slot = page.locator("[data-centre] [data-picture-frame]");
+      await expect(slot).toBeVisible();
       const s = (await slot.boundingBox())!;
       expect([s.width, s.height]).toEqual([280, 280]);
-      expect(Math.abs(s.x + s.width / 2 - (box.x + box.width / 2))).toBeLessThanOrEqual(2);
-      expect(Math.abs(s.y + s.height / 2 - (box.y + box.height / 2))).toBeLessThanOrEqual(2);
+      expect(Math.abs(s.x + s.width / 2 - width / 2)).toBeLessThanOrEqual(2);
       expect(await slot.getAttribute("aria-hidden")).toBe("true");
       // the text is centred, the eyebrow above the title, no header and no navigation
       const eyebrow = (await page.locator("[data-eyebrow]").boundingBox())!;

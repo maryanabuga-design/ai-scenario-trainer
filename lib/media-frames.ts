@@ -23,7 +23,7 @@ export const ARTWORK_FILL = 0.99;
 export const homeFrames = {
   tile: { width: 76, height: 60 },
   row: { width: 64, height: 60 },
-  /** The hero panel slot (Welcome, onboarding: it shrinks with the screen height, never below 200px) and the Verify slot. */
+  /** The 3D slot (Welcome, onboarding: it shrinks with the screen height, never below 200px) and the Verify slot. */
   panel: { width: 280, height: 280 },
   verify: { width: 120, height: 120 },
 } as const;

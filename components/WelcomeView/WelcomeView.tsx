@@ -1,5 +1,5 @@
 import { ButtonLink } from "@/components/Button/Button";
-import { HeroPanel } from "@/components/HeroPanel/HeroPanel";
+import { IntroStage } from "@/components/IntroStage/IntroStage";
 import { heroSlotFiles } from "@/lib/media-frames";
 
 export const APP_NAME = "AI Scenario Trainer";
@@ -9,15 +9,26 @@ export const WELCOME_SUBTITLE =
 export const WELCOME_NOTE = "For educational use. Demo data stays on this device.";
 
 /**
- * Welcome (DESIGN.md: Accounts): the hero panel with its 3D slot, the centred text (eyebrow, title,
- * subtitle, 32px below the panel) and the pinned buttons. No header and no navigation.
+ * Welcome (DESIGN.md: Accounts): on the plain page, the 3D picture and the centred text (eyebrow,
+ * title, subtitle) centred in the free space, and the pinned buttons. No header and no navigation.
  */
 export function WelcomeView() {
   return (
-    <div className="flex flex-1 flex-col">
-      <HeroPanel slot={heroSlotFiles.welcome} priority />
-      {/* 32px below the panel; a fixed minimum height (a two-line title, a three-line subtitle) */}
-      <div className="mt-8 flex min-h-[184px] flex-col items-center justify-start gap-2 px-2 text-center">
+    <IntroStage
+      slot={heroSlotFiles.welcome}
+      priority
+      bottom={
+        <>
+          <ButtonLink href="/sign-up">Create account</ButtonLink>
+          <ButtonLink variant="secondary" href="/sign-in">
+            I already have an account
+          </ButtonLink>
+          <p className="type-caption text-center text-text-secondary">{WELCOME_NOTE}</p>
+        </>
+      }
+    >
+      {/* a fixed minimum height (a two-line title, a three-line subtitle) */}
+      <div className="flex min-h-[184px] flex-col items-center justify-start gap-2 px-2 text-center">
         <p data-eyebrow className="type-small-strong text-text-secondary">
           {APP_NAME}
         </p>
@@ -26,13 +37,6 @@ export function WelcomeView() {
           {WELCOME_SUBTITLE}
         </p>
       </div>
-      <div className="mt-8 flex flex-col gap-3 pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]">
-        <ButtonLink href="/sign-up">Create account</ButtonLink>
-        <ButtonLink variant="secondary" href="/sign-in">
-          I already have an account
-        </ButtonLink>
-        <p className="type-caption text-center text-text-secondary">{WELCOME_NOTE}</p>
-      </div>
-    </div>
+    </IntroStage>
   );
 }

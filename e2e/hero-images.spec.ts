@@ -78,7 +78,14 @@ async function checkPicture(
           y0 = Math.min(y0, y);
           y1 = Math.max(y1, y);
         }
-    return { w: (x1 - x0 + 1) / frame, h: (y1 - y0 + 1) / frame, x0, y0, x1, y1 };
+    return {
+      w: (x1 - x0 + 1) / frame,
+      h: (y1 - y0 + 1) / frame,
+      x0,
+      y0,
+      x1,
+      y1,
+    };
   }, size);
   expect(Math.max(fill.w, fill.h), file).toBeGreaterThanOrEqual(0.85);
   // nothing is cut by the frame: the pixels stay inside it, with the 4% padding
@@ -106,10 +113,8 @@ async function layoutShift(page: Page, path: string) {
   return page.evaluate(() => (window as unknown as { __cls: number }).__cls);
 }
 
-const mid = (box: { y: number; height: number }) => box.y + box.height / 2;
-
-/** The 3D frame of the hero panel: 280px, shrinking with the screen height (36dvh), never below 200px. */
-const frameFor = (height: number) => Math.max(200, Math.min(280, 0.36 * height));
+/** The 3D frame of Welcome and the onboarding: 280px, shrinking with the screen height (35dvh), never below 200px. */
+const frameFor = (height: number) => Math.max(200, Math.min(280, 0.35 * height));
 
 for (const viewport of viewports) {
   test.describe(`Pictures and centring at ${viewport.name}`, () => {
@@ -118,57 +123,21 @@ for (const viewport of viewports) {
       storageState: emptyBrowser,
     });
 
-    test("Welcome: the 280 frame (200 at the least) fills with its picture, centred in the panel", async ({
-      page,
-    }) => {
+    test("Welcome: the 280 frame (200 at the least) fills with its picture", async ({ page }) => {
       // (Chromium reports layout shifts; the other engines return 0)
       const shift = await layoutShift(page, "/welcome");
       expect(shift).toBeLessThan(0.02);
       await checkPicture(
         page,
-        page.locator("[data-hero-panel] img"),
+        page.locator("[data-centre] img"),
         "/heroes/welcome.webp",
         280,
         true,
         frameFor(viewport.height),
       );
-      await expect(page.locator("[data-hero-panel] [data-media3d]")).toHaveCount(0);
-      const panel = (await page.locator("[data-hero-panel]").boundingBox())!;
-      const frame = (await page.locator("[data-hero-panel] [data-picture-frame]").boundingBox())!;
+      await expect(page.locator("[data-centre] [data-media3d]")).toHaveCount(0);
+      const frame = (await page.locator("[data-centre] [data-picture-frame]").boundingBox())!;
       expect(frame.width).toBeGreaterThanOrEqual(200);
-      expect(Math.abs(frame.x + frame.width / 2 - (panel.x + panel.width / 2))).toBeLessThanOrEqual(
-        2,
-      );
-      expect(Math.abs(mid(frame) - mid(panel))).toBeLessThanOrEqual(2);
-      // the panel is at least the frame plus 64px
-      expect(panel.height).toBeGreaterThanOrEqual(frame.height + 64 - 0.5);
-    });
-
-    test("Welcome: the panel takes all the free height and the text sits 32px below it", async ({
-      page,
-    }) => {
-      await page.goto("/welcome");
-      await page.waitForTimeout(400);
-      const panel = (await page.locator("[data-hero-panel]").boundingBox())!;
-      const eyebrow = (await page.locator("[data-eyebrow]").boundingBox())!;
-      const create = (await page.getByRole("link", { name: "Create account" }).boundingBox())!;
-      const note = (await page
-        .getByText("For educational use. Demo data stays on this device.")
-        .boundingBox())!;
-      expect(Math.abs(eyebrow.y - (panel.y + panel.height) - 32)).toBeLessThanOrEqual(1);
-      // the text block has its fixed minimum height, then 32px, then the buttons
-      expect(create.y).toBeGreaterThanOrEqual(eyebrow.y + 184 + 32 - 1);
-      expect(create.y + create.height).toBeLessThanOrEqual(note.y);
-      expect(eyebrow.y + 20).toBeLessThanOrEqual(create.y);
-      // on a tall screen nothing scrolls and the panel absorbed the spare height
-      const scrolls = await page.evaluate(
-        () => document.documentElement.scrollHeight > window.innerHeight + 1,
-      );
-      if (viewport.height >= 800) {
-        expect(scrolls).toBe(false);
-        expect(Math.abs(create.y - eyebrow.y - 184 - 32)).toBeLessThanOrEqual(1);
-      }
-      expect(await noSidewaysScroll(page)).toBe(true);
     });
   });
 
@@ -184,15 +153,12 @@ for (const viewport of viewports) {
           ? ["onboarding-practise", "onboarding-mistakes", "onboarding-exam"]
           : ["onboarding-practise", "onboarding-exam", "onboarding-mistakes"];
 
-      test("each slide: the picture in its frame, the panel as high on all three, the text 32px below it", async ({
-        page,
-      }) => {
+      test("each slide: the picture fills its frame", async ({ page }) => {
         await page.goto("/onboarding");
-        const heights: number[] = [];
         for (const [index, slot] of slides.entries()) {
           if (index > 0) await page.getByRole("button", { name: "Next" }).click();
           await page.waitForTimeout(450);
-          const image = page.locator("[data-hero-panel] img");
+          const image = page.locator("[data-centre] img");
           await checkPicture(
             page,
             image,
@@ -202,34 +168,8 @@ for (const viewport of viewports) {
             frameFor(viewport.height),
           );
           await expect(page.locator(`[data-slide=${slot}]`)).toBeVisible();
-          const panel = (await page.locator("[data-hero-panel]").boundingBox())!;
-          heights.push(panel.height);
-          const frame = (await page
-            .locator("[data-hero-panel] [data-picture-frame]")
-            .boundingBox())!;
-          expect(
-            Math.abs(frame.x + frame.width / 2 - (panel.x + panel.width / 2)),
-          ).toBeLessThanOrEqual(2);
-          expect(Math.abs(mid(frame) - mid(panel))).toBeLessThanOrEqual(2);
-          expect(panel.height).toBeGreaterThanOrEqual(frame.height + 64 - 0.5);
-          // the text block starts 32px below the panel and has its fixed minimum height
-          const block = (await page.locator("[data-slide]").boundingBox())!;
-          expect(
-            Math.abs(block.y - (panel.y + panel.height) - 32),
-            `slide ${index + 1}`,
-          ).toBeLessThanOrEqual(1);
-          expect(block.height).toBeGreaterThanOrEqual(154 - 0.5);
-          // the dots 32px below the text block, the button 24px below the dots, nothing overlaps
-          const dots = (await page.getByRole("img", { name: /^Step \d of 3$/ }).boundingBox())!;
-          const button = (await page
-            .getByRole("button", { name: /^(Next|Get started)$/ })
-            .boundingBox())!;
-          expect(Math.abs(dots.y - (block.y + block.height) - 32)).toBeLessThanOrEqual(1);
-          expect(Math.abs(button.y - (dots.y + dots.height) - 24)).toBeLessThanOrEqual(1);
           expect(await noSidewaysScroll(page)).toBe(true);
         }
-        // the panel is exactly as high on all three slides: nothing jumps when the slide changes
-        for (const height of heights) expect(Math.abs(height - heights[0])).toBeLessThanOrEqual(1);
       });
     });
   }

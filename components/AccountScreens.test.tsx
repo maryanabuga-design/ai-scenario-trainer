@@ -17,17 +17,18 @@ const html = (node: React.ReactElement) => renderToStaticMarkup(node).replace(/<
 describe("Welcome", () => {
   const out = html(<WelcomeView />);
 
-  it("has no header and no navigation, and the hero panel with its 280 by 280 picture", () => {
+  it("has no header and no navigation, and the plain-page layout with its 280 by 280 picture", () => {
     expect(out).not.toContain("<header");
     expect(out).not.toContain("data-form-step");
-    expect(out).toContain("data-hero-panel");
-    // the panel takes all the free height; its minimum is the slot plus 64px
-    expect(out).toContain("min-h-[calc(max(200px,min(280px,36dvh))+64px)] flex-1 basis-auto");
-    expect(out).toContain("flex flex-1 flex-col");
-    expect(out).not.toContain("clamp(280px,46dvh,380px)");
-    expect(out).toContain("rounded-b-[32px] border-b border-selectable-stroke bg-secondary-sand");
-    expect(out).toContain("-mx-[var(--gutter,1rem)]");
-    expect(out).toContain("env(safe-area-inset-top)");
+    expect(out).toContain("data-top-row");
+    expect(out).toContain("data-centre");
+    expect(out).toContain("data-bottom");
+    // the centre group takes the free space and centres its content, 24px between picture and text
+    expect(out).toContain("flex flex-1 flex-col items-center justify-center gap-6");
+    // no panel: no colour, border or rounded bottom corners
+    expect(out).not.toContain("data-hero-panel");
+    expect(out).not.toContain("rounded-b-");
+    expect(out).not.toContain("-mx-[var(--gutter,1rem)]");
     // the picture: decorative, explicit size, contained, loaded at once, no placeholder
     const img = out.slice(out.indexOf("<img"), out.indexOf(">", out.indexOf("<img")) + 1);
     expect(img).toContain('src="/heroes/welcome.webp"');
@@ -35,7 +36,7 @@ describe("Welcome", () => {
     expect(img).toContain('aria-hidden="true"');
     expect(img).toContain('width="280"');
     expect(img).toContain('height="280"');
-    expect(out).toContain("max(200px, min(280px, 36dvh))");
+    expect(out).toContain("max(200px, min(280px, 35dvh))");
     expect(img).toContain('loading="eager"');
     expect(img).toContain("object-contain");
     expect(img).not.toMatch(/shadow|bg-/);
@@ -53,9 +54,9 @@ describe("Welcome", () => {
     expect(out).toContain(">Train for real situations</h1>");
     expect(out).toContain(WELCOME_SUBTITLE);
     expect(out).toContain("max-w-[320px]");
-    // 32px below the panel, a fixed minimum height, content from the top (no vertical centring)
+    // a fixed minimum height, content from the top
     expect(out).toContain(
-      "mt-8 flex min-h-[184px] flex-col items-center justify-start gap-2 px-2 text-center",
+      "flex min-h-[184px] flex-col items-center justify-start gap-2 px-2 text-center",
     );
     expect(out).not.toContain("justify-center gap-2 px-2 py-4");
   });
@@ -257,7 +258,11 @@ describe("Verify", () => {
 });
 
 describe("Edit profile", () => {
-  const account = { name: "Maryana", email: "maryana@example.com", role: "student" as const };
+  const account = {
+    name: "Maryana",
+    email: "maryana@example.com",
+    role: "student" as const,
+  };
   const out = html(<EditProfileView account={account} onSave={() => undefined} />);
 
   it("has Back to Profile, the title and the avatar with the initial, no photo", () => {

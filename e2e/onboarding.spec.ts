@@ -4,7 +4,12 @@ import { newAccount } from "./auth-seed";
 
 const rgb = (value: string) => {
   const match = /rgba?\((\d+), (\d+), (\d+)(?:, ([\d.]+))?\)/.exec(value)!;
-  return { r: +match[1], g: +match[2], b: +match[3], a: match[4] === undefined ? 1 : +match[4] };
+  return {
+    r: +match[1],
+    g: +match[2],
+    b: +match[3],
+    a: match[4] === undefined ? 1 : +match[4],
+  };
 };
 
 const noSidewaysScroll = (page: Page) =>
@@ -28,35 +33,29 @@ for (const width of [360, 430]) {
   test.describe(`Onboarding at ${width}px`, () => {
     test.use({ viewport: { width, height: 800 }, storageState: newAccount() });
 
-    test("slide 1: the hero panel with the 280 by 280 slot, Skip in the corner, the text, the dots and the pinned Next", async ({
+    test("slide 1: the 280 by 280 slot on the plain page, Skip in the top row, the text, the dots and the pinned Next", async ({
       page,
     }) => {
       await page.goto("/onboarding");
       await expect(title(page)).toHaveText(student[0][0]);
       // the entrance animation (250ms) is over
       await page.waitForTimeout(400);
-      const panel = (await page.locator("[data-hero-panel]").boundingBox())!;
-      expect([panel.x, panel.y, panel.width]).toEqual([0, 0, width]);
-      expect(panel.height).toBeGreaterThanOrEqual(280 + 64);
-      const slot = (await page.locator("[data-hero-panel] [data-picture-frame]").boundingBox())!;
+      const slot = (await page.locator("[data-centre] [data-picture-frame]").boundingBox())!;
       expect([slot.width, slot.height]).toEqual([280, 280]);
       expect(Math.abs(slot.x + slot.width / 2 - width / 2)).toBeLessThanOrEqual(2);
-      expect(Math.abs(slot.y + slot.height / 2 - (panel.y + panel.height / 2))).toBeLessThanOrEqual(
-        2,
-      );
-      // Skip: top right of the panel, a 44px tap area, dark text
+      // Skip: top right, a 44px tap area, dark text
       const skip = page.getByRole("button", { name: "Skip" });
       const s = (await skip.boundingBox())!;
       expect(s.height).toBeGreaterThanOrEqual(44);
       expect(s.x + s.width).toBeLessThanOrEqual(width);
       expect(s.x).toBeGreaterThan(width / 2);
-      expect(s.y).toBeLessThan(panel.y + 80);
+      expect(s.y).toBeLessThan(80);
       const skipColour = await skip.evaluate((el) => getComputedStyle(el).color);
       expect(rgb(skipColour).a).toBeGreaterThan(0);
       expect(skipColour).not.toBe("rgb(0, 0, 0)");
       // the text is centred, the subtitle at most 320px wide and 3 lines
       const t = (await title(page).boundingBox())!;
-      expect(t.y).toBeGreaterThan(panel.y + panel.height);
+      expect(t.y).toBeGreaterThan(slot.y + slot.height);
       expect(Math.abs(t.x + t.width / 2 - width / 2)).toBeLessThanOrEqual(1);
       const body = page.getByText(student[0][1]);
       const b = (await body.boundingBox())!;
@@ -149,7 +148,12 @@ for (const width of [360, 430]) {
           (el, [x, y]) => {
             const fire = (type: string, cx: number, cy: number) =>
               el.dispatchEvent(
-                new PointerEvent(type, { clientX: cx, clientY: cy, bubbles: true, pointerId: 1 }),
+                new PointerEvent(type, {
+                  clientX: cx,
+                  clientY: cy,
+                  bubbles: true,
+                  pointerId: 1,
+                }),
               );
             fire("pointerdown", 200, 400);
             fire("pointerup", 200 + x, 400 + y);
@@ -217,7 +221,10 @@ for (const width of [360, 430]) {
   });
 
   test.describe(`Instructor onboarding at ${width}px`, () => {
-    test.use({ viewport: { width, height: 800 }, storageState: newAccount("instructor") });
+    test.use({
+      viewport: { width, height: 800 },
+      storageState: newAccount("instructor"),
+    });
 
     test("shows the instructor slides and Get started opens Instructor Home", async ({ page }) => {
       await page.goto("/");

@@ -18,9 +18,10 @@ const render = (role: Role, index: number) =>
   ).replace(/<!-- -->/g, "");
 
 describe("the onboarding slides", () => {
-  it("show the hero panel with the 280 by 280 picture, the title and the subtitle", () => {
+  it("show the 280 by 280 picture on the plain page, the title and the subtitle", () => {
     const out = render("student", 0);
-    expect(out).toContain("data-hero-panel");
+    expect(out).toContain("data-centre");
+    expect(out).not.toContain("data-hero-panel");
     expect(out).not.toContain('data-media3d="placeholder"');
     expect(out).toContain('src="/heroes/onboarding-practise.webp"');
     expect(out).toContain('width="280"');
@@ -59,14 +60,17 @@ describe("the onboarding slides", () => {
     expect(last).toContain(">Get started<");
   });
 
-  it("put Skip in the panel's top right corner and the Primary at the bottom", () => {
+  it("put Skip in the top row and the Primary at the bottom", () => {
     const out = render("student", 0);
-    expect(out.indexOf(">Skip<")).toBeLessThan(
-      out.indexOf("</div>", out.indexOf("data-hero-panel")) + 400,
-    );
-    expect(out).toContain("absolute top-[calc(env(safe-area-inset-top)+16px)] right-4");
+    expect(out.indexOf("data-top-row")).toBeLessThan(out.indexOf(">Skip<"));
+    expect(out.indexOf(">Skip<")).toBeLessThan(out.indexOf("data-centre"));
+    expect(out).toContain("-mt-2 flex h-11");
     expect(out).toContain("pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]");
     expect(out.indexOf("data-dot")).toBeLessThan(out.lastIndexOf(">Next<"));
+    // slide 3 keeps the empty row so nothing shifts
+    const last = render("student", 2);
+    expect(last).toContain("data-top-row");
+    expect(last).not.toContain(">Skip<");
   });
 
   it("have the dots: 8px, the active one a 24 by 8 olive pill, the group named Step N of 3", () => {
@@ -103,26 +107,24 @@ describe("the onboarding slides", () => {
     ]);
   });
 
-  it("lay out as a column: the panel takes the free height, 32px, the text, 32px, the dots, 24px, the button", () => {
+  it("lay out as a column: top row, a centre group (picture, 24px, text) and the bottom block", () => {
     const out = render("student", 0);
     expect(out).toContain("flex flex-1 touch-pan-y flex-col");
-    expect(out).toContain("min-h-[calc(max(200px,min(280px,36dvh))+64px)] flex-1 basis-auto");
-    // the text block: 32px below the panel, a fixed minimum height, content from the top
+    expect(out).toContain("flex flex-1 flex-col items-center justify-center gap-6");
+    // the text block: a fixed minimum height, content from the top
     expect(out).toMatch(
-      /<section[^>]*class="mt-8 flex min-h-\[154px\] flex-col items-center justify-start/,
+      /<section[^>]*class="flex min-h-\[154px\] flex-col items-center justify-start/,
     );
-    // the dots 32px below the text, the button 24px below the dots
-    expect(out).toContain(
-      'class="mt-8 flex flex-col gap-6 pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]"',
-    );
-    expect(out).not.toContain("justify-center py-4");
+    // the dots, 24px, the button, in the bottom block
+    expect(out).toContain('class="flex flex-col gap-6"');
+    expect(out).toContain("pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]");
     // the same on every slide, for both roles
     for (const role of ["student", "instructor"] as const) {
       for (const index of [0, 1, 2]) {
-        expect(render(role, index)).toContain("mt-8 flex min-h-[154px]");
+        expect(render(role, index)).toContain("flex min-h-[154px]");
       }
     }
-    expect(out.indexOf("data-hero-panel")).toBeLessThan(out.indexOf("data-slide"));
+    expect(out.indexOf("data-centre")).toBeLessThan(out.indexOf("data-slide"));
     expect(out.indexOf("data-slide")).toBeLessThan(out.indexOf('role="img"'));
   });
 
