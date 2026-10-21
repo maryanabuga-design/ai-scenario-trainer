@@ -101,7 +101,8 @@ describe("Answer review", () => {
   it("has no Previous or Next question text link (the pinned buttons are checked in the browser)", () => {
     const html = render("q-scn-s01-001", "a", 2, 5);
     expect(html).not.toContain("Previous question");
-    expect(html).not.toMatch(/type-action/);
+    // (the only type-action is the inline "Ask AI about this question" action, not a text link to a question)
+    expect(html.replace(/<a [^>]*data-ask-ai-row[\s\S]*?<\/a>/, "")).not.toMatch(/type-action/);
     expect(render("q-scn-s01-001", "a", 1, 5)).toContain("Question 1 of 5");
   });
 
@@ -118,7 +119,17 @@ describe("Answer review", () => {
       const html = render(id, "a", 2, 5);
       expect(html).toContain("Ask AI about this question");
       expect(html).toContain(`href="/ask-ai/q-${id}"`);
-      expect(html).toContain("h-14");
+      // the tertiary inline action: no card, no chevron, a 44px tap target, the underlined label
+      const row = html.slice(
+        html.indexOf("data-ask-ai-row"),
+        html.indexOf("</a>", html.indexOf("data-ask-ai-row")),
+      );
+      expect(row).toContain("min-h-11");
+      expect(row).toContain("w-full");
+      expect(row).toContain("underline");
+      expect(row).toContain("text-primary");
+      expect(row).not.toMatch(/bg-card|shadow-|lucide-chevron-right|h-14/);
+      expect(html.indexOf("data-ask-ai-row")).toBeGreaterThan(html.indexOf(">Why<"));
       expect(html).not.toContain("Ask AI about this step");
     }
   });

@@ -2,15 +2,14 @@
 
 import { Sparkles } from "lucide-react";
 import Link from "next/link";
-import { Chevron } from "@/components/Chevron/Chevron";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { questionThread, questionThreadId, withThread } from "@/lib/ask-ai";
 import { readThreads, writeThreads } from "@/lib/ask-ai-store";
 import type { Item } from "@/lib/items";
 
 /**
- * "Ask AI about this question" (DESIGN.md: Ask AI, Question threads): a white card row on the Answer
- * review and the Saved question screen. It opens the ONE thread of the question, created here on first
+ * "Ask AI about this question" (DESIGN.md: Ask AI, Question threads): the tertiary inline action with an icon (DESIGN.md:
+ * Tertiary inline action with an icon) on the Answer review and the Saved question screen. It opens the ONE thread of the question, created here on first
  * use from the question's own data, so reopening never duplicates it.
  */
 export function AskAiRow({
@@ -36,16 +35,12 @@ export function AskAiRow({
           withThread(threads, questionThread(item, number, choice, titleOf, Date.now())),
         );
       }}
-      className="flex h-14 items-center gap-3 rounded-card bg-card px-4 shadow-(--card-shadow) has-focus-visible:outline-2"
+      className="group type-action flex min-h-11 w-full items-center gap-2 rounded-[8px] text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
-      <span
-        aria-hidden="true"
-        className="flex h-6 w-6 shrink-0 items-center justify-center text-neutral-tile-ink"
-      >
-        <Sparkles size={24} strokeWidth={1.75} />
+      <Sparkles size={24} strokeWidth={1.75} aria-hidden="true" className="shrink-0" />
+      <span className="min-w-0 underline decoration-1 underline-offset-4 group-active:decoration-2">
+        Ask AI about this question
       </span>
-      <span className="type-body-strong min-w-0 flex-1 truncate">Ask AI about this question</span>
-      <Chevron />
     </Link>
   );
 }

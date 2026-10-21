@@ -67,9 +67,12 @@ export function ReviewQuestion({
             <GuideChip key={sectionId} sectionId={sectionId} />
           ))}
         </div>
+        {askNumber !== undefined && (
+          <div className="mt-2">
+            <AskAiRow item={item} number={askNumber} choice={choice} />
+          </div>
+        )}
       </section>
-
-      {askNumber !== undefined && <AskAiRow item={item} number={askNumber} choice={choice} />}
     </>
   );
 }

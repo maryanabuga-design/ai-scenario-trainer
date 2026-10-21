@@ -126,7 +126,24 @@ describe("every button goes through the Button component", () => {
     );
     // The floating text toolbar of the reading screen has its own white-on-olive buttons (DESIGN.md:
     // Highlights in the reading screen); they use the small action text style.
-    expect(own).toEqual(["components/SelectionToolbar/SelectionToolbar.tsx"]);
+    // The inline action with an icon ("Ask AI about this question", DESIGN.md: Tertiary inline action with an icon)
+    // draws the same underline; it is allowed in scrolling content only (the next test).
+    expect(own).toEqual([
+      "components/AskAiRow/AskAiRow.tsx",
+      "components/SelectionToolbar/SelectionToolbar.tsx",
+    ]);
+  });
+
+  it("keeps the tertiary inline action out of pinned bottom areas and dialogs", () => {
+    const users = sources().filter((file) => /<AskAiRow\b/.test(readFileSync(file, "utf8")));
+    expect(users).toEqual(["components/ReviewQuestion/ReviewQuestion.tsx"]);
+    const host = readFileSync(users[0], "utf8");
+    expect(host).not.toMatch(/ActionBar|ConfirmDialog|<dialog/);
+    const row = readFileSync("components/AskAiRow/AskAiRow.tsx", "utf8");
+    expect(row).not.toMatch(/ActionBar|ConfirmDialog|<dialog|Chevron|bg-card|shadow-/);
+    expect(row).toContain("min-h-11");
+    expect(row).toContain("w-full");
+    expect(row).toContain("focus-visible:outline-2");
   });
 
   it("uses no other variant names", () => {

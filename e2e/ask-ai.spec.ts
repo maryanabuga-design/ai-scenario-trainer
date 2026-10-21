@@ -275,8 +275,30 @@ for (const width of [360, 430]) {
       const row = page.locator("[data-ask-ai-row]");
       await expect(row).toBeVisible();
       const box = (await row.boundingBox())!;
-      expect(box.height).toBe(56);
-      expect(await bg(row)).toBe(WHITE);
+      // the tertiary inline action: no card or background, 44px or more, the full content width
+      expect(box.height).toBeGreaterThanOrEqual(44);
+      expect(box.x).toBe(16);
+      expect(await bg(row)).toBe("rgba(0, 0, 0, 0)");
+      expect(await row.evaluate((el) => getComputedStyle(el).color)).toBe("rgb(63, 70, 56)");
+      await expect(row.locator("svg.lucide-chevron-right")).toHaveCount(0);
+      const icon = (await row.locator("svg").boundingBox())!;
+      expect([icon.width, icon.height]).toEqual([24, 24]);
+      const label = row.locator("span");
+      expect(await label.evaluate((el) => getComputedStyle(el).textDecorationLine)).toBe(
+        "underline",
+      );
+      expect(await label.evaluate((el) => getComputedStyle(el).textDecorationThickness)).toBe(
+        "1px",
+      );
+      // under the guide pills, 16px below them
+      const chip = (await page
+        .locator("section:has(> h2:text-is('Why')) > div.flex-wrap")
+        .boundingBox())!;
+      expect(Math.round(box.y - (chip.y + chip.height))).toBe(16);
+      expect(box.y).toBeGreaterThan(chip.y + chip.height);
+      // a visible focus ring
+      await row.focus();
+      expect(await row.evaluate((el) => getComputedStyle(el).outlineStyle)).not.toBe("none");
       await row.click();
       await expect(page).toHaveURL(/\/ask-ai\/q-/);
       await expect(page.getByRole("heading", { level: 1 })).toContainText("Question 2: ");
