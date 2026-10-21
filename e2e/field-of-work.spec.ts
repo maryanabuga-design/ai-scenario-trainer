@@ -1,13 +1,11 @@
 import { expect, test } from "@playwright/test";
-import type { Page } from "@playwright/test";
-import { emptyBrowser } from "./auth-seed";
+import type { Browser, Page } from "@playwright/test";
+import { emptyBrowser, signedInStudent } from "./auth-seed";
 
 const CODE = "482913";
 const PRIMARY = "rgb(63, 70, 56)";
 const OLIVE_TINT = "rgb(224, 230, 214)";
 const CARD = "rgb(255, 255, 255)";
-const SAND_200 = "rgb(228, 214, 188)";
-const SAND_900 = "rgb(77, 63, 45)";
 const MUTED = "rgb(92, 90, 85)";
 const DISCLAIMER = "Prototype answer: a prepared example, not a live AI. It may be inaccurate.";
 
@@ -56,12 +54,43 @@ async function setField(page: Page, label: string) {
   await expect(page.locator("[data-field]").first()).toBeVisible();
 }
 
+/** The computed look of an icon tile: size, radius, colours and the icon's size and stroke. */
+const tileLook = (tile: ReturnType<Page["locator"]>) =>
+  tile.evaluate((el) => {
+    const css = getComputedStyle(el);
+    const box = el.getBoundingClientRect();
+    const svg = el.querySelector("svg")!;
+    const svgBox = svg.getBoundingClientRect();
+    return {
+      size: [Math.round(box.width), Math.round(box.height)],
+      radius: css.borderTopLeftRadius,
+      background: css.backgroundColor,
+      colour: css.color,
+      icon: [Math.round(svgBox.width), Math.round(svgBox.height)],
+      stroke: svg.getAttribute("stroke-width"),
+    };
+  });
+
+/** The Materials list's tile, read from the signed-in student's Materials screen. */
+async function materialsTile(browser: Browser, width: number) {
+  const context = await browser.newContext({
+    viewport: { width, height: 800 },
+    storageState: signedInStudent,
+  });
+  const page = await context.newPage();
+  await page.goto("/materials");
+  const look = await tileLook(page.locator("[data-icon-tile]:visible").first());
+  await context.close();
+  return look;
+}
+
 for (const width of [360, 430]) {
   test.describe(`Field of work at ${width}px`, () => {
     test.use({ viewport: { width, height: 800 }, storageState: emptyBrowser });
 
     test("a new student sees the step after Verify: layout, Continue is disabled until a choice, then the introduction", async ({
       page,
+      browser,
     }) => {
       await atStep(page);
       await expect(
@@ -98,19 +127,17 @@ for (const width of [360, 430]) {
       await expect(note).toHaveText("All content in this app is educational and non-combat.");
       expect(await note.evaluate((el) => getComputedStyle(el).color)).toBe(MUTED);
       expect(await note.evaluate((el) => getComputedStyle(el).textDecorationLine)).toBe("none");
-      // the icons: decorative, in 40px sand-200 circles with a 24px sand-900 icon, a 12px gap before the text
+      // the icons: decorative, on the very tile of the Materials list (size, radius, colours, icon), a 12px gap
+      const materials = await materialsTile(browser, width);
+      expect(materials.size).toEqual([44, 44]);
+      expect(materials.radius).toBe("12px");
+      expect(materials.background).toBe("rgb(226, 222, 214)");
+      expect(materials.colour).toBe("rgb(92, 90, 86)");
       for (const field of ["rescue", "paramedic", "military", "civil", "other"]) {
-        const circle = page.locator(`[data-field-icon=${field}]`);
-        const cb = (await circle.boundingBox())!;
-        expect([cb.width, cb.height]).toEqual([40, 40]);
-        expect(await bg(circle)).toBe(SAND_200);
-        expect(await circle.evaluate((el) => getComputedStyle(el).color)).toBe(SAND_900);
-        expect(await circle.evaluate((el) => getComputedStyle(el).borderTopLeftRadius)).not.toBe(
-          "0px",
-        );
-        await expect(circle).toHaveAttribute("aria-hidden", "true");
-        const icon = (await circle.locator("svg").boundingBox())!;
-        expect([icon.width, icon.height]).toEqual([24, 24]);
+        const tile = page.locator(`[data-icon-tile=${field}]`);
+        expect(await tileLook(tile)).toEqual(materials);
+        await expect(tile).toHaveAttribute("aria-hidden", "true");
+        const cb = (await tile.boundingBox())!;
         const text = (await page.locator(`[data-field=${field}]`).boundingBox())!;
         expect(Math.round(text.x - (cb.x + cb.width))).toBe(12);
       }
@@ -189,6 +216,7 @@ for (const width of [360, 430]) {
 
     test("Profile: the row below Direction, the picker applies at once, Clear selection, and the Backs", async ({
       page,
+      browser,
     }) => {
       await atStep(page);
       await page.getByRole("button", { name: "Skip", exact: true }).click();
@@ -207,14 +235,14 @@ for (const width of [360, 430]) {
       await expect(page.getByRole("heading", { name: "Field of work", level: 1 })).toBeVisible();
       await expect(page.getByText("Used to tune examples in Ask AI.")).toBeVisible();
       await expect(page.getByRole("button", { name: "Clear selection" })).toHaveCount(0);
-      // the same icons in the same circles, and no Skip
-      await expect(page.locator("[data-field-icon]:visible")).toHaveCount(5);
-      expect(await bg(page.locator("[data-field-icon=rescue]:visible"))).toBe(SAND_200);
-      expect(
-        await page
-          .locator("[data-field-icon=military]:visible")
-          .evaluate((el) => getComputedStyle(el).color),
-      ).toBe(SAND_900);
+      // the same icons on the same tile as the Materials list, and no Skip
+      await expect(page.locator("[data-icon-tile]:visible")).toHaveCount(5);
+      const materials = await materialsTile(browser, width);
+      for (const field of ["rescue", "paramedic", "military", "civil", "other"]) {
+        expect(await tileLook(page.locator(`[data-icon-tile=${field}]:visible`))).toEqual(
+          materials,
+        );
+      }
       await expect(page.getByRole("button", { name: "Skip", exact: true })).toHaveCount(0);
       await pick(page, "Military");
       await expect(page.locator("input[name=field-of-work]:checked")).toHaveCount(1);

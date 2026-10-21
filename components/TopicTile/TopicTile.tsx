@@ -41,6 +41,28 @@ const sizes = {
   square48: { tile: "h-12 w-12 rounded-[12px]", icon: 24, stroke: 2 },
 } as const;
 
+/**
+ * Any outline icon on the one neutral icon tile at one of the shared sizes. The Materials rows use
+ * the size "tile"; the Field of work rows use the very same one.
+ */
+export function LucideTile({
+  icon: Icon,
+  size = "default",
+  tileId,
+}: {
+  icon: LucideIcon;
+  size?: keyof typeof sizes;
+  tileId?: string;
+}) {
+  const look = sizes[size];
+  const shape = `${look.tile} ${size === "tile" || size === "square48" ? "" : "rounded-full"}`;
+  return (
+    <IconTile className={shape} tileId={tileId}>
+      <Icon size={look.icon} strokeWidth={look.stroke} />
+    </IconTile>
+  );
+}
+
 /** A topic's icon on the one neutral icon tile (`IconTile`). Decorative: the name sits next to it. */
 export function TopicTile({
   icon,
@@ -49,12 +71,5 @@ export function TopicTile({
   icon: TopicIcon;
   size?: keyof typeof sizes;
 }) {
-  const Icon = icons[icon];
-  const look = sizes[size];
-  const shape = `${look.tile} ${size === "tile" || size === "square48" ? "" : "rounded-full"}`;
-  return (
-    <IconTile className={shape}>
-      <Icon size={look.icon} strokeWidth={look.stroke} />
-    </IconTile>
-  );
+  return <LucideTile icon={icons[icon]} size={size} />;
 }

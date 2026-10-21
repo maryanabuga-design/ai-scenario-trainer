@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
 import { AskAiView } from "@/components/AskAiView/AskAiView";
 import { fieldIcons } from "@/components/FieldOfWork/FieldRows";
+import { TopicTile } from "@/components/TopicTile/TopicTile";
 import { FieldOfWorkStep } from "@/components/FieldOfWork/FieldOfWorkStep";
 import { FieldPickerView } from "@/components/FieldOfWork/FieldPickerView";
 import { ProfileView } from "@/components/ProfileView/ProfileView";
@@ -40,18 +41,28 @@ describe("the Field of work step", () => {
     expect(bar.match(/<Button/g)).toHaveLength(1);
   });
 
-  it("has an icon in a 40px sand-200 circle on every row, decorative, from the existing icon set", () => {
-    expect(html.match(/data-field-icon=/g)).toHaveLength(5);
-    expect(
-      html.match(
-        /h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sand-200 text-sand-900/g,
-      ),
-    ).toHaveLength(5);
-    expect(html.match(/aria-hidden="true"[^>]*data-field-icon/g)).toHaveLength(5);
+  it("has an icon on the Materials icon tile on every row: the shared IconTile, 44px, 12px radius, 22px icon", () => {
+    expect(html.match(/data-icon-tile=/g)).toHaveLength(5);
+    for (const field of ["rescue", "paramedic", "military", "civil", "other"]) {
+      expect(html).toContain(`data-icon-tile="${field}"`);
+    }
+    // the very classes of the Materials topic rows (TopicTile "tile")
+    const materials = renderToStaticMarkup(<TopicTile icon="BellRing" size="tile" />);
+    const classOf = (markup: string) => /<span[^>]*class="([^"]*)"/.exec(markup)![1];
+    const tileClass = classOf(materials);
+    expect(tileClass).toContain("h-11 w-11 rounded-[12px]");
+    expect(tileClass).toContain("bg-neutral-tile-bg text-neutral-tile-ink");
+    expect(html.split(tileClass).length - 1).toBe(5);
+    expect(html).not.toMatch(/bg-sand-200|rounded-full bg-sand/);
+    expect(html.match(/aria-hidden="true"[^>]*data-icon-tile/g)).toHaveLength(5);
     for (const icon of ["life-buoy", "heart-pulse", "shield", "users-round", "compass"]) {
       expect(html).toContain(`lucide-${icon}`);
     }
-    expect(html.match(/width="24"/g)!.length).toBeGreaterThanOrEqual(5);
+    // the same icon size and stroke as the Materials tile
+    const size = /width="(\d+)"[^>]*stroke-width="([\d.]+)"/.exec(materials)!;
+    expect(
+      html.match(new RegExp(`width="${size[1]}"[^>]*stroke-width="${size[2]}"`, "g")),
+    ).toHaveLength(5);
     // a neutral protective symbol: nothing about weapons or combat
     expect(Object.keys(fieldIcons)).toEqual(["rescue", "paramedic", "military", "civil", "other"]);
   });
@@ -111,7 +122,7 @@ describe("the field picker", () => {
 
   it("has the same icons as the step and no Skip", () => {
     const html = picker(null);
-    expect(html.match(/data-field-icon=/g)).toHaveLength(5);
+    expect(html.match(/data-icon-tile=/g)).toHaveLength(5);
     expect(html).not.toContain(">Skip<");
   });
 

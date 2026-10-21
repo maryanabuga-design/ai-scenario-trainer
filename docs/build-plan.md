@@ -146,3 +146,4 @@ One commit per screen group, in this order. Steps 1 to 82 are built (step 81, th
 144. Instructor mobile fixes (27 Oct 2026): honest group numbers, one Student row, Weakest topics filter, Import in the order File, Title, Topic, Invite students and Send reminder. Screenshots: `docs/screens/136-*`.
 145. Instructor tile dashboard (27 Oct 2026): the Overview as four tiles, the Topics screen, the avatar instead of the Profile tab and the filter line on Students. Screenshots: `docs/screens/137-*`.
 146. Instructor action dashboard (27 Oct 2026): the tiles replaced by NEEDS YOUR ACTION, the exam card with not started, the weakest topic with Assign exam on this topic, and the weekly delta. Screenshots: `docs/screens/138-*`.
+147. One neutral icon tile (27 Oct 2026): the Field of work rows use the Materials tile (LucideTile, IconTile 44px, 12px radius). Screenshots: `docs/screens/140-*`.

@@ -2,6 +2,7 @@
 
 import { Compass, HeartPulse, LifeBuoy, Shield, UsersRound } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { LucideTile } from "@/components/TopicTile/TopicTile";
 import { SelectableRow } from "@/components/SelectableRow/SelectableRow";
 import { FIELDS, fullLabels } from "@/lib/field-of-work";
 import type { FieldOfWork } from "@/lib/field-of-work";
@@ -38,13 +39,7 @@ export function FieldRows({
             checked={value === field}
             onChange={() => onChange(field)}
           >
-            <span
-              aria-hidden="true"
-              data-field-icon={field}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sand-200 text-sand-900"
-            >
-              <Icon size={24} strokeWidth={1.75} />
-            </span>
+            <LucideTile icon={Icon} size="tile" tileId={field} />
             <span data-field={field} className="type-body-strong min-w-0 flex-1">
               {fullLabels[field]}
             </span>

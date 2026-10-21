@@ -18,14 +18,18 @@ export function IconTile({
   className,
   children,
   tone = "neutral",
+  tileId = "",
 }: {
   className: string;
   children: ReactNode;
   tone?: keyof typeof tones;
+  /** For tests: the attribute `data-icon-tile` (empty by default). */
+  tileId?: string;
 }) {
   return (
     <span
       aria-hidden="true"
+      data-icon-tile={tileId}
       className={`flex shrink-0 items-center justify-center ${tones[tone]} ${className}`}
     >
       {children}
