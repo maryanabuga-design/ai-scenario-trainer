@@ -113,7 +113,7 @@ function files(dir: string): string[] {
   });
 }
 
-/** App code, without the Button itself and the dev-only screen review page (it shows specimens). */
+/** App code, without the Button itself and the screen review page (it shows specimens). */
 const sources = () =>
   [...files("components"), ...files("app")].filter(
     (file) => !file.includes("Button/Button.tsx") && !file.startsWith("app/screens/"),

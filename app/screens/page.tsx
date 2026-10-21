@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import Materials from "@/app/(app)/materials/page";
 import { ActionBarProvider, ActionBarSlot } from "@/components/ActionBar/ActionBar";
@@ -175,8 +174,6 @@ function FoundationKit() {
 }
 
 export default function Screens() {
-  if (process.env.NODE_ENV === "production") notFound();
-
   return (
     <SourceSheetProvider sections={loadAllSections()}>
       <main className="flex flex-col gap-10 bg-surface-muted p-8">

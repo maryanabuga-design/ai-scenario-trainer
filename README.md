@@ -28,7 +28,7 @@ npm run build
 
 To try it on a phone, connect the phone to the same Wi-Fi and open the "Network" address that `npm run dev` prints (for example `http://192.168.0.101:3000`). The app works there; only live reload is blocked for other devices, which Next.js does by default.
 
-In development, `/screens` shows every planned screen side by side at phone width for design review. It returns 404 in production.
+`/screens` shows every planned screen side by side at phone width for design review (fake demo data only). It is open in production too.
 
 ## Environment variables
 

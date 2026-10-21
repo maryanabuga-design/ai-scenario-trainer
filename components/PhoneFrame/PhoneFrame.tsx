@@ -7,7 +7,7 @@ type Props = {
   children?: ReactNode;
 };
 
-/** A 390 by 844 phone screen for the development-only /screens review page. */
+/** A 390 by 844 phone screen for the /screens review page. */
 export function PhoneFrame({ label, plannedStep, children }: Props) {
   const built = plannedStep === undefined;
   return (
