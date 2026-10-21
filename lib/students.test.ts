@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { groupCounts, participants, seededStudents, statusOf } from "@/lib/cohort";
+import { inScope } from "@/lib/groups";
 import type { Attempt } from "@/lib/cohort";
 import { isActive, seedGroupExams, topicQuestionCount } from "@/lib/group-exams";
 import { allTopicIds } from "@/lib/progress-view";
@@ -28,7 +29,10 @@ import {
 
 const now = new Date(2026, 9, 24, 10, 0).getTime();
 const exams = seedGroupExams(now);
-const people = participants([{ name: "Ana Test", email: "ana@example.com" }]);
+const people = inScope(
+  participants([{ name: "Ana Test", email: "ana@example.com" }]),
+  "rescue-team",
+);
 const all = profiles(people, { "ana@example.com": null });
 
 describe("thresholds", () => {
@@ -196,7 +200,8 @@ describe("the exams of a student match the Exam detail", () => {
   it("gives every exam with the same status the Exam detail computes, for every participant", () => {
     for (const person of people) {
       const rows = examRowsFor(person, exams, [], now);
-      expect(rows).toHaveLength(exams.length);
+      // only the exams for the person's group
+      expect(rows).toHaveLength(exams.filter((e) => e.groupIds.includes(person.groupId)).length);
       for (const row of rows) {
         expect(row.status).toEqual(
           statusOf(person, row.exam, { attempts: [], active: isActive(row.exam, now) }),
@@ -206,7 +211,7 @@ describe("the exams of a student match the Exam detail", () => {
   });
 
   it("agrees with the group counts of each exam", () => {
-    for (const exam of exams) {
+    for (const exam of exams.filter((e) => e.groupIds.includes("rescue-team"))) {
       const context = { attempts: [], active: isActive(exam, now) };
       const counts = groupCounts(people, exam, context);
       const kinds = people.map(

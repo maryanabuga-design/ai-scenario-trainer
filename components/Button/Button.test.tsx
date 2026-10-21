@@ -189,7 +189,7 @@ describe("a secondary always comes with a primary above it", () => {
       "components/InstructorExams/AssignExamView.tsx",
       "components/InstructorExams/ExamDetailView.tsx",
       // Overview: the nearest exam has a Secondary Assign exam under its card (the Primary is for "No active exam").
-      "components/InstructorOverview/InstructorOverviewView.tsx",
+      "components/InstructorOverview/OverviewBlocks.tsx",
       // Instructor Students: Show all (empty filter) and Back to students (unknown id).
       // Invite students: Copy code, Copy link and Cancel under the Primary Send invitations.
       "components/InstructorStudents/InviteView.tsx",

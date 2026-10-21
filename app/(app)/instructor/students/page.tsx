@@ -5,6 +5,9 @@ import { Suspense, useMemo, useState } from "react";
 import { StudentsListView } from "@/components/InstructorStudents/StudentsListView";
 import { useAuth } from "@/lib/auth";
 import { participants } from "@/lib/cohort";
+import { inScope } from "@/lib/groups";
+import type { Scope } from "@/lib/groups";
+import { useScope } from "@/lib/scope-store";
 import type { Account } from "@/lib/auth";
 import type { Attempt } from "@/lib/cohort";
 import type { GroupExam } from "@/lib/group-exams";
@@ -27,10 +30,12 @@ function Loaded({
   accounts,
   exams,
   attempts,
+  scope,
 }: {
   accounts: Account[];
   exams: GroupExam[];
   attempts: Attempt[];
+  scope: Scope;
 }) {
   const router = useRouter();
   const query = useSearchParams();
@@ -39,19 +44,25 @@ function Loaded({
   const origin = originFrom(query.get("from"));
   const { sections } = useSourceSheet();
   const [now] = useState(() => Date.now());
-  const people = useMemo(() => participants(accounts), [accounts]);
+  const people = useMemo(() => inScope(participants(accounts), scope), [accounts, scope]);
   const all = useMemo(() => profiles(people, readHistories(accounts)), [people, accounts]);
   // a filter from a tile or Topics (or Not started, or a topic) shows its label and Clear filter
   const showing =
     origin || topic
       ? showingLine(
           filter,
-          topic ? { id: topic, title: sections.find((s) => s.id === topic)?.title ?? topic } : null,
+          topic
+            ? {
+                id: topic,
+                title: sections.find((s) => s.id === topic)?.title ?? topic,
+              }
+            : null,
         )
       : null;
 
   return (
     <StudentsListView
+      scope={scope}
       shown={visibleStudents(all, filter, exams, attempts, now, topic)}
       count={people.length}
       notStarted={notStartedCount(all)}
@@ -76,8 +87,15 @@ function StudentsScreen() {
   const auth = useAuth();
   const exams = useGroupExams();
   const attempts = useAttempts();
-  if (auth === "loading" || exams === "loading" || attempts === "loading") return null;
-  return <Loaded accounts={auth.accounts} exams={exams} attempts={attempts} />;
+  const scope = useScope();
+  if (
+    auth === "loading" ||
+    exams === "loading" ||
+    attempts === "loading" ||
+    scope === "loading"
+  )
+    return null;
+  return <Loaded accounts={auth.accounts} exams={exams} attempts={attempts} scope={scope} />;
 }
 
 export default function StudentsPage() {

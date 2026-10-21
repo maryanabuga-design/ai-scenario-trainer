@@ -148,7 +148,7 @@ for (const width of [360, 430]) {
       await expect(assign).toBeDisabled();
       // the read-only info card
       await expect(page.locator("[data-info-audience]")).toHaveText(
-        "Audience: all students in Group A",
+        "Audience: 15 students in Rescue team",
       );
       // the date field only for "Pick a date", and no past date
       await page.getByText("Responding to an alarm").first().click();

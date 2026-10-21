@@ -1,15 +1,18 @@
 import cohort from "@/content/demo-cohort.json";
+import { DEFAULT_GROUP_ID } from "@/lib/groups";
 import { passCount } from "@/lib/results";
 
 /**
- * The demo group of the Instructor side (DESIGN.md: Instructor, demo group): 14 fictional students
- * plus the local student accounts of this browser, and the status of each participant for an exam.
+ * The demo participants of the Instructor side (DESIGN.md: Instructor, demo group and groups): 26
+ * fictional students in two groups plus the local student accounts of this browser (Rescue team), and the status of each participant for an exam.
  * Pure: every group figure is computed here from one participants list, so numbers match everywhere.
  */
 export type Field = "rescue" | "paramedic" | "military" | "civil" | "other";
 
 export type SeededStudent = {
   id: string;
+  /** The id of the demo group (`lib/groups.ts`). */
+  group: string;
   name: string;
   initials: string;
   field: Field;
@@ -19,7 +22,6 @@ export type SeededStudent = {
   previousCorrect?: number;
 };
 
-export const GROUP_NAME = cohort.group.name;
 export const seededStudents = cohort.students as SeededStudent[];
 export const DEMO_NOTE = "Demo group. Student data on this screen is simulated.";
 
@@ -30,6 +32,8 @@ export type Participant = {
   initials: string;
   /** A student account of this browser (real data), labelled "Your demo account". */
   local: boolean;
+  /** The group: seeded students have theirs, a local account joins the default group. */
+  groupId: string;
   /** The field of work of a local account, when it chose one. */
   field?: Field | null;
 };
@@ -48,7 +52,12 @@ export type Attempt = {
 export type ExamStatus =
   | { kind: "not-started" }
   | { kind: "not-passed"; correct: number; total: number }
-  | { kind: "certified"; correct: number; total: number; certificateId?: string };
+  | {
+      kind: "certified";
+      correct: number;
+      total: number;
+      certificateId?: string;
+    };
 
 const initialsOf = (name: string) =>
   name
@@ -68,6 +77,7 @@ export function participants(
       name: account.name,
       initials: initialsOf(account.name),
       local: true,
+      groupId: DEFAULT_GROUP_ID,
       // the field of work the person chose (shown on the Instructor's Student detail)
       field: account.field ?? null,
     })),
@@ -76,6 +86,7 @@ export function participants(
       name: student.name,
       initials: student.initials,
       local: false,
+      groupId: student.group,
     })),
   ];
 }
@@ -158,7 +169,12 @@ export function groupCounts(
   exam: ExamKey,
   context: StatusContext,
 ): GroupCounts {
-  const counts = { certified: 0, notPassed: 0, notStarted: 0, total: people.length };
+  const counts = {
+    certified: 0,
+    notPassed: 0,
+    notStarted: 0,
+    total: people.length,
+  };
   for (const person of people) {
     const status = statusOf(person, exam, context).kind;
     if (status === "certified") counts.certified += 1;
@@ -183,7 +199,10 @@ export function studentRows(
   context: StatusContext,
 ): StudentRow[] {
   return people
-    .map((participant) => ({ participant, status: statusOf(participant, exam, context) }))
+    .map((participant) => ({
+      participant,
+      status: statusOf(participant, exam, context),
+    }))
     .sort(
       (a, b) =>
         rank[a.status.kind] - rank[b.status.kind] ||

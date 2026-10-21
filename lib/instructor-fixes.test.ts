@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { groups, inScope } from "@/lib/groups";
 import { participants } from "@/lib/cohort";
 import { seedGroupExams } from "@/lib/group-exams";
 import { addNotice, collapseReminders, readNotices } from "@/lib/group-store";
 import {
-  GROUP_CODE,
-  INVITE_LINK,
+  inviteLink,
   invalidLine,
   invitedLine,
   parseEmails,
@@ -28,7 +28,10 @@ import type { StudentProfile, StudentTopic } from "@/lib/students";
 
 const now = new Date(2026, 10, 2, 10, 0).getTime();
 const exams = seedGroupExams(now);
-const people = participants([{ name: "Ana Test", email: "ana@example.com" }]);
+const people = inScope(
+  participants([{ name: "Ana Test", email: "ana@example.com" }]),
+  "rescue-team",
+);
 const all = profiles(people, { "ana@example.com": null });
 const seeded = all.filter((p) => !p.participant.local);
 
@@ -39,7 +42,13 @@ const topic = (sectionId: string, answered: number, correct: number): StudentTop
   total: 10,
 });
 const student = (id: string, topics: StudentTopic[], local = false): StudentProfile => ({
-  participant: { id, name: id, initials: id.slice(0, 2).toUpperCase(), local },
+  participant: {
+    id,
+    name: id,
+    initials: id.slice(0, 2).toUpperCase(),
+    local,
+    groupId: "rescue-team",
+  },
   field: null,
   topics,
 });
@@ -183,8 +192,8 @@ describe("inviting students", () => {
   });
 
   it("has a fixed demo code and link", () => {
-    expect(GROUP_CODE).toBe("QT-A7K2");
-    expect(INVITE_LINK).toContain(GROUP_CODE);
+    expect(groups.map((g) => g.code)).toEqual(["QT-A7K2", "QT-M4R9"]);
+    expect(inviteLink("QT-A7K2")).toContain("QT-A7K2");
   });
 });
 

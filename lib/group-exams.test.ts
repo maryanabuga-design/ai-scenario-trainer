@@ -40,7 +40,12 @@ describe("question counts", () => {
 });
 
 describe("the minimum-question rule and deadline rules", () => {
-  const ok = { title: "Exam: Alarm", topicIds: ["S1"], deadline: "2026-10-27" };
+  const ok = {
+    title: "Exam: Alarm",
+    topicIds: ["S1"],
+    deadline: "2026-10-27",
+    groupIds: ["rescue-team"],
+  };
 
   it("accepts a complete valid exam", () => {
     expect(assignProblems(ok, now)).toEqual([]);
@@ -50,6 +55,7 @@ describe("the minimum-question rule and deadline rules", () => {
     expect(assignProblems({ ...ok, title: "   " }, now)).toContain("Add a title.");
     expect(assignProblems({ ...ok, topicIds: [] }, now)).toContain("Choose at least one topic.");
     expect(assignProblems({ ...ok, deadline: null }, now)).toContain("Choose a deadline.");
+    expect(assignProblems({ ...ok, groupIds: [] }, now)).toContain("Choose at least one group.");
   });
 
   it("requires at least 10 questions in the selected topics", () => {
@@ -91,12 +97,18 @@ describe("an exam", () => {
 
   it("is created from valid input with 20 minutes, pass mark 80 and its question count", () => {
     const exam = createExam(
-      { title: "  Exam: Alarm  ", topicIds: ["S3", "S1"], deadline: "2026-10-31" },
+      {
+        title: "  Exam: Alarm  ",
+        topicIds: ["S3", "S1"],
+        deadline: "2026-10-31",
+        groupIds: ["military-training", "rescue-team"],
+      },
       now,
     );
     expect(exam).toMatchObject({
       title: "Exam: Alarm",
       topicIds: ["S1", "S3"],
+      groupIds: ["rescue-team", "military-training"],
       questionCount: 20,
       timeLimit: 20,
       passMark: 80,
@@ -105,16 +117,24 @@ describe("an exam", () => {
       createdBy: "Instructor",
     });
     expect(exam.id).toMatch(/^grp-/);
-    expect(createExam({ title: "x", topicIds: ["S1"], deadline: "2026-10-31" }, now).id).not.toBe(
-      exam.id,
-    );
+    expect(
+      createExam(
+        { title: "x", topicIds: ["S1"], deadline: "2026-10-31", groupIds: ["rescue-team"] },
+        now,
+      ).id,
+    ).not.toBe(exam.id);
   });
 
-  it("has two seeded exams, one Active and one Closed, dated from now", () => {
+  it("has three seeded exams: two Active (Rescue team and Military training) and one Closed, dated from now", () => {
     const seeded = seedGroupExams(now);
-    expect(seeded).toHaveLength(2);
+    expect(seeded).toHaveLength(3);
+    expect(seeded.map((e) => e.groupIds)).toEqual([
+      ["rescue-team"],
+      ["rescue-team"],
+      ["military-training"],
+    ]);
     const { active, closed } = splitExams(seeded, now);
-    expect(active).toHaveLength(1);
+    expect(active).toHaveLength(2);
     expect(closed).toHaveLength(1);
     for (const e of seeded)
       expect(totalQuestions(e.topicIds)).toBeGreaterThanOrEqual(MIN_QUESTIONS);

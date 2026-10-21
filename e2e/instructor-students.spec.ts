@@ -66,7 +66,7 @@ for (const width of [360, 430]) {
       await page.goto("/instructor/students");
       await expect(page.getByRole("heading", { name: "Students", level: 1 })).toBeVisible();
       await expect(page.locator("[data-page-header-band]:visible")).toContainText(
-        "Group A · 15 students · 2 not started",
+        "Rescue team · 15 students · 2 not started",
       );
       await expect(page.locator("[data-page-header-band] [data-avatar]")).toBeVisible();
       const invite = page.getByRole("link", { name: "Invite students" });

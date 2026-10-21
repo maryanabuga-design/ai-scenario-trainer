@@ -11,6 +11,7 @@ import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { DEMO_NOTE, statusText } from "@/lib/cohort";
 import type { ExamStatus, GroupCounts, StudentRow } from "@/lib/cohort";
 import { rulesLine, shortDate, topicsLine } from "@/lib/group-exams";
+import { groupNames } from "@/lib/groups";
 import type { GroupExam } from "@/lib/group-exams";
 
 const statusLook: Record<
@@ -122,6 +123,12 @@ export function ExamDetailView({
             <dt className="shrink-0 text-text-secondary">Topics</dt>
             <dd data-topics className="truncate text-right">
               {topicsLine(exam.topicIds, titleOf)}
+            </dd>
+          </div>
+          <div className="flex justify-between gap-3">
+            <dt className="shrink-0 text-text-secondary">Audience</dt>
+            <dd data-audience className="truncate text-right">
+              {groupNames(exam.groupIds)}
             </dd>
           </div>
         </dl>

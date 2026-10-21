@@ -8,7 +8,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { SelectableRow } from "@/components/SelectableRow/SelectableRow";
 import { TextField } from "@/components/TextField/TextField";
-import { GROUP_NAME } from "@/lib/cohort";
+import { groupNames, groups } from "@/lib/groups";
 import {
   assignProblems,
   defaultTitle,
@@ -20,12 +20,14 @@ import {
 } from "@/lib/group-exams";
 import type { DeadlinePreset } from "@/lib/group-exams";
 import { isoDay } from "@/lib/exam-deadline";
+import { studentsCount } from "@/lib/overview";
 import { trainingSections as allTopics } from "@/lib/parts";
 
 export type AssignValues = {
   title: string;
   topicIds: string[];
   deadline: string;
+  groupIds: string[];
 };
 
 /**
@@ -35,6 +37,8 @@ export type AssignValues = {
  */
 export function AssignExamView({
   titleOf,
+  groupCounts,
+  initialGroups,
   now,
   onAssign,
   onCancel,
@@ -44,6 +48,10 @@ export function AssignExamView({
   dialogInline = false,
 }: {
   titleOf: (id: string) => string;
+  /** The number of students of each group id (the AUDIENCE rows). */
+  groupCounts: Record<string, number>;
+  /** The groups chosen first: the selected group, none in All groups. */
+  initialGroups: string[];
   now: number;
   onAssign: (values: AssignValues) => void;
   onCancel: () => void;
@@ -64,13 +72,18 @@ export function AssignExamView({
   const [touched, setTouched] = useState(initial?.title !== undefined);
   const [preset, setPreset] = useState<DeadlinePreset | null>(initial?.preset ?? null);
   const [date, setDate] = useState(initial?.date ?? "");
+  const [audience, setAudience] = useState<string[]>(initialGroups);
   const [confirming, setConfirming] = useState(confirmingInitially);
 
   const shownTitle = touched ? title : defaultTitle(topics, titleOf);
   const deadline = preset === "date" ? date || null : preset ? presetDeadline(preset, now) : null;
-  const problems = assignProblems({ title: shownTitle, topicIds: topics, deadline }, now);
+  const problems = assignProblems(
+    { title: shownTitle, topicIds: topics, deadline, groupIds: audience },
+    now,
+  );
   const count = topics.length > 0 ? examQuestionCount(topics) : 20;
   const entered = touched || topics.length > 0 || preset !== null;
+  const audienceStudents = audience.reduce((sum, id) => sum + (groupCounts[id] ?? 0), 0);
   const allSelected = topics.length === allTopics.length;
 
   function toggleTopic(id: string) {
@@ -174,12 +187,48 @@ export function AssignExamView({
         )}
       </section>
 
+      <section aria-labelledby="audience-label" className="flex flex-col gap-3">
+        <h2 id="audience-label" className="type-label text-text-secondary">
+          AUDIENCE
+        </h2>
+        <fieldset className="flex flex-col gap-2" aria-labelledby="audience-label">
+          {groups.map((group) => (
+            <SelectableRow
+              key={group.id}
+              name="audience"
+              value={group.id}
+              type="checkbox"
+              compact
+              checked={audience.includes(group.id)}
+              onChange={(id) =>
+                setAudience((current) =>
+                  groups
+                    .map((entry) => entry.id)
+                    .filter((entry) =>
+                      entry === id ? !current.includes(id) : current.includes(entry),
+                    ),
+                )
+              }
+            >
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="type-body-strong truncate">{group.name}</span>
+                <span className="type-small text-text-secondary">
+                  {studentsCount(groupCounts[group.id] ?? 0)}
+                </span>
+              </span>
+            </SelectableRow>
+          ))}
+        </fieldset>
+      </section>
+
       <Card className="flex flex-col gap-1">
         <p data-info-rules className="type-body-strong">
           {count} questions · 20 minutes · pass mark 80
         </p>
         <p data-info-audience className="type-small text-text-secondary">
-          Audience: all students in {GROUP_NAME}
+          {audience.length === 0
+            ? "Audience: choose at least one group"
+            : `Audience: ${studentsCount(audienceStudents)} in ${groupNames(audience)}`}
         </p>
       </Card>
 
@@ -191,6 +240,7 @@ export function AssignExamView({
               title: shownTitle.trim(),
               topicIds: topics,
               deadline: deadline!,
+              groupIds: audience,
             })
           }
         >

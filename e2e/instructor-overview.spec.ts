@@ -16,7 +16,7 @@ const PRIMARY = "rgb(63, 70, 56)";
 const OLIVE_TINT = "rgb(224, 230, 214)";
 const SAND_200 = "rgb(228, 214, 188)";
 const SAND_900 = "rgb(77, 63, 45)";
-const MUTED = "rgb(92, 90, 85)";
+const STATUS_SUCCESS_INK = "rgb(68, 104, 58)";
 
 const instructor = {
   cookies: [],
@@ -77,13 +77,14 @@ for (const width of [360, 430]) {
       expect((await circle.boundingBox())!.width).toBe(40);
       expect(await bg(circle)).toBe(SAND_200);
       expect(await circle.evaluate((el) => getComputedStyle(el).color)).toBe(SAND_900);
-      await expect(page.locator("[data-group-readiness]")).toContainText(/Group readiness \d+%/);
+      await expect(page.locator("[data-group-readiness]")).toContainText("GROUP READINESS");
+      await expect(page.locator("[data-readiness-figure]")).toHaveText(/^\d+%$/);
       await expect(page.locator("[data-group-line]")).toHaveText(
-        "Group A · 15 students · 2 not started",
+        "Rescue team · 15 students · 2 not started",
       );
-      await expect(page.locator("[data-delta]")).toHaveText("+4 points since last week");
+      await expect(page.locator("[data-delta]")).toHaveText("+4 points this week");
       expect(await page.locator("[data-delta]").evaluate((el) => getComputedStyle(el).color)).toBe(
-        MUTED,
+        STATUS_SUCCESS_INK,
       );
       expect(await noSidewaysScroll(page)).toBe(true);
       // the old tiles are gone
@@ -95,15 +96,14 @@ for (const width of [360, 430]) {
       const box = async (selector: string) => (await page.locator(selector).first().boundingBox())!;
       expect((await box("[data-group-readiness]")).height).toBeGreaterThanOrEqual(80);
       expect((await box("[data-exam-card]")).height).toBe(88);
-      expect((await box("[data-weakest-topic]")).height).toBe(80);
       const rows = page.locator("[data-action]");
       const count = await rows.count();
       expect(count).toBeGreaterThan(0);
       expect(count).toBeLessThanOrEqual(3);
       for (const row of await rows.all()) {
         const b = (await row.boundingBox())!;
-        expect([b.height, b.x, b.width]).toEqual([72, 16, width - 32]);
-        expect(await bg(row)).toBe("rgb(255, 255, 255)");
+        // inside the one white card (1px border)
+        expect([b.height, b.x, b.width]).toEqual([72, 17, width - 34]);
         expect(await row.evaluate((el) => !!el.querySelector("svg.lucide-chevron-right"))).toBe(
           true,
         );
@@ -178,9 +178,7 @@ for (const width of [360, 430]) {
         false,
       );
       expect(await card.evaluate((el) => el.tagName)).toBe("DIV");
-      const name = (await card.locator("span.type-body").innerText())
-        .replace(/^S\d+\s*/, "")
-        .trim();
+      const name = (await card.locator("p.type-body-strong").innerText()).trim();
       const assign = page.getByRole("link", { name: "Assign exam on this topic" });
       expect(await bg(assign)).toBe(OLIVE_TINT);
       expect((await assign.boundingBox())!.height).toBe(52);
@@ -391,11 +389,11 @@ for (const width of [360, 430]) {
       await expect(page.locator("[data-exam-card]")).toHaveCount(1);
     });
 
-    test("the Instructor Profile has Group A (read-only), Demo mode, About and Sign out, but no Direction or Certificates", async ({
+    test("the Instructor Profile has Groups (read-only), Demo mode, About and Sign out, but no Direction or Certificates", async ({
       page,
     }) => {
       await page.goto("/profile");
-      await expect(page.locator("[data-group-row]")).toContainText("Group A");
+      await expect(page.locator("[data-group-row]")).toContainText("Rescue team");
       await expect(page.locator("[data-group-row] a, [data-group-row] svg")).toHaveCount(0);
       await expect(page.getByRole("link", { name: "About this prototype" })).toBeVisible();
       await expect(page.locator("[data-sign-out]")).toBeVisible();
@@ -425,7 +423,7 @@ for (const width of [360, 430]) {
       await signUpInstructor(page);
       await expect(page.getByRole("heading", { level: 1 })).toHaveText("Hi, Ira Instructor");
       await expect(page.locator("[data-group-line]")).toHaveText(
-        "Group A · 15 students · 2 not started",
+        "Rescue team · 15 students · 2 not started",
       );
 
       // assign an exam from the Overview (3 days: the nearest deadline)

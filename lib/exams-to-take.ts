@@ -2,11 +2,12 @@ import { localStatus } from "@/lib/cohort";
 import type { Attempt } from "@/lib/cohort";
 import { shortDate, splitExams } from "@/lib/group-exams";
 import type { GroupExam } from "@/lib/group-exams";
+import { DEFAULT_GROUP_ID } from "@/lib/groups";
 
 /**
  * The group exams a student still has to take (DESIGN.md: Assigned exams move into Notifications):
  * Active (not closed, deadline not passed) and not yet passed by this account, nearest deadline
- * first. Computed from the current exam state, never from the notification history.
+ * first, and only for exams that include the group of local accounts (Rescue team). Computed from the current exam state, never from the notification history.
  */
 export function examsToTake(
   exams: GroupExam[],
@@ -15,7 +16,9 @@ export function examsToTake(
   now: number,
 ): GroupExam[] {
   return splitExams(exams, now).active.filter(
-    (exam) => localStatus(attempts, email, exam.id).kind !== "certified",
+    (exam) =>
+      exam.groupIds.includes(DEFAULT_GROUP_ID) &&
+      localStatus(attempts, email, exam.id).kind !== "certified",
   );
 }
 

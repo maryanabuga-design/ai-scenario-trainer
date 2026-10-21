@@ -5,13 +5,18 @@ import {
   StudentNotFound,
 } from "@/components/InstructorStudents/StudentDetailView";
 import { StudentsListView } from "@/components/InstructorStudents/StudentsListView";
+import { inScope } from "@/lib/groups";
 import { participants } from "@/lib/cohort";
 import { seedGroupExams } from "@/lib/group-exams";
 import { examRowsFor, profiles, sortProfiles } from "@/lib/students";
 
 const now = new Date(2026, 9, 24, 10, 0).getTime();
-const exams = seedGroupExams(now);
-const people = participants([{ name: "Ana Test", email: "ana@example.com" }]);
+// the exams of Rescue team (the student's group): the Military training exam is not listed
+const exams = seedGroupExams(now).filter((exam) => exam.groupIds.includes("rescue-team"));
+const people = inScope(
+  participants([{ name: "Ana Test", email: "ana@example.com" }]),
+  "rescue-team",
+);
 const all = profiles(people, { "ana@example.com": null });
 const titleOf = (id: string) => `Topic ${id}`;
 
@@ -27,6 +32,7 @@ const list = (
 ) =>
   renderToStaticMarkup(
     <StudentsListView
+      scope="rescue-team"
       shown={shown}
       count={15}
       notStarted={2}
@@ -45,7 +51,7 @@ describe("the Students list", () => {
   it("has the band with the group line, the Primary Invite students, the selector and 72px rows", () => {
     expect(html).toContain("data-page-header-band");
     expect(html).toContain(">Students</h1>");
-    expect(html).toContain("Group A · 15 students · 2 not started");
+    expect(html).toContain("Rescue team · 15 students · 2 not started");
     expect(html).toContain('href="/instructor/students/invite"');
     expect(html.indexOf("Invite students")).toBeLessThan(html.indexOf("students-filter"));
     expect(html).toMatch(/bg-primary[^>]*>Invite students/);

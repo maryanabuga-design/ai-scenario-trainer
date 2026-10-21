@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import type { Scope } from "@/lib/groups";
+import { useScope } from "@/lib/scope-store";
 import { InviteView } from "@/components/InstructorStudents/InviteView";
 import {
   readInvitations,
@@ -11,7 +13,7 @@ import {
 } from "@/lib/invitations";
 
 /** Rendered once the pending list is read, so the time is never part of the prerender. */
-function Loaded({ pending }: { pending: ReturnType<typeof readInvitations> }) {
+function Loaded({ pending, scope }: { pending: ReturnType<typeof readInvitations>; scope: Scope }) {
   const router = useRouter();
   const [saveFailed, setSaveFailed] = useState(false);
   return (
@@ -22,9 +24,12 @@ function Loaded({ pending }: { pending: ReturnType<typeof readInvitations> }) {
         </p>
       )}
       <InviteView
+        scope={scope}
         pending={pending}
-        onSend={(emails) =>
-          setSaveFailed(!saveInvitations(withInvitations(readInvitations(), emails, Date.now())))
+        onSend={(emails, groupId) =>
+          setSaveFailed(
+            !saveInvitations(withInvitations(readInvitations(), emails, Date.now(), groupId)),
+          )
         }
         onCancel={() => router.push("/instructor/students")}
       />
@@ -34,6 +39,7 @@ function Loaded({ pending }: { pending: ReturnType<typeof readInvitations> }) {
 
 export default function InvitePage() {
   const pending = useInvitations();
-  if (pending === "loading") return null;
-  return <Loaded pending={pending} />;
+  const scope = useScope();
+  if (pending === "loading" || scope === "loading") return null;
+  return <Loaded pending={pending} scope={scope} />;
 }

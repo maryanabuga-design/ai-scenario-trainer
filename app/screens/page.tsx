@@ -50,6 +50,7 @@ import {
   InstructorExamsSample,
   InstructorContentSample,
   InstructorStudentsSample,
+  GroupPickerSample,
   AboutSample,
   WelcomeSample,
   SignUpSample,
@@ -800,7 +801,7 @@ export default function Screens() {
               <AboutSample confirming />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor: Overview (readiness with delta, Needs your action, Exams, Weakest topic)">
+          <PhoneFrame label="Instructor: Overview, Rescue team (switcher pill, readiness with delta and ring, Needs your action, Exams, Weakest topic)">
             <Screen nav="/instructor" role="instructor">
               <InstructorHomeSample />
             </Screen>
@@ -818,6 +819,51 @@ export default function Screens() {
           <PhoneFrame label="Instructor: Overview, no active exam (the one Primary)">
             <Screen nav="/instructor" role="instructor">
               <InstructorHomeSample state="no-exam" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Overview, Military training (a decrease in amber)">
+            <Screen nav="/instructor" role="instructor">
+              <InstructorHomeSample state="military" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Overview, All groups (GROUPS card, group prefixes, no Weakest topic)">
+            <Screen nav="/instructor" role="instructor">
+              <InstructorHomeSample state="all" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Overview, Get started (a group with no students and no exams)">
+            <Screen nav="/instructor" role="instructor">
+              <InstructorHomeSample state="get-started" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Groups picker (Rescue team chosen)">
+            <Screen nav="/instructor/groups" role="instructor">
+              <GroupPickerSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Groups picker (All groups chosen)">
+            <Screen nav="/instructor/groups" role="instructor">
+              <GroupPickerSample scope="all" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Students, Military training">
+            <Screen nav="/instructor/students" role="instructor">
+              <InstructorStudentsSample scope="military-training" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Students, All groups (group name in the second line)">
+            <Screen nav="/instructor/students" role="instructor">
+              <InstructorStudentsSample scope="all" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Invite students, All groups (choose a group first)">
+            <Screen nav="/instructor/students/invite" role="instructor">
+              <InstructorStudentsSample state="invite" scope="all" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Exams list, All groups (group tag)">
+            <Screen nav="/instructor/exams" role="instructor">
+              <InstructorExamsSample scope="all" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Content: empty">

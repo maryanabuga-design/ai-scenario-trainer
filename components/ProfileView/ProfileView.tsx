@@ -10,7 +10,7 @@ import { DirectionPicker } from "@/components/DirectionPicker/DirectionPicker";
 import { FooterNote } from "@/components/Footer/Footer";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
-import { GROUP_NAME } from "@/lib/cohort";
+import { groupNames, groups } from "@/lib/groups";
 import { shortLabel } from "@/lib/field-of-work";
 import { onboardingHref } from "@/lib/onboarding";
 import { ROLES, roleLabel } from "@/lib/role";
@@ -57,7 +57,12 @@ export function ProfileView({
   backHref,
   certificates = 0,
 }: {
-  account: { name: string; email: string; role: Role; field?: FieldOfWork | null };
+  account: {
+    name: string;
+    email: string;
+    role: Role;
+    field?: FieldOfWork | null;
+  };
   onRoleChange: (role: Role) => void;
   direction: string;
   onDirectionChange: (id: string) => void;
@@ -85,7 +90,10 @@ export function ProfileView({
         subtitle="Your account and settings"
         back={
           backHref
-            ? { label: student ? "Back to Home" : "Back to Overview", href: backHref }
+            ? {
+                label: student ? "Back to Home" : "Back to Overview",
+                href: backHref,
+              }
             : undefined
         }
       />
@@ -162,9 +170,12 @@ export function ProfileView({
             data-group-row
             className="flex h-14 items-center gap-3 rounded-card bg-card px-4 shadow-(--card-shadow)"
           >
-            <span className="type-body-strong min-w-0 flex-1">Group</span>
-            <span data-group-name className="type-body text-text-secondary">
-              {GROUP_NAME}
+            <span className="type-body-strong">Groups</span>
+            <span
+              data-group-name
+              className="type-body min-w-0 flex-1 truncate text-right text-text-secondary"
+            >
+              {groupNames(groups.map((group) => group.id))}
             </span>
           </div>
         )}

@@ -29,10 +29,18 @@ export function StatusWords({ status }: { status: StudentStatus }) {
  * "Ready · all topics on track", "Not started", "Your demo account · Not started". One line, never
  * wrapping (the long status words use the short "4 to review").
  */
-export function StudentLine({ profile }: { profile: StudentProfile }) {
+export function StudentLine({
+  profile,
+  groupName,
+}: {
+  profile: StudentProfile;
+  /** The group name first (All groups). */
+  groupName?: string;
+}) {
   const { status, tail } = rowParts(profile);
   return (
     <span data-student-line className="type-small block truncate text-text-secondary">
+      {groupName && <>{groupName} · </>}
       {profile.participant.local && <>Your demo account · </>}
       <StatusWords status={status} />
       {tail && <> · {tail}</>}

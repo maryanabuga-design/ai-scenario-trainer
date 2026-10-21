@@ -3,6 +3,7 @@ import { Chevron } from "@/components/Chevron/Chevron";
 import { Media3D } from "@/components/Media3D/Media3D";
 import { dueLine } from "@/lib/group-exams";
 import type { GroupExam } from "@/lib/group-exams";
+import { Chip } from "@/components/Chip/Chip";
 import { cardPictureFiles } from "@/lib/media-frames";
 
 /**
@@ -16,6 +17,8 @@ export function ExamCard({
   total,
   notStarted,
   from,
+  bare = false,
+  tag,
 }: {
   exam: GroupExam;
   passed: number;
@@ -24,17 +27,28 @@ export function ExamCard({
   notStarted?: number;
   /** Where the card is shown, so the detail's Back returns there (the Overview). */
   from?: "overview";
+  /** Inside another card (the Overview's EXAMS card): no card fill, border or shadow of its own. */
+  bare?: boolean;
+  /** The group name of the exam (All groups), shown as a small tag before the due line. */
+  tag?: string;
 }) {
   return (
     <Link
       href={`/instructor/exams/${exam.id}${from ? `?from=${from}` : ""}`}
       data-exam-card={exam.id}
-      className="flex h-[88px] items-center gap-3 rounded-card bg-card px-3 shadow-(--card-shadow) has-focus-visible:outline-2"
+      className={`flex h-[88px] items-center gap-3 px-3 has-focus-visible:outline-2 ${bare ? "" : "rounded-card bg-card shadow-(--card-shadow)"}`}
     >
       <Media3D variant="card" src={cardPictureFiles.examCard} />
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="type-body-strong truncate">{exam.title}</span>
-        <span className="type-small truncate text-text-secondary">{dueLine(exam)}</span>
+        <span className="type-small flex items-center gap-1.5 truncate text-text-secondary">
+          {tag && (
+            <Chip tone="sand" size="caption" className="max-w-[45%] shrink truncate">
+              {tag}
+            </Chip>
+          )}
+          <span className="truncate">{dueLine(exam)}</span>
+        </span>
         <span className="type-small truncate text-text-secondary">
           Passed {passed} of {total}
           {notStarted !== undefined && ` · ${notStarted} not started`}

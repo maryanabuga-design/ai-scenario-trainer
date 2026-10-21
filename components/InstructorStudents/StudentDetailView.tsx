@@ -205,7 +205,7 @@ export function StudentNotFound() {
   return (
     <div className="flex flex-col items-start gap-4">
       <h1 className="type-page-title">Student not found</h1>
-      <p className="text-text-secondary">This student is not in Group A.</p>
+      <p className="text-text-secondary">This student is not in your groups.</p>
       <ButtonLink href="/instructor/students" variant="secondary">
         Back to students
       </ButtonLink>

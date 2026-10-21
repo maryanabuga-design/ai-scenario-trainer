@@ -5,7 +5,9 @@ import { StudentLine, StudentListRow } from "@/components/InstructorStudents/Stu
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { ProfileAvatar } from "@/components/ProfileAvatar/ProfileAvatar";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
-import { DEMO_NOTE, GROUP_NAME } from "@/lib/cohort";
+import { DEMO_NOTE } from "@/lib/cohort";
+import { ALL_GROUPS, groupById, scopeName } from "@/lib/groups";
+import type { Scope } from "@/lib/groups";
 import { filters, groupLine } from "@/lib/students";
 import type { FilterOrigin, StudentProfile, StudentsFilter } from "@/lib/students";
 
@@ -26,13 +28,14 @@ const backFor = (origin: FilterOrigin) =>
     : { label: "Back to Overview", href: "/instructor" };
 
 /**
- * The Students tab of the Instructor (DESIGN.md: Instructor, Students): the band with the group line
+ * The Students tab of the Instructor (DESIGN.md: Instructor, Students): the band with the group line of the scope (the group name, or All groups with the group first in each row)
  * and the avatar, the Primary "Invite students", the segmented selector (All, Attention, Certified)
  * and the student rows of a fixed 72px sorted by status. A filter from a tile or Topics shows its
  * one-line label ("Showing: Not started") with a Secondary "Clear filter", and the band's Back goes
  * to where the list was opened from.
  */
 export function StudentsListView({
+  scope,
   shown,
   count,
   notStarted = 0,
@@ -43,6 +46,8 @@ export function StudentsListView({
   onClear,
   topic = null,
 }: {
+  /** "all" or the group the list follows. */
+  scope: Scope;
   /** The rows to show: already filtered and sorted. */
   shown: StudentProfile[];
   /** All the participants. */
@@ -64,7 +69,7 @@ export function StudentsListView({
     <div className="flex flex-col gap-4 pb-4">
       <PageHeaderBand
         title="Students"
-        subtitle={groupLine(GROUP_NAME, count, notStarted)}
+        subtitle={groupLine(scopeName(scope), count, notStarted)}
         back={origin ? backFor(origin) : undefined}
         action={<ProfileAvatar />}
       />
@@ -107,7 +112,16 @@ export function StudentsListView({
                 href={studentHref(profile.participant.id, filter, topic, origin)}
                 name={profile.participant.name}
                 initials={profile.participant.initials}
-                second={<StudentLine profile={profile} />}
+                second={
+                  <StudentLine
+                    profile={profile}
+                    groupName={
+                      scope === ALL_GROUPS
+                        ? groupById(profile.participant.groupId)?.name
+                        : undefined
+                    }
+                  />
+                }
               />
             </li>
           ))}

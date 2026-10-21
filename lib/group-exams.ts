@@ -1,6 +1,7 @@
 import cohort from "@/content/demo-cohort.json";
 import { EXAM_MINUTES, EXAM_QUESTIONS, PASS_MARK } from "@/lib/config";
 import { isoDay, parseDeadline } from "@/lib/exam-deadline";
+import { DEFAULT_GROUP_ID, knownGroupIds } from "@/lib/groups";
 import { modeItems, trainingSections } from "@/lib/parts";
 
 /**
@@ -11,6 +12,8 @@ export type GroupExam = {
   id: string;
   title: string;
   topicIds: string[];
+  /** The groups the exam is for (at least one; Rescue team when an older exam has none). */
+  groupIds: string[];
   questionCount: number;
   timeLimit: number;
   passMark: number;
@@ -84,7 +87,12 @@ export function defaultTitle(topicIds: string[], titleOf: (id: string) => string
   return `Exam: ${names}${topicIds.length > 2 ? ` +${topicIds.length - 2}` : ""}`;
 }
 
-export type AssignInput = { title: string; topicIds: string[]; deadline: string | null };
+export type AssignInput = {
+  title: string;
+  topicIds: string[];
+  deadline: string | null;
+  groupIds: string[];
+};
 
 /** Why the exam cannot be assigned yet; empty when it can. */
 export function assignProblems(input: AssignInput, now: number): string[] {
@@ -93,6 +101,7 @@ export function assignProblems(input: AssignInput, now: number): string[] {
   if (input.topicIds.length === 0) problems.push("Choose at least one topic.");
   else if (totalQuestions(input.topicIds) < MIN_QUESTIONS)
     problems.push(`Choose topics with at least ${MIN_QUESTIONS} questions in total.`);
+  if (input.groupIds.length === 0) problems.push("Choose at least one group.");
   if (!input.deadline) problems.push("Choose a deadline.");
   else if (!deadlineAllowed(input.deadline, now))
     problems.push("The deadline cannot be in the past.");
@@ -108,6 +117,7 @@ export function createExam(input: AssignInput, now: number, createdBy = "Instruc
     id: `grp-${now.toString(36)}-${counter}`,
     title: input.title.trim(),
     topicIds,
+    groupIds: knownGroupIds(input.groupIds),
     questionCount: examQuestionCount(topicIds),
     timeLimit: EXAM_MINUTES,
     passMark: PASS_MARK,
@@ -125,6 +135,7 @@ export function seedGroupExams(now: number): GroupExam[] {
       id: entry.id,
       title: entry.title,
       topicIds,
+      groupIds: knownGroupIds(entry.groupIds),
       questionCount: examQuestionCount(topicIds),
       timeLimit: EXAM_MINUTES,
       passMark: PASS_MARK,
@@ -144,7 +155,7 @@ export function cleanGroupExams(value: unknown): GroupExam[] | null {
   const list: GroupExam[] = [];
   for (const entry of value) {
     if (!isObject(entry)) continue;
-    const { id, title, topicIds, deadline, createdAt, createdBy, closedAt } = entry;
+    const { id, title, topicIds, groupIds, deadline, createdAt, createdBy, closedAt } = entry;
     if (typeof id !== "string" || id === "" || list.some((e) => e.id === id)) continue;
     if (typeof title !== "string" || title.trim() === "") continue;
     if (typeof deadline !== "string" || !parseDeadline(deadline)) continue;
@@ -152,10 +163,14 @@ export function cleanGroupExams(value: unknown): GroupExam[] | null {
       ? knownTopicIds(topicIds.filter((t): t is string => typeof t === "string"))
       : [];
     if (topics.length === 0 || totalQuestions(topics) < MIN_QUESTIONS) continue;
+    const known = Array.isArray(groupIds)
+      ? knownGroupIds(groupIds.filter((g): g is string => typeof g === "string"))
+      : [];
     list.push({
       id,
       title: title.trim(),
       topicIds: topics,
+      groupIds: known.length > 0 ? known : [DEFAULT_GROUP_ID],
       questionCount: examQuestionCount(topics),
       timeLimit: EXAM_MINUTES,
       passMark: PASS_MARK,
@@ -179,7 +194,10 @@ export function splitExams(exams: GroupExam[], now: number) {
   return { active, closed };
 }
 
-const dayMonth = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short" });
+const dayMonth = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+});
 /** "25 Oct" for a deadline. */
 export const shortDate = (iso: string) => {
   const date = parseDeadline(iso);

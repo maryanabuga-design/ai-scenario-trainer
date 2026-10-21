@@ -1,12 +1,7 @@
 import { isActive, splitExams } from "@/lib/group-exams";
 import type { GroupExam } from "@/lib/group-exams";
 import { allTopicIds } from "@/lib/progress-view";
-import {
-  activeProfiles,
-  profileStatus,
-  sortProfiles,
-  topicPassed,
-} from "@/lib/students";
+import { activeProfiles, profileStatus, sortProfiles, topicPassed } from "@/lib/students";
 import type { StudentProfile } from "@/lib/students";
 
 /**
@@ -33,7 +28,11 @@ export const needsAttention = (list: StudentProfile[]) =>
   sortProfiles(list).filter((profile) => profileStatus(profile) === "needs");
 
 /** A topic with the students at or above the pass mark in it, among those who answered it. */
-export type TopicStanding = { sectionId: string; passing: number; total: number };
+export type TopicStanding = {
+  sectionId: string;
+  passing: number;
+  total: number;
+};
 
 /**
  * All ten topics, the weakest first: for each topic, the active participants who answered it and those
@@ -47,7 +46,11 @@ export function topicStandings(list: StudentProfile[]): TopicStanding[] {
         const row = profile.topics.find((entry) => entry.sectionId === sectionId);
         return row && row.answered > 0 ? [row] : [];
       });
-      return { sectionId, passing: rows.filter(topicPassed).length, total: rows.length };
+      return {
+        sectionId,
+        passing: rows.filter(topicPassed).length,
+        total: rows.length,
+      };
     })
     .sort(
       (a, b) =>
@@ -84,12 +87,16 @@ export function groupDelta(list: StudentProfile[]): number | null {
   return Math.floor((now * 100) / total + 1e-9) - Math.floor((before * 100) / total + 1e-9);
 }
 
-/** "+4 points since last week", "-3 points since last week", "No change since last week" (no percent sign). */
+/** "+4 points this week", "-3 points this week", "No change this week" (no percent sign). */
 export function deltaLine(delta: number): string {
-  if (delta === 0) return "No change since last week";
+  if (delta === 0) return "No change this week";
   const n = Math.abs(delta);
-  return `${delta > 0 ? "+" : "-"}${n} ${n === 1 ? "point" : "points"} since last week`;
+  return `${delta > 0 ? "+" : "-"}${n} ${n === 1 ? "point" : "points"} this week`;
 }
+
+/** Which tone the delta pill takes: success for an increase, neutral for no change, attention (never red) for a decrease. */
+export const deltaTone = (delta: number): "success" | "neutral" | "attention" =>
+  delta > 0 ? "success" : delta < 0 ? "attention" : "neutral";
 
 /** The weakest topic for the Overview: its standing, or null when nobody has answered anything. */
 export const weakestTopic = (list: StudentProfile[]): TopicStanding | null => {

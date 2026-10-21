@@ -4,10 +4,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { AssignExamView } from "@/components/InstructorExams/AssignExamView";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
+import { useAuth } from "@/lib/auth";
+import { participants } from "@/lib/cohort";
 import { createExam, knownTopicIds, shortDate } from "@/lib/group-exams";
 import { addNotice, saveGroupExam } from "@/lib/group-store";
+import { ALL_GROUPS, groups } from "@/lib/groups";
+import type { Scope } from "@/lib/groups";
+import { useScope } from "@/lib/scope-store";
 
-function AssignExam() {
+function AssignExam({ scope, counts }: { scope: Scope; counts: Record<string, number> }) {
   const router = useRouter();
   const query = useSearchParams();
   const fromOverview = query.get("from") === "overview";
@@ -21,6 +26,8 @@ function AssignExam() {
   return (
     <AssignExamView
       titleOf={titleOf}
+      groupCounts={counts}
+      initialGroups={scope === ALL_GROUPS ? [] : [scope]}
       now={now}
       fromOverview={fromOverview}
       initial={topic.length > 0 ? { topics: topic } : undefined}
@@ -36,6 +43,7 @@ function AssignExam() {
           text: `Due ${shortDate(exam.deadline)}. Open the exam to see the rules and start.`,
           target: `/exam?id=${exam.id}`,
           createdAt: at,
+          groups: exam.groupIds,
         });
         router.push(
           `/instructor/exams/${exam.id}?assigned=1${fromOverview ? "&from=overview" : ""}`,
@@ -45,10 +53,21 @@ function AssignExam() {
   );
 }
 
+function Loaded() {
+  const auth = useAuth();
+  const scope = useScope();
+  if (auth === "loading" || scope === "loading") return null;
+  const people = participants(auth.accounts);
+  const counts = Object.fromEntries(
+    groups.map((group) => [group.id, people.filter((p) => p.groupId === group.id).length]),
+  );
+  return <AssignExam scope={scope} counts={counts} />;
+}
+
 export default function AssignExamPage() {
   return (
     <Suspense fallback={null}>
-      <AssignExam />
+      <Loaded />
     </Suspense>
   );
 }

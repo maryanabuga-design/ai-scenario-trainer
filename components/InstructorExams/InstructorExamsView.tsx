@@ -10,6 +10,8 @@ import { ExamCard } from "@/components/InstructorExams/ExamCard";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { ProfileAvatar } from "@/components/ProfileAvatar/ProfileAvatar";
 import { DEMO_NOTE, groupCounts } from "@/lib/cohort";
+import { ALL_GROUPS, examPeople, groupNames, scopeName } from "@/lib/groups";
+import type { Scope } from "@/lib/groups";
 import type { Attempt, Participant } from "@/lib/cohort";
 import type { GroupExam } from "@/lib/group-exams";
 import { isActive, splitExams } from "@/lib/group-exams";
@@ -22,12 +24,15 @@ export const EXAMS_EMPTY = "No exams yet. Assign the first exam to your group.";
  * pattern of Progress's "Other topics").
  */
 export function InstructorExamsView({
+  scope,
   exams,
   people,
   attempts,
   now,
   initiallyOpen = false,
 }: {
+  /** "all" or the group whose exams are listed (the exams are already of the scope). */
+  scope: Scope;
   exams: GroupExam[];
   people: Participant[];
   attempts: Attempt[];
@@ -40,10 +45,18 @@ export function InstructorExamsView({
   const wrapper = useRef<HTMLDivElement>(null);
 
   const card = (exam: GroupExam) => {
-    const counts = groupCounts(people, exam, { attempts, active: isActive(exam, now) });
+    const counts = groupCounts(examPeople(people, exam), exam, {
+      attempts,
+      active: isActive(exam, now),
+    });
     return (
       <li key={exam.id}>
-        <ExamCard exam={exam} passed={counts.certified} total={counts.total} />
+        <ExamCard
+          exam={exam}
+          passed={counts.certified}
+          total={counts.total}
+          tag={scope === ALL_GROUPS ? groupNames(exam.groupIds) : undefined}
+        />
       </li>
     );
   };
@@ -61,7 +74,15 @@ export function InstructorExamsView({
 
   return (
     <div className="flex flex-col gap-4 pb-4">
-      <PageHeaderBand title="Exams" subtitle="Assign exams to Group A" action={<ProfileAvatar />} />
+      <PageHeaderBand
+        title="Exams"
+        subtitle={
+          scope === ALL_GROUPS
+            ? "Assign exams to your groups"
+            : `Assign exams to ${scopeName(scope)}`
+        }
+        action={<ProfileAvatar />}
+      />
       <ButtonLink href="/instructor/exams/new">Assign exam</ButtonLink>
 
       {exams.length === 0 ? (

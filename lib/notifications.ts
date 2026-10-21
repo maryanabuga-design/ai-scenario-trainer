@@ -4,6 +4,7 @@ import { DAILY_GOAL, PASS_MARK } from "@/lib/config";
 import { isoDay } from "@/lib/exam-deadline";
 import { MIGRATED_EMAIL } from "@/lib/demo-account";
 import { collapseReminders, useNotices } from "@/lib/group-store";
+import { DEFAULT_GROUP_ID } from "@/lib/groups";
 import type { Notice } from "@/lib/group-store";
 import { createStore, storageNamespace } from "@/lib/store";
 import type { FinishedSession } from "@/lib/session";
@@ -117,7 +118,12 @@ export function withNotices(
   email: string | null = null,
 ): AppNotification[] {
   // a notice for one account (a reminder to a student) reaches only that account
-  const notices = allNotices.filter((notice) => !notice.to || notice.to === email);
+  // a notice for some groups only reaches the local accounts when theirs is one of them
+  const notices = allNotices.filter(
+    (notice) =>
+      (!notice.to || notice.to === email) &&
+      (!notice.groups || notice.groups.includes(DEFAULT_GROUP_ID)),
+  );
   return notices.reduce((current, notice) => {
     // a repeated reminder updates the one already there: a new date, unread again
     const old = current.find((n) => n.id === notice.id);
@@ -160,7 +166,10 @@ export function markAllRead(list: AppNotification[]): AppNotification[] {
 /** Unread ones under "New", read ones under "Earlier", newest first in each. */
 export function groupNotifications(list: AppNotification[]) {
   const sorted = [...list].sort(newestFirst);
-  return { fresh: sorted.filter((n) => !n.read), earlier: sorted.filter((n) => n.read) };
+  return {
+    fresh: sorted.filter((n) => !n.read),
+    earlier: sorted.filter((n) => n.read),
+  };
 }
 
 /** Adds a notification; one with the same id is never added twice (the list is returned as it was). */
@@ -186,7 +195,10 @@ export function relativeTime(createdAt: number, now: number): string {
   const days = Math.round((startOfDay(now) - startOfDay(createdAt)) / 86_400_000);
   if (days <= 1) return "Yesterday";
   if (days < 7) return `${days} days ago`;
-  return new Date(createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  return new Date(createdAt).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+  });
 }
 
 /** The notification an event adds, or null when it has none. */

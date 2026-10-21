@@ -8,10 +8,15 @@ import { ExamCard } from "@/components/InstructorExams/ExamCard";
 import { InstructorExamsView } from "@/components/InstructorExams/InstructorExamsView";
 import { groupCounts, participants, studentRows } from "@/lib/cohort";
 import { seedGroupExams } from "@/lib/group-exams";
+import { examsInScope, inScope } from "@/lib/groups";
 
 const now = new Date(2026, 9, 24, 10, 0).getTime();
-const exams = seedGroupExams(now);
-const people = participants([{ name: "Ana Test", email: "ana@example.com" }]);
+const allExams = seedGroupExams(now);
+const exams = examsInScope(allExams, "rescue-team");
+const people = inScope(
+  participants([{ name: "Ana Test", email: "ana@example.com" }]),
+  "rescue-team",
+);
 const titleOf = (id: string) => `Topic ${id}`;
 
 const wrap = (node: React.ReactNode) =>
@@ -37,6 +42,7 @@ describe("the Exams list", () => {
   const render = (list = exams, open = false) =>
     wrap(
       <InstructorExamsView
+        scope="rescue-team"
         exams={list}
         people={people}
         attempts={[]}
@@ -148,6 +154,8 @@ describe("Assign exam", () => {
     wrap(
       <AssignExamView
         titleOf={titleOf}
+        groupCounts={{ "rescue-team": 15, "military-training": 12 }}
+        initialGroups={["rescue-team"]}
         now={now}
         onAssign={() => undefined}
         onCancel={() => undefined}
@@ -158,17 +166,24 @@ describe("Assign exam", () => {
 
   it("has the four sections in order, 10 topic rows of 64px and the info card", () => {
     const html = render();
-    const order = ["TITLE", "TOPICS", "DEADLINE", "20 questions · 20 minutes · pass mark 80"].map(
-      (t) => html.indexOf(t),
-    );
+    const order = [
+      "TITLE",
+      "TOPICS",
+      "DEADLINE",
+      "AUDIENCE",
+      "20 questions · 20 minutes · pass mark 80",
+    ].map((t) => html.indexOf(t));
     expect([...order].sort((a, b) => a - b)).toEqual(order);
     expect(html.match(/name="topics"/g)).toHaveLength(10);
-    expect(html.match(/h-16 px-/g)).toHaveLength(10);
+    // the 10 topic rows and the 2 audience rows
+    expect(html.match(/h-16 px-/g)).toHaveLength(12);
     expect(html).toContain("Select all");
     for (const label of ["In 3 days", "In 1 week", "In 2 weeks", "Pick a date"]) {
       expect(html).toContain(label);
     }
-    expect(html).toContain("Audience: all students in Group A");
+    expect(html).toContain("Audience: 15 students in Rescue team");
+    expect(html.match(/name="audience"/g)).toHaveLength(2);
+    expect(html.match(/checked/g)).toHaveLength(1);
     expect(html).not.toContain('type="date"');
   });
 

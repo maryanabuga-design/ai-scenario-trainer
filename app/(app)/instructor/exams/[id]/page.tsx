@@ -7,6 +7,7 @@ import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { useAuth } from "@/lib/auth";
 import { groupCounts, participants, studentRows } from "@/lib/cohort";
 import { isActive, shortDate } from "@/lib/group-exams";
+import { examPeople } from "@/lib/groups";
 import { addNotice, closeGroupExam, useAttempts, useGroupExams } from "@/lib/group-store";
 
 function Detail() {
@@ -28,7 +29,7 @@ function Detail() {
   const exam = exams.find((entry) => entry.id === params.id);
   if (!exam) return <ExamNotFound />;
 
-  const people = participants(auth.accounts);
+  const people = examPeople(participants(auth.accounts), exam);
   const active = isActive(exam, now);
   const context = { attempts, active };
   const counts = groupCounts(people, exam, context);
@@ -52,6 +53,7 @@ function Detail() {
           text: "You have not started this exam yet.",
           target: `/exam?id=${exam.id}`,
           createdAt: at,
+          groups: exam.groupIds,
         });
         const n = counts.notStarted;
         setMessage(`Reminder sent to ${n} ${n === 1 ? "student" : "students"}`);

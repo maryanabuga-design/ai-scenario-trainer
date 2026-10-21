@@ -33,8 +33,9 @@ import { FieldOfWorkStep } from "@/components/FieldOfWork/FieldOfWorkStep";
 import { FieldPickerView } from "@/components/FieldOfWork/FieldPickerView";
 import type { FieldOfWork } from "@/lib/field-of-work";
 import { TopicsView } from "@/components/InstructorTopics/TopicsView";
-import { actionRows } from "@/lib/actions";
-import { topicStandings, weakestTopic } from "@/lib/overview";
+import { topicStandings } from "@/lib/overview";
+import { overviewModel } from "@/lib/overview-model";
+import { examsInScope, inScope } from "@/lib/groups";
 import { InviteView } from "@/components/InstructorStudents/InviteView";
 import { reminderFor, unfinishedExam } from "@/lib/reminders";
 import { ContentView } from "@/components/InstructorContent/ContentView";
@@ -111,7 +112,7 @@ import { toolbarActions } from "@/lib/selection-actions";
 import { homeArtwork, homeCounts, homeSummary } from "@/lib/home";
 import { NotificationsView } from "@/components/NotificationsView/NotificationsView";
 import { InstructorOverviewView } from "@/components/InstructorOverview/InstructorOverviewView";
-import { nearestActiveExam } from "@/lib/overview";
+import { GroupPickerView } from "@/components/InstructorGroups/GroupPickerView";
 import { AboutView } from "@/components/AboutView/AboutView";
 import { EditProfileView } from "@/components/EditProfileView/EditProfileView";
 import { SignInView } from "@/components/SignInView/SignInView";
@@ -1363,43 +1364,61 @@ export function NotificationsSample({ state }: { state: "exams" | "read" | "empt
   return <NotificationsView items={items} toTake={toTake} now={now} freshIds={fresh} />;
 }
 
-/** The Instructor Overview for the screen review page (the seeded demo group, a fixed date). */
+/** The Instructor Overview for the screen review page (the seeded demo groups, a fixed date). */
 export function InstructorHomeSample({
   state = "default",
 }: {
-  state?: "default" | "caught-up" | "no-exam" | "due-soon";
+  state?: "default" | "military" | "all" | "get-started" | "caught-up" | "no-exam" | "due-soon";
 }) {
   const { sections } = useSourceSheet();
   const now = new Date(2026, 9, 24, 10, 0).getTime();
   const seededExams = seedGroupExams(now);
   const exams =
-    state === "no-exam"
+    state === "no-exam" || state === "get-started"
       ? []
       : state === "due-soon"
         ? seededExams.map((e, i) => (i === 0 ? { ...e, deadline: "2026-10-26" } : e))
         : seededExams;
-  const people = participants([{ name: "Maryana", email: "maryana@example.com" }]);
+  const people =
+    state === "get-started"
+      ? []
+      : participants([{ name: "Maryana", email: "maryana@example.com" }]);
   const everyone = profiles(people, { "maryana@example.com": null });
   const needs = (p: (typeof everyone)[number]) => profileStatus(p) === "needs";
   const list = state === "caught-up" ? everyone.filter((p) => !needs(p)) : everyone;
-  const exam = nearestActiveExam(exams, now);
+  const scope =
+    state === "military" ? "military-training" : state === "all" ? "all" : "rescue-team";
   return (
     <InstructorOverviewView
       name="Maryana"
-      list={list}
-      actions={actionRows({
+      model={overviewModel({
+        scope,
         list,
+        people,
         exams,
         attempts: [],
-        people,
-        drafts: state === "default" ? [{ id: "cdemo", title: "Evacuation routes" }] : [],
+        drafts:
+          state === "default" || state === "all"
+            ? [{ id: "cdemo", title: "Evacuation routes" }]
+            : [],
+        publishedSets: 0,
         reminded: new Set(),
         now,
       })}
-      exam={exam}
-      counts={exam ? groupCounts(people, exam, { attempts: [], active: true }) : null}
-      weakest={weakestTopic(list)}
       topicTitle={(id) => sections.find((section) => section.id === id)?.title ?? id}
+      onSelectGroup={() => undefined}
+    />
+  );
+}
+
+/** The group picker for the screen review page. */
+export function GroupPickerSample({ scope = "rescue-team" }: { scope?: string }) {
+  return (
+    <GroupPickerView
+      scope={scope}
+      counts={{ "rescue-team": 15, "military-training": 12 }}
+      origin="overview"
+      onChoose={() => undefined}
     />
   );
 }
@@ -1420,7 +1439,9 @@ export function InstructorTopicsSample() {
 /** The Instructor exams screens for the screen review page (the seeded demo group, a fixed date). */
 export function InstructorExamsSample({
   state = "list",
+  scope = "rescue-team",
 }: {
+  scope?: string;
   state?:
     | "list"
     | "closed"
@@ -1440,7 +1461,8 @@ export function InstructorExamsSample({
   if (state === "list" || state === "closed" || state === "empty") {
     return (
       <InstructorExamsView
-        exams={state === "empty" ? [] : exams}
+        scope={scope}
+        exams={state === "empty" ? [] : examsInScope(exams, scope)}
         people={people}
         attempts={attempts}
         now={now}
@@ -1452,6 +1474,8 @@ export function InstructorExamsSample({
     return (
       <AssignExamView
         titleOf={titleOf}
+        groupCounts={{ "rescue-team": 15, "military-training": 12 }}
+        initialGroups={["rescue-team"]}
         now={now}
         onAssign={() => undefined}
         onCancel={() => undefined}
@@ -1493,7 +1517,9 @@ export function InstructorExamsSample({
 /** The Instructor Students screens for the screen review page (the demo group, a fixed date). */
 export function InstructorStudentsSample({
   state = "all",
+  scope = "rescue-team",
 }: {
+  scope?: string;
   state?:
     | "all"
     | "needs"
@@ -1510,17 +1536,27 @@ export function InstructorStudentsSample({
   const titleOf = (id: string) => sections.find((section) => section.id === id)?.title ?? id;
   const now = new Date(2026, 9, 24, 10, 0).getTime();
   const exams = seedGroupExams(now);
-  const people = participants([{ name: "Maryana", email: "maryana@example.com" }]);
+  const everyone = participants([{ name: "Maryana", email: "maryana@example.com" }]);
+  const people = inScope(everyone, scope);
   const all = profiles(people, { "maryana@example.com": null });
   if (state === "invite" || state === "invite-filled") {
     return (
       <InviteView
+        scope={scope}
         pending={
           state === "invite"
             ? []
             : [
-                { email: "mira@example.com", invitedAt: new Date(2026, 9, 21).getTime() },
-                { email: "tomas@example.com", invitedAt: new Date(2026, 9, 21).getTime() },
+                {
+                  email: "mira@example.com",
+                  invitedAt: new Date(2026, 9, 21).getTime(),
+                  groupId: "rescue-team",
+                },
+                {
+                  email: "tomas@example.com",
+                  invitedAt: new Date(2026, 9, 21).getTime(),
+                  groupId: "rescue-team",
+                },
               ]
         }
         initialText={state === "invite-filled" ? "new.person@example.com, not-an-address" : ""}
@@ -1554,6 +1590,7 @@ export function InstructorStudentsSample({
   const filter = state === "empty" ? "certified" : state === "topic" ? "all" : state;
   return (
     <StudentsListView
+      scope={scope}
       shown={
         state === "empty"
           ? []

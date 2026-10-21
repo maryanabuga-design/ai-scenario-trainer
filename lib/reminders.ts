@@ -29,6 +29,7 @@ export function unfinishedExam(
   return (
     splitExams(exams, now).active.find(
       (exam) =>
+        exam.groupIds.includes(participant.groupId) &&
         statusOf(participant, exam, { attempts, active: isActive(exam, now) }).kind !== "certified",
     ) ?? null
   );
@@ -62,7 +63,11 @@ export function reminderFor(
       target: "/weak-topics",
     };
   }
-  return { kind: "general", text: "Your instructor says: keep it up.", target: "/" };
+  return {
+    kind: "general",
+    text: "Your instructor says: keep it up.",
+    target: "/",
+  };
 }
 
 /** The id of a student's reminder notice: one per student and kind, so sending again updates it. */

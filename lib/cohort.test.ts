@@ -10,6 +10,7 @@ import {
   studentRows,
   unit,
 } from "@/lib/cohort";
+import { inScope } from "@/lib/groups";
 import type { Attempt } from "@/lib/cohort";
 import { passCount } from "@/lib/results";
 
@@ -17,10 +18,12 @@ const exam = { id: "seed-closed", deadline: "2026-10-18", questionCount: 20 };
 const open = { id: "seed-active", deadline: "2026-10-30", questionCount: 20 };
 
 describe("the demo group", () => {
-  it("has 14 fictional students with ids, initials, a field and per-topic counts", () => {
-    expect(seededStudents).toHaveLength(14);
+  it("has 26 fictional students in two groups (14 and 12) with ids, initials, a field and per-topic counts", () => {
+    expect(seededStudents).toHaveLength(26);
+    expect(seededStudents.filter((s) => s.group === "rescue-team")).toHaveLength(14);
+    expect(seededStudents.filter((s) => s.group === "military-training")).toHaveLength(12);
     const ids = new Set(seededStudents.map((s) => s.id));
-    expect(ids.size).toBe(14);
+    expect(ids.size).toBe(26);
     for (const s of seededStudents) {
       expect(s.initials).toBe(
         s.name
@@ -42,10 +45,11 @@ describe("the demo group", () => {
 
   it("puts the local accounts first and labels them local; initials come from the name", () => {
     const people = participants([{ name: "Ana Maria Test", email: "ana@example.com" }]);
-    expect(people).toHaveLength(15);
+    expect(people).toHaveLength(27);
+    expect(people[0].groupId).toBe("rescue-team");
     expect(people[0]).toMatchObject({ id: "ana@example.com", initials: "AM", local: true });
     expect(people.slice(1).every((p) => !p.local)).toBe(true);
-    expect(participants([])).toHaveLength(14);
+    expect(participants([])).toHaveLength(26);
   });
 });
 
@@ -148,7 +152,10 @@ describe("the status of a local account", () => {
 });
 
 describe("group counts and rows", () => {
-  const people = participants([{ name: "Ana Test", email: "ana@example.com" }]);
+  const people = inScope(
+    participants([{ name: "Ana Test", email: "ana@example.com" }]),
+    "rescue-team",
+  );
   const attempts: Attempt[] = [
     { examId: open.id, studentId: "ana@example.com", correct: 17, total: 20, finishedAt: 1 },
   ];

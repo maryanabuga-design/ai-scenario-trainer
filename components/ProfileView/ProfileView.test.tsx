@@ -114,9 +114,10 @@ describe("Profile for a student", () => {
 describe("Profile for an instructor", () => {
   const html = render("instructor");
 
-  it("has the read-only Group A row (no link, no chevron)", () => {
+  it("has the read-only Groups row with both group names (no link, no chevron)", () => {
     const row = html.slice(html.indexOf("data-group-row"), html.indexOf("data-group-row") + 300);
-    expect(row).toContain("Group A");
+    expect(row).toContain("Groups");
+    expect(row).toContain("Rescue team, Military training");
     expect(row).not.toContain("<a ");
     expect(render("student")).not.toContain("data-group-row");
   });

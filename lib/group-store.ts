@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 import type { Attempt } from "@/lib/cohort";
 import { cleanGroupExams, seedGroupExams } from "@/lib/group-exams";
 import type { GroupExam } from "@/lib/group-exams";
+import { knownGroupIds } from "@/lib/groups";
 import { createStore } from "@/lib/store";
 
 /**
@@ -108,6 +109,8 @@ export type Notice = {
   createdAt: number;
   /** Only for this account (the email); without it every local account gets the notice. */
   to?: string;
+  /** Only for students of these groups; without it every group gets the notice. Local accounts are in Rescue team. */
+  groups?: string[];
 };
 
 export function cleanNotices(value: unknown): Notice[] | null {
@@ -115,7 +118,7 @@ export function cleanNotices(value: unknown): Notice[] | null {
   const list: Notice[] = [];
   for (const entry of value) {
     if (!isObject(entry)) continue;
-    const { id, title, text, target, createdAt, to } = entry;
+    const { id, title, text, target, createdAt, to, groups } = entry;
     if (typeof id !== "string" || id === "" || list.some((n) => n.id === id)) continue;
     if (typeof title !== "string" || title.trim() === "") continue;
     if (typeof createdAt !== "number" || !Number.isFinite(createdAt)) continue;
@@ -126,6 +129,9 @@ export function cleanNotices(value: unknown): Notice[] | null {
       target: typeof target === "string" ? target : "/",
       createdAt,
       ...(typeof to === "string" && to !== "" && { to }),
+      ...(Array.isArray(groups) && {
+        groups: knownGroupIds(groups.filter((g): g is string => typeof g === "string")),
+      }),
     });
   }
   return list.length > 0 ? collapseReminders(list).slice(-50) : null;

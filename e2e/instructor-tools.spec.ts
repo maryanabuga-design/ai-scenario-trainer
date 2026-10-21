@@ -38,7 +38,7 @@ for (const width of [360, 430]) {
     }) => {
       await page.goto("/instructor/students");
       await expect(page.locator("[data-page-header-band]:visible")).toContainText(
-        "Group A · 15 students · 2 not started",
+        "Rescue team · 15 students · 2 not started",
       );
       // the local demo account is Not started, neutral, and last
       const mine = page.locator('[data-student="maryana@example.com"]');

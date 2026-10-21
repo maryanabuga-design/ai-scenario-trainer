@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ACTION_LIMIT, actionRows, dueReason, daysUntil } from "@/lib/actions";
 import type { DraftSet } from "@/lib/actions";
+import { inScope } from "@/lib/groups";
 import { participants } from "@/lib/cohort";
 import type { Attempt } from "@/lib/cohort";
 import { seedGroupExams } from "@/lib/group-exams";
@@ -10,7 +11,10 @@ import { profileStatus, profiles } from "@/lib/students";
 import type { StudentProfile, StudentTopic } from "@/lib/students";
 
 const now = new Date(2026, 9, 24, 10, 0).getTime();
-const people = participants([{ name: "Ana Test", email: "ana@example.com" }]);
+const people = inScope(
+  participants([{ name: "Ana Test", email: "ana@example.com" }]),
+  "rescue-team",
+);
 const list = profiles(people, { "ana@example.com": null });
 const [seedActive] = seedGroupExams(now);
 const draft: DraftSet = { id: "cx", title: "Evacuation routes" };
@@ -30,6 +34,7 @@ const rows = (over: Partial<Parameters<typeof actionRows>[0]> & { exams: GroupEx
     drafts: [],
     reminded: new Set(),
     now,
+    scope: "rescue-team",
     ...over,
   });
 
@@ -129,13 +134,13 @@ describe("the rows of Needs your action", () => {
   });
 });
 
-describe("the change since last week", () => {
+describe("the change this week", () => {
   it("is the seeded demo history: the same students now against a week ago, in whole points", () => {
     expect(groupDelta(list)).toBe(4);
-    expect(deltaLine(4)).toBe("+4 points since last week");
-    expect(deltaLine(1)).toBe("+1 point since last week");
-    expect(deltaLine(-3)).toBe("-3 points since last week");
-    expect(deltaLine(0)).toBe("No change since last week");
+    expect(deltaLine(4)).toBe("+4 points this week");
+    expect(deltaLine(1)).toBe("+1 point this week");
+    expect(deltaLine(-3)).toBe("-3 points this week");
+    expect(deltaLine(0)).toBe("No change this week");
     expect(deltaLine(-3)).not.toContain("%");
   });
 
@@ -156,13 +161,13 @@ describe("the change since last week", () => {
       total: 10,
     });
     const profile = (previousCorrect: number): StudentProfile => ({
-      participant: { id: "a", name: "A", initials: "A", local: false },
+      participant: { id: "a", name: "A", initials: "A", local: false, groupId: "rescue-team" },
       field: null,
       topics: [topic(6)],
       previousCorrect,
     });
     expect(groupDelta([profile(9)])).toBe(-30);
-    expect(deltaLine(-30)).toBe("-30 points since last week");
+    expect(deltaLine(-30)).toBe("-30 points this week");
   });
 });
 

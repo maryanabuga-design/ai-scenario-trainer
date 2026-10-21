@@ -16,15 +16,17 @@ export const topicStudentsHref = (id: string) => `/instructor/students?topic=${i
 export function TopicsView({
   standings,
   titleOf,
+  subtitle = "How the group is doing by topic",
 }: {
   standings: TopicStanding[];
+  subtitle?: string;
   titleOf: (id: string) => string;
 }) {
   return (
     <div className="flex flex-col gap-4 pb-4">
       <PageHeaderBand
         title="Topics"
-        subtitle="How the group is doing by topic"
+        subtitle={subtitle}
         back={{ label: "Back to Overview", href: "/instructor" }}
       />
       <ul className="flex flex-col gap-3">

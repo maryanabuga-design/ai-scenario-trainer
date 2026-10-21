@@ -1,17 +1,18 @@
 import { useMemo } from "react";
 import { isEmailFormat, normaliseEmail } from "@/lib/auth-validation";
+import { DEFAULT_GROUP_ID, isScope } from "@/lib/groups";
 import { createStore } from "@/lib/store";
 
 /**
  * Invite students (DESIGN.md: Instructor, Invite students). SIMULATED: no email is sent. The parsing
  * is pure; the pending list is kept in this browser (a shared key, versioned, tolerant).
  */
-export const GROUP_CODE = "QT-A7K2";
-export const INVITE_LINK = `https://scenario-trainer.example/join/${GROUP_CODE}`;
+/** The invite link of a group code (each group has its own code in `content/demo-cohort.json`). */
+export const inviteLink = (code: string) => `https://scenario-trainer.example/join/${code}`;
 export const MAX_INVITATIONS = 100;
 export const PROTOTYPE_LINE = "Prototype: no emails are sent.";
 
-export type Invitation = { email: string; invitedAt: number };
+export type Invitation = { email: string; invitedAt: number; groupId: string };
 
 /** The addresses of a text (separated by commas, semicolons, spaces or new lines): valid ones, once each, and the invalid ones. */
 export function parseEmails(text: string): { valid: string[]; invalid: string[] } {
@@ -36,8 +37,16 @@ export function splitNew(valid: string[], pending: Invitation[]) {
 }
 
 /** The new invitations first, then the earlier ones, at most MAX_INVITATIONS. */
-export const withInvitations = (pending: Invitation[], emails: string[], now: number) =>
-  [...emails.map((email) => ({ email, invitedAt: now })), ...pending].slice(0, MAX_INVITATIONS);
+export const withInvitations = (
+  pending: Invitation[],
+  emails: string[],
+  now: number,
+  groupId: string = DEFAULT_GROUP_ID,
+) =>
+  [...emails.map((email) => ({ email, invitedAt: now, groupId })), ...pending].slice(
+    0,
+    MAX_INVITATIONS,
+  );
 
 /** "Invited 21 Oct". */
 const dayMonth = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short" });
@@ -52,12 +61,16 @@ export function cleanInvitations(value: unknown): Invitation[] | null {
   const list: Invitation[] = [];
   for (const entry of value) {
     if (typeof entry !== "object" || entry === null) continue;
-    const { email, invitedAt } = entry as Record<string, unknown>;
+    const { email, invitedAt, groupId } = entry as Record<string, unknown>;
     if (typeof email !== "string" || !isEmailFormat(email)) continue;
     if (typeof invitedAt !== "number" || !Number.isFinite(invitedAt)) continue;
     const normal = normaliseEmail(email);
     if (list.some((other) => other.email === normal)) continue;
-    list.push({ email: normal, invitedAt });
+    list.push({
+      email: normal,
+      invitedAt,
+      groupId: typeof groupId === "string" && isScope(groupId) ? groupId : DEFAULT_GROUP_ID,
+    });
   }
   return list.slice(0, MAX_INVITATIONS);
 }

@@ -99,6 +99,8 @@ describe("every card arrow goes through ArrowCircle", () => {
       // the chevrons of the reading header's topic arrows
       "ReadingHeader/ReadingHeader.tsx",
       "ErrorTypesCard/ErrorTypesCard.tsx",
+      // the arrow at the right of the Overview readiness strip (the approved reference)
+      "InstructorOverview/OverviewBlocks.tsx",
     ];
     const own = [...files("components"), ...files("app")].filter((file) => {
       if (allowed.some((name) => file.endsWith(name))) return false;

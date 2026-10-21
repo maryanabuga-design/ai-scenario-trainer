@@ -1,9 +1,5 @@
 {
   "note": "Demo group for the Instructor side. Fictional students, invented names. Simulated data.",
-  "group": {
-    "id": "group-a",
-    "name": "Group A"
-  },
   "fields": [
     "rescue",
     "paramedic",
@@ -60,7 +56,8 @@
         }
       },
       "lastActiveDaysAgo": 3,
-      "previousCorrect": 71
+      "previousCorrect": 71,
+      "group": "rescue-team"
     },
     {
       "id": "stu-02",
@@ -110,7 +107,8 @@
         }
       },
       "lastActiveDaysAgo": 9,
-      "previousCorrect": 59
+      "previousCorrect": 59,
+      "group": "rescue-team"
     },
     {
       "id": "stu-03",
@@ -160,7 +158,8 @@
         }
       },
       "lastActiveDaysAgo": 2,
-      "previousCorrect": 58
+      "previousCorrect": 58,
+      "group": "rescue-team"
     },
     {
       "id": "stu-04",
@@ -210,7 +209,8 @@
         }
       },
       "lastActiveDaysAgo": 10,
-      "previousCorrect": 25
+      "previousCorrect": 25,
+      "group": "rescue-team"
     },
     {
       "id": "stu-05",
@@ -260,7 +260,8 @@
         }
       },
       "lastActiveDaysAgo": 5,
-      "previousCorrect": 69
+      "previousCorrect": 69,
+      "group": "rescue-team"
     },
     {
       "id": "stu-06",
@@ -310,7 +311,8 @@
         }
       },
       "lastActiveDaysAgo": 21,
-      "previousCorrect": 0
+      "previousCorrect": 0,
+      "group": "rescue-team"
     },
     {
       "id": "stu-07",
@@ -360,7 +362,8 @@
         }
       },
       "lastActiveDaysAgo": 4,
-      "previousCorrect": 50
+      "previousCorrect": 50,
+      "group": "rescue-team"
     },
     {
       "id": "stu-08",
@@ -410,7 +413,8 @@
         }
       },
       "lastActiveDaysAgo": 3,
-      "previousCorrect": 54
+      "previousCorrect": 54,
+      "group": "rescue-team"
     },
     {
       "id": "stu-09",
@@ -460,7 +464,8 @@
         }
       },
       "lastActiveDaysAgo": 1,
-      "previousCorrect": 35
+      "previousCorrect": 35,
+      "group": "rescue-team"
     },
     {
       "id": "stu-10",
@@ -510,7 +515,8 @@
         }
       },
       "lastActiveDaysAgo": 10,
-      "previousCorrect": 64
+      "previousCorrect": 64,
+      "group": "rescue-team"
     },
     {
       "id": "stu-11",
@@ -560,7 +566,8 @@
         }
       },
       "lastActiveDaysAgo": 7,
-      "previousCorrect": 47
+      "previousCorrect": 47,
+      "group": "rescue-team"
     },
     {
       "id": "stu-12",
@@ -610,7 +617,8 @@
         }
       },
       "lastActiveDaysAgo": 1,
-      "previousCorrect": 29
+      "previousCorrect": 29,
+      "group": "rescue-team"
     },
     {
       "id": "stu-13",
@@ -660,7 +668,8 @@
         }
       },
       "lastActiveDaysAgo": 10,
-      "previousCorrect": 56
+      "previousCorrect": 56,
+      "group": "rescue-team"
     },
     {
       "id": "stu-14",
@@ -710,7 +719,619 @@
         }
       },
       "lastActiveDaysAgo": 8,
+      "previousCorrect": 45,
+      "group": "rescue-team"
+    },
+    {
+      "id": "mil-01",
+      "name": "Eli Brandt",
+      "initials": "EB",
+      "field": "military",
+      "group": "military-training",
+      "topics": {
+        "S1": {
+          "answered": 35,
+          "correct": 31
+        },
+        "S2": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S3": {
+          "answered": 5,
+          "correct": 5
+        },
+        "S4": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S5": {
+          "answered": 3,
+          "correct": 3
+        },
+        "S6": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S7": {
+          "answered": 4,
+          "correct": 4
+        },
+        "S8": {
+          "answered": 3,
+          "correct": 3
+        },
+        "S9": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S10": {
+          "answered": 5,
+          "correct": 5
+        }
+      },
+      "lastActiveDaysAgo": 5,
+      "previousCorrect": 53
+    },
+    {
+      "id": "mil-02",
+      "name": "Mara Tovan",
+      "initials": "MT",
+      "field": "military",
+      "group": "military-training",
+      "topics": {
+        "S1": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S2": {
+          "answered": 4,
+          "correct": 3
+        },
+        "S3": {
+          "answered": 3,
+          "correct": 3
+        },
+        "S4": {
+          "answered": 6,
+          "correct": 5
+        },
+        "S5": {
+          "answered": 5,
+          "correct": 5
+        },
+        "S6": {
+          "answered": 5,
+          "correct": 4
+        },
+        "S7": {
+          "answered": 8,
+          "correct": 6
+        },
+        "S8": {
+          "answered": 5,
+          "correct": 5
+        },
+        "S9": {
+          "answered": 8,
+          "correct": 7
+        },
+        "S10": {
+          "answered": 0,
+          "correct": 0
+        }
+      },
+      "lastActiveDaysAgo": 6,
+      "previousCorrect": 33
+    },
+    {
+      "id": "mil-03",
+      "name": "Oskar Lind",
+      "initials": "OL",
+      "field": "military",
+      "group": "military-training",
+      "topics": {
+        "S1": {
+          "answered": 29,
+          "correct": 20
+        },
+        "S2": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S3": {
+          "answered": 5,
+          "correct": 3
+        },
+        "S4": {
+          "answered": 6,
+          "correct": 4
+        },
+        "S5": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S6": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S7": {
+          "answered": 5,
+          "correct": 4
+        },
+        "S8": {
+          "answered": 6,
+          "correct": 4
+        },
+        "S9": {
+          "answered": 8,
+          "correct": 6
+        },
+        "S10": {
+          "answered": 5,
+          "correct": 3
+        }
+      },
+      "lastActiveDaysAgo": 1,
       "previousCorrect": 45
+    },
+    {
+      "id": "mil-04",
+      "name": "Nadia Reyes",
+      "initials": "NR",
+      "field": "civil",
+      "group": "military-training",
+      "topics": {
+        "S1": {
+          "answered": 31,
+          "correct": 18
+        },
+        "S2": {
+          "answered": 4,
+          "correct": 3
+        },
+        "S3": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S4": {
+          "answered": 7,
+          "correct": 4
+        },
+        "S5": {
+          "answered": 6,
+          "correct": 4
+        },
+        "S6": {
+          "answered": 6,
+          "correct": 4
+        },
+        "S7": {
+          "answered": 6,
+          "correct": 3
+        },
+        "S8": {
+          "answered": 4,
+          "correct": 3
+        },
+        "S9": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S10": {
+          "answered": 5,
+          "correct": 3
+        }
+      },
+      "lastActiveDaysAgo": 9,
+      "previousCorrect": 46
+    },
+    {
+      "id": "mil-05",
+      "name": "Viktor Hale",
+      "initials": "VH",
+      "field": "military",
+      "group": "military-training",
+      "topics": {
+        "S1": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S2": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S3": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S4": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S5": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S6": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S7": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S8": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S9": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S10": {
+          "answered": 0,
+          "correct": 0
+        }
+      },
+      "lastActiveDaysAgo": 0
+    },
+    {
+      "id": "mil-06",
+      "name": "Priya Sandor",
+      "initials": "PS",
+      "field": "paramedic",
+      "group": "military-training",
+      "topics": {
+        "S1": {
+          "answered": 37,
+          "correct": 28
+        },
+        "S2": {
+          "answered": 6,
+          "correct": 4
+        },
+        "S3": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S4": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S5": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S6": {
+          "answered": 5,
+          "correct": 3
+        },
+        "S7": {
+          "answered": 4,
+          "correct": 3
+        },
+        "S8": {
+          "answered": 5,
+          "correct": 4
+        },
+        "S9": {
+          "answered": 6,
+          "correct": 5
+        },
+        "S10": {
+          "answered": 6,
+          "correct": 4
+        }
+      },
+      "lastActiveDaysAgo": 3,
+      "previousCorrect": 55
+    },
+    {
+      "id": "mil-07",
+      "name": "Callum Ardey",
+      "initials": "CA",
+      "field": "military",
+      "group": "military-training",
+      "topics": {
+        "S1": {
+          "answered": 28,
+          "correct": 17
+        },
+        "S2": {
+          "answered": 6,
+          "correct": 3
+        },
+        "S3": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S4": {
+          "answered": 5,
+          "correct": 3
+        },
+        "S5": {
+          "answered": 3,
+          "correct": 1
+        },
+        "S6": {
+          "answered": 8,
+          "correct": 5
+        },
+        "S7": {
+          "answered": 5,
+          "correct": 3
+        },
+        "S8": {
+          "answered": 5,
+          "correct": 3
+        },
+        "S9": {
+          "answered": 7,
+          "correct": 3
+        },
+        "S10": {
+          "answered": 4,
+          "correct": 2
+        }
+      },
+      "lastActiveDaysAgo": 4,
+      "previousCorrect": 43
+    },
+    {
+      "id": "mil-08",
+      "name": "Zoe Marin",
+      "initials": "ZM",
+      "field": "other",
+      "group": "military-training",
+      "topics": {
+        "S1": {
+          "answered": 31,
+          "correct": 26
+        },
+        "S2": {
+          "answered": 3,
+          "correct": 3
+        },
+        "S3": {
+          "answered": 6,
+          "correct": 5
+        },
+        "S4": {
+          "answered": 5,
+          "correct": 5
+        },
+        "S5": {
+          "answered": 5,
+          "correct": 4
+        },
+        "S6": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S7": {
+          "answered": 5,
+          "correct": 4
+        },
+        "S8": {
+          "answered": 7,
+          "correct": 6
+        },
+        "S9": {
+          "answered": 8,
+          "correct": 7
+        },
+        "S10": {
+          "answered": 0,
+          "correct": 0
+        }
+      },
+      "lastActiveDaysAgo": 4,
+      "previousCorrect": 54
+    },
+    {
+      "id": "mil-09",
+      "name": "Anton Keller",
+      "initials": "AK",
+      "field": "military",
+      "group": "military-training",
+      "topics": {
+        "S1": {
+          "answered": 40,
+          "correct": 24
+        },
+        "S2": {
+          "answered": 8,
+          "correct": 5
+        },
+        "S3": {
+          "answered": 8,
+          "correct": 5
+        },
+        "S4": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S5": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S6": {
+          "answered": 6,
+          "correct": 3
+        },
+        "S7": {
+          "answered": 7,
+          "correct": 5
+        },
+        "S8": {
+          "answered": 5,
+          "correct": 3
+        },
+        "S9": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S10": {
+          "answered": 0,
+          "correct": 0
+        }
+      },
+      "lastActiveDaysAgo": 3,
+      "previousCorrect": 47
+    },
+    {
+      "id": "mil-10",
+      "name": "Leila Fenn",
+      "initials": "LF",
+      "field": "civil",
+      "group": "military-training",
+      "topics": {
+        "S1": {
+          "answered": 38,
+          "correct": 25
+        },
+        "S2": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S3": {
+          "answered": 7,
+          "correct": 5
+        },
+        "S4": {
+          "answered": 5,
+          "correct": 4
+        },
+        "S5": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S6": {
+          "answered": 6,
+          "correct": 5
+        },
+        "S7": {
+          "answered": 7,
+          "correct": 6
+        },
+        "S8": {
+          "answered": 7,
+          "correct": 5
+        },
+        "S9": {
+          "answered": 0,
+          "correct": 0
+        },
+        "S10": {
+          "answered": 4,
+          "correct": 3
+        }
+      },
+      "lastActiveDaysAgo": 3,
+      "previousCorrect": 51
+    },
+    {
+      "id": "mil-11",
+      "name": "Hugo Parrish",
+      "initials": "HP",
+      "field": "rescue",
+      "group": "military-training",
+      "topics": {
+        "S1": {
+          "answered": 30,
+          "correct": 15
+        },
+        "S2": {
+          "answered": 3,
+          "correct": 1
+        },
+        "S3": {
+          "answered": 7,
+          "correct": 3
+        },
+        "S4": {
+          "answered": 3,
+          "correct": 1
+        },
+        "S5": {
+          "answered": 4,
+          "correct": 2
+        },
+        "S6": {
+          "answered": 7,
+          "correct": 3
+        },
+        "S7": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S8": {
+          "answered": 7,
+          "correct": 3
+        },
+        "S9": {
+          "answered": 5,
+          "correct": 2
+        },
+        "S10": {
+          "answered": 6,
+          "correct": 3
+        }
+      },
+      "lastActiveDaysAgo": 9,
+      "previousCorrect": 37
+    },
+    {
+      "id": "mil-12",
+      "name": "Ada Corwin",
+      "initials": "AC",
+      "field": "military",
+      "group": "military-training",
+      "topics": {
+        "S1": {
+          "answered": 33,
+          "correct": 29
+        },
+        "S2": {
+          "answered": 4,
+          "correct": 3
+        },
+        "S3": {
+          "answered": 3,
+          "correct": 2
+        },
+        "S4": {
+          "answered": 8,
+          "correct": 6
+        },
+        "S5": {
+          "answered": 8,
+          "correct": 6
+        },
+        "S6": {
+          "answered": 4,
+          "correct": 3
+        },
+        "S7": {
+          "answered": 5,
+          "correct": 4
+        },
+        "S8": {
+          "answered": 6,
+          "correct": 5
+        },
+        "S9": {
+          "answered": 6,
+          "correct": 4
+        },
+        "S10": {
+          "answered": 8,
+          "correct": 6
+        }
+      },
+      "lastActiveDaysAgo": 7,
+      "previousCorrect": 62
     }
   ],
   "exams": [
@@ -724,7 +1345,10 @@
         "S5"
       ],
       "deadlineOffsetDays": 6,
-      "createdDaysAgo": 2
+      "createdDaysAgo": 2,
+      "groupIds": [
+        "rescue-team"
+      ]
     },
     {
       "id": "seed-closed",
@@ -736,7 +1360,37 @@
         "S9"
       ],
       "deadlineOffsetDays": -6,
-      "createdDaysAgo": 14
+      "createdDaysAgo": 14,
+      "groupIds": [
+        "rescue-team"
+      ]
+    },
+    {
+      "id": "seed-military-active",
+      "title": "Evacuation and first aid exam",
+      "topicIds": [
+        "S4",
+        "S5",
+        "S6",
+        "S7"
+      ],
+      "deadlineOffsetDays": 9,
+      "createdDaysAgo": 3,
+      "groupIds": [
+        "military-training"
+      ]
+    }
+  ],
+  "groups": [
+    {
+      "id": "rescue-team",
+      "name": "Rescue team",
+      "code": "QT-A7K2"
+    },
+    {
+      "id": "military-training",
+      "name": "Military training",
+      "code": "QT-M4R9"
     }
   ]
 }

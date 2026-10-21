@@ -46,7 +46,9 @@ export function seededProfile(student: SeededStudent, participant: Participant):
   return {
     participant,
     field: student.field,
-    ...(student.previousCorrect !== undefined && { previousCorrect: student.previousCorrect }),
+    ...(student.previousCorrect !== undefined && {
+      previousCorrect: student.previousCorrect,
+    }),
     topics: allTopicIds.map((id) => {
       const total = topicQuestionCount(id);
       const answered = Math.min(student.topics[id]?.answered ?? 0, total);
@@ -134,7 +136,10 @@ export const topicsToReview = (profile: Pick<StudentProfile, "topics">) =>
   profile.topics.filter(topicNeedsReview).length;
 
 /** The second line of a student row: the status and what follows it ("4 to review"), see DESIGN.md. */
-export function rowParts(profile: StudentProfile): { status: StudentStatus; tail: string | null } {
+export function rowParts(profile: StudentProfile): {
+  status: StudentStatus;
+  tail: string | null;
+} {
   const status = profileStatus(profile);
   const n = topicsToReview(profile);
   if (status === "not-started") return { status, tail: null };
@@ -184,7 +189,12 @@ export function showingLine(
   return status ? `Showing: ${status}` : null;
 }
 
-const rank: Record<StudentStatus, number> = { needs: 0, almost: 1, ready: 2, "not-started": 3 };
+const rank: Record<StudentStatus, number> = {
+  needs: 0,
+  almost: 1,
+  ready: 2,
+  "not-started": 3,
+};
 
 /** Needs attention first, then Almost ready, then Ready, then Not started; alphabetical inside each. */
 export function sortProfiles(list: StudentProfile[]): StudentProfile[] {
@@ -204,6 +214,7 @@ export function certifiedAnywhere(
 ): boolean {
   return exams.some(
     (exam) =>
+      exam.groupIds.includes(participant.groupId) &&
       statusOf(participant, exam, { attempts, active: isActive(exam, now) }).kind === "certified",
   );
 }
@@ -248,14 +259,15 @@ export type StudentExamRow = {
   certificateId?: string;
 };
 
-/** The exams of one student, newest deadline first, with the same statuses as the Exam detail. */
+/** The exams of one student (those for the student's group), newest deadline first, with the same statuses as the Exam detail. */
 export function examRowsFor(
   participant: Participant,
   exams: GroupExam[],
   attempts: Attempt[],
   now: number,
 ): StudentExamRow[] {
-  return [...exams]
+  return exams
+    .filter((exam) => exam.groupIds.includes(participant.groupId))
     .sort((a, b) => b.deadline.localeCompare(a.deadline) || b.createdAt - a.createdAt)
     .map((exam) => {
       const context: StatusContext = { attempts, active: isActive(exam, now) };
