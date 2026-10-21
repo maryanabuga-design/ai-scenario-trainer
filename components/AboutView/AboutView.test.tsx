@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import pkg from "@/package.json";
 import {
   AboutView,
+  BUILD_LABEL,
   RESTART_HELPER,
   RESTART_TEXT,
   RESTART_TITLE,
@@ -58,5 +59,16 @@ describe("Restart demo on About this prototype", () => {
     expect(open).toContain(RESTART_TEXT);
     expect(open).toContain(">Restart<");
     expect(open).toContain(">Cancel<");
+  });
+});
+
+describe("the build marker", () => {
+  it("shows a muted 'Build <short commit>' line under the four info lines", () => {
+    expect(BUILD_LABEL).toMatch(/^Build [0-9a-f]{7}$|^Build dev$/);
+    const html = renderToStaticMarkup(<AboutView />);
+    expect(html).toContain("data-build");
+    expect(html).toContain(BUILD_LABEL);
+    expect(html.indexOf("data-build")).toBeGreaterThan(html.indexOf("Version"));
+    expect(html).toMatch(/data-build[^>]*text-text-secondary/);
   });
 });

@@ -13,6 +13,9 @@ export const aboutLines = [
   `Version ${pkg.version}`,
 ];
 
+/** The short commit id of this build ("dev" when it is not known). */
+export const BUILD_LABEL = `Build ${process.env.NEXT_PUBLIC_BUILD_ID ?? "dev"}`;
+
 export const RESTART_HELPER =
   "Clears all demo data on this device (accounts, progress, exams, notifications) and starts from the beginning.";
 export const RESTART_TITLE = "Restart the demo?";
@@ -49,6 +52,9 @@ export function AboutView({
           </li>
         ))}
       </ul>
+      <p data-build className="type-small text-text-secondary">
+        {BUILD_LABEL}
+      </p>
       <section aria-label="Restart demo" className="flex flex-col gap-3">
         <p className="type-small text-text-secondary">{RESTART_HELPER}</p>
         <Button variant="secondary" onClick={onAskRestart}>
