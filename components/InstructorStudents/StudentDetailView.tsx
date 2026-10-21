@@ -1,12 +1,16 @@
+"use client";
+
 import Link from "next/link";
 import { RotateCcw } from "lucide-react";
-import { ButtonLink } from "@/components/Button/Button";
+import { useState } from "react";
+import { Button, ButtonLink } from "@/components/Button/Button";
+import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { ExamStatusLine } from "@/components/InstructorStudents/ExamStatusLine";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { ReadinessBar } from "@/components/ReadinessBar/ReadinessBar";
 import { stepsCard } from "@/components/StepsView/StepCard";
-import { DEMO_NOTE, GROUP_NAME } from "@/lib/cohort";
+import { DEMO_NOTE } from "@/lib/cohort";
 import { PASS_MARK } from "@/lib/config";
 import { fieldLabel, readinessOf, statusDetail, topicNeedsReview } from "@/lib/students";
 import type { StudentExamRow, StudentProfile } from "@/lib/students";
@@ -23,6 +27,11 @@ export function StudentDetailView({
   rows,
   titleOf,
   certificateHref,
+  reminder,
+  sentMessage = "",
+  onSendReminder,
+  confirmingInitially = false,
+  dialogInline = false,
 }: {
   profile: StudentProfile;
   backHref: string;
@@ -31,19 +40,30 @@ export function StudentDetailView({
   titleOf: (id: string) => string;
   /** The read-only certificate of an exam result, when there is one. */
   certificateHref: (row: StudentExamRow) => string | null;
+  /** The reminder the Send reminder dialog would send (chosen from what the student has to do). */
+  reminder: string;
+  /** "Reminder sent to Ana", once it was sent. */
+  sentMessage?: string;
+  onSendReminder: () => void;
+  confirmingInitially?: boolean;
+  dialogInline?: boolean;
 }) {
   const readiness = readinessOf(profile);
+  const [confirming, setConfirming] = useState(confirmingInitially);
   return (
     <div className="flex flex-col gap-6 pb-4">
       <PageHeaderBand
         title={profile.participant.name}
         subtitle={
-          <span className="type-body">
-            {fieldLabel(profile.field)} · {GROUP_NAME}
+          <span data-field-line className="type-body">
+            {fieldLabel(profile.field)}
           </span>
         }
         back={{ label: backLabel, href: backHref }}
       />
+      <p role="status" data-message className="type-body text-center not-empty:py-1">
+        {sentMessage}
+      </p>
 
       <section
         aria-labelledby="student-readiness"
@@ -67,7 +87,7 @@ export function StudentDetailView({
         </h2>
         <ul className="flex flex-col gap-3">
           {profile.topics.map((row) => {
-            const share = row.total === 0 ? 0 : (row.correct / row.total) * 100;
+            const share = row.answered === 0 ? 0 : (row.correct / row.answered) * 100;
             const review = topicNeedsReview(row);
             return (
               <li
@@ -87,7 +107,9 @@ export function StudentDetailView({
                     {titleOf(row.sectionId)}
                   </span>
                   <span className="type-small flex items-center gap-1.5 text-text-secondary tabular-nums">
-                    {row.correct} of {row.total} correct
+                    {row.answered === 0
+                      ? "Not practised yet"
+                      : `${row.correct} of ${row.answered} correct`}
                     {review && (
                       <span
                         data-needs-review
@@ -146,6 +168,30 @@ export function StudentDetailView({
           })}
         </ul>
       </section>
+
+      <Button variant="secondary" onClick={() => setConfirming(true)}>
+        Send reminder
+      </Button>
+
+      {(confirming || !dialogInline) && (
+        <ConfirmDialog
+          open={confirming}
+          inline={dialogInline}
+          title={`Send a reminder to ${profile.participant.name}?`}
+          description=""
+          body={
+            <p data-reminder-preview className="type-small rounded-card bg-secondary-sand p-3">
+              {reminder}
+            </p>
+          }
+          confirmLabel="Send reminder"
+          onConfirm={() => {
+            setConfirming(false);
+            onSendReminder();
+          }}
+          onCancel={() => setConfirming(false)}
+        />
+      )}
 
       <p data-demo-note className="type-small text-center text-text-secondary">
         {DEMO_NOTE}

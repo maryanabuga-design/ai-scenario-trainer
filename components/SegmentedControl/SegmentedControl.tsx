@@ -20,7 +20,7 @@ export function SegmentedControl<T extends string>({
   /** Keep the legend for screen readers only. */
   hideLegend?: boolean;
   options: { value: T; label: string }[];
-  value: T;
+  value: T | null;
   onChange: (value: T) => void;
 }) {
   // Pages kept for Back can share a name; a radio group is one per page.

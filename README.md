@@ -65,6 +65,8 @@ Build order and decisions: `docs/build-plan.md`.
 
 ## Known limitations
 
+- Invitations and reminders to the invented students are simulated: no email is sent and nothing leaves the browser (a reminder to a local student account appears in that account's Notifications). Word, Excel and PDF files are not parsed; only CSV files are read.
+
 - Field of work (Student) is stored only in this browser and only tunes the prepared examples of the simulated Ask AI. In a real product it would be sensitive and optional.
 
 - Content import (Instructor): only CSV files are read (locally, nothing is uploaded). Word files are not parsed in this prototype and a prepared sample result is shown instead; a live product would parse Word and always ask a person to review before publishing. Imported sets stay in this browser, and publishing is a human decision. Published sets appear in Training only and never change readiness or the exam.

@@ -14,11 +14,14 @@ export function ExamCard({
   exam,
   passed,
   total,
+  notStarted,
   from,
 }: {
   exam: GroupExam;
   passed: number;
   total: number;
+  /** The students who have not started it: "Passed 1 of 15 · 11 not started". */
+  notStarted?: number;
   /** Where the card is shown, so the detail's Back returns there (the Overview). */
   from?: "overview";
 }) {
@@ -34,6 +37,7 @@ export function ExamCard({
         <span className="type-small truncate text-text-secondary">{dueLine(exam)}</span>
         <span className="type-small truncate text-text-secondary">
           Passed {passed} of {total}
+          {notStarted !== undefined && ` · ${notStarted} not started`}
         </span>
       </span>
       <Chevron />

@@ -88,33 +88,72 @@ describe("the Content tab", () => {
 });
 
 describe("the Import screen", () => {
-  const html = render(<ImportView titleOf={titleOf} onRead={noop} onCancel={noop} />);
+  const importView = (
+    draft: {
+      title?: string;
+      topic?: string | null;
+      detected?: string | null;
+      file?: { name: string; size: number } | null;
+    } = {},
+    extra: { reading?: boolean; readError?: string } = {},
+  ) =>
+    render(
+      <ImportView
+        draft={{ title: "", topic: null, detected: null, file: null, ...draft }}
+        topicTitle={titleOf}
+        onFile={noop}
+        onRemoveFile={noop}
+        onTitle={noop}
+        onImport={noop}
+        onCancel={noop}
+        {...extra}
+      />,
+    );
+  const html = importView();
 
-  it("has the four sections, a 52px title field, ten 64px topic rows and the template link", () => {
-    for (const label of ["SET TITLE", "TOPIC", "FILE"]) expect(html).toContain(label);
+  it("is in the order FILE, TITLE, TOPIC, with one visible label for the title and the template link", () => {
+    const at = (label: string) => html.indexOf(`>${label}</h2>`);
+    expect(at("FILE")).toBeGreaterThan(-1);
+    expect(at("FILE")).toBeLessThan(at("TITLE"));
+    expect(at("TITLE")).toBeLessThan(at("TOPIC"));
+    expect(html).not.toContain("SET TITLE");
+    expect(html).toContain('aria-label="Choose file"');
+    // the title input has a label for screen readers only, not a second visible one
+    expect(html).toMatch(/<label[^>]*class="sr-only"[^>]*>Set title<\/label>/);
     expect(html).toContain("h-[52px]");
-    expect(html.match(/h-16/g)!.length).toBeGreaterThanOrEqual(10);
-    expect(html).toContain("CSV or Word file, up to 1 MB");
-    expect(html).toContain('accept=".csv,.docx"');
+    expect(html).toContain("CSV, Excel, Word or PDF · up to 5 MB");
+    expect(html).toContain('accept=".csv,.xlsx,.docx,.pdf"');
     expect(html).toContain('href="/templates/question-template.csv"');
     expect(html).toContain("Download CSV template");
-    expect(html).toContain("Word files are not read in this prototype");
-    expect(html).toContain("How the file is read");
+  });
+
+  it("has the short info card and no column list", () => {
+    expect(html).toContain("One row is one question");
+    expect(html).toContain("Download the template, fill it in and choose it above.");
+    expect(html).toContain("A person always reviews before publishing.");
+    expect(html).not.toContain("option_a");
+    expect(html).not.toContain("How the file is read");
+  });
+
+  it("shows one 64px Topic row with a chevron to the picker, or the detected topic read-only", () => {
+    expect(html).toContain('href="/instructor/content/import/topic"');
+    expect(html).toContain("Choose a topic");
+    const row = html.slice(html.indexOf("data-topic-row"), html.indexOf("data-topic-row") + 700);
+    expect(row).toContain("h-16");
+    expect(row).toContain("lucide-chevron-right");
+    expect(importView({ topic: "S3" })).toContain("S3 Topic S3");
+    const detected = importView({ detected: "S3" });
+    expect(detected).toContain("Detected from file: S3 Topic S3");
+    expect(detected).not.toContain('href="/instructor/content/import/topic"');
+    expect(detected).not.toContain("data-topic-row");
   });
 
   it("shows the chosen file with its size and Remove, and the reading state", () => {
-    const filled = render(
-      <ImportView
-        titleOf={titleOf}
-        onRead={noop}
-        onCancel={noop}
-        initial={{ title: "T", topic: "S3", file: { name: "q.csv", size: 2048 } }}
-      />,
-    );
+    const filled = importView({ title: "q", file: { name: "q.csv", size: 2048 } });
     expect(filled).toContain("q.csv");
     expect(filled).toContain("2 KB");
     expect(filled).toContain(">Remove<");
-    const reading = render(<ImportView titleOf={titleOf} onRead={noop} onCancel={noop} reading />);
+    const reading = importView({}, { reading: true });
     expect(reading).toContain("Reading questions...");
     expect(reading).toContain("motion-reduce:animate-none");
   });
@@ -123,9 +162,7 @@ describe("the Import screen", () => {
     const code = readFileSync("components/InstructorContent/Amber.tsx", "utf8");
     expect(code).toContain("text-status-attention-ink");
     expect(code).not.toMatch(/text-wrong|\bred\b|text-red/);
-    const html2 = render(
-      <ImportView titleOf={titleOf} onRead={noop} onCancel={noop} readError="The file is empty." />,
-    );
+    const html2 = importView({}, { readError: "The file is empty." });
     expect(html2).toContain("data-amber");
     expect(html2).toContain("The file is empty.");
   });
@@ -161,7 +198,7 @@ describe("the Review screen", () => {
     expect(html.match(/data-question-row=/g)).toHaveLength(20);
     expect(html.match(/h-\[72px\]/g)).toHaveLength(20);
     expect(html).toContain('href="/instructor/content/cabc/1"');
-    expect(html).toContain("Sample result. Word files are not read in this prototype.");
+    expect(html).toContain("Sample result. This file type is not read in this prototype.");
   });
 
   it("shows the reasons, Needs attention first under that filter, and only those rows", () => {

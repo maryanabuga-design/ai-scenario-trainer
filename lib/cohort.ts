@@ -15,6 +15,8 @@ export type SeededStudent = {
   field: Field;
   topics: Record<string, { answered: number; correct: number }>;
   lastActiveDaysAgo: number;
+  /** The correct answers a week ago (all topics together): the demo history behind "since last week". */
+  previousCorrect?: number;
 };
 
 export const GROUP_NAME = cohort.group.name;

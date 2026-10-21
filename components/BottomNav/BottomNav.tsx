@@ -4,15 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRole } from "@/lib/auth";
 import type { Role } from "@/lib/role";
-import {
-  ChartNoAxesColumn,
-  ClipboardList,
-  FileText,
-  House,
-  Sparkles,
-  User,
-  Users,
-} from "lucide-react";
+import { ChartNoAxesColumn, ClipboardList, FileText, House, Sparkles, Users } from "lucide-react";
 
 const studentItems = [
   { href: "/", label: "Home", Icon: House },
@@ -21,13 +13,12 @@ const studentItems = [
   { href: "/ask-ai", label: "Ask AI", Icon: Sparkles },
 ];
 
-/** An instructor has Overview, Exams, Students, Content and Profile, in the same style. */
+/** An instructor has Overview, Exams, Students and Content, in the same style (Profile opens from the avatar). */
 const instructorItems = [
   { href: "/instructor", label: "Overview", Icon: House },
   { href: "/instructor/exams", label: "Exams", Icon: ClipboardList },
   { href: "/instructor/students", label: "Students", Icon: Users },
   { href: "/instructor/content", label: "Content", Icon: FileText },
-  { href: "/profile", label: "Profile", Icon: User },
 ];
 
 /** The reading screens of the Materials tab have no bottom navigation (DESIGN.md: Reading screen). */

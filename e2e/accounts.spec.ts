@@ -56,7 +56,7 @@ async function finishOnboarding(page: Page, role: Role = "Student") {
   if (role === "Student") {
     // a new student sees the Field of work step between Verify and the introduction
     await expect(page).toHaveURL(/\/field-of-work$/);
-    await page.getByRole("button", { name: "Skip for now" }).click();
+    await page.getByRole("button", { name: "Skip", exact: true }).click();
   }
   await expect(page).toHaveURL(/\/onboarding$/);
   await page.getByRole("button", { name: "Skip" }).click();
@@ -122,7 +122,7 @@ for (const width of [360, 430]) {
       await signUp(page, "Ines Instructor", "ines@example.com", "Instructor");
       await finishOnboarding(page, "Instructor");
       await expect(page.locator("[data-group-readiness]")).toBeVisible();
-      await expect(nav(page).getByRole("link")).toHaveCount(5);
+      await expect(nav(page).getByRole("link")).toHaveCount(4);
     });
 
     test("editing the name shows it on Profile and on Home", async ({ page }) => {

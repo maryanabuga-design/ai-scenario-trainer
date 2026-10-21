@@ -82,7 +82,7 @@ for (const width of [360, 430]) {
       ["/instructor", "Overview"],
       ["/instructor/exams", "Exams"],
       ["/instructor/students", "Students"],
-      ["/profile", "Profile"],
+      ["/instructor/content", "Content"],
     ]) {
       test(`Instructor: ${label} is a sand pill`, async ({ page }) => {
         await checkActive(page, path, label);

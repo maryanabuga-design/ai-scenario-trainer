@@ -24,6 +24,7 @@ export function TextField({
   readOnly = false,
   autoFocus = false,
   action,
+  hideLabel = false,
 }: {
   label: string;
   name: string;
@@ -42,6 +43,8 @@ export function TextField({
   autoFocus?: boolean;
   /** A link under the message (for example Sign in instead). */
   action?: ReactNode;
+  /** Keep the label for screen readers only (the section above already names the field). */
+  hideLabel?: boolean;
 }) {
   const id = useId();
   const errorId = `${id}-error`;
@@ -49,7 +52,7 @@ export function TextField({
   const describedBy = [error ? errorId : null, helper ? helperId : null].filter(Boolean).join(" ");
   return (
     <div className="flex flex-col">
-      <label htmlFor={id} className="type-small-strong mb-1.5">
+      <label htmlFor={id} className={hideLabel ? "sr-only" : "type-small-strong mb-1.5"}>
         {label}
       </label>
       <input

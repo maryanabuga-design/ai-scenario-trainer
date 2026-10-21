@@ -6,6 +6,8 @@ const CODE = "482913";
 const PRIMARY = "rgb(63, 70, 56)";
 const OLIVE_TINT = "rgb(224, 230, 214)";
 const CARD = "rgb(255, 255, 255)";
+const SAND_200 = "rgb(228, 214, 188)";
+const SAND_900 = "rgb(77, 63, 45)";
 const MUTED = "rgb(92, 90, 85)";
 const DISCLAIMER = "Prototype answer: a prepared example, not a live AI. It may be inaccurate.";
 
@@ -96,18 +98,46 @@ for (const width of [360, 430]) {
       await expect(note).toHaveText("All content in this app is educational and non-combat.");
       expect(await note.evaluate((el) => getComputedStyle(el).color)).toBe(MUTED);
       expect(await note.evaluate((el) => getComputedStyle(el).textDecorationLine)).toBe("none");
-      // the pinned buttons
+      // the icons: decorative, in 40px sand-200 circles with a 24px sand-900 icon, a 12px gap before the text
+      for (const field of ["rescue", "paramedic", "military", "civil", "other"]) {
+        const circle = page.locator(`[data-field-icon=${field}]`);
+        const cb = (await circle.boundingBox())!;
+        expect([cb.width, cb.height]).toEqual([40, 40]);
+        expect(await bg(circle)).toBe(SAND_200);
+        expect(await circle.evaluate((el) => getComputedStyle(el).color)).toBe(SAND_900);
+        expect(await circle.evaluate((el) => getComputedStyle(el).borderTopLeftRadius)).not.toBe(
+          "0px",
+        );
+        await expect(circle).toHaveAttribute("aria-hidden", "true");
+        const icon = (await circle.locator("svg").boundingBox())!;
+        expect([icon.width, icon.height]).toEqual([24, 24]);
+        const text = (await page.locator(`[data-field=${field}]`).boundingBox())!;
+        expect(Math.round(text.x - (cb.x + cb.width))).toBe(12);
+      }
+      // the row text stays the accessible name (the icon is not part of it)
+      await expect(page.getByRole("radio", { name: "Military" })).toBeAttached();
+      // Skip: the tertiary action at the top right, like the onboarding's
+      const skip = page.getByRole("button", { name: "Skip", exact: true });
+      const sb = (await skip.boundingBox())!;
+      expect(sb.height).toBeGreaterThanOrEqual(44);
+      expect(sb.x + sb.width).toBeGreaterThan(width - 16 - 14);
+      expect(sb.y).toBeLessThan(80);
+      expect(await bg(skip)).toBe("rgba(0, 0, 0, 0)");
+      expect(await skip.evaluate((el) => getComputedStyle(el).color)).toBe(PRIMARY);
+      expect(
+        await skip.locator("span").evaluate((el) => getComputedStyle(el).textDecorationLine),
+      ).toBe("underline");
+      // the pinned bottom area: only the Primary Continue, disabled until a choice
+      await expect(page.getByRole("button", { name: "Skip for now" })).toHaveCount(0);
       const cont = page.getByRole("button", { name: "Continue" });
-      const skip = page.getByRole("button", { name: "Skip for now" });
       await expect(cont).toBeDisabled();
-      await expect(skip).toBeEnabled();
-      expect(await bg(skip)).toBe(OLIVE_TINT);
       const c = (await cont.boundingBox())!;
-      const s = (await skip.boundingBox())!;
       expect([c.height, c.x, c.width]).toEqual([52, 16, width - 32]);
-      expect([s.height, s.x, s.width]).toEqual([52, 16, width - 32]);
-      expect(s.y).toBeGreaterThan(c.y + c.height);
-      expect(s.y + s.height).toBeLessThanOrEqual(800 - 16 + 1);
+      expect(c.y + c.height).toBeLessThanOrEqual(800 - 16 + 1);
+      const bottomButtons = await page
+        .locator("[data-full-bleed] button:visible")
+        .evaluateAll((els) => els.map((el) => el.textContent));
+      expect(bottomButtons).toEqual(["Continue"]);
       expect(await noSidewaysScroll(page)).toBe(true);
       // a choice enables Continue (the primary fill), which opens the introduction
       await pick(page, "Paramedic or medical");
@@ -127,7 +157,7 @@ for (const width of [360, 430]) {
 
     test("Skip for now stores nothing and continues; Profile says Not set", async ({ page }) => {
       await atStep(page);
-      await page.getByRole("button", { name: "Skip for now" }).click();
+      await page.getByRole("button", { name: "Skip", exact: true }).click();
       await finish(page);
       expect((await account(page, "ana@example.com")).field).toBeNull();
       await page.goto("/profile");
@@ -138,7 +168,7 @@ for (const width of [360, 430]) {
       page,
     }) => {
       await atStep(page);
-      await page.getByRole("button", { name: "Skip for now" }).click();
+      await page.getByRole("button", { name: "Skip", exact: true }).click();
       await expect(page).toHaveURL(/\/onboarding$/);
       await page.goto("/field-of-work");
       await expect(page).toHaveURL(/\/onboarding$/);
@@ -161,7 +191,7 @@ for (const width of [360, 430]) {
       page,
     }) => {
       await atStep(page);
-      await page.getByRole("button", { name: "Skip for now" }).click();
+      await page.getByRole("button", { name: "Skip", exact: true }).click();
       await finish(page);
       await page.goto("/profile");
       const row = page.locator("[data-field-row]");
@@ -177,6 +207,15 @@ for (const width of [360, 430]) {
       await expect(page.getByRole("heading", { name: "Field of work", level: 1 })).toBeVisible();
       await expect(page.getByText("Used to tune examples in Ask AI.")).toBeVisible();
       await expect(page.getByRole("button", { name: "Clear selection" })).toHaveCount(0);
+      // the same icons in the same circles, and no Skip
+      await expect(page.locator("[data-field-icon]:visible")).toHaveCount(5);
+      expect(await bg(page.locator("[data-field-icon=rescue]:visible"))).toBe(SAND_200);
+      expect(
+        await page
+          .locator("[data-field-icon=military]:visible")
+          .evaluate((el) => getComputedStyle(el).color),
+      ).toBe(SAND_900);
+      await expect(page.getByRole("button", { name: "Skip", exact: true })).toHaveCount(0);
       await pick(page, "Military");
       await expect(page.locator("input[name=field-of-work]:checked")).toHaveCount(1);
       expect((await account(page, "ana@example.com")).field).toBe("military");
@@ -242,7 +281,7 @@ for (const width of [360, 430]) {
         if (!url.startsWith("data:") && !url.startsWith("blob:")) requests.push(url);
       });
       await atStep(page);
-      await page.getByRole("button", { name: "Skip for now" }).click();
+      await page.getByRole("button", { name: "Skip", exact: true }).click();
       await finish(page);
       // no field: the invitation, the general suggested questions
       await page.goto("/ask-ai");

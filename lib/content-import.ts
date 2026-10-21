@@ -33,7 +33,10 @@ export type ImportedQuestion = {
 
 // ---- the file --------------------------------------------------------------------------------
 
-export const FILE_TYPES = ["csv", "docx"] as const;
+export const MAX_CSV_BYTES = MAX_FILE_BYTES;
+export const MAX_OTHER_BYTES = 5 * 1024 * 1024;
+
+export const FILE_TYPES = ["csv", "xlsx", "docx", "pdf"] as const;
 export type FileType = (typeof FILE_TYPES)[number];
 
 export const extensionOf = (name: string): string => {
@@ -43,8 +46,18 @@ export const extensionOf = (name: string): string => {
 
 export const fileTypeOf = (name: string): FileType | null => {
   const ext = extensionOf(name);
-  return ext === "csv" || ext === "docx" ? ext : null;
+  return (FILE_TYPES as readonly string[]).includes(ext) ? (ext as FileType) : null;
 };
+
+/** Only a CSV file is really read; the other types show the prepared sample result. */
+export const isRead = (name: string) => fileTypeOf(name) === "csv";
+
+/** The file name without its extension: the title the Import screen starts with. */
+export function titleFromFileName(name: string): string {
+  const dot = name.lastIndexOf(".");
+  const base = (dot > 0 ? name.slice(0, dot) : name).trim();
+  return base.slice(0, 120);
+}
 
 /** "1.2 MB", "34 KB" or "120 bytes". */
 export function sizeText(bytes: number): string {
@@ -53,12 +66,13 @@ export function sizeText(bytes: number): string {
   return `${bytes} bytes`;
 }
 
-/** The message for a file that cannot be read, or null when its name and size are fine. */
+/** The message for a file that cannot be used, or null when its name and size are fine. */
 export function checkFile(file: { name: string; size: number }): string | null {
-  if (fileTypeOf(file.name) === null) return "Choose a .csv or .docx file.";
+  const type = fileTypeOf(file.name);
+  if (type === null) return "Choose a CSV, Excel, Word or PDF file.";
   if (file.size === 0) return "The file is empty.";
-  if (file.size > MAX_FILE_BYTES)
-    return "The file is larger than 1 MB. Split it into smaller files.";
+  if (type === "csv" && file.size > MAX_CSV_BYTES) return "A CSV file may be up to 1 MB.";
+  if (file.size > MAX_OTHER_BYTES) return "The file is larger than 5 MB.";
   return null;
 }
 
@@ -153,9 +167,30 @@ export function readCsv(text: string, setId: string): ReadResult {
   return { ok: true, questions, dropped: body.length - kept.length };
 }
 
+/** A guide topic id written in a CSV cell ("S3", "s3" or "S3 Moving through smoke"), or null. */
+const topicOfCell = (cell: string): string | null => {
+  const match = /^s(10|[1-9])\b/i.exec(cell.trim());
+  return match ? `S${match[1]}` : null;
+};
+
+/** The topic named in a CSV's topic column: the most frequent valid one (the first wins a tie), or null. */
+export function detectTopic(text: string): string | null {
+  const rows = parseCsv(text);
+  const column = (rows[0] ?? []).map(normaliseHeader).indexOf("topic");
+  if (column < 0) return null;
+  const counts = new Map<string, number>();
+  for (const row of rows.slice(1)) {
+    const topic = topicOfCell(row[column] ?? "");
+    if (topic) counts.set(topic, (counts.get(topic) ?? 0) + 1);
+  }
+  let best: string | null = null;
+  for (const [topic, n] of counts) if (best === null || n > counts.get(best)!) best = topic;
+  return best;
+}
+
 // ---- the sample for Word files ----------------------------------------------------------------
 
-export const SAMPLE_LABEL = "Sample result. Word files are not read in this prototype.";
+export const SAMPLE_LABEL = "Sample result. This file type is not read in this prototype.";
 
 /** The prepared sample set shown for a Word file (20 questions, 2 of them flagged). */
 export function sampleQuestions(setId: string): ImportedQuestion[] {

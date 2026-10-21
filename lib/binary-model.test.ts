@@ -38,7 +38,9 @@ describe("one binary pattern: right or wrong, nothing else", () => {
     // (the Instructor's Edit question form has the question and explanation fields: Content, not a session)
     expect(
       containing(/Explain your choice|<textarea/).filter(
-        (file) => file !== "components/InstructorContent/EditQuestionView.tsx",
+        (file) =>
+          file !== "components/InstructorContent/EditQuestionView.tsx" &&
+          file !== "components/InstructorStudents/InviteView.tsx",
       ),
     ).toEqual([]);
   });

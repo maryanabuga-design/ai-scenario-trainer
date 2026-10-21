@@ -33,19 +33,19 @@ describe("the bottom navigation", () => {
     ]);
   });
 
-  it("has Overview, Exams, Students, Content and Profile for an instructor, in the same style, Overview being Instructor Home", () => {
+  it("has Overview, Exams, Students and Content (no Profile) for an instructor, in the same style, Overview being Instructor Home", () => {
     const home = renderToStaticMarkup(<BottomNav activePath="/instructor" role="instructor" />);
-    expect(labels(home)).toEqual(["Overview", "Exams", "Students", "Content", "Profile"]);
+    expect(labels(home)).toEqual(["Overview", "Exams", "Students", "Content"]);
+    expect(home).not.toContain('href="/profile"');
     expect(home).toContain('href="/instructor/content"');
     expect(home).toContain('href="/instructor/students"');
     expect(home).toContain('href="/instructor/exams"');
     expect(home).toContain('href="/instructor"');
-    expect(home).toContain('href="/profile"');
     expect(home).not.toContain('href="/materials"');
     expect(home).toContain("type-caption-strong bg-sand-100 text-sand-900");
     expect(home).not.toContain("pastel-yellow");
     expect(home).toContain("min-h-14");
-    // Overview is the current item on Instructor Home, Exams on the list, Profile on Profile
+    // Overview is the current item on Instructor Home, Exams on the list
     expect(home).toMatch(/aria-current="page"[^>]*>(?:<svg.*?<\/svg>)Overview/);
     const exams = renderToStaticMarkup(
       <BottomNav activePath="/instructor/exams" role="instructor" />,
@@ -56,13 +56,15 @@ describe("the bottom navigation", () => {
       "/instructor/exams/new",
       "/instructor/exams/grp-1",
       "/instructor/students/stu-01",
+      "/instructor/students/invite",
+      "/instructor/topics",
     ]) {
       expect(renderToStaticMarkup(<BottomNav activePath={path} role="instructor" />), path).toBe(
         "",
       );
     }
-    const profile = renderToStaticMarkup(<BottomNav activePath="/profile" role="instructor" />);
-    expect(profile).toMatch(/aria-current="page"[^>]*>(?:<svg.*?<\/svg>)Profile/);
+    // Profile opens from the avatar and has no navigation (like the Student Profile)
+    expect(renderToStaticMarkup(<BottomNav activePath="/profile" role="instructor" />)).toBe("");
     // an instructor has no navigation on a student-only screen
     expect(renderToStaticMarkup(<BottomNav activePath="/materials" role="instructor" />)).toBe("");
   });

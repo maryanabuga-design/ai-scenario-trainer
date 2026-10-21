@@ -13,8 +13,9 @@ export const STEP_NOTE = "All content in this app is educational and non-combat.
 
 /**
  * The registration step "Field of work" (DESIGN.md: Field of work): no picture and no Back (the code
- * is verified), the title, five 72px rows with none chosen, the educational note, and the pinned
- * Primary "Continue" (disabled until a row is chosen) over the Secondary "Skip for now".
+ * is verified), "Skip" at the top right like the onboarding, the title, five 72px rows with an icon
+ * each and none chosen, the educational note, and the pinned Primary "Continue" alone (disabled until
+ * a row is chosen).
  */
 export function FieldOfWorkStep({
   onContinue,
@@ -29,7 +30,13 @@ export function FieldOfWorkStep({
   const [field, setField] = useState<FieldOfWork | null>(initial);
   return (
     <div className="flex flex-col gap-6 pb-4">
-      <header className="flex flex-col gap-2 pt-2">
+      {/* the onboarding's corner: the same row, the same tertiary Skip */}
+      <div data-top-row className="-mt-2 flex h-11 shrink-0 items-center justify-end">
+        <Button variant="tertiary" onClick={onSkip}>
+          Skip
+        </Button>
+      </div>
+      <header className="-mt-4 flex flex-col gap-2">
         <h1 id="field-title" className="type-page-title">
           {STEP_TITLE}
         </h1>
@@ -42,9 +49,6 @@ export function FieldOfWorkStep({
       <ActionBar>
         <Button disabled={field === null} onClick={() => field && onContinue(field)}>
           Continue
-        </Button>
-        <Button variant="secondary" onClick={onSkip}>
-          Skip for now
         </Button>
       </ActionBar>
     </div>

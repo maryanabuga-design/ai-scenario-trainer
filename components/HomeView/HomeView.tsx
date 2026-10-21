@@ -7,7 +7,7 @@ import { buttonClasses } from "@/components/Button/Button";
 import { MiniQuizLink } from "@/components/MiniQuizLink/MiniQuizLink";
 import { Media3D } from "@/components/Media3D/Media3D";
 import { NotificationBell } from "@/components/NotificationBell/NotificationBell";
-import { TileIcon } from "@/components/TileIcon/TileIcon";
+import { Tile } from "@/components/Tile/Tile";
 import {
   HERO_BUTTON_LABEL,
   HERO_SUBTITLE,
@@ -93,16 +93,12 @@ export function HomeView({
       <ul className="grid grid-cols-2 gap-3">
         {tiles.map((tile) => (
           <li key={tile.id}>
-            <Link
+            <Tile
               href={tile.href}
-              className="flex h-full min-h-32 flex-col justify-between gap-4 rounded-card bg-card p-4 shadow-(--card-shadow) has-focus-visible:outline-2"
-            >
-              <Media3D variant="icon" fallback={<TileIcon icon={tileIcons[tile.id]} />} />
-              <span className="flex flex-col gap-0.5">
-                <span className="type-body-strong">{tile.title}</span>
-                <span className="type-small text-text-secondary">{tile.count}</span>
-              </span>
-            </Link>
+              title={tile.title}
+              subtitle={tile.count}
+              icon={tileIcons[tile.id]}
+            />
           </li>
         ))}
       </ul>

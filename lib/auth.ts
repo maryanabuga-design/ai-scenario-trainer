@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { isCorrectCode } from "@/lib/auth-code";
+import { MIGRATED_EMAIL, MIGRATED_NAME } from "@/lib/demo-account";
 import { cleanField } from "@/lib/field-of-work";
 import type { FieldOfWork } from "@/lib/field-of-work";
 import { isEmailFormat, normaliseEmail } from "@/lib/auth-validation";
@@ -42,9 +43,7 @@ export type AuthState = {
 
 export const emptyAuth = (): AuthState => ({ accounts: [], session: null, pending: null });
 
-/** The demo account made for people who already used the app before accounts existed. */
-export const MIGRATED_NAME = "Maryana";
-export const MIGRATED_EMAIL = "maryana@example.com";
+export { MIGRATED_EMAIL, MIGRATED_NAME };
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);

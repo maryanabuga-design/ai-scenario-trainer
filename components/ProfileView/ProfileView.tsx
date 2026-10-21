@@ -83,7 +83,11 @@ export function ProfileView({
       <PageHeaderBand
         title="Profile"
         subtitle="Your account and settings"
-        back={backHref ? { label: "Back to Home", href: backHref } : undefined}
+        back={
+          backHref
+            ? { label: student ? "Back to Home" : "Back to Overview", href: backHref }
+            : undefined
+        }
       />
       <div className="flex flex-col gap-8">
         <Link href="/profile/edit" data-user-card className={rowClass}>

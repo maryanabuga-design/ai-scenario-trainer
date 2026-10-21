@@ -181,8 +181,7 @@ describe("a secondary always comes with a primary above it", () => {
       // Instructor Assign exam: Cancel and Select all; Exam detail: Remind and Close exam, Exam not found.
       // Content: Import (Cancel, Choose file, Remove), Review (Delete set, Unpublish) and Edit question
       // (Delete question, Add image, Remove image), each under at most one Primary.
-      // Field of work: the registration step (Skip for now) and the picker (Clear selection).
-      "components/FieldOfWork/FieldOfWorkStep.tsx",
+      // Field of work: the picker (Clear selection). The step has only the corner Skip (tertiary) and Continue.
       "components/FieldOfWork/FieldPickerView.tsx",
       "components/InstructorContent/EditQuestionView.tsx",
       "components/InstructorContent/ImportView.tsx",
@@ -192,6 +191,8 @@ describe("a secondary always comes with a primary above it", () => {
       // Overview: the nearest exam has a Secondary Assign exam under its card (the Primary is for "No active exam").
       "components/InstructorOverview/InstructorOverviewView.tsx",
       // Instructor Students: Show all (empty filter) and Back to students (unknown id).
+      // Invite students: Copy code, Copy link and Cancel under the Primary Send invitations.
+      "components/InstructorStudents/InviteView.tsx",
       "components/InstructorStudents/StudentDetailView.tsx",
       "components/InstructorStudents/StudentsListView.tsx",
       // Material page: Create again and Read the sample guide, below the primary action.

@@ -22,15 +22,21 @@ import { StudentDetailView } from "@/components/InstructorStudents/StudentDetail
 import { StudentsListView } from "@/components/InstructorStudents/StudentsListView";
 import {
   examRowsFor,
+  notStartedCount,
+  profileStatus,
   profiles,
-  readinessOf,
+  showingLine,
   sortProfiles,
-  studentStatus,
   visibleStudents,
 } from "@/lib/students";
 import { FieldOfWorkStep } from "@/components/FieldOfWork/FieldOfWorkStep";
 import { FieldPickerView } from "@/components/FieldOfWork/FieldPickerView";
 import type { FieldOfWork } from "@/lib/field-of-work";
+import { TopicsView } from "@/components/InstructorTopics/TopicsView";
+import { actionRows } from "@/lib/actions";
+import { topicStandings, weakestTopic } from "@/lib/overview";
+import { InviteView } from "@/components/InstructorStudents/InviteView";
+import { reminderFor, unfinishedExam } from "@/lib/reminders";
 import { ContentView } from "@/components/InstructorContent/ContentView";
 import { EditQuestionView } from "@/components/InstructorContent/EditQuestionView";
 import { ImportView } from "@/components/InstructorContent/ImportView";
@@ -1361,28 +1367,51 @@ export function NotificationsSample({ state }: { state: "exams" | "read" | "empt
 export function InstructorHomeSample({
   state = "default",
 }: {
-  state?: "default" | "few" | "on-track" | "no-exam";
+  state?: "default" | "caught-up" | "no-exam" | "due-soon";
 }) {
   const { sections } = useSourceSheet();
-  const titleOf = (id: string) => sections.find((section) => section.id === id)?.title ?? id;
   const now = new Date(2026, 9, 24, 10, 0).getTime();
-  const exams = state === "no-exam" ? [] : seedGroupExams(now);
+  const seededExams = seedGroupExams(now);
+  const exams =
+    state === "no-exam"
+      ? []
+      : state === "due-soon"
+        ? seededExams.map((e, i) => (i === 0 ? { ...e, deadline: "2026-10-26" } : e))
+        : seededExams;
   const people = participants([{ name: "Maryana", email: "maryana@example.com" }]);
   const everyone = profiles(people, { "maryana@example.com": null });
-  const needs = (p: (typeof everyone)[number]) => studentStatus(readinessOf(p)) === "needs";
-  const list =
-    state === "on-track"
-      ? everyone.filter((p) => !needs(p))
-      : state === "few"
-        ? [...everyone.filter(needs).slice(0, 2), ...everyone.filter((p) => !needs(p))]
-        : everyone;
+  const needs = (p: (typeof everyone)[number]) => profileStatus(p) === "needs";
+  const list = state === "caught-up" ? everyone.filter((p) => !needs(p)) : everyone;
   const exam = nearestActiveExam(exams, now);
   return (
     <InstructorOverviewView
       name="Maryana"
       list={list}
+      actions={actionRows({
+        list,
+        exams,
+        attempts: [],
+        people,
+        drafts: state === "default" ? [{ id: "cdemo", title: "Evacuation routes" }] : [],
+        reminded: new Set(),
+        now,
+      })}
       exam={exam}
       counts={exam ? groupCounts(people, exam, { attempts: [], active: true }) : null}
+      weakest={weakestTopic(list)}
+      topicTitle={(id) => sections.find((section) => section.id === id)?.title ?? id}
+    />
+  );
+}
+
+/** The group Topics screen for the screen review page. */
+export function InstructorTopicsSample() {
+  const { sections } = useSourceSheet();
+  const titleOf = (id: string) => sections.find((section) => section.id === id)?.title ?? id;
+  const people = participants([{ name: "Maryana", email: "maryana@example.com" }]);
+  return (
+    <TopicsView
+      standings={topicStandings(profiles(people, { "maryana@example.com": null }))}
       titleOf={titleOf}
     />
   );
@@ -1465,7 +1494,17 @@ export function InstructorExamsSample({
 export function InstructorStudentsSample({
   state = "all",
 }: {
-  state?: "all" | "needs" | "certified" | "empty" | "detail-needs" | "detail-ready";
+  state?:
+    | "all"
+    | "needs"
+    | "certified"
+    | "empty"
+    | "topic"
+    | "detail-needs"
+    | "detail-ready"
+    | "reminder"
+    | "invite"
+    | "invite-filled";
 }) {
   const { sections } = useSourceSheet();
   const titleOf = (id: string) => sections.find((section) => section.id === id)?.title ?? id;
@@ -1473,10 +1512,27 @@ export function InstructorStudentsSample({
   const exams = seedGroupExams(now);
   const people = participants([{ name: "Maryana", email: "maryana@example.com" }]);
   const all = profiles(people, { "maryana@example.com": null });
-  if (state === "detail-needs" || state === "detail-ready") {
-    const wanted = state === "detail-needs" ? "needs" : "ready";
+  if (state === "invite" || state === "invite-filled") {
+    return (
+      <InviteView
+        pending={
+          state === "invite"
+            ? []
+            : [
+                { email: "mira@example.com", invitedAt: new Date(2026, 9, 21).getTime() },
+                { email: "tomas@example.com", invitedAt: new Date(2026, 9, 21).getTime() },
+              ]
+        }
+        initialText={state === "invite-filled" ? "new.person@example.com, not-an-address" : ""}
+        onSend={() => undefined}
+        onCancel={() => undefined}
+      />
+    );
+  }
+  if (state === "detail-needs" || state === "detail-ready" || state === "reminder") {
+    const wanted = state === "detail-ready" ? "ready" : "needs";
     const profile = sortProfiles(all).find(
-      (p) => !p.participant.local && studentStatus(readinessOf(p)) === wanted,
+      (p) => !p.participant.local && profileStatus(p) === wanted,
     )!;
     return (
       <StudentDetailView
@@ -1486,16 +1542,37 @@ export function InstructorStudentsSample({
         rows={examRowsFor(profile.participant, exams, [], now)}
         titleOf={titleOf}
         certificateHref={() => null}
+        reminder={
+          reminderFor(profile, unfinishedExam(profile.participant, exams, [], now), titleOf).text
+        }
+        onSendReminder={() => undefined}
+        confirmingInitially={state === "reminder"}
+        dialogInline
       />
     );
   }
-  const filter = state === "empty" ? "certified" : state;
+  const filter = state === "empty" ? "certified" : state === "topic" ? "all" : state;
   return (
     <StudentsListView
-      shown={state === "empty" ? [] : visibleStudents(all, filter, exams, [], now)}
+      shown={
+        state === "empty"
+          ? []
+          : visibleStudents(all, filter, exams, [], now, state === "topic" ? "S3" : null)
+      }
       count={people.length}
+      notStarted={notStartedCount(all)}
+      topic={state === "topic" ? "S3" : null}
+      origin={state === "topic" ? "topics" : state === "needs" ? "overview" : null}
+      showing={
+        state === "topic"
+          ? showingLine(filter, { id: "S3", title: titleOf("S3") })
+          : state === "needs"
+            ? showingLine("needs", null)
+            : null
+      }
       filter={filter}
       onFilter={() => undefined}
+      onClear={() => undefined}
     />
   );
 }
@@ -1567,23 +1644,19 @@ export function InstructorContentSample({
   if (state === "import" || state === "import-filled" || state === "import-error") {
     return (
       <ImportView
-        titleOf={titleOf}
-        onRead={() => undefined}
+        topicTitle={titleOf}
+        draft={{
+          title: state === "import" ? "" : "Evacuation routes",
+          topic: null,
+          detected: state === "import-filled" ? "S2" : null,
+          file: state === "import" ? null : { name: "evacuation routes.csv", size: 18_400 },
+        }}
+        onFile={() => undefined}
+        onRemoveFile={() => undefined}
+        onTitle={() => undefined}
+        onImport={() => undefined}
         onCancel={() => undefined}
-        readError={
-          state === "import-error"
-            ? "The file is larger than 1 MB. Split it into smaller files."
-            : ""
-        }
-        initial={
-          state === "import"
-            ? undefined
-            : {
-                title: "Evacuation routes",
-                topic: "S2",
-                ...(state === "import-filled" && { file: { name: "questions.csv", size: 18_400 } }),
-              }
-        }
+        readError={state === "import-error" ? "A CSV file may be up to 1 MB." : ""}
         dialogInline
       />
     );

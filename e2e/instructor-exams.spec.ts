@@ -60,14 +60,8 @@ for (const width of [360, 430]) {
       page,
     }) => {
       await page.goto("/instructor");
-      await expect(navLinks(page)).toHaveCount(5);
-      await expect(navLinks(page)).toHaveText([
-        "Overview",
-        "Exams",
-        "Students",
-        "Content",
-        "Profile",
-      ]);
+      await expect(navLinks(page)).toHaveCount(4);
+      await expect(navLinks(page)).toHaveText(["Overview", "Exams", "Students", "Content"]);
       await page
         .getByRole("navigation", { name: "Main" })
         .getByRole("link", { name: "Exams" })

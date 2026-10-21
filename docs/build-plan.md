@@ -143,3 +143,6 @@ One commit per screen group, in this order. Steps 1 to 82 are built (step 81, th
 141. Instructor Content (25 Oct 2026): Content tab, CSV import with flags, Review, Edit question, Publish and Unpublish, published sets in Training (Quiz) outside readiness and the exam. Screenshots: `docs/screens/133-*`.
 142. The Ask AI row restyled as a tertiary inline action with an icon (26 Oct 2026). Screenshots: `docs/screens/134-*`.
 143. Field of work (26 Oct 2026): the registration step, the Profile row and picker, and the tuned Ask AI (suggested questions and an example line per field). Screenshots: `docs/screens/135-*`.
+144. Instructor mobile fixes (27 Oct 2026): honest group numbers, one Student row, Weakest topics filter, Import in the order File, Title, Topic, Invite students and Send reminder. Screenshots: `docs/screens/136-*`.
+145. Instructor tile dashboard (27 Oct 2026): the Overview as four tiles, the Topics screen, the avatar instead of the Profile tab and the filter line on Students. Screenshots: `docs/screens/137-*`.
+146. Instructor action dashboard (27 Oct 2026): the tiles replaced by NEEDS YOUR ACTION, the exam card with not started, the weakest topic with Assign exam on this topic, and the weekly delta. Screenshots: `docs/screens/138-*`.

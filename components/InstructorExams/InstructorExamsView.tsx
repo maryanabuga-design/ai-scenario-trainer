@@ -8,6 +8,7 @@ import { Button, ButtonLink } from "@/components/Button/Button";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { ExamCard } from "@/components/InstructorExams/ExamCard";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
+import { ProfileAvatar } from "@/components/ProfileAvatar/ProfileAvatar";
 import { DEMO_NOTE, groupCounts } from "@/lib/cohort";
 import type { Attempt, Participant } from "@/lib/cohort";
 import type { GroupExam } from "@/lib/group-exams";
@@ -60,7 +61,7 @@ export function InstructorExamsView({
 
   return (
     <div className="flex flex-col gap-4 pb-4">
-      <PageHeaderBand title="Exams" subtitle="Assign exams to Group A" />
+      <PageHeaderBand title="Exams" subtitle="Assign exams to Group A" action={<ProfileAvatar />} />
       <ButtonLink href="/instructor/exams/new">Assign exam</ButtonLink>
 
       {exams.length === 0 ? (

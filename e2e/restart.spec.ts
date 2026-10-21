@@ -18,7 +18,7 @@ async function signUp(page: Page, name: string, email: string) {
 async function finishOnboarding(page: Page) {
   // a new student first sees the Field of work step
   await expect(page).toHaveURL(/\/field-of-work$/);
-  await page.getByRole("button", { name: "Skip for now" }).click();
+  await page.getByRole("button", { name: "Skip", exact: true }).click();
   await expect(page).toHaveURL(/\/onboarding$/);
   await page.getByRole("button", { name: "Skip" }).click();
   await expect(page).toHaveURL(/\/$/);

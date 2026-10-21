@@ -7,7 +7,9 @@ import { Button, ButtonLink } from "@/components/Button/Button";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { SetCard } from "@/components/InstructorContent/SetCard";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
+import { ProfileAvatar } from "@/components/ProfileAvatar/ProfileAvatar";
 import type { ContentSet } from "@/lib/content-sets";
+import { clearDraft } from "@/lib/import-draft";
 
 export const CONTENT_EMPTY = "No imported sets yet. Import questions from a file to create one.";
 export const CONTENT_NOTE = "Imported content stays in this browser (prototype).";
@@ -47,8 +49,14 @@ export function ContentView({
 
   return (
     <div className="flex flex-col gap-4 pb-4">
-      <PageHeaderBand title="Content" subtitle="Questions for your students" />
-      <ButtonLink href="/instructor/content/import">Import questions</ButtonLink>
+      <PageHeaderBand
+        title="Content"
+        subtitle="Questions for your students"
+        action={<ProfileAvatar />}
+      />
+      <ButtonLink href="/instructor/content/import" onClick={clearDraft}>
+        Import questions
+      </ButtonLink>
 
       <section aria-labelledby="sets-title" className="flex flex-col gap-3">
         <h2 id="sets-title" className="type-label text-text-secondary">

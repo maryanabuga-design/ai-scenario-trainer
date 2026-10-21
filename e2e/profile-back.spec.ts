@@ -17,7 +17,7 @@ const roles = [
   { role: "Instructor", home: /\/instructor$/, homePath: "/instructor", state: instructor },
 ] as const;
 
-const backHome = (page: Page) => page.getByRole("link", { name: "Back to Home" });
+const backHome = (page: Page) => page.getByRole("link", { name: /^Back to (Home|Overview)$/ });
 
 async function atHome(page: Page, home: RegExp) {
   await expect(page).toHaveURL(home);
@@ -60,10 +60,9 @@ for (const width of [360, 430]) {
           await page.goto("/materials");
           await page.locator("[data-page-header-band] [data-avatar]:visible").click();
         } else {
-          await page
-            .getByRole("navigation", { name: "Main" })
-            .getByRole("link", { name: "Profile" })
-            .click();
+          // an Instructor opens Profile from the avatar of a tab (Exams), not from the navigation
+          await page.goto("/instructor/exams");
+          await page.locator("[data-page-header-band] [data-avatar]:visible").click();
         }
         await expect(page).toHaveURL(/\/profile$/);
         await backHome(page).click();

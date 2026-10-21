@@ -2,12 +2,11 @@
 
 import { Award, CircleCheck, CircleDashed, RotateCcw } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import Link from "next/link";
-import { Chevron } from "@/components/Chevron/Chevron";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { IconTile } from "@/components/IconTile/IconTile";
+import { ExamLine, StudentListRow } from "@/components/InstructorStudents/StudentRow";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { DEMO_NOTE, statusText } from "@/lib/cohort";
 import type { ExamStatus, GroupCounts, StudentRow } from "@/lib/cohort";
@@ -153,36 +152,21 @@ export function ExamDetailView({
         <ul className="flex flex-col gap-2">
           {rows.map(({ participant, status }) => {
             const look = statusLook[status.kind];
-            const Icon = look.icon;
             return (
               <li key={participant.id} data-student-row={participant.id} data-status={status.kind}>
-                <Link
+                <StudentListRow
+                  id={participant.id}
                   href={`/instructor/students/${encodeURIComponent(participant.id)}?from=exam&exam=${exam.id}`}
-                  className="flex h-[72px] items-center gap-3 rounded-card bg-card px-4 shadow-(--card-shadow) has-focus-visible:outline-2"
-                >
-                  <span
-                    aria-hidden="true"
-                    className="type-body-strong flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-olive-tint text-primary"
-                  >
-                    {participant.initials}
-                  </span>
-                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <span className="type-body-strong truncate">
-                      {participant.name}
-                      {participant.local && (
-                        <span className="type-small font-normal text-text-secondary">
-                          {" "}
-                          · Your demo account
-                        </span>
-                      )}
-                    </span>
-                    <span className={`type-small flex items-center gap-1.5 ${look.ink}`}>
-                      <Icon size={14} strokeWidth={2} aria-hidden="true" className="shrink-0" />
-                      <span className="truncate">{statusText(status)}</span>
-                    </span>
-                  </span>
-                  <Chevron />
-                </Link>
+                  name={participant.name}
+                  initials={participant.initials}
+                  second={
+                    <ExamLine
+                      tone={look.tone}
+                      icon={look.icon}
+                      text={`${participant.local ? "Your demo account · " : ""}${statusText(status)}`}
+                    />
+                  }
+                />
               </li>
             );
           })}

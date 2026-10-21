@@ -2,9 +2,10 @@ import { useEffect, useMemo } from "react";
 import seed from "@/content/notifications.json";
 import { DAILY_GOAL, PASS_MARK } from "@/lib/config";
 import { isoDay } from "@/lib/exam-deadline";
+import { MIGRATED_EMAIL } from "@/lib/demo-account";
 import { collapseReminders, useNotices } from "@/lib/group-store";
 import type { Notice } from "@/lib/group-store";
-import { createStore } from "@/lib/store";
+import { createStore, storageNamespace } from "@/lib/store";
 import type { FinishedSession } from "@/lib/session";
 
 /**
@@ -110,7 +111,13 @@ export function seedNotifications(now: number): AppNotification[] {
 }
 
 /** The list with the instructor's notices added once each (an id already in the list is never added again). */
-export function withNotices(list: AppNotification[], notices: Notice[]): AppNotification[] {
+export function withNotices(
+  list: AppNotification[],
+  allNotices: Notice[],
+  email: string | null = null,
+): AppNotification[] {
+  // a notice for one account (a reminder to a student) reaches only that account
+  const notices = allNotices.filter((notice) => !notice.to || notice.to === email);
   return notices.reduce((current, notice) => {
     // a repeated reminder updates the one already there: a new date, unread again
     const old = current.find((n) => n.id === notice.id);
@@ -258,15 +265,18 @@ export function useNotifications(): AppNotification[] | "loading" {
     [stored],
   );
   const notices = useNotices();
+  // the signed-in account's email: its storage suffix (the migrated account has none)
+  const suffix = storageNamespace();
+  const email = suffix === "" ? MIGRATED_EMAIL : suffix.startsWith(":") ? suffix.slice(1) : null;
   useEffect(() => {
     if (list === null) readOrSeed(Date.now());
   }, [list]);
   // the instructor's notices reach this account once each
   useEffect(() => {
     if (list === null || list === "loading" || notices === "loading") return;
-    const merged = withNotices(list, notices);
+    const merged = withNotices(list, notices, email);
     if (merged !== list) store.write(merged);
-  }, [list, notices]);
+  }, [list, notices, email]);
   return list === null ? "loading" : list;
 }
 

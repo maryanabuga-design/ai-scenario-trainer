@@ -47,6 +47,7 @@ import {
   OnboardingSample,
   ProfileSample,
   InstructorHomeSample,
+  InstructorTopicsSample,
   InstructorExamsSample,
   InstructorContentSample,
   InstructorStudentsSample,
@@ -802,22 +803,22 @@ export default function Screens() {
               <AboutSample confirming />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor: Overview (Group readiness, Needs attention with See all, Weakest topics, Exams)">
+          <PhoneFrame label="Instructor: Overview (readiness with delta, Needs your action, Exams, Weakest topic)">
             <Screen nav="/instructor" role="instructor">
               <InstructorHomeSample />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor: Overview, few students need attention">
+          <PhoneFrame label="Instructor: Overview, exam due soon (the first action row)">
             <Screen nav="/instructor" role="instructor">
-              <InstructorHomeSample state="few" />
+              <InstructorHomeSample state="due-soon" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor: Overview, everyone on track">
+          <PhoneFrame label="Instructor: Overview, All caught up">
             <Screen nav="/instructor" role="instructor">
-              <InstructorHomeSample state="on-track" />
+              <InstructorHomeSample state="caught-up" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor: Overview, no active exam">
+          <PhoneFrame label="Instructor: Overview, no active exam (the one Primary)">
             <Screen nav="/instructor" role="instructor">
               <InstructorHomeSample state="no-exam" />
             </Screen>
@@ -833,7 +834,7 @@ export default function Screens() {
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Content: built-in topics open">
-            <Screen role="instructor">
+            <Screen nav="/instructor/content" role="instructor">
               <InstructorContentSample state="built-in" />
             </Screen>
           </PhoneFrame>
@@ -842,7 +843,7 @@ export default function Screens() {
               <InstructorContentSample state="import" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Import: filled">
+          <PhoneFrame label="Import: filled (topic found in the file)">
             <Screen role="instructor">
               <InstructorContentSample state="import-filled" />
             </Screen>
@@ -880,6 +881,16 @@ export default function Screens() {
           <PhoneFrame label="Edit question">
             <Screen role="instructor">
               <InstructorContentSample state="edit-ok" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Topics (all ten, weakest first)">
+            <Screen role="instructor">
+              <InstructorTopicsSample />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Students filtered from Needs your action (Attention, Back to Overview)">
+            <Screen nav="/instructor/students" role="instructor">
+              <InstructorStudentsSample state="needs" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Instructor: Exams list (Assign exam, ACTIVE, Show closed exams)">
@@ -940,6 +951,26 @@ export default function Screens() {
           <PhoneFrame label="Instructor: Students list, empty filter">
             <Screen nav="/instructor/students" role="instructor">
               <InstructorStudentsSample state="empty" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Students below the pass mark in S3 (topic filter, Clear filter)">
+            <Screen nav="/instructor/students" role="instructor">
+              <InstructorStudentsSample state="topic" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Send reminder dialog">
+            <Screen role="instructor">
+              <InstructorStudentsSample state="reminder" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Invite students (empty)">
+            <Screen role="instructor">
+              <InstructorStudentsSample state="invite" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Invite students (pending list, an invalid address)">
+            <Screen role="instructor">
+              <InstructorStudentsSample state="invite-filled" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Instructor: Student detail, Needs attention">

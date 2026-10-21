@@ -171,7 +171,7 @@ for (const width of [360, 430]) {
       await expect(page.getByRole("heading", { name: /^Hi, / })).toBeVisible();
     });
 
-    test("switching to Instructor opens Instructor Home with a five-item navigation (Overview, Exams, Students, Content, Profile)", async ({
+    test("switching to Instructor opens Instructor Home with a four-item navigation (Overview, Exams, Students, Content)", async ({
       page,
     }) => {
       await open(page, "/profile");
@@ -181,12 +181,11 @@ for (const width of [360, 430]) {
       await expect(main.getByRole("heading", { level: 1 })).toContainText("Hi, ");
       await expect(main.locator("[data-group-readiness]")).toBeVisible();
       const links = nav(page).getByRole("link");
-      await expect(links).toHaveCount(5);
+      await expect(links).toHaveCount(4);
       await expect(links.nth(0)).toHaveText("Overview");
       await expect(links.nth(1)).toHaveText("Exams");
       await expect(links.nth(2)).toHaveText("Students");
       await expect(links.nth(3)).toHaveText("Content");
-      await expect(links.nth(4)).toHaveText("Profile");
       await expect(links.nth(0)).toHaveAttribute("aria-current", "page");
       for (const link of await links.all()) {
         expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
@@ -207,7 +206,7 @@ for (const width of [360, 430]) {
       await expect(main.getByText("Reset progress")).toHaveCount(0);
       await expect(main.getByRole("link", { name: "How the app works" })).toBeVisible();
       await expect(main.getByRole("link", { name: "About this prototype" })).toBeVisible();
-      await expect(nav(page).getByRole("link")).toHaveCount(5);
+      await expect(nav(page).getByRole("link")).toHaveCount(0);
       expect(await noSidewaysScroll(page)).toBe(true);
       expect(errors()).toEqual([]);
     });
@@ -262,7 +261,7 @@ for (const width of [360, 430]) {
       await expect(page).toHaveURL(/\/instructor$/);
       await page.reload();
       await expect(page).toHaveURL(/\/instructor$/);
-      await expect(nav(page).getByRole("link")).toHaveCount(5);
+      await expect(nav(page).getByRole("link")).toHaveCount(4);
       await page.getByRole("link", { name: "Profile" }).click();
       await expect(page.locator("[data-role-label]")).toHaveText("Instructor");
     });

@@ -17,6 +17,7 @@ type Q = { id: string; section: string; correctOptionId: string; options: { id: 
 const quiz: Q[] = JSON.parse(readFileSync("content/quiz-bank.json", "utf8")).questions;
 
 const OLIVE_TINT = "rgb(224, 230, 214)";
+const PRIMARY = "rgb(63, 70, 56)";
 const SUCCESS_INK = "rgb(68, 104, 58)";
 const ATTENTION_INK = "rgb(111, 81, 32)";
 const noSidewaysScroll = (page: Page) =>
@@ -38,7 +39,7 @@ const names = (page: Page) =>
     ),
   );
 
-const rank = { needs: 0, almost: 1, ready: 2 } as Record<string, number>;
+const rank = { needs: 0, almost: 1, ready: 2, "not-started": 3 } as Record<string, number>;
 const statusFor = (readiness: number) =>
   readiness >= 80 ? "ready" : readiness >= 60 ? "almost" : "needs";
 
@@ -46,17 +47,11 @@ for (const width of [360, 430]) {
   test.describe(`Instructor students at ${width}px`, () => {
     test.use({ viewport: { width, height: 800 }, storageState: instructor });
 
-    test("the navigation is Overview, Exams, Students, Profile; the detail has no navigation", async ({
+    test("the navigation is Overview, Exams, Students, Content; the detail has no navigation", async ({
       page,
     }) => {
       await page.goto("/instructor/students");
-      await expect(navLinks(page)).toHaveText([
-        "Overview",
-        "Exams",
-        "Students",
-        "Content",
-        "Profile",
-      ]);
+      await expect(navLinks(page)).toHaveText(["Overview", "Exams", "Students", "Content"]);
       await expect(
         page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Students" }),
       ).toHaveAttribute("aria-current", "page");
@@ -65,16 +60,27 @@ for (const width of [360, 430]) {
       await expect(page.getByRole("navigation", { name: "Main" })).toHaveCount(0);
     });
 
-    test("the list: band, group line, selector, 72px rows with chevron, sorted by status, no percent", async ({
+    test("the list: band with the avatar, Primary Invite students, selector, 72px rows with the status line, sorted, no percent", async ({
       page,
     }) => {
       await page.goto("/instructor/students");
       await expect(page.getByRole("heading", { name: "Students", level: 1 })).toBeVisible();
       await expect(page.locator("[data-page-header-band]:visible")).toContainText(
-        "Group A · 15 students",
+        "Group A · 15 students · 2 not started",
       );
+      await expect(page.locator("[data-page-header-band] [data-avatar]")).toBeVisible();
+      const invite = page.getByRole("link", { name: "Invite students" });
+      expect((await invite.boundingBox())!.height).toBe(52);
+      expect(await invite.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(PRIMARY);
+      // the selector: three one-line options of 44px
       const radios = page.getByRole("radio");
       await expect(radios).toHaveCount(3);
+      for (const label of ["All", "Attention", "Certified"]) {
+        const option = page.locator("label", { hasText: new RegExp(`^${label}$`) });
+        const box = (await option.boundingBox())!;
+        expect(box.height).toBeGreaterThanOrEqual(44);
+        expect(await option.evaluate((el) => el.scrollHeight <= el.clientHeight + 1)).toBe(true);
+      }
       await expect(page.getByRole("radio", { name: "All" })).toBeChecked();
       await expect(rows(page)).toHaveCount(15);
       for (const row of await rows(page).all()) {
@@ -84,15 +90,20 @@ for (const width of [360, 430]) {
         expect(await row.evaluate((el) => !!el.querySelector("svg.lucide-chevron-right"))).toBe(
           true,
         );
-        // the avatar, a one-line name and a muted line "Field · n topics to review"
-        await expect(row.locator("[data-status-text]")).toBeVisible();
+        // the status with its icon in the second line, on one line, nothing at the right but the chevron
+        const line = row.locator("[data-student-line]");
+        await expect(line.locator("[data-status-text]")).toBeVisible();
+        // one line, not truncated (the local account row may be cut with an ellipsis)
+        if ((await row.getAttribute("data-student")) !== "maryana@example.com") {
+          expect(await line.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+        }
+        expect(await line.evaluate((el) => el.getBoundingClientRect().height)).toBeLessThan(24);
       }
-      await expect(rows(page).first().locator("span.type-small.truncate").first()).toContainText(
-        /(Rescue services|Paramedics|Military|Civil protection|Other|Not set) · (\d+ topics? to review|No topics to review)/,
+      await expect(rows(page).first().locator("[data-student-line]")).toContainText(
+        /^(Needs attention|Almost ready|Ready|Not started)/,
       );
       const order = (await statuses(page)).map((s) => rank[s]);
       expect(order).toEqual([...order].sort((a, b) => a - b));
-      // alphabetical inside each status
       const list = await names(page);
       const kinds = await statuses(page);
       for (let i = 1; i < list.length; i++) {
@@ -100,7 +111,11 @@ for (const width of [360, 430]) {
           expect(list[i - 1].localeCompare(list[i])).toBeLessThanOrEqual(0);
       }
       await expect(page.locator('[data-student="maryana@example.com"]')).toContainText(
-        "Your demo account",
+        "Your demo account · Not started",
+      );
+      // the field of work is not in the row
+      expect(await page.locator("main").innerText()).not.toMatch(
+        /Rescue services|Paramedic|Military/,
       );
       expect(await page.locator("main").innerText()).not.toContain("%");
       await expect(page.locator("[data-demo-note]:visible")).toHaveText(
@@ -125,11 +140,11 @@ for (const width of [360, 430]) {
       }
     });
 
-    test("the filters: Needs attention and Certified, and the choice is in the address", async ({
+    test("the filters: Attention and Certified, and the choice is in the address", async ({
       page,
     }) => {
       await page.goto("/instructor/students");
-      await page.locator("label", { hasText: /^Needs attention$/ }).click();
+      await page.locator("label", { hasText: /^Attention$/ }).click();
       await expect(page).toHaveURL(/filter=needs$/);
       const needs = await statuses(page);
       expect(needs.length).toBeGreaterThan(0);
@@ -143,7 +158,7 @@ for (const width of [360, 430]) {
       await expect(rows(page)).toHaveCount(15);
       // a filter in the address is honoured on a fresh load
       await page.goto("/instructor/students?filter=needs");
-      await expect(page.getByRole("radio", { name: "Needs attention" })).toBeChecked();
+      await expect(page.getByRole("radio", { name: "Attention" })).toBeChecked();
     });
 
     test("Back from a student returns to the same filter", async ({ page }) => {
@@ -154,7 +169,7 @@ for (const width of [360, 430]) {
       await expect(page).toHaveURL(/\/instructor\/students\/.+filter=needs/);
       await page.getByRole("link", { name: "Back to students" }).click();
       await expect(page).toHaveURL(/\/instructor\/students\?filter=needs$/);
-      await expect(page.getByRole("radio", { name: "Needs attention" })).toBeChecked();
+      await expect(page.getByRole("radio", { name: "Attention" })).toBeChecked();
       await expect(page.locator(`[data-student="${id}"]:visible`)).toBeVisible();
     });
 
@@ -168,7 +183,9 @@ for (const width of [360, 430]) {
       await expect(
         page.getByRole("heading", { name: listName.split(" · ")[0].trim(), level: 1 }),
       ).toBeVisible();
-      await expect(page.locator("[data-page-header-band]:visible")).toContainText("Group A");
+      await expect(page.locator("[data-field-line]")).toHaveText(
+        /^(Rescue services|Paramedic|Military|Civil protection|Other|Not set)$/,
+      );
       const number = await page.locator("[data-readiness-number]").innerText();
       const readiness = Number(/(\d+)%/.exec(number)![1]);
       // the list status follows the thresholds on this very figure
@@ -187,13 +204,14 @@ for (const width of [360, 430]) {
         expect(
           await card.evaluate((el) => el.querySelectorAll("svg.lucide-chevron-right").length),
         ).toBe(0);
-        await expect(card).toContainText(/\d+ of \d+ correct/);
+        await expect(card).toContainText(/\d+ of \d+ correct|Not practised yet/);
       }
       const review = page.locator("[data-needs-review]:visible").first();
       await expect(review).toHaveText("Needs review");
       expect(await review.evaluate((el) => getComputedStyle(el).color)).toBe(ATTENTION_INK);
-      // read-only: no buttons on the screen
-      await expect(page.locator("main button")).toHaveCount(0);
+      // read-only apart from the one Secondary "Send reminder" at the bottom
+      await expect(page.locator("main button:visible")).toHaveCount(1);
+      await expect(page.getByRole("button", { name: "Send reminder" })).toBeVisible();
       for (const exam of await page.locator("[data-exam-row]:visible").all()) {
         expect((await exam.boundingBox())!.height).toBe(72);
       }
@@ -267,11 +285,9 @@ for (const width of [360, 430]) {
       );
       await page.goto("/instructor/students/maryana%40example.com");
       await expect(page.getByRole("heading", { name: "Maryana", level: 1 })).toBeVisible();
-      await expect(page.locator("[data-page-header-band]:visible")).toContainText(
-        "Not set · Group A",
-      );
+      await expect(page.locator("[data-field-line]")).toHaveText("Not set");
       // the real counts: 8 of the 40 questions of S1 are answered right (the Progress calculation)
-      await expect(page.locator('[data-topic-row="S1"]')).toContainText("8 of 40 correct");
+      await expect(page.locator('[data-topic-row="S1"]')).toContainText("8 of 12 correct");
       // Certified with a certificate: the row opens the certificate, read-only
       const certified = page.locator('[data-exam-row="seed-active"]');
       await expect(certified).toContainText("Certified · 18 of 20 correct");

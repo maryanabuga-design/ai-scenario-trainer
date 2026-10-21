@@ -13,9 +13,10 @@ import {
   filterFrom,
   groupLine,
   localProfile,
+  profileStatus,
   profiles,
   readinessOf,
-  reviewLine,
+  rowText,
   seededProfile,
   sortProfiles,
   statusDetail,
@@ -52,14 +53,15 @@ describe("a student's figures", () => {
       for (const row of profile.topics) {
         expect(row.total).toBe(topicQuestionCount(row.sectionId));
         expect(row.correct).toBeGreaterThanOrEqual(0);
-        expect(row.correct).toBeLessThanOrEqual(row.total);
+        expect(row.correct).toBeLessThanOrEqual(row.answered);
+        expect(row.answered).toBeLessThanOrEqual(row.total);
       }
     }
   });
 
   it("gives the demo group a spread of statuses", () => {
-    const kinds = new Set(all.map((p) => studentStatus(readinessOf(p))));
-    expect(kinds).toEqual(new Set(["ready", "almost", "needs"]));
+    const kinds = new Set(all.map((p) => profileStatus(p)));
+    expect(kinds).toEqual(new Set(["ready", "almost", "needs", "not-started"]));
   });
 
   it("is the Progress readiness for a local account (the same calculation)", () => {
@@ -83,37 +85,55 @@ describe("a student's figures", () => {
     expect(readinessOf(localProfile(people[0], null))).toBe(0);
   });
 
-  it("counts topics below the pass mark as 'to review' and words the line", () => {
+  it("counts topics below the pass mark (80% of the answers given) as 'to review', never more than answered", () => {
+    const row = (sectionId: string, answered: number, correct: number, total = 10) => ({
+      sectionId,
+      answered,
+      correct,
+      total,
+    });
     const profile = {
       participant: people[1],
       field: "rescue" as const,
-      topics: [
-        { sectionId: "S1", correct: 40, total: 40 },
-        { sectionId: "S2", correct: 4, total: 6 },
-        { sectionId: "S3", correct: 4, total: 4 },
-        { sectionId: "S4", correct: 5, total: 5 },
-      ],
+      topics: [row("S1", 40, 40, 40), row("S2", 5, 4, 6), row("S3", 4, 3, 4), row("S4", 0, 0, 5)],
     };
-    expect(topicNeedsReview(profile.topics[1])).toBe(true);
-    expect(topicNeedsReview(profile.topics[2])).toBe(false);
+    expect(topicNeedsReview(profile.topics[0])).toBe(false);
+    expect(topicNeedsReview(profile.topics[1])).toBe(false); // 4 of 5 is exactly 80%
+    expect(topicNeedsReview(profile.topics[2])).toBe(true); // 3 of 4 is 75%
+    expect(topicNeedsReview(profile.topics[3])).toBe(false); // nothing answered: neither
     expect(topicsToReview(profile)).toBe(1);
-    expect(reviewLine(profile)).toBe("Rescue services · 1 topic to review");
-    expect(reviewLine({ ...profile, field: null, topics: [profile.topics[0]] })).toBe(
-      "Not set · No topics to review",
-    );
-    expect(reviewLine({ ...profile, topics: [profile.topics[1], profile.topics[1]] })).toBe(
-      "Rescue services · 2 topics to review",
-    );
     expect(fieldLabel("paramedic")).toBe("Paramedic");
     expect(fieldLabel(null)).toBe("Not set");
+  });
+
+  it("words the second line of a row: the status, then the short 'to review', or the local account", () => {
+    const row = (answered: number, correct: number) => ({
+      sectionId: "S1",
+      answered,
+      correct,
+      total: 40,
+    });
+    const base = { participant: people[1], field: null };
+    const bad = { ...base, topics: [row(10, 5), { ...row(10, 5), sectionId: "S2" }] };
+    expect(rowText(bad)).toBe("Needs attention · 2 to review");
+    const ready = {
+      ...base,
+      topics: [row(40, 38), { ...row(40, 40), sectionId: "S2", total: 40 }],
+    };
+    expect(profileStatus(ready)).toBe("ready");
+    expect(rowText(ready)).toBe("Ready · all topics on track");
+    expect(rowText({ ...base, topics: [row(0, 0)] })).toBe("Not started");
+    expect(rowText({ ...base, participant: people[0], topics: [row(0, 0)] })).toBe(
+      "Your demo account · Not started",
+    );
   });
 });
 
 describe("the list", () => {
-  it("sorts Needs attention first, then Almost ready, then Ready, alphabetical inside", () => {
+  it("sorts Needs attention first, then Almost ready, then Ready, then Not started, alphabetical inside", () => {
     const list = sortProfiles(all);
     const ranks = list.map(
-      (p) => ({ needs: 0, almost: 1, ready: 2 })[studentStatus(readinessOf(p))],
+      (p) => ({ needs: 0, almost: 1, ready: 2, "not-started": 3 })[profileStatus(p)],
     );
     expect(ranks).toEqual([...ranks].sort((a, b) => a - b));
     for (let i = 1; i < list.length; i++) {
@@ -130,8 +150,8 @@ describe("the list", () => {
     const needs = visibleStudents(all, "needs", exams, [], now);
     expect(needs.length).toBeGreaterThan(0);
     for (const p of needs) expect(readinessOf(p)).toBeLessThan(60);
-    // the local account has nothing answered, so it needs attention too
-    expect(needs.some((p) => p.participant.local)).toBe(true);
+    // the local account has nothing answered: it is Not started, not Needs attention
+    expect(needs.some((p) => p.participant.local)).toBe(false);
   });
 
   it("Certified keeps the students certified for at least one exam, the same statuses as the Exam detail", () => {
@@ -161,6 +181,7 @@ describe("the list", () => {
   it("words the group line and the status detail", () => {
     expect(groupLine("Group A", 14)).toBe("Group A · 14 students");
     expect(groupLine("Group A", 1)).toBe("Group A · 1 student");
+    expect(groupLine("Group A", 15, 2)).toBe("Group A · 15 students · 2 not started");
     expect(statusDetail({ kind: "certified", correct: 17, total: 20 })).toBe(
       "Certified · 17 of 20 correct",
     );

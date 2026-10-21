@@ -266,7 +266,7 @@ for (const viewport of viewports) {
       await expect(page.getByLabel("Digit 2 of 6")).toHaveValue("8");
       await expect(page.getByLabel("Digit 3 of 6")).toBeFocused();
       await page.getByRole("button", { name: "Fill in code" }).click();
-      await expect(page).toHaveURL(/\/onboarding$/);
+      await expect(page).toHaveURL(/\/field-of-work$/);
     });
 
     test("Create account: both role helpers are one line and both cards are 72px high", async ({

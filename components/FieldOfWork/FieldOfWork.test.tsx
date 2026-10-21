@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { describe, expect, it } from "vitest";
 import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
 import { AskAiView } from "@/components/AskAiView/AskAiView";
+import { fieldIcons } from "@/components/FieldOfWork/FieldRows";
 import { FieldOfWorkStep } from "@/components/FieldOfWork/FieldOfWorkStep";
 import { FieldPickerView } from "@/components/FieldOfWork/FieldPickerView";
 import { ProfileView } from "@/components/ProfileView/ProfileView";
@@ -17,6 +18,43 @@ const render = (node: ReactNode) =>
 
 describe("the Field of work step", () => {
   const html = render(<FieldOfWorkStep onContinue={noop} onSkip={noop} />);
+
+  it("has Skip as the tertiary action at the top right (the onboarding's row), and no Skip for now", () => {
+    expect(html).toContain("data-top-row");
+    expect(html.indexOf("data-top-row")).toBeLessThan(
+      html.indexOf(">Tell us about your work</h1>"),
+    );
+    expect(html).toMatch(/data-top-row[^>]*justify-end[^>]*>[\s\S]*?>Skip</);
+    const skip = html.slice(html.indexOf("data-top-row"), html.indexOf(">Skip<") + 7);
+    expect(skip).toContain("text-primary");
+    expect(skip).toContain("underline");
+    expect(skip).toContain("min-h-11");
+    expect(html).not.toContain("Skip for now");
+  });
+
+  it("keeps the pinned bottom area to the Primary Continue alone: no tertiary, underlined or Secondary action in it", () => {
+    const code = readFileSync("components/FieldOfWork/FieldOfWorkStep.tsx", "utf8");
+    const bar = code.slice(code.indexOf("<ActionBar>"), code.indexOf("</ActionBar>"));
+    expect(bar).toContain("Continue");
+    expect(bar).not.toMatch(/variant="(secondary|tertiary)"|underline|Skip/);
+    expect(bar.match(/<Button/g)).toHaveLength(1);
+  });
+
+  it("has an icon in a 40px sand-200 circle on every row, decorative, from the existing icon set", () => {
+    expect(html.match(/data-field-icon=/g)).toHaveLength(5);
+    expect(
+      html.match(
+        /h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sand-200 text-sand-900/g,
+      ),
+    ).toHaveLength(5);
+    expect(html.match(/aria-hidden="true"[^>]*data-field-icon/g)).toHaveLength(5);
+    for (const icon of ["life-buoy", "heart-pulse", "shield", "users-round", "compass"]) {
+      expect(html).toContain(`lucide-${icon}`);
+    }
+    expect(html.match(/width="24"/g)!.length).toBeGreaterThanOrEqual(5);
+    // a neutral protective symbol: nothing about weapons or combat
+    expect(Object.keys(fieldIcons)).toEqual(["rescue", "paramedic", "military", "civil", "other"]);
+  });
 
   it("has the title, the subtitle and no picture and no Back", () => {
     expect(html).toContain(">Tell us about your work</h1>");
@@ -47,7 +85,9 @@ describe("the Field of work step", () => {
 
   it("has the educational note in a named style, and underlines nothing", () => {
     expect(html).toContain("All content in this app is educational and non-combat.");
-    expect(html).not.toMatch(/underline/);
+    // (the corner Skip is the one underlined action; nothing else on the screen is)
+    const afterSkip = html.slice(html.indexOf(">Skip<"));
+    expect(afterSkip).not.toMatch(/underline/);
     const code = readFileSync("components/FieldOfWork/FieldOfWorkStep.tsx", "utf8");
     expect(code).not.toMatch(/text-\[/);
   });
@@ -68,6 +108,12 @@ describe("the field picker", () => {
         back={{ label: "Back to Profile", href: "/profile" }}
       />,
     );
+
+  it("has the same icons as the step and no Skip", () => {
+    const html = picker(null);
+    expect(html.match(/data-field-icon=/g)).toHaveLength(5);
+    expect(html).not.toContain(">Skip<");
+  });
 
   it("has the band with Back, the title and the subtitle", () => {
     const html = picker(null);

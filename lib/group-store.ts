@@ -106,6 +106,8 @@ export type Notice = {
   /** The screen it opens. */
   target: string;
   createdAt: number;
+  /** Only for this account (the email); without it every local account gets the notice. */
+  to?: string;
 };
 
 export function cleanNotices(value: unknown): Notice[] | null {
@@ -113,7 +115,7 @@ export function cleanNotices(value: unknown): Notice[] | null {
   const list: Notice[] = [];
   for (const entry of value) {
     if (!isObject(entry)) continue;
-    const { id, title, text, target, createdAt } = entry;
+    const { id, title, text, target, createdAt, to } = entry;
     if (typeof id !== "string" || id === "" || list.some((n) => n.id === id)) continue;
     if (typeof title !== "string" || title.trim() === "") continue;
     if (typeof createdAt !== "number" || !Number.isFinite(createdAt)) continue;
@@ -123,6 +125,7 @@ export function cleanNotices(value: unknown): Notice[] | null {
       text: typeof text === "string" ? text : "",
       target: typeof target === "string" ? target : "/",
       createdAt,
+      ...(typeof to === "string" && to !== "" && { to }),
     });
   }
   return list.length > 0 ? collapseReminders(list).slice(-50) : null;

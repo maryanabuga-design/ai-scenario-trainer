@@ -2,6 +2,10 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   MAX_FILE_BYTES,
+  MAX_OTHER_BYTES,
+  detectTopic,
+  isRead,
+  titleFromFileName,
   canPublish,
   checkFile,
   detectDelimiter,
@@ -172,22 +176,61 @@ describe("the flags", () => {
 });
 
 describe("the file checks", () => {
-  it("allows only .csv and .docx", () => {
-    expect(checkFile({ name: "q.csv", size: 10 })).toBeNull();
-    expect(checkFile({ name: "Q.DOCX", size: 10 })).toBeNull();
-    for (const name of ["q.xlsx", "q.pdf", "q", "q.csv.exe"]) {
-      expect(checkFile({ name, size: 10 })).toBe("Choose a .csv or .docx file.");
+  it("allows .csv, .xlsx, .docx and .pdf only", () => {
+    for (const name of ["q.csv", "Q.DOCX", "q.xlsx", "q.PDF"]) {
+      expect(checkFile({ name, size: 10 }), name).toBeNull();
+    }
+    for (const name of ["q.xls", "q.txt", "q", "q.csv.exe", "q.png"]) {
+      expect(checkFile({ name, size: 10 }), name).toBe("Choose a CSV, Excel, Word or PDF file.");
     }
   });
-  it("refuses an empty file and one over 1 MB", () => {
+  it("refuses an empty file; a CSV may be 1 MB, the other types 5 MB", () => {
     expect(checkFile({ name: "q.csv", size: 0 })).toBe("The file is empty.");
     expect(checkFile({ name: "q.csv", size: MAX_FILE_BYTES })).toBeNull();
-    expect(checkFile({ name: "q.csv", size: MAX_FILE_BYTES + 1 })).toMatch(/larger than 1 MB/);
+    expect(checkFile({ name: "q.csv", size: MAX_FILE_BYTES + 1 })).toBe(
+      "A CSV file may be up to 1 MB.",
+    );
+    for (const type of ["xlsx", "docx", "pdf"]) {
+      expect(checkFile({ name: `q.${type}`, size: MAX_OTHER_BYTES })).toBeNull();
+      expect(checkFile({ name: `q.${type}`, size: MAX_OTHER_BYTES + 1 })).toBe(
+        "The file is larger than 5 MB.",
+      );
+    }
+  });
+  it("reads only a CSV for real", () => {
+    expect(isRead("a.csv")).toBe(true);
+    for (const name of ["a.xlsx", "a.docx", "a.pdf"]) expect(isRead(name)).toBe(false);
+  });
+  it("makes the title from the file name without its extension", () => {
+    expect(titleFromFileName("evacuation routes.csv")).toBe("evacuation routes");
+    expect(titleFromFileName("Set.v2.docx")).toBe("Set.v2");
+    expect(titleFromFileName("noextension")).toBe("noextension");
+    expect(titleFromFileName(".csv")).toBe(".csv");
+    expect(titleFromFileName("x".repeat(200) + ".csv")).toHaveLength(120);
   });
   it("writes sizes in plain words", () => {
     expect(sizeText(120)).toBe("120 bytes");
     expect(sizeText(2048)).toBe("2 KB");
     expect(sizeText(1.5 * 1024 * 1024)).toBe("1.5 MB");
+  });
+});
+
+describe("the topic found in a CSV", () => {
+  const csv = (...topics: string[]) =>
+    ["topic,question", ...topics.map((topic, i) => `${topic},Question ${i}?`)].join("\n");
+  it("is the most frequent valid topic of the topic column, the first winning a tie", () => {
+    expect(detectTopic(csv("S3", "S3", "S1"))).toBe("S3");
+    expect(detectTopic(csv("s2", "S10", "S10"))).toBe("S10");
+    expect(detectTopic(csv("S1", "S2"))).toBe("S1");
+    expect(detectTopic(csv("S3 Moving through smoke", "S3"))).toBe("S3");
+  });
+  it("is null without a topic column or without a valid topic", () => {
+    expect(detectTopic("question\nWhat?")).toBeNull();
+    expect(detectTopic(csv("", "S11", "X1", "Smoke"))).toBeNull();
+    expect(detectTopic("")).toBeNull();
+  });
+  it("reads the shipped template: S1 is detected", () => {
+    expect(detectTopic(readFileSync("public/templates/question-template.csv", "utf8"))).toBe("S1");
   });
 });
 

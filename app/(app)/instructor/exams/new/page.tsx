@@ -4,12 +4,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { AssignExamView } from "@/components/InstructorExams/AssignExamView";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
-import { createExam, shortDate } from "@/lib/group-exams";
+import { createExam, knownTopicIds, shortDate } from "@/lib/group-exams";
 import { addNotice, saveGroupExam } from "@/lib/group-store";
 
 function AssignExam() {
   const router = useRouter();
-  const fromOverview = useSearchParams().get("from") === "overview";
+  const query = useSearchParams();
+  const fromOverview = query.get("from") === "overview";
+  // from "Assign exam on this topic": the topic is chosen and the title follows from it
+  const topic = knownTopicIds(query.getAll("topic"));
   const home = fromOverview ? "/instructor" : "/instructor/exams";
   const { sections } = useSourceSheet();
   const [now] = useState(() => Date.now());
@@ -20,6 +23,7 @@ function AssignExam() {
       titleOf={titleOf}
       now={now}
       fromOverview={fromOverview}
+      initial={topic.length > 0 ? { topics: topic } : undefined}
       onCancel={() => router.push(home)}
       onAssign={(values) => {
         const at = Date.now();

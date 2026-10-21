@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import type { ReactNode } from "react";
 import { Button } from "@/components/Button/Button";
 
 type Props = {
@@ -10,6 +11,8 @@ type Props = {
   confirmLabel: string;
   /** The label of the other action (default Cancel). */
   cancelLabel?: string;
+  /** Extra content under the description (a message preview). */
+  body?: ReactNode;
   /** Which action is the Primary button; the other is a Secondary button. */
   emphasis?: "confirm" | "cancel";
   onConfirm: () => void;
@@ -24,6 +27,7 @@ function DialogCard({
   confirmLabel,
   cancelLabel = "Cancel",
   emphasis = "confirm",
+  body,
   onConfirm,
   onCancel,
 }: Omit<Props, "open" | "inline">) {
@@ -32,7 +36,8 @@ function DialogCard({
       <h2 id="confirm-title" className="type-card-title">
         {title}
       </h2>
-      <p className="text-text-secondary">{description}</p>
+      {description && <p className="text-text-secondary">{description}</p>}
+      {body}
       <div className="flex flex-col gap-3">
         {emphasis === "confirm" ? (
           <>
