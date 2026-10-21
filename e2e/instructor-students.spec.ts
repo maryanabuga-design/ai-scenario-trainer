@@ -75,7 +75,7 @@ for (const width of [360, 430]) {
       // the selector: three one-line options of 44px
       const radios = page.getByRole("radio");
       await expect(radios).toHaveCount(3);
-      for (const label of ["All", "Attention", "Certified"]) {
+      for (const label of ["All", "Attention", "Passed"]) {
         const option = page.locator("label", { hasText: new RegExp(`^${label}$`) });
         const box = (await option.boundingBox())!;
         expect(box.height).toBeGreaterThanOrEqual(44);
@@ -140,7 +140,7 @@ for (const width of [360, 430]) {
       }
     });
 
-    test("the filters: Attention and Certified, and the choice is in the address", async ({
+    test("the filters: Attention and Passed, and the choice is in the address", async ({
       page,
     }) => {
       await page.goto("/instructor/students");
@@ -149,8 +149,8 @@ for (const width of [360, 430]) {
       const needs = await statuses(page);
       expect(needs.length).toBeGreaterThan(0);
       expect(needs.every((s) => s === "needs")).toBe(true);
-      await page.locator("label", { hasText: /^Certified$/ }).click();
-      await expect(page).toHaveURL(/filter=certified$/);
+      await page.locator("label", { hasText: /^Passed$/ }).click();
+      await expect(page).toHaveURL(/filter=passed$/);
       const certified = await rows(page).count();
       expect(certified).toBeGreaterThan(0);
       expect(certified).toBeLessThan(15);
@@ -243,7 +243,7 @@ for (const width of [360, 430]) {
       await expect(page).toHaveURL(/\/instructor\/students$/);
     });
 
-    test("a local account shows its real progress, and its Certified result opens the read-only certificate", async ({
+    test("a local account shows its real progress, and its Passed result opens the read-only certificate", async ({
       page,
     }) => {
       const s1 = quiz.filter((q) => q.section === "S1").slice(0, 12);
@@ -290,7 +290,7 @@ for (const width of [360, 430]) {
       await expect(page.locator('[data-topic-row="S1"]')).toContainText("8 of 12 correct");
       // Certified with a certificate: the row opens the certificate, read-only
       const certified = page.locator('[data-exam-row="seed-active"]');
-      await expect(certified).toContainText("Certified · 18 of 20 correct");
+      await expect(certified).toContainText("Passed · 18 of 20 correct");
       expect(await certified.evaluate((el) => !!el.querySelector("svg.lucide-chevron-right"))).toBe(
         true,
       );
@@ -305,7 +305,7 @@ for (const width of [360, 430]) {
       await expect(page).toHaveURL(/\/instructor\/students\/maryana%40example\.com$/);
       // a Not started row is plain text without a chevron
       const plain = page.locator('[data-exam-row="seed-closed"]');
-      await expect(plain).toHaveAttribute("data-status", "not-started");
+      await expect(plain).toHaveAttribute("data-status", "missed");
       expect(
         await plain.evaluate((el) => el.querySelectorAll("a, svg.lucide-chevron-right").length),
       ).toBe(0);

@@ -35,7 +35,7 @@ import type { FieldOfWork } from "@/lib/field-of-work";
 import { TopicsView } from "@/components/InstructorTopics/TopicsView";
 import { topicStandings } from "@/lib/overview";
 import { overviewModel } from "@/lib/overview-model";
-import { examsInScope, inScope } from "@/lib/groups";
+import { examPeople, inScope } from "@/lib/groups";
 import { InviteView } from "@/components/InstructorStudents/InviteView";
 import { reminderFor, unfinishedExam } from "@/lib/reminders";
 import { ContentView } from "@/components/InstructorContent/ContentView";
@@ -48,6 +48,11 @@ import { trainingSections } from "@/lib/parts";
 import { topicQuestionCount } from "@/lib/group-exams";
 import { AssignExamView } from "@/components/InstructorExams/AssignExamView";
 import { ExamDetailView } from "@/components/InstructorExams/ExamDetailView";
+import { ExamQuestionView } from "@/components/InstructorExams/ExamQuestionView";
+import { ExtendDeadlineView } from "@/components/InstructorExams/ExtendDeadlineView";
+import { hardestQuestions } from "@/lib/exam-detail";
+import { examQuestionIds } from "@/lib/exam-pool";
+import { findItem } from "@/lib/items";
 import { InstructorExamsView } from "@/components/InstructorExams/InstructorExamsView";
 import { groupCounts, participants, studentRows } from "@/lib/cohort";
 import type { Attempt } from "@/lib/cohort";
@@ -1436,12 +1441,10 @@ export function InstructorTopicsSample() {
   );
 }
 
-/** The Instructor exams screens for the screen review page (the seeded demo group, a fixed date). */
+/** The Instructor exams screens for the screen review page (the seeded demo groups, a fixed date). */
 export function InstructorExamsSample({
   state = "list",
-  scope = "rescue-team",
 }: {
-  scope?: string;
   state?:
     | "list"
     | "closed"
@@ -1450,20 +1453,23 @@ export function InstructorExamsSample({
     | "assign-filled"
     | "discard"
     | "detail"
-    | "detail-closed";
+    | "detail-closed"
+    | "remind"
+    | "close"
+    | "extend"
+    | "question";
 }) {
   const { sections } = useSourceSheet();
   const titleOf = (id: string) => sections.find((section) => section.id === id)?.title ?? id;
   const now = new Date(2026, 9, 24, 10, 0).getTime();
   const exams = seedGroupExams(now);
-  const people = participants([{ name: "Maryana", email: "maryana@example.com" }]);
+  const everyone = participants([{ name: "Maryana", email: "maryana@example.com" }]);
   const attempts: Attempt[] = [];
   if (state === "list" || state === "closed" || state === "empty") {
     return (
       <InstructorExamsView
-        scope={scope}
-        exams={state === "empty" ? [] : examsInScope(exams, scope)}
-        people={people}
+        exams={state === "empty" ? [] : exams}
+        people={everyone}
         attempts={attempts}
         now={now}
         initiallyOpen={state === "closed"}
@@ -1493,22 +1499,48 @@ export function InstructorExamsSample({
       />
     );
   }
+  if (state === "extend") {
+    return (
+      <ExtendDeadlineView
+        exam={exams[0]}
+        now={now}
+        onExtend={() => undefined}
+        onCancel={() => undefined}
+        initial="1w"
+      />
+    );
+  }
   const closed = state === "detail-closed";
   const exam = closed ? exams[1] : exams[0];
-  const context = { attempts, active: !closed };
+  const people = examPeople(everyone, exam);
+  const context = { attempts, now };
+  if (state === "question") {
+    const id = examQuestionIds(exam)[3];
+    return (
+      <ExamQuestionView
+        item={findItem(id)!}
+        number={4}
+        stats={{ wrong: 9, answered: 14 }}
+        examId={exam.id}
+      />
+    );
+  }
   return (
     <ExamDetailView
       exam={exam}
       active={!closed}
+      now={now}
       counts={groupCounts(people, exam, context)}
       rows={studentRows(people, exam, context)}
+      hardest={hardestQuestions(people, exam, attempts, now)}
       titleOf={titleOf}
       message=""
-      confirmingClose={false}
+      dialog={state === "remind" ? "remind" : state === "close" ? "close" : null}
+      onAskRemind={() => undefined}
       onRemind={() => undefined}
       onAskClose={() => undefined}
-      onCancelClose={() => undefined}
       onClose={() => undefined}
+      onCancelDialog={() => undefined}
       dialogInline
     />
   );
@@ -1523,7 +1555,7 @@ export function InstructorStudentsSample({
   state?:
     | "all"
     | "needs"
-    | "certified"
+    | "passed"
     | "empty"
     | "topic"
     | "detail-needs"
@@ -1587,7 +1619,7 @@ export function InstructorStudentsSample({
       />
     );
   }
-  const filter = state === "empty" ? "certified" : state === "topic" ? "all" : state;
+  const filter = state === "empty" ? "passed" : state === "topic" ? "all" : state;
   return (
     <StudentsListView
       scope={scope}

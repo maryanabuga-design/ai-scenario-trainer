@@ -144,14 +144,11 @@ for (const width of [360, 430]) {
         "Military training · 12 students · 1 not started",
       );
       await expect(page.locator("[data-student]:visible")).toHaveCount(12);
-      // Exams follows the scope: only the exam of this group
+      // Exams lists the exams of every group (no group switcher there)
       await nav(page).getByRole("link", { name: "Exams" }).click();
-      await expect(page.locator("[data-page-header-band]:visible")).toContainText(
-        "Assign exams to Military training",
-      );
-      await expect(page.locator("[data-exam-card]:visible")).toHaveCount(1);
-      await expect(page.locator("[data-exam-card]:visible")).toContainText(
-        "Evacuation and first aid exam",
+      await expect(page.locator("[data-exam-card]:visible")).toHaveCount(2);
+      await expect(page.locator("[data-exam-card]:visible").last()).toContainText(
+        "Military training",
       );
     });
 
@@ -178,9 +175,7 @@ for (const width of [360, 430]) {
       // choosing returns to where it was opened from
       await page.getByRole("radio", { name: /All groups/ }).check({ force: true });
       await expect(page).toHaveURL(/\/instructor\/exams$/);
-      await expect(page.locator("[data-page-header-band]:visible")).toContainText(
-        "Assign exams to your groups",
-      );
+      await expect(page.locator("[data-exam-card]:visible")).toHaveCount(2);
     });
 
     test("the readiness strip opens Students for the same group", async ({ page }) => {
@@ -271,7 +266,7 @@ for (const width of [360, 430]) {
       await page.goto("/instructor");
       await page.locator("[data-exam-card]").click();
       await expect(page).toHaveURL(/\/instructor\/exams\/seed-active\?from=overview$/);
-      await expect(page.locator("[data-audience]")).toHaveText("Rescue team");
+      await expect(page.locator("[data-group-pills]")).toContainText("Rescue team");
       await page.goto("/instructor");
       await page.locator("[data-exams-card]").getByRole("link", { name: "Assign exam" }).click();
       await expect(page).toHaveURL(/\/instructor\/exams\/new\?from=overview$/);
@@ -292,22 +287,15 @@ for (const width of [360, 430]) {
       await choose(page, "All groups");
       await page.goto("/instructor/exams/new");
       await expect(page.locator("input[name=audience]:checked")).toHaveCount(0);
-      await expect(page.locator("[data-info-audience]")).toHaveText(
-        "Audience: choose at least one group",
-      );
       await page.getByText("Responding to an alarm").first().click();
       await page.getByText("In 1 week").click();
       const assign = page.getByRole("button", { name: "Assign exam" });
       await expect(assign).toBeDisabled();
       await row(page, "Military training").click();
-      await expect(page.locator("[data-info-audience]")).toHaveText(
-        "Audience: 12 students in Military training",
-      );
+      await expect(page.locator("input[name=audience]:checked")).toHaveCount(1);
       await expect(assign).toBeEnabled();
       await row(page, "Rescue team").click();
-      await expect(page.locator("[data-info-audience]")).toHaveText(
-        "Audience: 27 students in Rescue team, Military training",
-      );
+      await expect(page.locator("input[name=audience]:checked")).toHaveCount(2);
       await row(page, "Military training").click();
       await row(page, "Rescue team").click();
       await expect(assign).toBeDisabled();
@@ -315,7 +303,7 @@ for (const width of [360, 430]) {
       await row(page, "Military training").click();
       await assign.click();
       await expect(page).toHaveURL(/\/instructor\/exams\/grp-/);
-      await expect(page.locator("[data-audience]")).toHaveText("Military training");
+      await expect(page.locator("[data-group-pills]")).toContainText("Military training");
       await expect(page.locator("[data-student]")).toHaveCount(12);
     });
 

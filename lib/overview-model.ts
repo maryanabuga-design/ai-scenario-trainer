@@ -88,7 +88,7 @@ export function overviewModel(input: OverviewInput): OverviewModel {
   const scoped = examsInScope(exams, scope);
   const { active } = splitExams(scoped, now);
   const counts = (exam: GroupExam) =>
-    groupCounts(examPeople(people, exam), exam, { attempts, active: true });
+    groupCounts(examPeople(people, exam), exam, { attempts, now });
   // the nearest active exam: of the group, or of each group (once when it is shared)
   const nearest = all
     ? groups.flatMap((group) => {

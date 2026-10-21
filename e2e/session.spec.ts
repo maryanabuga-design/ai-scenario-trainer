@@ -935,7 +935,7 @@ test.describe("Exam", () => {
       "20 questions from all topics",
       "20 minutes",
       "No hints or feedback during the exam",
-      "Pass mark 80%",
+      "Pass mark 80",
     ]) {
       await expect(page.getByText(rule, { exact: true })).toBeVisible();
     }

@@ -14,6 +14,8 @@ export type GroupExam = {
   topicIds: string[];
   /** The groups the exam is for (at least one; Rescue team when an older exam has none). */
   groupIds: string[];
+  /** How many tries a student has: 1, 3 or null for unlimited. */
+  attemptsAllowed: AttemptsAllowed;
   questionCount: number;
   timeLimit: number;
   passMark: number;
@@ -24,6 +26,9 @@ export type GroupExam = {
   /** Set when the instructor closed the exam before its deadline. */
   closedAt?: number;
 };
+
+export type AttemptsAllowed = 1 | 3 | null;
+export const DEFAULT_ATTEMPTS: AttemptsAllowed = 3;
 
 /** The fewest questions the selected topics must hold. */
 export const MIN_QUESTIONS = 10;
@@ -92,6 +97,7 @@ export type AssignInput = {
   topicIds: string[];
   deadline: string | null;
   groupIds: string[];
+  attemptsAllowed?: AttemptsAllowed;
 };
 
 /** Why the exam cannot be assigned yet; empty when it can. */
@@ -118,6 +124,7 @@ export function createExam(input: AssignInput, now: number, createdBy = "Instruc
     title: input.title.trim(),
     topicIds,
     groupIds: knownGroupIds(input.groupIds),
+    attemptsAllowed: input.attemptsAllowed === undefined ? DEFAULT_ATTEMPTS : input.attemptsAllowed,
     questionCount: examQuestionCount(topicIds),
     timeLimit: EXAM_MINUTES,
     passMark: PASS_MARK,
@@ -136,6 +143,7 @@ export function seedGroupExams(now: number): GroupExam[] {
       title: entry.title,
       topicIds,
       groupIds: knownGroupIds(entry.groupIds),
+      attemptsAllowed: attemptsFrom(entry.attemptsAllowed),
       questionCount: examQuestionCount(topicIds),
       timeLimit: EXAM_MINUTES,
       passMark: PASS_MARK,
@@ -148,6 +156,13 @@ export function seedGroupExams(now: number): GroupExam[] {
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
+
+/** 1 or 3 tries, null (written "unlimited" or null) for unlimited, 3 when missing or odd. */
+export function attemptsFrom(value: unknown): AttemptsAllowed {
+  if (value === 1 || value === 3) return value;
+  if (value === null || value === "unlimited") return null;
+  return DEFAULT_ATTEMPTS;
+}
 
 /** Tolerant loading: a broken exam is dropped, unknown topics are removed, nothing throws. */
 export function cleanGroupExams(value: unknown): GroupExam[] | null {
@@ -171,6 +186,7 @@ export function cleanGroupExams(value: unknown): GroupExam[] | null {
       title: title.trim(),
       topicIds: topics,
       groupIds: known.length > 0 ? known : [DEFAULT_GROUP_ID],
+      attemptsAllowed: attemptsFrom(entry.attemptsAllowed),
       questionCount: examQuestionCount(topics),
       timeLimit: EXAM_MINUTES,
       passMark: PASS_MARK,

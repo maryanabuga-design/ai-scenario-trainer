@@ -188,6 +188,9 @@ describe("a secondary always comes with a primary above it", () => {
       "components/InstructorContent/ReviewView.tsx",
       "components/InstructorExams/AssignExamView.tsx",
       "components/InstructorExams/ExamDetailView.tsx",
+      // Exams list: the "Show closed exams" toggle. Extend deadline: Cancel under the Primary.
+      "components/InstructorExams/ExtendDeadlineView.tsx",
+      "components/InstructorExams/InstructorExamsView.tsx",
       // Overview: the nearest exam has a Secondary Assign exam under its card (the Primary is for "No active exam").
       "components/InstructorOverview/OverviewBlocks.tsx",
       // Instructor Students: Show all (empty filter) and Back to students (unknown id).

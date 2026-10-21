@@ -3,12 +3,13 @@ import { drawExam, examDurationMs } from "@/lib/exam";
 import { demoExam, nearestExam, readExams } from "@/lib/assigned-exams";
 import { currentAccount, readAuth } from "@/lib/auth";
 import { recordCertificate } from "@/lib/certificates-store";
-import { readGroupExams, recordAttempt } from "@/lib/group-store";
+import { examQuestionIds } from "@/lib/exam-pool";
+import { dropUnfinished, finishAttempt, readGroupExams, startAttempt } from "@/lib/group-store";
 import { correctCount, scoreItem } from "@/lib/scoring";
 import type { ScoredItem } from "@/lib/scoring";
 import { resultPercent } from "@/lib/results";
 import type { FinishedSession } from "@/lib/session";
-import { readExam, saveExam } from "@/lib/exam-store";
+import { clearExam, readExam, saveExam } from "@/lib/exam-store";
 import type { ExamSession } from "@/lib/exam-store";
 import { findItem } from "@/lib/items";
 import { addToHistory, answerFor, topicIdsOf } from "@/lib/session";
@@ -20,15 +21,37 @@ export function startExam(
   /** A group exam: its topics and question count, and the id the attempt is recorded against. */
   group?: { id: string; topicIds: string[]; questionCount: number },
 ) {
+  // a group exam is one fixed set of questions for everyone (`lib/exam-pool.ts`); the generic exam is a random draw
+  const itemIds = group ? examQuestionIds(group) : drawExam(random, EXAM_QUESTIONS, undefined);
   saveExam({
     ...(group && { examId: group.id }),
-    itemIds: drawExam(random, group?.questionCount ?? EXAM_QUESTIONS, group?.topicIds),
+    itemIds,
     answers: [],
     index: 0,
     startedAt: now,
     endsAt: now + examDurationMs,
     finished: false,
   });
+  // an attempt at a group exam is "in progress" for the instructor from the moment it starts
+  const account = currentAccount(readAuth());
+  if (group && account) {
+    startAttempt({
+      examId: group.id,
+      studentId: account.email,
+      startedAt: now,
+      correct: 0,
+      total: itemIds.length,
+      answers: {},
+    });
+  }
+}
+
+/** Leaving the exam: nothing is saved, and the attempt that was in progress disappears. */
+export function leaveExam() {
+  const exam = readExam();
+  const account = currentAccount(readAuth());
+  if (exam?.examId && account) dropUnfinished(exam.examId, account.email);
+  clearExam();
 }
 
 /** Every question of the exam graded: one with no answer counts as incorrect. */
@@ -84,11 +107,13 @@ export function finishExam(exam: ExamSession, now: number = Date.now()) {
     });
     // an attempt at a group exam is recorded against its id (the instructor's lists read it)
     if (exam.examId) {
-      recordAttempt({
+      finishAttempt({
         examId: exam.examId,
         studentId: account.email,
+        startedAt: exam.startedAt,
         correct,
         total: exam.itemIds.length,
+        answers: Object.fromEntries(scored.map((item) => [item.id, item.correct])),
         finishedAt,
         ...(certificate && { certificateId: certificate.id }),
       });

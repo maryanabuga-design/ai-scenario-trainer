@@ -227,10 +227,10 @@ describe("exam results and the repeat-session summary", () => {
     );
   const text = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
 
-  it("an exam shows 'Score 85%' as its only percentage, and the pass mark as a count", () => {
+  it("an exam shows '17 of 20 correct' with no percentage, and the pass mark as a count", () => {
     const html = view("exam", draw(17, 20));
-    expect(text(html)).toContain("Score 85%");
-    expect(text(html).match(/%/g)).toHaveLength(1);
+    expect(text(html)).toContain("17 of 20 correct");
+    expect(text(html)).not.toContain("%");
     expect(html).toContain("PASS MARK: 16 of 20");
     expect(html).not.toMatch(/aria-label="[^"]*%[^"]*%/);
   });

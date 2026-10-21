@@ -861,11 +861,6 @@ export default function Screens() {
               <InstructorStudentsSample state="invite" scope="all" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor: Exams list, All groups (group tag)">
-            <Screen nav="/instructor/exams" role="instructor">
-              <InstructorExamsSample scope="all" />
-            </Screen>
-          </PhoneFrame>
           <PhoneFrame label="Content: empty">
             <Screen nav="/instructor/content" role="instructor">
               <InstructorContentSample state="empty" />
@@ -976,6 +971,26 @@ export default function Screens() {
               <InstructorExamsSample state="detail-closed" />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Instructor: Exam detail, Send reminder dialog">
+            <Screen>
+              <InstructorExamsSample state="remind" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Exam detail, Close exam dialog">
+            <Screen>
+              <InstructorExamsSample state="close" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Extend deadline">
+            <Screen>
+              <InstructorExamsSample state="extend" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Exam question (read-only)">
+            <Screen>
+              <InstructorExamsSample state="question" />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Instructor: Students list (All)">
             <Screen nav="/instructor/students" role="instructor">
               <InstructorStudentsSample state="all" />
@@ -986,9 +1001,9 @@ export default function Screens() {
               <InstructorStudentsSample state="needs" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor: Students list (Certified)">
+          <PhoneFrame label="Instructor: Students list (Passed)">
             <Screen nav="/instructor/students" role="instructor">
-              <InstructorStudentsSample state="certified" />
+              <InstructorStudentsSample state="passed" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Instructor: Students list, empty filter">

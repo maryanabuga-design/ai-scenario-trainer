@@ -2,13 +2,13 @@ import { describe, expect, it } from "vitest";
 import { groupCounts, participants, seededStudents, statusOf } from "@/lib/cohort";
 import { inScope } from "@/lib/groups";
 import type { Attempt } from "@/lib/cohort";
-import { isActive, seedGroupExams, topicQuestionCount } from "@/lib/group-exams";
+import { seedGroupExams, topicQuestionCount } from "@/lib/group-exams";
 import { allTopicIds } from "@/lib/progress-view";
 import { examReadiness } from "@/lib/readiness";
 import type { FinishedSession } from "@/lib/session";
 import { modeItems } from "@/lib/parts";
 import {
-  certifiedAnywhere,
+  passedAnywhere,
   examRowsFor,
   fieldLabel,
   filterFrom,
@@ -158,26 +158,35 @@ describe("the list", () => {
     expect(needs.some((p) => p.participant.local)).toBe(false);
   });
 
-  it("Certified keeps the students certified for at least one exam, the same statuses as the Exam detail", () => {
+  it("Passed keeps the students who passed at least one exam, the same statuses as the Exam detail", () => {
     const attempts: Attempt[] = [];
-    const certified = visibleStudents(all, "certified", exams, attempts, now);
+    const certified = visibleStudents(all, "passed", exams, attempts, now);
     for (const p of certified)
-      expect(certifiedAnywhere(p.participant, exams, attempts, now)).toBe(true);
+      expect(passedAnywhere(p.participant, exams, attempts, now)).toBe(true);
     for (const p of all.filter((x) => !certified.includes(x))) {
-      expect(certifiedAnywhere(p.participant, exams, attempts, now)).toBe(false);
+      expect(passedAnywhere(p.participant, exams, attempts, now)).toBe(false);
     }
     // a real attempt makes the local account certified
     const mine: Attempt[] = [
-      { examId: exams[0].id, studentId: "ana@example.com", correct: 18, total: 20, finishedAt: 1 },
+      {
+        examId: exams[0].id,
+        studentId: "ana@example.com",
+        startedAt: 0,
+        correct: 18,
+        total: 20,
+        finishedAt: 1,
+        answers: {},
+      },
     ];
-    expect(
-      visibleStudents(all, "certified", exams, mine, now).some((p) => p.participant.local),
-    ).toBe(true);
+    expect(visibleStudents(all, "passed", exams, mine, now).some((p) => p.participant.local)).toBe(
+      true,
+    );
   });
 
   it("reads the filter from the address and falls back to All", () => {
     expect(filterFrom("needs")).toBe("needs");
-    expect(filterFrom("certified")).toBe("certified");
+    expect(filterFrom("passed")).toBe("passed");
+    expect(filterFrom("certified")).toBe("all");
     expect(filterFrom("nope")).toBe("all");
     expect(filterFrom(null)).toBe("all");
   });
@@ -186,13 +195,14 @@ describe("the list", () => {
     expect(groupLine("Group A", 14)).toBe("Group A · 14 students");
     expect(groupLine("Group A", 1)).toBe("Group A · 1 student");
     expect(groupLine("Group A", 15, 2)).toBe("Group A · 15 students · 2 not started");
-    expect(statusDetail({ kind: "certified", correct: 17, total: 20 })).toBe(
-      "Certified · 17 of 20 correct",
+    expect(statusDetail({ kind: "passed", correct: 17, total: 20, attempts: 1 })).toBe(
+      "Passed · 17 of 20 correct",
     );
-    expect(statusDetail({ kind: "not-passed", correct: 14, total: 20 })).toBe(
+    expect(statusDetail({ kind: "not-passed", correct: 14, total: 20, attempts: 2 })).toBe(
       "Not passed · 14 of 20 correct",
     );
     expect(statusDetail({ kind: "not-started" })).toBe("Not started");
+    expect(statusDetail({ kind: "missed" })).toBe("Missed");
   });
 });
 
@@ -203,27 +213,27 @@ describe("the exams of a student match the Exam detail", () => {
       // only the exams for the person's group
       expect(rows).toHaveLength(exams.filter((e) => e.groupIds.includes(person.groupId)).length);
       for (const row of rows) {
-        expect(row.status).toEqual(
-          statusOf(person, row.exam, { attempts: [], active: isActive(row.exam, now) }),
-        );
+        expect(row.status).toEqual(statusOf(person, row.exam, { attempts: [], now }));
       }
     }
   });
 
   it("agrees with the group counts of each exam", () => {
     for (const exam of exams.filter((e) => e.groupIds.includes("rescue-team"))) {
-      const context = { attempts: [], active: isActive(exam, now) };
+      const context = { attempts: [], now };
       const counts = groupCounts(people, exam, context);
       const kinds = people.map(
         (p) => examRowsFor(p, exams, [], now).find((r) => r.exam.id === exam.id)!.status.kind,
       );
-      expect(kinds.filter((k) => k === "certified")).toHaveLength(counts.certified);
+      expect(kinds.filter((k) => k === "passed")).toHaveLength(counts.passed);
+      expect(kinds.filter((k) => k === "in-progress")).toHaveLength(counts.inProgress);
+      expect(kinds.filter((k) => k === "missed")).toHaveLength(counts.missed);
       expect(kinds.filter((k) => k === "not-passed")).toHaveLength(counts.notPassed);
       expect(kinds.filter((k) => k === "not-started")).toHaveLength(counts.notStarted);
     }
   });
 
-  it("offers a certificate only for a Certified local result that has one", () => {
+  it("offers a certificate only for a Passed local result that has one", () => {
     const attempts: Attempt[] = [
       {
         examId: exams[0].id,
@@ -231,6 +241,8 @@ describe("the exams of a student match the Exam detail", () => {
         correct: 18,
         total: 20,
         finishedAt: 1,
+        startedAt: 0,
+        answers: {},
         certificateId: "QT-2026-0001",
       },
     ];

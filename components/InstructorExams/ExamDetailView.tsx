@@ -1,104 +1,158 @@
 "use client";
 
-import { Award, CircleCheck, CircleDashed, RotateCcw } from "lucide-react";
+import {
+  Award,
+  Bell,
+  CalendarPlus,
+  Copy,
+  Lock,
+  ListChecks,
+  LockKeyhole,
+  RotateCw,
+  Shield,
+  Star,
+  UsersRound,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import Link from "next/link";
 import { Button, ButtonLink } from "@/components/Button/Button";
-import { Card } from "@/components/Card/Card";
+import { Chevron } from "@/components/Chevron/Chevron";
+import { Chip } from "@/components/Chip/Chip";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
-import { IconTile } from "@/components/IconTile/IconTile";
-import { ExamLine, StudentListRow } from "@/components/InstructorStudents/StudentRow";
+import { StatusAvatar, StatusPill } from "@/components/InstructorExams/ExamParts";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
-import { DEMO_NOTE, statusText } from "@/lib/cohort";
-import type { ExamStatus, GroupCounts, StudentRow } from "@/lib/cohort";
+import { DEMO_NOTE, triedCount } from "@/lib/cohort";
+import type { GroupCounts, StudentRow } from "@/lib/cohort";
+import {
+  attemptsAllowedLine,
+  closedLine,
+  rosterLine,
+  triedLine,
+  wrongLine,
+} from "@/lib/exam-detail";
+import type { HardQuestion } from "@/lib/exam-detail";
 import { rulesLine, shortDate, topicsLine } from "@/lib/group-exams";
-import { groupNames } from "@/lib/groups";
 import type { GroupExam } from "@/lib/group-exams";
+import { groupNames, groups } from "@/lib/groups";
+import { studentsCount } from "@/lib/overview";
 
-const statusLook: Record<
-  ExamStatus["kind"],
-  { icon: LucideIcon; ink: string; tone: "success" | "attention" | "neutral" }
-> = {
-  certified: {
-    icon: CircleCheck,
-    ink: "text-status-success-ink",
-    tone: "success",
-  },
-  "not-passed": {
-    icon: RotateCcw,
-    ink: "text-status-attention-ink",
-    tone: "attention",
-  },
-  "not-started": {
-    icon: CircleDashed,
-    ink: "text-text-secondary",
-    tone: "neutral",
-  },
-};
+export type DetailDialog = "remind" | "close" | null;
 
+const card = "rounded-card border border-selectable-stroke bg-card shadow-(--card-shadow)";
+
+/** The soft status pill at the top: "Active · Due 23 Oct", or "Closed 12 Oct" with "Final results" and a lock. */
+function StatePill({ exam, active }: { exam: GroupExam; active: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span
+        data-state-pill={active ? "active" : "closed"}
+        className="type-small-strong inline-flex items-center gap-2 rounded-full bg-secondary-sand px-3 py-1.5"
+      >
+        <span aria-hidden="true" className="h-2 w-2 rounded-full bg-primary" />
+        {active ? `Active · Due ${shortDate(exam.deadline)}` : closedLine(exam)}
+      </span>
+      {!active && (
+        <>
+          <span className="type-small min-w-0 flex-1 text-text-secondary">Final results</span>
+          <Lock
+            size={18}
+            strokeWidth={2}
+            aria-hidden="true"
+            className="shrink-0 text-text-secondary"
+          />
+        </>
+      )}
+    </div>
+  );
+}
+
+/** A count tile: the count in large type and its word; counts only. */
 function CountTile({
   kind,
   label,
   count,
+  tone = "neutral",
   icon: Icon,
 }: {
   kind: string;
   label: string;
   count: number;
-  icon: LucideIcon;
+  tone?: "success" | "attention" | "neutral";
+  icon?: LucideIcon;
 }) {
-  const tone = kind === "certified" ? "success" : kind === "not-passed" ? "attention" : "neutral";
+  const look =
+    tone === "success"
+      ? "bg-status-success-bg text-status-success-ink"
+      : tone === "attention"
+        ? "bg-status-attention-bg text-status-attention-ink"
+        : "bg-secondary-sand text-text";
   return (
     <div
       data-count={kind}
-      className="flex flex-col gap-2 rounded-card bg-card p-3 shadow-(--card-shadow)"
+      className={`flex min-w-0 flex-col items-start gap-1 rounded-[14px] p-3 ${look}`}
     >
-      <IconTile tone={tone} className="h-9 w-9 rounded-full">
-        <Icon size={18} strokeWidth={1.75} />
-      </IconTile>
-      <span className="flex flex-col">
-        <span className="type-card-title tabular-nums">{count}</span>
-        <span className="type-small text-text-secondary">{label}</span>
-      </span>
+      {Icon && <Icon size={16} strokeWidth={2} aria-hidden="true" />}
+      <span className="type-card-title tabular-nums">{count}</span>
+      <span className="type-caption truncate">{label}</span>
     </div>
   );
 }
 
+function Spec({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
+  return (
+    <li className="type-small flex min-w-0 items-center gap-2">
+      <Icon size={16} strokeWidth={2} aria-hidden="true" className="shrink-0 text-text-secondary" />
+      <span className="truncate">{text}</span>
+    </li>
+  );
+}
+
 /**
- * The Exam detail of the Instructor (DESIGN.md: Instructor, Exam detail): the band with Back and the
- * title, a summary card with three count tiles, the student rows (72px, not tappable yet) and the
- * actions Remind and Close exam. Counts only, no percentages.
+ * The Exam detail of the Instructor (DESIGN.md: Instructor, Exams rebuilt): the state pill, the
+ * summary card (Active: topics, groups, rules, the "3 of 14 tried" bar and four count tiles;
+ * Closed: group, title, specs box and Passed, Not passed, Missed), the STUDENTS roster with
+ * status badges, HARDEST QUESTIONS and the actions. Counts only, never a percentage.
  */
 export function ExamDetailView({
   exam,
   active,
+  now,
   counts,
   rows,
+  hardest,
   titleOf,
   message,
-  confirmingClose,
+  dialog,
+  onAskRemind,
   onRemind,
   onAskClose,
-  onCancelClose,
-  fromOverview = false,
   onClose,
+  onCancelDialog,
+  fromOverview = false,
   dialogInline = false,
 }: {
   exam: GroupExam;
   active: boolean;
+  now: number;
   counts: GroupCounts;
   rows: StudentRow[];
+  hardest: HardQuestion[];
   titleOf: (id: string) => string;
   /** A short confirmation ("Exam assigned…", "Reminder sent to 5 students"). */
   message: string;
-  confirmingClose: boolean;
+  dialog: DetailDialog;
+  onAskRemind: () => void;
   onRemind: () => void;
   onAskClose: () => void;
-  onCancelClose: () => void;
+  onClose: () => void;
+  onCancelDialog: () => void;
   /** Opened from the Overview: Back returns there. */
   fromOverview?: boolean;
-  onClose: () => void;
   dialogInline?: boolean;
 }) {
+  const tried = triedCount(counts);
+  const reminderText = `Reminder: ${exam.title} is due ${shortDate(exam.deadline)}. You have not started this exam yet.`;
+  const examGroups = exam.groupIds.map((id) => groups.find((g) => g.id === id)?.name ?? id);
   return (
     <div className="flex flex-col gap-4 pb-4">
       <PageHeaderBand
@@ -113,83 +167,231 @@ export function ExamDetailView({
         {message}
       </p>
 
-      <Card className="flex flex-col gap-4">
-        <dl className="type-small flex flex-col gap-1">
-          <div className="flex justify-between gap-3">
-            <dt className="text-text-secondary">{active ? "Due" : "Closed"}</dt>
-            <dd data-due>{shortDate(exam.deadline)}</dd>
+      <StatePill exam={exam} active={active} />
+
+      {active ? (
+        <section
+          data-summary="active"
+          className={`${card} flex flex-col gap-4 p-[var(--gutter,1rem)]`}
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 flex-col gap-1">
+              <p className="type-label text-text-secondary">TOPIC MODULE</p>
+              <p data-topics className="type-card-title">
+                {topicsLine(exam.topicIds, titleOf)}
+              </p>
+            </div>
           </div>
-          <div className="flex justify-between gap-3">
-            <dt className="shrink-0 text-text-secondary">Topics</dt>
-            <dd data-topics className="truncate text-right">
-              {topicsLine(exam.topicIds, titleOf)}
-            </dd>
+          <div data-group-pills className="flex flex-wrap gap-2">
+            {examGroups.map((name) => (
+              <Chip key={name} tone="sand" size="caption">
+                <UsersRound size={14} strokeWidth={2} aria-hidden="true" />
+                {name}
+              </Chip>
+            ))}
           </div>
-          <div className="flex justify-between gap-3">
-            <dt className="shrink-0 text-text-secondary">Audience</dt>
-            <dd data-audience className="truncate text-right">
-              {groupNames(exam.groupIds)}
-            </dd>
+          <p data-rules className="type-small text-text-secondary">
+            {attemptsAllowedLine(exam)} · {rulesLine(exam).replace("pass mark", "Pass mark")}
+          </p>
+          <div className="flex flex-col gap-2 rounded-[14px] bg-secondary-sand p-3">
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="type-label text-text-secondary">COMPLETION</span>
+              <span data-tried className="type-small-strong">
+                {triedLine(counts)}
+              </span>
+            </div>
+            <div
+              aria-hidden="true"
+              className="h-1.5 overflow-hidden rounded-full bg-secondary-sand-pressed"
+            >
+              <div
+                className="h-full rounded-full bg-primary"
+                style={{ width: `${counts.total === 0 ? 0 : (tried * 100) / counts.total}%` }}
+              />
+            </div>
           </div>
-        </dl>
-        <p data-rules className="type-small text-text-secondary">
-          {rulesLine(exam)}
-        </p>
-        <div className="grid grid-cols-3 gap-2">
-          <CountTile kind="certified" label="Certified" count={counts.certified} icon={Award} />
-          <CountTile
-            kind="not-passed"
-            label="Not passed"
-            count={counts.notPassed}
-            icon={RotateCcw}
-          />
-          <CountTile
-            kind="not-started"
-            label="Not started"
-            count={counts.notStarted}
-            icon={CircleDashed}
-          />
-        </div>
-      </Card>
+          <div className="grid grid-cols-4 gap-2">
+            <CountTile kind="passed" label="Passed" count={counts.passed} />
+            <CountTile kind="not-passed" label="Not passed" count={counts.notPassed} />
+            <CountTile kind="in-progress" label="In progress" count={counts.inProgress} />
+            <CountTile kind="not-started" label="Not started" count={counts.notStarted} />
+          </div>
+        </section>
+      ) : (
+        <section
+          data-summary="closed"
+          className={`${card} flex flex-col gap-4 p-[var(--gutter,1rem)]`}
+        >
+          <p data-group-label className="type-label flex items-center gap-2 text-text-secondary">
+            <Shield size={16} strokeWidth={2} aria-hidden="true" />
+            {groupNames(exam.groupIds).toUpperCase()}
+          </p>
+          <h2 data-exam-title className="type-card-title">
+            {exam.title}
+          </h2>
+          <p data-topics className="type-small text-text-secondary">
+            {topicsLine(exam.topicIds, titleOf)}
+          </p>
+          <ul
+            data-specs
+            className="grid grid-cols-2 gap-x-3 gap-y-2 rounded-[14px] bg-secondary-sand p-3"
+          >
+            <Spec
+              icon={ListChecks}
+              text={`${exam.questionCount} questions · ${exam.timeLimit} min`}
+            />
+            <Spec icon={Star} text={`Pass mark ${exam.passMark}`} />
+            <Spec
+              icon={RotateCw}
+              text={
+                exam.attemptsAllowed === null
+                  ? "Unlimited attempts"
+                  : `Max ${exam.attemptsAllowed} attempts`
+              }
+            />
+            <Spec icon={UsersRound} text={`${counts.total} assigned`} />
+          </ul>
+          <div className="grid grid-cols-3 gap-2">
+            <CountTile
+              kind="passed"
+              label="Passed"
+              count={counts.passed}
+              tone="success"
+              icon={Award}
+            />
+            <CountTile
+              kind="not-passed"
+              label="Not passed"
+              count={counts.notPassed}
+              tone="attention"
+              icon={RotateCw}
+            />
+            <CountTile kind="missed" label="Missed" count={counts.missed} icon={LockKeyhole} />
+          </div>
+        </section>
+      )}
 
       <section aria-labelledby="students-title" className="flex flex-col gap-3">
-        <h2 id="students-title" className="type-label text-text-secondary">
-          STUDENTS
-        </h2>
-        <ul className="flex flex-col gap-2">
-          {rows.map(({ participant, status }) => {
-            const look = statusLook[status.kind];
-            return (
-              <li key={participant.id} data-student-row={participant.id} data-status={status.kind}>
-                <StudentListRow
-                  id={participant.id}
-                  href={`/instructor/students/${encodeURIComponent(participant.id)}?from=exam&exam=${exam.id}`}
-                  name={participant.name}
-                  initials={participant.initials}
-                  second={
-                    <ExamLine
-                      tone={look.tone}
-                      icon={look.icon}
-                      text={`${participant.local ? "Your demo account · " : ""}${statusText(status)}`}
-                    />
-                  }
-                />
-              </li>
-            );
-          })}
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 id="students-title" className="type-label text-text-secondary">
+            STUDENTS
+          </h2>
+          <span data-student-count className="type-small text-text-secondary">
+            {studentsCount(rows.length)}
+          </span>
+        </div>
+        <ul className={`${card} divide-y divide-soft-divider`}>
+          {rows.map(({ participant, status }) => (
+            <li key={participant.id} data-student-row={participant.id} data-status={status.kind}>
+              <Link
+                href={`/instructor/students/${encodeURIComponent(participant.id)}?from=exam&exam=${exam.id}`}
+                data-student={participant.id}
+                className="flex h-[72px] items-center gap-3 px-[var(--gutter,1rem)] has-focus-visible:outline-2"
+              >
+                <StatusAvatar initials={participant.initials} kind={status.kind} />
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span className="type-body-strong truncate">{participant.name}</span>
+                    <StatusPill kind={status.kind} />
+                    {status.kind === "passed" && status.certificateId && (
+                      <Award
+                        data-certificate-badge
+                        size={16}
+                        strokeWidth={2}
+                        aria-label="Certificate"
+                        className="shrink-0 text-status-success-ink"
+                      />
+                    )}
+                  </span>
+                  <span className="type-small truncate text-text-secondary">
+                    {participant.local && "Your demo account · "}
+                    {rosterLine(status, now)}
+                  </span>
+                </span>
+                <Chevron />
+              </Link>
+            </li>
+          ))}
         </ul>
       </section>
 
-      {active && (
+      {hardest.length > 0 && (
+        <section aria-labelledby="hardest-title" className="flex flex-col gap-3">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 id="hardest-title" className="type-label text-text-secondary">
+              HARDEST QUESTIONS
+            </h2>
+            <span className="type-small text-text-secondary">Flagged for debrief</span>
+          </div>
+          <ul className="flex flex-col gap-3">
+            {hardest.map((question) => (
+              <li key={question.id}>
+                <Link
+                  href={`/instructor/exams/${exam.id}/questions/${question.number}`}
+                  data-hard-question={question.number}
+                  className={`${card} flex items-start gap-3 p-[var(--gutter,1rem)] has-focus-visible:outline-2`}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="type-caption-strong flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] bg-secondary-sand"
+                  >
+                    Q{question.number}
+                  </span>
+                  <span className="flex min-w-0 flex-1 flex-col gap-1">
+                    <span className="type-body-strong line-clamp-3">{question.text}</span>
+                    <span className="type-small flex items-center gap-2 text-text-secondary">
+                      <span
+                        aria-hidden="true"
+                        className="h-2 w-2 shrink-0 rounded-full bg-status-attention-ink"
+                      />
+                      {wrongLine(question)}
+                    </span>
+                  </span>
+                  <Chevron />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {active ? (
         <div className="flex flex-col gap-3">
           {counts.notStarted > 0 && (
-            <Button variant="secondary" onClick={onRemind}>
-              Remind students who have not started
+            <Button variant="secondary" icon={Bell} onClick={onAskRemind}>
+              Send reminder
             </Button>
           )}
-          <Button variant="secondary" onClick={onAskClose}>
+          <ButtonLink
+            href={`/instructor/exams/${exam.id}/extend`}
+            variant="secondary"
+            icon={CalendarPlus}
+          >
+            Extend deadline
+          </ButtonLink>
+          <ButtonLink
+            href={`/instructor/exams/new?duplicate=${exam.id}`}
+            variant="secondary"
+            icon={Copy}
+          >
+            Duplicate exam
+          </ButtonLink>
+          <Button variant="secondary" icon={Lock} onClick={onAskClose}>
             Close exam now
           </Button>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          <ButtonLink
+            href={`/instructor/exams/new?duplicate=${exam.id}`}
+            variant="secondary"
+            icon={Copy}
+          >
+            Duplicate exam
+          </ButtonLink>
+          <p className="type-small text-center text-text-secondary">
+            Opens Assign exam with the same topics and settings.
+          </p>
         </div>
       )}
 
@@ -197,16 +399,32 @@ export function ExamDetailView({
         {DEMO_NOTE}
       </p>
 
-      {(confirmingClose || !dialogInline) && (
+      {(dialog === "remind" || !dialogInline) && (
         <ConfirmDialog
-          open={confirmingClose}
+          open={dialog === "remind"}
+          inline={dialogInline}
+          title={`Remind ${studentsCount(counts.notStarted)}?`}
+          description="They will get this message in their notifications."
+          body={
+            <p data-reminder-preview className="type-small rounded-[14px] bg-secondary-sand p-3">
+              {reminderText}
+            </p>
+          }
+          confirmLabel="Send reminder"
+          onConfirm={onRemind}
+          onCancel={onCancelDialog}
+        />
+      )}
+      {(dialog === "close" || !dialogInline) && (
+        <ConfirmDialog
+          open={dialog === "close"}
           inline={dialogInline}
           title="Close this exam now?"
-          description="Students will no longer be able to start it."
+          description="Students will no longer be able to start it. Results stay available."
           confirmLabel="Close exam"
           cancelLabel="Keep open"
           onConfirm={onClose}
-          onCancel={onCancelClose}
+          onCancel={onCancelDialog}
         />
       )}
     </div>

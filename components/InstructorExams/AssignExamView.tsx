@@ -1,25 +1,30 @@
 "use client";
 
+import { Calendar, ClipboardCheck, FileCheck, Shield, UsersRound } from "lucide-react";
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button } from "@/components/Button/Button";
-import { Card } from "@/components/Card/Card";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
+import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
 import { SelectableRow } from "@/components/SelectableRow/SelectableRow";
 import { TextField } from "@/components/TextField/TextField";
-import { groupNames, groups } from "@/lib/groups";
+import { LucideTile } from "@/components/TopicTile/TopicTile";
+import { isoDay } from "@/lib/exam-deadline";
 import {
+  DEFAULT_ATTEMPTS,
+  MIN_QUESTIONS,
   assignProblems,
   defaultTitle,
   examQuestionCount,
   knownTopicIds,
   presetDeadline,
   presets,
-  topicQuestionCount,
+  totalQuestions,
 } from "@/lib/group-exams";
-import type { DeadlinePreset } from "@/lib/group-exams";
-import { isoDay } from "@/lib/exam-deadline";
+import type { AttemptsAllowed, DeadlinePreset } from "@/lib/group-exams";
+import { groups } from "@/lib/groups";
 import { studentsCount } from "@/lib/overview";
 import { trainingSections as allTopics } from "@/lib/parts";
 
@@ -28,12 +33,52 @@ export type AssignValues = {
   topicIds: string[];
   deadline: string;
   groupIds: string[];
+  attemptsAllowed: AttemptsAllowed;
 };
 
+const attemptOptions: { value: "1" | "3" | "unlimited"; label: string }[] = [
+  { value: "1", label: "1 attempt" },
+  { value: "3", label: "3 attempts" },
+  { value: "unlimited", label: "Unlimited" },
+];
+const toKey = (value: AttemptsAllowed) =>
+  value === null ? "unlimited" : (String(value) as "1" | "3");
+const fromKey = (key: string): AttemptsAllowed =>
+  key === "unlimited" ? null : key === "1" ? 1 : 3;
+
+/** A white section card with its small uppercase label (and an optional action at the right). */
+function Section({
+  id,
+  label,
+  action,
+  children,
+}: {
+  id: string;
+  label: string;
+  action?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section
+      aria-labelledby={id}
+      className="flex flex-col gap-3 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)]"
+    >
+      <div className="flex min-h-9 items-center justify-between gap-3">
+        <h2 id={id} className="type-label text-text-secondary">
+          {label}
+        </h2>
+        {action}
+      </div>
+      {children}
+    </section>
+  );
+}
+
 /**
- * Assign exam (DESIGN.md: Instructor, Assign exam): ONE scrolling screen with a title, topics,
- * a deadline and a read-only information card. Pinned: Primary "Assign exam" (disabled until it is
- * valid) and Secondary "Cancel" (a dialog only when something was entered).
+ * Assign exam (DESIGN.md: Instructor, Exams rebuilt): the compact specs card, then white section
+ * cards TITLE, TOPICS (all ten, selection circles), DEADLINE (a 2 by 2 grid), ATTEMPTS (three
+ * segments) and AUDIENCE (the groups). Pinned: Primary "Assign exam" (disabled until valid) above
+ * Secondary "Cancel" (a dialog only after input). Duplicate and "Assign exam on this topic" prefill it.
  */
 export function AssignExamView({
   titleOf,
@@ -50,19 +95,20 @@ export function AssignExamView({
   titleOf: (id: string) => string;
   /** The number of students of each group id (the AUDIENCE rows). */
   groupCounts: Record<string, number>;
-  /** The groups chosen first: the selected group, none in All groups. */
+  /** The groups chosen first: the group in context. */
   initialGroups: string[];
   now: number;
   onAssign: (values: AssignValues) => void;
   onCancel: () => void;
   /** Opened from the Overview: Back returns there. */
   fromOverview?: boolean;
-  /** Only for the screen review page: a filled form. */
+  /** Prefilled values: from a topic, from Duplicate, or for the screen review page. */
   initial?: {
     topics?: string[];
     title?: string;
     preset?: DeadlinePreset | null;
     date?: string;
+    attempts?: AttemptsAllowed;
   };
   confirmingInitially?: boolean;
   dialogInline?: boolean;
@@ -72,19 +118,28 @@ export function AssignExamView({
   const [touched, setTouched] = useState(initial?.title !== undefined);
   const [preset, setPreset] = useState<DeadlinePreset | null>(initial?.preset ?? null);
   const [date, setDate] = useState(initial?.date ?? "");
+  const [attempts, setAttempts] = useState<AttemptsAllowed>(
+    initial?.attempts === undefined ? DEFAULT_ATTEMPTS : initial.attempts,
+  );
   const [audience, setAudience] = useState<string[]>(initialGroups);
   const [confirming, setConfirming] = useState(confirmingInitially);
 
   const shownTitle = touched ? title : defaultTitle(topics, titleOf);
   const deadline = preset === "date" ? date || null : preset ? presetDeadline(preset, now) : null;
   const problems = assignProblems(
-    { title: shownTitle, topicIds: topics, deadline, groupIds: audience },
+    {
+      title: shownTitle,
+      topicIds: topics,
+      deadline,
+      groupIds: audience,
+      attemptsAllowed: attempts,
+    },
     now,
   );
   const count = topics.length > 0 ? examQuestionCount(topics) : 20;
   const entered = touched || topics.length > 0 || preset !== null;
-  const audienceStudents = audience.reduce((sum, id) => sum + (groupCounts[id] ?? 0), 0);
   const allSelected = topics.length === allTopics.length;
+  const tooFew = topics.length > 0 && totalQuestions(topics) < MIN_QUESTIONS;
 
   function toggleTopic(id: string) {
     setTopics((current) =>
@@ -93,7 +148,7 @@ export function AssignExamView({
   }
 
   return (
-    <div className="flex flex-col gap-6 pb-4">
+    <div className="flex flex-col gap-4 pb-4">
       <PageHeaderBand
         title="Assign exam"
         back={
@@ -103,12 +158,26 @@ export function AssignExamView({
         }
       />
 
-      <section aria-labelledby="title-label" className="flex flex-col gap-2">
-        <h2 id="title-label" className="type-label text-text-secondary">
-          TITLE
-        </h2>
+      <div
+        data-specs-card
+        className="flex items-center gap-3 rounded-card border border-selectable-stroke bg-secondary-sand p-[var(--gutter,1rem)]"
+      >
+        <LucideTile icon={ClipboardCheck} size="tile" />
+        <div className="flex min-w-0 flex-col">
+          <p className="type-label text-text-secondary">EVALUATION SPECS</p>
+          <p data-info-rules className="type-body-strong">
+            {count} questions
+          </p>
+          <p data-info-rules-2 className="type-small text-text-secondary">
+            20 minutes · pass mark 80
+          </p>
+        </div>
+      </div>
+
+      <Section id="title-label" label="TITLE">
         <TextField
           label="Exam title"
+          hideLabel
           name="title"
           value={shownTitle}
           onChange={(value) => {
@@ -116,13 +185,12 @@ export function AssignExamView({
             setTitle(value);
           }}
         />
-      </section>
+      </Section>
 
-      <section aria-labelledby="topics-label" className="flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-3">
-          <h2 id="topics-label" className="type-label text-text-secondary">
-            TOPICS
-          </h2>
+      <Section
+        id="topics-label"
+        label="TOPICS"
+        action={
           <Button
             variant="secondary"
             wide={false}
@@ -131,37 +199,38 @@ export function AssignExamView({
           >
             {allSelected ? "Clear" : "Select all"}
           </Button>
-        </div>
-        <fieldset className="flex flex-col gap-2" aria-labelledby="topics-label">
+        }
+      >
+        <fieldset className="flex min-w-0 flex-col gap-2" aria-labelledby="topics-label">
           {allTopics.map((id) => (
             <SelectableRow
               key={id}
               name="topics"
               value={id}
               type="checkbox"
+              round
               compact
               checked={topics.includes(id)}
               onChange={toggleTopic}
             >
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className="type-body-strong truncate">{titleOf(id)}</span>
-                <span className="type-small text-text-secondary">
-                  {topicQuestionCount(id)} questions
-                </span>
+              <span className="type-body-strong min-w-0 flex-1 truncate">
+                {id} {titleOf(id)}
               </span>
             </SelectableRow>
           ))}
         </fieldset>
-      </section>
+        {tooFew && (
+          <p data-too-few className="type-small text-status-attention-ink">
+            Choose topics with at least {MIN_QUESTIONS} questions in total.
+          </p>
+        )}
+      </Section>
 
-      <section aria-labelledby="deadline-label" className="flex flex-col gap-3">
-        <h2 id="deadline-label" className="type-label text-text-secondary">
-          DEADLINE
-        </h2>
+      <Section id="deadline-label" label="DEADLINE">
         <fieldset
           role="radiogroup"
           aria-labelledby="deadline-label"
-          className="flex flex-col gap-2"
+          className="grid min-w-0 grid-cols-2 gap-2"
         >
           {presets.map((option) => (
             <SelectableRow
@@ -171,7 +240,17 @@ export function AssignExamView({
               checked={preset === option.id}
               onChange={() => setPreset(option.id)}
             >
-              <span className="type-body-strong">{option.label}</span>
+              {option.id === "date" && (
+                <Calendar
+                  size={18}
+                  strokeWidth={2}
+                  aria-hidden="true"
+                  className="hidden shrink-0 min-[400px]:block"
+                />
+              )}
+              <span className="type-small-strong min-w-0 flex-1 whitespace-nowrap">
+                {option.label}
+              </span>
             </SelectableRow>
           ))}
         </fieldset>
@@ -185,19 +264,29 @@ export function AssignExamView({
             onChange={setDate}
           />
         )}
-      </section>
+      </Section>
 
-      <section aria-labelledby="audience-label" className="flex flex-col gap-3">
-        <h2 id="audience-label" className="type-label text-text-secondary">
-          AUDIENCE
-        </h2>
-        <fieldset className="flex flex-col gap-2" aria-labelledby="audience-label">
-          {groups.map((group) => (
+      <Section id="attempts-label" label="ATTEMPTS">
+        <SegmentedControl
+          name="attempts"
+          legend="Attempts allowed"
+          hideLegend
+          dense
+          options={attemptOptions}
+          value={toKey(attempts)}
+          onChange={(key) => setAttempts(fromKey(key))}
+        />
+      </Section>
+
+      <Section id="audience-label" label="AUDIENCE">
+        <fieldset className="flex min-w-0 flex-col gap-2" aria-labelledby="audience-label">
+          {groups.map((group, index) => (
             <SelectableRow
               key={group.id}
               name="audience"
               value={group.id}
               type="checkbox"
+              round
               compact
               checked={audience.includes(group.id)}
               onChange={(id) =>
@@ -210,6 +299,7 @@ export function AssignExamView({
                 )
               }
             >
+              <LucideTile icon={index === 0 ? UsersRound : Shield} size="compact" />
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="type-body-strong truncate">{group.name}</span>
                 <span className="type-small text-text-secondary">
@@ -219,21 +309,11 @@ export function AssignExamView({
             </SelectableRow>
           ))}
         </fieldset>
-      </section>
-
-      <Card className="flex flex-col gap-1">
-        <p data-info-rules className="type-body-strong">
-          {count} questions · 20 minutes · pass mark 80
-        </p>
-        <p data-info-audience className="type-small text-text-secondary">
-          {audience.length === 0
-            ? "Audience: choose at least one group"
-            : `Audience: ${studentsCount(audienceStudents)} in ${groupNames(audience)}`}
-        </p>
-      </Card>
+      </Section>
 
       <ActionBar>
         <Button
+          icon={FileCheck}
           disabled={problems.length > 0}
           onClick={() =>
             onAssign({
@@ -241,6 +321,7 @@ export function AssignExamView({
               topicIds: topics,
               deadline: deadline!,
               groupIds: audience,
+              attemptsAllowed: attempts,
             })
           }
         >

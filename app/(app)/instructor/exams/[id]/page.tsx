@@ -3,12 +3,15 @@
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { ExamDetailView, ExamNotFound } from "@/components/InstructorExams/ExamDetailView";
+import type { DetailDialog } from "@/components/InstructorExams/ExamDetailView";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { useAuth } from "@/lib/auth";
 import { groupCounts, participants, studentRows } from "@/lib/cohort";
+import { hardestQuestions } from "@/lib/exam-detail";
 import { isActive, shortDate } from "@/lib/group-exams";
 import { examPeople } from "@/lib/groups";
 import { addNotice, closeGroupExam, useAttempts, useGroupExams } from "@/lib/group-store";
+import { studentsCount } from "@/lib/overview";
 
 function Detail() {
   const params = useParams<{ id: string }>();
@@ -23,7 +26,7 @@ function Detail() {
   const [message, setMessage] = useState(
     assigned ? "Exam assigned. Students will see it on Home." : "",
   );
-  const [confirming, setConfirming] = useState(false);
+  const [dialog, setDialog] = useState<DetailDialog>(null);
   if (exams === "loading" || attempts === "loading" || auth === "loading") return null;
 
   const exam = exams.find((entry) => entry.id === params.id);
@@ -31,7 +34,7 @@ function Detail() {
 
   const people = examPeople(participants(auth.accounts), exam);
   const active = isActive(exam, now);
-  const context = { attempts, active };
+  const context = { attempts, now };
   const counts = groupCounts(people, exam, context);
   const titleOf = (id: string) => sections.find((section) => section.id === id)?.title ?? id;
 
@@ -39,14 +42,18 @@ function Detail() {
     <ExamDetailView
       exam={exam}
       active={active}
+      now={now}
       counts={counts}
       rows={studentRows(people, exam, context)}
+      hardest={hardestQuestions(people, exam, attempts, now)}
       titleOf={titleOf}
       message={message}
       fromOverview={fromOverview}
-      confirmingClose={confirming}
+      dialog={dialog}
+      onAskRemind={() => setDialog("remind")}
       onRemind={() => {
         const at = Date.now();
+        // one reminder per exam: sending again replaces the earlier one
         addNotice({
           id: `remind-${exam.id}`,
           title: `Reminder: ${exam.title} is due ${shortDate(exam.deadline)}`,
@@ -55,14 +62,14 @@ function Detail() {
           createdAt: at,
           groups: exam.groupIds,
         });
-        const n = counts.notStarted;
-        setMessage(`Reminder sent to ${n} ${n === 1 ? "student" : "students"}`);
+        setDialog(null);
+        setMessage(`Reminder sent to ${studentsCount(counts.notStarted)}`);
       }}
-      onAskClose={() => setConfirming(true)}
-      onCancelClose={() => setConfirming(false)}
+      onAskClose={() => setDialog("close")}
+      onCancelDialog={() => setDialog(null)}
       onClose={() => {
         closeGroupExam(exam.id);
-        setConfirming(false);
+        setDialog(null);
         setMessage("Exam closed.");
       }}
     />

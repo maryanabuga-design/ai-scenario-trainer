@@ -268,7 +268,8 @@ for (const width of [360, 430]) {
       // it opens the Exam detail, where Remind students is
       await row.click();
       await expect(page).toHaveURL(new RegExp(`/instructor/exams/${id}\\?from=overview$`));
-      await page.getByRole("button", { name: "Remind students who have not started" }).click();
+      await page.getByRole("button", { name: "Send reminder" }).click();
+      await page.locator("dialog[open]").getByRole("button", { name: "Send reminder" }).click();
       await expect(page.locator("[data-message]")).toContainText("Reminder sent to");
       await page.getByRole("link", { name: "Back to Overview" }).click();
       await expect(page).toHaveURL(/\/instructor$/);
@@ -342,7 +343,7 @@ for (const width of [360, 430]) {
       const passed = await passedOf(page, id);
       await page.locator("[data-exam-card]").click();
       await expect(page).toHaveURL(new RegExp(`/instructor/exams/${id}\\?from=overview$`));
-      await expect(page.locator("[data-count=certified] .tabular-nums")).toHaveText(String(passed));
+      await expect(page.locator("[data-count=passed] .tabular-nums")).toHaveText(String(passed));
       await page.getByRole("link", { name: "Back to Overview" }).click();
       await expect(page).toHaveURL(/\/instructor$/);
     });
@@ -472,15 +473,15 @@ for (const width of [360, 430]) {
       await expect(page.locator(`[data-exam-card="${examId}"]`)).toBeVisible();
       expect(await passedOf(page, examId)).toBe(before + 1);
       await page.goto(`/instructor/exams/${examId}`);
-      await expect(page.locator("[data-count=certified] .tabular-nums")).toHaveText(
+      await expect(page.locator("[data-count=passed] .tabular-nums")).toHaveText(
         String(before + 1),
       );
       const mine = page.locator('[data-student-row="ira@example.com"]');
-      await expect(mine).toHaveAttribute("data-status", "certified");
+      await expect(mine).toHaveAttribute("data-status", "passed");
       await page.goto("/instructor/students/ira%40example.com");
       await expect(page.locator(`[data-exam-row="${examId}"]`)).toHaveAttribute(
         "data-status",
-        "certified",
+        "passed",
       );
       expect(await noSidewaysScroll(page)).toBe(true);
     });

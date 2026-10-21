@@ -1,21 +1,42 @@
 import { describe, expect, it } from "vitest";
 import {
+  attemptsLeft,
+  attemptsOf,
+  bestAttempt,
+  deriveStatus,
   groupCounts,
-  localStatus,
   participants,
-  seededStatus,
+  seededAttempts,
   seededStudents,
   statusOf,
   statusText,
   studentRows,
+  triedCount,
   unit,
 } from "@/lib/cohort";
-import { inScope } from "@/lib/groups";
 import type { Attempt } from "@/lib/cohort";
+import { seedGroupExams } from "@/lib/group-exams";
+import type { GroupExam } from "@/lib/group-exams";
+import { inScope } from "@/lib/groups";
+import { examQuestionIds } from "@/lib/exam-pool";
 import { passCount } from "@/lib/results";
 
-const exam = { id: "seed-closed", deadline: "2026-10-18", questionCount: 20 };
-const open = { id: "seed-active", deadline: "2026-10-30", questionCount: 20 };
+const now = new Date(2026, 9, 24, 10, 0).getTime();
+const seeded = seedGroupExams(now);
+const open = seeded.find((e) => e.id === "seed-active")!;
+const closed = seeded.find((e) => e.id === "seed-closed")!;
+const exam = (over: Partial<GroupExam> = {}): GroupExam => ({ ...open, ...over });
+
+const attempt = (correct: number, over: Partial<Attempt> = {}): Attempt => ({
+  examId: open.id,
+  studentId: "ana@example.com",
+  startedAt: now - 3_600_000,
+  finishedAt: now - 3_000_000,
+  correct,
+  total: 20,
+  answers: {},
+  ...over,
+});
 
 describe("the demo group", () => {
   it("has 26 fictional students in two groups (14 and 12) with ids, initials, a field and per-topic counts", () => {
@@ -53,101 +74,148 @@ describe("the demo group", () => {
   });
 });
 
-describe("the status of a seeded student", () => {
-  it("is deterministic: the same inputs always give the same status", () => {
-    for (const s of seededStudents) {
-      expect(seededStatus(s.id, exam, false)).toEqual(seededStatus(s.id, exam, false));
-    }
-    expect(unit("x", "y")).toBe(unit("x", "y"));
-    expect(unit("x")).toBeGreaterThanOrEqual(0);
-    expect(unit("x")).toBeLessThan(1);
+describe("the status of a participant (derived from attempts)", () => {
+  it("is Passed from the best finished attempt reaching the pass mark (16 of 20), Not passed below it", () => {
+    expect(passCount(20)).toBe(16);
+    expect(deriveStatus([attempt(16)], open, now)).toMatchObject({
+      kind: "passed",
+      correct: 16,
+      total: 20,
+      attempts: 1,
+    });
+    expect(deriveStatus([attempt(15)], open, now)).toMatchObject({
+      kind: "not-passed",
+      correct: 15,
+    });
   });
 
-  it("depends on the exam and the deadline, so another exam can differ", () => {
-    const a = seededStudents.map((s) => seededStatus(s.id, exam, false).kind).join();
-    const b = seededStudents
-      .map((s) => seededStatus(s.id, { ...exam, id: "other" }, false).kind)
-      .join();
-    const c = seededStudents
-      .map((s) => seededStatus(s.id, { ...exam, deadline: "2026-11-01" }, false).kind)
-      .join();
-    expect(new Set([a, b, c]).size).toBeGreaterThan(1);
+  it("takes the best attempt, the earliest on a tie, and counts the finished ones", () => {
+    const list = [
+      attempt(12, { finishedAt: 1 }),
+      attempt(17, { finishedAt: 2 }),
+      attempt(14, { finishedAt: 3 }),
+    ];
+    expect(bestAttempt(list)?.correct).toBe(17);
+    expect(deriveStatus(list, open, now)).toMatchObject({
+      kind: "passed",
+      correct: 17,
+      attempts: 3,
+    });
+    expect(
+      bestAttempt([attempt(10, { finishedAt: 5 }), attempt(10, { finishedAt: 2 })])?.finishedAt,
+    ).toBe(2);
+    expect(bestAttempt([])).toBeNull();
   });
 
-  it("is a pass only with at least the pass count, and a fail with fewer", () => {
-    for (let n = 0; n < 200; n++) {
-      const status = seededStatus(`stu-${n}`, exam, false);
-      const pass = passCount(20);
-      if (status.kind === "certified") expect(status.correct).toBeGreaterThanOrEqual(pass);
-      if (status.kind === "certified") expect(status.correct).toBeLessThanOrEqual(20);
-      if (status.kind === "not-passed") {
-        expect(status.correct).toBeLessThan(pass);
-        expect(status.correct).toBeGreaterThanOrEqual(0);
-      }
-    }
+  it("is In progress with an unfinished attempt (and no passed one), with the attempt number", () => {
+    const unfinished = attempt(0, { finishedAt: undefined, startedAt: now - 600_000 });
+    expect(deriveStatus([unfinished], open, now)).toEqual({
+      kind: "in-progress",
+      startedAt: now - 600_000,
+      attempt: 1,
+    });
+    expect(deriveStatus([attempt(10), unfinished], open, now)).toMatchObject({
+      kind: "in-progress",
+      attempt: 2,
+    });
+    // a passed attempt wins over a later unfinished one
+    expect(deriveStatus([attempt(18), unfinished], open, now).kind).toBe("passed");
   });
 
-  it("has about 60% certified, 25% not passed for a closed exam, and fewer attempts while open", () => {
-    const sample = (active: boolean) => {
-      const counts = { certified: 0, "not-passed": 0, "not-started": 0 };
-      for (let n = 0; n < 4000; n++) counts[seededStatus(`s${n}`, exam, active).kind] += 1;
-      return counts;
-    };
-    const closed = sample(false);
-    expect(closed.certified / 4000).toBeGreaterThan(0.55);
-    expect(closed.certified / 4000).toBeLessThan(0.65);
-    expect(closed["not-passed"] / 4000).toBeGreaterThan(0.2);
-    expect(closed["not-passed"] / 4000).toBeLessThan(0.3);
-    const active = sample(true);
-    expect(active["not-started"]).toBeGreaterThan(closed["not-started"]);
-    expect(active.certified).toBeLessThan(closed.certified);
+  it("is Not started while Active and Missed once Closed, with no attempt", () => {
+    expect(deriveStatus([], open, now).kind).toBe("not-started");
+    expect(deriveStatus([], closed, now).kind).toBe("missed");
+    expect(deriveStatus([], { ...open, closedAt: now - 1 }, now).kind).toBe("missed");
   });
 
-  it("works for fewer questions: the pass count follows the exam size", () => {
-    for (let n = 0; n < 100; n++) {
-      const status = seededStatus(`s${n}`, { ...exam, questionCount: 12 }, false);
-      if (status.kind === "certified") expect(status.correct).toBeGreaterThanOrEqual(passCount(12));
-      if (status.kind !== "not-started") expect(status.total).toBe(12);
-    }
+  it("keeps an unfinished attempt In progress after the deadline (it can be submitted)", () => {
+    const after = new Date(2026, 10, 30).getTime();
+    const unfinished = attempt(0, { finishedAt: undefined });
+    expect(deriveStatus([unfinished], open, after).kind).toBe("in-progress");
+    expect(deriveStatus([], open, after).kind).toBe("missed");
+  });
+
+  it("reads Passed, Not passed, In progress, Not started and Missed in words (never Certified)", () => {
+    expect(statusText({ kind: "passed", correct: 17, total: 20, attempts: 1 })).toBe(
+      "Passed · 17 of 20 correct",
+    );
+    expect(statusText({ kind: "not-passed", correct: 14, total: 20, attempts: 2 })).toBe(
+      "Not passed · 14 of 20 correct",
+    );
+    expect(statusText({ kind: "in-progress", startedAt: 1, attempt: 1 })).toBe("In progress");
+    expect(statusText({ kind: "not-started" })).toBe("Not started");
+    expect(statusText({ kind: "missed" })).toBe("Missed");
+  });
+
+  it("keeps the certificate of a passed attempt", () => {
+    expect(deriveStatus([attempt(18, { certificateId: "QT-2026-0001" })], open, now)).toMatchObject(
+      { kind: "passed", certificateId: "QT-2026-0001" },
+    );
   });
 });
 
-describe("the status of a local account", () => {
-  const attempt = (correct: number, at = 1, examId = "e1", studentId = "a@b.co"): Attempt => ({
-    examId,
-    studentId,
-    correct,
-    total: 20,
-    finishedAt: at,
+describe("attempts left", () => {
+  it("is the attempts allowed minus the finished ones, never below 0; unlimited is null", () => {
+    expect(attemptsLeft({ attemptsAllowed: 3 }, [attempt(10)])).toBe(2);
+    expect(attemptsLeft({ attemptsAllowed: 1 }, [attempt(10)])).toBe(0);
+    expect(attemptsLeft({ attemptsAllowed: 1 }, [attempt(10), attempt(11)])).toBe(0);
+    expect(attemptsLeft({ attemptsAllowed: null }, [attempt(10)])).toBeNull();
+    // an unfinished attempt is not a used try
+    expect(attemptsLeft({ attemptsAllowed: 3 }, [attempt(0, { finishedAt: undefined })])).toBe(3);
+  });
+});
+
+describe("the attempts of a seeded student", () => {
+  it("are deterministic and consistent with the exam: counts, a fixed question set, per-question results", () => {
+    for (const s of seededStudents.slice(0, 12)) {
+      const first = seededAttempts(s.id, open, now);
+      expect(seededAttempts(s.id, open, now)).toEqual(first);
+      for (const a of first) {
+        expect(a.total).toBe(open.questionCount);
+        if (a.finishedAt === undefined) continue;
+        const ids = Object.keys(a.answers);
+        expect(ids.sort()).toEqual([...examQuestionIds(open)].sort());
+        expect(Object.values(a.answers).filter(Boolean)).toHaveLength(a.correct);
+      }
+      expect(first.length).toBeLessThanOrEqual(3);
+    }
+    expect(unit("x", "y")).toBe(unit("x", "y"));
   });
 
-  it("is Not started without attempts at that exam", () => {
-    expect(localStatus([], "a@b.co", "e1")).toEqual({ kind: "not-started" });
-    expect(localStatus([attempt(18, 1, "other")], "a@b.co", "e1")).toEqual({ kind: "not-started" });
-    expect(localStatus([attempt(18, 1, "e1", "x@y.zz")], "a@b.co", "e1")).toEqual({
-      kind: "not-started",
-    });
+  it("respect one attempt allowed", () => {
+    const single = exam({ attemptsAllowed: 1 });
+    for (const s of seededStudents) {
+      expect(seededAttempts(s.id, single, now).length).toBeLessThanOrEqual(1);
+    }
   });
 
-  it("is Not passed with the best count, and Certified once an attempt passed", () => {
-    expect(localStatus([attempt(9), attempt(12, 2)], "a@b.co", "e1")).toEqual({
-      kind: "not-passed",
-      correct: 12,
-      total: 20,
-    });
-    expect(localStatus([attempt(12), attempt(17, 2)], "a@b.co", "e1")).toEqual({
-      kind: "certified",
-      correct: 17,
-      total: 20,
-    });
-    expect(
-      localStatus([{ ...attempt(19), certificateId: "QT-2026-0001" }], "a@b.co", "e1"),
-    ).toMatchObject({ kind: "certified", certificateId: "QT-2026-0001" });
+  it("give a spread of statuses: some of each for an active exam, Missed (no In progress) once closed", () => {
+    const kinds = (e: GroupExam) =>
+      seededStudents
+        .filter((s) => s.group === "rescue-team")
+        .map((s) => deriveStatus(seededAttempts(s.id, e, now), e, now).kind);
+    const active = kinds(open);
+    for (const kind of ["passed", "not-passed", "not-started"]) expect(active).toContain(kind);
+    const done = kinds(closed);
+    expect(done).toContain("passed");
+    expect(done).not.toContain("in-progress");
+    expect(done).not.toContain("not-started");
+    // a closed exam has more passed than an open one
+    expect(done.filter((k) => k === "passed").length).toBeGreaterThan(
+      active.filter((k) => k === "passed").length,
+    );
   });
 
-  it("is certified exactly at the pass count (16 of 20) and not at 15", () => {
-    expect(localStatus([attempt(16)], "a@b.co", "e1").kind).toBe("certified");
-    expect(localStatus([attempt(15)], "a@b.co", "e1").kind).toBe("not-passed");
+  it("make the same questions hard for everyone (the hardest are shared)", () => {
+    const wrongCounts = new Map<string, number>();
+    for (const s of seededStudents.filter((x) => x.group === "rescue-team")) {
+      const best = bestAttempt(seededAttempts(s.id, closed, now));
+      for (const [id, right] of Object.entries(best?.answers ?? {})) {
+        if (!right) wrongCounts.set(id, (wrongCounts.get(id) ?? 0) + 1);
+      }
+    }
+    const sorted = [...wrongCounts.values()].sort((a, b) => b - a);
+    expect(sorted[0]).toBeGreaterThan(sorted[sorted.length - 1]);
   });
 });
 
@@ -156,47 +224,62 @@ describe("group counts and rows", () => {
     participants([{ name: "Ana Test", email: "ana@example.com" }]),
     "rescue-team",
   );
-  const attempts: Attempt[] = [
-    { examId: open.id, studentId: "ana@example.com", correct: 17, total: 20, finishedAt: 1 },
-  ];
-  const context = { attempts, active: true };
+  const attempts: Attempt[] = [attempt(17)];
+  const context = { attempts, now };
 
   it("counts every participant once; the counts add up and match the rows", () => {
     const counts = groupCounts(people, open, context);
     expect(counts.total).toBe(15);
-    expect(counts.certified + counts.notPassed + counts.notStarted).toBe(15);
+    expect(
+      counts.passed + counts.notPassed + counts.inProgress + counts.notStarted + counts.missed,
+    ).toBe(15);
+    expect(counts.missed).toBe(0);
     const rows = studentRows(people, open, context);
     expect(rows).toHaveLength(15);
-    expect(rows.filter((r) => r.status.kind === "certified")).toHaveLength(counts.certified);
-    expect(rows.filter((r) => r.status.kind === "not-passed")).toHaveLength(counts.notPassed);
-    expect(rows.filter((r) => r.status.kind === "not-started")).toHaveLength(counts.notStarted);
-    // the local account's real attempt counts
-    expect(statusOf(people[0], open, context).kind).toBe("certified");
+    for (const kind of ["passed", "not-passed", "in-progress", "not-started"] as const) {
+      const key = {
+        passed: "passed",
+        "not-passed": "notPassed",
+        "in-progress": "inProgress",
+        "not-started": "notStarted",
+      }[kind] as "passed";
+      expect(rows.filter((r) => r.status.kind === kind)).toHaveLength(counts[key]);
+    }
+    expect(statusOf(people[0], open, context).kind).toBe("passed");
+    expect(triedCount(counts)).toBe(counts.passed + counts.notPassed + counts.inProgress);
   });
 
-  it("sorts Not passed first, then Not started, then Certified", () => {
-    const kinds = studentRows(people, exam, { attempts: [], active: false }).map(
-      (r) => r.status.kind,
-    );
-    const order = { "not-passed": 0, "not-started": 1, certified: 2 } as const;
-    const ranks = kinds.map((k) => order[k]);
+  it("has Missed instead of Not started once the exam is closed", () => {
+    const counts = groupCounts(people, closed, { attempts: [], now });
+    expect(counts.notStarted).toBe(0);
+    expect(counts.missed).toBeGreaterThan(0);
+    // the local account has no attempt at it
+    expect(statusOf(people[0], closed, { attempts: [], now }).kind).toBe("missed");
+  });
+
+  it("sorts Not passed, then In progress, then Not started or Missed, then Passed", () => {
+    const order = {
+      "not-passed": 0,
+      "in-progress": 1,
+      "not-started": 2,
+      missed: 2,
+      passed: 3,
+    } as const;
+    const ranks = studentRows(people, open, { attempts: [], now }).map((r) => order[r.status.kind]);
     expect(ranks).toEqual([...ranks].sort((a, b) => a - b));
   });
 
   it("changes when a local attempt is added (real data)", () => {
-    const before = groupCounts(people, open, { attempts: [], active: true });
-    const after = groupCounts(people, open, context);
-    expect(before.notStarted - after.notStarted).toBe(1);
-    expect(after.certified - before.certified).toBe(1);
-  });
-});
-
-describe("status wording", () => {
-  it("reads Certified, Not started and Not passed with the count", () => {
-    expect(statusText({ kind: "certified", correct: 17, total: 20 })).toBe("Certified");
-    expect(statusText({ kind: "not-started" })).toBe("Not started");
-    expect(statusText({ kind: "not-passed", correct: 14, total: 20 })).toBe(
-      "Not passed · 14 of 20 correct",
-    );
+    const before = groupCounts(people, open, { attempts: [], now });
+    const after = groupCounts(people, open, { attempts: [attempt(18)], now });
+    expect(before.notStarted).toBe(after.notStarted + 1);
+    expect(after.passed).toBe(before.passed + 1);
+    // an unfinished attempt makes the local account In progress
+    const started = groupCounts(people, open, {
+      attempts: [attempt(0, { finishedAt: undefined })],
+      now,
+    });
+    expect(started.inProgress).toBe(before.inProgress + 1);
+    expect(attemptsOf(people[0], open, [attempt(18)], now)).toHaveLength(1);
   });
 });

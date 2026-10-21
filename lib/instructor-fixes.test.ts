@@ -237,6 +237,8 @@ describe("reminders", () => {
       correct: 20,
       total: 20,
       finishedAt: 1,
+      startedAt: 0,
+      answers: {},
     };
     expect(unfinishedExam(person, exams, [passed], now)).toBeNull();
   });

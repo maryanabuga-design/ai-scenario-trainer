@@ -6,8 +6,8 @@ import { ButtonLink } from "@/components/Button/Button";
 import { ExamTimer } from "@/components/ExamTimer/ExamTimer";
 import { SessionRunner } from "@/components/SessionRunner/SessionRunner";
 import { secondsLeft } from "@/lib/exam";
-import { finishExam } from "@/lib/exam-session";
-import { clearExam, isValidExam, saveExam, useExam } from "@/lib/exam-store";
+import { finishExam, leaveExam } from "@/lib/exam-session";
+import { isValidExam, saveExam, useExam } from "@/lib/exam-store";
 import type { ExamSession } from "@/lib/exam-store";
 
 function NoExam() {
@@ -64,7 +64,7 @@ function Runner({ exam }: { exam: ExamSession }) {
       onChange={saveExam}
       onFinish={finish}
       onLeave={() => {
-        clearExam();
+        leaveExam();
         router.replace("/exam");
       }}
     />

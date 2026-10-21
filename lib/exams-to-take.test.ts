@@ -16,6 +16,8 @@ const passed = (examId: string): Attempt => ({
   correct: 20,
   total: 20,
   finishedAt: now,
+  startedAt: 0,
+  answers: {},
 });
 
 describe("the exams to take", () => {

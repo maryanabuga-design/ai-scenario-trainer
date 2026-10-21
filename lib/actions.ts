@@ -91,10 +91,7 @@ export function actionRows({
     for (const exam of active) {
       const days = daysUntil(exam.deadline, now);
       if (days === null || days > DUE_SOON_DAYS || reminded.has(exam.id)) continue;
-      const { notStarted } = groupCounts(peopleOfGroup, exam, {
-        attempts,
-        active: true,
-      });
+      const { notStarted } = groupCounts(peopleOfGroup, exam, { attempts, now });
       if (notStarted === 0) continue;
       rows.push({
         kind: "exam-not-started",

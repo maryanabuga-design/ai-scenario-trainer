@@ -1348,7 +1348,8 @@
       "createdDaysAgo": 2,
       "groupIds": [
         "rescue-team"
-      ]
+      ],
+      "attemptsAllowed": 3
     },
     {
       "id": "seed-closed",
@@ -1363,7 +1364,8 @@
       "createdDaysAgo": 14,
       "groupIds": [
         "rescue-team"
-      ]
+      ],
+      "attemptsAllowed": 1
     },
     {
       "id": "seed-military-active",
@@ -1378,7 +1380,8 @@
       "createdDaysAgo": 3,
       "groupIds": [
         "military-training"
-      ]
+      ],
+      "attemptsAllowed": 3
     }
   ],
   "groups": [

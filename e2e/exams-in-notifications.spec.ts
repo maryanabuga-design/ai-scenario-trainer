@@ -201,7 +201,8 @@ for (const width of [360, 430]) {
       await switchRole(page, "Instructor");
       for (let n = 0; n < 2; n++) {
         await page.goto(`/instructor/exams/${b}`);
-        await page.getByRole("button", { name: "Remind students who have not started" }).click();
+        await page.getByRole("button", { name: "Send reminder" }).click();
+        await page.locator("dialog[open]").getByRole("button", { name: "Send reminder" }).click();
         await expect(page.locator("[data-message]")).toContainText("Reminder sent to");
         await page.waitForTimeout(30);
       }

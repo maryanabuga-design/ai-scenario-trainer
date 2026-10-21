@@ -78,7 +78,7 @@ describe("the exam question screen", () => {
     expect(page).toContain("Leave the exam?");
     expect(page).toContain("Your progress will be lost.");
     expect(page).toContain("hints={false}");
-    expect(page).toContain("clearExam()");
+    expect(page).toContain("leaveExam()");
     expect(page).not.toContain("saveSession");
   });
 });

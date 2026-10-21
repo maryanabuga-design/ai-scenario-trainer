@@ -13,6 +13,8 @@ type Props = {
   tall?: boolean;
   /** Exactly 64px high (the topic rows of Assign exam). */
   compact?: boolean;
+  /** A check box drawn as a circle (the Instructor's multi-select rows): the same choice, a round indicator. */
+  round?: boolean;
   /** A letter badge before the content (A, B, C), for answer options. */
   letter?: string;
   children: ReactNode;
@@ -33,6 +35,7 @@ export function SelectableRow({
   type = "radio",
   tall = false,
   compact = false,
+  round = false,
   letter,
   children,
 }: Props) {
@@ -64,7 +67,7 @@ export function SelectableRow({
       <span
         aria-hidden="true"
         className={`flex h-5 w-5 shrink-0 items-center justify-center border ${
-          type === "checkbox" ? "rounded-[4px]" : "rounded-full"
+          type === "checkbox" && !round ? "rounded-[4px]" : "rounded-full"
         } ${disabled ? "border-dashed border-text-secondary" : "border-primary"} ${
           checked && type === "checkbox" ? "bg-primary" : ""
         }`}

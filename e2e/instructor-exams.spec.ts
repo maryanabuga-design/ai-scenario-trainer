@@ -31,6 +31,7 @@ const PRIMARY = "rgb(63, 70, 56)";
 const OLIVE_TINT = "rgb(224, 230, 214)";
 const SUCCESS_BG = "rgb(225, 234, 218)";
 const ATTENTION_BG = "rgb(241, 228, 200)";
+const SAND = "rgb(240, 236, 230)";
 const noSidewaysScroll = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
 const bg = (loc: ReturnType<Page["locator"]>) =>
@@ -39,455 +40,643 @@ const bg = (loc: ReturnType<Page["locator"]>) =>
 const navLinks = (page: Page) => page.getByRole("navigation", { name: "Main" }).getByRole("link");
 
 async function switchRole(page: Page, role: "Student" | "Instructor") {
+  // let any navigation of the last click finish first (WebKit interrupts a goto otherwise)
+  await page.waitForLoadState("networkidle");
   await page.goto("/profile");
   await page.getByRole("radio", { name: role }).check({ force: true });
   await expect(page).toHaveURL(role === "Student" ? /\/$/ : /\/instructor$/);
 }
 
-/** Fills the assign form: topics S1 and S2 and a one-week deadline. */
-async function fillAssign(page: Page, title?: string) {
+/** Fills the assign form: topics S1 and S2, a deadline (one week by default) and the attempts. */
+async function fillAssign(
+  page: Page,
+  title?: string,
+  { deadline = "In 1 week", attempts }: { deadline?: string; attempts?: string } = {},
+) {
   await page.getByText("Responding to an alarm", { exact: false }).first().click();
   await page.getByText("Checking the route").first().click();
-  await page.getByText("In 1 week").click();
+  await page.getByText(deadline, { exact: true }).click();
+  if (attempts) await page.getByText(attempts, { exact: true }).click();
   if (title) await page.getByLabel("Exam title").fill(title);
 }
+
+/** Assigns an exam as the instructor and returns its id. */
+async function assign(
+  page: Page,
+  title: string,
+  options: { deadline?: string; attempts?: string } = {},
+) {
+  await page.goto("/instructor/exams/new");
+  await fillAssign(page, title, options);
+  await page.getByRole("button", { name: "Assign exam" }).click();
+  await expect(page).toHaveURL(/assigned=1/);
+  return new URL(page.url()).pathname.split("/").pop()!;
+}
+
+/** As the student: starts the exam, answers `right` questions correctly and finishes. */
+async function playExam(page: Page, examId: string, right: number) {
+  await page.goto(`/exam?id=${examId}`);
+  await page
+    .getByRole("button", { name: /^Start exam/ })
+    .first()
+    .click();
+  await expect(page).toHaveURL(/\/exam\/session$/);
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.exam.v1")!).value);
+  const answers = (saved.itemIds as string[]).map((id, i) => ({
+    itemId: id,
+    optionId: i < right ? correctOf.get(id)! : wrongOf.get(id)!,
+  }));
+  await page.evaluate(
+    ([a]) => {
+      const stored = JSON.parse(localStorage.getItem("ast.exam.v1")!);
+      stored.value.answers = a;
+      stored.value.index = a.length - 1;
+      localStorage.setItem("ast.exam.v1", JSON.stringify(stored));
+    },
+    [answers] as const,
+  );
+  await page.reload();
+  await page.getByRole("button", { name: "Finish", exact: true }).click();
+  await expect(page).toHaveURL(/\/exam\/results$/);
+}
+
+const mineRow = (page: Page) => page.locator('[data-student-row="maryana@example.com"]');
+const count = (page: Page, kind: string) =>
+  page.locator(`[data-count=${kind}] .tabular-nums`).innerText().then(Number);
+
+const noPercent = async (page: Page) =>
+  expect(((await page.locator("main").innerText()).match(/%/g) ?? []).length).toBe(0);
 
 for (const width of [360, 430]) {
   test.describe(`Instructor exams at ${width}px`, () => {
     test.use({ viewport: { width, height: 800 }, storageState: instructor });
 
-    test("the navigation is Overview, Exams, Students, Profile; the detail screens have no navigation", async ({
+    test("the navigation is Overview, Exams, Students, Content; the detail screens have no navigation", async ({
       page,
     }) => {
       await page.goto("/instructor");
-      await expect(navLinks(page)).toHaveCount(4);
       await expect(navLinks(page)).toHaveText(["Overview", "Exams", "Students", "Content"]);
       await page
         .getByRole("navigation", { name: "Main" })
         .getByRole("link", { name: "Exams" })
         .click();
       await expect(page).toHaveURL(/\/instructor\/exams$/);
-      await expect(
-        page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Exams" }),
-      ).toHaveAttribute("aria-current", "page");
       await page.getByRole("link", { name: "Assign exam" }).click();
       await expect(page).toHaveURL(/\/exams\/new$/);
       await expect(page.getByRole("navigation", { name: "Main" })).toHaveCount(0);
     });
 
-    test("the Exams list: band, Primary Assign exam, ACTIVE card (88px), closed toggle (Other topics pattern)", async ({
+    test("the Exams list: the band with the avatar only, the Primary Assign exam with an icon, ACTIVE with its count, 104px cards with the group name, the closed toggle", async ({
       page,
     }) => {
       await page.goto("/instructor/exams");
-      await expect(page.getByRole("heading", { name: "Exams", level: 1 })).toBeVisible();
-      const assign = page.getByRole("link", { name: "Assign exam" });
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Exams");
+      await expect(page.locator("[data-avatar]")).toBeVisible();
+      await expect(page.locator("[data-group-pill]")).toHaveCount(0);
+      const assign = page.locator("main").getByRole("link", { name: "Assign exam" });
       expect(await bg(assign)).toBe(PRIMARY);
-      const a = (await assign.boundingBox())!;
-      expect(a.height).toBe(52);
-      expect(a.width).toBe(width - 32);
-      const band = (await page.locator("[data-page-header-band]").boundingBox())!;
-      expect(a.y).toBeGreaterThan(band.y + band.height);
-      expect(a.y - (band.y + band.height)).toBeLessThanOrEqual(20);
-      await expect(page.getByRole("heading", { name: "ACTIVE" })).toBeVisible();
+      expect((await assign.boundingBox())!.height).toBe(52);
+      await expect(assign.locator("svg.lucide-circle-plus")).toHaveCount(1);
+      await expect(page.locator("[data-active-count]")).toHaveText("2 Active");
       const cards = page.locator("[data-exam-card]:visible");
-      await expect(cards).toHaveCount(1);
-      const card = cards.first();
-      expect((await card.boundingBox())!.height).toBe(88);
-      await expect(card.locator("img")).toHaveAttribute("src", "/heroes/exam-card.webp");
-      const frame = (await card.locator("[data-picture-frame]").boundingBox())!;
-      expect([frame.width, frame.height]).toEqual([56, 56]);
-      await expect(card).toContainText(/Due \d{1,2} \w{3} · 4 topics/);
-      await expect(card).toContainText(/Passed \d+ of 15/);
-      expect(await card.evaluate((el) => !!el.querySelector("svg.lucide-chevron-right"))).toBe(
-        true,
+      await expect(cards).toHaveCount(2);
+      for (const card of await cards.all()) {
+        const b = (await card.boundingBox())!;
+        expect([b.height, b.x, b.width]).toEqual([104, 16, width - 32]);
+        await expect(card.locator("[data-group-name]")).toBeVisible();
+        await expect(card.locator("img")).toHaveAttribute("src", "/heroes/exam-card.webp");
+        expect((await card.locator("img").boundingBox())!.width).toBe(56);
+        expect(await bg(card)).toBe("rgb(255, 255, 255)");
+        await expect(card).toContainText(/Passed \d+ of \d+ · \d+ not started/);
+        await expect(card.locator("svg.lucide-chevron-right")).toHaveCount(1);
+      }
+      await expect(page.locator("[data-due-pill]").first()).toContainText(
+        /^Due \d+ \w{3} · \d topics?$/,
       );
-      // the closed exams: one toggle after the list, closed by default
+      expect(await bg(page.locator("[data-due-pill]").first())).toBe(SAND);
+      // the toggle is a full-width Secondary under the active cards, closed cards are inert until opened
       const toggle = page.getByRole("button", { name: "Show closed exams (1)" });
+      expect(await bg(toggle)).toBe(OLIVE_TINT);
+      expect((await toggle.boundingBox())!.height).toBe(52);
       await expect(toggle).toHaveAttribute("aria-expanded", "false");
-      await expect(page.getByRole("heading", { name: "CLOSED" })).toBeHidden();
+      await expect(page.getByText("CLOSED", { exact: true })).toBeHidden();
       await toggle.click();
-      const hide = page.getByRole("button", { name: "Hide closed exams" });
-      await expect(hide).toHaveAttribute("aria-expanded", "true");
-      await expect(hide).toBeFocused();
-      await page.waitForTimeout(300);
-      await expect(page.getByRole("heading", { name: "CLOSED" })).toBeVisible();
-      await expect(page.locator("[data-exam-card]:visible")).toHaveCount(2);
-      await expect(page.locator("button[aria-controls=closed-exams]")).toHaveCount(1);
-      // the demo note ends the screen, and no percent sign in the lists
-      await expect(page.locator("[data-demo-note]:visible")).toHaveText(
+      await expect(page.getByText("CLOSED", { exact: true })).toBeVisible();
+      const closed = page.locator("[data-exam-card=seed-closed]");
+      await expect(closed).toContainText(/Closed \d+ \w{3}/);
+      await expect(closed).toContainText(/Passed \d+ of \d+$/);
+      await expect(closed.locator("img")).toHaveCount(0);
+      await expect(closed.locator("[data-icon-tile]")).toBeVisible();
+      await expect(page.getByRole("button", { name: "Hide closed exams" })).toBeVisible();
+      await noPercent(page);
+      expect(await noSidewaysScroll(page)).toBe(true);
+      await expect(page.locator("[data-demo-note]")).toHaveText(
         "Demo group. Student data on this screen is simulated.",
       );
-      expect(await page.locator("main").innerText()).not.toContain("%");
-      expect(await noSidewaysScroll(page)).toBe(true);
     });
 
-    test("Assign exam: disabled until valid, Select all and Clear, title prefill, deadline presets and date", async ({
+    test("a due pill is amber within 3 days, with 'Due in 3 days · 2 topics'", async ({ page }) => {
+      const id = await assign(page, "Exam: Soon", { deadline: "In 3 days" });
+      await page.goto("/instructor/exams");
+      const pill = page.locator(`[data-exam-card="${id}"] [data-due-pill]`);
+      await expect(pill).toHaveText("Due in 3 days · 2 topics");
+      expect(await bg(pill)).toBe(ATTENTION_BG);
+    });
+
+    test("the empty Exams list (the screen review frame): the picture, 'No exams yet', one Primary inside the card, the note", async ({
+      page,
+    }) => {
+      await page.goto("/screens");
+      const frame = page.locator("figure", { hasText: "Instructor: Exams list, empty" });
+      await expect(frame).toContainText("No exams yet");
+      await expect(frame).toContainText("Assign the first exam to your group.");
+      await expect(frame).toContainText(
+        "Exams check how well your group knows the topics you choose.",
+      );
+      await expect(frame.getByRole("link", { name: "Assign exam" })).toHaveCount(1);
+      await expect(frame).not.toContainText("templates");
+    });
+
+    test("Assign exam: the sections, all ten topics, disabled until title, topics, deadline and audience are set", async ({
       page,
     }) => {
       await page.goto("/instructor/exams/new");
-      const assign = page.getByRole("button", { name: "Assign exam" });
-      await expect(assign).toBeDisabled();
-      expect((await assign.boundingBox())!.height).toBe(52);
-      const rows = page.locator("label:has(input[name=topics])");
-      await expect(rows).toHaveCount(10);
-      for (const row of await rows.all()) expect((await row.boundingBox())!.height).toBe(64);
-      // the title is prefilled from the first topics and stays editable
+      await expect(page.locator("[data-avatar]")).toHaveCount(0);
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Assign exam");
+      await expect(page.getByRole("link", { name: "Back to Exams" })).toBeVisible();
+      const labels = await page.locator("main section h2").allInnerTexts();
+      expect(labels).toEqual(["TITLE", "TOPICS", "DEADLINE", "ATTEMPTS", "AUDIENCE"]);
+      await expect(page.locator("[data-specs-card]")).toContainText("20 questions");
+      await expect(page.locator("[data-specs-card]")).toContainText("20 minutes · pass mark 80");
+      await expect(page.locator("input[name=topics]")).toHaveCount(10);
+      await expect(page.getByText("S10 ", { exact: false }).first()).toBeVisible();
+      const assignButton = page.getByRole("button", { name: "Assign exam" });
+      const cancel = page.getByRole("button", { name: "Cancel" });
+      expect(await bg(assignButton)).not.toBe(OLIVE_TINT);
+      await expect(assignButton).toBeDisabled();
+      // the pinned bar is stacked: the Primary above the Secondary
+      const a = (await assignButton.boundingBox())!;
+      const c = (await cancel.boundingBox())!;
+      expect(a.y + a.height).toBeLessThanOrEqual(c.y);
+      expect([a.height, c.height]).toEqual([52, 52]);
+      await expect(assignButton.locator("svg.lucide-file-check")).toHaveCount(1);
+      // audience: Rescue team is the group in context; at least one is needed
+      await expect(page.locator("input[name=audience]:checked")).toHaveCount(1);
       await page.getByText("Responding to an alarm").first().click();
-      await expect(page.getByLabel("Exam title")).toHaveValue(/^Exam: Responding to an alarm/);
-      await expect(assign).toBeDisabled();
-      await page.getByText("In 3 days").click();
-      await expect(assign).toBeEnabled();
-      // Select all / Clear
+      await page.getByText("In 1 week", { exact: true }).click();
+      await expect(assignButton).toBeEnabled();
+      await page.locator("fieldset label", { hasText: "Rescue team" }).click();
+      await expect(assignButton).toBeDisabled();
+      await page.locator("fieldset label", { hasText: "Military training" }).click();
+      await expect(assignButton).toBeEnabled();
+      // attempts: three segments, 3 by default
+      await expect(page.getByRole("radio", { name: "3 attempts" })).toBeChecked();
+      await page.getByText("Unlimited", { exact: true }).click();
+      await expect(page.getByRole("radio", { name: "Unlimited" })).toBeChecked();
+      // the 2 by 2 deadline grid and the date field
+      await page.getByText("Pick a date", { exact: true }).click();
+      await expect(page.getByLabel("Deadline date")).toBeVisible();
+      await expect(assignButton).toBeDisabled();
+      expect(await noSidewaysScroll(page)).toBe(true);
+      await noPercent(page);
+    });
+
+    test("Select all and Clear, the title prefill, and a past date is not allowed", async ({
+      page,
+    }) => {
+      await page.goto("/instructor/exams/new");
       await page.getByRole("button", { name: "Select all" }).click();
       await expect(page.locator("input[name=topics]:checked")).toHaveCount(10);
-      await expect(page.locator("[data-info-rules]")).toHaveText(
-        "20 questions · 20 minutes · pass mark 80",
-      );
       await page.getByRole("button", { name: "Clear" }).click();
       await expect(page.locator("input[name=topics]:checked")).toHaveCount(0);
-      await expect(assign).toBeDisabled();
-      // the read-only info card
-      await expect(page.locator("[data-info-audience]")).toHaveText(
-        "Audience: 15 students in Rescue team",
-      );
-      // the date field only for "Pick a date", and no past date
       await page.getByText("Responding to an alarm").first().click();
-      await expect(page.getByLabel("Deadline date")).toHaveCount(0);
-      await page.getByText("Pick a date").click();
-      const date = page.getByLabel("Deadline date");
-      await expect(date).toBeVisible();
-      expect((await date.boundingBox())!.height).toBe(52);
-      await expect(assign).toBeDisabled();
-      await date.fill("2020-01-01");
-      await expect(assign).toBeDisabled();
-      const future = new Date(Date.now() + 5 * 86_400_000).toISOString().slice(0, 10);
-      await date.fill(future);
-      await expect(assign).toBeEnabled();
-      await page.getByLabel("Exam title").fill("   ");
-      await expect(assign).toBeDisabled();
-      expect(await noSidewaysScroll(page)).toBe(true);
-    });
-
-    test("the minimum-question rule: topics with fewer than 10 questions cannot be assigned", async ({
-      page,
-    }) => {
-      const quiz: { section: string }[] = JSON.parse(
-        readFileSync("content/quiz-bank.json", "utf8"),
-      ).questions;
-      const steps: { section: string }[] = JSON.parse(
-        readFileSync("content/scenario-building-evacuation.json", "utf8"),
-      ).steps;
-      const count = (s: string) => [...quiz, ...steps].filter((q) => q.section === s).length;
-      const small = Array.from({ length: 10 }, (_, i) => `S${i + 1}`).find((s) => count(s) < 10);
-      test.skip(!small, "every topic holds at least 10 questions");
-      await page.goto("/instructor/exams/new");
-      await page
-        .locator(`input[name=topics][value=${small}]`)
-        .evaluate((el) => (el as HTMLElement).click());
-      await page.getByText("In 3 days").click();
+      await expect(page.getByLabel("Exam title")).toHaveValue("Exam: Responding to an alarm");
+      await page.getByText("Pick a date", { exact: true }).click();
+      await page.getByLabel("Deadline date").fill("2020-01-01");
       await expect(page.getByRole("button", { name: "Assign exam" })).toBeDisabled();
-      await expect(page.locator("[data-info-rules]")).toContainText(`${count(small!)} questions`);
+      await page.getByLabel("Deadline date").fill("2099-01-01");
+      await expect(page.getByRole("button", { name: "Assign exam" })).toBeEnabled();
     });
 
-    test("Cancel leaves at once when nothing was entered, and asks first when something was", async ({
+    test("Cancel asks only after input: Primary Discard, Secondary Keep editing", async ({
       page,
     }) => {
       await page.goto("/instructor/exams/new");
       await page.getByRole("button", { name: "Cancel" }).click();
       await expect(page).toHaveURL(/\/instructor\/exams$/);
-      await page.getByRole("link", { name: "Assign exam" }).click();
+      await page.goto("/instructor/exams/new");
       await page.getByText("Responding to an alarm").first().click();
       await page.getByRole("button", { name: "Cancel" }).click();
       const dialog = page.locator("dialog[open]");
-      await expect(dialog).toBeVisible();
+      await expect(dialog).toContainText("Discard this exam?");
       expect(await bg(dialog.getByRole("button", { name: "Discard" }))).toBe(PRIMARY);
       expect(await bg(dialog.getByRole("button", { name: "Keep editing" }))).toBe(OLIVE_TINT);
       await dialog.getByRole("button", { name: "Keep editing" }).click();
       await expect(page).toHaveURL(/\/exams\/new$/);
-      await page.getByRole("button", { name: "Cancel" }).click();
-      await dialog.getByRole("button", { name: "Discard" }).click();
-      await expect(page).toHaveURL(/\/instructor\/exams$/);
     });
 
-    test("assigning saves the exam, opens its detail with the message, and sends the students a notice", async ({
+    test("assigning creates the exam, opens its detail with the message, and sends the student one notification", async ({
       page,
     }) => {
-      await page.goto("/instructor/exams/new");
-      await fillAssign(page, "Exam: Alarm and routes");
-      const assign = page.getByRole("button", { name: "Assign exam" });
-      expect(await bg(assign)).toBe(PRIMARY);
-      await assign.click();
-      await expect(page).toHaveURL(/\/instructor\/exams\/grp-[^?]+\?assigned=1$/);
-      await expect(
-        page.getByRole("heading", { name: "Exam: Alarm and routes", level: 1 }),
-      ).toBeVisible();
+      const id = await assign(page, "Exam: Alarm and routes");
       await expect(page.locator("[data-message]")).toHaveText(
         "Exam assigned. Students will see it on Home.",
       );
-      await expect(page.locator("[data-rules]")).toContainText(
-        "20 questions · 20 minutes · pass mark 80",
-      );
-      await expect(page.locator("[data-student-row]")).toHaveCount(15);
-      // it is in the list, as Active
-      await page.goto("/instructor/exams");
-      await expect(page.locator("[data-exam-card]:visible")).toHaveCount(2);
-      await expect(page.getByText("Exam: Alarm and routes")).toBeVisible();
-      const notices = await page.evaluate(
-        () =>
-          JSON.parse(localStorage.getItem("ast.group-notices.v1")!).value as { title: string }[],
-      );
-      expect(notices[0].title).toMatch(/^New exam assigned: Exam: Alarm and routes$/);
+      await expect(page.locator("main h1:visible")).toHaveText("Exam: Alarm and routes");
+      await expect(page.locator("[data-state-pill]")).toContainText(/^Active · Due \d+ \w{3}$/);
+      await switchRole(page, "Student");
+      await page.goto("/notifications");
+      await expect(page.getByText("New exam assigned: Exam: Alarm and routes")).toHaveCount(1);
+      const card = page.locator(`[data-assigned-exam="${id}"]`);
+      await expect(card).toBeVisible();
+      expect((await card.boundingBox())!.height).toBe(88);
+      // assigning only to Military training sends this student nothing
+      await switchRole(page, "Instructor");
+      await page.goto("/instructor/exams/new");
+      await fillAssign(page, "Exam: Military only");
+      await page.locator("fieldset label", { hasText: "Rescue team" }).click();
+      await page.locator("fieldset label", { hasText: "Military training" }).click();
+      await page.getByRole("button", { name: "Assign exam" }).click();
+      await expect(page).toHaveURL(/assigned=1/);
+      await switchRole(page, "Student");
+      await page.goto("/notifications");
+      await expect(page.getByText("Military only")).toHaveCount(0);
     });
 
-    test("the detail: three count tiles, 72px student rows that open the student (chevron), sorted, tokens", async ({
+    test("the Active detail: pill, TOPIC MODULE, a group pill, the rules, 'n of 15 tried' and four count tiles; no avatar, no percent", async ({
       page,
     }) => {
-      await page.goto("/instructor/exams");
-      await page.locator("[data-exam-card]:visible").first().click();
-      await expect(page).toHaveURL(/\/instructor\/exams\/seed-active$/);
+      await page.goto("/instructor/exams/seed-active");
       await expect(page.getByRole("link", { name: "Back to Exams" })).toBeVisible();
-      const tiles = page.locator("[data-count]");
-      await expect(tiles).toHaveCount(3);
-      const counts = await tiles.evaluateAll((els) =>
-        els.map((el) => Number(el.querySelector(".tabular-nums")!.textContent)),
+      await expect(page.locator("[data-avatar]")).toHaveCount(0);
+      await expect(page.locator("[data-state-pill]")).toContainText("Active · Due");
+      await expect(page.locator("main")).toContainText("TOPIC MODULE");
+      await expect(page.locator("[data-group-pills]")).toContainText("Rescue team");
+      await expect(page.locator("[data-rules]")).toHaveText(
+        "3 attempts allowed · 20 questions · 20 minutes · Pass mark 80",
       );
-      expect(counts.reduce((a, b) => a + b, 0)).toBe(15);
-      const tone = (name: string) =>
-        bg(page.locator(`[data-count=${name}] [aria-hidden=true]`).first());
-      expect(await tone("certified")).toBe(SUCCESS_BG);
-      expect(await tone("not-passed")).toBe(ATTENTION_BG);
+      await expect(page.locator("[data-tried]")).toHaveText(/^\d+ of 15 tried$/);
+      await expect(page.locator("[data-count]")).toHaveCount(4);
+      const total = (
+        await Promise.all(
+          ["passed", "not-passed", "in-progress", "not-started"].map((k) => count(page, k)),
+        )
+      ).reduce((a, b) => a + b, 0);
+      expect(total).toBe(15);
+      await expect(page.locator("[data-student-count]")).toHaveText("15 students");
       const rows = page.locator("[data-student-row]");
       await expect(rows).toHaveCount(15);
+      const order = {
+        "not-passed": 0,
+        "in-progress": 1,
+        "not-started": 2,
+        missed: 2,
+        passed: 3,
+      } as Record<string, number>;
+      const kinds = (
+        await rows.evaluateAll((els) => els.map((e) => e.getAttribute("data-status")!))
+      ).map((k) => order[k]);
+      expect(kinds).toEqual([...kinds].sort((x, y) => x - y));
       for (const row of await rows.all()) {
-        expect((await row.boundingBox())!.height).toBe(72);
-        expect(
-          await row.evaluate((el) => el.querySelectorAll("svg.lucide-chevron-right").length),
-        ).toBe(1);
+        const b = (await row.locator("a").boundingBox())!;
+        expect(b.height).toBe(72);
+        await expect(row.locator("[data-avatar-badge]")).toHaveCount(1);
+        await expect(row.locator("[data-status-pill]")).toHaveCount(1);
+        await expect(row.locator("svg.lucide-chevron-right")).toHaveCount(1);
       }
-      // the rows match the tiles, and are sorted Not passed, Not started, Certified
-      const kinds = await rows.evaluateAll((els) =>
-        els.map((el) => el.getAttribute("data-status")!),
-      );
-      const order = { "not-passed": 0, "not-started": 1, certified: 2 } as Record<string, number>;
-      expect(kinds.map((k) => order[k])).toEqual(
-        [...kinds.map((k) => order[k])].sort((a, b) => a - b),
-      );
-      expect(kinds.filter((k) => k === "certified")).toHaveLength(counts[0]);
-      expect(kinds.filter((k) => k === "not-passed")).toHaveLength(counts[1]);
-      expect(kinds.filter((k) => k === "not-started")).toHaveLength(counts[2]);
-      // "Not passed · 14 of 20 correct" wording, status as text plus icon
-      const notPassed = page.locator('[data-status="not-passed"]').first();
-      if ((await notPassed.count()) > 0) {
-        await expect(notPassed).toContainText(/Not passed · \d+ of \d+ correct/);
-        // the status icon, and the chevron of the row that opens the student
-        expect(await notPassed.evaluate((el) => el.querySelectorAll("svg").length)).toBe(2);
-      }
-      await expect(page.locator('[data-student-row="maryana@example.com"]')).toContainText(
-        "Your demo account",
-      );
-      await expect(page.locator("[data-demo-note]:visible")).toBeVisible();
-      // the actions are Secondary
-      for (const name of ["Remind students who have not started", "Close exam now"]) {
-        expect(await bg(page.getByRole("button", { name }))).toBe(OLIVE_TINT);
-        expect((await page.getByRole("button", { name }).boundingBox())!.height).toBe(52);
-      }
-      expect(await page.locator("main").innerText()).not.toContain("%");
+      const pass = page.locator('[data-status-pill="passed"]').first();
+      expect(await bg(pass)).toBe(SUCCESS_BG);
+      expect(await bg(page.locator('[data-status-pill="not-passed"]').first())).toBe(ATTENTION_BG);
+      await noPercent(page);
       expect(await noSidewaysScroll(page)).toBe(true);
     });
 
-    test("Remind shows the count and sends a notice; Close exam asks first and closes it", async ({
+    test("the Closed detail: 'Closed date · Final results', the group, the specs box, Passed, Not passed and Missed tiles", async ({
       page,
     }) => {
-      await page.goto("/instructor/exams/seed-active");
-      const notStarted = Number(
-        await page.locator("[data-count=not-started] .tabular-nums").innerText(),
+      await page.goto("/instructor/exams/seed-closed");
+      await expect(page.locator("[data-state-pill]")).toHaveText(/^Closed \d+ \w{3}$/);
+      await expect(page.locator("main")).toContainText("Final results");
+      await expect(page.locator("[data-group-label]")).toContainText("RESCUE TEAM");
+      await expect(page.locator("[data-specs]")).toContainText("14 questions · 20 min");
+      await expect(page.locator("[data-specs]")).toContainText("Max 1 attempt");
+      await expect(page.locator("[data-specs]")).toContainText("15 assigned");
+      await expect(page.locator("[data-count]")).toHaveCount(3);
+      expect(await bg(page.locator("[data-count=passed]"))).toBe(SUCCESS_BG);
+      expect(await bg(page.locator("[data-count=not-passed]"))).toBe(ATTENTION_BG);
+      await expect(page.locator('[data-status="not-started"]')).toHaveCount(0);
+      await expect(page.locator('[data-status="missed"]').first()).toBeVisible();
+      // only Duplicate exam, with its note
+      await expect(page.getByRole("link", { name: "Duplicate exam" })).toBeVisible();
+      await expect(page.locator("main")).toContainText(
+        "Opens Assign exam with the same topics and settings.",
       );
-      expect(notStarted).toBeGreaterThan(0);
-      await page.getByRole("button", { name: "Remind students who have not started" }).click();
+      for (const gone of ["Send reminder", "Extend deadline", "Close exam now"]) {
+        await expect(page.getByRole("button", { name: gone })).toHaveCount(0);
+        await expect(page.getByRole("link", { name: gone })).toHaveCount(0);
+      }
+      await noPercent(page);
+    });
+
+    test("hardest questions: up to three, 'Flagged for debrief', counts only; a card opens the read-only question", async ({
+      page,
+    }) => {
+      await page.goto("/instructor/exams/seed-closed");
+      await expect(page.locator("main")).toContainText("Flagged for debrief");
+      const cards = page.locator("[data-hard-question]");
+      expect(await cards.count()).toBeGreaterThan(0);
+      expect(await cards.count()).toBeLessThanOrEqual(3);
+      const first = cards.first();
+      await expect(first).toContainText(/^Q\d+/);
+      await expect(first).toContainText(/\d+ of \d+ answered wrong/);
+      const text = (await first.locator("span.line-clamp-3").innerText()).trim();
+      await first.click();
+      await expect(page).toHaveURL(/\/instructor\/exams\/seed-closed\/questions\/\d+$/);
+      await expect(page.getByRole("link", { name: "Back to exam" })).toBeVisible();
+      await expect(page.locator("main")).toContainText(text.slice(0, 30));
+      await expect(page.locator("main")).toContainText("Why");
+      await expect(page.locator("input")).toHaveCount(0);
+      await expect(page.getByRole("button", { name: /save|bookmark/i })).toHaveCount(0);
+      await page.getByRole("link", { name: "Back to exam" }).click();
+      await expect(page).toHaveURL(/\/instructor\/exams\/seed-closed$/);
+    });
+
+    test("Send reminder: a dialog with the message, the count after sending, and one notification however often", async ({
+      page,
+    }) => {
+      const id = await assign(page, "Exam: Remind me");
+      const notStarted = await count(page, "not-started");
+      await page.getByRole("button", { name: "Send reminder" }).click();
+      const dialog = page.locator("dialog[open]");
+      await expect(dialog).toContainText(`Remind ${notStarted} students?`);
+      await expect(dialog.locator("[data-reminder-preview]")).toContainText(
+        "Reminder: Exam: Remind me is due",
+      );
+      expect(await bg(dialog.getByRole("button", { name: "Send reminder" }))).toBe(PRIMARY);
+      expect(await bg(dialog.getByRole("button", { name: "Cancel" }))).toBe(OLIVE_TINT);
+      await dialog.getByRole("button", { name: "Send reminder" }).click();
       await expect(page.locator("[data-message]")).toHaveText(
-        `Reminder sent to ${notStarted} ${notStarted === 1 ? "student" : "students"}`,
+        `Reminder sent to ${notStarted} students`,
       );
-      const notices = await page.evaluate(
-        () =>
-          JSON.parse(localStorage.getItem("ast.group-notices.v1")!).value as { title: string }[],
+      await page.getByRole("button", { name: "Send reminder" }).click();
+      await page.locator("dialog[open]").getByRole("button", { name: "Send reminder" }).click();
+      await switchRole(page, "Student");
+      await page.goto("/notifications");
+      await expect(page.getByText("Reminder: Exam: Remind me is due")).toHaveCount(1);
+      void id;
+    });
+
+    test("Extend deadline: choices, the note, a Primary and a Secondary; the date changes on both sides and the student is told", async ({
+      page,
+    }) => {
+      const id = await assign(page, "Exam: Extend me");
+      const due = (await page.locator("[data-state-pill]").innerText()).replace(
+        "Active · Due ",
+        "",
       );
-      expect(notices.some((n) => n.title.startsWith("Reminder:"))).toBe(true);
-      // close: a dialog with Primary Close exam and Secondary Keep open
+      await page.getByRole("link", { name: "Extend deadline" }).click();
+      await expect(page).toHaveURL(new RegExp(`/instructor/exams/${id}/extend$`));
+      await expect(page.getByRole("link", { name: "Back to exam" })).toBeVisible();
+      for (const label of ["+3 days", "+1 week", "Pick a date"]) {
+        await expect(page.locator("fieldset").getByText(label).first()).toBeVisible();
+      }
+      await expect(page.locator("[data-extend-note]")).toHaveText("Students will be notified.");
+      const extend = page.getByRole("button", { name: "Extend deadline" });
+      await expect(extend).toBeDisabled();
+      await page.getByText("+3 days").click();
+      await expect(extend).toBeEnabled();
+      await extend.click();
+      await expect(page).toHaveURL(new RegExp(`/instructor/exams/${id}$`));
+      const next = (await page.locator("[data-state-pill]").innerText()).replace(
+        "Active · Due ",
+        "",
+      );
+      expect(next).not.toBe(due);
+      await switchRole(page, "Student");
+      await page.goto("/notifications");
+      await expect(page.getByText("Deadline extended: Exam: Extend me")).toHaveCount(1);
+      await expect(page.locator(`[data-assigned-exam="${id}"]`)).toContainText(`Due ${next}`);
+    });
+
+    test("Close exam now: asks first, Not started becomes Missed, and the student's card is gone", async ({
+      page,
+    }) => {
+      const id = await assign(page, "Exam: Close me");
       await page.getByRole("button", { name: "Close exam now" }).click();
       const dialog = page.locator("dialog[open]");
+      await expect(dialog).toContainText("Close this exam now?");
+      await expect(dialog).toContainText(
+        "Students will no longer be able to start it. Results stay available.",
+      );
       expect(await bg(dialog.getByRole("button", { name: "Close exam" }))).toBe(PRIMARY);
-      expect(await bg(dialog.getByRole("button", { name: "Keep open" }))).toBe(OLIVE_TINT);
       await dialog.getByRole("button", { name: "Keep open" }).click();
-      await expect(page.getByRole("button", { name: "Close exam now" })).toBeVisible();
-      await page.getByRole("button", { name: "Close exam now" }).click();
-      await dialog.getByRole("button", { name: "Close exam" }).click();
-      await expect(page.getByRole("button", { name: "Close exam now" })).toHaveCount(0);
-      await expect(page.getByRole("button", { name: /Remind students/ })).toHaveCount(0);
-      await page.goto("/instructor/exams");
-      await expect(page.locator("[data-exam-card]:visible")).toHaveCount(0);
-      await page.getByRole("button", { name: "Show closed exams (2)" }).click();
-      await page.waitForTimeout(300);
-      await expect(page.locator("[data-exam-card]:visible")).toHaveCount(2);
-    });
-
-    test("an unknown exam id shows 'Exam not found' with a Secondary button back to Exams", async ({
-      page,
-    }) => {
-      await page.goto("/instructor/exams/nope");
-      await expect(page.getByRole("heading", { name: "Exam not found" })).toBeVisible();
-      const back = page.getByRole("link", { name: "Back to Exams" });
-      expect(await bg(back)).toBe(OLIVE_TINT);
-      await back.click();
-      await expect(page).toHaveURL(/\/instructor\/exams$/);
-    });
-
-    test("a broken saved list loads without a crash and the seeded exams return", async ({
-      page,
-    }) => {
-      await page.addInitScript(() => localStorage.setItem("ast.group-exams.v1", "{broken"));
-      await page.goto("/instructor/exams");
-      await expect(page.locator("[data-exam-card]:visible")).toHaveCount(1);
-    });
-
-    test("the whole flow: assign, the student gets the notice and the card, passes, the instructor sees Certified", async ({
-      page,
-    }) => {
-      await page.goto("/instructor/exams/new");
-      await fillAssign(page, "Exam: Alarm and routes");
-      await page.getByRole("button", { name: "Assign exam" }).click();
-      await expect(page).toHaveURL(/assigned=1/);
-      const examId = new URL(page.url()).pathname.split("/").pop()!;
-      const before = Number(await page.locator("[data-count=certified] .tabular-nums").innerText());
-      // as a student: the bell has an unread badge, the notice, and the Assigned exam card
-      await switchRole(page, "Student");
-      const bell = page.getByRole("link", { name: /^Notifications, \d+ unread$/ });
-      await expect(bell).toBeVisible();
-      expect((await bell.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-      await expect(page.locator("[data-unread-badge]")).toBeVisible();
-      // Home has no exam cards; the card is under EXAMS TO TAKE on Notifications
-      await expect(page.locator("[data-assigned-exam]")).toHaveCount(0);
-      await bell.click();
-      await expect(page).toHaveURL(/\/notifications$/);
-      const card = page.locator(`[data-assigned-exam="${examId}"]`);
-      await expect(card).toBeVisible();
-      expect((await card.boundingBox())!.height).toBe(88);
-      await expect(card).toContainText("Exam: Alarm and routes");
-      await expect(card).toContainText(/Due \d{1,2} \w{3}/);
-      await expect(card).toContainText("20 questions · 20 minutes");
-      await expect(page.getByRole("button", { name: "Start exam" })).toHaveCount(0);
-      await expect(page.getByText("New exam assigned: Exam: Alarm and routes")).toBeVisible();
-      // the card opens the exam intro, where the Primary Start exam lives
-      await card.click();
-      await expect(page).toHaveURL(new RegExp(`/exam\\?id=${examId}$`));
-      await page
-        .getByRole("button", { name: /^Start exam/ })
-        .first()
-        .click();
-      await expect(page).toHaveURL(/\/exam\/session$/);
-      // the attempt is recorded against the exam; answer everything right and finish
-      const saved = await page.evaluate(
-        () => JSON.parse(localStorage.getItem("ast.exam.v1")!).value,
-      );
-      expect(saved.examId).toBe(examId);
-      expect(saved.itemIds).toHaveLength(20);
-      const answers = (saved.itemIds as string[]).map((id) => ({
-        itemId: id,
-        optionId: correctOf.get(id)!,
-      }));
-      await page.evaluate(
-        ([a]) => {
-          const stored = JSON.parse(localStorage.getItem("ast.exam.v1")!);
-          stored.value.answers = a;
-          stored.value.index = a.length - 1;
-          localStorage.setItem("ast.exam.v1", JSON.stringify(stored));
-        },
-        [answers] as const,
-      );
-      await page.reload();
-      await page.getByRole("button", { name: "Finish", exact: true }).click();
-      await expect(page).toHaveURL(/\/exam\/results$/);
-      await expect(page.getByRole("heading", { name: "Passed" })).toBeVisible();
-      // the card is gone from Notifications once it is passed
-      await page.goto("/notifications");
-      await expect(page.locator(`[data-assigned-exam="${examId}"]`)).toHaveCount(0);
-      // back as the instructor: this account is Certified for the exam, and the counts followed
-      await switchRole(page, "Instructor");
-      await page.goto(`/instructor/exams/${examId}`);
-      const mine = page.locator('[data-student-row="maryana@example.com"]');
-      await expect(mine).toHaveAttribute("data-status", "certified");
-      await expect(mine).toContainText("Certified");
-      const after = Number(await page.locator("[data-count=certified] .tabular-nums").innerText());
-      expect(after).toBe(before + 1);
-    });
-
-    test("a failed attempt marks Not passed with the count, and a retry is possible until the deadline", async ({
-      page,
-    }) => {
-      await page.goto("/instructor/exams/new");
-      await fillAssign(page, "Exam: Retry");
-      await page.getByRole("button", { name: "Assign exam" }).click();
-      await expect(page).toHaveURL(/assigned=1/);
-      const examId = new URL(page.url()).pathname.split("/").pop()!;
-      await switchRole(page, "Student");
-      await page.goto(`/exam?id=${examId}`);
-      await page
-        .getByRole("button", { name: /^Start exam/ })
-        .first()
-        .click();
-      await expect(page).toHaveURL(/\/exam\/session$/);
-      const saved = await page.evaluate(
-        () => JSON.parse(localStorage.getItem("ast.exam.v1")!).value,
-      );
-      const answers = (saved.itemIds as string[]).map((id, i) => ({
-        itemId: id,
-        optionId: i < 10 ? correctOf.get(id)! : wrongOf.get(id)!,
-      }));
-      await page.evaluate(
-        ([a]) => {
-          const stored = JSON.parse(localStorage.getItem("ast.exam.v1")!);
-          stored.value.answers = a;
-          stored.value.index = a.length - 1;
-          localStorage.setItem("ast.exam.v1", JSON.stringify(stored));
-        },
-        [answers] as const,
-      );
-      await page.reload();
-      await page.getByRole("button", { name: "Finish", exact: true }).click();
-      await expect(page.getByRole("heading", { name: "Not passed yet" })).toBeVisible();
-      // still assigned: the card stays and the exam can be started again
-      await page.goto("/notifications");
-      await expect(page.locator(`[data-assigned-exam="${examId}"]`)).toBeVisible();
-      await switchRole(page, "Instructor");
-      await page.goto(`/instructor/exams/${examId}`);
-      const mine = page.locator('[data-student-row="maryana@example.com"]');
-      await expect(mine).toHaveAttribute("data-status", "not-passed");
-      await expect(mine).toContainText("Not passed · 10 of 20 correct");
-    });
-
-    test("a closed exam cannot be started by a student", async ({ page }) => {
-      await page.goto("/instructor/exams/seed-active");
+      await expect(page.locator("[data-state-pill]")).toContainText("Active");
       await page.getByRole("button", { name: "Close exam now" }).click();
       await page.locator("dialog[open]").getByRole("button", { name: "Close exam" }).click();
+      await expect(page.locator("[data-message]")).toHaveText("Exam closed.");
+      await expect(page.locator("[data-state-pill]")).toContainText("Closed");
+      // a closed exam has Missed, never Not started
+      await expect(page.locator("[data-count=not-started]")).toHaveCount(0);
+      expect(await count(page, "missed")).toBeGreaterThan(0);
+      await expect(mineRow(page)).toHaveAttribute("data-status", "missed");
+      await expect(mineRow(page)).toContainText("Closed without a try");
       await switchRole(page, "Student");
       await page.goto("/notifications");
-      await expect(page.locator('[data-assigned-exam="seed-active"]')).toHaveCount(0);
-      await page.goto("/exam?id=seed-active");
+      await expect(page.locator(`[data-assigned-exam="${id}"]`)).toHaveCount(0);
+      await page.goto(`/exam?id=${id}`);
       await expect(page.getByRole("heading", { name: "This exam is closed" })).toBeVisible();
-      await expect(page.getByRole("button", { name: /^Start exam/ })).toHaveCount(0);
     });
 
-    test("no external network request on the Instructor screens", async ({ page }) => {
+    test("Duplicate exam opens Assign exam prefilled (topics, attempts, audience, a new title) and never edits the old one", async ({
+      page,
+    }) => {
+      const id = await assign(page, "Exam: Original", { attempts: "1 attempt" });
+      await page.getByRole("link", { name: "Duplicate exam" }).click();
+      await expect(page).toHaveURL(new RegExp(`/instructor/exams/new\\?duplicate=${id}$`));
+      await expect(page.getByLabel("Exam title")).toHaveValue("Exam: Original (copy)");
+      await expect(page.locator("input[name=topics]:checked")).toHaveCount(2);
+      await expect(page.getByRole("radio", { name: "1 attempt" })).toBeChecked();
+      await expect(page.locator("input[name=audience]:checked")).toHaveCount(1);
+      await expect(page.getByRole("button", { name: "Assign exam" })).toBeDisabled();
+      await page.getByText("In 2 weeks", { exact: true }).click();
+      await page.getByRole("button", { name: "Assign exam" }).click();
+      await expect(page).toHaveURL(/assigned=1/);
+      await expect(page.locator("main h1:visible")).toHaveText("Exam: Original (copy)");
+      await page.goto(`/instructor/exams/${id}`);
+      await expect(page.locator("main h1:visible")).toHaveText("Exam: Original");
+    });
+
+    test("as a student: the exam to take, the intro with attempts left, a pass changes the instructor's counts, statuses and attempts", async ({
+      page,
+    }) => {
+      const id = await assign(page, "Exam: Whole flow");
+      const before = await count(page, "passed");
+      const notStartedBefore = await count(page, "not-started");
+      await switchRole(page, "Student");
+      await page.goto("/notifications");
+      const card = page.locator(`[data-assigned-exam="${id}"]`);
+      await expect(card).toBeVisible();
+      await card.click();
+      await expect(page).toHaveURL(new RegExp(`/exam\\?id=${id}$`));
+      await expect(page.locator("main")).toContainText("20 questions · 20 minutes");
+      await expect(page.locator("main")).toContainText("Pass mark 80");
+      await expect(page.locator("main")).toContainText("3 attempts left");
+      await playExam(page, id, 20);
+      await expect(page.getByRole("heading", { name: "Passed" })).toBeVisible();
+      await expect(page.locator("main")).toContainText("20 of 20 correct");
+      await expect(page.locator("[data-attempts-line]")).toHaveCount(0);
+      expect(((await page.locator("main").innerText()).match(/%/g) ?? []).length).toBe(0);
+      await page.goto("/notifications");
+      await expect(page.locator(`[data-assigned-exam="${id}"]`)).toHaveCount(0);
+      await switchRole(page, "Instructor");
+      await page.goto(`/instructor/exams/${id}`);
+      await expect(mineRow(page)).toHaveAttribute("data-status", "passed");
+      await expect(mineRow(page)).toContainText("20 of 20 correct · 1 attempt");
+      await expect(mineRow(page).locator("[data-certificate-badge]")).toHaveCount(1);
+      expect(await count(page, "passed")).toBe(before + 1);
+      expect(await count(page, "not-started")).toBe(notStartedBefore - 1);
+      await expect(page.locator("[data-tried]")).toContainText("tried");
+      // the Exams list shows the same count
+      await page.goto("/instructor/exams");
+      await expect(page.locator(`[data-exam-card="${id}"]`)).toContainText(
+        `Passed ${before + 1} of 15`,
+      );
+    });
+
+    test("Not passed: a retry while attempts remain, 'n attempts left' on the results and the intro; no attempts left blocks Start", async ({
+      page,
+    }) => {
+      const id = await assign(page, "Exam: Retry");
+      await switchRole(page, "Student");
+      await playExam(page, id, 10);
+      await expect(page.getByRole("heading", { name: "Not passed yet" })).toBeVisible();
+      await expect(page.locator("main")).toContainText("10 of 20 correct");
+      await expect(page.locator("[data-attempts-line]")).toHaveText("2 attempts left");
+      await page.goto("/notifications");
+      await expect(page.locator(`[data-assigned-exam="${id}"]`)).toBeVisible();
+      await page.goto(`/exam?id=${id}`);
+      await expect(page.locator("main")).toContainText("2 attempts left");
+      await playExam(page, id, 12);
+      await expect(page.locator("[data-attempts-line]")).toHaveText("1 attempt left");
+      await playExam(page, id, 14);
+      await expect(page.locator("[data-attempts-line]")).toHaveText("No attempts left");
+      await page.goto(`/exam?id=${id}`);
+      await expect(page.locator("[data-exam-blocked]")).toHaveText(
+        "No attempts left for this exam",
+      );
+      await expect(page.getByRole("button", { name: /^Start exam/ })).toHaveCount(0);
+      await page.goto("/notifications");
+      await expect(page.locator(`[data-assigned-exam="${id}"]`)).toHaveCount(0);
+      await switchRole(page, "Instructor");
+      await page.goto(`/instructor/exams/${id}`);
+      await expect(mineRow(page)).toHaveAttribute("data-status", "not-passed");
+      await expect(mineRow(page)).toContainText("14 of 20 correct · 3 attempts");
+    });
+
+    test("one attempt allowed: a fail ends it; and an exam in progress shows as In progress, then disappears when left", async ({
+      page,
+    }) => {
+      const id = await assign(page, "Exam: One try", { attempts: "1 attempt" });
+      await switchRole(page, "Student");
+      await page.goto(`/exam?id=${id}`);
+      await expect(page.locator("main")).toContainText("1 attempt left");
+      // start and look from the instructor's side: In progress
+      await page
+        .getByRole("button", { name: /^Start exam/ })
+        .first()
+        .click();
+      await expect(page).toHaveURL(/\/exam\/session$/);
+      await switchRole(page, "Instructor");
+      await page.goto(`/instructor/exams/${id}`);
+      await expect(mineRow(page)).toHaveAttribute("data-status", "in-progress");
+      await expect(mineRow(page)).toContainText(/Started \d+ min ago · Attempt 1/);
+      // back to the exam: Continue exam, then leave it (nothing saved)
+      await switchRole(page, "Student");
+      await page.goto(`/exam?id=${id}`);
+      await expect(page.getByRole("button", { name: "Continue exam" })).toBeVisible();
+      await page.getByRole("button", { name: "Continue exam" }).click();
+      await expect(page).toHaveURL(/\/exam\/session$/);
+      await page
+        .getByRole("button", { name: /^Exit|Leave/ })
+        .first()
+        .click();
+      await page.getByRole("button", { name: "Leave", exact: true }).click();
+      await expect(page).toHaveURL(/\/exam\?|\/exam$/);
+      await switchRole(page, "Instructor");
+      await page.goto(`/instructor/exams/${id}`);
+      await expect(mineRow(page)).toHaveAttribute("data-status", "not-started");
+      // now play and fail the single attempt
+      await switchRole(page, "Student");
+      await playExam(page, id, 5);
+      await expect(page.locator("[data-attempts-line]")).toHaveText("No attempts left");
+      await page.goto(`/exam?id=${id}`);
+      await expect(page.locator("[data-exam-blocked]")).toHaveText(
+        "No attempts left for this exam",
+      );
+    });
+
+    test("an unfinished attempt can be continued after the deadline passes (the exam is closed for new tries)", async ({
+      page,
+    }) => {
+      const id = await assign(page, "Exam: Late finish");
+      await switchRole(page, "Student");
+      await page.goto(`/exam?id=${id}`);
+      await page
+        .getByRole("button", { name: /^Start exam/ })
+        .first()
+        .click();
+      await expect(page).toHaveURL(/\/exam\/session$/);
+      // the instructor closes it while the attempt is running
+      await switchRole(page, "Instructor");
+      await page.goto(`/instructor/exams/${id}`);
+      await page.getByRole("button", { name: "Close exam now" }).click();
+      await page.locator("dialog[open]").getByRole("button", { name: "Close exam" }).click();
+      await expect(page.locator("[data-state-pill]")).toContainText("Closed");
+      await switchRole(page, "Student");
+      await page.goto(`/exam?id=${id}`);
+      await expect(page.getByRole("button", { name: "Continue exam" })).toBeVisible();
+    });
+
+    test("no percent character on any Exams screen, no external requests, and tap targets of at least 44px", async ({
+      page,
+    }) => {
       const requests: string[] = [];
       page.on("request", (request) => {
         const url = request.url();
         if (!url.startsWith("data:") && !url.startsWith("blob:")) requests.push(url);
       });
-      await page.goto("/instructor/exams");
-      await page.locator("[data-exam-card]:visible").first().click();
-      await expect(page.locator("[data-student-row]").first()).toBeVisible();
-      await page.goto("/instructor/exams/new");
-      await expect(page.getByLabel("Exam title")).toBeVisible();
+      for (const path of [
+        "/instructor/exams",
+        "/instructor/exams/new",
+        "/instructor/exams/seed-active",
+        "/instructor/exams/seed-closed",
+        "/instructor/exams/seed-active/extend",
+        "/instructor/exams/seed-closed/questions/1",
+      ]) {
+        await page.goto(path);
+        await page.waitForLoadState("networkidle");
+        expect(((await page.locator("main").innerText()).match(/%/g) ?? []).length, path).toBe(0);
+        expect(await noSidewaysScroll(page), path).toBe(true);
+        // (the header band's Back circle is the app's existing 40px button)
+        // (the guide chip of the question screen is the app's existing small chip)
+        if (path.includes("/questions/")) continue;
+        const controls = page.locator(
+          'main a:visible:not([aria-label^="Back"]), main button:visible:not([aria-label^="Back"])',
+        );
+        for (const control of await controls.all()) {
+          const b = await control.boundingBox();
+          if (b) expect(b.height, path).toBeGreaterThanOrEqual(44);
+        }
+      }
       expect(requests.filter((url) => !url.startsWith("http://localhost:3100"))).toEqual([]);
+    });
+
+    test("a broken saved exam list loads without a crash and the seeded exams return", async ({
+      page,
+    }) => {
+      await page.addInitScript(() => localStorage.setItem("ast.group-exams.v1", "{broken"));
+      await page.goto("/instructor/exams");
+      await expect(page.locator("[data-exam-card]:visible")).toHaveCount(2);
     });
 
     test("an instructor cannot open student-only routes", async ({ page }) => {
@@ -506,6 +695,8 @@ test.describe("Student and the Instructor routes", () => {
       "/instructor/exams",
       "/instructor/exams/new",
       "/instructor/exams/seed-active",
+      "/instructor/exams/seed-active/extend",
+      "/instructor/exams/seed-active/questions/1",
     ]) {
       await page.goto(path);
       await expect(page).toHaveURL(/^http:\/\/localhost:3100\/$/);

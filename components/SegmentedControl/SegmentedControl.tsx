@@ -14,6 +14,7 @@ export function SegmentedControl<T extends string>({
   options,
   value,
   onChange,
+  dense = false,
 }: {
   name: string;
   legend: string;
@@ -22,6 +23,8 @@ export function SegmentedControl<T extends string>({
   options: { value: T; label: string }[];
   value: T | null;
   onChange: (value: T) => void;
+  /** Less side padding, so three longer labels ("3 attempts") fit on one line at 360px. */
+  dense?: boolean;
 }) {
   // Pages kept for Back can share a name; a radio group is one per page.
   const group = useId();
@@ -34,7 +37,7 @@ export function SegmentedControl<T extends string>({
           return (
             <label
               key={option.value}
-              className={`flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-[10px] px-3 type-body has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${
+              className={`flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-[10px] ${dense ? "px-1 whitespace-nowrap" : "px-3"} type-body has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${
                 checked
                   ? "type-body-strong bg-primary text-primary-text"
                   : "text-text active:bg-secondary-sand-pressed"

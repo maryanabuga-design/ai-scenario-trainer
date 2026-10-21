@@ -310,7 +310,7 @@ export function ExamsCard({ rows, activeCount }: { rows: ExamRow[]; activeCount:
                   <ExamCard
                     bare
                     exam={exam}
-                    passed={counts.certified}
+                    passed={counts.passed}
                     total={counts.total}
                     notStarted={counts.notStarted}
                     from="overview"

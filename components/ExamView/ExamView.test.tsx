@@ -149,7 +149,7 @@ describe("the exam screen", () => {
     expect(html).toContain(`${EXAM_QUESTIONS} questions from all topics`);
     expect(html).toContain(`${EXAM_MINUTES} minutes`);
     expect(html).toContain("No hints or feedback during the exam");
-    expect(html).toContain(`Pass mark ${PASS_MARK}%`);
+    expect(html).toContain(`Pass mark ${PASS_MARK}`);
     expect(html.match(/h-9 w-9/g)).toHaveLength(4);
     // the four rules sit in neutral warm grey circles, not the olive tile
     const rules = html.slice(html.indexOf(">How it works<"), html.indexOf(">Your results<"));

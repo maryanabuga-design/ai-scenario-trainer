@@ -74,7 +74,15 @@ describe("the rows of Needs your action", () => {
   it("1 disappears when nobody is left who has not started (everyone attempted)", () => {
     const attempts: Attempt[] = people
       .filter((p) => p.local)
-      .map((p) => ({ examId: "e1", studentId: p.id, correct: 20, total: 20, finishedAt: 1 }));
+      .map((p) => ({
+        examId: "e1",
+        studentId: p.id,
+        correct: 20,
+        total: 20,
+        finishedAt: 1,
+        startedAt: 0,
+        answers: {},
+      }));
     // the invented students keep their seeded statuses, so some are still not started
     expect(rows({ exams: [exam("2026-10-26")], attempts }).length).toBeGreaterThan(0);
   });

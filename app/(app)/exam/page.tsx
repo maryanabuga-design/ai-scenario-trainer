@@ -3,9 +3,12 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { ButtonLink } from "@/components/Button/Button";
-import { ExamView } from "@/components/ExamView/ExamView";
+import { ExamView, groupRules } from "@/components/ExamView/ExamView";
 import { byDeadline, nearestExam, useExams } from "@/lib/assigned-exams";
 import type { AssignedExam } from "@/lib/assigned-exams";
+import { attemptsLeft, deriveStatus } from "@/lib/cohort";
+import { attemptsLeftLine } from "@/lib/exam-detail";
+import { useExam } from "@/lib/exam-store";
 import { isActive } from "@/lib/group-exams";
 import { useAttempts, useGroupExams } from "@/lib/group-store";
 import { examsToTake } from "@/lib/exams-to-take";
@@ -24,6 +27,7 @@ function ExamScreen() {
   const history = useHistory();
   const groupExams = useGroupExams();
   const attempts = useAttempts();
+  const running = useExam();
   const account = useCurrentAccount();
   const [now] = useState(() => Date.now());
   if (
@@ -31,12 +35,24 @@ function ExamScreen() {
     history === "loading" ||
     groupExams === "loading" ||
     attempts === "loading" ||
+    running === "loading" ||
     account === "loading"
   )
     return null;
   // an exam assigned by the instructor (the Instructor side): its topics, its question count
   const group = groupExams.find((entry) => entry.id === params.get("id"));
-  if (group && !isActive(group, now)) {
+  // this student's tries at the exam; an unfinished one can be continued even after the deadline
+  const mine =
+    group && account
+      ? attempts.filter((a) => a.examId === group.id && a.studentId === account.email)
+      : [];
+  const unfinished =
+    !!group &&
+    mine.some((a) => a.finishedAt === undefined) &&
+    !!running &&
+    running.examId === group.id &&
+    !running.finished;
+  if (group && !isActive(group, now) && !unfinished) {
     return (
       <div className="flex flex-col items-start gap-4">
         <h1 className="type-page-title">This exam is closed</h1>
@@ -81,6 +97,22 @@ function ExamScreen() {
       canRepeat={hasWeakTopics(exam.topicIds, history)}
       last={count(last)}
       best={count(best)}
+      group={
+        group && {
+          left: attemptsLeft(group, mine),
+          passed: deriveStatus(mine, group, now).kind === "passed",
+          unfinished,
+          rules: groupRules(
+            group.questionCount,
+            group.timeLimit,
+            attemptsLeftLine(attemptsLeft(group, mine)),
+          ),
+        }
+      }
+      onContinue={() => {
+        window.scrollTo(0, 0);
+        router.push("/exam/session");
+      }}
       onStart={() => {
         startExam(
           Date.now(),

@@ -57,24 +57,33 @@ export function closeGroupExam(id: string, now: number = Date.now()) {
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-/** Tolerant loading of the attempts: a broken one is dropped. */
+/** Tolerant loading of the attempts: a broken one is dropped; an older one without a start or answers gets them. */
 export function cleanAttempts(value: unknown): Attempt[] | null {
   if (!Array.isArray(value)) return null;
   const list: Attempt[] = [];
   for (const entry of value) {
     if (!isObject(entry)) continue;
-    const { examId, studentId, correct, total, finishedAt, certificateId } = entry;
+    const { examId, studentId, correct, total, startedAt, finishedAt, answers, certificateId } =
+      entry;
     if (typeof examId !== "string" || typeof studentId !== "string") continue;
     if (typeof correct !== "number" || typeof total !== "number") continue;
     if (!Number.isInteger(correct) || !Number.isInteger(total) || total <= 0) continue;
     if (correct < 0 || correct > total) continue;
-    if (typeof finishedAt !== "number" || !Number.isFinite(finishedAt)) continue;
+    const done = typeof finishedAt === "number" && Number.isFinite(finishedAt);
+    const started = typeof startedAt === "number" && Number.isFinite(startedAt);
+    if (!done && !started) continue;
     list.push({
       examId,
       studentId,
       correct,
       total,
-      finishedAt,
+      startedAt: started ? (startedAt as number) : (finishedAt as number),
+      ...(done && { finishedAt: finishedAt as number }),
+      answers: isObject(answers)
+        ? (Object.fromEntries(
+            Object.entries(answers).filter(([, right]) => typeof right === "boolean"),
+          ) as Record<string, boolean>)
+        : {},
       ...(typeof certificateId === "string" && { certificateId }),
     });
   }
@@ -95,6 +104,32 @@ export function useAttempts(): Attempt[] | "loading" {
 
 export function recordAttempt(attempt: Attempt) {
   attemptStore.write([...readAttempts(), attempt]);
+}
+
+/** Starts an attempt (unfinished). A leftover unfinished attempt of the same student and exam is replaced. */
+export function startAttempt(attempt: Attempt) {
+  dropUnfinished(attempt.examId, attempt.studentId);
+  recordAttempt(attempt);
+}
+
+/** Removes the unfinished attempt of a student at an exam (they left the exam). */
+export function dropUnfinished(examId: string, studentId: string) {
+  const list = readAttempts();
+  const rest = list.filter(
+    (a) => !(a.examId === examId && a.studentId === studentId && a.finishedAt === undefined),
+  );
+  if (rest.length !== list.length) attemptStore.write(rest.length > 0 ? rest : null);
+}
+
+/** Finishes the student's unfinished attempt (or adds a finished one when none was started). */
+export function finishAttempt(attempt: Attempt) {
+  dropUnfinished(attempt.examId, attempt.studentId);
+  recordAttempt(attempt);
+}
+
+/** Moves the deadline of an exam (Extend deadline). */
+export function extendGroupExam(id: string, deadline: string) {
+  examStore.write(seedGroup().map((exam) => (exam.id === id ? { ...exam, deadline } : exam)));
 }
 
 // ---- notices --------------------------------------------------------------------------------

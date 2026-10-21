@@ -24,7 +24,7 @@ const titleOf = (id: string) => `Topic ${id}`;
 const visible = (html: string) => html.replace(/<[^>]+>/g, " ");
 
 const list = (
-  filter: "all" | "needs" | "certified" = "all",
+  filter: "all" | "needs" | "passed" = "all",
   shown = sortProfiles(all),
   topic: string | null = null,
   origin: "overview" | "topics" | null = null,
@@ -55,7 +55,7 @@ describe("the Students list", () => {
     expect(html).toContain('href="/instructor/students/invite"');
     expect(html.indexOf("Invite students")).toBeLessThan(html.indexOf("students-filter"));
     expect(html).toMatch(/bg-primary[^>]*>Invite students/);
-    for (const label of ["All", "Attention", "Certified"]) expect(html).toContain(`>${label}<`);
+    for (const label of ["All", "Attention", "Passed"]) expect(html).toContain(`>${label}<`);
     expect(html.match(/data-student=/g)).toHaveLength(15);
     expect(html.match(/h-\[72px\]/g)).toHaveLength(15);
     expect(visible(html)).not.toContain("%");
@@ -104,7 +104,7 @@ describe("the Students list", () => {
   });
 
   it("shows 'No students match this filter.' with a Secondary Clear filter when empty", () => {
-    const empty = list("certified", []);
+    const empty = list("passed", []);
     expect(empty).toContain("No students match this filter.");
     const before = empty.slice(0, empty.indexOf(">Clear filter<"));
     expect(before.slice(before.lastIndexOf("<button"))).toContain("bg-olive-tint");

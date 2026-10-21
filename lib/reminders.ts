@@ -1,6 +1,6 @@
 import { statusOf } from "@/lib/cohort";
 import type { Attempt, Participant } from "@/lib/cohort";
-import { isActive, shortDate, splitExams } from "@/lib/group-exams";
+import { shortDate, splitExams } from "@/lib/group-exams";
 import type { GroupExam } from "@/lib/group-exams";
 import { topicNeedsReview } from "@/lib/students";
 import type { StudentProfile } from "@/lib/students";
@@ -30,7 +30,7 @@ export function unfinishedExam(
     splitExams(exams, now).active.find(
       (exam) =>
         exam.groupIds.includes(participant.groupId) &&
-        statusOf(participant, exam, { attempts, active: isActive(exam, now) }).kind !== "certified",
+        statusOf(participant, exam, { attempts, now }).kind !== "passed",
     ) ?? null
   );
 }

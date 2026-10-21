@@ -20,6 +20,7 @@ export function ReviewQuestion({
   saved,
   onToggleSaved,
   askNumber,
+  readOnly = false,
 }: {
   item: Item;
   /** The option the person chose; null in Saved, where there is no choice. */
@@ -28,6 +29,8 @@ export function ReviewQuestion({
   onToggleSaved: () => void;
   /** The number in the question thread's title; the row "Ask AI about this question" shows when it is given. */
   askNumber?: number;
+  /** A read-only view (the Instructor's question screen): no bookmark. */
+  readOnly?: boolean;
 }) {
   return (
     <>
@@ -38,7 +41,7 @@ export function ReviewQuestion({
         {item.situation && <SituationCard text={item.situation} />}
         <div className="flex items-start justify-between gap-3">
           <h1 className="type-item-title pt-1.5">{item.question}</h1>
-          <BookmarkButton saved={saved} onToggle={onToggleSaved} />
+          {!readOnly && <BookmarkButton saved={saved} onToggle={onToggleSaved} />}
         </div>
       </section>
 

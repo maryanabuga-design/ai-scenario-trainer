@@ -165,7 +165,7 @@ test.describe("Exam readiness", () => {
     await expect(page).toHaveURL(/\/exam\/session$/);
   });
 
-  test("failed exam answers become mistakes, readiness drops, and the results show a Score", async ({
+  test("failed exam answers become mistakes, readiness drops, and the results show the count", async ({
     page,
   }) => {
     // 90% ready first
@@ -180,9 +180,9 @@ test.describe("Exam readiness", () => {
     }
     await expect(page).toHaveURL(/\/exam\/results$/);
     const main = page.locator("main");
-    await expect(main.getByText(/^Score \d+%$/)).toBeVisible();
-    // Score is the only percentage on the exam results
-    expect(((await main.innerText()).match(/%/g) ?? []).length).toBe(1);
+    await expect(main.getByText(/^\d+ of 20 correct$/)).toBeVisible();
+    // the exam results show counts only, no percentage
+    expect(((await main.innerText()).match(/%/g) ?? []).length).toBe(0);
     await expect(main).toContainText("PASS MARK: 16 of 20");
     await expect(page.getByRole("heading", { name: /Passed|Not passed yet/ })).toBeVisible();
     if (await page.getByRole("heading", { name: "Not passed yet" }).isVisible()) {

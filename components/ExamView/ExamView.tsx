@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleCheck, Clock, Info, ListChecks, LightbulbOff, Target } from "lucide-react";
+import { CircleCheck, Clock, Info, LightbulbOff, ListChecks, RotateCw, Target } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { AssignedExamCard } from "@/components/AssignedExamCard/AssignedExamCard";
 import { Button } from "@/components/Button/Button";
@@ -23,8 +23,37 @@ export const examRules: { icon: LucideIcon; text: string }[] = [
   { icon: ListChecks, text: `${EXAM_QUESTIONS} questions from all topics` },
   { icon: Clock, text: `${EXAM_MINUTES} minutes` },
   { icon: LightbulbOff, text: "No hints or feedback during the exam" },
-  { icon: Target, text: `Pass mark ${PASS_MARK}%` },
+  { icon: Target, text: `Pass mark ${PASS_MARK}` },
 ];
+
+/** What a group exam adds to the intro: the tries left, and why Start may be missing. */
+export type GroupIntro = {
+  /** Tries left (null: unlimited). */
+  left: number | null;
+  /** The best finished attempt reached the pass mark. */
+  passed: boolean;
+  /** An unfinished attempt exists: it can be continued until it is submitted. */
+  unfinished: boolean;
+  /** The rules of this exam: questions and minutes, pass mark, the tries. */
+  rules: { icon: LucideIcon; text: string }[];
+};
+
+export const NO_ATTEMPTS_LEFT = "No attempts left for this exam";
+export const ALREADY_PASSED = "You passed this exam.";
+
+/** The rules of a group exam: its questions and minutes, the pass mark, the tries (no percent sign). */
+export function groupRules(
+  questions: number,
+  minutes: number,
+  attemptsLine: string,
+): { icon: LucideIcon; text: string }[] {
+  return [
+    { icon: ListChecks, text: `${questions} questions · ${minutes} minutes` },
+    { icon: Target, text: `Pass mark ${PASS_MARK}` },
+    { icon: LightbulbOff, text: "No hints or feedback during the exam" },
+    { icon: RotateCw, text: attemptsLine },
+  ];
+}
 
 /** The subtitle of the band: "Assigned by Instructor · Due 25 Oct", with a clock when overdue. */
 export function ExamSubtitle({ assignedBy, deadline }: { assignedBy: string; deadline: Deadline }) {
@@ -69,6 +98,8 @@ export function ExamView({
   best,
   onStart,
   onRepeat,
+  onContinue,
+  group,
   assigned = [],
 }: {
   title: string;
@@ -81,6 +112,10 @@ export function ExamView({
   best: ExamAttemptCount | null;
   onStart: () => void;
   onRepeat: () => void;
+  /** Continues the unfinished attempt of a group exam. */
+  onContinue?: () => void;
+  /** A group exam: the tries and the rules of this exam. */
+  group?: GroupIntro;
   /** The exams to take, shown first on the plain Exam screen (not on the intro of one exam). */
   assigned?: GroupExam[];
 }) {
@@ -134,7 +169,7 @@ export function ExamView({
       <Card className="flex flex-col gap-4">
         <h2 className="type-body-strong">How it works</h2>
         <ul className="flex flex-col gap-3">
-          {examRules.map(({ icon: Icon, text }) => (
+          {(group?.rules ?? examRules).map(({ icon: Icon, text }) => (
             <li key={text} className="flex items-center gap-3">
               <IconTile tone="neutral" className="h-9 w-9 rounded-full">
                 <Icon size={18} strokeWidth={1.75} />
@@ -159,7 +194,17 @@ export function ExamView({
 
       {/* the buttons end the column: at the bottom of a short screen, after the content on a tall one */}
       <div className="mt-auto flex flex-col gap-3 pt-2">
-        {ready || !canRepeat ? (
+        {group && group.unfinished ? (
+          <Button onClick={onContinue}>Continue exam</Button>
+        ) : group && group.passed ? (
+          <p data-exam-blocked className="type-body text-center text-text-secondary">
+            {ALREADY_PASSED}
+          </p>
+        ) : group && group.left === 0 ? (
+          <p data-exam-blocked role="status" className="type-body text-center text-text-secondary">
+            {NO_ATTEMPTS_LEFT}
+          </p>
+        ) : ready || !canRepeat ? (
           <Button onClick={onStart}>Start exam</Button>
         ) : (
           <>

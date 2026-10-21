@@ -86,27 +86,3 @@ export function StudentListRow({
     </Link>
   );
 }
-
-/** The exam status of a student as the second line of the Exam detail row. */
-export function ExamLine({
-  tone,
-  icon: Icon,
-  text,
-}: {
-  tone: "success" | "attention" | "neutral";
-  icon: LucideIcon;
-  text: string;
-}) {
-  const ink =
-    tone === "success"
-      ? "text-status-success-ink"
-      : tone === "attention"
-        ? "text-status-attention-ink"
-        : "text-text-secondary";
-  return (
-    <span className={`type-small block truncate ${ink}`}>
-      <Icon size={14} strokeWidth={2} aria-hidden="true" className="mr-1 -mt-0.5 inline" />
-      {text}
-    </span>
-  );
-}

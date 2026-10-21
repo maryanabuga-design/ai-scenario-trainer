@@ -56,30 +56,22 @@ function useRestoredScroll() {
 
 /**
  * The result on a bar with a marker at the pass mark. A practice session shows a count ("7 of 10
- * correct") and the pass mark as a count; only an exam shows a percentage, the "Score" (DESIGN.md:
- * the percentage vocabulary).
+ * correct") and the pass mark as a count; an exam shows its count too (no percentage).
  */
-function ResultBar({ items, kind }: { items: ScoredItem[]; kind: SessionKind }) {
+function ResultBar({ items }: { items: ScoredItem[] }) {
   const total = items.length;
   const correct = correctCount(items);
   const percent = resultPercent(items);
   const needed = passCount(total);
-  const exam = kind === "exam";
   return (
     <div className="flex flex-col gap-2">
-      <p className="type-numeral text-center tabular-nums">
-        {exam ? `Score ${percent}%` : `${correct} of ${total} correct`}
-      </p>
+      <p className="type-numeral text-center tabular-nums">{`${correct} of ${total} correct`}</p>
       <div
         role="meter"
         aria-valuemin={0}
         aria-valuemax={total}
         aria-valuenow={correct}
-        aria-label={
-          exam
-            ? `Score ${percent}%, pass mark ${needed} of ${total}`
-            : `${correct} of ${total} correct, pass mark ${needed} of ${total}`
-        }
+        aria-label={`${correct} of ${total} correct, pass mark ${needed} of ${total}`}
         className="relative h-3 rounded-full bg-secondary-sand-pressed"
       >
         <div className="h-full rounded-full bg-primary" style={{ width: `${percent}%` }} />
@@ -228,6 +220,7 @@ export function ResultsView({
   examRepeat = false,
   doneHref,
   certificateHref,
+  attemptsLine,
 }: {
   kind: SessionKind;
   items: ScoredItem[];
@@ -246,6 +239,8 @@ export function ResultsView({
   doneHref?: string;
   /** A passed exam: where its certificate is. The card "Certificate earned" shows when it is given. */
   certificateHref?: string;
+  /** A group exam that was not passed: "2 attempts left". */
+  attemptsLine?: string;
 }) {
   useRestoredScroll();
   const passed = isPassed(items);
@@ -271,9 +266,14 @@ export function ResultsView({
         </h2>
       </section>
 
-      <ResultBar items={items} kind={kind} />
+      <ResultBar items={items} />
 
       <p className="text-center text-text-secondary">{conclusion(items)}</p>
+      {attemptsLine && !passed && (
+        <p data-attempts-line className="type-body-strong text-center">
+          {attemptsLine}
+        </p>
+      )}
 
       {topics.length > 0 && <WeakTopicsCard topics={topics} />}
 

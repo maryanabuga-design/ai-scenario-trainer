@@ -1,5 +1,5 @@
 import { PASS_MARK } from "@/lib/config";
-import { statusOf } from "@/lib/cohort";
+import { statusOf, statusText } from "@/lib/cohort";
 import type {
   Attempt,
   ExamStatus,
@@ -10,7 +10,7 @@ import type {
 } from "@/lib/cohort";
 import { seededStudents } from "@/lib/cohort";
 import { shortLabels } from "@/lib/field-of-work";
-import { isActive, topicQuestionCount } from "@/lib/group-exams";
+import { topicQuestionCount } from "@/lib/group-exams";
 import type { GroupExam } from "@/lib/group-exams";
 import { allTopicIds, topicProgress } from "@/lib/progress-view";
 import type { TopicProgress } from "@/lib/progress-view";
@@ -159,11 +159,11 @@ export function rowText(profile: StudentProfile): string {
   return tail ? `${base} · ${tail}` : base;
 }
 
-export type StudentsFilter = "all" | "needs" | "certified";
+export type StudentsFilter = "all" | "needs" | "passed";
 export const filters: { value: StudentsFilter; label: string }[] = [
   { value: "all", label: "All" },
   { value: "needs", label: "Attention" },
-  { value: "certified", label: "Certified" },
+  { value: "passed", label: "Passed" },
 ];
 
 /** A filter from the address, "all" when it is missing or unknown. */
@@ -180,8 +180,7 @@ export function showingLine(
   filter: StudentsFilter,
   topic: { id: string; title: string } | null,
 ): string | null {
-  const status =
-    filter === "needs" ? "Needs attention" : filter === "certified" ? "Certified" : null;
+  const status = filter === "needs" ? "Needs attention" : filter === "passed" ? "Passed" : null;
   if (topic) {
     const base = `Below pass mark in ${topic.id} · ${topic.title}`;
     return status ? `${base} · ${status}` : base;
@@ -205,8 +204,8 @@ export function sortProfiles(list: StudentProfile[]): StudentProfile[] {
   );
 }
 
-/** Whether the participant is Certified for at least one exam. */
-export function certifiedAnywhere(
+/** Whether the participant has Passed at least one exam. */
+export function passedAnywhere(
   participant: Participant,
   exams: GroupExam[],
   attempts: Attempt[],
@@ -215,7 +214,7 @@ export function certifiedAnywhere(
   return exams.some(
     (exam) =>
       exam.groupIds.includes(participant.groupId) &&
-      statusOf(participant, exam, { attempts, active: isActive(exam, now) }).kind === "certified",
+      statusOf(participant, exam, { attempts, now }).kind === "passed",
   );
 }
 
@@ -235,7 +234,7 @@ export function visibleStudents(
       if (!row || !topicNeedsReview(row)) return false;
     }
     if (filter === "needs") return profileStatus(profile) === "needs";
-    if (filter === "certified") return certifiedAnywhere(profile.participant, exams, attempts, now);
+    if (filter === "passed") return passedAnywhere(profile.participant, exams, attempts, now);
     return true;
   });
   return sortProfiles(kept);
@@ -245,17 +244,15 @@ export function visibleStudents(
 export const groupLine = (name: string, count: number, notStarted = 0) =>
   `${name} · ${count} ${count === 1 ? "student" : "students"}${notStarted > 0 ? ` · ${notStarted} not started` : ""}`;
 
-/** "Certified · 17 of 20 correct", "Not passed · 14 of 20 correct" or "Not started". */
+/** "Passed · 17 of 20 correct", "Not passed · 14 of 20 correct", "In progress", "Missed" or "Not started". */
 export function statusDetail(status: ExamStatus): string {
-  if (status.kind === "not-started") return "Not started";
-  const text = status.kind === "certified" ? "Certified" : "Not passed";
-  return `${text} · ${status.correct} of ${status.total} correct`;
+  return statusText(status);
 }
 
 export type StudentExamRow = {
   exam: GroupExam;
   status: ExamStatus;
-  /** A Certified result of a local account with a certificate: the row opens it. */
+  /** A Passed result of a local account with a certificate: the row opens it. */
   certificateId?: string;
 };
 
@@ -270,12 +267,12 @@ export function examRowsFor(
     .filter((exam) => exam.groupIds.includes(participant.groupId))
     .sort((a, b) => b.deadline.localeCompare(a.deadline) || b.createdAt - a.createdAt)
     .map((exam) => {
-      const context: StatusContext = { attempts, active: isActive(exam, now) };
+      const context: StatusContext = { attempts, now };
       const status = statusOf(participant, exam, context);
       return {
         exam,
         status,
-        ...(status.kind === "certified" &&
+        ...(status.kind === "passed" &&
           status.certificateId && { certificateId: status.certificateId }),
       };
     });
