@@ -28,6 +28,8 @@ export type Participant = {
   initials: string;
   /** A student account of this browser (real data), labelled "Your demo account". */
   local: boolean;
+  /** The field of work of a local account, when it chose one. */
+  field?: Field | null;
 };
 
 /** One attempt at a group exam, kept on this device. */
@@ -55,13 +57,17 @@ const initialsOf = (name: string) =>
     .join("");
 
 /** The group: the local student accounts first (real data), then the seeded students. */
-export function participants(local: { name: string; email: string }[]): Participant[] {
+export function participants(
+  local: { name: string; email: string; field?: Field | null }[],
+): Participant[] {
   return [
     ...local.map((account) => ({
       id: account.email,
       name: account.name,
       initials: initialsOf(account.name),
       local: true,
+      // the field of work the person chose (shown on the Instructor's Student detail)
+      field: account.field ?? null,
     })),
     ...seededStudents.map((student) => ({
       id: student.id,

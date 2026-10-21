@@ -21,7 +21,13 @@ export function AuthGate({ children }: { children: ReactNode }) {
     auth === "loading"
       ? null
       : guardRedirect(
-          account ? { role: account.role, onboardingDone: account.onboardingDone } : null,
+          account
+            ? {
+                role: account.role,
+                onboardingDone: account.onboardingDone,
+                fieldStepDone: account.fieldStepDone,
+              }
+            : null,
           pathname,
         );
 

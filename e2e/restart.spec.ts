@@ -16,6 +16,9 @@ async function signUp(page: Page, name: string, email: string) {
 }
 
 async function finishOnboarding(page: Page) {
+  // a new student first sees the Field of work step
+  await expect(page).toHaveURL(/\/field-of-work$/);
+  await page.getByRole("button", { name: "Skip for now" }).click();
   await expect(page).toHaveURL(/\/onboarding$/);
   await page.getByRole("button", { name: "Skip" }).click();
   await expect(page).toHaveURL(/\/$/);
@@ -111,7 +114,8 @@ for (const width of [360, 430]) {
       ).toBeVisible();
       // a new account with that email starts at the onboarding, with no old progress
       await signUp(page, "Ana Again", "ana@example.com");
-      await expect(page).toHaveURL(/\/onboarding$/);
+      // (a new student first sees the Field of work step)
+      await expect(page).toHaveURL(/\/field-of-work$/);
       await finishOnboarding(page);
       await expect(page.getByRole("heading", { name: "Hi, Ana Again" })).toBeVisible();
       await page.goto("/training");

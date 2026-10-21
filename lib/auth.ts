@@ -1,5 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { isCorrectCode } from "@/lib/auth-code";
+import { cleanField } from "@/lib/field-of-work";
+import type { FieldOfWork } from "@/lib/field-of-work";
 import { isEmailFormat, normaliseEmail } from "@/lib/auth-validation";
 import { ROLES, roleHome } from "@/lib/role";
 import type { Role } from "@/lib/role";
@@ -17,6 +19,10 @@ export type Account = {
   createdAt: number;
   /** The onboarding was finished or skipped (a new account sees it once, right after verification). */
   onboardingDone: boolean;
+  /** The field of work (DESIGN.md: Field of work); null: not set. It only tunes the simulated Ask AI. */
+  field: FieldOfWork | null;
+  /** The registration step "Field of work" was shown (and left with Continue or Skip). */
+  fieldStepDone: boolean;
   /** The account made from data the app already had: it keeps the old device keys (no suffix). */
   legacy?: boolean;
 };
@@ -48,7 +54,7 @@ const isRole = (value: unknown): value is Role =>
 
 function cleanAccount(value: unknown): Account | null {
   if (!isObject(value)) return null;
-  const { name, email, role, createdAt, legacy, onboardingDone } = value;
+  const { name, email, role, createdAt, legacy, onboardingDone, field, fieldStepDone } = value;
   if (typeof name !== "string" || name.trim() === "") return null;
   if (typeof email !== "string" || !isEmailFormat(email)) return null;
   if (!isRole(role)) return null;
@@ -59,6 +65,9 @@ function cleanAccount(value: unknown): Account | null {
     createdAt: typeof createdAt === "number" && Number.isFinite(createdAt) ? createdAt : 0,
     // an account saved before the flag existed counts as done: it never sees the onboarding again
     onboardingDone: onboardingDone !== false,
+    field: cleanField(field),
+    // an account from before the step existed never sees it
+    fieldStepDone: fieldStepDone !== false,
     ...(legacy === true && { legacy: true }),
   };
 }
@@ -131,6 +140,8 @@ export function migrateLegacy(
         role,
         createdAt: now,
         onboardingDone: true,
+        field: null,
+        fieldStepDone: true,
         legacy: true,
       },
     ],
@@ -192,6 +203,8 @@ export function completeVerification(state: AuthState, code: string, now: number
       role: pending.role,
       createdAt: now,
       onboardingDone: false,
+      field: null,
+      fieldStepDone: pending.role !== "student",
     };
     accounts = [...accounts, account];
   }
@@ -212,7 +225,7 @@ export const signOutState = (state: AuthState): AuthState => ({
 
 function updateCurrent(
   state: AuthState,
-  change: Partial<Pick<Account, "name" | "role" | "onboardingDone">>,
+  change: Partial<Pick<Account, "name" | "role" | "onboardingDone" | "field" | "fieldStepDone">>,
 ) {
   const current = currentAccount(state);
   if (!current) return state;
@@ -234,6 +247,14 @@ export const setRoleState = (state: AuthState, role: Role): AuthState =>
 export const finishOnboardingState = (state: AuthState): AuthState =>
   updateCurrent(state, { onboardingDone: true });
 
+/** The field of work of the signed-in account (null clears it). */
+export const setFieldState = (state: AuthState, field: FieldOfWork | null): AuthState =>
+  updateCurrent(state, { field });
+
+/** The registration step was left with Continue (a field) or Skip (null). */
+export const finishFieldStepState = (state: AuthState, field: FieldOfWork | null): AuthState =>
+  updateCurrent(state, { field, fieldStepDone: true });
+
 /** The state without the current account and without the session. */
 export function deleteCurrentState(state: AuthState): AuthState {
   const current = currentAccount(state);
@@ -247,7 +268,11 @@ export function deleteCurrentState(state: AuthState): AuthState {
 
 /** Where a person goes after a correct code: the onboarding until it was done, then the Home of the role. */
 export const homeAfterVerification = (account: Account): string =>
-  account.onboardingDone ? roleHome(account.role) : "/onboarding";
+  account.onboardingDone
+    ? roleHome(account.role)
+    : account.role === "student" && !account.fieldStepDone
+      ? "/field-of-work"
+      : "/onboarding";
 
 // ---- the saved state ----
 
@@ -311,6 +336,12 @@ export function useCurrentAccount(): Account | null | "loading" {
   return useMemo(() => (state === "loading" ? "loading" : currentAccount(state)), [state]);
 }
 
+/** The field of work of the signed-in account ("loading" until read; null when not set). */
+export function useField(): FieldOfWork | null | "loading" {
+  const account = useCurrentAccount();
+  return account === "loading" ? "loading" : (account?.field ?? null);
+}
+
 /** The role of the signed-in account ("loading" until read; a student when signed out). */
 export function useRole(): Role | "loading" {
   const account = useCurrentAccount();
@@ -355,6 +386,16 @@ export function setRole(role: Role) {
 /** Marks the onboarding as done for the signed-in account (Skip or Get started). */
 export function finishOnboarding() {
   save(finishOnboardingState(readAuth()));
+}
+
+/** Sets or clears the field of work (Profile). */
+export function setField(field: FieldOfWork | null) {
+  save(setFieldState(readAuth(), field));
+}
+
+/** The registration step is done: Continue stores the field, Skip stores null. */
+export function finishFieldStep(field: FieldOfWork | null) {
+  save(finishFieldStepState(readAuth(), field));
 }
 
 /** Deletes the signed-in account and the data stored for it on this device. */

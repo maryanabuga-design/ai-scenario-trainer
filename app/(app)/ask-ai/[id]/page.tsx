@@ -16,6 +16,8 @@ import {
 } from "@/lib/ask-ai";
 import type { AiMessage, QuickAction, Thread } from "@/lib/ask-ai";
 import { readThreads, useThreads, writeThreads } from "@/lib/ask-ai-store";
+import { useField } from "@/lib/auth";
+import type { FieldOfWork } from "@/lib/field-of-work";
 
 /** Adds a user message with its answer waiting; the answer arrives after the typing indicator. */
 function ask(id: string, text: string, reply: AiMessage) {
@@ -46,7 +48,7 @@ function deliver(id: string, userId: string) {
   );
 }
 
-function Conversation({ thread }: { thread: Thread }) {
+function Conversation({ thread, field }: { thread: Thread; field: FieldOfWork | null }) {
   const last = thread.messages.at(-1);
   const waitingId = last?.role === "user" && last.reply ? last.id : null;
   const delivered = useRef<string | null>(null);
@@ -72,18 +74,18 @@ function Conversation({ thread }: { thread: Thread }) {
     <AskAiThread
       thread={thread}
       typing={waitingId !== null}
-      onSend={(text) => ask(thread.id, text, answerTo(text, Date.now()))}
+      onSend={(text) => ask(thread.id, text, answerTo(text, Date.now(), field))}
       onSuggested={(suggestedId) =>
         ask(
           thread.id,
           suggestedById(suggestedId)!.question,
-          answerToSuggested(suggestedId, Date.now()),
+          answerToSuggested(suggestedId, Date.now(), field),
         )
       }
       onAction={(action: QuickAction) => {
         const topic = [...thread.messages].reverse().find((m) => m.topic)?.topic;
         if (!topic) return;
-        ask(thread.id, actionLabel(action), followUp(action, topic, Date.now()));
+        ask(thread.id, actionLabel(action), followUp(action, topic, Date.now(), field));
       }}
     />
   );
@@ -92,7 +94,8 @@ function Conversation({ thread }: { thread: Thread }) {
 export default function AskAiThreadPage() {
   const threads = useThreads();
   const params = useParams<{ id: string }>();
-  if (threads === "loading") return null;
+  const field = useField();
+  if (threads === "loading" || field === "loading") return null;
   const thread = threads.find((entry) => entry.id === params.id);
   if (!thread) {
     return (
@@ -103,5 +106,5 @@ export default function AskAiThreadPage() {
       </div>
     );
   }
-  return <Conversation thread={thread} />;
+  return <Conversation thread={thread} field={field} />;
 }

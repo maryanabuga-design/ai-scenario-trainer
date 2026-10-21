@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { questionThread, questionThreadId, withThread } from "@/lib/ask-ai";
 import { readThreads, writeThreads } from "@/lib/ask-ai-store";
+import { useField } from "@/lib/auth";
 import type { Item } from "@/lib/items";
 
 /**
@@ -23,6 +24,7 @@ export function AskAiRow({
   choice: string | null;
 }) {
   const { sections } = useSourceSheet();
+  const field = useField();
   const titleOf = (id: string) => sections.find((section) => section.id === id)?.title;
   return (
     <Link
@@ -32,7 +34,17 @@ export function AskAiRow({
         const threads = readThreads();
         if (threads.some((thread) => thread.id === questionThreadId(item.id))) return;
         writeThreads(
-          withThread(threads, questionThread(item, number, choice, titleOf, Date.now())),
+          withThread(
+            threads,
+            questionThread(
+              item,
+              number,
+              choice,
+              titleOf,
+              Date.now(),
+              field === "loading" ? null : field,
+            ),
+          ),
         );
       }}
       className="group type-action flex min-h-11 w-full items-center gap-2 rounded-[8px] text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"

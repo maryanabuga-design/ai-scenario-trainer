@@ -11,8 +11,10 @@ import { FooterNote } from "@/components/Footer/Footer";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
 import { GROUP_NAME } from "@/lib/cohort";
+import { shortLabel } from "@/lib/field-of-work";
 import { onboardingHref } from "@/lib/onboarding";
 import { ROLES, roleLabel } from "@/lib/role";
+import type { FieldOfWork } from "@/lib/field-of-work";
 import type { Role } from "@/lib/role";
 import { initialOf } from "@/lib/user";
 
@@ -55,7 +57,7 @@ export function ProfileView({
   backHref,
   certificates = 0,
 }: {
-  account: { name: string; email: string; role: Role };
+  account: { name: string; email: string; role: Role; field?: FieldOfWork | null };
   onRoleChange: (role: Role) => void;
   direction: string;
   onDirectionChange: (id: string) => void;
@@ -121,6 +123,20 @@ export function ProfileView({
 
         {student && (
           <DirectionPicker value={direction} onChange={onDirectionChange} legend="Direction" />
+        )}
+
+        {student && (
+          <Link
+            href="/profile/field"
+            data-field-row
+            className="flex h-14 items-center gap-3 rounded-card bg-card px-4 shadow-(--card-shadow) has-focus-visible:outline-2"
+          >
+            <span className="type-body-strong min-w-0 flex-1">Field of work</span>
+            <span data-field-value className="type-body text-text-secondary">
+              {shortLabel(account.field ?? null)}
+            </span>
+            <Chevron />
+          </Link>
         )}
 
         {student && (

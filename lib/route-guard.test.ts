@@ -45,6 +45,7 @@ describe("the route guard: signed in", () => {
       for (const path of [...AUTH_ROUTES, "/", "/training", "/profile", "/instructor", "/about"]) {
         expect(guardRedirect(visitor, path), path).toBe("/onboarding");
       }
+      expect(guardRedirect(visitor, "/profile/field")).toBe("/onboarding");
       expect(guardRedirect(visitor, "/onboarding")).toBeNull();
     }
   });
@@ -61,5 +62,35 @@ describe("the route guard: signed in", () => {
     expect(guardRedirect(student, "/instructor")).toBe("/");
     expect(guardRedirect(student, "/profile/edit")).toBeNull();
     expect(guardRedirect(student, "/training")).toBeNull();
+  });
+
+  it("shows the Field of work step to a new student once, between Verify and the introduction", () => {
+    expect(guardRedirect({ ...newStudent, fieldStepDone: false }, "/field-of-work")).toBeNull();
+    // once it was left, the step is not shown again: back to the introduction
+    expect(guardRedirect({ ...newStudent, fieldStepDone: true }, "/field-of-work")).toBe(
+      "/onboarding",
+    );
+    // until then every other route (the auth routes after Verify too) leads to the step
+    for (const path of [...AUTH_ROUTES, "/", "/training", "/profile"]) {
+      expect(guardRedirect({ ...newStudent, fieldStepDone: false }, path), path).toBe(
+        "/field-of-work",
+      );
+    }
+    expect(guardRedirect({ ...newStudent, fieldStepDone: false }, "/onboarding")).toBeNull();
+    // an instructor never sees it
+    expect(guardRedirect({ ...newInstructor, fieldStepDone: true }, "/field-of-work")).toBe(
+      "/onboarding",
+    );
+    expect(guardRedirect({ ...newInstructor, fieldStepDone: false }, "/field-of-work")).toBe(
+      "/onboarding",
+    );
+    // after the onboarding it goes to the Home of the role (a field is set in Profile)
+    expect(guardRedirect(student, "/field-of-work")).toBe("/");
+    expect(guardRedirect(instructor, "/field-of-work")).toBe("/instructor");
+  });
+
+  it("keeps the field picker for students: an instructor is sent to Instructor Home", () => {
+    expect(guardRedirect(student, "/profile/field")).toBeNull();
+    expect(guardRedirect(instructor, "/profile/field")).toBe("/instructor");
   });
 });

@@ -1,82 +1,368 @@
 {
   "note": "Prepared Ask AI content, built from the sample evacuation guide (S1 to S10). Educational only. Nothing here is invented: every line restates the guide.",
   "suggested": [
-    { "id": "sg-alarm", "topic": "S1", "question": "Why is every alarm treated as real?" },
-    { "id": "sg-smoke", "topic": "S3", "question": "How do I move through smoke?" },
-    { "id": "sg-call", "topic": "S5", "question": "What do I say when I call for help?" },
-    { "id": "sg-burn", "topic": "S8", "question": "What should I do for a burn?" }
+    {
+      "id": "sg-alarm",
+      "topic": "S1",
+      "question": "Why is every alarm treated as real?"
+    },
+    {
+      "id": "sg-smoke",
+      "topic": "S3",
+      "question": "How do I move through smoke?"
+    },
+    {
+      "id": "sg-call",
+      "topic": "S5",
+      "question": "What do I say when I call for help?"
+    },
+    {
+      "id": "sg-burn",
+      "topic": "S8",
+      "question": "What should I do for a burn?"
+    }
   ],
-  "fallbackSuggested": ["sg-alarm", "sg-smoke", "sg-call"],
+  "fallbackSuggested": [
+    "sg-alarm",
+    "sg-smoke",
+    "sg-call"
+  ],
   "topics": {
     "S1": {
-      "keywords": ["alarm", "drill", "elevator", "lift", "stairs", "belongings", "evacuate", "leave", "exit", "real"],
+      "keywords": [
+        "alarm",
+        "drill",
+        "elevator",
+        "lift",
+        "stairs",
+        "belongings",
+        "evacuate",
+        "leave",
+        "exit",
+        "real"
+      ],
       "answer": "Treat every alarm as real until it is officially confirmed otherwise. Nobody can tell from the sound alone whether it is a drill, a fault or a fire. Stop non-essential tasks, take only what you can carry in a few seconds, use the stairs and not an elevator, and help others only if it is safe.",
       "example": "Example: the alarm sounds while you are in a meeting. Do not finish the sentence. Say \"Alarm, leave now\", leave your bag and laptop, and take the stairs.",
       "simple": "In short: assume it is real, stop what you are doing, take almost nothing, use the stairs and move.",
-      "guide": ["Treat every alarm as real until it is officially confirmed otherwise.", "Stop non-essential tasks. Take only what you can carry in a few seconds; never delay your exit to collect belongings.", "Do not use elevators during a fire. Use the stairs.", "Help people who need assistance only if it is safe. Otherwise report their location to responders."]
+      "guide": [
+        "Treat every alarm as real until it is officially confirmed otherwise.",
+        "Stop non-essential tasks. Take only what you can carry in a few seconds; never delay your exit to collect belongings.",
+        "Do not use elevators during a fire. Use the stairs.",
+        "Help people who need assistance only if it is safe. Otherwise report their location to responders."
+      ]
     },
     "S2": {
-      "keywords": ["door", "hot", "closed", "heat", "route", "close", "check"],
+      "keywords": [
+        "door",
+        "hot",
+        "closed",
+        "heat",
+        "route",
+        "close",
+        "check"
+      ],
       "answer": "Before opening a closed door, feel it with the back of your hand. If it is hot, do not open it and use another route. If it is cool, open it slowly and be ready to close it at once if you see smoke or feel heat. Close doors behind you to slow the spread of fire and smoke.",
       "example": "Example: the corridor door is warm to the back of your hand. You leave it shut and take the other stairwell.",
       "simple": "In short: touch the door first. Hot means do not open. Close doors behind you.",
-      "guide": ["Before opening a closed door, feel it with the back of your hand. If it is hot, do not open it. Use another route.", "If the door is cool, open it slowly and be ready to close it at once if you see smoke or feel heat.", "Close doors behind you. This slows the spread of fire and smoke."]
+      "guide": [
+        "Before opening a closed door, feel it with the back of your hand. If it is hot, do not open it. Use another route.",
+        "If the door is cool, open it slowly and be ready to close it at once if you see smoke or feel heat.",
+        "Close doors behind you. This slows the spread of fire and smoke."
+      ]
     },
     "S3": {
-      "keywords": ["smoke", "low", "crawl", "window", "blocked", "wall", "air"],
+      "keywords": [
+        "smoke",
+        "low",
+        "crawl",
+        "window",
+        "blocked",
+        "wall",
+        "air"
+      ],
       "answer": "Smoke and hot gases rise, so stay low where the air is cleaner and cover your nose and mouth with cloth if possible. Keep one hand on the wall to hold your direction and move to the nearest safe exit. Do not break windows to clear a corridor, because extra air can make a fire grow. If the route is blocked, go to a room with a window, close the door, seal gaps if you can, signal your position and call the emergency number.",
       "example": "Example: the corridor fills with smoke. You stay low, keep a hand on the wall and follow it to the nearest exit.",
       "simple": "In short: stay low, cover your face, follow the wall. If blocked, shelter in a room with a window and call for help.",
-      "guide": ["Smoke and hot gases rise. Stay low, where the air is cleaner, and cover your nose and mouth with cloth if possible.", "Keep one hand on the wall to hold your direction and move to the nearest safe exit.", "Do not break windows to clear smoke from a corridor. Extra air can make a fire grow.", "If your route is blocked, go to a room with a window, close the door, seal gaps if you can, signal your position and call the emergency number."]
+      "guide": [
+        "Smoke and hot gases rise. Stay low, where the air is cleaner, and cover your nose and mouth with cloth if possible.",
+        "Keep one hand on the wall to hold your direction and move to the nearest safe exit.",
+        "Do not break windows to clear smoke from a corridor. Extra air can make a fire grow.",
+        "If your route is blocked, go to a room with a window, close the door, seal gaps if you can, signal your position and call the emergency number."
+      ]
     },
     "S4": {
-      "keywords": ["assembly", "headcount", "point", "missing", "responders", "re-enter", "outside"],
+      "keywords": [
+        "assembly",
+        "headcount",
+        "point",
+        "missing",
+        "responders",
+        "re-enter",
+        "outside"
+      ],
       "answer": "Go to the designated assembly point, away from the building and its entrances so responders have access. Report to the person responsible for the headcount, and report anyone missing with their last known location. Do not re-enter the building until responders declare it safe.",
       "example": "Example: at the assembly point you tell the warden that a colleague from room 204 is not here and was last seen on the second floor.",
       "simple": "In short: go to the assembly point, be counted, report who is missing, and stay out.",
-      "guide": ["Go to the designated assembly point, away from the building and its entrances so responders have access.", "Report to the person responsible for the headcount. Report anyone missing and their last known location.", "Do not re-enter the building until it is declared safe by responders."]
+      "guide": [
+        "Go to the designated assembly point, away from the building and its entrances so responders have access.",
+        "Report to the person responsible for the headcount. Report anyone missing and their last known location.",
+        "Do not re-enter the building until it is declared safe by responders."
+      ]
     },
     "S5": {
-      "keywords": ["call", "112", "emergency", "phone", "number", "help", "report"],
+      "keywords": [
+        "call",
+        "112",
+        "emergency",
+        "phone",
+        "number",
+        "help",
+        "report"
+      ],
       "answer": "Call 112 or the local emergency number. Give the location, what happened, the number of injured people and any hazards, and stay on the line until told to hang up. Assign one specific person to call, for example \"You, call 112 and tell me what they said\", because a general request leads people to assume someone else has already called.",
       "example": "Example: \"You in the blue jacket, call 112 and tell me what they said.\" Then the caller gives the address, what happened and how many are hurt.",
       "simple": "In short: name one person to call, give the place, what happened, how many are hurt and any danger, and stay on the line.",
-      "guide": ["Call 112 or the local emergency number. Give the location, what happened, the number of injured people and any hazards. Stay on the line until told to hang up.", "Assign one specific person to call, for example: \"You, call 112 and tell me what they said.\" A general request leads people to assume someone else has already called."]
+      "guide": [
+        "Call 112 or the local emergency number. Give the location, what happened, the number of injured people and any hazards. Stay on the line until told to hang up.",
+        "Assign one specific person to call, for example: \"You, call 112 and tell me what they said.\" A general request leads people to assume someone else has already called."
+      ]
     },
     "S6": {
-      "keywords": ["assess", "injured", "responsive", "breathing", "casualty", "scene", "check", "person"],
+      "keywords": [
+        "assess",
+        "injured",
+        "responsive",
+        "breathing",
+        "casualty",
+        "scene",
+        "check",
+        "person"
+      ],
       "answer": "Check that the scene is safe first, so you do not become a second casualty. Then check responsiveness by speaking to the person and gently tapping the shoulders, then breathing by looking, listening and feeling for up to 10 seconds. Deal with life-threatening problems first: not breathing and severe bleeding.",
       "example": "Example: you find someone on the floor. You check nothing dangerous is nearby, speak to them, tap their shoulders, then look and listen for breathing.",
       "simple": "In short: safe scene, then responsive, then breathing, and treat the life-threatening problems first.",
-      "guide": ["Check that the scene is safe first. Do not become a second casualty.", "Check responsiveness (speak to the person and gently tap the shoulders), then breathing (look, listen and feel for up to 10 seconds).", "Deal with life-threatening problems first: not breathing and severe bleeding."]
+      "guide": [
+        "Check that the scene is safe first. Do not become a second casualty.",
+        "Check responsiveness (speak to the person and gently tap the shoulders), then breathing (look, listen and feel for up to 10 seconds).",
+        "Deal with life-threatening problems first: not breathing and severe bleeding."
+      ]
     },
     "S7": {
-      "keywords": ["bleeding", "blood", "wound", "pressure", "tourniquet", "bleed", "dressing"],
+      "keywords": [
+        "bleeding",
+        "blood",
+        "wound",
+        "pressure",
+        "tourniquet",
+        "bleed",
+        "dressing"
+      ],
       "answer": "Press firmly and directly on the wound with a clean cloth or dressing and keep the pressure on. If the cloth soaks through, add more layers on top instead of removing it. If a limb wound bleeds heavily and pressure does not control it, a tourniquet may be applied by someone trained and equipped, noting the time. Keep the person lying down and warm and monitor them until help arrives.",
       "example": "Example: a cloth soaks through on a deep cut. You leave it in place, add another layer on top and keep pressing.",
       "simple": "In short: press hard on the wound, add layers instead of removing, keep the person warm, wait for help.",
-      "guide": ["Press firmly and directly on the wound with a clean cloth or dressing, and keep the pressure on.", "If the cloth soaks through, add more layers on top instead of removing it.", "If a limb wound bleeds heavily and pressure does not control it, a tourniquet may be applied by someone trained and equipped. Note the time.", "Keep the person lying down and warm, and monitor them until help arrives."]
+      "guide": [
+        "Press firmly and directly on the wound with a clean cloth or dressing, and keep the pressure on.",
+        "If the cloth soaks through, add more layers on top instead of removing it.",
+        "If a limb wound bleeds heavily and pressure does not control it, a tourniquet may be applied by someone trained and equipped. Note the time.",
+        "Keep the person lying down and warm, and monitor them until help arrives."
+      ]
     },
     "S8": {
-      "keywords": ["burn", "burns", "blister", "water", "scald", "cool", "ice"],
+      "keywords": [
+        "burn",
+        "burns",
+        "blister",
+        "water",
+        "scald",
+        "cool",
+        "ice"
+      ],
       "answer": "Cool the burn under cool running water for 10 to 20 minutes. Do not apply ice, butter, oils or toothpaste, and do not burst blisters. Cover it loosely with a clean, non-fluffy dressing. Seek medical help for large or deep burns, burns on the face, hands or genitals, or if you are unsure.",
       "example": "Example: someone burns a hand. You hold it under cool running water for 10 to 20 minutes, then cover it loosely with a clean dressing.",
       "simple": "In short: cool running water for 10 to 20 minutes, no ice or creams, cover loosely, get help for big burns.",
-      "guide": ["Cool the burn under cool running water for 10 to 20 minutes.", "Do not apply ice, butter, oils or toothpaste. Do not burst blisters.", "Cover loosely with a clean, non-fluffy dressing.", "Seek medical help for large or deep burns, burns on the face, hands or genitals, or if you are unsure."]
+      "guide": [
+        "Cool the burn under cool running water for 10 to 20 minutes.",
+        "Do not apply ice, butter, oils or toothpaste. Do not burst blisters.",
+        "Cover loosely with a clean, non-fluffy dressing.",
+        "Seek medical help for large or deep burns, burns on the face, hands or genitals, or if you are unsure."
+      ]
     },
     "S9": {
-      "keywords": ["unresponsive", "unconscious", "recovery", "compressions", "cpr", "aed", "breathing", "airway"],
+      "keywords": [
+        "unresponsive",
+        "unconscious",
+        "recovery",
+        "compressions",
+        "cpr",
+        "aed",
+        "breathing",
+        "airway"
+      ],
       "answer": "If the person is breathing normally, place them in the recovery position, keep the airway open and monitor breathing. If the person is not breathing normally, call the emergency number and start chest compressions in the centre of the chest, hard and fast (about 100 to 120 per minute). Use an AED if one is available and follow its prompts.",
       "example": "Example: a person does not respond and is not breathing normally. You call the emergency number, start chest compressions and send someone for the AED.",
       "simple": "In short: breathing normally means the recovery position; not breathing normally means call, compressions and the AED.",
-      "guide": ["If the person is breathing normally, place them in the recovery position, keep the airway open and monitor breathing.", "If the person is not breathing normally, call the emergency number and start chest compressions in the centre of the chest, hard and fast (about 100 to 120 per minute). Use an AED if one is available and follow its prompts."]
+      "guide": [
+        "If the person is breathing normally, place them in the recovery position, keep the airway open and monitor breathing.",
+        "If the person is not breathing normally, call the emergency number and start chest compressions in the centre of the chest, hard and fast (about 100 to 120 per minute). Use an AED if one is available and follow its prompts."
+      ]
     },
     "S10": {
-      "keywords": ["handover", "hand", "over", "responders", "report", "summary", "missing"],
+      "keywords": [
+        "handover",
+        "hand",
+        "over",
+        "responders",
+        "report",
+        "summary",
+        "missing"
+      ],
       "answer": "Give a short, ordered handover: what happened, what you found, what you did and when, and any changes since. Name any missing person and the last place they were seen.",
       "example": "Example: \"A person fell on the stairs at about two o'clock. They were awake but in pain. I kept them still and called 112 at five past. Nothing has changed since.\"",
       "simple": "In short: what happened, what you found, what you did and when, what changed, and who is missing.",
-      "guide": ["Give a short, ordered handover: what happened, what you found, what you did and when, and any changes since.", "Name any missing person and the last place they were seen."]
+      "guide": [
+        "Give a short, ordered handover: what happened, what you found, what you did and when, and any changes since.",
+        "Name any missing person and the last place they were seen."
+      ]
     }
+  },
+  "examples": {
+    "rescue": {
+      "S1": "On shift at the station, the building alarm sounds. You stop the checklist, leave the equipment and use the stairs, like any other occupant.",
+      "S2": "Before leading visitors out, you touch the corridor door with the back of your hand and send them to the second stairwell when it is warm.",
+      "S3": "A corridor is hazy with smoke. You stay low, keep a hand on the wall and guide the people behind you to the nearest exit.",
+      "S4": "At the assembly point you give the warden a clear count and name the one colleague you have not seen since the second floor.",
+      "S5": "You call the emergency number and say the address first, then what happened, then how many people are hurt.",
+      "S6": "Finding a visitor on the floor, you check the area is safe, speak to them and tap their shoulders before you look for breathing.",
+      "S7": "A colleague cuts a forearm. You press on the wound with a clean pad, add a second pad when the first soaks through and keep pressing.",
+      "S8": "A canteen worker scalds a hand. You hold it under cool running water for 10 to 20 minutes and cover it loosely with a clean dressing.",
+      "S9": "A person does not respond and is not breathing normally. You call for help, start chest compressions and send someone for the AED.",
+      "S10": "When the crew arrives you hand over in order: what happened, what you saw, what you did and what has changed since."
+    },
+    "paramedic": {
+      "S1": "During a clinic day the alarm sounds. You stop the consultation, help the patient up if it is safe and use the stairs, not the lift.",
+      "S2": "Leaving a treatment room with a patient, you feel the corridor door first and take the other stairwell if it is hot.",
+      "S3": "Smoke fills the waiting area. You keep the patients low, cover their noses and mouths with cloth and move along the wall to the exit.",
+      "S4": "At the assembly point you tell the warden which patient and which colleague are missing and where they were last seen.",
+      "S5": "You call the emergency number and give the address, the patient's condition and how many people need help, then stay on the line.",
+      "S6": "A visitor collapses in the corridor. You check for danger, speak to them, tap their shoulders and look and listen for breathing.",
+      "S7": "A patient's dressing soaks through. You leave it in place, add another layer on top and keep firm pressure.",
+      "S8": "A nurse burns a hand on a hot tray. You cool it under running water for 10 to 20 minutes and cover it loosely.",
+      "S9": "A person is unresponsive and not breathing normally. You call the emergency number, start compressions and ask for the AED.",
+      "S10": "At handover you give the responders the time of the event, the person's condition, what you did and any change, in that order."
+    },
+    "military": {
+      "S1": "In the headquarters building the alarm sounds. You stop the task, leave your equipment where it is and use the stairs.",
+      "S2": "Before you open a closed office door during an evacuation, you feel it with the back of your hand and use another route if it is hot.",
+      "S3": "A stairwell has smoke. You stay low, cover your face with cloth and follow the wall to the nearest safe exit.",
+      "S4": "At the assembly point you report to the duty officer that one colleague from the second floor is not accounted for.",
+      "S5": "You call the emergency number and give the location first, then what happened and how many people are hurt.",
+      "S6": "A colleague is lying in a corridor after a fall. You check the area is safe, speak to them and look for breathing.",
+      "S7": "During a first aid drill a colleague has a deep cut on the arm. You press firmly with a clean pad and keep pressing.",
+      "S8": "In the kitchen a cook burns a hand. You hold it under cool running water for 10 to 20 minutes and cover it loosely.",
+      "S9": "A person does not respond and is not breathing normally. You call for help, start chest compressions and send someone for the AED.",
+      "S10": "Reporting an incident to the responders, you give the time, the place, what you saw, what you did and what has changed."
+    },
+    "civil": {
+      "S1": "At a community hall the alarm sounds during an event. You say \"Alarm, leave now\" and guide people to the marked exit by the stairs.",
+      "S2": "As a volunteer steward you feel the door with the back of your hand before you send the group through it, and choose another exit if it is hot.",
+      "S3": "Smoke enters the corridor. You tell everyone to stay low and cover their face, and you lead them along the wall to the exit.",
+      "S4": "At the assembly point you count your group, write the names down and tell the warden who is missing.",
+      "S5": "You ask a volunteer to call the emergency number and give the address, what happened and how many people are hurt.",
+      "S6": "At a shelter a visitor lies still on the floor. You check the area, speak to them, tap their shoulders and check their breathing.",
+      "S7": "A volunteer cuts a hand on a broken crate. You press on the wound with a clean pad and add a layer if it soaks through.",
+      "S8": "A volunteer burns a hand in the shelter kitchen. You hold it under cool running water for 10 to 20 minutes and cover it loosely.",
+      "S9": "A visitor does not respond and is not breathing normally. You call the emergency number, start compressions and send someone for the AED.",
+      "S10": "At handover you tell the responders what happened, when, what you did and what has changed since."
+    }
+  },
+  "suggestedByField": {
+    "rescue": [
+      {
+        "id": "sg-rescue-1",
+        "topic": "S3",
+        "question": "How do I lead others out of a smoky corridor?"
+      },
+      {
+        "id": "sg-rescue-2",
+        "topic": "S4",
+        "question": "What do I report at the assembly point?"
+      },
+      {
+        "id": "sg-rescue-3",
+        "topic": "S5",
+        "question": "What do I say when I call for help?"
+      },
+      {
+        "id": "sg-rescue-4",
+        "topic": "S10",
+        "question": "How do I hand over to the arriving crew?"
+      }
+    ],
+    "paramedic": [
+      {
+        "id": "sg-paramedic-1",
+        "topic": "S1",
+        "question": "How do I help a patient leave during an alarm?"
+      },
+      {
+        "id": "sg-paramedic-2",
+        "topic": "S6",
+        "question": "How do I check a person who does not respond?"
+      },
+      {
+        "id": "sg-paramedic-3",
+        "topic": "S7",
+        "question": "How do I stop heavy bleeding?"
+      },
+      {
+        "id": "sg-paramedic-4",
+        "topic": "S10",
+        "question": "What do I say at handover?"
+      }
+    ],
+    "military": [
+      {
+        "id": "sg-military-1",
+        "topic": "S2",
+        "question": "How do I check a door during an evacuation?"
+      },
+      {
+        "id": "sg-military-2",
+        "topic": "S4",
+        "question": "How do I report a missing colleague?"
+      },
+      {
+        "id": "sg-military-3",
+        "topic": "S8",
+        "question": "How do I treat a burn?"
+      },
+      {
+        "id": "sg-military-4",
+        "topic": "S10",
+        "question": "How do I report an incident?"
+      }
+    ],
+    "civil": [
+      {
+        "id": "sg-civil-1",
+        "topic": "S1",
+        "question": "How do I guide a group to the exit?"
+      },
+      {
+        "id": "sg-civil-2",
+        "topic": "S4",
+        "question": "How do I do a headcount?"
+      },
+      {
+        "id": "sg-civil-3",
+        "topic": "S9",
+        "question": "What do I do if someone is unresponsive?"
+      },
+      {
+        "id": "sg-civil-4",
+        "topic": "S7",
+        "question": "How do I help someone who is bleeding?"
+      }
+    ]
   }
 }

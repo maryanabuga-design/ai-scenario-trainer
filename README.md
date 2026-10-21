@@ -65,6 +65,8 @@ Build order and decisions: `docs/build-plan.md`.
 
 ## Known limitations
 
+- Field of work (Student) is stored only in this browser and only tunes the prepared examples of the simulated Ask AI. In a real product it would be sensitive and optional.
+
 - Content import (Instructor): only CSV files are read (locally, nothing is uploaded). Word files are not parsed in this prototype and a prepared sample result is shown instead; a live product would parse Word and always ask a person to review before publishing. Imported sets stay in this browser, and publishing is a human decision. Published sets appear in Training only and never change readiness or the exam.
 
 - The Instructor demo uses simulated group data: Group A is 14 invented students (`content/demo-cohort.json`) plus the accounts of this browser. Exams, results and notices are kept in this browser only; there is no server, no real group and no real people.

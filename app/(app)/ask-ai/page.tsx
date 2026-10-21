@@ -6,10 +6,18 @@ import { AskAiView } from "@/components/AskAiView/AskAiView";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { answerTo, answerToSuggested, newThread, suggestedById, withThread } from "@/lib/ask-ai";
 import { readThreads, useThreads, writeThreads } from "@/lib/ask-ai-store";
+import { useField } from "@/lib/auth";
+import type { FieldOfWork } from "@/lib/field-of-work";
 import type { AiMessage } from "@/lib/ask-ai";
 
 /** Rendered once the conversations are read, so the time is never part of the prerender. */
-function Loaded({ threads }: { threads: ReturnType<typeof readThreads> }) {
+function Loaded({
+  threads,
+  field,
+}: {
+  threads: ReturnType<typeof readThreads>;
+  field: FieldOfWork | null;
+}) {
   const router = useRouter();
   const { sections } = useSourceSheet();
   const [now] = useState(() => Date.now());
@@ -25,9 +33,12 @@ function Loaded({ threads }: { threads: ReturnType<typeof readThreads> }) {
   return (
     <AskAiView
       threads={threads}
+      field={field}
       now={now}
-      onSend={(text) => start(text, answerTo(text, Date.now()))}
-      onSuggested={(id) => start(suggestedById(id)!.question, answerToSuggested(id, Date.now()))}
+      onSend={(text) => start(text, answerTo(text, Date.now(), field))}
+      onSuggested={(id) =>
+        start(suggestedById(id)!.question, answerToSuggested(id, Date.now(), field))
+      }
       confirming={confirming}
       onAskClear={() => setConfirming(true)}
       onCancelClear={() => setConfirming(false)}
@@ -41,6 +52,7 @@ function Loaded({ threads }: { threads: ReturnType<typeof readThreads> }) {
 
 export default function AskAiPage() {
   const threads = useThreads();
-  if (threads === "loading") return null;
-  return <Loaded threads={threads} />;
+  const field = useField();
+  if (threads === "loading" || field === "loading") return null;
+  return <Loaded threads={threads} field={field} />;
 }

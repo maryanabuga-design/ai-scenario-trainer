@@ -28,6 +28,9 @@ import {
   studentStatus,
   visibleStudents,
 } from "@/lib/students";
+import { FieldOfWorkStep } from "@/components/FieldOfWork/FieldOfWorkStep";
+import { FieldPickerView } from "@/components/FieldOfWork/FieldPickerView";
+import type { FieldOfWork } from "@/lib/field-of-work";
 import { ContentView } from "@/components/InstructorContent/ContentView";
 import { EditQuestionView } from "@/components/InstructorContent/EditQuestionView";
 import { ImportView } from "@/components/InstructorContent/ImportView";
@@ -548,7 +551,10 @@ export function ProfileSample({
   dialog = null,
   role = "student",
   scrolled = false,
+  field = null,
 }: {
+  /** The field of work shown on its row. */
+  field?: FieldOfWork | null;
   dialog?: "reset" | "delete" | null;
   role?: Role;
   /** The frame is scrolled to its end. */
@@ -560,7 +566,7 @@ export function ProfileSample({
       <ProfileView
         certificates={1}
         backHref={role === "student" ? "/" : "/instructor"}
-        account={{ name: "Maryana", email: "maryana@example.com", role }}
+        account={{ name: "Maryana", email: "maryana@example.com", role, field }}
         onRoleChange={() => undefined}
         direction={defaultDirection.id}
         onDirectionChange={() => undefined}
@@ -582,8 +588,11 @@ export function ProfileSample({
 /** Ask AI in fixed states for the screen review page. */
 export function AskAiSample({
   state = "history",
+  field = null,
 }: {
-  state?: "empty" | "history" | "thread" | "fallback" | "typing" | "clear";
+  state?: "empty" | "history" | "thread" | "fallback" | "typing" | "clear" | "example";
+  /** The field of work: tunes the suggested questions and the example lines. */
+  field?: FieldOfWork | null;
 }) {
   const now = new Date(2026, 9, 23, 14, 0).getTime();
   const minutes = (n: number) => now - n * 60_000;
@@ -594,7 +603,12 @@ export function AskAiSample({
   });
   const { sections } = useSourceSheet();
   const titleOf = (id: string) => sections.find((section) => section.id === id)?.title;
-  const smoke = newThread("How do I move through smoke?", answerTo("smoke", now), titleOf, now);
+  const smoke = newThread(
+    "How do I move through smoke?",
+    answerTo("smoke", now, field),
+    titleOf,
+    now,
+  );
   const burn = newThread("What should I do for a burn?", answerTo("burn", now), titleOf, now);
   const item = getItem("q-scn-s01-001");
   const question = questionThread(item, 1, "a", titleOf, now);
@@ -611,6 +625,7 @@ export function AskAiSample({
     return (
       <AskAiView
         threads={state === "empty" ? [] : history}
+        field={field}
         now={now}
         onSend={() => undefined}
         onSuggested={() => undefined}
@@ -637,8 +652,10 @@ export function AskAiSample({
     state === "fallback"
       ? withReply(base, "Who won the match?", answerTo("zzz", now), false)
       : state === "typing"
-        ? withReply(base, "Give an example", followUp("example", "S3", now), true)
-        : base;
+        ? withReply(base, "Give an example", followUp("example", "S3", now, field), true)
+        : state === "example"
+          ? withReply(base, "Give an example", followUp("example", "S3", now, field), false)
+          : base;
   return (
     <AskAiThread
       thread={thread}
@@ -1598,6 +1615,31 @@ export function InstructorContentSample({
       onDelete={() => undefined}
       confirmingInitially={state === "publish-dialog" ? "publish" : null}
       dialogInline
+    />
+  );
+}
+
+/** The Field of work step and the Profile picker for the screen review page. */
+export function FieldOfWorkSample({
+  state = "step",
+}: {
+  state?: "step" | "step-chosen" | "picker" | "picker-empty";
+}) {
+  if (state === "step" || state === "step-chosen") {
+    return (
+      <FieldOfWorkStep
+        onContinue={() => undefined}
+        onSkip={() => undefined}
+        initial={state === "step-chosen" ? "paramedic" : null}
+      />
+    );
+  }
+  return (
+    <FieldPickerView
+      value={state === "picker" ? "paramedic" : null}
+      onChange={() => undefined}
+      onClear={() => undefined}
+      back={{ label: "Back to Profile", href: "#profile" }}
     />
   );
 }

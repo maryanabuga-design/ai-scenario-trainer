@@ -9,11 +9,13 @@ import {
   currentAccount,
   deleteCurrentState,
   emptyAuth,
+  finishFieldStepState,
   finishOnboardingState,
   homeAfterVerification,
   migrateLegacy,
   namespaceFor,
   renameState,
+  setFieldState,
   setRoleState,
   signOutState,
 } from "@/lib/auth";
@@ -94,6 +96,8 @@ describe("migration of people who already used the app", () => {
         role: "instructor",
         createdAt: NOW,
         onboardingDone: true,
+        field: null,
+        fieldStepDone: true,
         legacy: true,
       },
     ]);
@@ -139,7 +143,8 @@ describe("creating an account", () => {
   it("makes a new account with the onboarding still to do, and sends it there after the code", () => {
     const done = signedUp();
     expect(done.result === "ok" && done.account.onboardingDone).toBe(false);
-    expect(done.result === "ok" && homeAfterVerification(done.account)).toBe("/onboarding");
+    // a student gets the Field of work step first, then the introduction
+    expect(done.result === "ok" && homeAfterVerification(done.account)).toBe("/field-of-work");
     const finished = finishOnboardingState(done.state);
     expect(currentAccount(finished)!.onboardingDone).toBe(true);
     const account = currentAccount(finished)!;
@@ -292,7 +297,7 @@ describe("the saved store and its data", () => {
     expect(auth.startSignUp({ name: "Ana Test", email: "ana@example.com", role: "student" })).toBe(
       "ok",
     );
-    expect(auth.verifyCode(DEMO_CODE)).toEqual({ ok: true, destination: "/onboarding" });
+    expect(auth.verifyCode(DEMO_CODE)).toEqual({ ok: true, destination: "/field-of-work" });
     history.write(["ana-data"]);
     expect([...data.keys()].sort()).toEqual(["ast.auth.v1", "ast.history.v1:ana@example.com"]);
 
@@ -349,5 +354,76 @@ describe("the saved store and its data", () => {
     data.set("ast.auth.v1", "{}");
     clearNamespaceData("");
     expect([...data.keys()]).toEqual(["ast.auth.v1"]);
+  });
+});
+
+describe("the field of work of an account", () => {
+  it("starts empty; a student has the registration step to do, an instructor does not", () => {
+    const student = signedUp();
+    const account = student.result === "ok" ? student.account : null;
+    expect(account).toMatchObject({ field: null, fieldStepDone: false });
+    const started = beginSignUp(emptyAuth(), {
+      name: "Ines Test",
+      email: "ines@example.com",
+      role: "instructor",
+    });
+    const done = completeVerification(started.state, DEMO_CODE, NOW);
+    expect(done.result === "ok" && done.account).toMatchObject({
+      field: null,
+      fieldStepDone: true,
+    });
+    expect(done.result === "ok" && homeAfterVerification(done.account)).toBe("/onboarding");
+  });
+
+  it("sends a student who already finished the onboarding straight Home", () => {
+    const done = signedUp();
+    const account = done.result === "ok" ? done.account : null;
+    expect(homeAfterVerification({ ...account!, onboardingDone: true })).toBe("/");
+    expect(homeAfterVerification({ ...account!, fieldStepDone: true })).toBe("/onboarding");
+  });
+
+  it("stores Continue as the field and Skip as null, both ending the step", () => {
+    const done = signedUp();
+    const picked = finishFieldStepState(done.state, "military");
+    expect(currentAccount(picked)).toMatchObject({ field: "military", fieldStepDone: true });
+    const skipped = finishFieldStepState(done.state, null);
+    expect(currentAccount(skipped)).toMatchObject({ field: null, fieldStepDone: true });
+  });
+
+  it("sets and clears the field from Profile without touching anything else", () => {
+    const done = finishOnboardingState(finishFieldStepState(signedUp().state, null));
+    const set = setFieldState(done, "paramedic");
+    expect(currentAccount(set)).toMatchObject({ field: "paramedic", onboardingDone: true });
+    expect(currentAccount(setFieldState(set, null))!.field).toBeNull();
+    expect(currentAccount(setFieldState(set, "civil"))!.name).toBe(currentAccount(set)!.name);
+  });
+
+  it("is read tolerantly: a missing or broken value is null, and an old account never sees the step", () => {
+    const raw = (extra: object) => ({
+      accounts: [
+        {
+          name: "Ana",
+          email: "ana@example.com",
+          role: "student",
+          createdAt: 1,
+          onboardingDone: true,
+          ...extra,
+        },
+      ],
+      session: { email: "ana@example.com" },
+      pending: null,
+    });
+    for (const bad of [{}, { field: "pilot" }, { field: 4 }, { field: null }]) {
+      expect(cleanAuth(raw(bad))!.accounts[0]).toMatchObject({ field: null, fieldStepDone: true });
+    }
+    expect(cleanAuth(raw({ field: "rescue", fieldStepDone: false }))!.accounts[0]).toMatchObject({
+      field: "rescue",
+      fieldStepDone: false,
+    });
+  });
+
+  it("is removed with the account", () => {
+    const withField = setFieldState(signedUp().state, "civil");
+    expect(deleteCurrentState(withField).accounts).toEqual([]);
   });
 });

@@ -104,7 +104,7 @@ describe("a student's figures", () => {
     expect(reviewLine({ ...profile, topics: [profile.topics[1], profile.topics[1]] })).toBe(
       "Rescue services · 2 topics to review",
     );
-    expect(fieldLabel("paramedic")).toBe("Paramedics");
+    expect(fieldLabel("paramedic")).toBe("Paramedic");
     expect(fieldLabel(null)).toBe("Not set");
   });
 });

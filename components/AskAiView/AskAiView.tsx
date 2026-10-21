@@ -7,7 +7,9 @@ import { Chevron } from "@/components/Chevron/Chevron";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { ProfileAvatar } from "@/components/ProfileAvatar/ProfileAvatar";
-import { EMPTY_TEXT, suggested, timeLabel } from "@/lib/ask-ai";
+import { EMPTY_TEXT, suggestedFor, timeLabel } from "@/lib/ask-ai";
+import { tunedLine } from "@/lib/field-of-work";
+import type { FieldOfWork } from "@/lib/field-of-work";
 import type { Thread } from "@/lib/ask-ai";
 
 /**
@@ -24,6 +26,7 @@ export function AskAiView({
   onAskClear,
   onCancelClear,
   onClear,
+  field = null,
   dialogInline = false,
 }: {
   threads: Thread[];
@@ -34,6 +37,8 @@ export function AskAiView({
   onAskClear: () => void;
   onCancelClear: () => void;
   onClear: () => void;
+  /** The field of work: it tunes the suggested questions and shows in the row under the header. */
+  field?: FieldOfWork | null;
   /** Only for the screen review page: draw the dialog in place. */
   dialogInline?: boolean;
 }) {
@@ -45,6 +50,17 @@ export function AskAiView({
         action={<ProfileAvatar />}
       />
 
+      <Link
+        href="/profile/field?from=ask-ai"
+        data-tuned-row
+        className="flex h-11 items-center gap-3 rounded-card bg-card px-4 shadow-(--card-shadow) has-focus-visible:outline-2"
+      >
+        <span data-tuned-text className="type-small min-w-0 flex-1 truncate">
+          {tunedLine(field)}
+        </span>
+        <Chevron />
+      </Link>
+
       <div className="flex flex-col gap-6">
         <section aria-labelledby="suggested-title" className="flex flex-col gap-3">
           {threads.length === 0 && <p className="text-text-secondary">{EMPTY_TEXT}</p>}
@@ -52,7 +68,7 @@ export function AskAiView({
             Suggested questions
           </h2>
           <ul className="flex flex-col gap-2">
-            {suggested.map((entry) => (
+            {suggestedFor(field).map((entry) => (
               <li key={entry.id}>
                 <button
                   type="button"

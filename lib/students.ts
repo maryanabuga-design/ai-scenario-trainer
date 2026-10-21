@@ -9,6 +9,7 @@ import type {
   StatusContext,
 } from "@/lib/cohort";
 import { seededStudents } from "@/lib/cohort";
+import { shortLabels } from "@/lib/field-of-work";
 import { isActive, topicQuestionCount } from "@/lib/group-exams";
 import type { GroupExam } from "@/lib/group-exams";
 import { allTopicIds, topicProgress } from "@/lib/progress-view";
@@ -22,13 +23,7 @@ import type { FinishedSession } from "@/lib/session";
  */
 export const ALMOST_READY = 60;
 
-export const fieldLabels: Record<Field, string> = {
-  rescue: "Rescue services",
-  paramedic: "Paramedics",
-  military: "Military",
-  civil: "Civil protection",
-  other: "Other",
-};
+export const fieldLabels: Record<Field, string> = shortLabels;
 
 /** The short label of a field of work, "Not set" without one. */
 export const fieldLabel = (field: Field | null) => (field ? fieldLabels[field] : "Not set");
@@ -60,7 +55,7 @@ export function localProfile(
 ): StudentProfile {
   return {
     participant,
-    field: null,
+    field: participant.field ?? null,
     topics: allTopicIds.map((id) => topicProgress(id, history)),
   };
 }

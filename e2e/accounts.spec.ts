@@ -53,6 +53,11 @@ const rgb = (value: string) => {
 const nav = (page: Page) => page.getByRole("navigation", { name: "Main" });
 
 async function finishOnboarding(page: Page, role: Role = "Student") {
+  if (role === "Student") {
+    // a new student sees the Field of work step between Verify and the introduction
+    await expect(page).toHaveURL(/\/field-of-work$/);
+    await page.getByRole("button", { name: "Skip for now" }).click();
+  }
   await expect(page).toHaveURL(/\/onboarding$/);
   await page.getByRole("button", { name: "Skip" }).click();
   await expect(page).toHaveURL(role === "Student" ? /\/$/ : /\/instructor$/);
@@ -189,8 +194,8 @@ for (const width of [360, 430]) {
       await page.locator("[data-sign-out]").click();
       await expect(page).toHaveURL(/\/welcome$/);
       await signUp(page, "Bob Test", "bob@example.com");
-      // Bob has not seen the introduction
-      await expect(page).toHaveURL(/\/onboarding$/);
+      // Bob has not seen the introduction: a student's first step is Field of work
+      await expect(page).toHaveURL(/\/field-of-work$/);
     });
 
     test("an unknown email says so, with a link to Create account", async ({ page }) => {
@@ -304,7 +309,7 @@ for (const width of [360, 430]) {
           }),
         );
       }, CODE);
-      await expect(page).toHaveURL(/\/onboarding$/);
+      await expect(page).toHaveURL(/\/field-of-work$/);
     });
 
     test("verify: Backspace goes back and clears the previous box", async ({ page }) => {
@@ -666,7 +671,7 @@ for (const width of [360, 430]) {
       const fillButton = page.getByRole("button", { name: "Fill in code" });
       expect((await fillButton.boundingBox())!.height).toBe(44);
       await fillButton.click();
-      await expect(page).toHaveURL(/\/onboarding$/);
+      await expect(page).toHaveURL(/\/field-of-work$/);
     });
 
     test("Verify: the Verify button submits the typed digits", async ({ page }) => {

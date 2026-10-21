@@ -142,3 +142,4 @@ One commit per screen group, in this order. Steps 1 to 82 are built (step 81, th
 140. Assigned exams moved from Student Home into Notifications (24 Oct 2026): Exams to take and Earlier, the bell counts unread history only, one assignment notification and one reminder per exam, the Exam screen lists assigned exams first and the Exam tile shows the assigned count. Screenshots: `docs/screens/132-*`.
 141. Instructor Content (25 Oct 2026): Content tab, CSV import with flags, Review, Edit question, Publish and Unpublish, published sets in Training (Quiz) outside readiness and the exam. Screenshots: `docs/screens/133-*`.
 142. The Ask AI row restyled as a tertiary inline action with an icon (26 Oct 2026). Screenshots: `docs/screens/134-*`.
+143. Field of work (26 Oct 2026): the registration step, the Profile row and picker, and the tuned Ask AI (suggested questions and an example line per field). Screenshots: `docs/screens/135-*`.

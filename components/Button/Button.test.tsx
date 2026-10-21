@@ -181,6 +181,9 @@ describe("a secondary always comes with a primary above it", () => {
       // Instructor Assign exam: Cancel and Select all; Exam detail: Remind and Close exam, Exam not found.
       // Content: Import (Cancel, Choose file, Remove), Review (Delete set, Unpublish) and Edit question
       // (Delete question, Add image, Remove image), each under at most one Primary.
+      // Field of work: the registration step (Skip for now) and the picker (Clear selection).
+      "components/FieldOfWork/FieldOfWorkStep.tsx",
+      "components/FieldOfWork/FieldPickerView.tsx",
       "components/InstructorContent/EditQuestionView.tsx",
       "components/InstructorContent/ImportView.tsx",
       "components/InstructorContent/ReviewView.tsx",

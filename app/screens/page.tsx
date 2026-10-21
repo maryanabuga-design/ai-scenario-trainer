@@ -40,6 +40,7 @@ import {
   ReviewSample,
   AnswerReviewSample,
   AskAiSample,
+  FieldOfWorkSample,
   Media3DSample,
   NotesMaterialSample,
   UploadSample,
@@ -954,6 +955,46 @@ export default function Screens() {
           <PhoneFrame label="Student Home: the Exam tile with an assigned exam (no cards)">
             <Screen nav="/">
               <HomeSample state="first" assigned />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Field of work step (registration, none chosen)">
+            <Screen>
+              <FieldOfWorkSample state="step" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Field of work step (a row chosen, Continue enabled)">
+            <Screen>
+              <FieldOfWorkSample state="step-chosen" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Profile: the Field of work row (value set)">
+            <Screen nav="/profile">
+              <ProfileSample field="paramedic" scrolled />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Profile: field picker (Clear selection)">
+            <Screen>
+              <FieldOfWorkSample state="picker" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Profile: field picker (nothing chosen)">
+            <Screen>
+              <FieldOfWorkSample state="picker-empty" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Ask AI: tuned for Paramedic (own suggested questions)">
+            <Screen nav="/ask-ai">
+              <AskAiSample state="history" field="paramedic" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Ask AI: Set your field to tune answers">
+            <Screen nav="/ask-ai">
+              <AskAiSample state="empty" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Ask AI thread: Give an example with the field line (civil protection)">
+            <Screen>
+              <AskAiSample state="example" field="civil" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Delete account confirmation">

@@ -1,5 +1,7 @@
 import content from "@/content/ask-ai.json";
 import { keywordMatches, tokens } from "@/lib/chat";
+import { shortLabels } from "@/lib/field-of-work";
+import type { FieldOfWork } from "@/lib/field-of-work";
 import type { Item } from "@/lib/items";
 
 /**
@@ -53,6 +55,30 @@ export const topicIds = Object.keys(topics);
 export type Suggested = { id: string; topic: string; question: string };
 export const suggested = content.suggested as Suggested[];
 const fallbackIds = content.fallbackSuggested as string[];
+const suggestedByField = content.suggestedByField as Record<string, Suggested[]>;
+const examplesByField = content.examples as Record<string, Record<string, string>>;
+
+/** The suggested questions for a field: its own four, or the general list for "other" and no field. */
+export function suggestedFor(field: FieldOfWork | null): Suggested[] {
+  return (field && suggestedByField[field]) || suggested;
+}
+
+/**
+ * The example line of a topic for a field: "Example for rescue services: <sentence>", or null while no
+ * field is set. "Other" uses the general example of the topic. Safe, educational sentences only.
+ */
+export function exampleLine(field: FieldOfWork | null, topic: string | undefined): string | null {
+  if (!field || !topic || !(topic in topics)) return null;
+  const sentence =
+    examplesByField[field]?.[topic] ?? topics[topic].example.replace(/^Example:\s*/, "");
+  return `Example for ${shortLabels[field].toLowerCase()}: ${sentence}`;
+}
+
+/** A prepared answer with the example line of the field at its end (the text as it is without a field). */
+export function withExample(text: string, field: FieldOfWork | null, topic: string | undefined) {
+  const line = exampleLine(field, topic);
+  return line ? `${text}\n\n${line}` : text;
+}
 
 export type QuickAction = "example" | "simple" | "guide";
 export const quickActions: { id: QuickAction; label: string }[] = [
@@ -67,7 +93,8 @@ export function newId(prefix: string, now: number) {
   return `${prefix}-${now.toString(36)}-${counter}`;
 }
 
-export const suggestedById = (id: string) => suggested.find((entry) => entry.id === id);
+export const suggestedById = (id: string) =>
+  [...suggested, ...Object.values(suggestedByField).flat()].find((entry) => entry.id === id);
 
 /** The topic whose keywords match the text best (a section id such as "s3" counts too); null when none. */
 export function matchTopic(text: string): string | null {
@@ -85,7 +112,7 @@ export function matchTopic(text: string): string | null {
 }
 
 /** The prepared reply to a free question. */
-export function answerTo(text: string, now: number): AiMessage {
+export function answerTo(text: string, now: number, field: FieldOfWork | null = null): AiMessage {
   const topic = matchTopic(text);
   if (!topic) {
     return {
@@ -96,31 +123,50 @@ export function answerTo(text: string, now: number): AiMessage {
       suggestions: fallbackIds,
     };
   }
-  return { id: newId("m", now), role: "ai", text: topics[topic].answer, sources: [topic], topic };
-}
-
-/** The prepared answer for a suggested question. */
-export function answerToSuggested(id: string, now: number): AiMessage {
-  const entry = suggestedById(id);
-  if (!entry) return answerTo("", now);
   return {
     id: newId("m", now),
     role: "ai",
-    text: topics[entry.topic].answer,
+    text: withExample(topics[topic].answer, field, topic),
+    sources: [topic],
+    topic,
+  };
+}
+
+/** The prepared answer for a suggested question. */
+export function answerToSuggested(
+  id: string,
+  now: number,
+  field: FieldOfWork | null = null,
+): AiMessage {
+  const entry = suggestedById(id);
+  if (!entry) return answerTo("", now, field);
+  return {
+    id: newId("m", now),
+    role: "ai",
+    text: withExample(topics[entry.topic].answer, field, entry.topic),
     sources: [entry.topic],
     topic: entry.topic,
   };
 }
 
 /** A follow-up from the same topic data: an example, a simple explanation, or the guide's own lines. */
-export function followUp(action: QuickAction, topic: string, now: number): AiMessage {
+export function followUp(
+  action: QuickAction,
+  topic: string,
+  now: number,
+  field: FieldOfWork | null = null,
+): AiMessage {
   const data = topics[topic];
   const text =
     action === "example"
-      ? data.example
-      : action === "simple"
-        ? data.simple
-        : `From the guide:\n${data.guide.map((line) => `• ${line}`).join("\n")}`;
+      ? (exampleLine(field, topic) ?? data.example)
+      : withExample(
+          action === "simple"
+            ? data.simple
+            : `From the guide:\n${data.guide.map((line) => `• ${line}`).join("\n")}`,
+          field,
+          topic,
+        );
   return { id: newId("m", now), role: "ai", text, sources: [topic], topic };
 }
 
@@ -162,6 +208,7 @@ export function questionThread(
   choice: string | null,
   titleOf: (id: string) => string | undefined,
   now: number,
+  field: FieldOfWork | null = null,
 ): Thread {
   const optionText = (id: string | null) => item.options.find((option) => option.id === id)?.text;
   const lines: string[] = [];
@@ -191,7 +238,7 @@ export function questionThread(
       {
         id: newId("m", now),
         role: "ai",
-        text: lines.join("\n\n"),
+        text: withExample(lines.join("\n\n"), field, topic),
         sources,
         ...(topic && { topic }),
       },
