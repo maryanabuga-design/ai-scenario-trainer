@@ -18,7 +18,7 @@ import { participants } from "@/lib/cohort";
 import { seedGroupExams } from "@/lib/group-exams";
 import { loadAllSections } from "@/lib/guide";
 import { inScope } from "@/lib/groups";
-import { topicStandings } from "@/lib/overview";
+import { switcherRows, topicStandings } from "@/lib/overview";
 import {
   belowPassMark,
   examRowsFor,
@@ -65,10 +65,24 @@ const list = (
     ),
   );
 
+const rows = switcherRows(
+  profiles(
+    participants([{ name: "Ana Test", email: "ana@example.com" }]),
+    { "ana@example.com": null },
+    now,
+  ),
+);
+
 describe("the Students header", () => {
   const html = clean(
     renderToStaticMarkup(
-      <StudentsHeader scope="rescue-team" view="students" onView={() => undefined} />,
+      <StudentsHeader
+        scope="rescue-team"
+        rows={rows}
+        onScope={() => undefined}
+        view="students"
+        onView={() => undefined}
+      />,
     ),
   );
 
@@ -79,7 +93,9 @@ describe("the Students header", () => {
     expect(row).toContain("data-group-pill");
     expect(row).toContain("Rescue team");
     expect(row).toContain("lucide-chevron-down");
-    expect(html).toContain('href="/instructor/groups?from=students"');
+    expect(html).not.toContain("/instructor/groups");
+    expect(row).toContain('aria-haspopup="listbox"');
+    expect(row).toContain("bg-neutral-tile-bg");
     expect(html).toContain("data-avatar");
     expect(html).not.toContain('aria-label="Back');
     // the pill is small (32px) inside a 44px tap target
@@ -96,7 +112,15 @@ describe("the Students header", () => {
     expect(html).toMatch(/checked=""[^>]*value="students"/);
     expect(html).toMatch(/value="topics"/);
     const topics = clean(
-      renderToStaticMarkup(<StudentsHeader scope="all" view="topics" onView={() => undefined} />),
+      renderToStaticMarkup(
+        <StudentsHeader
+          scope="all"
+          rows={rows}
+          onScope={() => undefined}
+          view="topics"
+          onView={() => undefined}
+        />,
+      ),
     );
     expect(topics).toMatch(/checked=""[^>]*value="topics"/);
     expect(topics).toContain("All groups");
@@ -106,6 +130,8 @@ describe("the Students header", () => {
     const back = renderToStaticMarkup(
       <StudentsHeader
         scope="rescue-team"
+        rows={rows}
+        onScope={() => undefined}
         view="students"
         onView={() => undefined}
         back={{ label: "Back to Overview", href: "/instructor" }}
@@ -324,7 +350,7 @@ describe("the Topics view", () => {
           dataEmpty="all-groups"
           title="Select a group to see topic results."
           text="x"
-          action={<a href="/instructor/groups?from=students">Choose group</a>}
+          action={<a href="#choose">Choose group</a>}
         />,
       ),
     );

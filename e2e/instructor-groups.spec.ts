@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
-import { authValue, signedInStudent } from "./auth-seed";
+import { authValue } from "./auth-seed";
 
 const instructor = {
   cookies: [],
@@ -16,13 +16,15 @@ const instructor = {
 const PRIMARY = "rgb(63, 70, 56)";
 const SAND = "rgb(240, 236, 230)";
 const WHITE = "rgb(255, 255, 255)";
-const SUCCESS_BG = "rgb(225, 234, 218)";
-const ATTENTION_BG = "rgb(241, 228, 200)";
+const SUCCESS_INK = "rgb(68, 104, 58)";
+const MUTED = "rgb(92, 90, 85)";
 const OLIVE_TINT = "rgb(224, 230, 214)";
 const NEUTRAL_TILE = "rgb(226, 222, 214)";
 
 const noSidewaysScroll = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
+const colour = (loc: ReturnType<Page["locator"]>) =>
+  loc.evaluate((el) => getComputedStyle(el).color);
 const bg = (loc: ReturnType<Page["locator"]>) =>
   loc.evaluate((el) => getComputedStyle(el).backgroundColor);
 const box = async (loc: ReturnType<Page["locator"]>) => (await loc.first().boundingBox())!;
@@ -34,8 +36,8 @@ const row = (page: Page, text: string) => page.locator("fieldset label", { hasTe
 async function choose(page: Page, name: string) {
   await page.goto("/instructor");
   await page.locator("[data-group-pill]").click();
-  await expect(page).toHaveURL(/\/instructor\/groups\?from=overview$/);
-  await page.getByRole("radio", { name }).check({ force: true });
+  await page.locator("[data-group-option]", { hasText: name }).click();
+  await expect(page.locator("[data-group-list]")).toHaveCount(0);
   await expect(page).toHaveURL(/\/instructor$/);
 }
 
@@ -59,14 +61,15 @@ for (const width of [360, 430]) {
       expect(await bg(pill.locator("span").first())).toBe(SAND);
       await expect(pill).toContainText("Rescue team");
       expect((await box(pill)).y).toBeGreaterThan((await box(page.locator("[data-subtitle]"))).y);
-      // readiness card: white, the figure, the soft success pill with an arrow, the ring, the strip
+      // readiness card: white, the figure, the plain trend line, the ring, the strip
       const card = page.locator("[data-group-readiness]");
       expect(await bg(card)).toBe(WHITE);
       await expect(page.locator("[data-readiness-figure]")).toHaveText(/^\d+%$/);
-      const delta = page.locator("[data-delta]");
-      await expect(delta).toHaveText("+4 points this week");
-      expect(await bg(delta)).toBe(SUCCESS_BG);
-      await expect(delta.locator("svg.lucide-arrow-up")).toHaveCount(1);
+      const trend = page.locator("[data-trend]");
+      await expect(trend).toHaveText("↑ Up from 66% last week");
+      expect(await colour(trend)).toBe(SUCCESS_INK);
+      expect(await bg(trend)).toBe("rgba(0, 0, 0, 0)");
+      await expect(page.locator("[data-delta]")).toHaveCount(0);
       await expect(page.locator("[data-ring]")).toHaveAttribute("aria-hidden", "true");
       expect(
         await page
@@ -95,12 +98,12 @@ for (const width of [360, 430]) {
       expect((await box(assign)).height).toBe(52);
       await expect(assign.locator("svg.lucide-circle-plus")).toHaveCount(1);
       await expect(page.locator("[data-block-note]")).toHaveText("1 Active");
-      // weakest topic: card with the badge, a Secondary and a centred underlined link
+      // weakest topic: card with the badge and a Secondary; the underlined link is in the header row
       const weak = page.locator("[data-weakest-topic]");
       expect(await bg(weak)).toBe(WHITE);
-      await expect(weak.getByRole("link", { name: "All topics" })).toBeVisible();
-      // the single-percentage rule, no sideways scroll, nothing external
-      expect(((await main.innerText()).match(/%/g) ?? []).length).toBe(1);
+      await expect(page.getByRole("link", { name: "All topics" })).toBeVisible();
+      // one headline percentage plus the comparison value of the trend line
+      expect(((await main.innerText()).match(/%/g) ?? []).length).toBe(2);
       expect(await noSidewaysScroll(page)).toBe(true);
       const primaries = await page
         .locator("main a, main button")
@@ -114,17 +117,22 @@ for (const width of [360, 430]) {
       );
     });
 
-    test("a decrease shows amber with a down arrow, never red (Military training)", async ({
+    test("a decrease is a muted plain line, never red or amber (Military training)", async ({
       page,
     }) => {
       await choose(page, "Military training");
-      const delta = page.locator("[data-delta]");
-      await expect(delta).toHaveText("-3 points this week");
-      expect(await bg(delta)).toBe(ATTENTION_BG);
-      await expect(delta.locator("svg.lucide-arrow-down")).toHaveCount(1);
+      const trend = page.locator("[data-trend]");
+      await expect(trend).toHaveText("↓ Down from 62% last week");
+      expect(await colour(trend)).toBe(MUTED);
+      expect(await bg(trend)).toBe("rgba(0, 0, 0, 0)");
     });
 
-    test("the pill opens the picker; the choice applies at once, persists after a reload and follows into Students and Exams", async ({
+    test("All groups has no trend line", async ({ page }) => {
+      await choose(page, "All groups");
+      await expect(page.locator("[data-trend]")).toHaveCount(0);
+    });
+
+    test("the pill opens the dropdown; the choice applies at once, persists after a reload and follows into Students and Exams", async ({
       page,
     }) => {
       await choose(page, "Military training");
@@ -148,32 +156,6 @@ for (const width of [360, 430]) {
       await expect(page.locator("[data-exam-card]:visible").last()).toContainText(
         "Military training",
       );
-    });
-
-    test("the picker has Back, the band, 'All groups' and each group with its student count; no bottom sheet", async ({
-      page,
-    }) => {
-      await page.goto("/instructor/groups?from=exams");
-      await expect(page.locator("[data-page-header-band]:visible")).toContainText("Groups");
-      await expect(page.getByRole("link", { name: "Back to Exams" })).toBeVisible();
-      await expect(page.getByRole("radio")).toHaveCount(3);
-      await expect(page.locator("label", { hasText: "All groups" })).toContainText(
-        "2 groups · 27 students",
-      );
-      await expect(page.locator("label", { hasText: "Rescue team" })).toContainText("15 students");
-      await expect(page.locator("label", { hasText: "Military training" })).toContainText(
-        "12 students",
-      );
-      await expect(page.getByRole("radio", { name: /Rescue team/ })).toBeChecked();
-      await expect(page.getByRole("dialog")).toHaveCount(0);
-      for (const label of await page.locator("fieldset label").all()) {
-        expect((await box(label)).height).toBe(72);
-      }
-      expect(await noSidewaysScroll(page)).toBe(true);
-      // choosing returns to where it was opened from
-      await page.getByRole("radio", { name: /All groups/ }).check({ force: true });
-      await expect(page).toHaveURL(/\/instructor\/exams$/);
-      await expect(page.locator("[data-exam-card]:visible")).toHaveCount(2);
     });
 
     test("the readiness strip opens Students for the same group", async ({ page }) => {
@@ -242,10 +224,10 @@ for (const width of [360, 430]) {
         "Select a group to see topic results.",
       );
       await expect(page.locator("[data-topic-card]")).toHaveCount(0);
-      await page.getByRole("link", { name: "Choose group" }).click();
-      await expect(page).toHaveURL(/\/instructor\/groups\?from=students$/);
-      await page.getByRole("radio", { name: /Military training/ }).check({ force: true });
-      await expect(page).toHaveURL(/\/instructor\/students$/);
+      await page.locator("[data-group-pill]:visible").click();
+      await page.locator("[data-group-option]", { hasText: "Military training" }).click();
+      await expect(page).toHaveURL(/\/instructor\/students\?view=topics$/);
+      await expect(page.locator("[data-topic-card]")).toHaveCount(10);
     });
 
     test("the action rows, the exam card, Assign exam, Assign exam on this topic and All topics go to the right place", async ({
@@ -320,33 +302,17 @@ for (const width of [360, 430]) {
       );
     });
 
-    test("makes no external request and a student cannot open the picker", async ({
-      browser,
-      page,
-    }) => {
+    test("makes no external request", async ({ page }) => {
       const external: string[] = [];
       page.on("request", (r) => {
         if (!r.url().startsWith("http://localhost:3100") && !r.url().startsWith("data:"))
           external.push(r.url());
       });
-      for (const path of [
-        "/instructor",
-        "/instructor/groups",
-        "/instructor/students",
-        "/instructor/exams",
-      ]) {
+      for (const path of ["/instructor", "/instructor/students", "/instructor/exams"]) {
         await page.goto(path);
         await page.waitForLoadState("networkidle");
       }
       expect(external).toEqual([]);
-      const context = await browser.newContext({
-        storageState: signedInStudent,
-        viewport: { width, height: 800 },
-      });
-      const student = await context.newPage();
-      await student.goto("http://localhost:3100/instructor/groups");
-      await expect(student).toHaveURL("http://localhost:3100/");
-      await context.close();
     });
   });
 }

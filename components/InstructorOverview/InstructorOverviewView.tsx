@@ -1,11 +1,11 @@
 "use client";
 
+import { GroupSwitcher } from "@/components/GroupSwitcher/GroupSwitcher";
 import { ProfileAvatar } from "@/components/ProfileAvatar/ProfileAvatar";
 import {
   ActionsCard,
   ExamsCard,
   GetStartedCard,
-  GroupPill,
   GroupsCard,
   ReadinessCard,
   WeakestCard,
@@ -31,12 +31,15 @@ export function InstructorOverviewView({
   model,
   topicTitle,
   onSelectGroup,
+  switcherOpen = false,
 }: {
   name: string;
   model: OverviewModel;
   topicTitle: (id: string) => string;
-  /** Selects a group (the GROUPS card and the rows of All groups open it first). */
+  /** Selects a group or "all" (the dropdown, the GROUPS card and the rows of All groups). */
   onSelectGroup: (id: string) => void;
+  /** For the review page: the group dropdown drawn open. */
+  switcherOpen?: boolean;
 }) {
   const { scope, steps, weakest } = model;
   return (
@@ -49,7 +52,12 @@ export function InstructorOverviewView({
         <p data-subtitle className="type-body text-text-secondary">
           {scopeSubtitle(scope)}
         </p>
-        <GroupPill scope={scope} />
+        <GroupSwitcher
+          scope={scope}
+          rows={model.switcher}
+          onSelect={onSelectGroup}
+          initiallyOpen={switcherOpen}
+        />
       </header>
 
       {steps ? (
@@ -62,7 +70,7 @@ export function InstructorOverviewView({
             <ReadinessCard
               scope={scope}
               readiness={model.readiness}
-              delta={model.delta}
+              lastWeek={model.lastWeek}
               students={model.students}
               notStarted={model.notStarted}
             />
@@ -74,6 +82,7 @@ export function InstructorOverviewView({
               weakest={weakest}
               title={topicTitle(weakest.sectionId)}
               href={assignOnTopicHref(weakest.sectionId)}
+              students={model.students}
             />
           )}
         </>

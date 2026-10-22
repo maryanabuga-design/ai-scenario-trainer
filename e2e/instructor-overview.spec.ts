@@ -82,8 +82,8 @@ for (const width of [360, 430]) {
       await expect(page.locator("[data-group-line]")).toHaveText(
         "Rescue team · 15 students · 2 not started",
       );
-      await expect(page.locator("[data-delta]")).toHaveText("+4 points this week");
-      expect(await page.locator("[data-delta]").evaluate((el) => getComputedStyle(el).color)).toBe(
+      await expect(page.locator("[data-trend]")).toHaveText("↑ Up from 66% last week");
+      expect(await page.locator("[data-trend]").evaluate((el) => getComputedStyle(el).color)).toBe(
         STATUS_SUCCESS_INK,
       );
       expect(await noSidewaysScroll(page)).toBe(true);
@@ -112,9 +112,9 @@ for (const width of [360, 430]) {
       await expect(rows.first()).toHaveAttribute("data-action", "needs-attention");
       await expect(rows.first()).toContainText(/\d+ students need attention/);
       await expect(rows.first()).toContainText("Below the pass mark");
-      // one percentage on the whole screen
+      // one headline percentage plus the comparison value in the trend line
       const text = await page.locator("main").innerText();
-      expect(text.match(/%/g)).toHaveLength(1);
+      expect(text.match(/%/g)).toHaveLength(2);
       await expect(page.locator("[data-demo-note]")).toHaveText(
         "Demo group. Student data on this screen is simulated.",
       );
@@ -174,7 +174,7 @@ for (const width of [360, 430]) {
       await page.goto("/instructor");
       const card = page.locator("[data-weakest-topic]");
       const id = (await card.getAttribute("data-weakest-topic"))!;
-      await expect(card).toContainText(/\d+ of 13 students at or above the pass mark/);
+      await expect(card).toContainText(/\d+ of 13 who answered it are at or above the pass mark/);
       expect(await card.evaluate((el) => !!el.querySelector("svg.lucide-chevron-right"))).toBe(
         false,
       );

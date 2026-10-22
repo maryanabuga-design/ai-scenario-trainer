@@ -6,22 +6,16 @@ import { getStarted } from "@/lib/get-started";
 import type { StartStep } from "@/lib/get-started";
 import { splitExams } from "@/lib/group-exams";
 import type { GroupExam } from "@/lib/group-exams";
-import {
-  ALL_GROUPS,
-  examPeople,
-  examsInScope,
-  groupNames,
-  groups,
-} from "@/lib/groups";
+import { ALL_GROUPS, examPeople, examsInScope, groupNames, groups } from "@/lib/groups";
 import type { Group, Scope } from "@/lib/groups";
 import {
-  groupDelta,
   groupReadiness,
   needsAttention,
   nearestActiveExam,
+  switcherRows,
   weakestTopic,
 } from "@/lib/overview";
-import type { TopicStanding } from "@/lib/overview";
+import type { SwitcherRow, TopicStanding } from "@/lib/overview";
 import { notStartedCount } from "@/lib/students";
 import type { StudentProfile } from "@/lib/students";
 
@@ -31,9 +25,7 @@ export type GroupRow = { group: Group; students: number; needs: number };
 
 export const groupRows = (list: StudentProfile[]): GroupRow[] =>
   groups.map((group) => {
-    const own = list.filter(
-      (profile) => profile.participant.groupId === group.id,
-    );
+    const own = list.filter((profile) => profile.participant.groupId === group.id);
     return { group, students: own.length, needs: needsAttention(own).length };
   });
 
@@ -64,7 +56,10 @@ export type OverviewModel = {
   /** The profiles of the scope. */
   list: StudentProfile[];
   readiness: number;
-  delta: number | null;
+  /** The readiness of the group a week ago (demo data), or null (All groups, or no value). */
+  lastWeek: number | null;
+  /** The rows of the group dropdown, from all participants. */
+  switcher: SwitcherRow[];
   /** "Rescue team · 14 students · 1 not started" lines of the scope (one group), else null. */
   students: number;
   notStarted: number;
@@ -106,7 +101,8 @@ export function overviewModel(input: OverviewInput): OverviewModel {
     scope,
     list,
     readiness: groupReadiness(list),
-    delta: groupDelta(list),
+    lastWeek: all ? null : (groups.find((group) => group.id === scope)?.lastWeekReadiness ?? null),
+    switcher: switcherRows(input.list),
     students: list.length,
     notStarted: notStartedCount(list),
     groupRows: all ? groupRows(input.list) : [],

@@ -6,7 +6,13 @@ import type { DraftSet } from "@/lib/actions";
 import { participants } from "@/lib/cohort";
 import { seedGroupExams } from "@/lib/group-exams";
 import type { GroupExam } from "@/lib/group-exams";
-import { groupReadiness, topicStandings, weakestTopic } from "@/lib/overview";
+import {
+  groupReadiness,
+  topicStandings,
+  trendLine,
+  weakestTopic,
+  weakestLine,
+} from "@/lib/overview";
 import { overviewModel } from "@/lib/overview-model";
 import { profileStatus, profiles } from "@/lib/students";
 
@@ -65,19 +71,70 @@ describe("the Overview header", () => {
     expect(render({ scope: "all" })).toContain("Here is how your groups are doing.");
   });
 
-  it("has the group switcher pill under the subtitle: 40px pill, 44px tap target, dot, name, chevron", () => {
-    expect(html).toContain('href="/instructor/groups?from=overview"');
-    const pill = html.slice(
-      html.indexOf("data-group-pill") - 20,
-      html.indexOf("data-group-pill") + 700,
-    );
+  it("has the group switcher under the subtitle: a button pill with a neutral group icon, the name and a chevron, closed", () => {
+    expect(html).not.toContain("/instructor/groups");
+    const at = html.indexOf("data-group-pill");
+    const pill = html.slice(html.lastIndexOf("<button", at), at + 1800);
+    expect(pill).toContain("<button");
+    expect(pill).toContain('aria-haspopup="listbox"');
+    expect(pill).toContain('aria-expanded="false"');
     expect(pill).toContain("min-h-11");
     expect(pill).toContain("h-10");
     expect(pill).toContain("rounded-full");
+    expect(pill).toContain("bg-neutral-tile-bg");
+    expect(pill).toContain("lucide-users-round");
+    expect(pill).not.toContain("bg-primary");
     expect(pill).toContain("Rescue team");
     expect(pill).toContain("lucide-chevron-down");
+    expect(html).not.toContain('role="listbox"');
     expect(html.indexOf("Here is how")).toBeLessThan(html.indexOf("data-group-pill"));
     expect(render({ scope: "all" })).toMatch(/data-group-pill[\s\S]*All groups/);
+  });
+
+  it("draws the list under the pill when open: a listbox of options with counts and status words, a check on the current one, All groups last", () => {
+    const open = renderToStaticMarkup(
+      <InstructorOverviewView
+        name="Ira"
+        switcherOpen
+        model={overviewModel({
+          scope: "rescue-team",
+          list: everyone,
+          people,
+          exams,
+          attempts: [],
+          drafts: [],
+          publishedSets: 0,
+          reminded: new Set(),
+          now,
+        })}
+        topicTitle={titleOf}
+        onSelectGroup={() => undefined}
+      />,
+    );
+    expect(open).toContain('aria-expanded="true"');
+    expect(open).toContain("rotate-180");
+    const list = open.slice(
+      open.indexOf('role="listbox"'),
+      open.indexOf("</ul>", open.indexOf('role="listbox"')),
+    );
+    expect(list.match(/role="option"/g)).toHaveLength(3);
+    expect(list).toContain("15 students · Almost ready");
+    expect(list).toContain("12 students · Needs attention");
+    expect(list).toContain("One card per group");
+    expect(list.indexOf("Military training")).toBeLessThan(list.indexOf("All groups"));
+    expect(list.match(/aria-selected="true"/g)).toHaveLength(1);
+    expect(list.match(/lucide-check/g)).toHaveLength(1);
+    for (const hook of [
+      "rounded-[16px]",
+      "border-selectable-stroke",
+      "min-h-14",
+      "max-w-[min(320px,calc(100vw-32px))]",
+      "absolute",
+    ]) {
+      expect(list.concat(open)).toContain(hook);
+    }
+    expect(list).not.toContain("%");
+    expect(open).not.toContain('role="dialog"');
   });
 });
 
@@ -85,11 +142,11 @@ describe("the readiness card", () => {
   const html = render();
   const card = html.slice(html.indexOf("data-group-readiness"), html.indexOf("NEEDS YOUR ACTION"));
 
-  it("has the label, the figure, the delta pill, the ring and the strip, in this order", () => {
+  it("has the label, the figure, the trend line, the ring and the strip, in this order", () => {
     const order = [
       "GROUP READINESS",
       "data-readiness-figure",
-      "data-delta",
+      "data-trend",
       "data-ring",
       "data-readiness-strip",
     ].map((t) => card.indexOf(t));
@@ -98,25 +155,38 @@ describe("the readiness card", () => {
     expect(card).toContain(`>${groupReadiness(rescue)}%<`);
   });
 
-  it("has exactly one percentage on the whole screen (the ring is only a graphic)", () => {
-    expect(visible(html).match(/%/g)).toHaveLength(1);
+  it("has one headline percentage and the comparison value in the trend line, nothing else (the ring is only a graphic)", () => {
+    const text = visible(html);
+    expect(text.match(/%/g)).toHaveLength(2);
+    const outside = text.replace(/Up from \d+% last week/, "");
+    expect(outside.match(/%/g)).toHaveLength(1);
     const ring = card.slice(card.indexOf("data-ring") - 40, card.indexOf("data-readiness-strip"));
     expect(ring).toContain('aria-hidden="true"');
     expect(ring).toContain("lucide-shield");
     expect(ring).not.toMatch(/<text/);
   });
 
-  it("shows the soft success pill with an up arrow for an increase", () => {
-    expect(card).toMatch(/data-delta-tone="success"[^>]*class="[^"]*bg-status-success-bg/);
-    expect(card).toMatch(/data-delta[^>]*>[\s\S]*lucide-arrow-up[\s\S]*\+4 points this week/);
+  it("has no pill any more, and an increase is a plain line with an up arrow in the success text colour", () => {
+    expect(html).not.toContain("data-delta");
+    expect(card).not.toContain("points this week");
+    expect(card).toMatch(
+      /data-trend-tone="up"[^>]*class="[^"]*text-status-success-ink[^"]*"[^>]*>↑ Up from 66% last week</,
+    );
+    expect(card).not.toContain("bg-status-success-bg");
   });
 
-  it("shows amber with a down arrow for a decrease, never red", () => {
+  it("shows a decrease in the muted text colour, never red or amber", () => {
     const military = render({ scope: "military-training" });
-    expect(military).toMatch(/data-delta-tone="attention"/);
-    expect(military).toMatch(/lucide-arrow-down[\s\S]*-3 points this week/);
-    expect(military).toContain("bg-status-attention-bg");
+    expect(military).toMatch(
+      /data-trend-tone="muted"[^>]*class="[^"]*text-text-secondary[^"]*"[^>]*>↓ Down from 62% last week</,
+    );
     expect(military).not.toMatch(/bg-wrong|text-wrong/);
+  });
+
+  it("shows 'Same as last week' for an unchanged value and nothing without a value or in All groups", () => {
+    expect(trendLine(70, 70)?.text).toBe("→ Same as last week");
+    expect(render({ scope: "all" })).not.toContain("data-trend");
+    expect(trendLine(70, null)).toBeNull();
   });
 
   it("has a sand strip with the group line that opens Students", () => {
@@ -204,17 +274,24 @@ describe("WEAKEST TOPIC", () => {
     expect(section).toContain(`data-weakest-topic="${weak.sectionId}"`);
     expect(section).toContain(`>${weak.sectionId}<`);
     expect(section).toContain(`Topic ${weak.sectionId}`);
-    expect(section).toContain(
-      `${weak.passing} of ${weak.total} students at or above the pass mark`,
-    );
+    expect(section).toContain(weakestLine(weak, rescue.length));
+    expect(section).toContain("who answered it are at or above the pass mark");
     expect(section).toContain(
       `href="/instructor/exams/new?topic=${weak.sectionId}&amp;from=overview"`,
     );
     expect(section).toMatch(
       /bg-olive-tint[^>]*>[\s\S]*lucide-clipboard-check[\s\S]*Assign exam on this topic</,
     );
-    expect(section).toContain('href="/instructor/students?view=topics"');
-    expect(section).toMatch(/justify-center[\s\S]*underline[\s\S]*All topics/);
+    // the link is in the header row with the label, right-aligned, and no longer under the card
+    const header = html.slice(
+      html.indexOf('aria-labelledby="weakest-title"'),
+      html.indexOf("data-weakest-topic"),
+    );
+    expect(header).toMatch(
+      /justify-between[\s\S]*WEAKEST TOPIC[\s\S]*href="\/instructor\/students\?view=topics"[\s\S]*underline[\s\S]*All topics/,
+    );
+    expect(section.slice(section.indexOf("data-weakest-topic"))).not.toContain("All topics");
+    expect(section.match(/All topics/g)).toHaveLength(1);
     expect(section).not.toContain("lucide-chevron-right");
   });
 
@@ -299,7 +376,7 @@ describe("the whole screen", () => {
     for (const file of [
       "components/InstructorOverview/InstructorOverviewView.tsx",
       "components/InstructorOverview/OverviewBlocks.tsx",
-      "components/InstructorGroups/GroupPickerView.tsx",
+      "components/GroupSwitcher/GroupSwitcher.tsx",
     ]) {
       const code = readFileSync(file, "utf8");
       expect(code, file).not.toMatch(/#[0-9a-fA-F]{3,6}\b/);

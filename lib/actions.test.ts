@@ -1,14 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { ACTION_LIMIT, actionRows, dueReason, daysUntil } from "@/lib/actions";
 import type { DraftSet } from "@/lib/actions";
-import { inScope } from "@/lib/groups";
+import { groups, inScope } from "@/lib/groups";
 import { participants } from "@/lib/cohort";
 import type { Attempt } from "@/lib/cohort";
 import { seedGroupExams } from "@/lib/group-exams";
 import type { GroupExam } from "@/lib/group-exams";
-import { deltaLine, groupDelta, weakestTopic } from "@/lib/overview";
+import { deltaLine, groupReadiness, trendLine, weakestTopic } from "@/lib/overview";
 import { profileStatus, profiles } from "@/lib/students";
-import type { StudentProfile, StudentTopic } from "@/lib/students";
 
 const now = new Date(2026, 9, 24, 10, 0).getTime();
 const people = inScope(
@@ -142,43 +141,24 @@ describe("the rows of Needs your action", () => {
   });
 });
 
-describe("the change this week", () => {
-  it("is the seeded demo history: the same students now against a week ago, in whole points", () => {
-    expect(groupDelta(list)).toBe(4);
+describe("the trend line", () => {
+  it("compares with last week's stored readiness of the group: up, down, same, and nothing without a value", () => {
+    expect(trendLine(70, 62)).toEqual({ text: "↑ Up from 62% last week", tone: "up" });
+    expect(trendLine(59, 70)).toEqual({ text: "↓ Down from 70% last week", tone: "muted" });
+    expect(trendLine(66, 66)).toEqual({ text: "→ Same as last week", tone: "muted" });
+    expect(trendLine(66, null)).toBeNull();
+    expect(trendLine(66, undefined)).toBeNull();
+  });
+
+  it("is read from the demo data per group, not computed from a points number", () => {
+    expect(groups.map((group) => group.lastWeekReadiness)).toEqual([66, 62]);
+    expect(trendLine(groupReadiness(list), groups[0].lastWeekReadiness)?.tone).toBe("up");
+  });
+
+  it("keeps the student weekly change wording (Student detail)", () => {
     expect(deltaLine(4)).toBe("+4 points this week");
-    expect(deltaLine(1)).toBe("+1 point this week");
     expect(deltaLine(-3)).toBe("-3 points this week");
     expect(deltaLine(0)).toBe("No change this week");
-    expect(deltaLine(-3)).not.toContain("%");
-  });
-
-  it("is absent without history, and the local account (no history) is not counted", () => {
-    const local = list.filter((p) => p.participant.local);
-    expect(groupDelta(local)).toBeNull();
-    expect(groupDelta([])).toBeNull();
-    const noHistory = list.map((p) => ({ ...p, previousCorrect: undefined }));
-    expect(groupDelta(noHistory as StudentProfile[])).toBeNull();
-    expect(groupDelta(list.filter((p) => !p.participant.local))).toBe(groupDelta(list));
-  });
-
-  it("can be negative", () => {
-    const topic = (correct: number): StudentTopic => ({
-      sectionId: "S1",
-      answered: 10,
-      correct,
-      total: 10,
-    });
-    const profile = (previousCorrect: number): StudentProfile => ({
-      participant: { id: "a", name: "A", initials: "A", local: false, groupId: "rescue-team" },
-      field: null,
-      lastActiveDaysAgo: null,
-      practiceThisWeek: 0,
-      readinessPrev: null,
-      topics: [topic(6)],
-      previousCorrect,
-    });
-    expect(groupDelta([profile(9)])).toBe(-30);
-    expect(deltaLine(-30)).toBe("-30 points this week");
   });
 });
 

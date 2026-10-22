@@ -6,7 +6,6 @@ import {
   ArrowUp,
   Award,
   Check,
-  ChevronDown,
   CirclePlus,
   ClipboardCheck,
   ClipboardList,
@@ -32,7 +31,7 @@ import { GET_STARTED } from "@/lib/get-started";
 import type { StartStep } from "@/lib/get-started";
 import { scopeName } from "@/lib/groups";
 import type { Scope } from "@/lib/groups";
-import { deltaLine, deltaTone, studentsCount } from "@/lib/overview";
+import { deltaLine, deltaTone, studentsCount, trendLine, weakestLine } from "@/lib/overview";
 import type { TopicStanding } from "@/lib/overview";
 import type { ExamRow, GroupRow } from "@/lib/overview-model";
 import { groupLine } from "@/lib/students";
@@ -65,42 +64,6 @@ export function BlockLabel({
         </span>
       )}
     </div>
-  );
-}
-
-/**
- * The group switcher (DESIGN.md: Instructor, Overview rebuilt): a rounded pill 40px high inside a
- * 44px tap target, a small olive dot, the group name and a chevron down. It opens the picker.
- */
-export function GroupPill({
-  scope,
-  from = "overview",
-  compact = false,
-}: {
-  scope: Scope;
-  from?: string;
-  /** The small pill of a header band (Students): the name and a chevron, no dot. */
-  compact?: boolean;
-}) {
-  return (
-    <Link
-      href={`/instructor/groups?from=${from}`}
-      data-group-pill
-      aria-label={`Group: ${scopeName(scope)}. Change group`}
-      className={`flex min-h-11 items-center has-focus-visible:outline-2 ${compact ? "min-w-0 shrink" : "w-fit max-w-full"}`}
-    >
-      <span
-        className={`type-small-strong flex min-w-0 items-center gap-2 rounded-full text-text ${
-          compact ? "h-8 bg-secondary-sand-pressed px-3" : "h-10 bg-secondary-sand px-4"
-        }`}
-      >
-        {!compact && (
-          <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-primary" />
-        )}
-        <span className="truncate">{scopeName(scope)}</span>
-        <ChevronDown size={16} strokeWidth={2} aria-hidden="true" className="shrink-0" />
-      </span>
-    </Link>
   );
 }
 
@@ -168,21 +131,23 @@ export function DeltaPill({ delta }: { delta: number }) {
 
 /**
  * GROUP READINESS (one group; the ONE percentage of the screen): the label, the large figure with
- * the delta pill, the ring at the right and a sand strip with the group line that opens Students.
+ * the trend line under it, the ring at the right and a sand strip with the group line that opens Students.
  */
 export function ReadinessCard({
   scope,
   readiness,
-  delta,
+  lastWeek,
   students,
   notStarted,
 }: {
   scope: Scope;
   readiness: number;
-  delta: number | null;
+  /** The readiness of the group a week ago, or null. */
+  lastWeek: number | null;
   students: number;
   notStarted: number;
 }) {
+  const trend = trendLine(readiness, lastWeek);
   return (
     <section
       aria-labelledby="group-readiness"
@@ -194,12 +159,18 @@ export function ReadinessCard({
           <h2 id="group-readiness" className="type-label text-text-secondary">
             GROUP READINESS
           </h2>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <p data-readiness-figure className="type-display tabular-nums">
-              {readiness}%
+          <p data-readiness-figure className="type-display tabular-nums">
+            {readiness}%
+          </p>
+          {trend && (
+            <p
+              data-trend
+              data-trend-tone={trend.tone}
+              className={`type-small ${trend.tone === "up" ? "text-status-success-ink" : "text-text-secondary"}`}
+            >
+              {trend.text}
             </p>
-            {delta !== null && <DeltaPill delta={delta} />}
-          </div>
+          )}
         </div>
         <ReadinessRing percent={readiness} />
       </div>
@@ -367,19 +338,31 @@ export function ExamsCard({ rows, activeCount }: { rows: ExamRow[]; activeCount:
   );
 }
 
-/** WEAKEST TOPIC: the S badge and topic name, the muted count, a Secondary "Assign exam on this topic" and the centred link "All topics". */
+/** WEAKEST TOPIC: the label with the link "All topics" at its right, then the S badge and topic name, the muted count and a Secondary "Assign exam on this topic". */
 export function WeakestCard({
   weakest,
   title,
   href,
+  students,
 }: {
   weakest: TopicStanding;
   title: string;
   href: string;
+  /** The students of the group (the count line says when fewer answered this topic). */
+  students: number;
 }) {
   return (
     <section aria-labelledby="weakest-title" className="flex flex-col gap-3">
-      <BlockLabel id="weakest-title">WEAKEST TOPIC</BlockLabel>
+      <div className="flex items-center justify-between gap-3">
+        <h2 id="weakest-title" className="type-label text-text-secondary">
+          WEAKEST TOPIC
+        </h2>
+        <div className="-mr-3">
+          <ButtonLink href="/instructor/students?view=topics" variant="tertiary">
+            All topics
+          </ButtonLink>
+        </div>
+      </div>
       <div
         data-weakest-topic={weakest.sectionId}
         className={`${card} flex flex-col gap-3 p-[var(--gutter,1rem)]`}
@@ -390,17 +373,12 @@ export function WeakestCard({
           </Chip>
           <p className="type-body-strong min-w-0 flex-1 truncate">{title}</p>
         </div>
-        <p className="type-small text-text-secondary tabular-nums">
-          {weakest.passing} of {weakest.total} students at or above the pass mark
+        <p data-weakest-count className="type-small text-text-secondary tabular-nums">
+          {weakestLine(weakest, students)}
         </p>
         <ButtonLink href={href} variant="secondary" icon={ClipboardCheck}>
           Assign exam on this topic
         </ButtonLink>
-        <div className="flex justify-center">
-          <ButtonLink href="/instructor/students?view=topics" variant="tertiary">
-            All topics
-          </ButtonLink>
-        </div>
       </div>
     </section>
   );

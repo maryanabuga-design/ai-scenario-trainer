@@ -165,8 +165,6 @@ describe("a secondary always comes with a primary above it", () => {
       // Content: the friendly not-found screens (Back to Content, Back to Review).
       "app/(app)/instructor/content/[id]/[n]/page.tsx",
       "app/(app)/instructor/content/[id]/page.tsx",
-      // Students: Choose group (the Topics view in All groups).
-      "app/(app)/instructor/students/page.tsx",
       // About this prototype: "Restart demo" under the info lines (one clearly separate action).
       "components/AboutView/AboutView.tsx",
       // Answer review: Back to results, below the primary Next question.

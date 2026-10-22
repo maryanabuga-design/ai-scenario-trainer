@@ -22,10 +22,12 @@ import { withNotices } from "@/lib/notifications";
 import {
   deltaLine,
   deltaTone,
-  groupDelta,
   groupReadiness,
   needsAttention,
   studentsCount,
+  switcherRows,
+  trendLine,
+  weakestLine,
 } from "@/lib/overview";
 import { groupRows, overviewModel } from "@/lib/overview-model";
 import { activeProfiles, notStartedCount, profiles } from "@/lib/students";
@@ -83,7 +85,7 @@ describe("scope-aware figures", () => {
       });
       expect(model.list).toEqual(own);
       expect(model.readiness).toBe(groupReadiness(own));
-      expect(model.delta).toBe(groupDelta(own));
+      expect(model.lastWeek).toBe(group.lastWeekReadiness ?? null);
       expect(model.students).toBe(own.length);
       expect(model.notStarted).toBe(notStartedCount(own));
     }
@@ -118,10 +120,14 @@ describe("scope-aware figures", () => {
     expect(model.activeCount).toBe(2);
   });
 
-  it("the two delta states of the demo data: Rescue team up, Military training down", () => {
-    const delta = (id: string) => groupDelta(everyone.filter((p) => p.participant.groupId === id));
-    expect(delta("rescue-team")).toBe(4);
-    expect(delta("military-training")).toBe(-3);
+  it("the demo data has an up and a down trend: Rescue team up from 66, Military training down from 62", () => {
+    const line = (id: string) =>
+      trendLine(
+        groupReadiness(everyone.filter((p) => p.participant.groupId === id)),
+        groups.find((g) => g.id === id)!.lastWeekReadiness,
+      );
+    expect(line("rescue-team")?.text).toBe("↑ Up from 66% last week");
+    expect(line("military-training")?.text).toBe("↓ Down from 62% last week");
   });
 
   it("names the three delta tones and wording", () => {
@@ -318,5 +324,59 @@ describe("Get started", () => {
       "done",
       "locked",
     ]);
+  });
+});
+
+describe("one student count per group across the Overview cards", () => {
+  for (const group of groups) {
+    it(`${group.name}: the Readiness, Exams and Weakest topic cards agree on the group's students`, () => {
+      const model = overviewModel({
+        scope: group.id,
+        list: everyone,
+        people,
+        exams,
+        attempts: [],
+        drafts: [],
+        publishedSets: 0,
+        reminded: new Set(),
+        now,
+      });
+      const count = everyone.filter((p) => p.participant.groupId === group.id).length;
+      // the Readiness card's count is the group's student count
+      expect(model.students).toBe(count);
+      // an exam of only this group is counted over the same students
+      for (const row of model.examRows.filter((r) => r.exam.groupIds.join() === group.id)) {
+        expect(row.counts.total).toBe(count);
+      }
+      // the Weakest topic card never counts more than the group, and says so when it counts fewer
+      const weakest = model.weakest!;
+      expect(weakest.total).toBeLessThanOrEqual(count);
+      const text = weakestLine(weakest, count);
+      if (weakest.total === count) expect(text).toContain(`of ${count} students at or above`);
+      else
+        expect(text).toBe(
+          `${weakest.passing} of ${weakest.total} who answered it are at or above the pass mark`,
+        );
+    });
+  }
+});
+
+describe("the group dropdown rows", () => {
+  it("lists each group with its students and status word, then All groups, with no percentage", () => {
+    const rows = switcherRows(everyone);
+    expect(rows.map((r) => r.id)).toEqual(["rescue-team", "military-training", "all"]);
+    expect(rows[0].line).toBe("15 students · Almost ready");
+    expect(rows[1].line).toBe("12 students · Needs attention");
+    expect(rows[2]).toEqual({ id: "all", name: "All groups", line: "One card per group" });
+    for (const row of rows) expect(row.line).not.toContain("%");
+  });
+
+  it("says Not started for a group nobody has answered in, and the trend line is hidden without a value", () => {
+    const none = everyone.map((p) => ({
+      ...p,
+      topics: p.topics.map((t) => ({ ...t, answered: 0, correct: 0, total: 0 })),
+    }));
+    expect(switcherRows(none)[0].line).toBe("15 students · Not started");
+    expect(trendLine(70, null)).toBeNull();
   });
 });

@@ -51,7 +51,6 @@ import {
   InstructorContentSample,
   InstructorStudentsSample,
   PackageSample,
-  GroupPickerSample,
   AboutSample,
   WelcomeSample,
   SignUpSample,
@@ -814,7 +813,7 @@ export default function Screens() {
               <AboutSample confirming />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor: Overview, Rescue team (switcher pill, readiness with delta and ring, Needs your action, Exams, Weakest topic)">
+          <PhoneFrame label="Instructor: Overview, Rescue team (switcher pill, readiness with trend line and ring, Needs your action, Exams, Weakest topic)">
             <Screen nav="/instructor" role="instructor">
               <InstructorHomeSample />
             </Screen>
@@ -849,14 +848,14 @@ export default function Screens() {
               <InstructorHomeSample state="get-started" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor: Groups picker (Rescue team chosen)">
-            <Screen nav="/instructor/groups" role="instructor">
-              <GroupPickerSample />
+          <PhoneFrame label="Instructor: Overview, group dropdown open (Rescue team chosen)">
+            <Screen nav="/instructor" role="instructor">
+              <InstructorHomeSample state="switcher-open" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor: Groups picker (All groups chosen)">
-            <Screen nav="/instructor/groups" role="instructor">
-              <GroupPickerSample scope="all" />
+          <PhoneFrame label="Instructor: Students, group dropdown open">
+            <Screen nav="/instructor/students" role="instructor">
+              <InstructorStudentsSample state="switcher-open" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Content: empty">

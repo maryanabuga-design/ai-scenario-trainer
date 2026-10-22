@@ -6,7 +6,13 @@ import cohort from "@/content/demo-cohort.json";
  * the participants of a scope (`inScope`), never a second calculation. Not built yet: creating,
  * renaming or changing groups.
  */
-export type Group = { id: string; name: string; code: string };
+export type Group = {
+  id: string;
+  name: string;
+  code: string;
+  /** The readiness of the group a week ago, a whole percent (demo data; the Overview trend line compares with it). */
+  lastWeekReadiness?: number;
+};
 
 export const groups: Group[] = cohort.groups;
 

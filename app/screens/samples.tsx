@@ -19,7 +19,6 @@ import type { AiMessage, Thread } from "@/lib/ask-ai";
 import { CertificateView } from "@/components/CertificateView/CertificateView";
 import { CertificatesList } from "@/components/CertificatesList/CertificatesList";
 import { StudentDetailView } from "@/components/InstructorStudents/StudentDetailView";
-import { ButtonLink } from "@/components/Button/Button";
 import { StudentsHeader } from "@/components/InstructorStudents/StudentsHeader";
 import { EmptyCard, StudentsListView } from "@/components/InstructorStudents/StudentsListView";
 import { JoinView } from "@/components/JoinView/JoinView";
@@ -37,7 +36,7 @@ import { FieldOfWorkStep } from "@/components/FieldOfWork/FieldOfWorkStep";
 import { FieldPickerView } from "@/components/FieldOfWork/FieldPickerView";
 import type { FieldOfWork } from "@/lib/field-of-work";
 import { TopicsView } from "@/components/InstructorTopics/TopicsView";
-import { topicStandings } from "@/lib/overview";
+import { switcherRows, topicStandings } from "@/lib/overview";
 import { overviewModel } from "@/lib/overview-model";
 import { examPeople, groupById, inScope } from "@/lib/groups";
 import { InviteView } from "@/components/InstructorStudents/InviteView";
@@ -121,7 +120,6 @@ import { toolbarActions } from "@/lib/selection-actions";
 import { homeArtwork, homeCounts, homeSummary } from "@/lib/home";
 import { NotificationsView } from "@/components/NotificationsView/NotificationsView";
 import { InstructorOverviewView } from "@/components/InstructorOverview/InstructorOverviewView";
-import { GroupPickerView } from "@/components/InstructorGroups/GroupPickerView";
 import { AboutView } from "@/components/AboutView/AboutView";
 import { EditProfileView } from "@/components/EditProfileView/EditProfileView";
 import { SignInView } from "@/components/SignInView/SignInView";
@@ -1386,7 +1384,15 @@ export function NotificationsSample({ state }: { state: "exams" | "read" | "empt
 export function InstructorHomeSample({
   state = "default",
 }: {
-  state?: "default" | "military" | "all" | "get-started" | "caught-up" | "no-exam" | "due-soon";
+  state?:
+    | "default"
+    | "military"
+    | "all"
+    | "get-started"
+    | "caught-up"
+    | "no-exam"
+    | "due-soon"
+    | "switcher-open";
 }) {
   const { sections } = useSourceSheet();
   const now = new Date(2026, 9, 24, 10, 0).getTime();
@@ -1408,6 +1414,7 @@ export function InstructorHomeSample({
     state === "military" ? "military-training" : state === "all" ? "all" : "rescue-team";
   return (
     <InstructorOverviewView
+      switcherOpen={state === "switcher-open"}
       name="Maryana"
       model={overviewModel({
         scope,
@@ -1425,18 +1432,6 @@ export function InstructorHomeSample({
       })}
       topicTitle={(id) => sections.find((section) => section.id === id)?.title ?? id}
       onSelectGroup={() => undefined}
-    />
-  );
-}
-
-/** The group picker for the screen review page. */
-export function GroupPickerSample({ scope = "rescue-team" }: { scope?: string }) {
-  return (
-    <GroupPickerView
-      scope={scope}
-      counts={{ "rescue-team": 15, "military-training": 12 }}
-      origin="overview"
-      onChoose={() => undefined}
     />
   );
 }
@@ -1560,6 +1555,7 @@ export function InstructorStudentsSample({
     | "group-empty"
     | "topics"
     | "topics-all"
+    | "switcher-open"
     | "topic-students"
     | "detail-needs"
     | "detail-ready"
@@ -1654,6 +1650,9 @@ export function InstructorStudentsSample({
     <div className="flex flex-col gap-4 pb-4">
       <StudentsHeader
         scope={state === "topics-all" ? "all" : scope}
+        rows={switcherRows(profiles(everyone, { "maryana@example.com": null }, now))}
+        onScope={noop}
+        switcherOpen={state === "switcher-open"}
         view={view}
         onView={noop}
         back={state === "filter-line" ? { label: "Back to Overview", href: "#" } : undefined}
@@ -1663,23 +1662,15 @@ export function InstructorStudentsSample({
           <EmptyCard
             dataEmpty="all-groups"
             title="Select a group to see topic results."
-            text="Topic results mix groups when all are shown."
-            action={
-              <ButtonLink href="#groups" variant="secondary">
-                Choose group
-              </ButtonLink>
-            }
+            text="Topic results mix groups when all are shown. Choose a group with the switch at the top."
+            action={null}
           />
         ) : (
           <TopicsView standings={topicStandings(all)} titleOf={titleOf} />
         )
       ) : (
         <StudentsListView
-          shown={
-            state === "group-empty"
-              ? []
-              : visibleStudents(all, filter, query, null)
-          }
+          shown={state === "group-empty" ? [] : visibleStudents(all, filter, query, null)}
           total={state === "group-empty" ? 0 : all.length}
           filter={filter}
           query={query}

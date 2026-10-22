@@ -43,8 +43,8 @@ const order = { needs: 0, almost: 1, "not-started": 2, ready: 3 } as Record<stri
 async function chooseGroup(page: Page, name: string) {
   await page.goto("/instructor/students");
   await page.locator("[data-group-pill]:visible").click();
-  await expect(page).toHaveURL(/\/instructor\/groups\?from=students$/);
-  await page.getByRole("radio", { name }).check({ force: true });
+  await page.locator("[data-group-option]", { hasText: name }).click();
+  await expect(page.locator("[data-group-list]")).toHaveCount(0);
   await expect(page).toHaveURL(/\/instructor\/students$/);
 }
 

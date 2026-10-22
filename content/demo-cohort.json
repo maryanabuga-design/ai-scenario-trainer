@@ -1414,12 +1414,14 @@
     {
       "id": "rescue-team",
       "name": "Rescue team",
-      "code": "QT-A7K2"
+      "code": "QT-A7K2",
+      "lastWeekReadiness": 66
     },
     {
       "id": "military-training",
       "name": "Military training",
-      "code": "QT-M4R9"
+      "code": "QT-M4R9",
+      "lastWeekReadiness": 62
     }
   ]
 }
