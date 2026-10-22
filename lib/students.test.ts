@@ -8,15 +8,16 @@ import { examReadiness } from "@/lib/readiness";
 import type { FinishedSession } from "@/lib/session";
 import { modeItems } from "@/lib/parts";
 import {
-  passedAnywhere,
   examRowsFor,
   fieldLabel,
   filterFrom,
+  matchesQuery,
   groupLine,
   localProfile,
   profileStatus,
   profiles,
   readinessOf,
+  rowMuted,
   rowText,
   seededProfile,
   sortProfiles,
@@ -117,27 +118,34 @@ describe("a student's figures", () => {
       correct,
       total: 40,
     });
-    const base = { participant: people[1], field: null };
+    const base = {
+      participant: people[1],
+      field: null,
+      lastActiveDaysAgo: null,
+      practiceThisWeek: 0,
+      readinessPrev: null,
+    };
     const bad = { ...base, topics: [row(10, 5), { ...row(10, 5), sectionId: "S2" }] };
     expect(rowText(bad)).toBe("Needs attention · 2 to review");
+    expect(rowMuted(bad)).toBe("· 2 to review");
     const ready = {
       ...base,
       topics: [row(40, 38), { ...row(40, 40), sectionId: "S2", total: 40 }],
     };
     expect(profileStatus(ready)).toBe("ready");
-    expect(rowText(ready)).toBe("Ready · all topics on track");
+    // Ready and Not started have no muted text after the chip
+    expect(rowText(ready)).toBe("Ready");
+    expect(rowMuted(ready)).toBeNull();
     expect(rowText({ ...base, topics: [row(0, 0)] })).toBe("Not started");
-    expect(rowText({ ...base, participant: people[0], topics: [row(0, 0)] })).toBe(
-      "Your demo account · Not started",
-    );
+    expect(rowMuted({ ...base, participant: people[0], topics: [row(0, 0)] })).toBeNull();
   });
 });
 
 describe("the list", () => {
-  it("sorts Needs attention first, then Almost ready, then Ready, then Not started, alphabetical inside", () => {
+  it("sorts Needs attention, Almost ready, Not started, then Ready, alphabetical inside", () => {
     const list = sortProfiles(all);
     const ranks = list.map(
-      (p) => ({ needs: 0, almost: 1, ready: 2, "not-started": 3 })[profileStatus(p)],
+      (p) => ({ needs: 0, almost: 1, "not-started": 2, ready: 3 })[profileStatus(p)],
     );
     expect(ranks).toEqual([...ranks].sort((a, b) => a - b));
     for (let i = 1; i < list.length; i++) {
@@ -150,43 +158,48 @@ describe("the list", () => {
   });
 
   it("filters: All keeps everyone, Needs attention only those below 60", () => {
-    expect(visibleStudents(all, "all", exams, [], now)).toHaveLength(15);
-    const needs = visibleStudents(all, "needs", exams, [], now);
+    expect(visibleStudents(all, "all")).toHaveLength(15);
+    const needs = visibleStudents(all, "needs");
     expect(needs.length).toBeGreaterThan(0);
     for (const p of needs) expect(readinessOf(p)).toBeLessThan(60);
     // the local account has nothing answered: it is Not started, not Needs attention
     expect(needs.some((p) => p.participant.local)).toBe(false);
   });
 
-  it("Passed keeps the students who passed at least one exam, the same statuses as the Exam detail", () => {
-    const attempts: Attempt[] = [];
-    const certified = visibleStudents(all, "passed", exams, attempts, now);
-    for (const p of certified)
-      expect(passedAnywhere(p.participant, exams, attempts, now)).toBe(true);
-    for (const p of all.filter((x) => !certified.includes(x))) {
-      expect(passedAnywhere(p.participant, exams, attempts, now)).toBe(false);
-    }
-    // a real attempt makes the local account certified
-    const mine: Attempt[] = [
-      {
-        examId: exams[0].id,
-        studentId: "ana@example.com",
-        startedAt: 0,
-        correct: 18,
-        total: 20,
-        finishedAt: 1,
-        answers: {},
-      },
-    ];
-    expect(visibleStudents(all, "passed", exams, mine, now).some((p) => p.participant.local)).toBe(
-      true,
-    );
+  it("Ready keeps only Ready students, Almost ready and Not started come from another screen", () => {
+    const ready = visibleStudents(all, "ready");
+    expect(ready.length).toBeGreaterThan(0);
+    expect(ready.every((p) => profileStatus(p) === "ready")).toBe(true);
+    expect(visibleStudents(all, "almost").every((p) => profileStatus(p) === "almost")).toBe(true);
+    const notStarted = visibleStudents(all, "not-started");
+    expect(notStarted.length).toBeGreaterThan(0);
+    expect(notStarted.every((p) => profileStatus(p) === "not-started")).toBe(true);
+  });
+
+  it("searches names case-insensitively, and combines the search with a filter and a topic", () => {
+    expect(matchesQuery("Alva Renn", "  ALV ")).toBe(true);
+    expect(matchesQuery("Alva Renn", "renn")).toBe(true);
+    expect(matchesQuery("Alva Renn", "zim")).toBe(false);
+    expect(matchesQuery("Alva Renn", "")).toBe(true);
+    const found = visibleStudents(all, "all", "a");
+    expect(found.every((p) => p.participant.name.toLowerCase().includes("a"))).toBe(true);
+    expect(visibleStudents(all, "all", "zzzz")).toEqual([]);
+    const needs = visibleStudents(all, "needs");
+    const both = visibleStudents(all, "needs", needs[0].participant.name.slice(0, 3));
+    expect(both.length).toBeGreaterThan(0);
+    expect(both.every((p) => profileStatus(p) === "needs")).toBe(true);
+    // the same filter and search give nothing when no needs-attention student matches
+    expect(visibleStudents(all, "needs", "Maryana")).toEqual([]);
+    const s3 = visibleStudents(all, "all", "", "S3");
+    expect(visibleStudents(all, "needs", "", "S3").every((p) => s3.includes(p))).toBe(true);
   });
 
   it("reads the filter from the address and falls back to All", () => {
     expect(filterFrom("needs")).toBe("needs");
-    expect(filterFrom("passed")).toBe("passed");
-    expect(filterFrom("certified")).toBe("all");
+    expect(filterFrom("ready")).toBe("ready");
+    expect(filterFrom("almost")).toBe("almost");
+    expect(filterFrom("not-started")).toBe("not-started");
+    expect(filterFrom("passed")).toBe("all");
     expect(filterFrom("nope")).toBe("all");
     expect(filterFrom(null)).toBe("all");
   });

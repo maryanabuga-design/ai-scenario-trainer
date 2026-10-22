@@ -1,5 +1,6 @@
 "use client";
 
+import { INSTRUCTOR_SEES } from "@/lib/cohort";
 import { ClipboardList, GraduationCap } from "lucide-react";
 import { useRef, useState } from "react";
 import type { FormEvent } from "react";
@@ -128,6 +129,9 @@ export function SignUpView({
         ))}
       </fieldset>
       <p className="type-small text-text-secondary">{DEMO_DATA_NOTE}</p>
+      <p data-instructor-sees className="type-small text-text-secondary">
+        {INSTRUCTOR_SEES}
+      </p>
       <div className="mt-auto flex flex-col items-center gap-1 pt-2">
         <Button type="submit">Continue</Button>
         <ButtonLink variant="tertiary" href="/sign-in">

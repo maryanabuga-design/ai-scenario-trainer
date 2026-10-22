@@ -75,6 +75,8 @@ Build order and decisions: `docs/build-plan.md`.
 
 - Exams (Instructor and Student) are simulated in this browser: attempts, results and notifications are kept on this device only. Draft and scheduled exams, exam templates and result export are not in the prototype.
 
+- Invitations are simulated: no email is sent; the join link only works in this browser. Moving or removing students and messaging are not in the prototype.
+
 - Certificates are simulated: a prototype certificate is made on this device when an exam is passed. It is not an official document and nothing is verified or sent.
 
 - Exam assignment is a single-browser simulation of an instructor feature; there is no server. The one assigned exam is demo data seeded on first load (S1 to S4, due in 7 days). The Student/Instructor switch on Profile is a demo; the Instructor "Assign exam" screen is not built yet (Instructor Home is a stub).

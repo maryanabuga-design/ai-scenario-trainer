@@ -8,11 +8,18 @@ import { createStore } from "@/lib/store";
  * is pure; the pending list is kept in this browser (a shared key, versioned, tolerant).
  */
 /** The invite link of a group code (each group has its own code in `content/demo-cohort.json`). */
-export const inviteLink = (code: string) => `https://scenario-trainer.example/join/${code}`;
+export const inviteLink = (code: string, origin = "https://scenario-trainer.example") =>
+  `${origin}/join/${code}`;
 export const MAX_INVITATIONS = 100;
 export const PROTOTYPE_LINE = "Prototype: no emails are sent.";
 
-export type Invitation = { email: string; invitedAt: number; groupId: string };
+export type Invitation = {
+  email: string;
+  invitedAt: number;
+  groupId: string;
+  /** When the invited person created an account through the join link (the invitation is then "Joined"). */
+  joinedAt?: number;
+};
 
 /** The addresses of a text (separated by commas, semicolons, spaces or new lines): valid ones, once each, and the invalid ones. */
 export function parseEmails(text: string): { valid: string[]; invalid: string[] } {
@@ -61,7 +68,7 @@ export function cleanInvitations(value: unknown): Invitation[] | null {
   const list: Invitation[] = [];
   for (const entry of value) {
     if (typeof entry !== "object" || entry === null) continue;
-    const { email, invitedAt, groupId } = entry as Record<string, unknown>;
+    const { email, invitedAt, groupId, joinedAt } = entry as Record<string, unknown>;
     if (typeof email !== "string" || !isEmailFormat(email)) continue;
     if (typeof invitedAt !== "number" || !Number.isFinite(invitedAt)) continue;
     const normal = normaliseEmail(email);
@@ -70,6 +77,7 @@ export function cleanInvitations(value: unknown): Invitation[] | null {
       email: normal,
       invitedAt,
       groupId: typeof groupId === "string" && isScope(groupId) ? groupId : DEFAULT_GROUP_ID,
+      ...(typeof joinedAt === "number" && Number.isFinite(joinedAt) && { joinedAt }),
     });
   }
   return list.slice(0, MAX_INVITATIONS);
@@ -89,3 +97,19 @@ export function useInvitations(): Invitation[] | "loading" {
 }
 
 export const saveInvitations = (list: Invitation[]): boolean => store.write(list);
+
+/** The invitations of a group that are still pending (not joined yet). */
+export const pendingOf = (list: Invitation[], groupId: string) =>
+  list.filter((entry) => entry.groupId === groupId && entry.joinedAt === undefined);
+
+/** The invitation sent to an address, if any (the address is compared in lower case). */
+export const invitationFor = (list: Invitation[], email: string): Invitation | undefined =>
+  list.find((entry) => entry.email === normaliseEmail(email));
+
+/** The list with the invitation of this address marked Joined; a list without one is returned as it is. */
+export function markJoined(list: Invitation[], email: string, now: number): Invitation[] {
+  const target = normaliseEmail(email);
+  return list.map((entry) =>
+    entry.email === target && entry.joinedAt === undefined ? { ...entry, joinedAt: now } : entry,
+  );
+}

@@ -171,6 +171,9 @@ describe("the change this week", () => {
     const profile = (previousCorrect: number): StudentProfile => ({
       participant: { id: "a", name: "A", initials: "A", local: false, groupId: "rescue-team" },
       field: null,
+      lastActiveDaysAgo: null,
+      practiceThisWeek: 0,
+      readinessPrev: null,
       topics: [topic(6)],
       previousCorrect,
     });

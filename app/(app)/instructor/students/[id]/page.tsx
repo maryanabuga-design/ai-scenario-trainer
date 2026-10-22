@@ -15,6 +15,7 @@ import type { Participant } from "@/lib/cohort";
 import type { Reminder } from "@/lib/reminders";
 import { reminderFor, reminderNoticeId, sentLine, unfinishedExam } from "@/lib/reminders";
 import { addNotice } from "@/lib/group-store";
+import { groupById } from "@/lib/groups";
 import { examRowsFor, filterFrom, originFrom, profiles, topicFrom } from "@/lib/students";
 
 /** A local student account gets the reminder in Notifications; one per student and kind, sending again updates it. */
@@ -46,7 +47,7 @@ function Detail() {
   const person = people.find((entry) => entry.id === id);
   if (!person) return <StudentNotFound />;
 
-  const profile = profiles([person], readHistories(auth.accounts))[0];
+  const profile = profiles([person], readHistories(auth.accounts), now)[0];
   const titleOf = (topic: string) => sections.find((s) => s.id === topic)?.title ?? topic;
 
   // Back: to the Exam detail when opened from there, otherwise to the list with its filter
@@ -59,9 +60,13 @@ function Detail() {
   if (filter !== "all") listParams.set("filter", filter);
   if (topic) listParams.set("topic", topic);
   if (origin) listParams.set("from", origin);
-  const listHref = listParams.toString()
-    ? `/instructor/students?${listParams.toString()}`
-    : "/instructor/students";
+  // from the topic students list Back returns to that list
+  const listHref =
+    topic && origin === "topics"
+      ? `/instructor/students/topic/${topic}`
+      : listParams.toString()
+        ? `/instructor/students?${listParams.toString()}`
+        : "/instructor/students";
   const backHref = fromOverview
     ? "/instructor"
     : fromExam
@@ -71,13 +76,17 @@ function Detail() {
     ? "Back to Overview"
     : fromExam
       ? "Back to exam"
-      : "Back to students";
+      : topic && origin === "topics"
+        ? "Back to topic"
+        : "Back to students";
 
   const reminder = reminderFor(profile, unfinishedExam(person, exams, attempts, now), titleOf);
 
   return (
     <StudentDetailView
       profile={profile}
+      groupName={groupById(person.groupId)?.name ?? ""}
+      now={now}
       reminder={reminder.text}
       sentMessage={sent}
       onSendReminder={() => {

@@ -19,10 +19,14 @@ import type { AiMessage, Thread } from "@/lib/ask-ai";
 import { CertificateView } from "@/components/CertificateView/CertificateView";
 import { CertificatesList } from "@/components/CertificatesList/CertificatesList";
 import { StudentDetailView } from "@/components/InstructorStudents/StudentDetailView";
-import { StudentsListView } from "@/components/InstructorStudents/StudentsListView";
+import { ButtonLink } from "@/components/Button/Button";
+import { StudentsHeader } from "@/components/InstructorStudents/StudentsHeader";
+import { EmptyCard, StudentsListView } from "@/components/InstructorStudents/StudentsListView";
+import { JoinView } from "@/components/JoinView/JoinView";
+import { TopicStudentsView } from "@/components/InstructorTopics/TopicStudentsView";
 import {
+  belowPassMark,
   examRowsFor,
-  notStartedCount,
   profileStatus,
   profiles,
   showingLine,
@@ -35,7 +39,7 @@ import type { FieldOfWork } from "@/lib/field-of-work";
 import { TopicsView } from "@/components/InstructorTopics/TopicsView";
 import { topicStandings } from "@/lib/overview";
 import { overviewModel } from "@/lib/overview-model";
-import { examPeople, inScope } from "@/lib/groups";
+import { examPeople, groupById, inScope } from "@/lib/groups";
 import { InviteView } from "@/components/InstructorStudents/InviteView";
 import { reminderFor, unfinishedExam } from "@/lib/reminders";
 import { ContentView } from "@/components/InstructorContent/ContentView";
@@ -1388,7 +1392,7 @@ export function InstructorHomeSample({
     state === "get-started"
       ? []
       : participants([{ name: "Maryana", email: "maryana@example.com" }]);
-  const everyone = profiles(people, { "maryana@example.com": null });
+  const everyone = profiles(people, { "maryana@example.com": null }, now);
   const needs = (p: (typeof everyone)[number]) => profileStatus(p) === "needs";
   const list = state === "caught-up" ? everyone.filter((p) => !needs(p)) : everyone;
   const scope =
@@ -1424,19 +1428,6 @@ export function GroupPickerSample({ scope = "rescue-team" }: { scope?: string })
       counts={{ "rescue-team": 15, "military-training": 12 }}
       origin="overview"
       onChoose={() => undefined}
-    />
-  );
-}
-
-/** The group Topics screen for the screen review page. */
-export function InstructorTopicsSample() {
-  const { sections } = useSourceSheet();
-  const titleOf = (id: string) => sections.find((section) => section.id === id)?.title ?? id;
-  const people = participants([{ name: "Maryana", email: "maryana@example.com" }]);
-  return (
-    <TopicsView
-      standings={topicStandings(profiles(people, { "maryana@example.com": null }))}
-      titleOf={titleOf}
     />
   );
 }
@@ -1546,23 +1537,30 @@ export function InstructorExamsSample({
   );
 }
 
-/** The Instructor Students screens for the screen review page (the demo group, a fixed date). */
+/** The Instructor Students screens for the screen review page (the demo groups, a fixed date). */
 export function InstructorStudentsSample({
-  state = "all",
+  state = "list",
   scope = "rescue-team",
 }: {
-  scope?: string;
   state?:
-    | "all"
+    | "list"
     | "needs"
-    | "passed"
-    | "empty"
-    | "topic"
+    | "ready"
+    | "search-empty"
+    | "filter-line"
+    | "group-empty"
+    | "topics"
+    | "topics-all"
+    | "topic-students"
     | "detail-needs"
     | "detail-ready"
+    | "detail-not-started"
     | "reminder"
     | "invite"
-    | "invite-filled";
+    | "invite-filled"
+    | "join"
+    | "join-invalid";
+  scope?: string;
 }) {
   const { sections } = useSourceSheet();
   const titleOf = (id: string) => sections.find((section) => section.id === id)?.title ?? id;
@@ -1570,41 +1568,43 @@ export function InstructorStudentsSample({
   const exams = seedGroupExams(now);
   const everyone = participants([{ name: "Maryana", email: "maryana@example.com" }]);
   const people = inScope(everyone, scope);
-  const all = profiles(people, { "maryana@example.com": null });
+  const all = profiles(people, { "maryana@example.com": null }, now);
+  const noop = () => undefined;
   if (state === "invite" || state === "invite-filled") {
+    const day = new Date(2026, 9, 21).getTime();
     return (
       <InviteView
         scope={scope}
-        pending={
+        counts={{ "rescue-team": 15, "military-training": 12 }}
+        invitations={
           state === "invite"
             ? []
             : [
-                {
-                  email: "mira@example.com",
-                  invitedAt: new Date(2026, 9, 21).getTime(),
-                  groupId: "rescue-team",
-                },
-                {
-                  email: "tomas@example.com",
-                  invitedAt: new Date(2026, 9, 21).getTime(),
-                  groupId: "rescue-team",
-                },
+                { email: "j.lindqvist@example.com", invitedAt: day, groupId: "rescue-team" },
+                { email: "m.hoffman@example.com", invitedAt: day, groupId: "rescue-team" },
               ]
         }
+        origin="https://scenario-trainer.example"
         initialText={state === "invite-filled" ? "new.person@example.com, not-an-address" : ""}
-        onSend={() => undefined}
-        onCancel={() => undefined}
+        onSend={noop}
+        onCancel={noop}
       />
     );
   }
-  if (state === "detail-needs" || state === "detail-ready" || state === "reminder") {
-    const wanted = state === "detail-ready" ? "ready" : "needs";
+  if (state === "join" || state === "join-invalid") {
+    return <JoinView code={state === "join" ? "QT-A7K2" : "QT-0000"} />;
+  }
+  if (state.startsWith("detail") || state === "reminder") {
+    const wanted =
+      state === "detail-ready" ? "ready" : state === "detail-not-started" ? "not-started" : "needs";
     const profile = sortProfiles(all).find(
       (p) => !p.participant.local && profileStatus(p) === wanted,
     )!;
     return (
       <StudentDetailView
         profile={profile}
+        groupName={groupById(profile.participant.groupId)?.name ?? ""}
+        now={now}
         backHref="#students"
         backLabel="Back to students"
         rows={examRowsFor(profile.participant, exams, [], now)}
@@ -1613,36 +1613,74 @@ export function InstructorStudentsSample({
         reminder={
           reminderFor(profile, unfinishedExam(profile.participant, exams, [], now), titleOf).text
         }
-        onSendReminder={() => undefined}
+        onSendReminder={noop}
         confirmingInitially={state === "reminder"}
         dialogInline
       />
     );
   }
-  const filter = state === "empty" ? "passed" : state === "topic" ? "all" : state;
+  const view = state === "topics" || state === "topics-all" ? "topics" : "students";
+  if (state === "topic-students") {
+    const standing = topicStandings(all).find((topic) => topic.sectionId === "S3")!;
+    return (
+      <TopicStudentsView
+        id="S3"
+        title={titleOf("S3")}
+        standing={standing}
+        rows={sortProfiles(belowPassMark(all, "S3"))}
+        onClear={noop}
+      />
+    );
+  }
+  const filter =
+    state === "needs"
+      ? "needs"
+      : state === "ready"
+        ? "ready"
+        : state === "filter-line"
+          ? "not-started"
+          : "all";
+  const query = state === "search-empty" ? "Zimmerman" : "";
   return (
-    <StudentsListView
-      scope={scope}
-      shown={
-        state === "empty"
-          ? []
-          : visibleStudents(all, filter, exams, [], now, state === "topic" ? "S3" : null)
-      }
-      count={people.length}
-      notStarted={notStartedCount(all)}
-      topic={state === "topic" ? "S3" : null}
-      origin={state === "topic" ? "topics" : state === "needs" ? "overview" : null}
-      showing={
-        state === "topic"
-          ? showingLine(filter, { id: "S3", title: titleOf("S3") })
-          : state === "needs"
-            ? showingLine("needs", null)
-            : null
-      }
-      filter={filter}
-      onFilter={() => undefined}
-      onClear={() => undefined}
-    />
+    <div className="flex flex-col gap-4 pb-4">
+      <StudentsHeader
+        scope={state === "topics-all" ? "all" : scope}
+        view={view}
+        onView={noop}
+        back={state === "filter-line" ? { label: "Back to Overview", href: "#" } : undefined}
+      />
+      {view === "topics" ? (
+        state === "topics-all" ? (
+          <EmptyCard
+            dataEmpty="all-groups"
+            title="Select a group to see topic results."
+            text="Topic results mix groups when all are shown."
+            action={
+              <ButtonLink href="#groups" variant="secondary">
+                Choose group
+              </ButtonLink>
+            }
+          />
+        ) : (
+          <TopicsView standings={topicStandings(all)} titleOf={titleOf} />
+        )
+      ) : (
+        <StudentsListView
+          shown={
+            state === "group-empty"
+              ? []
+              : visibleStudents(all, filter, query, null)
+          }
+          total={state === "group-empty" ? 0 : all.length}
+          filter={filter}
+          query={query}
+          showing={showingLine(filter, null)}
+          onFilter={noop}
+          onQuery={noop}
+          onClearFilter={noop}
+        />
+      )}
+    </div>
   );
 }
 

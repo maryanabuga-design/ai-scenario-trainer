@@ -140,9 +140,7 @@ for (const width of [360, 430]) {
       // Students follows the scope
       await nav(page).getByRole("link", { name: "Students" }).click();
       await expect(page.getByRole("heading", { level: 1 })).toHaveText("Students");
-      await expect(page.locator("[data-page-header-band]:visible")).toContainText(
-        "Military training · 12 students · 1 not started",
-      );
+      await expect(page.locator("[data-group-pill]:visible")).toContainText("Military training");
       await expect(page.locator("[data-student]:visible")).toHaveCount(12);
       // Exams lists the exams of every group (no group switcher there)
       await nav(page).getByRole("link", { name: "Exams" }).click();
@@ -182,9 +180,8 @@ for (const width of [360, 430]) {
       await page.goto("/instructor");
       await page.locator("[data-readiness-strip]").click();
       await expect(page).toHaveURL(/\/instructor\/students/);
-      await expect(page.locator("[data-page-header-band]:visible")).toContainText(
-        "Rescue team · 15 students",
-      );
+      await expect(page.locator("[data-group-pill]:visible")).toContainText("Rescue team");
+      await expect(page.locator("[data-student]:visible")).toHaveCount(15);
     });
 
     test("All groups: a GROUPS card instead of one average, group prefixes, a tag on each exam, no Weakest topic, no percent", async ({
@@ -222,39 +219,33 @@ for (const width of [360, 430]) {
       await choose(page, "All groups");
       await page.locator('[data-group-row="military-training"]').click();
       await expect(page).toHaveURL(/\/instructor\/students/);
-      await expect(page.locator("[data-page-header-band]:visible")).toContainText(
-        "Military training · 12 students",
-      );
+      await expect(page.locator("[data-group-pill]:visible")).toContainText("Military training");
+      await expect(page.locator("[data-student]:visible")).toHaveCount(12);
       await page.goto("/instructor");
       await expect(page.locator("[data-group-pill]")).toContainText("Military training");
       await choose(page, "All groups");
       const action = page.locator('[data-action="needs-attention"]').last();
       await action.click();
       await expect(page).toHaveURL(/\/instructor\/students\?filter=needs/);
-      await expect(page.locator("[data-page-header-band]:visible")).toContainText(
-        "Military training",
-      );
+      await expect(page.locator("[data-group-pill]:visible")).toContainText("Military training");
     });
 
-    test("Students in All groups shows the group name in each row's second line", async ({
+    test("Students in All groups lists every student; the Topics view asks for a group first", async ({
       page,
     }) => {
       await choose(page, "All groups");
       await nav(page).getByRole("link", { name: "Students" }).click();
-      await expect(page.locator("[data-page-header-band]:visible")).toContainText(
-        "All groups · 27 students",
+      await expect(page.locator("[data-group-pill]:visible")).toContainText("All groups");
+      await expect(page.locator("[data-student]:visible")).toHaveCount(27);
+      await page.getByText("Topics", { exact: true }).click();
+      await expect(page.locator('[data-empty="all-groups"]')).toContainText(
+        "Select a group to see topic results.",
       );
-      const lines = await page
-        .locator("[data-student]:visible [data-student-line]")
-        .allInnerTexts();
-      expect(lines).toHaveLength(27);
-      expect(
-        lines.every(
-          (line) =>
-            /^(Rescue team|Military training) · /.test(line) || /Your demo account/.test(line),
-        ),
-      ).toBe(true);
-      expect(lines.filter((l) => l.startsWith("Military training"))).toHaveLength(12);
+      await expect(page.locator("[data-topic-card]")).toHaveCount(0);
+      await page.getByRole("link", { name: "Choose group" }).click();
+      await expect(page).toHaveURL(/\/instructor\/groups\?from=students$/);
+      await page.getByRole("radio", { name: /Military training/ }).check({ force: true });
+      await expect(page).toHaveURL(/\/instructor\/students$/);
     });
 
     test("the action rows, the exam card, Assign exam, Assign exam on this topic and All topics go to the right place", async ({
@@ -278,7 +269,7 @@ for (const width of [360, 430]) {
       await expect(page).toHaveURL(/\/instructor\/exams\/new\?topic=S\d+&from=overview$/);
       await page.goto("/instructor");
       await page.getByRole("link", { name: "All topics" }).click();
-      await expect(page).toHaveURL(/\/instructor\/topics$/);
+      await expect(page).toHaveURL(/\/instructor\/students\?view=topics$/);
     });
 
     test("Assign exam needs an audience: none is chosen in All groups, and one group is enough", async ({

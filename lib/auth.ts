@@ -2,6 +2,9 @@ import { useEffect, useMemo } from "react";
 import { isCorrectCode } from "@/lib/auth-code";
 import { MIGRATED_EMAIL, MIGRATED_NAME } from "@/lib/demo-account";
 import { cleanField } from "@/lib/field-of-work";
+import { cleanAccountGroup } from "@/lib/groups";
+import { readInvitations, markJoined, saveInvitations } from "@/lib/invitations";
+import { clearJoin, groupToJoin, readJoin } from "@/lib/join";
 import type { FieldOfWork } from "@/lib/field-of-work";
 import { isEmailFormat, normaliseEmail } from "@/lib/auth-validation";
 import { ROLES, roleHome } from "@/lib/role";
@@ -24,6 +27,8 @@ export type Account = {
   field: FieldOfWork | null;
   /** The registration step "Field of work" was shown (and left with Continue or Skip). */
   fieldStepDone: boolean;
+  /** The demo group of a Student who joined through a link or an invitation (Rescue team when missing). */
+  groupId?: string;
   /** The account made from data the app already had: it keeps the old device keys (no suffix). */
   legacy?: boolean;
 };
@@ -53,7 +58,8 @@ const isRole = (value: unknown): value is Role =>
 
 function cleanAccount(value: unknown): Account | null {
   if (!isObject(value)) return null;
-  const { name, email, role, createdAt, legacy, onboardingDone, field, fieldStepDone } = value;
+  const { name, email, role, createdAt, legacy, onboardingDone, field, fieldStepDone, groupId } =
+    value;
   if (typeof name !== "string" || name.trim() === "") return null;
   if (typeof email !== "string" || !isEmailFormat(email)) return null;
   if (!isRole(role)) return null;
@@ -68,6 +74,7 @@ function cleanAccount(value: unknown): Account | null {
     // an account from before the step existed never sees it
     fieldStepDone: fieldStepDone !== false,
     ...(legacy === true && { legacy: true }),
+    ...(cleanAccountGroup(groupId) && { groupId: cleanAccountGroup(groupId) }),
   };
 }
 
@@ -189,7 +196,13 @@ export type VerifyResult =
   | { state: AuthState; result: "wrong" | "none" };
 
 /** A correct code signs the person in (creating the account first when it is a sign-up). */
-export function completeVerification(state: AuthState, code: string, now: number): VerifyResult {
+export function completeVerification(
+  state: AuthState,
+  code: string,
+  now: number,
+  /** The demo group a new Student account joins (a join link or an invitation). */
+  groupId?: string | null,
+): VerifyResult {
   const { pending } = state;
   if (!pending) return { state, result: "none" };
   if (!isCorrectCode(code)) return { state, result: "wrong" };
@@ -204,6 +217,7 @@ export function completeVerification(state: AuthState, code: string, now: number
       onboardingDone: false,
       field: null,
       fieldStepDone: pending.role !== "student",
+      ...(groupId && pending.role === "student" && { groupId }),
     };
     accounts = [...accounts, account];
   }
@@ -363,9 +377,21 @@ export function startSignIn(email: string): StartResult {
 
 /** Checks the code of the pending verification; a correct one signs in and returns where to go. */
 export function verifyCode(code: string): { ok: true; destination: string } | { ok: false } {
-  const outcome = completeVerification(readAuth(), code, Date.now());
+  const before = readAuth();
+  const pending = before.pending;
+  const invitations = readInvitations();
+  const joining =
+    pending && pending.mode === "sign-up" && !accountFor(before, pending.email)
+      ? groupToJoin(pending.role, pending.email, readJoin(), invitations)
+      : null;
+  const outcome = completeVerification(before, code, Date.now(), joining);
   if (outcome.result !== "ok") return { ok: false };
   save(outcome.state);
+  if (pending && pending.mode === "sign-up") {
+    // the invitation of this address becomes Joined, and the opened link is used up
+    if (joining) saveInvitations(markJoined(invitations, pending.email, Date.now()));
+    clearJoin();
+  }
   return { ok: true, destination: homeAfterVerification(outcome.account) };
 }
 

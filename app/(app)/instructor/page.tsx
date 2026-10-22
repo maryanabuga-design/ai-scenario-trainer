@@ -39,7 +39,7 @@ function Loaded({
   const { sections } = useSourceSheet();
   const [now] = useState(() => Date.now());
   const people = participants(accounts);
-  const list = profiles(people, readHistories(accounts));
+  const list = profiles(people, readHistories(accounts), now);
   return (
     <InstructorOverviewView
       name={name}

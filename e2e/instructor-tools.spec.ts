@@ -37,23 +37,15 @@ for (const width of [360, 430]) {
       page,
     }) => {
       await page.goto("/instructor/students");
-      await expect(page.locator("[data-page-header-band]:visible")).toContainText(
-        "Rescue team · 15 students · 2 not started",
-      );
-      // the local demo account is Not started, neutral, and last
+      await expect(page.locator("[data-group-pill]:visible")).toContainText("Rescue team");
+      await expect(page.locator("[data-student]:visible")).toHaveCount(15);
+      // the local demo account is Not started: its chip says so and nothing else is shown for it
       const mine = page.locator('[data-student="maryana@example.com"]');
-      await expect(mine.locator("[data-student-line]")).toHaveText(
-        "Your demo account · Not started",
-      );
-      await expect(mine.locator("[data-status-text]")).toHaveAttribute(
-        "data-status-text",
+      await expect(mine.locator("[data-status-chip]")).toHaveAttribute(
+        "data-status-chip",
         "not-started",
       );
-      const last = page.locator("[data-student]:visible").last();
-      await expect(last.locator("[data-status-text]")).toHaveAttribute(
-        "data-status-text",
-        "not-started",
-      );
+      await expect(mine.locator("[data-muted]")).toHaveCount(0);
       // Needs attention never lists a Not started participant; the counts agree
       await page.goto("/instructor");
       const needs = Number(
@@ -63,11 +55,11 @@ for (const width of [360, 430]) {
       );
       await page.goto("/instructor/students?filter=needs&from=overview");
       await expect(page.locator("[data-student]:visible")).toHaveCount(needs);
-      await expect(page.locator('[data-status-text="not-started"]:visible')).toHaveCount(0);
+      await expect(page.locator('[data-status-chip="not-started"]:visible')).toHaveCount(0);
       // Topics: the counts are among those who answered (13 active students, not 15)
-      await page.goto("/instructor/topics");
+      await page.goto("/instructor/students?view=topics");
       for (const card of await page.locator("[data-topic-card]").all()) {
-        expect(await card.innerText()).toMatch(/of 13 students at or above the pass mark/);
+        expect(await card.innerText()).toMatch(/of 13 at or above pass mark/);
       }
     });
 
@@ -169,7 +161,7 @@ for (const width of [360, 430]) {
       await expect(page.locator("[data-message]")).toHaveText(
         /Link copied|Copying is not available here/,
       );
-      const link = page.getByRole("textbox", { name: "Invite link" });
+      const link = page.getByRole("textbox", { name: "INVITE LINK" });
       await expect(link).toHaveAttribute("readonly", "");
       await expect(link).toHaveValue(/QT-A7K2$/);
       // the pinned buttons: one Primary, disabled until a new valid address
@@ -194,9 +186,10 @@ for (const width of [360, 430]) {
       await expect(pending).toHaveCount(2);
       for (const row of await pending.all()) {
         const box = (await row.boundingBox())!;
-        expect([box.height, box.x]).toEqual([72, 16]);
-        await expect(row).toContainText(/Invited \d{1,2} \w{3} · Pending/);
-        expect(await row.evaluate((el) => !!el.querySelector("svg"))).toBe(false);
+        expect([box.height, box.x]).toEqual([72, 17]);
+        await expect(row).toContainText(/Invited \d{1,2} \w{3}/);
+        await expect(row.locator("[data-pending-pill]")).toHaveText("Pending");
+        await expect(row.locator("svg.lucide-chevron-right")).toHaveCount(0);
       }
       // duplicates are ignored with a message, and nothing new can be sent
       await emails.fill("ana@example.com");

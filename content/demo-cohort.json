@@ -57,7 +57,8 @@
       },
       "lastActiveDaysAgo": 3,
       "previousCorrect": 71,
-      "group": "rescue-team"
+      "group": "rescue-team",
+      "practiceSessionsThisWeek": 4
     },
     {
       "id": "stu-02",
@@ -108,7 +109,8 @@
       },
       "lastActiveDaysAgo": 9,
       "previousCorrect": 59,
-      "group": "rescue-team"
+      "group": "rescue-team",
+      "practiceSessionsThisWeek": 0
     },
     {
       "id": "stu-03",
@@ -159,7 +161,8 @@
       },
       "lastActiveDaysAgo": 2,
       "previousCorrect": 58,
-      "group": "rescue-team"
+      "group": "rescue-team",
+      "practiceSessionsThisWeek": 5
     },
     {
       "id": "stu-04",
@@ -210,7 +213,8 @@
       },
       "lastActiveDaysAgo": 10,
       "previousCorrect": 25,
-      "group": "rescue-team"
+      "group": "rescue-team",
+      "practiceSessionsThisWeek": 0
     },
     {
       "id": "stu-05",
@@ -261,7 +265,8 @@
       },
       "lastActiveDaysAgo": 5,
       "previousCorrect": 69,
-      "group": "rescue-team"
+      "group": "rescue-team",
+      "practiceSessionsThisWeek": 4
     },
     {
       "id": "stu-06",
@@ -312,7 +317,8 @@
       },
       "lastActiveDaysAgo": 21,
       "previousCorrect": 0,
-      "group": "rescue-team"
+      "group": "rescue-team",
+      "practiceSessionsThisWeek": 0
     },
     {
       "id": "stu-07",
@@ -363,7 +369,8 @@
       },
       "lastActiveDaysAgo": 4,
       "previousCorrect": 50,
-      "group": "rescue-team"
+      "group": "rescue-team",
+      "practiceSessionsThisWeek": 4
     },
     {
       "id": "stu-08",
@@ -414,7 +421,8 @@
       },
       "lastActiveDaysAgo": 3,
       "previousCorrect": 54,
-      "group": "rescue-team"
+      "group": "rescue-team",
+      "practiceSessionsThisWeek": 5
     },
     {
       "id": "stu-09",
@@ -465,7 +473,8 @@
       },
       "lastActiveDaysAgo": 1,
       "previousCorrect": 35,
-      "group": "rescue-team"
+      "group": "rescue-team",
+      "practiceSessionsThisWeek": 5
     },
     {
       "id": "stu-10",
@@ -516,7 +525,8 @@
       },
       "lastActiveDaysAgo": 10,
       "previousCorrect": 64,
-      "group": "rescue-team"
+      "group": "rescue-team",
+      "practiceSessionsThisWeek": 0
     },
     {
       "id": "stu-11",
@@ -567,7 +577,8 @@
       },
       "lastActiveDaysAgo": 7,
       "previousCorrect": 47,
-      "group": "rescue-team"
+      "group": "rescue-team",
+      "practiceSessionsThisWeek": 0
     },
     {
       "id": "stu-12",
@@ -618,7 +629,8 @@
       },
       "lastActiveDaysAgo": 1,
       "previousCorrect": 29,
-      "group": "rescue-team"
+      "group": "rescue-team",
+      "practiceSessionsThisWeek": 2
     },
     {
       "id": "stu-13",
@@ -669,7 +681,8 @@
       },
       "lastActiveDaysAgo": 10,
       "previousCorrect": 56,
-      "group": "rescue-team"
+      "group": "rescue-team",
+      "practiceSessionsThisWeek": 0
     },
     {
       "id": "stu-14",
@@ -720,7 +733,8 @@
       },
       "lastActiveDaysAgo": 8,
       "previousCorrect": 45,
-      "group": "rescue-team"
+      "group": "rescue-team",
+      "practiceSessionsThisWeek": 0
     },
     {
       "id": "mil-01",
@@ -771,7 +785,8 @@
         }
       },
       "lastActiveDaysAgo": 5,
-      "previousCorrect": 53
+      "previousCorrect": 53,
+      "practiceSessionsThisWeek": 2
     },
     {
       "id": "mil-02",
@@ -822,7 +837,8 @@
         }
       },
       "lastActiveDaysAgo": 6,
-      "previousCorrect": 33
+      "previousCorrect": 33,
+      "practiceSessionsThisWeek": 5
     },
     {
       "id": "mil-03",
@@ -873,7 +889,8 @@
         }
       },
       "lastActiveDaysAgo": 1,
-      "previousCorrect": 45
+      "previousCorrect": 45,
+      "practiceSessionsThisWeek": 4
     },
     {
       "id": "mil-04",
@@ -924,7 +941,8 @@
         }
       },
       "lastActiveDaysAgo": 9,
-      "previousCorrect": 46
+      "previousCorrect": 46,
+      "practiceSessionsThisWeek": 0
     },
     {
       "id": "mil-05",
@@ -974,7 +992,8 @@
           "correct": 0
         }
       },
-      "lastActiveDaysAgo": 0
+      "lastActiveDaysAgo": 0,
+      "practiceSessionsThisWeek": 0
     },
     {
       "id": "mil-06",
@@ -1025,7 +1044,8 @@
         }
       },
       "lastActiveDaysAgo": 3,
-      "previousCorrect": 55
+      "previousCorrect": 55,
+      "practiceSessionsThisWeek": 6
     },
     {
       "id": "mil-07",
@@ -1076,7 +1096,8 @@
         }
       },
       "lastActiveDaysAgo": 4,
-      "previousCorrect": 43
+      "previousCorrect": 43,
+      "practiceSessionsThisWeek": 5
     },
     {
       "id": "mil-08",
@@ -1127,7 +1148,8 @@
         }
       },
       "lastActiveDaysAgo": 4,
-      "previousCorrect": 54
+      "previousCorrect": 54,
+      "practiceSessionsThisWeek": 2
     },
     {
       "id": "mil-09",
@@ -1178,7 +1200,8 @@
         }
       },
       "lastActiveDaysAgo": 3,
-      "previousCorrect": 47
+      "previousCorrect": 47,
+      "practiceSessionsThisWeek": 1
     },
     {
       "id": "mil-10",
@@ -1229,7 +1252,8 @@
         }
       },
       "lastActiveDaysAgo": 3,
-      "previousCorrect": 51
+      "previousCorrect": 51,
+      "practiceSessionsThisWeek": 4
     },
     {
       "id": "mil-11",
@@ -1280,7 +1304,8 @@
         }
       },
       "lastActiveDaysAgo": 9,
-      "previousCorrect": 37
+      "previousCorrect": 37,
+      "practiceSessionsThisWeek": 0
     },
     {
       "id": "mil-12",
@@ -1331,7 +1356,8 @@
         }
       },
       "lastActiveDaysAgo": 7,
-      "previousCorrect": 62
+      "previousCorrect": 62,
+      "practiceSessionsThisWeek": 0
     }
   ],
   "exams": [

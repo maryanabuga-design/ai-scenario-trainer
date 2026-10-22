@@ -1,78 +1,108 @@
+import { FilePlus } from "lucide-react";
 import Link from "next/link";
+import { ButtonLink } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
-import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { stepsCard } from "@/components/StepsView/StepCard";
 import { DEMO_NOTE } from "@/lib/cohort";
+import { needsReviewTag } from "@/lib/overview";
+import { assignOnTopicParams } from "@/lib/students";
 import type { TopicStanding } from "@/lib/overview";
 
-/** The address of the Students list filtered to a topic, opened from Topics (Back returns here). */
-export const topicStudentsHref = (id: string) => `/instructor/students?topic=${id}&from=topics`;
+/** The address of the students below the pass mark in a topic (Back returns to the Topics view). */
+export const topicStudentsHref = (id: string) => `/instructor/students/topic/${id}`;
+
+/** The address of Assign exam with a topic chosen (the title is prefilled from it). */
+export const assignOnTopic = (id: string) => `/instructor/exams/new?${assignOnTopicParams(id)}`;
+
+export const NEEDS_REVIEW = "Needs review";
+
+/** The amber "Needs review" tag (text plus the amber tone, never red). */
+export function ReviewTag() {
+  return (
+    <span
+      data-review-tag
+      className="type-caption shrink-0 rounded-full bg-status-attention-bg px-2 py-0.5 whitespace-nowrap text-status-attention-ink"
+    >
+      {NEEDS_REVIEW}
+    </span>
+  );
+}
+
+/** The S-code badge of a topic. */
+export function TopicBadge({ id }: { id: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="type-caption flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-olive-tint text-text"
+    >
+      {id}
+    </span>
+  );
+}
 
 /**
- * The group Topics screen (DESIGN.md: Instructor, Topics): all ten topics as 80px cards, the weakest
- * first. A card opens Students filtered to that topic; a topic nobody has answered says so and is not
- * tappable (no chevron).
+ * The Topics view of the Students tab (DESIGN.md: Instructor, Students rebuilt): ten 80px cards
+ * from the weakest topic, each with the S badge, the name, the amber "Needs review" tag when fewer
+ * than half of the active students are on track, the one-line count and a chevron to the students
+ * below the pass mark; then the Secondary "Assign exam on weakest topic".
  */
 export function TopicsView({
   standings,
   titleOf,
-  subtitle = "How the group is doing by topic",
 }: {
   standings: TopicStanding[];
-  subtitle?: string;
   titleOf: (id: string) => string;
 }) {
+  const weakest = standings.find((topic) => topic.total > 0) ?? standings[0];
   return (
-    <div className="flex flex-col gap-4 pb-4">
-      <PageHeaderBand
-        title="Topics"
-        subtitle={subtitle}
-        back={{ label: "Back to Overview", href: "/instructor" }}
-      />
+    <>
       <ul className="flex flex-col gap-3">
         {standings.map((topic) => {
           const classes = `${stepsCard} flex h-[var(--list-card-height,80px)] items-center gap-3 px-[var(--gutter,1rem)]`;
           const body = (
             <>
-              <span
-                aria-hidden="true"
-                className="type-caption flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-olive-tint text-text"
-              >
-                {topic.sectionId}
-              </span>
-              <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span data-topic-title className="type-body truncate">
-                  <span className="sr-only">{topic.sectionId} </span>
-                  {titleOf(topic.sectionId)}
+              <TopicBadge id={topic.sectionId} />
+              <span className="flex min-w-0 flex-1 flex-col gap-1">
+                <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
+                  <span data-topic-title className="type-body-strong w-full truncate leading-snug">
+                    <span className="sr-only">{topic.sectionId} </span>
+                    {titleOf(topic.sectionId)}
+                  </span>
+                  {needsReviewTag(topic) && <ReviewTag />}
                 </span>
-                <span className="type-small line-clamp-2 leading-snug text-text-secondary tabular-nums">
+                <span className="type-small whitespace-nowrap text-text-secondary tabular-nums">
                   {topic.total === 0
                     ? "No data yet"
-                    : `${topic.passing} of ${topic.total} students at or above the pass mark`}
+                    : `${topic.passing} of ${topic.total} at or above pass mark`}
                 </span>
               </span>
-              {topic.total > 0 && <Chevron />}
             </>
           );
           return (
             <li key={topic.sectionId} data-topic-card={topic.sectionId}>
-              {topic.total > 0 ? (
+              {topic.total === 0 ? (
+                <div className={classes}>{body}</div>
+              ) : (
                 <Link
                   href={topicStudentsHref(topic.sectionId)}
                   className={`${classes} has-focus-visible:outline-2`}
                 >
                   {body}
+                  <Chevron />
                 </Link>
-              ) : (
-                <div className={classes}>{body}</div>
               )}
             </li>
           );
         })}
       </ul>
+      {weakest && weakest.total > 0 && (
+        <ButtonLink href={assignOnTopic(weakest.sectionId)} variant="secondary" icon={FilePlus}>
+          Assign exam on weakest topic
+        </ButtonLink>
+      )}
       <p data-demo-note className="type-small text-center text-text-secondary">
         {DEMO_NOTE}
       </p>
-    </div>
+    </>
   );
 }

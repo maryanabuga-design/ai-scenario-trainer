@@ -50,6 +50,9 @@ const student = (id: string, topics: StudentTopic[], local = false): StudentProf
     groupId: "rescue-team",
   },
   field: null,
+  lastActiveDaysAgo: null,
+  practiceThisWeek: 0,
+  readinessPrev: null,
   topics,
 });
 
@@ -152,18 +155,16 @@ describe("the group figures leave out Not started participants", () => {
   });
 
   it("filters the students below the pass mark in a topic, and reads the topic from the address", () => {
-    const s3 = visibleStudents(all, "all", exams, [], now, "S3");
+    const s3 = visibleStudents(all, "all", "", "S3");
     for (const p of s3) {
       const row = p.topics.find((t) => t.sectionId === "S3")!;
       expect(row.answered).toBeGreaterThan(0);
       expect(row.correct * 100).toBeLessThan(80 * row.answered);
     }
     expect(s3.length).toBeGreaterThan(0);
-    expect(
-      visibleStudents(all, "needs", exams, [], now, "S3").every(
-        (p) => profileStatus(p) === "needs",
-      ),
-    ).toBe(true);
+    expect(visibleStudents(all, "needs", "", "S3").every((p) => profileStatus(p) === "needs")).toBe(
+      true,
+    );
     expect(topicFrom("S3")).toBe("S3");
     expect(topicFrom("S11")).toBeNull();
     expect(topicFrom(null)).toBeNull();

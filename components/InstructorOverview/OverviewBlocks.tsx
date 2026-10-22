@@ -72,16 +72,31 @@ export function BlockLabel({
  * The group switcher (DESIGN.md: Instructor, Overview rebuilt): a rounded pill 40px high inside a
  * 44px tap target, a small olive dot, the group name and a chevron down. It opens the picker.
  */
-export function GroupPill({ scope, from = "overview" }: { scope: Scope; from?: string }) {
+export function GroupPill({
+  scope,
+  from = "overview",
+  compact = false,
+}: {
+  scope: Scope;
+  from?: string;
+  /** The small pill of a header band (Students): the name and a chevron, no dot. */
+  compact?: boolean;
+}) {
   return (
     <Link
       href={`/instructor/groups?from=${from}`}
       data-group-pill
       aria-label={`Group: ${scopeName(scope)}. Change group`}
-      className="flex min-h-11 w-fit max-w-full items-center has-focus-visible:outline-2"
+      className={`flex min-h-11 items-center has-focus-visible:outline-2 ${compact ? "min-w-0 shrink" : "w-fit max-w-full"}`}
     >
-      <span className="type-small-strong flex h-10 min-w-0 items-center gap-2 rounded-full bg-secondary-sand px-4 text-text">
-        <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-primary" />
+      <span
+        className={`type-small-strong flex min-w-0 items-center gap-2 rounded-full text-text ${
+          compact ? "h-8 bg-secondary-sand-pressed px-3" : "h-10 bg-secondary-sand px-4"
+        }`}
+      >
+        {!compact && (
+          <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-primary" />
+        )}
         <span className="truncate">{scopeName(scope)}</span>
         <ChevronDown size={16} strokeWidth={2} aria-hidden="true" className="shrink-0" />
       </span>
@@ -382,7 +397,7 @@ export function WeakestCard({
           Assign exam on this topic
         </ButtonLink>
         <div className="flex justify-center">
-          <ButtonLink href="/instructor/topics" variant="tertiary">
+          <ButtonLink href="/instructor/students?view=topics" variant="tertiary">
             All topics
           </ButtonLink>
         </div>

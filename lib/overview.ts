@@ -103,3 +103,7 @@ export const weakestTopic = (list: StudentProfile[]): TopicStanding | null => {
   const first = topicStandings(list)[0];
   return first && first.total > 0 ? first : null;
 };
+
+/** The amber "Needs review" tag of a topic: fewer than half of the active students are at or above the pass mark. */
+export const needsReviewTag = (topic: TopicStanding) =>
+  topic.total > 0 && topic.passing * 2 < topic.total;

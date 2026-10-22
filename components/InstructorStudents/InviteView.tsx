@@ -1,42 +1,56 @@
 "use client";
 
+import { Clock, Copy, Link2, Send, UsersRound } from "lucide-react";
 import { useState } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button } from "@/components/Button/Button";
-import { Card } from "@/components/Card/Card";
 import { Amber } from "@/components/InstructorContent/Amber";
+import { InitialsAvatar } from "@/components/InstructorStudents/StudentRow";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { SelectableRow } from "@/components/SelectableRow/SelectableRow";
-import { TextField } from "@/components/TextField/TextField";
+import { LucideTile } from "@/components/TopicTile/TopicTile";
+import { DEMO_NOTE } from "@/lib/cohort";
+import { copyText } from "@/lib/clipboard";
 import { ALL_GROUPS, groupById, groups } from "@/lib/groups";
 import type { Scope } from "@/lib/groups";
-import { copyText } from "@/lib/clipboard";
 import {
-  inviteLink,
   PROTOTYPE_LINE,
   invalidLine,
+  inviteLink,
   invitedLine,
   parseEmails,
+  pendingOf,
   splitNew,
 } from "@/lib/invitations";
 import type { Invitation } from "@/lib/invitations";
+import { studentsCount } from "@/lib/overview";
+
+const card =
+  "flex flex-col gap-3 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)]";
 
 /**
- * Invite students (DESIGN.md: Instructor, Invite students): the group code and the invite link with
- * their Secondary copy buttons, a textarea for addresses with live checking, and the pending list
- * (72px rows, no chevron). Pinned: Primary "Send invitations" (disabled until a new valid address
- * exists) and Secondary "Cancel". Nothing is sent: this is a simulation.
+ * Invite students (DESIGN.md: Instructor, Students rebuilt): the group of the invitation in a small
+ * sand card (asked first in All groups), GROUP CODE, INVITE LINK, INVITE BY EMAIL and PENDING
+ * INVITATIONS (n). Pinned: Primary "Send invitations" (disabled until a valid new address) above
+ * Secondary "Cancel". Nothing is sent: this is a simulation.
  */
 export function InviteView({
   scope,
-  pending,
+  counts,
+  invitations,
+  origin,
   onSend,
   onCancel,
   initialText = "",
 }: {
   /** "all" asks which group first; otherwise the group is the selected one. */
   scope: Scope;
-  pending: Invitation[];
+  /** The number of students of each group id. */
+  counts: Record<string, number>;
+  /** Every invitation (the pending list shows those of the group that are not joined). */
+  invitations: Invitation[];
+  /** The site address the invite link starts with. */
+  origin: string;
   /** The new addresses (valid, not invited yet) and the group they are invited to. */
   onSend: (emails: string[], groupId: string) => void;
   onCancel: () => void;
@@ -48,8 +62,12 @@ export function InviteView({
   const [text, setText] = useState(initialText);
   const [message, setMessage] = useState("");
   const { valid, invalid } = parseEmails(text);
-  const ofGroup = pending.filter((entry) => entry.groupId === group?.id);
-  const { fresh, duplicates } = splitNew(valid, ofGroup);
+  const pending = group ? pendingOf(invitations, group.id) : [];
+  const { fresh, duplicates } = splitNew(
+    valid,
+    invitations.filter((entry) => entry.groupId === group?.id),
+  );
+  const link = group ? inviteLink(group.code, origin) : "";
 
   async function copy(value: string, done: string) {
     const ok = await copyText(value);
@@ -57,10 +75,9 @@ export function InviteView({
   }
 
   return (
-    <div className="flex flex-col gap-6 pb-4">
+    <div className="flex flex-col gap-4 pb-4">
       <PageHeaderBand
         title="Invite students"
-        subtitle="Add people to your group"
         back={{ label: "Back to Students", href: "/instructor/students" }}
       />
       <p role="status" data-message className="type-body text-center not-empty:py-1">
@@ -72,7 +89,11 @@ export function InviteView({
           <h2 id="group-label" className="type-label text-text-secondary">
             GROUP
           </h2>
-          <fieldset role="radiogroup" aria-labelledby="group-label" className="flex flex-col gap-2">
+          <fieldset
+            role="radiogroup"
+            aria-labelledby="group-label"
+            className="flex min-w-0 flex-col gap-2"
+          >
             {groups.map((entry) => (
               <SelectableRow
                 key={entry.id}
@@ -99,16 +120,32 @@ export function InviteView({
 
       {group && (
         <>
+          {scope !== ALL_GROUPS && (
+            <div
+              data-invite-group
+              className="flex items-center gap-3 rounded-card border border-selectable-stroke bg-secondary-sand p-[var(--gutter,1rem)]"
+            >
+              <LucideTile icon={UsersRound} size="tile" />
+              <p className="type-body-strong min-w-0 truncate">
+                {group.name} · {studentsCount(counts[group.id] ?? 0)}
+              </p>
+            </div>
+          )}
+
           <section aria-labelledby="code-label" className="flex flex-col gap-3">
             <h2 id="code-label" className="type-label text-text-secondary">
               GROUP CODE
             </h2>
-            <Card>
+            <div className={card}>
               <p data-group-code className="type-code tabular-nums">
                 {group.code}
               </p>
-            </Card>
-            <Button variant="secondary" onClick={() => void copy(group.code, "Code copied")}>
+            </div>
+            <Button
+              variant="secondary"
+              icon={Copy}
+              onClick={() => void copy(group.code, "Code copied")}
+            >
               Copy code
             </Button>
           </section>
@@ -117,67 +154,74 @@ export function InviteView({
             <h2 id="link-label" className="type-label text-text-secondary">
               INVITE LINK
             </h2>
-            <TextField
-              label="Invite link"
-              hideLabel
+            <input
+              aria-labelledby="link-label"
               name="invite-link"
-              value={inviteLink(group.code)}
               readOnly
+              value={link}
+              className="type-small h-[52px] w-full truncate rounded-[14px] border border-secondary-sand-pressed bg-secondary-sand px-[var(--gutter,1rem)] text-text-secondary"
             />
-            <Button
-              variant="secondary"
-              onClick={() => void copy(inviteLink(group.code), "Link copied")}
-            >
+            <Button variant="secondary" icon={Link2} onClick={() => void copy(link, "Link copied")}>
               Copy link
             </Button>
           </section>
 
-          <section aria-labelledby="email-label" className="flex flex-col gap-2">
+          <section aria-labelledby="email-label" className="flex flex-col gap-3">
             <h2 id="email-label" className="type-label text-text-secondary">
               INVITE BY EMAIL
             </h2>
-            <textarea
-              aria-labelledby="email-label"
-              name="emails"
-              rows={4}
-              value={text}
-              onChange={(event) => {
-                setText(event.target.value);
-                setMessage("");
-              }}
-              placeholder="name@company.com, other@company.com"
-              className="type-body min-h-28 w-full rounded-[14px] border border-selectable-stroke bg-card px-[var(--gutter,1rem)] py-3 text-text placeholder:text-text-secondary focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primary"
-            />
-            <p className="type-small text-text-secondary">
-              Separate addresses with commas, spaces or new lines.
-            </p>
-            {invalid.length > 0 && <Amber>{invalidLine(invalid)}</Amber>}
-            {duplicates.length > 0 && (
-              <p data-duplicates className="type-small text-text-secondary">
-                {duplicates.length === 1
-                  ? "1 address is already invited and will be ignored."
-                  : `${duplicates.length} addresses are already invited and will be ignored.`}
+            <div className={card}>
+              <textarea
+                aria-labelledby="email-label"
+                name="emails"
+                rows={3}
+                value={text}
+                onChange={(event) => {
+                  setText(event.target.value);
+                  setMessage("");
+                }}
+                placeholder="name@example.com, name2@example.com"
+                className="type-body min-h-24 w-full rounded-[14px] border border-selectable-stroke bg-bg px-[var(--gutter,1rem)] py-3 text-text placeholder:text-text-secondary focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primary"
+              />
+              <p className="type-small text-text-secondary">
+                Separate addresses with commas or new lines.
               </p>
-            )}
+              {invalid.length > 0 && <Amber>{invalidLine(invalid)}</Amber>}
+              {duplicates.length > 0 && (
+                <p data-duplicates className="type-small text-text-secondary">
+                  {duplicates.length === 1
+                    ? "1 address is already invited and will be ignored."
+                    : `${duplicates.length} addresses are already invited and will be ignored.`}
+                </p>
+              )}
+            </div>
           </section>
 
-          {ofGroup.length > 0 && (
+          {pending.length > 0 && (
             <section aria-labelledby="pending-label" className="flex flex-col gap-3">
               <h2 id="pending-label" className="type-label text-text-secondary">
-                PENDING INVITATIONS
+                PENDING INVITATIONS ({pending.length})
               </h2>
-              <ul className="flex flex-col gap-2">
-                {ofGroup.map((entry) => (
+              <ul className="divide-y divide-soft-divider overflow-hidden rounded-card border border-selectable-stroke bg-card">
+                {pending.map((entry) => (
                   <li
                     key={entry.email}
                     data-pending={entry.email}
-                    className="flex h-[72px] items-center gap-3 rounded-card bg-card px-4 shadow-(--card-shadow)"
+                    className="flex h-[72px] items-center gap-3 px-[var(--gutter,1rem)]"
                   >
-                    <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <InitialsAvatar initials={entry.email.slice(0, 2).toUpperCase()} />
+                    <span className="flex min-w-0 flex-1 flex-col">
                       <span className="type-body-strong truncate">{entry.email}</span>
                       <span className="type-small truncate text-text-secondary">
-                        {invitedLine(entry.invitedAt)} · Pending
+                        {invitedLine(entry.invitedAt)}
                       </span>
+                    </span>
+                    <span
+                      data-pending-pill
+                      className="type-caption inline-flex shrink-0 items-center gap-1 rounded-full bg-secondary-sand px-2.5 py-0.5 whitespace-nowrap text-text-secondary"
+                    >
+                      <Clock size={12} strokeWidth={2.25} aria-hidden="true" />
+                      Pending
                     </span>
                   </li>
                 ))}
@@ -190,9 +234,13 @@ export function InviteView({
       <p data-prototype-line className="type-small text-center text-text-secondary">
         {PROTOTYPE_LINE}
       </p>
+      <p data-demo-note className="type-small text-center text-text-secondary">
+        {DEMO_NOTE}
+      </p>
 
       <ActionBar>
         <Button
+          icon={Send}
           disabled={!group || fresh.length === 0}
           onClick={() => {
             onSend(fresh, group!.id);

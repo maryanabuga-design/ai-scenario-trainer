@@ -1,27 +1,49 @@
 "use client";
 
+import { Bell, Check, Clock, Flag, Repeat, Award } from "lucide-react";
 import Link from "next/link";
-import { RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
-import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { Chevron } from "@/components/Chevron/Chevron";
-import { ExamStatusLine } from "@/components/InstructorStudents/ExamStatusLine";
+import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
+import { StatusPill } from "@/components/InstructorExams/ExamParts";
+import { DeltaPill } from "@/components/InstructorOverview/OverviewBlocks";
+import { statusChipLook, InitialsAvatar } from "@/components/InstructorStudents/StudentRow";
+import { ReviewTag, TopicBadge } from "@/components/InstructorTopics/TopicsView";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
-import { ReadinessBar } from "@/components/ReadinessBar/ReadinessBar";
-import { stepsCard } from "@/components/StepsView/StepCard";
 import { DEMO_NOTE } from "@/lib/cohort";
 import { PASS_MARK } from "@/lib/config";
-import { fieldLabel, readinessOf, statusDetail, topicNeedsReview } from "@/lib/students";
+import { rosterLine } from "@/lib/exam-detail";
+import {
+  fieldLabel,
+  lastActiveLong,
+  profileStatus,
+  readinessChange,
+  readinessOf,
+  topicNeedsReview,
+} from "@/lib/students";
 import type { StudentExamRow, StudentProfile } from "@/lib/students";
 
+const card = "rounded-card border border-selectable-stroke bg-card shadow-(--card-shadow)";
+
+/** "Practised 3 times this week", "Practised once this week", "No practice this week". */
+export const practicedLine = (n: number) =>
+  n === 0
+    ? "No practice this week"
+    : n === 1
+      ? "Practised once this week"
+      : `Practised ${n} times this week`;
+
 /**
- * The Student detail of the Instructor (DESIGN.md: Instructor, Students): READ-ONLY. The band with Back
- * and the name, the readiness card (the ONE percentage of the screen), the "By topic" cards of Progress
- * (80px, not tappable, no chevron), and the Exams rows of 72px.
+ * The Student detail of the Instructor (DESIGN.md: Instructor, Students rebuilt): READ-ONLY. Back and
+ * the band "Student detail" (no avatar), the header card, READINESS (the ONE percentage of the
+ * screen, with the weekly change), BY TOPIC (80px cards, not tappable), EXAMS (hairline rows; only a
+ * Passed row with a certificate opens it) and the Secondary "Send reminder" with its dialog.
  */
 export function StudentDetailView({
   profile,
+  groupName,
+  now,
   backHref,
   backLabel,
   rows,
@@ -34,6 +56,8 @@ export function StudentDetailView({
   dialogInline = false,
 }: {
   profile: StudentProfile;
+  groupName: string;
+  now: number;
   backHref: string;
   backLabel: string;
   rows: StudentExamRow[];
@@ -49,87 +73,124 @@ export function StudentDetailView({
   dialogInline?: boolean;
 }) {
   const readiness = readinessOf(profile);
+  const change = readinessChange(profile);
+  const status = profileStatus(profile);
   const [confirming, setConfirming] = useState(confirmingInitially);
+  const dot = statusChipLook[status].tone;
   return (
-    <div className="flex flex-col gap-6 pb-4">
-      <PageHeaderBand
-        title={profile.participant.name}
-        subtitle={
-          <span data-field-line className="type-body">
-            {fieldLabel(profile.field)}
-          </span>
-        }
-        back={{ label: backLabel, href: backHref }}
-      />
+    <div className="flex flex-col gap-4 pb-4">
+      <PageHeaderBand title="Student detail" back={{ label: backLabel, href: backHref }} />
       <p role="status" data-message className="type-body text-center not-empty:py-1">
         {sentMessage}
       </p>
 
       <section
-        aria-labelledby="student-readiness"
-        className="flex flex-col gap-4 rounded-card bg-card p-4 shadow-(--card-shadow)"
+        data-student-header
+        className={`${card} flex items-center gap-4 p-[var(--gutter,1rem)]`}
       >
-        <h2 id="student-readiness" className="type-item-title">
-          Readiness
-        </h2>
-        <p className="type-numeral tabular-nums" data-readiness-number>
-          Readiness {readiness}%
-        </p>
-        <ReadinessBar percent={readiness} markText={String(PASS_MARK)} />
-        <p data-pass-mark className="type-body">
-          Pass mark: {PASS_MARK}
-        </p>
+        <span className="relative flex shrink-0">
+          <InitialsAvatar initials={profile.participant.initials} size={64} />
+          <span
+            aria-hidden="true"
+            data-status-dot={status}
+            className={`absolute right-0 bottom-0 h-4 w-4 rounded-full border-2 border-card ${dot}`}
+          />
+        </span>
+        <div className="flex min-w-0 flex-col gap-1">
+          <h2 data-student-name className="type-card-title truncate">
+            {profile.participant.name}
+          </h2>
+          <p data-field-line className="type-small truncate text-text-secondary">
+            {fieldLabel(profile.field)} · {groupName}
+          </p>
+          <p data-last-active className="type-small flex items-center gap-1.5 text-text-secondary">
+            <Clock size={14} strokeWidth={2} aria-hidden="true" className="shrink-0" />
+            {profile.lastActiveDaysAgo === null
+              ? "No activity yet"
+              : `Last active ${lastActiveLong(profile.lastActiveDaysAgo)}`}
+          </p>
+        </div>
       </section>
 
-      <section aria-labelledby="student-topics" className="flex flex-col gap-4">
-        <h2 id="student-topics" className="type-item-title">
-          By topic
+      <section
+        aria-labelledby="student-readiness"
+        className={`${card} flex flex-col gap-3 p-[var(--gutter,1rem)]`}
+      >
+        <h2 id="student-readiness" className="type-label text-text-secondary">
+          READINESS
         </h2>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <p data-readiness-number className="type-display tabular-nums">
+            {readiness}%
+          </p>
+          {change !== null && <DeltaPill delta={change} />}
+        </div>
+        <div className="grid grid-cols-2 gap-2 rounded-[14px] bg-secondary-sand p-3">
+          <p data-pass-mark className="type-small flex items-center gap-2">
+            <Flag
+              size={16}
+              strokeWidth={2}
+              aria-hidden="true"
+              className="shrink-0 text-text-secondary"
+            />
+            <span>Pass mark: {PASS_MARK}</span>
+          </p>
+          <p data-practice className="type-small flex items-center gap-2">
+            <Repeat
+              size={16}
+              strokeWidth={2}
+              aria-hidden="true"
+              className="shrink-0 text-text-secondary"
+            />
+            <span>{practicedLine(profile.practiceThisWeek)}</span>
+          </p>
+        </div>
+      </section>
+
+      <section aria-labelledby="student-topics" className="flex flex-col gap-3">
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 id="student-topics" className="type-label text-text-secondary">
+            BY TOPIC
+          </h2>
+          <span className="type-small text-text-secondary">{profile.topics.length} topics</span>
+        </div>
         <ul className="flex flex-col gap-3">
           {profile.topics.map((row) => {
-            const share = row.answered === 0 ? 0 : (row.correct / row.answered) * 100;
             const review = topicNeedsReview(row);
+            const passed = row.answered > 0 && !review;
             return (
               <li
                 key={row.sectionId}
                 data-topic-row={row.sectionId}
-                className={`${stepsCard} flex h-[var(--list-card-height,80px)] items-center gap-3 px-[var(--gutter,1rem)]`}
+                className={`${card} flex h-[var(--list-card-height,80px)] items-center gap-3 px-[var(--gutter,1rem)]`}
               >
-                <span
-                  aria-hidden="true"
-                  className="type-caption flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-olive-tint text-text"
-                >
-                  {row.sectionId}
-                </span>
-                <span className="flex min-w-0 flex-1 flex-col gap-1">
-                  <span data-topic-title className="type-body truncate">
+                <TopicBadge id={row.sectionId} />
+                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span data-topic-title className="type-body-strong truncate">
                     <span className="sr-only">{row.sectionId} </span>
                     {titleOf(row.sectionId)}
                   </span>
-                  <span className="type-small flex items-center gap-1.5 text-text-secondary tabular-nums">
+                  <span className="type-small text-text-secondary tabular-nums">
                     {row.answered === 0
                       ? "Not practised yet"
                       : `${row.correct} of ${row.answered} correct`}
-                    {review && (
-                      <span
-                        data-needs-review
-                        className="flex shrink-0 items-center gap-1 text-status-attention-ink"
-                      >
-                        <RotateCcw size={14} strokeWidth={2} aria-hidden="true" />
-                        Needs review
-                      </span>
-                    )}
-                  </span>
-                  <span
-                    aria-hidden="true"
-                    className="h-1.5 overflow-hidden rounded-full bg-secondary-sand"
-                  >
-                    <span
-                      className="block h-full rounded-full bg-primary"
-                      style={{ width: `${share}%` }}
-                    />
                   </span>
                 </span>
+                {review && (
+                  <span data-needs-review>
+                    <ReviewTag />
+                  </span>
+                )}
+                {passed && (
+                  <span
+                    data-on-track
+                    role="img"
+                    aria-label="At or above the pass mark"
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-status-success-bg text-status-success-ink"
+                  >
+                    <Check size={16} strokeWidth={2.5} aria-hidden="true" />
+                  </span>
+                )}
               </li>
             );
           })}
@@ -137,23 +198,39 @@ export function StudentDetailView({
       </section>
 
       <section aria-labelledby="student-exams" className="flex flex-col gap-3">
-        <h2 id="student-exams" className="type-item-title">
-          Exams
-        </h2>
-        <ul className="flex flex-col gap-2">
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 id="student-exams" className="type-label text-text-secondary">
+            EXAMS
+          </h2>
+          <span className="type-small text-text-secondary">{rows.length} total</span>
+        </div>
+        <ul className={`${card} divide-y divide-soft-divider`}>
           {rows.map((row) => {
             const href = certificateHref(row);
             const body = (
               <>
-                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <span className="type-body-strong truncate">{row.exam.title}</span>
-                  <ExamStatusLine status={row.status} text={statusDetail(row.status)} />
+                <span className="flex min-w-0 flex-1 flex-col gap-1">
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span className="type-body-strong truncate">{row.exam.title}</span>
+                    <StatusPill kind={row.status.kind} />
+                    {href && (
+                      <Award
+                        data-certificate-badge
+                        size={16}
+                        strokeWidth={2}
+                        aria-label="Certificate"
+                        className="shrink-0 text-status-success-ink"
+                      />
+                    )}
+                  </span>
+                  <span className="type-small truncate text-text-secondary">
+                    {rosterLine(row.status, now)}
+                  </span>
                 </span>
                 {href && <Chevron />}
               </>
             );
-            const classes =
-              "flex h-[72px] items-center gap-3 rounded-card bg-card px-4 shadow-(--card-shadow)";
+            const classes = "flex min-h-[72px] items-center gap-3 px-[var(--gutter,1rem)] py-3";
             return (
               <li key={row.exam.id} data-exam-row={row.exam.id} data-status={row.status.kind}>
                 {href ? (
@@ -169,7 +246,7 @@ export function StudentDetailView({
         </ul>
       </section>
 
-      <Button variant="secondary" onClick={() => setConfirming(true)}>
+      <Button variant="secondary" icon={Bell} onClick={() => setConfirming(true)}>
         Send reminder
       </Button>
 
@@ -180,7 +257,7 @@ export function StudentDetailView({
           title={`Send a reminder to ${profile.participant.name}?`}
           description=""
           body={
-            <p data-reminder-preview className="type-small rounded-card bg-secondary-sand p-3">
+            <p data-reminder-preview className="type-small rounded-[14px] bg-secondary-sand p-3">
               {reminder}
             </p>
           }

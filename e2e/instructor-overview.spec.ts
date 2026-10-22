@@ -153,13 +153,14 @@ for (const width of [360, 430]) {
       const n = Number(/(\d+) students need attention/.exec(await row.innerText())![1]);
       await row.click();
       await expect(page).toHaveURL(/\/instructor\/students\?filter=needs&from=overview$/);
-      await expect(page.locator("[data-showing]:visible")).toHaveText("Showing: Needs attention");
+      // "Needs attention" is one of the chips: it is chosen, and there is no filter line
+      await expect(page.getByRole("radio", { name: "Needs attention" })).toBeChecked();
+      await expect(page.locator("[data-filter-line]:visible")).toHaveCount(0);
       await expect(page.locator("[data-student]:visible")).toHaveCount(n);
       for (const line of await page.locator("[data-student-line]:visible").all()) {
         await expect(line).toContainText("Needs attention");
       }
-      await page.getByRole("button", { name: "Clear filter" }).click();
-      await expect(page).toHaveURL(/\/instructor\/students$/);
+      await page.locator("label", { hasText: /^All$/ }).click();
       await expect(page.locator("[data-student]:visible")).toHaveCount(15);
       await page.goto("/instructor");
       await row.click();
@@ -198,25 +199,25 @@ for (const width of [360, 430]) {
         "rgba(0, 0, 0, 0)",
       );
       await all.click();
-      await expect(page).toHaveURL(/\/instructor\/topics$/);
+      await expect(page).toHaveURL(/\/instructor\/students\?view=topics$/);
       await expect(page.locator("[data-topic-card]").first()).toHaveAttribute(
         "data-topic-card",
         id,
       );
     });
 
-    test("Topics: all ten, weakest first, cards open the topic filter; Back and Clear filter work", async ({
+    test("Topics: all ten, weakest first, cards open the students below the pass mark; Back and Clear filter work", async ({
       page,
     }) => {
-      await page.goto("/instructor/topics");
-      await expect(page.getByRole("heading", { name: "Topics", level: 1 })).toBeVisible();
+      await page.goto("/instructor/students?view=topics");
+      await expect(page.getByRole("heading", { name: "Students", level: 1 })).toBeVisible();
       const cards = page.locator("[data-topic-card]");
       await expect(cards).toHaveCount(10);
       const shares: number[] = [];
       for (const card of await cards.all()) {
         const b = (await card.boundingBox())!;
         expect([b.height, b.x, b.width]).toEqual([80, 16, width - 32]);
-        const m = /(\d+) of (\d+) students at or above the pass mark/.exec(await card.innerText());
+        const m = /(\d+) of (\d+) at or above pass mark/.exec(await card.innerText());
         if (m) shares.push(Number(m[1]) / Number(m[2]));
         expect(await card.innerText()).not.toContain("%");
       }
@@ -227,21 +228,16 @@ for (const width of [360, 430]) {
       const id = (await first.getAttribute("data-topic-card"))!;
       const passing = /(\d+) of (\d+)/.exec(await first.innerText())!;
       await first.locator("a").click();
-      await expect(page).toHaveURL(new RegExp(`/instructor/students\\?topic=${id}&from=topics$`));
-      await expect(page.locator("[data-showing]:visible")).toContainText(
-        `Below pass mark in ${id} · `,
-      );
+      await expect(page).toHaveURL(new RegExp(`/instructor/students/topic/${id}$`));
+      await expect(page.locator("[data-showing]:visible")).toHaveText(`Below pass mark in ${id}`);
       await expect(page.locator("[data-student]:visible")).toHaveCount(
         Number(passing[2]) - Number(passing[1]),
       );
       await page.getByRole("link", { name: "Back to Topics" }).click();
-      await expect(page).toHaveURL(/\/instructor\/topics$/);
-      await page.getByRole("link", { name: "Back to Overview" }).click();
-      await expect(page).toHaveURL(/\/instructor$/);
-      await page.goto("/instructor/topics");
+      await expect(page).toHaveURL(/\/instructor\/students\?view=topics$/);
       await cards.first().locator("a").click();
       await page.getByRole("button", { name: "Clear filter" }).click();
-      await expect(page).toHaveURL(/\/instructor\/students$/);
+      await expect(page).toHaveURL(/\/instructor\/students\?view=topics$/);
     });
 
     test("an exam due soon with students not started is the first row; Remind removes it", async ({

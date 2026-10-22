@@ -10,6 +10,7 @@ import { DirectionPicker } from "@/components/DirectionPicker/DirectionPicker";
 import { FooterNote } from "@/components/Footer/Footer";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
+import { INSTRUCTOR_SEES } from "@/lib/cohort";
 import { groupNames, groups } from "@/lib/groups";
 import { shortLabel } from "@/lib/field-of-work";
 import { onboardingHref } from "@/lib/onboarding";
@@ -194,6 +195,11 @@ export function ProfileView({
             <span className="type-body-strong min-w-0 flex-1">About this prototype</span>
             <Chevron />
           </Link>
+          {student && (
+            <p data-instructor-sees className="type-small text-text-secondary">
+              {INSTRUCTOR_SEES}
+            </p>
+          )}
         </section>
 
         <section aria-labelledby="settings-title" className="flex flex-col gap-3">

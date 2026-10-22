@@ -165,6 +165,8 @@ describe("a secondary always comes with a primary above it", () => {
       // Content: the friendly not-found screens (Back to Content, Back to Review).
       "app/(app)/instructor/content/[id]/[n]/page.tsx",
       "app/(app)/instructor/content/[id]/page.tsx",
+      // Students: Choose group (the Topics view in All groups).
+      "app/(app)/instructor/students/page.tsx",
       // About this prototype: "Restart demo" under the info lines (one clearly separate action).
       "components/AboutView/AboutView.tsx",
       // Answer review: Back to results, below the primary Next question.
@@ -198,6 +200,11 @@ describe("a secondary always comes with a primary above it", () => {
       "components/InstructorStudents/InviteView.tsx",
       "components/InstructorStudents/StudentDetailView.tsx",
       "components/InstructorStudents/StudentsListView.tsx",
+      // Topics view: Assign exam on weakest topic; topic students: Assign exam on this topic.
+      "components/InstructorTopics/TopicStudentsView.tsx",
+      "components/InstructorTopics/TopicsView.tsx",
+      // The join screen: Sign in under the Primary Create account (or Back to welcome alone).
+      "components/JoinView/JoinView.tsx",
       // Material page: Create again and Read the sample guide, below the primary action.
       "components/MaterialView/MaterialView.tsx",
       // Progress: the Exam readiness card's Repeat weak topics, its one action (documented exception).

@@ -213,7 +213,7 @@ describe("WEAKEST TOPIC", () => {
     expect(section).toMatch(
       /bg-olive-tint[^>]*>[\s\S]*lucide-clipboard-check[\s\S]*Assign exam on this topic</,
     );
-    expect(section).toContain('href="/instructor/topics"');
+    expect(section).toContain('href="/instructor/students?view=topics"');
     expect(section).toMatch(/justify-center[\s\S]*underline[\s\S]*All topics/);
     expect(section).not.toContain("lucide-chevron-right");
   });

@@ -21,11 +21,15 @@ export type SeededStudent = {
   field: Field;
   topics: Record<string, { answered: number; correct: number }>;
   lastActiveDaysAgo: number;
+  /** Practice sessions in the last 7 days (the demo history). */
+  practiceSessionsThisWeek: number;
   /** The correct answers a week ago (all topics together): the demo history behind "since last week". */
   previousCorrect?: number;
 };
 
 export const seededStudents = cohort.students as SeededStudent[];
+/** What a student is told about the Instructor (Profile and Create account). */
+export const INSTRUCTOR_SEES = "Your instructor can see your progress and exam results.";
 export const DEMO_NOTE = "Demo group. Student data on this screen is simulated.";
 
 export type Participant = {
@@ -80,7 +84,7 @@ const initialsOf = (name: string) =>
 
 /** The group: the local student accounts first (real data), then the seeded students. */
 export function participants(
-  local: { name: string; email: string; field?: Field | null }[],
+  local: { name: string; email: string; field?: Field | null; groupId?: string }[],
 ): Participant[] {
   return [
     ...local.map((account) => ({
@@ -88,7 +92,8 @@ export function participants(
       name: account.name,
       initials: initialsOf(account.name),
       local: true,
-      groupId: DEFAULT_GROUP_ID,
+      // a Student who joined through a link or an invitation is in that group
+      groupId: account.groupId ?? DEFAULT_GROUP_ID,
       // the field of work the person chose (shown on the Instructor's Student detail)
       field: account.field ?? null,
     })),

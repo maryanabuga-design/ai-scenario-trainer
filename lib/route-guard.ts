@@ -17,7 +17,9 @@ export const FIELD_ROUTE = "/field-of-work";
  * role, and the role guard of before still applies. Pure.
  */
 export function guardRedirect(visitor: Visitor | null, pathname: string): string | null {
-  if (visitor === null) return AUTH_ROUTES.includes(pathname) ? null : "/welcome";
+  // a join link (`/join/<code>`) is open to a signed-out visitor; a signed-in person goes Home
+  const isJoin = pathname.startsWith("/join/");
+  if (visitor === null) return AUTH_ROUTES.includes(pathname) || isJoin ? null : "/welcome";
   if (!visitor.onboardingDone) {
     // a student who has not been through the Field of work step goes there first, once; then the introduction
     const owesStep = visitor.role === "student" && visitor.fieldStepDone === false;
@@ -27,6 +29,6 @@ export function guardRedirect(visitor: Visitor | null, pathname: string): string
   }
   // the step is never shown again once the onboarding is done
   if (pathname === FIELD_ROUTE) return roleHome(visitor.role);
-  if (AUTH_ROUTES.includes(pathname)) return roleHome(visitor.role);
+  if (AUTH_ROUTES.includes(pathname) || isJoin) return roleHome(visitor.role);
   return roleRedirect(visitor.role, pathname);
 }

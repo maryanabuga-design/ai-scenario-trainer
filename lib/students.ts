@@ -23,6 +23,7 @@ import type { FinishedSession } from "@/lib/session";
  * (`lib/progress-view.ts`), so no figure is calculated twice.
  */
 export const ALMOST_READY = 60;
+const DAY = 86_400_000;
 
 export const fieldLabels: Record<Field, string> = shortLabels;
 
@@ -39,22 +40,36 @@ export type StudentProfile = {
   topics: StudentTopic[];
   /** The correct answers a week ago (only the invented students have this history). */
   previousCorrect?: number;
+  /** Whole days since the last answer; null for a student who has not started. */
+  lastActiveDaysAgo: number | null;
+  /** Practice sessions in the last 7 days. */
+  practiceThisWeek: number;
+  /** The readiness a week ago in whole percent (the invented students only); null without history. */
+  readinessPrev: number | null;
 };
 
 /** A seeded student's per-topic figures, held to the real number of questions of each topic. */
 export function seededProfile(student: SeededStudent, participant: Participant): StudentProfile {
+  const topics = allTopicIds.map((id) => {
+    const total = topicQuestionCount(id);
+    const answered = Math.min(student.topics[id]?.answered ?? 0, total);
+    const correct = Math.min(student.topics[id]?.correct ?? 0, answered);
+    return { sectionId: id, correct, total, answered };
+  });
+  const allQuestions = topics.reduce((sum, row) => sum + row.total, 0);
   return {
     participant,
     field: student.field,
     ...(student.previousCorrect !== undefined && {
       previousCorrect: student.previousCorrect,
     }),
-    topics: allTopicIds.map((id) => {
-      const total = topicQuestionCount(id);
-      const answered = Math.min(student.topics[id]?.answered ?? 0, total);
-      const correct = Math.min(student.topics[id]?.correct ?? 0, answered);
-      return { sectionId: id, correct, total, answered };
-    }),
+    topics,
+    lastActiveDaysAgo: topics.some((row) => row.answered > 0) ? student.lastActiveDaysAgo : null,
+    practiceThisWeek: student.practiceSessionsThisWeek ?? 0,
+    readinessPrev:
+      student.previousCorrect === undefined || allQuestions === 0
+        ? null
+        : Math.floor((student.previousCorrect * 100) / allQuestions + 1e-9),
   };
 }
 
@@ -62,7 +77,11 @@ export function seededProfile(student: SeededStudent, participant: Participant):
 export function localProfile(
   participant: Participant,
   history: FinishedSession[] | null,
+  now: number = Date.now(),
 ): StudentProfile {
+  const sessions = history ?? [];
+  const latestAt = sessions.reduce((top, s) => Math.max(top, s.finishedAt), 0);
+  const week = now - 7 * DAY;
   return {
     participant,
     field: participant.field ?? null,
@@ -71,6 +90,10 @@ export function localProfile(
       const answered = scopeItemIds([id]).filter((item) => latest.has(item)).length;
       return { ...topicProgress(id, history), answered };
     }),
+    // the date of the latest answer or exam attempt of this account
+    lastActiveDaysAgo: latestAt === 0 ? null : Math.max(0, Math.floor((now - latestAt) / DAY)),
+    practiceThisWeek: sessions.filter((s) => s.kind !== "exam" && s.finishedAt > week).length,
+    readinessPrev: null,
   };
 }
 
@@ -78,9 +101,10 @@ export function localProfile(
 export function profiles(
   people: Participant[],
   histories: Record<string, FinishedSession[] | null>,
+  now: number = Date.now(),
 ): StudentProfile[] {
   return people.map((participant) => {
-    if (participant.local) return localProfile(participant, histories[participant.id] ?? null);
+    if (participant.local) return localProfile(participant, histories[participant.id] ?? null, now);
     const student = seededStudents.find((entry) => entry.id === participant.id)!;
     return seededProfile(student, participant);
   });
@@ -135,67 +159,110 @@ export const topicNeedsReview = (row: StudentTopic) => row.answered > 0 && !topi
 export const topicsToReview = (profile: Pick<StudentProfile, "topics">) =>
   profile.topics.filter(topicNeedsReview).length;
 
-/** The second line of a student row: the status and what follows it ("4 to review"), see DESIGN.md. */
-export function rowParts(profile: StudentProfile): {
-  status: StudentStatus;
-  tail: string | null;
-} {
+/** "today", "yesterday", "3d ago", "2w ago" (the days since the last answer). */
+export function lastActiveShort(days: number): string {
+  if (days <= 0) return "today";
+  if (days === 1) return "yesterday";
+  return days < 14 ? `${days}d ago` : `${Math.floor(days / 7)}w ago`;
+}
+
+/** "today", "yesterday", "6 days ago", "2 weeks ago" (the Student detail). */
+export function lastActiveLong(days: number): string {
+  if (days <= 0) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 14) return `${days} days ago`;
+  return `${Math.floor(days / 7)} weeks ago`;
+}
+
+/** The muted text after the status chip of a row: "· 5 to review" (none for Ready and Not started). */
+export function rowMuted(profile: StudentProfile): string | null {
   const status = profileStatus(profile);
-  const n = topicsToReview(profile);
-  if (status === "not-started") return { status, tail: null };
-  if (profile.participant.local) return { status, tail: null };
-  if (status === "ready")
-    return { status, tail: n === 0 ? "all topics on track" : `${n} to review` };
-  // the long status words take the short form, so nothing wraps
-  return { status, tail: `${n} to review` };
+  if (status === "ready" || status === "not-started") return null;
+  return `· ${topicsToReview(profile)} to review`;
 }
 
-/** The same line as plain text (for tests and screen readers). */
+/** The muted text in the topic students list: "· S3: 2 of 5 correct". */
+export function topicMuted(profile: StudentProfile, topicId: string): string | null {
+  const row = profile.topics.find((entry) => entry.sectionId === topicId);
+  return row ? `· ${topicId}: ${row.correct} of ${row.answered} correct` : null;
+}
+
+/** The same row as plain text (for tests and screen readers): "Needs attention · 5 to review". */
 export function rowText(profile: StudentProfile): string {
-  const { status, tail } = rowParts(profile);
-  const base = profile.participant.local
-    ? `Your demo account · ${statusLabels[status]}`
-    : statusLabels[status];
-  return tail ? `${base} · ${tail}` : base;
+  const muted = rowMuted(profile);
+  return `${statusLabels[profileStatus(profile)]}${muted ? ` ${muted}` : ""}`;
 }
 
-export type StudentsFilter = "all" | "needs" | "passed";
+/** The change of the readiness since last week in points, or null without history (accounts of this browser have none). */
+export function readinessChange(profile: StudentProfile): number | null {
+  if (profile.readinessPrev === null || isNotStarted(profile)) return null;
+  return readinessOf(profile) - profile.readinessPrev;
+}
+
+/** The topics of a student below the pass mark in `topicId` (the students of the topic list). */
+export const belowPassMark = (list: StudentProfile[], topicId: string) =>
+  list.filter((profile) => {
+    const row = profile.topics.find((entry) => entry.sectionId === topicId);
+    return !!row && topicNeedsReview(row);
+  });
+
+/** Whether a name matches the search text (case-insensitive, anywhere in the name). */
+export const matchesQuery = (name: string, query: string) =>
+  query.trim() === "" || name.toLowerCase().includes(query.trim().toLowerCase());
+
+export type StudentsFilter = "all" | "needs" | "ready" | "almost" | "not-started";
+
+/** The three filter chips; Almost ready and Not started only come from another screen (the filter line). */
 export const filters: { value: StudentsFilter; label: string }[] = [
   { value: "all", label: "All" },
-  { value: "needs", label: "Attention" },
-  { value: "passed", label: "Passed" },
+  { value: "needs", label: "Needs attention" },
+  { value: "ready", label: "Ready" },
 ];
+const allFilters: StudentsFilter[] = ["all", "needs", "ready", "almost", "not-started"];
 
 /** A filter from the address, "all" when it is missing or unknown. */
 export const filterFrom = (value: string | null): StudentsFilter =>
-  filters.some((f) => f.value === value) ? (value as StudentsFilter) : "all";
+  allFilters.includes(value as StudentsFilter) ? (value as StudentsFilter) : "all";
+
+/** Whether the filter is one of the chips. */
+export const isChipFilter = (filter: StudentsFilter) => filters.some((f) => f.value === filter);
+
+const filterWords: Record<StudentsFilter, string> = {
+  all: "All",
+  needs: "Needs attention",
+  ready: "Ready",
+  almost: "Almost ready",
+  "not-started": "Not started",
+};
 
 /** Where a filtered list was opened from (the Overview or Topics): Back returns there. */
 export type FilterOrigin = "overview" | "topics";
 export const originFrom = (value: string | null): FilterOrigin | null =>
   value === "overview" || value === "topics" ? value : null;
 
-/** The one-line label of the filter on the Students list, or null while the whole list shows. */
+/**
+ * The text of the filter line: "Showing: Not started" for a status that is not a chip, "Below pass
+ * mark in S3 · Moving through smoke" for a topic; null while only the chips filter.
+ */
 export function showingLine(
   filter: StudentsFilter,
   topic: { id: string; title: string } | null,
 ): string | null {
-  const status = filter === "needs" ? "Needs attention" : filter === "passed" ? "Passed" : null;
   if (topic) {
     const base = `Below pass mark in ${topic.id} · ${topic.title}`;
-    return status ? `${base} · ${status}` : base;
+    return filter === "all" ? base : `${base} · ${filterWords[filter]}`;
   }
-  return status ? `Showing: ${status}` : null;
+  return isChipFilter(filter) ? null : `Showing: ${filterWords[filter]}`;
 }
 
 const rank: Record<StudentStatus, number> = {
   needs: 0,
   almost: 1,
-  ready: 2,
-  "not-started": 3,
+  "not-started": 2,
+  ready: 3,
 };
 
-/** Needs attention first, then Almost ready, then Ready, then Not started; alphabetical inside each. */
+/** Needs attention first, then Almost ready, then Not started, then Ready; alphabetical inside each. */
 export function sortProfiles(list: StudentProfile[]): StudentProfile[] {
   return [...list].sort(
     (a, b) =>
@@ -204,38 +271,21 @@ export function sortProfiles(list: StudentProfile[]): StudentProfile[] {
   );
 }
 
-/** Whether the participant has Passed at least one exam. */
-export function passedAnywhere(
-  participant: Participant,
-  exams: GroupExam[],
-  attempts: Attempt[],
-  now: number,
-): boolean {
-  return exams.some(
-    (exam) =>
-      exam.groupIds.includes(participant.groupId) &&
-      statusOf(participant, exam, { attempts, now }).kind === "passed",
-  );
-}
-
-/** The list for a filter, sorted. */
+/** The list for a status filter, a name search and a topic (below the pass mark in it), sorted. */
 export function visibleStudents(
   list: StudentProfile[],
   filter: StudentsFilter,
-  exams: GroupExam[],
-  attempts: Attempt[],
-  now: number,
+  query = "",
   topic: string | null = null,
 ): StudentProfile[] {
   const kept = list.filter((profile) => {
-    // the topic filter (from Weakest topics): below the pass mark in that topic
     if (topic) {
       const row = profile.topics.find((entry) => entry.sectionId === topic);
       if (!row || !topicNeedsReview(row)) return false;
     }
-    if (filter === "needs") return profileStatus(profile) === "needs";
-    if (filter === "passed") return passedAnywhere(profile.participant, exams, attempts, now);
-    return true;
+    if (!matchesQuery(profile.participant.name, query)) return false;
+    const status = profileStatus(profile);
+    return filter === "all" || status === (filter === "needs" ? "needs" : filter);
   });
   return sortProfiles(kept);
 }
@@ -283,3 +333,6 @@ export const topicFrom = (value: string | null): string | null =>
   value !== null && allTopicIds.includes(value) ? value : null;
 
 export const notStartedCount = (list: StudentProfile[]) => list.filter(isNotStarted).length;
+
+/** The query of Assign exam with a topic chosen (the title is prefilled from it). */
+export const assignOnTopicParams = (topicId: string) => `topic=${topicId}&from=students`;

@@ -16,6 +16,7 @@ export function PageHeaderBand({
   subtitle,
   back,
   action,
+  titleAccessory,
   overlap = false,
 }: {
   title: string;
@@ -23,6 +24,8 @@ export function PageHeaderBand({
   back?: Back;
   /** A control at the top right (the avatar button on the tab screens). */
   action?: ReactNode;
+  /** A small control on the title's row (the Students band's group pill). */
+  titleAccessory?: ReactNode;
   overlap?: boolean;
 }) {
   return (
@@ -39,7 +42,14 @@ export function PageHeaderBand({
       )}
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-1">
-          <h1 className="type-page-title text-text line-clamp-2">{title}</h1>
+          {titleAccessory ? (
+            <div className="flex min-w-0 items-center gap-3">
+              <h1 className="type-page-title text-text">{title}</h1>
+              {titleAccessory}
+            </div>
+          ) : (
+            <h1 className="type-page-title text-text line-clamp-2">{title}</h1>
+          )}
           {subtitle && <p className="type-body text-text">{subtitle}</p>}
         </div>
         {!back && action}

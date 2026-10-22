@@ -46,7 +46,6 @@ import {
   OnboardingSample,
   ProfileSample,
   InstructorHomeSample,
-  InstructorTopicsSample,
   InstructorExamsSample,
   InstructorContentSample,
   InstructorStudentsSample,
@@ -846,21 +845,6 @@ export default function Screens() {
               <GroupPickerSample scope="all" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor: Students, Military training">
-            <Screen nav="/instructor/students" role="instructor">
-              <InstructorStudentsSample scope="military-training" />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Instructor: Students, All groups (group name in the second line)">
-            <Screen nav="/instructor/students" role="instructor">
-              <InstructorStudentsSample scope="all" />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Instructor: Invite students, All groups (choose a group first)">
-            <Screen nav="/instructor/students/invite" role="instructor">
-              <InstructorStudentsSample state="invite" scope="all" />
-            </Screen>
-          </PhoneFrame>
           <PhoneFrame label="Content: empty">
             <Screen nav="/instructor/content" role="instructor">
               <InstructorContentSample state="empty" />
@@ -921,14 +905,89 @@ export default function Screens() {
               <InstructorContentSample state="edit-ok" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor: Topics (all ten, weakest first)">
-            <Screen role="instructor">
-              <InstructorTopicsSample />
+          <PhoneFrame label="Instructor: Students list (all statuses, chips, search, rows with chip under the name)">
+            <Screen nav="/instructor/students" role="instructor">
+              <InstructorStudentsSample />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor: Students filtered from Needs your action (Attention, Back to Overview)">
+          <PhoneFrame label="Instructor: Students, Needs attention chip">
             <Screen nav="/instructor/students" role="instructor">
               <InstructorStudentsSample state="needs" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Students, Ready chip">
+            <Screen nav="/instructor/students" role="instructor">
+              <InstructorStudentsSample state="ready" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Students, search with no result">
+            <Screen nav="/instructor/students" role="instructor">
+              <InstructorStudentsSample state="search-empty" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Students, filter line from the Overview (Not started)">
+            <Screen nav="/instructor/students" role="instructor">
+              <InstructorStudentsSample state="filter-line" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Students, empty group (Get started)">
+            <Screen nav="/instructor/students" role="instructor">
+              <InstructorStudentsSample state="group-empty" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Students, Topics view">
+            <Screen nav="/instructor/students" role="instructor">
+              <InstructorStudentsSample state="topics" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Students, Topics view in All groups">
+            <Screen nav="/instructor/students" role="instructor">
+              <InstructorStudentsSample state="topics-all" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Topic students (below the pass mark in S3)">
+            <Screen>
+              <InstructorStudentsSample state="topic-students" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Student detail (Needs attention)">
+            <Screen>
+              <InstructorStudentsSample state="detail-needs" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Student detail (Ready)">
+            <Screen>
+              <InstructorStudentsSample state="detail-ready" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Student detail (Not started)">
+            <Screen>
+              <InstructorStudentsSample state="detail-not-started" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Student detail, Send reminder dialog">
+            <Screen>
+              <InstructorStudentsSample state="reminder" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Invite students">
+            <Screen>
+              <InstructorStudentsSample state="invite" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Invite students, filled and pending">
+            <Screen>
+              <InstructorStudentsSample state="invite-filled" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Join link: invited to Rescue team">
+            <Screen>
+              <InstructorStudentsSample state="join" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Join link: not valid">
+            <Screen>
+              <InstructorStudentsSample state="join-invalid" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Instructor: Exams list (Assign exam, ACTIVE, Show closed exams)">
@@ -989,56 +1048,6 @@ export default function Screens() {
           <PhoneFrame label="Instructor: Exam question (read-only)">
             <Screen>
               <InstructorExamsSample state="question" />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Instructor: Students list (All)">
-            <Screen nav="/instructor/students" role="instructor">
-              <InstructorStudentsSample state="all" />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Instructor: Students list (Needs attention)">
-            <Screen nav="/instructor/students" role="instructor">
-              <InstructorStudentsSample state="needs" />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Instructor: Students list (Passed)">
-            <Screen nav="/instructor/students" role="instructor">
-              <InstructorStudentsSample state="passed" />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Instructor: Students list, empty filter">
-            <Screen nav="/instructor/students" role="instructor">
-              <InstructorStudentsSample state="empty" />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Instructor: Students below the pass mark in S3 (topic filter, Clear filter)">
-            <Screen nav="/instructor/students" role="instructor">
-              <InstructorStudentsSample state="topic" />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Instructor: Send reminder dialog">
-            <Screen role="instructor">
-              <InstructorStudentsSample state="reminder" />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Instructor: Invite students (empty)">
-            <Screen role="instructor">
-              <InstructorStudentsSample state="invite" />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Instructor: Invite students (pending list, an invalid address)">
-            <Screen role="instructor">
-              <InstructorStudentsSample state="invite-filled" />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Instructor: Student detail, Needs attention">
-            <Screen>
-              <InstructorStudentsSample state="detail-needs" />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Instructor: Student detail, Ready">
-            <Screen>
-              <InstructorStudentsSample state="detail-ready" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Student Home: the Exam tile with an assigned exam (no cards)">

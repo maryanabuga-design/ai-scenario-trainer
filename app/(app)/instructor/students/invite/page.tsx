@@ -2,18 +2,29 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { Scope } from "@/lib/groups";
-import { useScope } from "@/lib/scope-store";
 import { InviteView } from "@/components/InstructorStudents/InviteView";
+import { useAuth } from "@/lib/auth";
+import { participants } from "@/lib/cohort";
+import { groups } from "@/lib/groups";
+import type { Scope } from "@/lib/groups";
 import {
   readInvitations,
   saveInvitations,
   useInvitations,
   withInvitations,
 } from "@/lib/invitations";
+import { useScope } from "@/lib/scope-store";
 
-/** Rendered once the pending list is read, so the time is never part of the prerender. */
-function Loaded({ pending, scope }: { pending: ReturnType<typeof readInvitations>; scope: Scope }) {
+/** Rendered once everything is read, so the time and the address are never part of the prerender. */
+function Loaded({
+  invitations,
+  scope,
+  counts,
+}: {
+  invitations: ReturnType<typeof readInvitations>;
+  scope: Scope;
+  counts: Record<string, number>;
+}) {
   const router = useRouter();
   const [saveFailed, setSaveFailed] = useState(false);
   return (
@@ -25,7 +36,9 @@ function Loaded({ pending, scope }: { pending: ReturnType<typeof readInvitations
       )}
       <InviteView
         scope={scope}
-        pending={pending}
+        counts={counts}
+        invitations={invitations}
+        origin={window.location.origin}
         onSend={(emails, groupId) =>
           setSaveFailed(
             !saveInvitations(withInvitations(readInvitations(), emails, Date.now(), groupId)),
@@ -38,8 +51,13 @@ function Loaded({ pending, scope }: { pending: ReturnType<typeof readInvitations
 }
 
 export default function InvitePage() {
-  const pending = useInvitations();
+  const invitations = useInvitations();
   const scope = useScope();
-  if (pending === "loading" || scope === "loading") return null;
-  return <Loaded pending={pending} scope={scope} />;
+  const auth = useAuth();
+  if (invitations === "loading" || scope === "loading" || auth === "loading") return null;
+  const people = participants(auth.accounts);
+  const counts = Object.fromEntries(
+    groups.map((group) => [group.id, people.filter((p) => p.groupId === group.id).length]),
+  );
+  return <Loaded invitations={invitations} scope={scope} counts={counts} />;
 }

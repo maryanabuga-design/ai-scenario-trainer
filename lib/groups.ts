@@ -60,3 +60,7 @@ export const groupNames = (ids: string[]): string =>
 
 /** "14 students" / "1 student". */
 export const studentsText = (n: number) => `${n} ${n === 1 ? "student" : "students"}`;
+
+/** The group of an account as it is saved: a known group id, otherwise nothing. */
+export const cleanAccountGroup = (value: unknown): string | undefined =>
+  typeof value === "string" && value !== ALL_GROUPS && isScope(value) ? value : undefined;
