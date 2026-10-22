@@ -47,8 +47,8 @@ describe("the Content tab", () => {
   it("has the band, the one Primary Import questions right under it, and 88px set cards", () => {
     expect(withSets).toContain("data-page-header-band");
     expect(withSets).toContain(">Content</h1>");
-    expect(withSets.indexOf("Import questions")).toBeGreaterThan(withSets.indexOf("Content</h1>"));
-    expect(withSets.indexOf("Import questions")).toBeLessThan(withSets.indexOf("IMPORTED SETS"));
+    expect(withSets.indexOf("Import content")).toBeGreaterThan(withSets.indexOf("Content</h1>"));
+    expect(withSets.indexOf("Import content")).toBeLessThan(withSets.indexOf("IMPORTED SETS"));
     expect(withSets.match(/h-\[88px\]/g)).toHaveLength(2);
     expect(withSets).toContain("S3 Topic S3 · 20 questions");
     expect(withSets).toContain('data-set-status="draft"');
@@ -299,7 +299,7 @@ describe("the Edit question screen", () => {
       "components/InstructorContent/ReviewView.tsx",
       "lib/content-import.ts",
       "lib/content-sets.ts",
-      "app/(app)/instructor/content/import/page.tsx",
+      "app/(app)/instructor/content/import/questions/page.tsx",
     ]) {
       const code = readFileSync(file, "utf8");
       expect(code, file).not.toMatch(

@@ -65,3 +65,6 @@ public/
 ## Working style
 - Propose a short plan before large changes. Build one screen at a time and check it against `DESIGN.md`.
 - Ask when a product decision is unclear instead of guessing.
+
+## Demo topics (content package import)
+The Instructor can import a package of CSV files and images into ONE demo topic (Guide, Steps, Scenario, Quiz, each item linked to a guide section) and publish it to an isolated student section "From your instructor" in Materials. Demo topics have their own codes (N1, N2, ...), are stored on their own key, and are NEVER part of the ten built-in topics, readiness, Progress, exams, Assign exam, Weakest topics, Hardest questions, Ask AI or any built-in data. See DESIGN.md "Instructor: content package import and demo topics".

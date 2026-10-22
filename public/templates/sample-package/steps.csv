@@ -1,0 +1,8 @@
+﻿checklist_title,step,action,detail,guide_reference,image_file,alt_text
+When the alarm sounds,1,Stop what you are doing,Leave your belongings behind.,2,,
+When the alarm sounds,2,Find the nearest marked exit,Follow the green exit signs.,1,exit-sign.png,Green exit sign above a door
+When the alarm sounds,3,Walk steadily to the exit,Keep to one side. Do not run or push.,2,,
+When the alarm sounds,4,Do not stop in the doorway,Keep moving so others can pass.,3,,
+At the assembly point,1,Go to the assembly point,Follow the signs and stay with your group.,4,assembly-point.png,Green sign marking an assembly point
+At the assembly point,2,Stay there and wait to be counted,Do not go back inside.,4,,
+At the assembly point,3,Report anyone who is missing,Give staff their name and where you last saw them.,4,,

@@ -134,6 +134,15 @@ import { demoExam } from "@/lib/assigned-exams";
 import { seedNotifications } from "@/lib/notifications";
 import { readinessAfter, scopeItemIds } from "@/lib/readiness";
 import { topicIdsOf } from "@/lib/session";
+import { PackageImportView } from "@/components/InstructorContent/PackageImportView";
+import { PackageTopicView } from "@/components/InstructorContent/PackageTopicView";
+import {
+  PackagePartView,
+  PackageTopicStudentView,
+} from "@/components/PackageContent/PackageStudentViews";
+import { checkPackage, readPackage } from "@/lib/package-read";
+import type { PackageFile } from "@/lib/package-read";
+import { createTopic } from "@/lib/packages";
 
 /**
  * The Training screen: empty, or with some progress (the first part of a topic done, one passed,
@@ -1891,6 +1900,125 @@ export function EditProfileSample() {
         role: "student",
       }}
       onSave={() => undefined}
+    />
+  );
+}
+
+/** The content package screens (import, demo topic, student section) with a prepared demo topic. */
+export function PackageSample({
+  files,
+  state,
+}: {
+  /** The text of the sample package's CSV files, read on the server. */
+  files: Record<string, string>;
+  state:
+    | "import-empty"
+    | "import-files"
+    | "import-problems"
+    | "topic-guide"
+    | "topic-steps"
+    | "topic-problems"
+    | "publish"
+    | "student-topic"
+    | "preview";
+}) {
+  const now = new Date(2026, 9, 31, 10, 0).getTime();
+  const noop = () => undefined;
+  const sample = (name: string): PackageFile => {
+    const text = files[name];
+    return { name, size: text.length, text };
+  };
+  const clean = ["topic.csv", "guide.csv", "steps.csv", "scenario.csv", "questions.csv"].map(
+    sample,
+  );
+  const pictures: PackageFile[] = ["exit-sign.png", "assembly-point.png"].map((name) => ({
+    name,
+    size: 4000,
+    dataUrl: "",
+  }));
+  const withProblems = [
+    sample("guide.csv"),
+    sample("steps-with-problems.csv"),
+    sample("questions-with-problems.csv"),
+    ...pictures,
+  ];
+  const importView = (files: PackageFile[]) => {
+    const outcome = readPackage(files);
+    return (
+      <PackageImportView
+        outcome={outcome}
+        title={outcome.data.title}
+        summary={outcome.data.summary}
+        questionsChoice={null}
+        onChoice={noop}
+        onFiles={noop}
+        onRemove={noop}
+        onTitle={noop}
+        onSummary={noop}
+        onImport={noop}
+        onCancel={noop}
+      />
+    );
+  };
+  if (state === "import-empty") return importView([]);
+  if (state === "import-files") return importView([...clean, ...pictures]);
+  if (state === "import-problems") return importView(withProblems);
+
+  const good = createTopic(
+    readPackage([...clean, ...pictures]).data,
+    "Evacuating a crowded hall",
+    "How to leave a busy indoor space calmly.",
+    now,
+    [],
+  );
+  const bad = createTopic(
+    readPackage(withProblems).data,
+    "Evacuating a crowded hall",
+    "How to leave a busy indoor space calmly.",
+    now,
+    [],
+  );
+  const topicView = (
+    topic: typeof good,
+    tab: "guide" | "steps" | "scenario" | "quiz",
+    dialog: "publish" | null = null,
+  ) => (
+    <PackageTopicView
+      topic={topic}
+      tab={tab}
+      issues={checkPackage(topic)}
+      now={now}
+      dialog={dialog}
+      onTab={noop}
+      onAsk={noop}
+      onConfirm={noop}
+      onCancelDialog={noop}
+      dialogInline
+    />
+  );
+  if (state === "topic-guide") return topicView(good, "guide");
+  if (state === "topic-steps") return topicView(good, "steps");
+  if (state === "topic-problems") return topicView(bad, "steps");
+  if (state === "publish") return topicView(good, "guide", "publish");
+  if (state === "preview") {
+    return (
+      <PackagePartView
+        title={good.title}
+        part="guide"
+        data={good}
+        guideHref={(section) => `#section-${section}`}
+        back={{ label: "Back to topic", href: "#topic" }}
+        preview={{ exitHref: "#topic" }}
+      />
+    );
+  }
+  return (
+    <PackageTopicStudentView
+      title={good.title}
+      summary={good.summary}
+      data={good}
+      partHref={(part) => `#${part}`}
+      back={{ label: "Back to Materials", href: "#materials" }}
     />
   );
 }

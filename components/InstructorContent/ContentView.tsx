@@ -5,11 +5,13 @@ import { useRef, useState } from "react";
 import type { MouseEvent } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
+import { PackageCard } from "@/components/InstructorContent/PackageCard";
 import { SetCard } from "@/components/InstructorContent/SetCard";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { ProfileAvatar } from "@/components/ProfileAvatar/ProfileAvatar";
 import type { ContentSet } from "@/lib/content-sets";
 import { clearDraft } from "@/lib/import-draft";
+import type { DemoTopic } from "@/lib/packages";
 
 export const CONTENT_EMPTY = "No imported sets yet. Import questions from a file to create one.";
 export const CONTENT_NOTE = "Imported content stays in this browser (prototype).";
@@ -23,11 +25,14 @@ export type BuiltInTopic = { id: string; title: string; count: number };
  */
 export function ContentView({
   sets,
+  packages = [],
   builtIn,
   topicTitle,
   initiallyOpen = false,
 }: {
   sets: ContentSet[];
+  /** The demo topics of the package import (the section YOUR TOPICS). */
+  packages?: DemoTopic[];
   builtIn: BuiltInTopic[];
   topicTitle: (id: string) => string;
   /** Only for the screen review page: the built-in topics start open. */
@@ -55,7 +60,7 @@ export function ContentView({
         action={<ProfileAvatar />}
       />
       <ButtonLink href="/instructor/content/import" onClick={clearDraft}>
-        Import questions
+        Import content
       </ButtonLink>
 
       <section aria-labelledby="sets-title" className="flex flex-col gap-3">
@@ -74,6 +79,25 @@ export function ContentView({
           </ul>
         )}
       </section>
+
+      {packages.length > 0 && (
+        <section
+          aria-labelledby="your-topics-title"
+          data-your-topics
+          className="flex flex-col gap-3"
+        >
+          <h2 id="your-topics-title" className="type-label text-text-secondary">
+            YOUR TOPICS
+          </h2>
+          <ul className="flex flex-col gap-3">
+            {packages.map((topic) => (
+              <li key={topic.id}>
+                <PackageCard topic={topic} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div ref={wrapper} className="flex flex-col">
         <div

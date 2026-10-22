@@ -63,7 +63,7 @@ async function pickTopic(page: Page, name = "Checking the route") {
   await page.locator("[data-topic-row]").click();
   await expect(page).toHaveURL(/\/instructor\/content\/import\/topic$/);
   await page.locator("fieldset label", { hasText: name }).click();
-  await expect(page).toHaveURL(/\/instructor\/content\/import$/);
+  await expect(page).toHaveURL(/\/instructor\/content\/import\/questions$/);
 }
 
 /** Imports a file through the screen (file, title, topic) and stops on the Review. */
@@ -72,7 +72,7 @@ async function importFile(
   file: { name: string; mimeType: string; buffer: Buffer },
   title = "Evacuation routes",
 ) {
-  await page.goto("/instructor/content/import");
+  await page.goto("/instructor/content/import/questions");
   await page.locator("[data-file-input]").setInputFiles(file);
   await page.getByRole("textbox", { name: "Set title" }).fill(title);
   // a CSV with a topic column names its topic; any other file asks for one
@@ -118,7 +118,7 @@ for (const width of [360, 430]) {
         "page",
       );
       await expect(page.getByRole("heading", { name: "Content", level: 1 })).toBeVisible();
-      const importLink = page.getByRole("link", { name: "Import questions" });
+      const importLink = page.getByRole("link", { name: "Import content" });
       expect(await bg(importLink)).toBe(PRIMARY);
       const b = (await importLink.boundingBox())!;
       expect([b.height, b.x, b.width]).toEqual([52, 16, width - 32]);
@@ -150,7 +150,7 @@ for (const width of [360, 430]) {
     });
 
     test("the CSV template downloads with the documented header row", async ({ page }) => {
-      await page.goto("/instructor/content/import");
+      await page.goto("/instructor/content/import/questions");
       const [download] = await Promise.all([
         page.waitForEvent("download"),
         page.getByRole("link", { name: "Download CSV template" }).click(),
@@ -164,7 +164,7 @@ for (const width of [360, 430]) {
     test("Import: the order File, Title, Topic; the title follows the file name; the topic is found or picked", async ({
       page,
     }) => {
-      await page.goto("/instructor/content/import");
+      await page.goto("/instructor/content/import/questions");
       await expect(page.getByRole("heading", { name: "Import questions", level: 1 })).toBeVisible();
       const y = async (label: string) =>
         (await page.getByRole("heading", { name: label, level: 2, exact: true }).boundingBox())!.y;
@@ -216,7 +216,7 @@ for (const width of [360, 430]) {
       for (const r of await rows.all()) expect((await r.boundingBox())!.height).toBe(64);
       expect(await noSidewaysScroll(page)).toBe(true);
       await page.locator("fieldset label", { hasText: "Burns" }).click();
-      await expect(page).toHaveURL(/\/instructor\/content\/import$/);
+      await expect(page).toHaveURL(/\/instructor\/content\/import\/questions$/);
       await expect(page.locator("[data-topic-value]")).toContainText("S8");
       // the file and the title were kept while the picker was open
       await expect(page.locator("[data-file-name]")).toHaveText("plain.csv");
@@ -227,7 +227,7 @@ for (const width of [360, 430]) {
     test("Import: which files are accepted, which are refused (amber), and Cancel", async ({
       page,
     }) => {
-      await page.goto("/instructor/content/import");
+      await page.goto("/instructor/content/import/questions");
       const read = page.getByRole("button", { name: "Import and review" });
       const input = page.locator("[data-file-input]");
       await expect(input).toHaveAttribute("accept", ".csv,.xlsx,.docx,.pdf");
@@ -283,7 +283,7 @@ for (const width of [360, 430]) {
       await dialog.getByRole("button", { name: "Discard" }).click();
       await expect(page).toHaveURL(/\/instructor\/content$/);
       // and with nothing entered Cancel leaves at once (the form starts empty again)
-      await page.locator("a:visible", { hasText: "Import questions" }).click();
+      await page.goto("/instructor/content/import/questions");
       await expect(page.getByRole("textbox", { name: "Set title" })).toHaveValue("");
       await page.getByRole("button", { name: "Cancel" }).click();
       await expect(page).toHaveURL(/\/instructor\/content$/);
@@ -297,7 +297,7 @@ for (const width of [360, 430]) {
         const url = r.url();
         if (!url.startsWith("data:") && !url.startsWith("blob:")) requests.push(url);
       });
-      await page.goto("/instructor/content/import");
+      await page.goto("/instructor/content/import/questions");
       await page.locator("[data-file-input]").setInputFiles(csvFile(makeCsv(20)));
       await page.getByRole("textbox", { name: "Set title" }).fill("Evacuation routes");
       await page.getByRole("button", { name: "Import and review" }).click();
@@ -592,7 +592,7 @@ test.describe("Content and the Student", () => {
   test("a student is sent Home from every Content route", async ({ page }) => {
     for (const path of [
       "/instructor/content",
-      "/instructor/content/import",
+      "/instructor/content/import/questions",
       "/instructor/content/abc",
       "/instructor/content/abc/1",
     ]) {

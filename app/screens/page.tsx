@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import type { ReactNode } from "react";
 import Materials from "@/app/(app)/materials/page";
 import { ActionBarProvider, ActionBarSlot } from "@/components/ActionBar/ActionBar";
@@ -49,6 +50,7 @@ import {
   InstructorExamsSample,
   InstructorContentSample,
   InstructorStudentsSample,
+  PackageSample,
   GroupPickerSample,
   AboutSample,
   WelcomeSample,
@@ -172,6 +174,18 @@ function FoundationKit() {
     </>
   );
 }
+
+const packageFiles = Object.fromEntries(
+  [
+    "topic.csv",
+    "guide.csv",
+    "steps.csv",
+    "scenario.csv",
+    "questions.csv",
+    "steps-with-problems.csv",
+    "questions-with-problems.csv",
+  ].map((name) => [name, readFileSync(`public/templates/sample-package/${name}`, "utf8")]),
+);
 
 export default function Screens() {
   return (
@@ -983,6 +997,51 @@ export default function Screens() {
           <PhoneFrame label="Join link: invited to Rescue team">
             <Screen>
               <InstructorStudentsSample state="join" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Content package: Import content, empty">
+            <Screen>
+              <PackageSample files={packageFiles} state="import-empty" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Content package: Import content, the whole package recognised">
+            <Screen>
+              <PackageSample files={packageFiles} state="import-files" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Content package: Import content, files with problems">
+            <Screen>
+              <PackageSample files={packageFiles} state="import-problems" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Content package: demo topic, Guide tab with Used by lines">
+            <Screen>
+              <PackageSample files={packageFiles} state="topic-guide" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Content package: demo topic, Steps tab">
+            <Screen>
+              <PackageSample files={packageFiles} state="topic-steps" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Content package: demo topic with issues, Publish disabled">
+            <Screen>
+              <PackageSample files={packageFiles} state="topic-problems" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Content package: Publish dialog">
+            <Screen>
+              <PackageSample files={packageFiles} state="publish" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Content package: Preview as student">
+            <Screen>
+              <PackageSample files={packageFiles} state="preview" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Content package: student topic screen, From your instructor">
+            <Screen>
+              <PackageSample files={packageFiles} state="student-topic" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Join link: not valid">

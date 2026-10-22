@@ -40,6 +40,7 @@ describe("one binary pattern: right or wrong, nothing else", () => {
       containing(/Explain your choice|<textarea/).filter(
         (file) =>
           file !== "components/InstructorContent/EditQuestionView.tsx" &&
+          file !== "components/InstructorContent/PackageQuestionViews.tsx" &&
           file !== "components/InstructorStudents/InviteView.tsx",
       ),
     ).toEqual([]);

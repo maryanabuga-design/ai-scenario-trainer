@@ -17,7 +17,7 @@ export default function ImportTopicPage() {
       <PageHeaderBand
         title="Topic"
         subtitle="The guide topic of these questions"
-        back={{ label: "Back to Import", href: "/instructor/content/import" }}
+        back={{ label: "Back to Import", href: "/instructor/content/import/questions" }}
       />
       <span id="topic-picker-label" className="sr-only">
         Topic
@@ -36,7 +36,7 @@ export default function ImportTopicPage() {
             checked={draft.topic === id}
             onChange={(value) => {
               updateDraft({ topic: value });
-              router.replace("/instructor/content/import");
+              router.replace("/instructor/content/import/questions");
             }}
           >
             <span className="type-body-strong min-w-0 flex-1 truncate">

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { Chip } from "@/components/Chip/Chip";
+import { FromInstructor } from "@/components/MaterialsTopics/FromInstructor";
 import { ListScroll } from "@/components/MaterialsTopics/ListScroll";
 import { ProfileAvatar } from "@/components/ProfileAvatar/ProfileAvatar";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
@@ -76,6 +77,7 @@ export function MaterialsTopics({ topics = allTopics() }: { topics?: Topic[] }) 
             </ul>
           </section>
         ))}
+        <FromInstructor />
       </div>
     </div>
   );

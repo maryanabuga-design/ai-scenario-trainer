@@ -1,0 +1,11 @@
+﻿question_id,question,option_a,option_b,option_c,option_d,correct,explanation,guide_reference,image_file,alt_text
+Q001,What should you do first when you enter a crowded hall?,Find a seat close to the stage,Find the two nearest exits,Take a photo of the room,Check where the toilets are,B,Knowing two exits in advance saves time if an alarm sounds.,1,,
+Q002,How should you move when the alarm sounds?,Run as fast as you can,Walk steadily and keep to one side,Wait for others to go first,Move against the crowd,B,A steady pace keeps the crowd moving and prevents falls.,2,,
+Q003,Which exit should you choose?,Only the one you came in through,The nearest marked exit,The biggest door,The one furthest from the stage,B,The nearest marked exit is usually fastest and spreads people across exits.,1,,
+Q004,What should you use to go down several floors during an evacuation?,The lift,The stairs,The service door,A window,B,Lifts can stop working in an emergency. Use the stairs.,2,,
+Q005,What should you avoid at a busy doorway?,Walking steadily,Stopping in the doorway,Keeping to one side,Following the signs,B,Stopping blocks the people behind you.,3,,
+Q006,Who should you tell about a person who cannot move quickly?,A stranger outside,A member of staff,"Nobody, they will manage",The nearest friend,B,Staff can bring the right help without blocking the route.,3,,
+Q007,Why should you not go back inside for your belongings?,It takes too long to queue,It is dangerous and blocks others,Staff will return them later,You may lose your seat,B,Going back puts you at risk and slows the evacuation.,4,,
+Q008,What should you do at the assembly point?,Leave for home,Stay there and be counted,Go back to the entrance,Wait inside the building,B,Staff need to count everyone to know who is missing.,4,,
+Q009,You notice a friend is missing at the assembly point. What do you do?,Search inside the building,Tell staff their name and last known place,Ask people to start a search,Wait and say nothing,B,Staff can organise a safe search.,4,,
+Q010,What does a green exit sign show?,A place to rest,The route to an exit,A first aid point,The assembly point,B,Green exit signs mark the way out of a building.,1,,

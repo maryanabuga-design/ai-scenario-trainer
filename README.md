@@ -77,6 +77,18 @@ Build order and decisions: `docs/build-plan.md`.
 
 - Invitations are simulated: no email is sent; the join link only works in this browser. Moving or removing students and messaging are not in the prototype.
 
+- Content package import is a demonstration: it reads CSV files and images only. A real product would read one Excel workbook (sheets Guide, Steps, Scenario, Questions) plus Word, PDF and ZIP packages, use stable ids to update existing content, and offer AI-assisted conversion of a raw document into the template, with every item shown next to its source passage and always reviewed by a person before publishing. Demo topics are isolated from the rest of the app: they are not part of readiness, Progress, exams or Ask AI. The sample package is in `public/templates/sample-package/` (and as `sample-package.zip`).
+
+The five CSV formats (the sample package is the reference example; headers are matched case-insensitively):
+
+| File | Columns |
+|---|---|
+| topic | topic_title, topic_summary, scenario_title |
+| guide | section, title, text, image_file, alt_text |
+| steps | checklist_title, step, action, detail, guide_reference, image_file, alt_text |
+| scenario | step, situation, question, option_a, option_b, option_c, option_d, correct, why, guide_reference, image_file, alt_text |
+| questions | question_id, question, option_a, option_b, option_c, option_d, correct, explanation, guide_reference, image_file, alt_text |
+
 - Certificates are simulated: a prototype certificate is made on this device when an exam is passed. It is not an official document and nothing is verified or sent.
 
 - Exam assignment is a single-browser simulation of an instructor feature; there is no server. The one assigned exam is demo data seeded on first load (S1 to S4, due in 7 days). The Student/Instructor switch on Profile is a demo; the Instructor "Assign exam" screen is not built yet (Instructor Home is a stub).

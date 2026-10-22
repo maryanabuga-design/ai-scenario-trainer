@@ -1,4 +1,5 @@
 import { ChevronDown } from "lucide-react";
+import type { ReactNode } from "react";
 import type { Step } from "@/lib/checklists";
 
 /** The fill, border and radius of the Steps list card and the Source row. */
@@ -15,11 +16,14 @@ export function StepCard({
   index,
   open,
   onToggleOpen,
+  footer,
 }: {
   step: Step;
   index: number;
   open: boolean;
   onToggleOpen: () => void;
+  /** More under the details (a demo topic's picture and guide pill). */
+  footer?: ReactNode;
 }) {
   const headerId = `${step.id}-header`;
   const panelId = `${step.id}-panel`;
@@ -59,6 +63,7 @@ export function StepCard({
                 {detail}
               </p>
             ))}
+            {footer}
           </div>
         </div>
       </div>

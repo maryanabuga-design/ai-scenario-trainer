@@ -281,7 +281,7 @@ for (const width of [360, 430]) {
     test("a draft set is a row that opens its Review; publishing it removes the row", async ({
       page,
     }) => {
-      await page.goto("/instructor/content/import");
+      await page.goto("/instructor/content/import/questions");
       const csv =
         "topic,question,option_a,option_b,option_c,option_d,correct,explanation,guide_reference,image_url\nS2,What is safest?,Marked exit,Lift,Wait,,A,The marked exit.,S2,";
       await page
