@@ -11,11 +11,11 @@ const page = readFileSync("app/(app)/materials/read/[topic]/page.tsx", "utf8");
 describe("the reading screen", () => {
   it("has the sticky header, the title, one meta line with the guide, the topic id and the reading time", () => {
     expect(source).toContain("<ReadingHeader");
-    expect(source).toContain("label={`${topic.id} · ${topic.position} of ${topic.total}`}");
+    expect(source).toContain("`${topic.id} · ${topic.position} of ${topic.total}`");
     // Back always goes to the Materials list
     expect(source).toContain("if (canGoBackToList()) router.back();");
     expect(source).toContain('router.push("/materials")');
-    expect(source).toContain("{topic.guideTitle} · {topic.id} · {readingLabel(topic.minutes)}");
+    expect(source).toContain("${topic.guideTitle} · ${topic.id} · ${readingLabel(topic.minutes)}");
     expect(source).toContain('<h1 className="type-page-title">{topic.title}</h1>');
   });
 

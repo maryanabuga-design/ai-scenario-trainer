@@ -6,6 +6,7 @@ import {
   Image as ImageIcon,
   ListChecks,
   LoaderCircle,
+  X,
   Route,
   ClipboardCheck,
   Shapes,
@@ -14,19 +15,20 @@ import type { LucideIcon } from "lucide-react";
 import { useRef } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button, ButtonLink } from "@/components/Button/Button";
-import { Card } from "@/components/Card/Card";
 import { Amber } from "@/components/InstructorContent/Amber";
+import { Notice } from "@/components/Notice/Notice";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { SelectableRow } from "@/components/SelectableRow/SelectableRow";
 import { TextField } from "@/components/TextField/TextField";
 import { LucideTile } from "@/components/TopicTile/TopicTile";
-import { checkPackage, imagesLabel } from "@/lib/package-read";
+import { checkPackage, imagesLabel, missingImages, shortName } from "@/lib/package-read";
 import type { PartKind, ReadOutcome } from "@/lib/package-read";
 
 export const FILES_HELP = "CSV files and images · choose them together";
 export const INFO_TITLE = "How the package is read";
 export const INFO_TEXT =
-  "Each CSV describes one part: topic, guide, steps, scenario or questions. Choose all files together, with the images they mention. Steps, scenario and questions should point to the guide section they rely on. A person always reviews before publishing.";
+  "Each CSV describes one part: topic, guide, steps, scenario or questions. Choose all files together, with the images they mention. Steps, scenario and questions should point to the guide section they rely on. Word, Excel and PDF files are not read in this prototype. A person always reviews before publishing.";
+export const FIX_IN_REVIEW = "You can import now and fix the issues in the review.";
 export const ACCEPT = ".csv,.png,.jpg,.jpeg,.webp";
 
 const ICONS: Record<PartKind | "images", LucideIcon> = {
@@ -101,9 +103,9 @@ export function PackageImportView({
         back={{ label: "Back to Content", href: "/instructor/content" }}
       />
       {notice && (
-        <p role="status" data-notice className="type-body text-center">
+        <Notice variant="to-fix" alert title="Choose the corrected files">
           {notice}
-        </p>
+        </Notice>
       )}
 
       <section aria-labelledby="files-label" className="flex flex-col gap-3">
@@ -148,50 +150,71 @@ export function PackageImportView({
         {rows.length > 0 && (
           <ul data-recognised className="flex flex-col gap-2">
             {rows.map((row) => {
-              const problems = blockingBy(row.part);
+              const fileName =
+                "fileName" in row ? (row as { fileName?: string }).fileName : undefined;
+              const missing = row.part === "images" ? missingImages(outcome.data) : [];
+              const problems = row.part === "images" ? missing.length : blockingBy(row.part);
+              const pill =
+                row.part === "images" && problems > 0
+                  ? `${problems} to add`
+                  : problems > 0
+                    ? `${problems} to fix`
+                    : "Ready";
+              const removeName = row.part === "images" ? "all images" : (fileName ?? row.part);
               return (
                 <li
-                  key={`${row.part}-${"fileName" in row ? row.fileName : ""}`}
+                  key={`${row.part}-${fileName ?? ""}`}
                   data-recognised-row={row.part}
                   className="flex min-h-[72px] items-center gap-3 rounded-card border border-selectable-stroke bg-card px-3 py-2"
                 >
                   <LucideTile icon={ICONS[row.part]} size="tile" />
                   <span className="flex min-w-0 flex-1 flex-col gap-1">
-                    <span className="type-body-strong truncate">{row.label}</span>
-                    <span className="type-small flex items-center gap-2 text-text-secondary">
-                      <span
-                        data-row-pill={problems > 0 ? "attention" : "ready"}
-                        className={`type-caption shrink-0 rounded-full px-2.5 py-0.5 whitespace-nowrap ${
-                          problems > 0
-                            ? "bg-status-attention-bg text-status-attention-ink"
-                            : "bg-status-success-bg text-status-success-ink"
-                        }`}
-                      >
-                        {problems > 0 ? `Needs attention · ${problems}` : "Ready"}
-                      </span>
-                      {"fileName" in row && row.fileName && (
-                        <span className="truncate">{row.fileName}</span>
-                      )}
+                    <span className="type-body-strong">{row.label}</span>
+                    <span
+                      data-row-pill={problems > 0 ? "to-fix" : "ready"}
+                      className={`type-caption w-fit rounded-full px-2.5 py-0.5 whitespace-nowrap ${
+                        problems > 0
+                          ? "bg-status-attention-bg text-status-attention-ink"
+                          : "bg-status-success-bg text-status-success-ink"
+                      }`}
+                    >
+                      {pill}
                     </span>
+                    {missing.length > 0 && (
+                      <span data-missing className="type-small text-text-secondary">
+                        Missing: {missing.join(", ")}
+                      </span>
+                    )}
+                    {fileName && (
+                      <span
+                        data-file-name
+                        aria-label={fileName}
+                        className="type-small text-text-secondary"
+                      >
+                        <span aria-hidden="true">{shortName(fileName)}</span>
+                      </span>
+                    )}
                   </span>
-                  <Button
-                    variant="secondary"
-                    wide={false}
-                    compact
-                    aria-label={`Remove ${row.part === "images" ? "images" : (row as { fileName?: string }).fileName}`}
-                    onClick={() =>
-                      onRemove({
-                        part: row.part,
-                        fileName: (row as { fileName?: string }).fileName,
-                      })
-                    }
+                  <button
+                    type="button"
+                    aria-label={`Remove ${removeName}`}
+                    onClick={() => onRemove({ part: row.part, fileName })}
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-neutral-tile-bg text-neutral-tile-ink has-focus-visible:outline-2 focus-visible:outline-2"
                   >
-                    Remove
-                  </Button>
+                    <X size={18} strokeWidth={2} aria-hidden="true" />
+                  </button>
                 </li>
               );
             })}
           </ul>
+        )}
+
+        {rows.some((row) =>
+          row.part === "images" ? missingImages(outcome.data).length > 0 : blockingBy(row.part) > 0,
+        ) && (
+          <p data-fix-in-review className="type-small text-text-secondary">
+            {FIX_IN_REVIEW}
+          </p>
         )}
 
         <div className="flex flex-wrap items-center gap-x-2">
@@ -212,10 +235,16 @@ export function PackageImportView({
         </div>
       </section>
 
-      <Card className="flex flex-col gap-1">
-        <h2 className="type-body-strong">{INFO_TITLE}</h2>
-        <p className="type-small text-text-secondary">{INFO_TEXT}</p>
-      </Card>
+      <div className="flex flex-col gap-1">
+        <Notice variant="info" title={INFO_TITLE}>
+          {INFO_TEXT}
+        </Notice>
+        <div className="-ml-3 self-start">
+          <ButtonLink href="/instructor/content/import/questions" variant="tertiary">
+            Import questions to a built-in topic
+          </ButtonLink>
+        </div>
+      </div>
 
       {onlyQuestions && (
         <section aria-labelledby="where-label" className="flex flex-col gap-3">
@@ -269,14 +298,11 @@ export function PackageImportView({
           label="Summary"
           hideLabel
           name="topic-summary"
+          rows={2}
           value={summary}
           onChange={onSummary}
         />
       </section>
-
-      <ButtonLink href="/instructor/content/import/questions" variant="secondary">
-        Import questions to a built-in topic
-      </ButtonLink>
 
       {reading && (
         <p

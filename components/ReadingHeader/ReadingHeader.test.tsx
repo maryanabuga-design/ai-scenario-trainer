@@ -29,7 +29,7 @@ describe("the reading header", () => {
 
   it("is sticky on the page colour, 56px plus the top safe area, full width and marked full-bleed", () => {
     const html = render();
-    expect(html).toContain("sticky top-0");
+    expect(html).toContain("sticky top-[var(--preview-bar,0px)]");
     expect(html).toContain("bg-bg");
     expect(html).toContain("h-[calc(56px+env(safe-area-inset-top))]");
     expect(html).toContain("data-full-bleed");

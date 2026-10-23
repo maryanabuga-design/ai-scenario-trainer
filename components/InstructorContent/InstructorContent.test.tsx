@@ -125,8 +125,9 @@ describe("the Import screen", () => {
     // the title input has a label for screen readers only, not a second visible one
     expect(html).toMatch(/<label[^>]*class="sr-only"[^>]*>Set title<\/label>/);
     expect(html).toContain("h-[52px]");
-    expect(html).toContain("CSV, Excel, Word or PDF · up to 5 MB");
-    expect(html).toContain('accept=".csv,.xlsx,.docx,.pdf"');
+    expect(html).toContain("CSV file · up to 5 MB");
+    expect(html).toContain("Word, Excel and PDF files are not read in this prototype.");
+    expect(html).toContain('accept=".csv"');
     expect(html).toContain('href="/templates/question-template.csv"');
     expect(html).toContain("Download CSV template");
   });

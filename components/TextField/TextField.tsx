@@ -25,6 +25,7 @@ export function TextField({
   autoFocus = false,
   action,
   hideLabel = false,
+  rows,
 }: {
   label: string;
   name: string;
@@ -45,6 +46,8 @@ export function TextField({
   action?: ReactNode;
   /** Keep the label for screen readers only (the section above already names the field). */
   hideLabel?: boolean;
+  /** A text area of this many lines instead of the one-line input (the summary of a topic). */
+  rows?: number;
 }) {
   const id = useId();
   const errorId = `${id}-error`;
@@ -55,29 +58,51 @@ export function TextField({
       <label htmlFor={id} className={hideLabel ? "sr-only" : "type-small-strong mb-1.5"}>
         {label}
       </label>
-      <input
-        id={id}
-        name={name}
-        type={type}
-        min={min}
-        inputMode={inputMode}
-        autoComplete={autoComplete}
-        autoFocus={autoFocus}
-        autoCapitalize={type === "email" ? "none" : undefined}
-        spellCheck={false}
-        readOnly={readOnly}
-        aria-readonly={readOnly || undefined}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={describedBy || undefined}
-        value={value}
-        onChange={(event) => onChange?.(event.target.value)}
-        onBlur={onBlur}
-        className={`type-body h-[52px] w-full rounded-[14px] border px-[var(--gutter,1rem)] focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primary ${
-          readOnly
-            ? "border-secondary-sand-pressed bg-secondary-sand text-text-secondary"
-            : `bg-card text-text ${error ? "border-wrong" : "border-selectable-stroke"}`
-        }`}
-      />
+      {rows ? (
+        <textarea
+          id={id}
+          name={name}
+          rows={rows}
+          autoFocus={autoFocus}
+          spellCheck={false}
+          readOnly={readOnly}
+          aria-readonly={readOnly || undefined}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy || undefined}
+          value={value}
+          onChange={(event) => onChange?.(event.target.value)}
+          onBlur={onBlur}
+          className={`type-body w-full resize-none rounded-[14px] border px-[var(--gutter,1rem)] py-3 focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primary ${
+            readOnly
+              ? "border-secondary-sand-pressed bg-secondary-sand text-text-secondary"
+              : `bg-card text-text ${error ? "border-wrong" : "border-selectable-stroke"}`
+          }`}
+        />
+      ) : (
+        <input
+          id={id}
+          name={name}
+          type={type}
+          min={min}
+          inputMode={inputMode}
+          autoComplete={autoComplete}
+          autoFocus={autoFocus}
+          autoCapitalize={type === "email" ? "none" : undefined}
+          spellCheck={false}
+          readOnly={readOnly}
+          aria-readonly={readOnly || undefined}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy || undefined}
+          value={value}
+          onChange={(event) => onChange?.(event.target.value)}
+          onBlur={onBlur}
+          className={`type-body h-[52px] w-full rounded-[14px] border px-[var(--gutter,1rem)] focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primary ${
+            readOnly
+              ? "border-secondary-sand-pressed bg-secondary-sand text-text-secondary"
+              : `bg-card text-text ${error ? "border-wrong" : "border-selectable-stroke"}`
+          }`}
+        />
+      )}
       {helper && (
         <p id={helperId} className="type-small mt-1.5 text-text-secondary">
           {helper}

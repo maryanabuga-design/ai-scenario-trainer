@@ -1,25 +1,10 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import {
-  PackageGone,
-  PackageTopicStudentView,
-} from "@/components/PackageContent/PackageStudentViews";
-import { publishedPackages, usePackages } from "@/lib/packages";
+import { PackageStudentRoute } from "@/components/PackageContent/PackageStudentRoute";
 
+/** A published demo topic opens its reading screen directly, like a built-in topic. */
 export default function PackageStudentPage() {
-  const params = useParams<{ id: string }>();
-  const topics = usePackages();
-  if (topics === "loading") return null;
-  const topic = publishedPackages(topics).find((entry) => entry.id === params.id);
-  if (!topic) return <PackageGone />;
-  return (
-    <PackageTopicStudentView
-      title={topic.title}
-      summary={topic.summary}
-      data={topic}
-      partHref={(part) => `/materials/package/${topic.id}/${part}`}
-      back={{ label: "Back to Materials", href: "/materials" }}
-    />
-  );
+  const { id } = useParams<{ id: string }>();
+  return <PackageStudentRoute id={id} preview={false} />;
 }

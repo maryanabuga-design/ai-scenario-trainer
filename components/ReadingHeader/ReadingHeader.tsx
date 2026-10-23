@@ -36,7 +36,7 @@ export function ReadingHeader({
     <header
       data-reading-header
       data-full-bleed
-      className={`sticky top-0 z-20 -mt-[calc(1.5rem+env(safe-area-inset-top))] mb-6 flex h-[calc(56px+env(safe-area-inset-top))] shrink-0 items-center border-b bg-bg px-[var(--gutter,1rem)] pt-[env(safe-area-inset-top)] -mx-[var(--gutter,1rem)] ${scrolled ? "border-selectable-stroke" : "border-transparent"}`}
+      className={`sticky top-[var(--preview-bar,0px)] z-20 -mt-[calc(1.5rem+env(safe-area-inset-top))] mb-6 flex h-[calc(56px+env(safe-area-inset-top))] shrink-0 items-center border-b bg-bg px-[var(--gutter,1rem)] pt-[env(safe-area-inset-top)] -mx-[var(--gutter,1rem)] ${scrolled ? "border-selectable-stroke" : "border-transparent"}`}
     >
       <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2">
         <div className="justify-self-start">

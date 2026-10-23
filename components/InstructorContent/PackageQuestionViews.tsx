@@ -4,7 +4,7 @@ import { Pencil } from "lucide-react";
 import { useState } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button, ButtonLink } from "@/components/Button/Button";
-import { Amber } from "@/components/InstructorContent/Amber";
+import { Notice } from "@/components/Notice/Notice";
 import { OptionResult } from "@/components/OptionCard/OptionCard";
 import { GuidePill, NeedsAttention, PackageImage } from "@/components/PackageContent/PackageParts";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
@@ -116,10 +116,14 @@ export function PackageQuestionEdit({
         back={{ label: "Back to question", href: backHref }}
       />
       {problems.length > 0 && (
-        <div data-problems className="flex flex-col gap-1">
-          {problems.map((issue) => (
-            <Amber key={issue.id}>{issue.reason}</Amber>
-          ))}
+        <div data-problems>
+          <Notice variant="to-fix" title={`${problems.length} to fix in this question`}>
+            <ul className="flex flex-col gap-0.5">
+              {problems.map((issue) => (
+                <li key={issue.id}>{issue.reason}</li>
+              ))}
+            </ul>
+          </Notice>
         </div>
       )}
       <section aria-labelledby="pq-q" className="flex flex-col gap-2">
@@ -139,6 +143,11 @@ export function PackageQuestionEdit({
         <h2 id="pq-a" className="type-label text-text-secondary">
           ANSWERS · CHOOSE THE CORRECT ONE
         </h2>
+        {draft.correct && (
+          <Notice variant="info" title="Check the correct answer">
+            Option {draft.correct.toUpperCase()} is marked as correct. Change it if that is wrong.
+          </Notice>
+        )}
         {LETTERS.map((letter, i) => (
           <div key={letter} className="flex items-center gap-2">
             <label className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center">

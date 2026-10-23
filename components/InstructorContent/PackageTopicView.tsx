@@ -1,16 +1,17 @@
 "use client";
 
 import { Eye, FolderSync } from "lucide-react";
+import { useState } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
-import { Amber } from "@/components/InstructorContent/Amber";
 import {
   ChecklistCards,
   GuideSections,
   QuizRows,
   ScenarioCards,
 } from "@/components/PackageContent/PackageParts";
+import { Notice } from "@/components/Notice/Notice";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
 import { blockingIssues, coverageLine, partsOf } from "@/lib/package-read";
@@ -40,14 +41,13 @@ export function issuesOfPart(issues: Issue[], part: PathPart): Issue[] {
   return issues.filter((issue) => issue.part === name);
 }
 
-export const issueCount = (n: number) => `${n} ${n === 1 ? "issue" : "issues"}`;
-
 /**
- * The demo topic of the Instructor (DESIGN.md: Instructor, content package import and demo topics):
- * the band with the title, the status line and the coverage, the four-option selector Guide | Steps |
- * Scenario | Quiz (a missing part is disabled), the part in the student's components with the guide
- * links and the flagged items, Replace files and Preview as student, and the pinned area:
- * Draft: hint, Primary "Publish", Secondary "Delete demo topic"; Published: Secondary "Unpublish".
+ * The demo topic of the Instructor (DESIGN.md: Content package review): the band with the title, the
+ * meta line "Draft · Last edited today", ONE notice (to fix, with "Show next issue", or "Nothing to
+ * fix"), the coverage, the four-option selector (an amber dot on a tab with issues, a missing part
+ * disabled), the tab with its own notice and the flagged items, and the pinned area: Primary Publish,
+ * Secondary Preview as student (both off while anything is to fix) and the destructive text link
+ * Delete demo topic; a Published topic has Secondary Unpublish and Secondary Preview as student.
  */
 export function PackageTopicView({
   topic,
@@ -59,6 +59,8 @@ export function PackageTopicView({
   onAsk,
   onConfirm,
   onCancelDialog,
+  onNextIssue,
+  onPreview,
   dialogInline = false,
 }: {
   topic: DemoTopic;
@@ -70,8 +72,13 @@ export function PackageTopicView({
   onAsk: (dialog: Exclude<PackageDialog, null>) => void;
   onConfirm: () => void;
   onCancelDialog: () => void;
+  /** "Show next issue". */
+  onNextIssue: () => void;
+  /** Opens Preview as student. */
+  onPreview: () => void;
   dialogInline?: boolean;
 }) {
+  const [closed, setClosed] = useState(false);
   const present = partsOf(topic);
   const blocking = blockingIssues(issues);
   const own = issuesOfPart(issues, tab);
@@ -80,6 +87,9 @@ export function PackageTopicView({
   const guideHref = (section: string) => `${base}?tab=guide#section-${section}`;
   const coverage = coverageLine(topic);
   const published = topic.status === "published";
+  const toFix = blocking.length > 0;
+  const inFiles = ownBlocking.some((issue) => issue.fix === "files");
+  const replaceHref = `/instructor/content/import?replace=${topic.id}&fix=${tab}`;
   return (
     <div className="flex flex-col gap-4 pb-4">
       <PageHeaderBand
@@ -98,9 +108,9 @@ export function PackageTopicView({
             }`}
           >
             {published ? "Published" : "Draft"}
-          </span>
+          </span>{" "}
           <span className="text-text-secondary">
-            {topic.code} · Last edited {editedText(topic.editedAt, now)}
+            · Last edited {editedText(topic.editedAt, now)}
           </span>
         </p>
         {coverage && (
@@ -110,12 +120,47 @@ export function PackageTopicView({
         )}
       </div>
 
+      {toFix ? (
+        <Notice
+          variant="to-fix"
+          id="package-status"
+          title={`${blocking.length} to fix before you can publish`}
+          action={
+            <div className="-ml-3">
+              <Button variant="tertiary" onClick={onNextIssue}>
+                Show next issue
+              </Button>
+            </div>
+          }
+        >
+          Preview and Publish unlock when everything is fixed.
+        </Notice>
+      ) : (
+        !closed && (
+          <Notice
+            variant="success"
+            id="package-status"
+            title="Nothing to fix"
+            onClose={() => setClosed(true)}
+          >
+            Preview as student, then publish.
+          </Notice>
+        )
+      )}
+
       <SegmentedControl
         name="package-tab"
         legend="Part"
         hideLegend
         dense
-        options={tabs.map((entry) => ({ ...entry, disabled: !present.includes(entry.value) }))}
+        options={tabs.map((entry) => {
+          const count = issuesOfPart(issues, entry.value).filter((issue) => issue.blocking).length;
+          return {
+            ...entry,
+            disabled: !present.includes(entry.value),
+            dot: count > 0 ? `${entry.label}, ${count} to fix` : undefined,
+          };
+        })}
         value={tab}
         onChange={onTab}
       />
@@ -130,15 +175,38 @@ export function PackageTopicView({
       ) : (
         <>
           {ownBlocking.length > 0 && (
-            <Amber>{issueCount(ownBlocking.length)} to fix in this tab</Amber>
+            <Notice
+              variant="to-fix"
+              id="tab-notice"
+              title={`${ownBlocking.length} to fix in this tab`}
+              action={
+                inFiles ? (
+                  <ButtonLink href={replaceHref} variant="secondary" icon={FolderSync}>
+                    Replace files
+                  </ButtonLink>
+                ) : undefined
+              }
+            >
+              {own
+                .filter(
+                  (issue) =>
+                    issue.blocking && (issue.key.endsWith(":all") || !issue.key.includes(":")),
+                )
+                .map((issue) => (
+                  <span
+                    key={issue.id}
+                    data-issue-ids={issue.id}
+                    tabIndex={-1}
+                    className="block rounded-[6px] outline-offset-2 data-[flash=true]:outline-2 data-[flash=true]:outline-status-attention-ink"
+                  >
+                    {issue.where}: {issue.reason}
+                  </span>
+                ))}
+              {inFiles
+                ? "Fix the flagged items in your files, then replace them."
+                : "Open each flagged question and use Edit question."}
+            </Notice>
           )}
-          {own
-            .filter((issue) => issue.key.endsWith(":all") || !issue.key.includes(":"))
-            .map((issue) => (
-              <Amber key={issue.id}>
-                {issue.where}: {issue.reason}
-              </Amber>
-            ))}
           {tab === "guide" && <GuideSections data={topic} issues={issues} showUse />}
           {tab === "steps" && <ChecklistCards data={topic} issues={issues} guideHref={guideHref} />}
           {tab === "scenario" && (
@@ -150,6 +218,7 @@ export function PackageTopicView({
               issues={issues}
               guideHref={guideHref}
               questionHref={(index) => `${base}/question/${index}`}
+              editHref={(index) => `${base}/question/${index}/edit`}
             />
           )}
           {own
@@ -159,19 +228,14 @@ export function PackageTopicView({
                 {issue.reason}
               </p>
             ))}
-          <ButtonLink href={`${base}/preview/${tab}`} variant="secondary" icon={Eye}>
-            Preview as student
-          </ButtonLink>
         </>
       )}
 
-      <ButtonLink
-        href={`/instructor/content/import?replace=${topic.id}`}
-        variant="secondary"
-        icon={FolderSync}
-      >
-        Replace files
-      </ButtonLink>
+      <div className="-ml-3 self-start">
+        <ButtonLink href={`/instructor/content/import?replace=${topic.id}`} variant="tertiary">
+          Replace files
+        </ButtonLink>
+      </div>
       {published && (
         <p data-published-note className="type-small text-center text-text-secondary">
           Visible to students in Materials, in the section From your instructor.
@@ -183,20 +247,23 @@ export function PackageTopicView({
 
       <ActionBar>
         {published ? (
-          <Button variant="secondary" onClick={() => onAsk("unpublish")}>
-            Unpublish
-          </Button>
+          <>
+            <Button variant="secondary" onClick={() => onAsk("unpublish")}>
+              Unpublish
+            </Button>
+            <Button variant="secondary" icon={Eye} disabled={toFix} onClick={onPreview}>
+              Preview as student
+            </Button>
+          </>
         ) : (
           <>
-            {blocking.length > 0 && (
-              <p data-publish-hint className="type-small text-center text-text-secondary">
-                Fix {issueCount(blocking.length)} to publish
-              </p>
-            )}
-            <Button disabled={blocking.length > 0} onClick={() => onAsk("publish")}>
+            <Button disabled={toFix} onClick={() => onAsk("publish")}>
               Publish
             </Button>
-            <Button variant="secondary" onClick={() => onAsk("delete")}>
+            <Button variant="secondary" icon={Eye} disabled={toFix} onClick={onPreview}>
+              Preview as student
+            </Button>
+            <Button variant="tertiary" destructive onClick={() => onAsk("delete")}>
               Delete demo topic
             </Button>
           </>

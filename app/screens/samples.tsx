@@ -135,10 +135,8 @@ import { readinessAfter, scopeItemIds } from "@/lib/readiness";
 import { topicIdsOf } from "@/lib/session";
 import { PackageImportView } from "@/components/InstructorContent/PackageImportView";
 import { PackageTopicView } from "@/components/InstructorContent/PackageTopicView";
-import {
-  PackagePartView,
-  PackageTopicStudentView,
-} from "@/components/PackageContent/PackageStudentViews";
+import { PackageStudentScreen } from "@/components/PackageContent/PackageStudentScreen";
+import type { StudentPart } from "@/components/PackageContent/PackageStudentScreen";
 import { checkPackage, readPackage } from "@/lib/package-read";
 import type { PackageFile } from "@/lib/package-read";
 import { createTopic } from "@/lib/packages";
@@ -1896,7 +1894,11 @@ export function EditProfileSample() {
   );
 }
 
-/** The content package screens (import, demo topic, student section) with a prepared demo topic. */
+/** A 1 by 1 picture standing in for the sample pictures on the review page. */
+const PIXEL =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+
+/** The content package screens (import, review, student and preview) with a prepared demo topic. */
 export function PackageSample({
   files,
   state,
@@ -1906,13 +1908,23 @@ export function PackageSample({
   state:
     | "import-empty"
     | "import-files"
+    | "import-missing"
     | "import-problems"
     | "topic-guide"
     | "topic-steps"
-    | "topic-problems"
+    | "topic-scenario"
+    | "topic-quiz"
+    | "topic-clean"
+    | "published"
     | "publish"
-    | "student-topic"
-    | "preview";
+    | "student-guide"
+    | "preview-guide"
+    | "student-steps"
+    | "preview-steps"
+    | "student-scenario"
+    | "preview-scenario"
+    | "student-quiz"
+    | "preview-quiz";
 }) {
   const now = new Date(2026, 9, 31, 10, 0).getTime();
   const noop = () => undefined;
@@ -1926,7 +1938,7 @@ export function PackageSample({
   const pictures: PackageFile[] = ["exit-sign.png", "assembly-point.png"].map((name) => ({
     name,
     size: 4000,
-    dataUrl: "",
+    dataUrl: PIXEL,
   }));
   const withProblems = [
     sample("guide.csv"),
@@ -1934,8 +1946,8 @@ export function PackageSample({
     sample("questions-with-problems.csv"),
     ...pictures,
   ];
-  const importView = (files: PackageFile[]) => {
-    const outcome = readPackage(files);
+  const importView = (list: PackageFile[]) => {
+    const outcome = readPackage(list);
     return (
       <PackageImportView
         outcome={outcome}
@@ -1954,22 +1966,13 @@ export function PackageSample({
   };
   if (state === "import-empty") return importView([]);
   if (state === "import-files") return importView([...clean, ...pictures]);
+  if (state === "import-missing") return importView([...clean, pictures[0]]);
   if (state === "import-problems") return importView(withProblems);
 
-  const good = createTopic(
-    readPackage([...clean, ...pictures]).data,
-    "Evacuating a crowded hall",
-    "How to leave a busy indoor space calmly.",
-    now,
-    [],
-  );
-  const bad = createTopic(
-    readPackage(withProblems).data,
-    "Evacuating a crowded hall",
-    "How to leave a busy indoor space calmly.",
-    now,
-    [],
-  );
+  const title = "Evacuating a crowded hall";
+  const summary = "How to leave a busy indoor space calmly.";
+  const good = createTopic(readPackage([...clean, ...pictures]).data, title, summary, now, []);
+  const bad = createTopic(readPackage(withProblems).data, title, summary, now, []);
   const topicView = (
     topic: typeof good,
     tab: "guide" | "steps" | "scenario" | "quiz",
@@ -1985,32 +1988,26 @@ export function PackageSample({
       onAsk={noop}
       onConfirm={noop}
       onCancelDialog={noop}
+      onNextIssue={noop}
+      onPreview={noop}
       dialogInline
     />
   );
-  if (state === "topic-guide") return topicView(good, "guide");
-  if (state === "topic-steps") return topicView(good, "steps");
-  if (state === "topic-problems") return topicView(bad, "steps");
+  if (state === "topic-guide") return topicView(bad, "guide");
+  if (state === "topic-steps") return topicView(bad, "steps");
+  if (state === "topic-scenario") return topicView(bad, "scenario");
+  if (state === "topic-quiz") return topicView(bad, "quiz");
+  if (state === "topic-clean") return topicView(good, "guide");
+  if (state === "published") return topicView({ ...good, status: "published" }, "guide");
   if (state === "publish") return topicView(good, "guide", "publish");
-  if (state === "preview") {
-    return (
-      <PackagePartView
-        title={good.title}
-        part="guide"
-        data={good}
-        guideHref={(section) => `#section-${section}`}
-        back={{ label: "Back to topic", href: "#topic" }}
-        preview={{ exitHref: "#topic" }}
-      />
-    );
-  }
+  const [kind, part] = state.split("-") as ["student" | "preview", StudentPart];
   return (
-    <PackageTopicStudentView
+    <PackageStudentScreen
+      id={good.id}
       title={good.title}
-      summary={good.summary}
       data={good}
-      partHref={(part) => `#${part}`}
-      back={{ label: "Back to Materials", href: "#materials" }}
+      part={part}
+      preview={kind === "preview"}
     />
   );
 }

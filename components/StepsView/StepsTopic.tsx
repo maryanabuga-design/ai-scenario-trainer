@@ -3,12 +3,13 @@
 import { ExternalLink } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { StepCard, stepsCard } from "@/components/StepsView/StepCard";
 import { TopicTile } from "@/components/TopicTile/TopicTile";
 import { initialOpen, toggleOpen } from "@/lib/accordion";
 import { STEP_GUIDES_PATH, stepCountLabel } from "@/lib/checklists";
-import type { Checklist } from "@/lib/checklists";
+import type { Checklist, Step } from "@/lib/checklists";
 
 /** The presentation of one topic's steps, with the open step passed in (the screen review page shows fixed states). */
 export function StepsTopicView({
@@ -16,11 +17,14 @@ export function StepsTopicView({
   open,
   onBack,
   onToggleOpen,
+  footerFor,
 }: {
   checklist: Checklist;
   open: string | null;
   onBack: () => void;
   onToggleOpen: (stepId: string) => void;
+  /** Under the details of a step (the picture and guide link of a demo topic's step). */
+  footerFor?: (step: Step, index: number) => ReactNode;
 }) {
   return (
     <div className="flex flex-col pb-[var(--gutter,1rem)]">
@@ -47,6 +51,7 @@ export function StepsTopicView({
             index={index}
             open={open === step.id}
             onToggleOpen={() => onToggleOpen(step.id)}
+            footer={footerFor?.(step, index)}
           />
         ))}
       </ol>

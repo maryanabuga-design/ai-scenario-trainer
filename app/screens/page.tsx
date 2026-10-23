@@ -1030,39 +1030,89 @@ export default function Screens() {
               <PackageSample files={packageFiles} state="import-files" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Content package: Import content, files with problems">
+          <PhoneFrame label="Content package: Import content, images missing (N to add)">
+            <Screen>
+              <PackageSample files={packageFiles} state="import-missing" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Content package: Import content, files with problems (N to fix)">
             <Screen>
               <PackageSample files={packageFiles} state="import-problems" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Content package: demo topic, Guide tab with Used by lines">
+          <PhoneFrame label="Content package review: Guide tab with issues, Show next issue">
             <Screen>
               <PackageSample files={packageFiles} state="topic-guide" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Content package: demo topic, Steps tab">
+          <PhoneFrame label="Content package review: Steps tab with issues">
             <Screen>
               <PackageSample files={packageFiles} state="topic-steps" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Content package: demo topic with issues, Publish disabled">
+          <PhoneFrame label="Content package review: Scenario tab with issues">
             <Screen>
-              <PackageSample files={packageFiles} state="topic-problems" />
+              <PackageSample files={packageFiles} state="topic-scenario" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Content package: Publish dialog">
+          <PhoneFrame label="Content package review: Quiz tab with issues, Edit question">
+            <Screen>
+              <PackageSample files={packageFiles} state="topic-quiz" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Content package review: nothing to fix">
+            <Screen>
+              <PackageSample files={packageFiles} state="topic-clean" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Content package review: Published, Unpublish and Preview as student">
+            <Screen>
+              <PackageSample files={packageFiles} state="published" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Content package review: Publish dialog">
             <Screen>
               <PackageSample files={packageFiles} state="publish" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Content package: Preview as student">
+          <PhoneFrame label="Demo topic: the student's reading screen">
             <Screen>
-              <PackageSample files={packageFiles} state="preview" />
+              <PackageSample files={packageFiles} state="student-guide" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Content package: student topic screen, From your instructor">
+          <PhoneFrame label="Demo topic: Preview as student, the same reading screen">
             <Screen>
-              <PackageSample files={packageFiles} state="student-topic" />
+              <PackageSample files={packageFiles} state="preview-guide" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Demo topic: the student's step guide">
+            <Screen>
+              <PackageSample files={packageFiles} state="student-steps" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Demo topic: Preview as student, the same step guide">
+            <Screen>
+              <PackageSample files={packageFiles} state="preview-steps" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Demo topic: the student's scenario step">
+            <Screen>
+              <PackageSample files={packageFiles} state="student-scenario" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Demo topic: Preview as student, the same scenario step">
+            <Screen>
+              <PackageSample files={packageFiles} state="preview-scenario" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Demo topic: the student's quiz question">
+            <Screen>
+              <PackageSample files={packageFiles} state="student-quiz" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Demo topic: Preview as student, the same quiz question">
+            <Screen>
+              <PackageSample files={packageFiles} state="preview-quiz" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Join link: not valid">

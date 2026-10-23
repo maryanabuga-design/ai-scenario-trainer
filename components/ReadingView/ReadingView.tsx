@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import type { ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { HighlightableText } from "@/components/HighlightableText/HighlightableText";
@@ -24,6 +25,17 @@ export type ReadingTopic = {
   canPractise: boolean;
   /** The step guide attached to the topic, if any (S1, S7, S8). */
   stepsHref: string | null;
+  /**
+   * A topic that is not in the built-in guides (a demo topic of the Instructor) fills these in:
+   * the header label, the meta line, its own body (no highlighting), what Practise and Back do.
+   */
+  demo?: {
+    label: string;
+    meta: string;
+    content: ReactNode;
+    onPractise: () => void;
+    onBack: () => void;
+  };
   /** The place in its guide: 3 of 10. */
   position: number;
   total: number;
@@ -32,9 +44,9 @@ export type ReadingTopic = {
 };
 
 /** The one-time tip under the meta line; it goes after the first highlight or when it is tapped. */
-function ReadingTip() {
+function ReadingTip({ hidden }: { hidden: boolean }) {
   const seen = useTipSeen();
-  if (seen !== null) return null;
+  if (hidden || seen !== null) return null;
   return (
     <button
       type="button"
@@ -66,7 +78,8 @@ export function ReadingView({ topic }: { topic: ReadingTopic }) {
   const [barVisible, setBarVisible] = useState(false);
 
   // Exit and Back on Results return here, not to Home or Training.
-  const practise = usePractise(topic.id, readingPath(topic.id));
+  const practiseBuiltIn = usePractise(topic.id, readingPath(topic.id));
+  const practise = topic.demo ? topic.demo.onPractise : practiseBuiltIn;
 
   /** One pass of the scroll rules: the header line and the quick-actions bar. */
   const update = useCallback(() => {
@@ -111,11 +124,15 @@ export function ReadingView({ topic }: { topic: ReadingTopic }) {
   return (
     <div className="flex flex-1 flex-col pb-[var(--gutter,1rem)]">
       <ReadingHeader
-        label={`${topic.id} · ${topic.position} of ${topic.total}`}
+        label={topic.demo ? topic.demo.label : `${topic.id} · ${topic.position} of ${topic.total}`}
         previousId={topic.previous?.id ?? null}
         nextId={topic.next?.id ?? null}
         scrolled={scrolled}
         onBack={() => {
+          if (topic.demo) {
+            topic.demo.onBack();
+            return;
+          }
           // always the Materials list: the history when it leads there (the list keeps its scroll),
           // otherwise a new navigation to the list, which scrolls back to where it was
           if (canGoBackToList()) router.back();
@@ -129,12 +146,22 @@ export function ReadingView({ topic }: { topic: ReadingTopic }) {
         <header className="flex flex-col gap-2">
           <h1 className="type-page-title">{topic.title}</h1>
           <p className="type-small text-text-secondary tabular-nums">
-            {topic.guideTitle} · {topic.id} · {readingLabel(topic.minutes)}
+            {topic.demo
+              ? topic.demo.meta
+              : `${topic.guideTitle} · ${topic.id} · ${readingLabel(topic.minutes)}`}
           </p>
-          <ReadingTip />
+          <ReadingTip hidden={topic.demo !== undefined} />
         </header>
 
-        <HighlightableText topicId={topic.id} markdown={topic.body} onActiveChange={onSelecting} />
+        {topic.demo ? (
+          topic.demo.content
+        ) : (
+          <HighlightableText
+            topicId={topic.id}
+            markdown={topic.body}
+            onActiveChange={onSelecting}
+          />
+        )}
       </div>
 
       {(topic.canPractise || topic.stepsHref) && (

@@ -433,6 +433,17 @@ export function imagesLabel(data: PackageData): string | null {
     : `Images · ${found} of ${named.length} found`;
 }
 
+/** The picture names the package mentions that were not selected, each once, in the order they appear. */
+export function missingImages(data: PackageData): string[] {
+  const seen = new Set<string>();
+  return referencedImages(data).filter((name) => {
+    const key = name.toLowerCase();
+    if (seen.has(key) || findImage(data, name) !== undefined) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 // ---- the checks ------------------------------------------------------------------------------
 
 export type IssuePart = PartKind | "images";
@@ -442,8 +453,10 @@ export type Issue = {
   /** The row: "Q004", "Section 3", "When the alarm sounds, step 2". */
   where: string;
   reason: string;
-  /** Needs attention (blocks Publish); false for the informational notes. */
+  /** To fix (blocks Preview and Publish); false for the informational notes. */
   blocking: boolean;
+  /** Where the fix is made: in the question editor, or in the files (then they are replaced). */
+  fix: "edit" | "files";
   /** Which item it belongs to, e.g. "questions:3", so a tab can flag it. */
   key: string;
 };
@@ -464,7 +477,17 @@ export const refExists = (data: PackageData, ref: string) =>
 export function checkPackage(data: PackageData): Issue[] {
   const issues: Issue[] = [];
   const add = (part: IssuePart, key: string, where: string, reason: string, blocking = true) =>
-    issues.push({ id: `${key}:${issues.length}`, part, where, reason, blocking, key });
+    issues.push({
+      id: `${key}:${issues.length}`,
+      part,
+      where,
+      reason,
+      blocking,
+      key,
+      // a question's text, answers, explanation and guide link are fixed in the editor; anything
+      // about a picture, and every other part, is fixed in the files
+      fix: part === "questions" && !/^Image |picture|larger than/.test(reason) ? "edit" : "files",
+    });
   const hasGuide = data.guide !== null && data.guide.length > 0;
 
   const image = (part: IssuePart, key: string, where: string, file: string, alt: string) => {
@@ -660,6 +683,9 @@ export const coverageLine = (data: PackageData): string | null => {
 export const LEARNING_PATH = ["guide", "steps", "scenario", "quiz"] as const;
 export type PathPart = (typeof LEARNING_PATH)[number];
 
+export const isPathPart = (value: string): value is PathPart =>
+  (LEARNING_PATH as readonly string[]).includes(value);
+
 export function partsOf(data: PackageData): PathPart[] {
   const present: Record<PathPart, boolean> = {
     guide: !!data.guide && data.guide.length > 0,
@@ -679,4 +705,52 @@ export function partsLine(data: PackageData): string {
         : part[0].toUpperCase() + part.slice(1),
     )
     .join(" · ");
+}
+
+/** The tab an issue belongs to (the questions are the Quiz tab; image notes follow their item). */
+export const tabOfIssue = (issue: Issue): PathPart | null =>
+  issue.part === "questions"
+    ? "quiz"
+    : issue.part === "guide" || issue.part === "steps" || issue.part === "scenario"
+      ? issue.part
+      : null;
+
+/** The issues to fix in the order "Show next issue" visits them: Guide, Steps, Scenario, Quiz; items in order. */
+export function orderedIssues(issues: Issue[]): Issue[] {
+  const rank = (issue: Issue) => {
+    const tab = tabOfIssue(issue);
+    return tab === null ? 4 : LEARNING_PATH.indexOf(tab);
+  };
+  return issues
+    .filter((issue) => issue.blocking)
+    .map((issue, index) => ({ issue, index }))
+    .sort((a, b) => rank(a.issue) - rank(b.issue) || a.index - b.index)
+    .map((entry) => entry.issue);
+}
+
+/** A long file name with the middle left out so the end (the extension) stays: "assembly-p…nt.png". */
+export function shortName(name: string, max = 26): string {
+  if (name.length <= max) return name;
+  const keep = max - 1;
+  const tail = Math.ceil(keep / 2.5);
+  return `${name.slice(0, keep - tail)}…${name.slice(name.length - tail)}`;
+}
+
+/** The issue "Show next issue" visits after the one with this id (the first when none): in order, wrapping around. */
+export function nextIssue(issues: Issue[], afterId: string | null): Issue | null {
+  const list = orderedIssues(issues);
+  if (list.length === 0) return null;
+  const at = afterId === null ? -1 : list.findIndex((issue) => issue.id === afterId);
+  return list[(at + 1) % list.length];
+}
+
+/** "Fix these in your files: Steps, step 3: Guide section 7 does not exist; ..." for the reopened import. */
+export function fixMessage(issues: Issue[], tab: PathPart | null): string {
+  const list = orderedIssues(issues).filter((issue) =>
+    tab === null ? true : tabOfIssue(issue) === tab,
+  );
+  if (list.length === 0) return "";
+  const shown = list.slice(0, 4).map((issue) => `${issue.where}: ${issue.reason}`);
+  const more = list.length > 4 ? ` and ${list.length - 4} more` : "";
+  return `Fix these in your files, then choose them together: ${shown.join("; ")}${more}.`;
 }

@@ -244,7 +244,7 @@ for (const width of [360, 430]) {
   test.describe(`From your instructor at ${width}px`, () => {
     test.use({ viewport: { width, height: 800 }, storageState: instructor });
 
-    test("the demo topic groups READ and PRACTISE, the step guide has no tick and writes nothing", async ({
+    test("the demo topic opens its reading screen directly (no hub), its step guide has no tick and writes nothing", async ({
       page,
     }) => {
       await page.goto("/instructor/content/import");
@@ -255,25 +255,25 @@ for (const width of [360, 430]) {
             .map((n) => `${D}${n}.csv`)
             .concat([`${D}exit-sign.png`, `${D}assembly-point.png`]),
         );
+      await expect(page.locator("[data-recognised-row]").first()).toBeVisible();
       await page.getByRole("button", { name: "Import and review" }).click();
       await expect(page).toHaveURL(/\/instructor\/content\/package\//, { timeout: 15000 });
       await page.getByRole("button", { name: "Publish", exact: true }).click();
       await page.getByRole("dialog").getByRole("button", { name: "Publish", exact: true }).click();
+      await expect(page.getByRole("button", { name: "Unpublish" })).toBeVisible();
       await page.evaluate(
         (value) => localStorage.setItem("ast.auth.v1", value),
         authValue("student"),
       );
       await page.goto("/materials");
+      await page.waitForLoadState("networkidle");
       await page.locator("[data-package-topic]").first().click();
-      await expect(page.locator("[data-part-group='READ']")).toContainText("Read the guide");
-      await expect(page.locator("[data-part-group='READ']")).toContainText("Read the step guide");
-      await expect(page.locator("[data-part-group='PRACTISE']")).toContainText(
-        "Practise the scenario",
-      );
-      await expect(page.locator("[data-part-group='PRACTISE']")).toContainText("Take the quiz");
+      await expect(page.locator("[data-reading-header]")).toBeVisible();
+      await expect(page.locator("[data-package-part], [data-part-group]")).toHaveCount(0);
+      await page.waitForLoadState("networkidle");
       const before = await page.evaluate(() => JSON.stringify({ ...localStorage }));
-      await page.locator("[data-package-part='steps']").click();
-      await expect(page.getByRole("heading", { name: "Read the step guide" })).toBeVisible();
+      await page.getByRole("link", { name: "Step guide for this topic" }).click();
+      await expect(page.getByText("Step-by-step guide")).toBeVisible();
       await expect(page.locator("input[type=checkbox]")).toHaveCount(0);
       await page.locator("main ol li button[aria-expanded]").first().click();
       expect(await page.evaluate(() => JSON.stringify({ ...localStorage }))).toBe(before);

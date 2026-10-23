@@ -69,7 +69,7 @@ export function sizeText(bytes: number): string {
 /** The message for a file that cannot be used, or null when its name and size are fine. */
 export function checkFile(file: { name: string; size: number }): string | null {
   const type = fileTypeOf(file.name);
-  if (type === null) return "Choose a CSV, Excel, Word or PDF file.";
+  if (type === null) return "Choose a CSV file. Word, Excel and PDF files are not read in this prototype.";
   if (file.size === 0) return "The file is empty.";
   if (type === "csv" && file.size > MAX_CSV_BYTES) return "A CSV file may be up to 1 MB.";
   if (file.size > MAX_OTHER_BYTES) return "The file is larger than 5 MB.";

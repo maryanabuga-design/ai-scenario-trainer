@@ -184,9 +184,7 @@ for (const width of [360, 430]) {
       const title = page.getByRole("textbox", { name: "Set title" });
       expect((await title.boundingBox())!.height).toBe(52);
       await expect(page.locator("label:not(.sr-only)", { hasText: "Set title" })).toHaveCount(0);
-      await expect(page.locator("[data-file-area]")).toContainText(
-        "CSV, Excel, Word or PDF · up to 5 MB",
-      );
+      await expect(page.locator("[data-file-area]")).toContainText("CSV file · up to 5 MB");
       await expect(page.getByText("One row is one question")).toBeVisible();
       await expect(page.getByText("option_a")).toHaveCount(0);
       expect(await noSidewaysScroll(page)).toBe(true);
@@ -239,7 +237,7 @@ for (const width of [360, 430]) {
       await page.goto("/instructor/content/import/questions");
       const read = page.getByRole("button", { name: "Import and review" });
       const input = page.locator("[data-file-input]");
-      await expect(input).toHaveAttribute("accept", ".csv,.xlsx,.docx,.pdf");
+      await expect(input).toHaveAttribute("accept", ".csv");
       // other extensions, empty files and files over the limit are refused in amber
       await input.setInputFiles({
         name: "q.txt",
@@ -247,7 +245,7 @@ for (const width of [360, 430]) {
         buffer: Buffer.from("x"),
       });
       await expect(page.locator("[data-amber]:visible")).toContainText(
-        "Choose a CSV, Excel, Word or PDF file.",
+        "Choose a CSV file. Word, Excel and PDF files are not read in this prototype.",
       );
       expect(await colour(page.locator("[data-amber]:visible"))).toBe(ATTENTION_INK);
       await expect(page.locator("[data-file-row]")).toHaveCount(0);
@@ -270,7 +268,7 @@ for (const width of [360, 430]) {
         "The file is larger than 5 MB.",
       );
       await expect(read).toBeDisabled();
-      // a PDF, Word or Excel file up to 5 MB is accepted (and not read)
+      // a PDF, Word or Excel file up to 5 MB is still let through for the prepared sample (it is not read)
       for (const name of ["a.pdf", "a.docx", "a.xlsx"]) {
         await input.setInputFiles({
           name,

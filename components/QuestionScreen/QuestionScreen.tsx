@@ -26,6 +26,7 @@ export function QuestionScreen({
   hint,
   mode = "training",
   checked = false,
+  bookmark = true,
 }: {
   item: Item;
   choice: string | null;
@@ -37,6 +38,8 @@ export function QuestionScreen({
   mode?: QuestionMode;
   /** The answer was checked (training modes only): it is locked and its feedback shows. */
   checked?: boolean;
+  /** False where nothing can be saved (the practice of a demo topic): no bookmark is drawn. */
+  bookmark?: boolean;
 }) {
   // Feedback exists in the training modes only, and only after Check.
   const shown = mode === "training" && checked;
@@ -69,7 +72,7 @@ export function QuestionScreen({
         <h1 id={`question-${item.id}`} className="type-item-title pt-1.5">
           {item.question}
         </h1>
-        <BookmarkButton saved={saved} onToggle={onToggleSaved} />
+        {bookmark && <BookmarkButton saved={saved} onToggle={onToggleSaved} />}
       </div>
       <fieldset
         role="radiogroup"

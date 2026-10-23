@@ -6,6 +6,8 @@ import type { ComponentProps, ReactNode } from "react";
 export type ButtonVariant = "primary" | "secondary" | "tertiary";
 
 export type ButtonLook = {
+  /** A tertiary text link that deletes something: drawn in the destructive text colour. */
+  destructive?: boolean;
   variant?: ButtonVariant;
   /** Primary and secondary fill the width by default; false for one in a row (Ask AI Send, the
    * Materials header). */
@@ -42,10 +44,17 @@ export const pressedLook: Record<ButtonVariant, string> = {
 /** The page-header action (Upload a file) is 44px high instead of 52px. */
 const compactHeight = "h-11!";
 
-export function buttonClasses({ variant = "primary", wide, compact, snug, pill }: ButtonLook) {
+export function buttonClasses({
+  variant = "primary",
+  wide,
+  compact,
+  snug,
+  pill,
+  destructive,
+}: ButtonLook) {
   const width = (wide ?? variant !== "tertiary") ? "w-full" : "";
   const padding = variant === "tertiary" ? "" : snug || pill ? "px-4" : "px-6";
-  return `group inline-flex items-center justify-center gap-2 rounded-button disabled:cursor-not-allowed ${buttonVariants[variant]} ${padding} ${width} ${compact ? compactHeight : ""} ${pill ? "h-9! rounded-xl!" : ""}`;
+  return `group inline-flex items-center justify-center gap-2 rounded-button disabled:cursor-not-allowed ${buttonVariants[variant]} ${destructive && variant === "tertiary" ? "text-wrong-text!" : ""} ${padding} ${width} ${compact ? compactHeight : ""} ${pill ? "h-9! rounded-xl!" : ""}`;
 }
 
 function Content({
@@ -76,13 +85,18 @@ export function Button({
   wide,
   compact,
   snug,
+  destructive,
   icon,
   trailing,
   children,
   ...props
 }: Omit<ComponentProps<"button">, "className"> & ButtonLook) {
   return (
-    <button type="button" className={buttonClasses({ variant, wide, compact, snug })} {...props}>
+    <button
+      type="button"
+      className={buttonClasses({ variant, wide, compact, snug, destructive })}
+      {...props}
+    >
       <Content variant={variant} icon={icon} trailing={trailing}>
         {children}
       </Content>

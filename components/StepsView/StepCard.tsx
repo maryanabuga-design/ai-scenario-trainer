@@ -17,6 +17,7 @@ export function StepCard({
   open,
   onToggleOpen,
   footer,
+  flag,
 }: {
   step: Step;
   index: number;
@@ -24,6 +25,8 @@ export function StepCard({
   onToggleOpen: () => void;
   /** More under the details (a demo topic's picture and guide pill). */
   footer?: ReactNode;
+  /** Always visible under the header, even while the step is closed (a flagged step of a demo topic). */
+  flag?: ReactNode;
 }) {
   const headerId = `${step.id}-header`;
   const panelId = `${step.id}-panel`;
@@ -48,6 +51,7 @@ export function StepCard({
           className={`shrink-0 text-text transition-transform duration-200 motion-reduce:transition-none ${open ? "rotate-180" : ""}`}
         />
       </button>
+      {flag && <div className="px-[var(--gutter,1rem)] pb-[var(--gutter,1rem)]">{flag}</div>}
       <div
         id={panelId}
         role="region"

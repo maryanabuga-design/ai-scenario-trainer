@@ -4,6 +4,7 @@ import { FileText } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { ButtonLink } from "@/components/Button/Button";
 import { Chip } from "@/components/Chip/Chip";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { OptionResult } from "@/components/OptionCard/OptionCard";
@@ -66,20 +67,42 @@ export function GuidePill({ section, href }: { section: string; href: string }) 
   );
 }
 
-/** The amber "Needs attention" pill with the reasons under it. */
-export function NeedsAttention({ issues }: { issues: Issue[] }) {
+/**
+ * A flagged item: the amber "To fix" pill with the reasons under it and what to do: a Secondary
+ * "Edit question" when the fix is in the question editor (`editHref`), otherwise the text "Fix this
+ * in the files, then replace them." The element carries the ids of its issues so "Show next issue"
+ * can find it, take the focus to it and outline it.
+ */
+export function NeedsAttention({ issues, editHref }: { issues: Issue[]; editHref?: string }) {
   const blocking = issues.filter((issue) => issue.blocking);
   if (blocking.length === 0) return null;
+  const editable = editHref !== undefined && blocking.some((issue) => issue.fix === "edit");
+  const inFiles = blocking.some((issue) => issue.fix === "files");
   return (
-    <div data-needs-attention className="flex flex-col items-start gap-1">
+    <div
+      data-to-fix
+      data-issue-ids={blocking.map((issue) => issue.id).join(" ")}
+      tabIndex={-1}
+      className="flex flex-col items-start gap-1 rounded-[10px] outline-offset-4 data-[flash=true]:outline-2 data-[flash=true]:outline-status-attention-ink"
+    >
       <span className="type-caption rounded-full bg-status-attention-bg px-2.5 py-0.5 whitespace-nowrap text-status-attention-ink">
-        Needs attention
+        To fix
       </span>
       {blocking.map((issue) => (
         <p key={issue.id} className="type-small text-status-attention-ink">
           {issue.reason}
         </p>
       ))}
+      {editable && (
+        <div className="mt-1 w-full">
+          <ButtonLink href={editHref} variant="secondary">
+            Edit question
+          </ButtonLink>
+        </div>
+      )}
+      {inFiles && (
+        <p className="type-small text-text-secondary">Fix this in the files, then replace them.</p>
+      )}
     </div>
   );
 }
@@ -165,8 +188,12 @@ export function ChecklistCards({
                           href={guideHref(step.guideRef.trim())}
                         />
                       )}
-                      <NeedsAttention issues={own} />
                     </div>
+                  }
+                  flag={
+                    own.some((issue) => issue.blocking) ? (
+                      <NeedsAttention issues={own} />
+                    ) : undefined
                   }
                 />
               );
@@ -233,11 +260,14 @@ export function QuizRows({
   data,
   issues = [],
   questionHref,
+  editHref,
   guideHref,
 }: {
   data: PackageData;
   issues?: Issue[];
   questionHref: (index: number) => string;
+  /** The question editor of a question (the Secondary "Edit question" of a flagged one). */
+  editHref?: (index: number) => string;
   guideHref: (section: string) => string;
 }) {
   return (
@@ -268,7 +298,7 @@ export function QuizRows({
                   href={guideHref(question.guideRef.trim())}
                 />
               )}
-              <NeedsAttention issues={own} />
+              <NeedsAttention issues={own} editHref={editHref?.(index)} />
             </div>
           </li>
         );

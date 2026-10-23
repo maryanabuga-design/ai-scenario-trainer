@@ -8,7 +8,7 @@ import type { DemoTopic } from "@/lib/packages";
 /**
  * A demo topic on the Content root (DESIGN.md: Instructor, content package import and demo topics):
  * a fixed 88px card, the neutral tile, the title, "Guide · Steps · Scenario · 10 questions" for the
- * parts present, a Draft or Published pill, an amber "2 need attention" when relevant, a chevron.
+ * parts present, a Draft or Published pill, an amber "2 to fix" when relevant, a chevron.
  */
 export function PackageCard({ topic }: { topic: DemoTopic }) {
   const problems = blockingIssues(checkPackage(topic)).length;
@@ -36,10 +36,10 @@ export function PackageCard({ topic }: { topic: DemoTopic }) {
           </span>
           {problems > 0 && (
             <span
-              data-need-attention
+              data-to-fix-count
               className="type-caption truncate whitespace-nowrap text-status-attention-ink"
             >
-              {problems} need attention
+              {problems} to fix
             </span>
           )}
         </span>

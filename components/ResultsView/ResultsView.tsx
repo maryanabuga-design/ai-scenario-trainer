@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { useEffect } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
@@ -221,6 +222,7 @@ export function ResultsView({
   doneHref,
   certificateHref,
   attemptsLine,
+  actions,
 }: {
   kind: SessionKind;
   items: ScoredItem[];
@@ -241,6 +243,8 @@ export function ResultsView({
   certificateHref?: string;
   /** A group exam that was not passed: "2 attempts left". */
   attemptsLine?: string;
+  /** The buttons at the bottom instead of the normal ones (the practice of a demo topic). */
+  actions?: ReactNode;
 }) {
   useRestoredScroll();
   const passed = isPassed(items);
@@ -298,15 +302,17 @@ export function ResultsView({
       )}
 
       <ActionBar>
-        <ResultsButtons
-          kind={kind}
-          passed={passed}
-          canRepeat={topics.length > 0}
-          examRepeat={examRepeat}
-          onRepeat={onRepeat}
-          reviewHref={reviewHref}
-          doneHref={doneHref ?? backHref}
-        />
+        {actions ?? (
+          <ResultsButtons
+            kind={kind}
+            passed={passed}
+            canRepeat={topics.length > 0}
+            examRepeat={examRepeat}
+            onRepeat={onRepeat}
+            reviewHref={reviewHref}
+            doneHref={doneHref ?? backHref}
+          />
+        )}
       </ActionBar>
     </div>
   );

@@ -118,7 +118,7 @@ describe("a demo topic is isolated from the rest of the app", () => {
   const libFiles = readdirSync("lib").filter((f) => f.endsWith(".ts") && !f.endsWith(".test.ts"));
 
   it("is imported by no module of readiness, Progress, exams, Assign exam, Weakest topics, Hardest questions, Ask AI or the built-in content", () => {
-    const allowed = new Set(["packages.ts", "package-read.ts"]);
+    const allowed = new Set(["packages.ts", "package-read.ts", "package-student.ts"]);
     const importers = libFiles.filter((file) => {
       if (allowed.has(file)) return false;
       const code = readFileSync(`lib/${file}`, "utf8");
@@ -139,7 +139,7 @@ describe("a demo topic is isolated from the rest of the app", () => {
     );
     const outside = users.filter(
       (path) =>
-        !/PackageContent|InstructorContent|MaterialsTopics\/FromInstructor|app\/\(app\)\/(instructor\/content|materials\/package)|app\/screens/.test(
+        !/PackageContent|InstructorContent|MaterialsTopics\/FromInstructor|app\/\(app\)\/(instructor\/content|materials\/package)|app\/screens|package-student/.test(
           path,
         ),
     );
@@ -150,19 +150,26 @@ describe("a demo topic is isolated from the rest of the app", () => {
     const code = readFileSync("lib/packages.ts", "utf8");
     expect(code.match(/createStore<[^>]*>\(\s*"([^"]+)"/g)).toHaveLength(1);
     expect(code).toContain('"ast.demo-topics.v1"');
-    const runner = readFileSync("components/PackageContent/PackageRunner.tsx", "utf8");
-    for (const store of [
-      "@/lib/session",
-      "@/lib/progress",
-      "@/lib/exam-store",
-      "@/lib/store",
-      "@/lib/saved",
-      "@/lib/notifications",
+    // the student screens of a demo topic (also the preview) import none of the stores that save
+    for (const file of [
+      "components/PackageContent/PackageStudentScreen.tsx",
+      "components/PackageContent/PackageStudentRoute.tsx",
+      "lib/package-student.ts",
     ]) {
-      expect(runner, store).not.toContain(store);
+      const code = readFileSync(file, "utf8");
+      for (const store of [
+        "@/lib/session",
+        "@/lib/progress",
+        "@/lib/exam-store",
+        "@/lib/store",
+        "@/lib/saved",
+        "@/lib/notifications",
+        "@/lib/highlight-store",
+        "@/lib/part-progress",
+      ]) {
+        expect(code, `${file} ${store}`).not.toContain(store);
+      }
     }
-    const views = readFileSync("components/PackageContent/PackageStudentViews.tsx", "utf8");
-    expect(views).not.toMatch(/@\/lib\/(session|progress|readiness|exam|store|notifications)/);
   });
 
   it("has a code (N1, N2, ...) that is none of the built-in topics, with no questions, readiness or topic count", () => {

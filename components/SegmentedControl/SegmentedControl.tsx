@@ -20,7 +20,12 @@ export function SegmentedControl<T extends string>({
   legend: string;
   /** Keep the legend for screen readers only. */
   hideLegend?: boolean;
-  options: { value: T; label: string; disabled?: boolean }[];
+  options: {
+    value: T;
+    label: string;
+    disabled?: boolean;
+    /** An amber dot after the label; the text is the radio's accessible name ("Quiz, 4 to fix"). */ dot?: string;
+  }[];
   value: T | null;
   onChange: (value: T) => void;
   /** Less side padding, so three longer labels ("3 attempts") fit on one line at 360px. */
@@ -50,10 +55,18 @@ export function SegmentedControl<T extends string>({
                 value={option.value}
                 checked={checked}
                 disabled={off}
+                aria-label={option.dot}
                 onChange={() => onChange(option.value)}
                 className="sr-only"
               />
               {option.label}
+              {option.dot && (
+                <span
+                  aria-hidden="true"
+                  data-tab-dot
+                  className="h-2 w-2 shrink-0 rounded-full bg-status-attention-ink"
+                />
+              )}
             </label>
           );
         })}

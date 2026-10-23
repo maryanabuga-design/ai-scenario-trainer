@@ -211,9 +211,10 @@ describe("a secondary always comes with a primary above it", () => {
       // Material page: Create again and Read the sample guide, below the primary action.
       "components/MaterialView/MaterialView.tsx",
       // Progress: the Exam readiness card's Repeat weak topics, its one action (documented exception).
-      // Demo topic: Try again under the result's Primary; the slim preview bar's Exit preview.
-      "components/PackageContent/PackageRunner.tsx",
-      "components/PackageContent/PackageStudentViews.tsx",
+      // Demo topic: Edit question under a flagged question; Try again under the result's Primary
+      // Done; the slim preview bar's Exit preview.
+      "components/PackageContent/PackageParts.tsx",
+      "components/PackageContent/PackageStudentScreen.tsx",
       "components/ProgressView/ProgressView.tsx",
       // The reading screen's quick-actions bar: Steps next to the primary Practise this topic.
       "components/QuickActionsBar/QuickActionsBar.tsx",

@@ -5,7 +5,8 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { PackageImportView } from "@/components/InstructorContent/PackageImportView";
 import type { QuestionsChoice } from "@/components/InstructorContent/PackageImportView";
 import { chooseDraftFile, clearDraft } from "@/lib/import-draft";
-import { csvPart, fileKind, readPackage } from "@/lib/package-read";
+import { checkPackage, csvPart, fileKind, fixMessage, readPackage } from "@/lib/package-read";
+import type { PathPart } from "@/lib/package-read";
 import type { PackageFile } from "@/lib/package-read";
 import {
   NO_ROOM,
@@ -26,12 +27,18 @@ const readAs = (file: File, mode: "text" | "url") =>
     else reader.readAsDataURL(file);
   });
 
+const tabFrom = (value: string): PathPart | null =>
+  value === "guide" || value === "steps" || value === "scenario" || value === "quiz" ? value : null;
+
+const clock = () => Date.now();
 const pause = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
 const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function Import() {
   const router = useRouter();
-  const replaceId = useSearchParams().get("replace");
+  const query = useSearchParams();
+  const replaceId = query.get("replace");
+  const fixTab = query.get("fix");
   const topics = usePackages();
   const [files, setFiles] = useState<PackageFile[]>([]);
   const [title, setTitle] = useState<string | null>(null);
@@ -85,7 +92,7 @@ function Import() {
     }
     setReading(true);
     if (!reduced()) await pause(1200);
-    const now = Date.now();
+    const now = clock();
     const existing = readPackages();
     const topic = target
       ? replaceFiles(target, outcome.data, shownTitle, shownSummary, now)
@@ -110,7 +117,9 @@ function Import() {
       reading={reading}
       notice={
         target
-          ? `Choose the corrected files together. They replace the files of ${target.title}; the title is kept.`
+          ? `${
+              fixTab ? `${fixMessage(checkPackage(target), tabFrom(fixTab))} ` : ""
+            }The new files replace the files of ${target.title}; the title is kept.`
           : ""
       }
       extraMessage={problem}

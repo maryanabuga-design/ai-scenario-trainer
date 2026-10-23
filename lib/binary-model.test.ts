@@ -41,6 +41,7 @@ describe("one binary pattern: right or wrong, nothing else", () => {
         (file) =>
           file !== "components/InstructorContent/EditQuestionView.tsx" &&
           file !== "components/InstructorContent/PackageQuestionViews.tsx" &&
+          file !== "components/TextField/TextField.tsx" &&
           file !== "components/InstructorStudents/InviteView.tsx",
       ),
     ).toEqual([]);

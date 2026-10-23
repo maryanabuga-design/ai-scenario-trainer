@@ -5,19 +5,19 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button, ButtonLink } from "@/components/Button/Button";
-import { Card } from "@/components/Card/Card";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { Amber } from "@/components/InstructorContent/Amber";
+import { Notice } from "@/components/Notice/Notice";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { TextField } from "@/components/TextField/TextField";
 import { checkFile, sizeText } from "@/lib/content-import";
 import type { ImportDraft } from "@/lib/import-draft";
 
-export const FILE_HELP = "CSV, Excel, Word or PDF · up to 5 MB";
+export const FILE_HELP = "CSV file · up to 5 MB";
 export const INFO_TITLE = "One row is one question";
 export const INFO_TEXT =
-  "Download the template, fill it in and choose it above. Word, Excel and PDF files are not read in this prototype; a sample result is shown. A person always reviews before publishing.";
+  "Download the template, fill it in and choose it above. Word, Excel and PDF files are not read in this prototype. A person always reviews before publishing.";
 export const TOPIC_PICKER = "/instructor/content/import/topic";
 
 /**
@@ -118,7 +118,7 @@ export function ImportView({
           <input
             ref={input}
             type="file"
-            accept=".csv,.xlsx,.docx,.pdf"
+            accept=".csv"
             aria-label="Choose file"
             data-file-input
             className="sr-only"
@@ -203,10 +203,9 @@ export function ImportView({
         )}
       </section>
 
-      <Card className="flex flex-col gap-2">
-        <h2 className="type-body-strong">{INFO_TITLE}</h2>
-        <p className="type-small text-text-secondary">{INFO_TEXT}</p>
-      </Card>
+      <Notice variant="info" title={INFO_TITLE}>
+        {INFO_TEXT}
+      </Notice>
 
       <ActionBar>
         <Button disabled={!ready} onClick={onImport}>
