@@ -24,7 +24,7 @@ export function SegmentedControl<T extends string>({
     value: T;
     label: string;
     disabled?: boolean;
-    /** An amber dot after the label; the text is the radio's accessible name ("Quiz, 4 to fix"). */ dot?: string;
+    /** The radio's accessible name when it differs from the label ("Quiz, 4 to fix"). */ ariaLabel?: string;
   }[];
   value: T | null;
   onChange: (value: T) => void;
@@ -55,18 +55,11 @@ export function SegmentedControl<T extends string>({
                 value={option.value}
                 checked={checked}
                 disabled={off}
-                aria-label={option.dot}
+                aria-label={option.ariaLabel}
                 onChange={() => onChange(option.value)}
                 className="sr-only"
               />
               {option.label}
-              {option.dot && (
-                <span
-                  aria-hidden="true"
-                  data-tab-dot
-                  className="h-2 w-2 shrink-0 rounded-full bg-status-attention-ink"
-                />
-              )}
             </label>
           );
         })}

@@ -117,7 +117,11 @@ export function PackageQuestionEdit({
       />
       {problems.length > 0 && (
         <div data-problems>
-          <Notice variant="to-fix" title={`${problems.length} to fix in this question`}>
+          <Notice
+            variant="to-fix"
+            clamp={false}
+            title={`${problems.length} to fix in this question`}
+          >
             <ul className="flex flex-col gap-0.5">
               {problems.map((issue) => (
                 <li key={issue.id}>{issue.reason}</li>
@@ -144,7 +148,7 @@ export function PackageQuestionEdit({
           ANSWERS · CHOOSE THE CORRECT ONE
         </h2>
         {draft.correct && (
-          <Notice variant="info" title="Check the correct answer">
+          <Notice variant="info" clamp={false} title="Check the correct answer">
             Option {draft.correct.toUpperCase()} is marked as correct. Change it if that is wrong.
           </Notice>
         )}

@@ -203,7 +203,7 @@ export function ImportView({
         )}
       </section>
 
-      <Notice variant="info" title={INFO_TITLE}>
+      <Notice variant="info" clamp={false} title={INFO_TITLE}>
         {INFO_TEXT}
       </Notice>
 

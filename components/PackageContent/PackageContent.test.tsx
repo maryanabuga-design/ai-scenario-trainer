@@ -122,7 +122,7 @@ describe("the import screen", () => {
     expect(html).toMatch(/<textarea[^>]*name="topic-summary"[^>]*rows="2"/);
   });
 
-  it("with the whole package: three-line rows (label, Ready pill, file name), icon Remove buttons, nothing missing", () => {
+  it("with the whole package: three-line rows (label, Ready pill, file name), a corner x on each file row, thumbnails for the pictures", () => {
     const html = importView(clean);
     for (const label of [
       "Topic · Evacuating a crowded hall",
@@ -139,14 +139,19 @@ describe("the import screen", () => {
     expect(html).not.toContain("Needs attention");
     expect(html).not.toContain("data-missing");
     expect(html).not.toContain("data-fix-in-review");
-    // remove: 44px neutral icon buttons named after the file, no large Secondary buttons
+    // a small corner x: a 28px neutral circle in a 44px tap area at the top-right of the card
     expect(html).not.toContain(">Remove<");
     expect(html).toContain('aria-label="Remove guide.csv"');
-    expect(html).toContain('aria-label="Remove all images"');
-    expect(html.match(/aria-label="Remove /g)).toHaveLength(6);
-    expect(
-      html.match(/h-11 w-11 shrink-0 items-center justify-center rounded-full bg-neutral-tile-bg/g),
-    ).toHaveLength(6);
+    const corner = html.slice(html.indexOf('aria-label="Remove guide.csv"') - 160);
+    expect(corner).toMatch(/absolute top-0 right-0 flex h-11 w-11/);
+    expect(corner).toMatch(/h-7 w-7[^"]*rounded-full bg-neutral-tile-bg/);
+    // the text block keeps a right padding so nothing sits under the x
+    expect(html).toMatch(/flex items-center gap-3 pr-8/);
+    // five file rows have the x; the pictures have their own x on each thumbnail
+    expect(html.match(/data-remove/g)).toHaveLength(7);
+    expect(html.match(/data-thumbnail=/g)).toHaveLength(2);
+    expect(html).toContain('aria-label="Remove exit-sign.png"');
+    expect(html).not.toContain("Remove all images");
     // line 1 label, line 2 the pill, line 3 the file name
     const row = html.slice(html.indexOf('data-recognised-row="scenario"'));
     expect(row.indexOf("Scenario · 4 steps")).toBeLessThan(row.indexOf("data-row-pill"));
@@ -162,6 +167,10 @@ describe("the import screen", () => {
     expect(row).toMatch(/data-row-pill="to-fix"[^>]*bg-status-attention-bg[^>]*>1 to add</);
     expect(row).not.toContain(">Ready<");
     expect(row).toContain("Missing: assembly-point.png");
+    // a thumbnail for the one chosen, a dashed placeholder with the name for the missing one
+    expect(row.match(/data-thumbnail=/g)).toHaveLength(1);
+    expect(row).toContain('data-thumbnail-missing="assembly-point.png"');
+    expect(row).toContain("border-dashed");
     expect(html).toContain("You can import now and fix the issues in the review.");
     // none selected: every named picture is missing
     const none = importView(clean.slice(0, 5));
@@ -258,89 +267,108 @@ describe("the review screen", () => {
     expect(bar).not.toMatch(/disabled=""[^>]*>[\s\S]*Preview as student</);
   });
 
-  it("with issues: a to fix Notice with the count, its body and 'Show next issue' as an underlined tertiary link", () => {
+  it("with issues: ONE to fix Notice with the count and the counts per part as plain text, no button or link inside", () => {
     const html = render({ topic: bad });
     const count = blockingIssues(checkPackage(bad)).length;
     expect(count).toBe(6);
-    expect(html).toContain('data-notice="to-fix"');
-    expect(html).toContain(`${count} to fix before you can publish`);
-    expect(html).toContain("Preview and Publish unlock when everything is fixed.");
-    expect(html).toMatch(/underline[^>]*>Show next issue</);
-    expect(html.match(/Show next issue/g)).toHaveLength(1);
-    expect(html).not.toContain("Needs attention");
+    expect(html.match(/data-notice=/g)).toHaveLength(1);
+    const notice = html.slice(html.indexOf('data-notice="to-fix"'), html.indexOf("</section>"));
+    expect(notice).toContain(`${count} to fix before you can publish`);
+    expect(notice).toContain("Steps 2 · Quiz 4");
+    expect(notice).not.toMatch(/<a |<button/);
+    expect(html).not.toContain("Preview and Publish unlock");
+    expect(html).not.toContain("to fix in this tab");
     expect(html).not.toContain('data-notice="success"');
+    expect(html).not.toContain("Needs attention");
   });
 
-  it("the four-option selector stays on one line and a tab with issues has an amber dot with an accessible name", () => {
+  it("the four-option selector stays on one line, has no dot and keeps its accessible names", () => {
     const html = render({ topic: bad, tab: "steps" });
     const radios = group(html);
-    for (const label of ["Guide", "Steps", "Scenario", "Quiz"])
-      expect(radios).toContain(`${label}`);
+    for (const label of ["Guide", "Steps", "Scenario", "Quiz"]) expect(radios).toContain(label);
     expect(radios.match(/whitespace-nowrap/g)).toHaveLength(4);
+    expect(html).not.toContain("data-tab-dot");
     expect(radios).toContain('aria-label="Steps, 2 to fix"');
     expect(radios).toContain('aria-label="Quiz, 4 to fix"');
-    expect(radios.match(/data-tab-dot/g)).toHaveLength(2);
     expect(radios).not.toContain('aria-label="Guide');
-    expect(radios).toContain("bg-status-attention-ink");
   });
 
-  it("a tab with issues has a to fix Notice 'N to fix in this tab'; files tabs get a Secondary Replace files with the tab in the link", () => {
+  it("flagged items keep the amber To fix pill and the reason; file problems get an underlined Replace files link", () => {
     const steps = render({ topic: bad, tab: "steps" });
-    const notice = steps.slice(steps.indexOf('id="tab-notice"'));
-    expect(notice).toContain("2 to fix in this tab");
-    expect(notice).toMatch(
-      /bg-olive-tint[^>]*href="\/instructor\/content\/import\?replace=[a-z0-9]+&amp;fix=steps"|href="\/instructor\/content\/import\?replace=[a-z0-9]+&amp;fix=steps"[^>]*bg-olive-tint/,
-    );
     expect(steps.match(/data-to-fix=/g)).toHaveLength(2);
     expect(steps).toContain(">To fix<");
     expect(steps).toContain("Guide section 7 does not exist");
     expect(steps).toContain("No action");
-    expect(steps).toContain("Fix this in the files, then replace them.");
+    const links = steps.match(/underline[^>]*>Replace files</g) ?? [];
+    // one in the meta row and one on each flagged item
+    expect(links.length).toBe(3);
+    expect(steps).toContain(`href="/instructor/content/import?replace=${bad.id}&amp;fix=steps"`);
     expect(steps).not.toContain("Edit question");
+    expect(steps).not.toContain("Fix this in the files, then replace them.");
   });
 
-  it("flagged questions get a Secondary 'Edit question' that opens the editor; the tab notice offers no Replace files for them", () => {
+  it("flagged questions get a Secondary 'Edit question' that opens the editor; the picture problem gets Replace files", () => {
     const quiz = render({ topic: bad, tab: "quiz" });
     expect(quiz.match(/data-to-fix=/g)).toHaveLength(4);
     expect(quiz.match(/>Edit question</g)).toHaveLength(3);
     expect(quiz).toContain(`/instructor/content/package/${bad.id}/question/3/edit`);
-    expect(quiz).toContain("4 to fix in this tab");
-    // the missing picture of question 10 is fixed in the files
+    expect(quiz).toMatch(/bg-olive-tint[^>]*>Edit question</);
     expect(quiz).toContain("Image door-check.png was not selected");
-    expect(quiz).toContain("Fix this in the files, then replace them.");
-    expect(quiz).toContain("Replace files");
+    expect(quiz).toContain(`href="/instructor/content/import?replace=${bad.id}&amp;fix=quiz"`);
   });
 
-  it("with issues the pinned area has Publish and Preview as student disabled and the destructive tertiary Delete link", () => {
-    const html = render({ topic: bad });
-    const bar = html.slice(html.indexOf("data-bar"));
-    expect(bar).toMatch(/disabled=""[^>]*bg-primary[^>]*>Publish<|disabled=""[^>]*>Publish</);
-    expect(bar).toMatch(/disabled=""[^>]*>[\s\S]*?Preview as student</);
-    const del = bar.slice(0, bar.indexOf(">Delete demo topic<"));
-    const tag = del.slice(del.lastIndexOf("<button"));
-    expect(tag).toContain("text-wrong-text");
-    expect(tag).toContain("min-h-11");
-    expect(bar.slice(bar.indexOf(">Delete demo topic<") - 80)).toContain("underline");
-    expect(bar).not.toMatch(/bg-olive-tint[^>]*>Delete demo topic</);
-    // order: Publish, Preview as student, Delete
-    expect(bar.indexOf(">Publish<")).toBeLessThan(bar.indexOf("Preview as student"));
-    expect(bar.indexOf("Preview as student")).toBeLessThan(bar.indexOf("Delete demo topic"));
-    expect(html).not.toContain("data-publish-hint");
+  it("the meta row is 'Draft · Last edited today' followed by an underlined tertiary Replace files link", () => {
+    const html = render();
+    const meta = html.slice(html.indexOf("data-package-status"), html.indexOf("data-coverage"));
+    expect(meta.replace(/<[^>]+>/g, "")).toContain("Draft · Last edited today");
+    expect(meta).toMatch(/underline[^>]*>Replace files</);
+    expect(meta.indexOf("Last edited")).toBeLessThan(meta.indexOf("Replace files"));
+    expect(meta).toContain(`href="/instructor/content/import?replace=${topic.id}"`);
   });
 
-  it("exactly one Primary on the screen (Publish), and none in the Published state", () => {
-    const primaries = (html: string) =>
-      html.match(/h-\[52px\] bg-primary text-primary-text/g)?.length ?? 0;
-    expect(primaries(render())).toBe(1);
+  it("has Back on the left and a ⋯ More actions button on the right; Delete is in its menu, not in the pinned area", () => {
+    const closed = render();
+    expect(closed).toContain('aria-label="More actions"');
+    expect(closed).toContain('aria-haspopup="menu"');
+    expect(closed).toContain('aria-expanded="false"');
+    expect(closed).toContain("lucide-ellipsis");
+    expect(closed).toContain("h-11 w-11");
+    expect(closed).not.toContain('role="menu"');
+    expect(closed).not.toContain("Delete demo topic");
+    expect(closed.indexOf('aria-label="Back to Content"')).toBeLessThan(
+      closed.indexOf('aria-label="More actions"'),
+    );
+    const open = render({ menuOpen: true });
+    expect(open).toContain('role="menu"');
+    expect(open).toMatch(/role="menuitem"[^>]*>Delete demo topic</);
+    expect(open).toContain("text-wrong-text");
+    expect(open.slice(open.indexOf("data-bar"))).not.toContain("Delete demo topic");
+  });
+
+  it("the pinned area has exactly the right buttons in each state: issues, clean, published", () => {
+    const bar = (html: string) => html.slice(html.indexOf("data-bar"));
+    const buttons = (html: string) =>
+      [...bar(html).matchAll(/<button[^>]*>([\s\S]*?)<\/button>/g)].map((m) =>
+        m[1].replace(/<[^>]+>/g, "").trim(),
+      );
+    const primaries = (html: string) => bar(html).match(/h-\[52px\] bg-primary/g)?.length ?? 0;
+    const issues = render({ topic: bad });
+    expect(buttons(issues)).toEqual(["Show next issue"]);
+    expect(primaries(issues)).toBe(1);
+    expect(bar(issues)).not.toMatch(/disabled=/);
+    const cleanHtml = render();
+    expect(buttons(cleanHtml)).toEqual(["Publish", "Preview as student"]);
+    expect(primaries(cleanHtml)).toBe(1);
+    expect(bar(cleanHtml)).not.toMatch(/disabled=/);
     const published = render({ topic: { ...topic, status: "published" } });
+    expect(buttons(published)).toEqual(["Unpublish", "Preview as student"]);
     expect(primaries(published)).toBe(0);
-    expect(published).toMatch(/bg-olive-tint[^>]*>Unpublish</);
-    expect(published).toMatch(/bg-olive-tint[^>]*>[\s\S]*?Preview as student</);
     expect(published).toContain(
       "Visible to students in Materials, in the section From your instructor.",
     );
-    expect(published).not.toContain(">Publish<");
-    expect(published).not.toContain("Delete demo topic");
+    for (const html of [issues, cleanHtml, published]) {
+      expect(buttons(html).length).toBeLessThanOrEqual(2);
+    }
   });
 
   it("disables a missing part and shows a calm card", () => {

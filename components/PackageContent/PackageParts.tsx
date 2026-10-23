@@ -73,7 +73,16 @@ export function GuidePill({ section, href }: { section: string; href: string }) 
  * in the files, then replace them." The element carries the ids of its issues so "Show next issue"
  * can find it, take the focus to it and outline it.
  */
-export function NeedsAttention({ issues, editHref }: { issues: Issue[]; editHref?: string }) {
+export function NeedsAttention({
+  issues,
+  editHref,
+  replaceHref,
+}: {
+  issues: Issue[];
+  editHref?: string;
+  /** Where "Replace files" goes (the import with the title kept). */
+  replaceHref?: string;
+}) {
   const blocking = issues.filter((issue) => issue.blocking);
   if (blocking.length === 0) return null;
   const editable = editHref !== undefined && blocking.some((issue) => issue.fix === "edit");
@@ -100,8 +109,12 @@ export function NeedsAttention({ issues, editHref }: { issues: Issue[]; editHref
           </ButtonLink>
         </div>
       )}
-      {inFiles && (
-        <p className="type-small text-text-secondary">Fix this in the files, then replace them.</p>
+      {inFiles && replaceHref && (
+        <div className="-ml-3">
+          <ButtonLink href={replaceHref} variant="tertiary">
+            Replace files
+          </ButtonLink>
+        </div>
       )}
     </div>
   );
@@ -116,10 +129,12 @@ export function GuideSections({
   data,
   issues = [],
   showUse = false,
+  replaceHref,
 }: {
   data: PackageData;
   issues?: Issue[];
   showUse?: boolean;
+  replaceHref?: string;
 }) {
   const use = coverage(data).sections;
   return (
@@ -141,7 +156,10 @@ export function GuideSections({
               {usedByText(use[index])}
             </p>
           )}
-          <NeedsAttention issues={issuesOfKey(issues, `guide:${index}`)} />
+          <NeedsAttention
+            issues={issuesOfKey(issues, `guide:${index}`)}
+            replaceHref={replaceHref}
+          />
         </li>
       ))}
     </ol>
@@ -153,10 +171,12 @@ export function ChecklistCards({
   data,
   issues = [],
   guideHref,
+  replaceHref,
 }: {
   data: PackageData;
   issues?: Issue[];
   guideHref: (section: string) => string;
+  replaceHref?: string;
 }) {
   const [open, setOpen] = useState<string | null>(null);
   return (
@@ -192,7 +212,7 @@ export function ChecklistCards({
                   }
                   flag={
                     own.some((issue) => issue.blocking) ? (
-                      <NeedsAttention issues={own} />
+                      <NeedsAttention issues={own} replaceHref={replaceHref} />
                     ) : undefined
                   }
                 />
@@ -213,10 +233,12 @@ export function ScenarioCards({
   data,
   issues = [],
   guideHref,
+  replaceHref,
 }: {
   data: PackageData;
   issues?: Issue[];
   guideHref: (section: string) => string;
+  replaceHref?: string;
 }) {
   return (
     <ol className="flex flex-col gap-6">
@@ -247,7 +269,10 @@ export function ScenarioCards({
             {step.guideRef.trim() !== "" && (
               <GuidePill section={step.guideRef.trim()} href={guideHref(step.guideRef.trim())} />
             )}
-            <NeedsAttention issues={issuesOfKey(issues, `scenario:${index}`)} />
+            <NeedsAttention
+              issues={issuesOfKey(issues, `scenario:${index}`)}
+              replaceHref={replaceHref}
+            />
           </div>
         </li>
       ))}
@@ -261,11 +286,13 @@ export function QuizRows({
   issues = [],
   questionHref,
   editHref,
+  replaceHref,
   guideHref,
 }: {
   data: PackageData;
   issues?: Issue[];
   questionHref: (index: number) => string;
+  replaceHref?: string;
   /** The question editor of a question (the Secondary "Edit question" of a flagged one). */
   editHref?: (index: number) => string;
   guideHref: (section: string) => string;
@@ -298,7 +325,7 @@ export function QuizRows({
                   href={guideHref(question.guideRef.trim())}
                 />
               )}
-              <NeedsAttention issues={own} editHref={editHref?.(index)} />
+              <NeedsAttention issues={own} editHref={editHref?.(index)} replaceHref={replaceHref} />
             </div>
           </li>
         );

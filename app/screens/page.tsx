@@ -1065,6 +1065,11 @@ export default function Screens() {
               <PackageSample files={packageFiles} state="topic-clean" />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Content package review: the ⋯ menu open (Delete demo topic)">
+            <Screen>
+              <PackageSample files={packageFiles} state="topic-menu" />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Content package review: Published, Unpublish and Preview as student">
             <Screen>
               <PackageSample files={packageFiles} state="published" />

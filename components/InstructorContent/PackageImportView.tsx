@@ -12,6 +12,7 @@ import {
   Shapes,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import Image from "next/image";
 import { useRef } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button, ButtonLink } from "@/components/Button/Button";
@@ -39,6 +40,29 @@ const ICONS: Record<PartKind | "images", LucideIcon> = {
   questions: ClipboardCheck,
   images: ImageIcon,
 };
+
+/**
+ * A small "x" in the top-right corner of a card: a 28px neutral circle inside a 44px tap area that
+ * extends inward, so nothing overlaps the text next to it.
+ */
+function RemoveCorner({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      data-remove
+      className="absolute top-0 right-0 flex h-11 w-11 items-start justify-end p-1.5 has-focus-visible:outline-2 focus-visible:outline-2"
+    >
+      <span
+        aria-hidden="true"
+        className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-tile-bg text-neutral-tile-ink"
+      >
+        <X size={14} strokeWidth={2.25} />
+      </span>
+    </button>
+  );
+}
 
 export type QuestionsChoice = "builtin" | "package" | null;
 
@@ -103,7 +127,7 @@ export function PackageImportView({
         back={{ label: "Back to Content", href: "/instructor/content" }}
       />
       {notice && (
-        <Notice variant="to-fix" alert title="Choose the corrected files">
+        <Notice variant="to-fix" alert clamp={false} title="Choose the corrected files">
           {notice}
         </Notice>
       )}
@@ -160,49 +184,102 @@ export function PackageImportView({
                   : problems > 0
                     ? `${problems} to fix`
                     : "Ready";
-              const removeName = row.part === "images" ? "all images" : (fileName ?? row.part);
+              const isImages = row.part === "images";
+              const pictures = isImages ? Object.entries(outcome.data.images) : [];
               return (
                 <li
                   key={`${row.part}-${fileName ?? ""}`}
                   data-recognised-row={row.part}
-                  className="flex min-h-[72px] items-center gap-3 rounded-card border border-selectable-stroke bg-card px-3 py-2"
+                  className="relative flex min-h-[72px] flex-col gap-3 rounded-card border border-selectable-stroke bg-card px-3 py-2"
                 >
-                  <LucideTile icon={ICONS[row.part]} size="tile" />
-                  <span className="flex min-w-0 flex-1 flex-col gap-1">
-                    <span className="type-body-strong">{row.label}</span>
-                    <span
-                      data-row-pill={problems > 0 ? "to-fix" : "ready"}
-                      className={`type-caption w-fit rounded-full px-2.5 py-0.5 whitespace-nowrap ${
-                        problems > 0
-                          ? "bg-status-attention-bg text-status-attention-ink"
-                          : "bg-status-success-bg text-status-success-ink"
-                      }`}
-                    >
-                      {pill}
-                    </span>
-                    {missing.length > 0 && (
-                      <span data-missing className="type-small text-text-secondary">
-                        Missing: {missing.join(", ")}
-                      </span>
-                    )}
-                    {fileName && (
+                  <div className="flex items-center gap-3 pr-8">
+                    <LucideTile icon={ICONS[row.part]} size="tile" />
+                    <span className="flex min-w-0 flex-1 flex-col gap-1">
+                      <span className="type-body-strong">{row.label}</span>
                       <span
-                        data-file-name
-                        aria-label={fileName}
-                        className="type-small text-text-secondary"
+                        data-row-pill={problems > 0 ? "to-fix" : "ready"}
+                        className={`type-caption w-fit rounded-full px-2.5 py-0.5 whitespace-nowrap ${
+                          problems > 0
+                            ? "bg-status-attention-bg text-status-attention-ink"
+                            : "bg-status-success-bg text-status-success-ink"
+                        }`}
                       >
-                        <span aria-hidden="true">{shortName(fileName)}</span>
+                        {pill}
                       </span>
-                    )}
-                  </span>
-                  <button
-                    type="button"
-                    aria-label={`Remove ${removeName}`}
-                    onClick={() => onRemove({ part: row.part, fileName })}
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-neutral-tile-bg text-neutral-tile-ink has-focus-visible:outline-2 focus-visible:outline-2"
-                  >
-                    <X size={18} strokeWidth={2} aria-hidden="true" />
-                  </button>
+                      {missing.length > 0 && (
+                        <span data-missing className="type-small text-text-secondary">
+                          Missing: {missing.join(", ")}
+                        </span>
+                      )}
+                      {fileName && (
+                        <span
+                          data-file-name
+                          aria-label={fileName}
+                          className="type-small text-text-secondary"
+                        >
+                          <span aria-hidden="true">{shortName(fileName)}</span>
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  {isImages && (pictures.length > 0 || missing.length > 0) && (
+                    <ul data-thumbnails className="flex flex-wrap gap-3">
+                      {pictures.map(([name, picture]) => (
+                        <li
+                          key={name}
+                          data-thumbnail={name}
+                          className="flex w-16 flex-col items-start gap-1"
+                        >
+                          <span className="relative block h-14 w-14">
+                            <Image
+                              src={picture.data}
+                              alt=""
+                              width={56}
+                              height={56}
+                              unoptimized
+                              className="h-14 w-14 rounded-[12px] border border-selectable-stroke object-cover"
+                            />
+                            <RemoveCorner
+                              label={`Remove ${name}`}
+                              onClick={() => onRemove({ part: "images", fileName: name })}
+                            />
+                          </span>
+                          <span
+                            aria-label={name}
+                            className="type-caption w-full truncate text-text-secondary"
+                          >
+                            <span aria-hidden="true">{shortName(name, 12)}</span>
+                          </span>
+                        </li>
+                      ))}
+                      {missing.map((name) => (
+                        <li
+                          key={name}
+                          data-thumbnail-missing={name}
+                          className="flex w-16 flex-col items-start gap-1"
+                        >
+                          <span
+                            aria-hidden="true"
+                            className="flex h-14 w-14 items-center justify-center rounded-[12px] border-[1.5px] border-dashed border-placeholder-stroke text-text-secondary"
+                          >
+                            <ImageIcon size={20} strokeWidth={1.75} />
+                          </span>
+                          <span
+                            aria-label={`${name}, missing`}
+                            className="type-caption w-full truncate text-text-secondary"
+                          >
+                            <span aria-hidden="true">{shortName(name, 12)}</span>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {!isImages && (
+                    <RemoveCorner
+                      label={`Remove ${fileName ?? row.part}`}
+                      onClick={() => onRemove({ part: row.part, fileName })}
+                    />
+                  )}
                 </li>
               );
             })}
@@ -236,7 +313,7 @@ export function PackageImportView({
       </section>
 
       <div className="flex flex-col gap-1">
-        <Notice variant="info" title={INFO_TITLE}>
+        <Notice variant="info" clamp={false} title={INFO_TITLE}>
           {INFO_TEXT}
         </Notice>
         <div className="-ml-3 self-start">

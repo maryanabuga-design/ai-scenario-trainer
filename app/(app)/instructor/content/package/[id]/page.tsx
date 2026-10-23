@@ -29,7 +29,9 @@ function Topic() {
     // the notice of a tab stands in for a note about a whole part, once that tab is the one shown
     const found =
       shown(`[data-issue-ids~="${target.id}"]`) ??
-      (new URLSearchParams(search).get("tab") === target.tab ? shown("#tab-notice") : undefined);
+      (new URLSearchParams(search).get("tab") === target.tab
+        ? shown("#package-status")
+        : undefined);
     if (!found) return;
     document.querySelectorAll("[data-flash]").forEach((el) => el.removeAttribute("data-flash"));
     found.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "center" });

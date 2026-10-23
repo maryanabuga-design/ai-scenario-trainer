@@ -129,7 +129,7 @@ function Import() {
       onFiles={(chosen) => void choose(chosen)}
       onRemove={({ part, fileName }) =>
         setFiles((current) =>
-          part === "images"
+          part === "images" && fileName === undefined
             ? current.filter((f) => fileKind(f.name) !== "image")
             : current.filter((f) => f.name !== fileName),
         )

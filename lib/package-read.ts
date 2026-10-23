@@ -754,3 +754,17 @@ export function fixMessage(issues: Issue[], tab: PathPart | null): string {
   const more = list.length > 4 ? ` and ${list.length - 4} more` : "";
   return `Fix these in your files, then choose them together: ${shown.join("; ")}${more}.`;
 }
+
+/** "Guide 2 · Steps 4 · Scenario 1 · Quiz 4": the issues to fix per part, parts with none left out. */
+export function partCounts(issues: Issue[]): string {
+  const names: Record<PathPart, string> = {
+    guide: "Guide",
+    steps: "Steps",
+    scenario: "Scenario",
+    quiz: "Quiz",
+  };
+  return LEARNING_PATH.flatMap((part) => {
+    const n = issues.filter((issue) => issue.blocking && tabOfIssue(issue) === part).length;
+    return n > 0 ? [`${names[part]} ${n}`] : [];
+  }).join(" · ");
+}

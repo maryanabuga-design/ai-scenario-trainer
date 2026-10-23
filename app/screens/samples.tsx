@@ -1915,6 +1915,7 @@ export function PackageSample({
     | "topic-scenario"
     | "topic-quiz"
     | "topic-clean"
+    | "topic-menu"
     | "published"
     | "publish"
     | "student-guide"
@@ -1977,6 +1978,7 @@ export function PackageSample({
     topic: typeof good,
     tab: "guide" | "steps" | "scenario" | "quiz",
     dialog: "publish" | null = null,
+    menuOpen = false,
   ) => (
     <PackageTopicView
       topic={topic}
@@ -1991,8 +1993,10 @@ export function PackageSample({
       onNextIssue={noop}
       onPreview={noop}
       dialogInline
+      menuOpen={menuOpen}
     />
   );
+  if (state === "topic-menu") return topicView(good, "guide", null, true);
   if (state === "topic-guide") return topicView(bad, "guide");
   if (state === "topic-steps") return topicView(bad, "steps");
   if (state === "topic-scenario") return topicView(bad, "scenario");
