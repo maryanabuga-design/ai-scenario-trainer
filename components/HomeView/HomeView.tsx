@@ -1,10 +1,9 @@
 "use client";
 
-import { Bookmark, ClipboardCheck, ListChecks, ListOrdered } from "lucide-react";
+import { Bookmark, ClipboardCheck, ListChecks, Timer } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { buttonClasses } from "@/components/Button/Button";
-import { MiniQuizLink } from "@/components/MiniQuizLink/MiniQuizLink";
 import { Media3D } from "@/components/Media3D/Media3D";
 import { NotificationBell } from "@/components/NotificationBell/NotificationBell";
 import { Tile } from "@/components/Tile/Tile";
@@ -18,19 +17,17 @@ import {
 } from "@/lib/home";
 import type { HomeCounts, HomeSummary, HomeTileId } from "@/lib/home";
 
-const miniQuizPath = "/mini-quiz?from=home";
-
 const tileIcons: Record<HomeTileId, LucideIcon> = {
-  exam: ClipboardCheck,
-  steps: ListOrdered,
+  exam: Timer,
+  "mini-quiz": ClipboardCheck,
   weak: ListChecks,
   saved: Bookmark,
 };
 
 /**
  * Home, the student view: an avatar (Profile), the greeting and the notification bell, then one sentence, the hero card (its
- * one Primary button opens Training), four tiles and the Mini-quiz row. Nothing from Progress is
- * repeated here, and no readiness percentage.
+ * one Primary button opens Training) and a 2 by 2 grid of tiles (Exam, Mini-quiz, Weak topics, Saved
+ * questions). Nothing from Progress is repeated here, and no readiness percentage.
  */
 export function HomeView({
   name,
@@ -102,13 +99,6 @@ export function HomeView({
           </li>
         ))}
       </ul>
-
-      <MiniQuizLink
-        href={miniQuizPath}
-        subtitle="Pick topics and how many questions"
-        minHeight="min-h-[104px]"
-        clampSubtitle
-      />
     </div>
   );
 }

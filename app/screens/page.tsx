@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import type { ReactNode } from "react";
 import Materials from "@/app/(app)/materials/page";
+import { MaterialsTopics } from "@/components/MaterialsTopics/MaterialsTopics";
 import { ActionBarProvider, ActionBarSlot } from "@/components/ActionBar/ActionBar";
 import { StepsList } from "@/components/StepsView/StepsList";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
@@ -48,6 +49,7 @@ import {
   ProfileSample,
   InstructorHomeSample,
   InstructorExamsSample,
+  BuiltInTopicSample,
   InstructorContentSample,
   InstructorStudentsSample,
   PackageSample,
@@ -226,6 +228,11 @@ export default function Screens() {
           </PhoneFrame>
         </Group>
         <Group title="Materials">
+          <PhoneFrame label="Materials: the Step guides view">
+            <Screen nav="/materials">
+              <MaterialsTopics view="steps" />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Materials list">
             <Screen nav="/materials">
               <Materials />
@@ -246,7 +253,7 @@ export default function Screens() {
               <ReadingExample id="S2" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Reading: the quick-actions bar over the text (Steps and Practise this topic)">
+          <PhoneFrame label="Reading: the quick-actions bar over the text (Step guide and Practise topic)">
             <Screen>
               <ReadingExample id="S1" />
             </Screen>
@@ -278,7 +285,7 @@ export default function Screens() {
               <HighlightSample markdown={loadGuides()[0].sections[0].body} state="copied" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Reading screen: a flood topic (no Practise or Steps: just the text)">
+          <PhoneFrame label="Reading screen: a flood topic (no Practise or Step guide: just the text)">
             <Screen>
               <ReadingExample id="F5" />
             </Screen>
@@ -665,7 +672,7 @@ export default function Screens() {
               <NotificationsSample state="empty" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Steps: the list">
+          <PhoneFrame label="Step guides: the page behind the old link /checklists">
             <Screen>
               <StepsList />
             </Screen>
@@ -871,6 +878,21 @@ export default function Screens() {
           <PhoneFrame label="Content: built-in topics open">
             <Screen nav="/instructor/content" role="instructor">
               <InstructorContentSample state="built-in" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Content: a built-in topic with a step guide (S1), Overview">
+            <Screen nav="/instructor/content" role="instructor">
+              <BuiltInTopicSample id="S1" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Content: a built-in topic, Steps tab (read-only step cards)">
+            <Screen nav="/instructor/content" role="instructor">
+              <BuiltInTopicSample id="S1" tab="steps" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Content: a built-in topic without a step guide (S2, no Steps tab)">
+            <Screen nav="/instructor/content" role="instructor">
+              <BuiltInTopicSample id="S2" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Import: empty">

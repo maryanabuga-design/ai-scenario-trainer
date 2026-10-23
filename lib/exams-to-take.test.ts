@@ -49,17 +49,10 @@ describe("the exams to take", () => {
     expect(assignedLine([])).toBeNull();
     expect(assignedLine([active])).toMatch(/^1 assigned · due \d{1,2} \w{3}$/);
     expect(assignedLine([active, { ...active, id: "x" }])).toMatch(/^2 assigned · due /);
-    const tile = (assigned: string | null, best: { correct: number; questions: number } | null) =>
-      homeTiles({
-        assigned,
-        bestExam: best,
-        weakSections: 0,
-        saved: 0,
-        checklists: 1,
-      }).find((t) => t.id === "exam")!.count;
-    expect(tile("1 assigned · due 26 Oct", null)).toBe("1 assigned · due 26 Oct");
-    expect(tile(null, null)).toBe("Not taken yet");
-    expect(tile(null, { correct: 17, questions: 20 })).toBe("Best: 17 of 20");
+    const tile = (assigned: string | null) =>
+      homeTiles({ assigned, weakSections: 0, saved: 0 }).find((t) => t.id === "exam")!.count;
+    expect(tile("1 assigned · due 26 Oct")).toBe("1 assigned · due 26 Oct");
+    expect(tile(null)).toBe("No exams assigned");
   });
 });
 

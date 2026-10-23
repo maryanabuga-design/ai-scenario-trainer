@@ -19,13 +19,13 @@ describe("the reading screen", () => {
     expect(source).toContain('<h1 className="type-page-title">{topic.title}</h1>');
   });
 
-  it("ends with the action block: Practise (primary button), Steps (secondary), each hidden when it does not apply, and nothing else", () => {
+  it("ends with the action block: Practise (primary button), Step guide (secondary), each hidden when it does not apply, and nothing else", () => {
     expect(source).toContain(
       "{topic.canPractise && <Button onClick={practise}>Practise this topic</Button>}",
     );
     expect(source).toContain("{topic.stepsHref && (");
     expect(source).toContain('variant="secondary"');
-    expect(source).toContain("Steps for this topic");
+    expect(source).toContain("Step guide for this topic");
     // the pager is gone: the header arrows are the only way between topics
     expect(source).not.toMatch(/TopicPager|Previous|Next\b/);
     expect(source).not.toContain("border-t");

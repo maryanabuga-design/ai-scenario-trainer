@@ -127,13 +127,17 @@ for (const width of [360, 430]) {
         .toBeLessThanOrEqual(0);
     });
 
-    test("Exam and Steps keep the band with its Back button; Edit profile and About are unchanged", async ({
+    test("Exam and Step guides keep the band with its Back button; Edit profile and About are unchanged", async ({
       page,
     }) => {
       for (const path of ["/exam", "/checklists"]) {
         await page.goto(path);
         await expect(band(page)).toHaveCount(1);
-        await expect(band(page).getByRole("link", { name: "Back to Home" })).toHaveCount(1);
+        await expect(
+          band(page).getByRole("link", {
+            name: path === "/exam" ? "Back to Home" : "Back to Materials",
+          }),
+        ).toHaveCount(1);
         const bg = await band(page).evaluate((el) => getComputedStyle(el).backgroundColor);
         expect(bg, path).toBe("rgb(240, 236, 230)");
       }

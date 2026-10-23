@@ -106,13 +106,14 @@ describe("Home layout", () => {
     expect(bell).not.toContain("data-unread-badge");
   });
 
-  it("goes greeting, hero card, four tiles, Mini-quiz", () => {
+  it("goes greeting, hero card, then the tile grid", () => {
     const order = [
       'aria-label="Profile"',
       "Training materials",
       ">Exam<",
+      ">Mini-quiz<",
+      ">Weak topics<",
       ">Saved questions<",
-      "Mini-quiz",
     ].map((text) => html.indexOf(text));
     expect(order.every((position) => position >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
@@ -271,7 +272,7 @@ describe("the tiles", () => {
     expect(grid).not.toContain("data-media3d");
   });
 
-  it("are four cards in a two-column grid, each with a neutral circle and a count line", () => {
+  it("are four cards in a 2 by 2 grid, each with a neutral circle and a second line", () => {
     expect(html).toContain("grid grid-cols-2 gap-3");
     const grid = html.slice(html.indexOf("grid-cols-2"), html.lastIndexOf("</ul>"));
     expect(grid.match(/<a /g)).toHaveLength(4);
@@ -283,21 +284,22 @@ describe("the tiles", () => {
     expect(grid.match(/rounded-card bg-card/g)).toHaveLength(4);
   });
 
-  it("are Exam, Steps, Weak topics and Saved questions, and there is no Materials tile", () => {
-    const order = [">Exam<", ">Steps<", ">Weak topics<", ">Saved questions<"].map((text) =>
+  it("are Exam, Mini-quiz, Weak topics and Saved questions in that order, with no Steps and no Materials tile", () => {
+    const order = [">Exam<", ">Mini-quiz<", ">Weak topics<", ">Saved questions<"].map((text) =>
       html.indexOf(text),
     );
     expect(order.every((position) => position >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
     const grid = html.slice(html.indexOf("grid-cols-2"), html.lastIndexOf("</ul>"));
-    expect(grid).not.toMatch(/Materials|Guide|Scenarios|>Quiz<|Quick checklists/);
+    expect(grid).not.toMatch(/Materials|Guide|Scenarios|>Quiz<|>Steps<|checklist/i);
     expect(grid).not.toContain('href="/materials"');
+    expect(html).not.toContain("data-mini-quiz");
   });
 
-  it("show the counts and go to the right screen", () => {
+  it("show the second lines and go to the right screen", () => {
     for (const [title, count, href] of [
-      ["Exam", "Not taken yet", "/exam"],
-      ["Steps", "3 checklists", "/checklists"],
+      ["Exam", "No exams assigned", "/exam"],
+      ["Mini-quiz", "Choose topics and length", "/mini-quiz?from=home"],
       ["Weak topics", "Nothing to repeat", "/weak-topics"],
       ["Saved questions", "0 saved", "/saved"],
     ]) {
@@ -308,57 +310,28 @@ describe("the tiles", () => {
     }
   });
 
-  it("shows the best exam result on the Exam tile", () => {
+  it("shows the assigned exam on the Exam tile", () => {
     const withExam = renderToStaticMarkup(
       <HomeView
         name={"Maryana"}
         summary={homeSummary({ unfinished: null, history: [] })}
-        counts={{ ...counts, bestExam: { correct: 17, questions: 20 } }}
+        counts={{ ...counts, assigned: "1 assigned · due 27 Oct" }}
       />,
     );
-    expect(withExam).toContain("Best: 17 of 20");
-    expect(withExam).not.toMatch(/Best: \d+%/);
-    expect(withExam).not.toContain("Not taken yet");
-  });
-});
-
-describe("the Mini-quiz row", () => {
-  const html = render();
-
-  it("is a full-width card with a chevron that opens the Mini-quiz screen from Home", () => {
-    const start = html.lastIndexOf("<a ", html.indexOf(">Mini-quiz<"));
-    const row = html.slice(start, html.indexOf("</a>", start));
-    expect(row).toContain('href="/mini-quiz?from=home"');
-    expect(row).toContain("Pick topics and how many questions");
-    expect(row).toContain("lucide-chevron-right");
-    expect(row).toContain("min-h-[104px]");
-    expect(row).toContain("rounded-card bg-card");
+    expect(withExam).toContain("1 assigned · due 27 Oct");
+    expect(withExam).not.toContain("No exams assigned");
   });
 
-  it("has the mini-quiz picture in a fixed 64 by 60 frame on the left, centred on the text (bare, decorative), the title, the description and the chevron on the right", () => {
-    const start = html.lastIndexOf("<a ", html.indexOf(">Mini-quiz<"));
-    const row = html.slice(start, html.indexOf("</a>", start));
-    const picture = row.slice(row.indexOf("<img"), row.indexOf(">", row.indexOf("<img")) + 1);
-    expect(picture).toContain("/heroes/icon-miniquiz.webp");
-    expect(picture).toContain('alt=""');
-    expect(picture).toContain('aria-hidden="true"');
-    expect(picture).toContain('width="64"');
-    expect(picture).toContain('height="60"');
-    expect(row).toContain("width:64px;height:60px");
-    expect(row).toContain("flex min-w-0 flex-1 items-center gap-3");
-    expect(picture).not.toMatch(/bg-|border|rounded|shadow/);
-    expect(row).not.toContain("data-media3d");
-    expect(row).not.toContain(">3D<");
-    const order = ["<img", ">Mini-quiz<", "Pick topics", "lucide-chevron-right"].map((text) =>
-      row.indexOf(text),
-    );
-    expect([...order].sort((a, b) => a - b)).toEqual(order);
-    expect(row).toContain("line-clamp-2");
-  });
-
-  it("no longer starts an instant session of 5 questions", () => {
-    expect(html).not.toMatch(
-      /Mini-session|quick questions|<button type="button" class="flex min-h-16/,
-    );
+  it("gives the Mini-quiz tile the clipboard-with-check icon in the same neutral tile, and the Exam tile its own icon", () => {
+    const tile = (title: string) => {
+      const start = html.lastIndexOf("<a ", html.indexOf(`>${title}<`));
+      return html.slice(start, html.indexOf("</a>", start));
+    };
+    expect(tile("Mini-quiz")).toContain("lucide-clipboard-check");
+    expect(tile("Mini-quiz")).toContain("bg-neutral-tile-bg text-neutral-tile-ink");
+    expect(tile("Exam")).not.toContain("lucide-clipboard-check");
+    for (const title of ["Exam", "Mini-quiz", "Weak topics", "Saved questions"]) {
+      expect(tile(title), title).toContain("min-h-32");
+    }
   });
 });

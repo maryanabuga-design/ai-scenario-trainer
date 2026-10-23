@@ -17,37 +17,35 @@ const topic = (open: string | null, checklist = checklists[1]) =>
 describe("the Steps list", () => {
   const html = renderToStaticMarkup(<StepsList />);
 
-  it("has the primary header band with the 40px Back to Home, the title and the subtitle", () => {
+  it("has the band with the 40px Back to Materials, the title and the subtitle", () => {
     const band = html.slice(0, html.indexOf("<ul"));
     expect(band).toContain("data-page-header-band");
     expect(band).toContain("bg-secondary-sand");
-    expect(band).toContain('aria-label="Back to Home"');
+    expect(band).toContain('aria-label="Back to Materials"');
+    expect(band).toContain('href="/materials?view=steps"');
     expect(band).toContain("h-10 w-10");
-    expect(band).toContain(">Steps</h1>");
-    expect(band).toContain("Short step-by-step guides for each topic.");
-    // nothing else on the page background carries a title or a subtitle
+    expect(band).toContain(">Step guides</h1>");
+    expect(band).toContain("Short step-by-step guides for the topics that have one.");
     expect(html.match(/<h1/g)).toHaveLength(1);
-    expect(html.match(/Short step-by-step guides/g)).toHaveLength(1);
   });
 
-  it("has a card per topic: icon tile, one-line title, the number of steps and a chevron", () => {
+  it("has a row per step guide: neutral icon tile, the title, '6 steps · S1' and a chevron", () => {
     const list = html.slice(html.indexOf("<ul"));
     expect(list.match(/<li/g)).toHaveLength(checklists.length);
     checklists.forEach((checklist) => {
       expect(list).toContain(checklist.title);
-      expect(list).toContain(`>${checklist.steps.length} steps<`);
+      expect(list).toContain(`>${checklist.steps.length} steps · ${checklist.topic}<`);
       expect(list).toContain(`href="/checklists/${checklist.id}"`);
-      // the full title and the count for assistive technology
-      expect(list).toContain(`aria-label="${checklist.title}, ${checklist.steps.length} steps"`);
+      expect(list).toContain(
+        `aria-label="${checklist.title}, ${checklist.steps.length} steps · ${checklist.topic}"`,
+      );
     });
-    expect(list).not.toMatch(/done|·/);
+    expect(list).not.toMatch(/done/i);
     expect(list.match(/lucide-chevron-right/g)).toHaveLength(checklists.length);
-    // a 44px rounded-square icon tile with an icon (and the chevron): two svgs a card
-    expect(list.match(/<svg/g)).toHaveLength(checklists.length * 2);
     expect(list.match(/h-11 w-11 rounded-\[12px\]/g)).toHaveLength(checklists.length);
     expect(list.match(/bg-neutral-tile-bg text-neutral-tile-ink/g)).toHaveLength(checklists.length);
     expect(list).not.toContain("bg-olive-tint");
-    expect(list).not.toContain("rounded-full");
+    expect(list).not.toMatch(/checklist(?!s\/)/i);
   });
 
   it("gives the three guides three different icons: bell, blood drop, flame", () => {
@@ -58,36 +56,12 @@ describe("the Steps list", () => {
     expect(list).toContain("lucide-flame");
   });
 
-  it("is the list-card look with a fixed height: fill, 1px stroke, radius, gutter padding, no shadow", () => {
+  it("uses the topic-row pattern of Materials: a row with a divider, no card look and no shadow", () => {
     const list = html.slice(html.indexOf("<ul"));
-    expect(list).toContain("bg-list-card");
-    expect(list).toContain("border border-selectable-stroke");
-    expect(list).toContain("rounded-card");
-    expect(list).toContain("px-[var(--gutter,1rem)]");
-    expect(list.match(/h-\[var\(--list-card-height,80px\)\]/g)).toHaveLength(checklists.length);
+    expect(list).toContain("border-b border-selectable-stroke");
+    expect(list).not.toContain("bg-list-card");
     expect(list).not.toContain("shadow");
     expect(html).not.toContain("ArrowCircle");
-  });
-
-  it("keeps a very long title on one line: the text block shrinks and the title is truncated", () => {
-    const long = {
-      ...checklists[0],
-      id: "long",
-      title:
-        "A very long title of a step guide that goes on and on and on and on and on and on and on",
-    };
-    expect(long.title.length).toBeGreaterThan(80);
-    const withLong = renderToStaticMarkup(<StepsList items={[long, checklists[1]]} />);
-    const card = withLong.slice(withLong.indexOf("<ul"));
-    expect(card).toContain(long.title);
-    // min-w-0 on the text block, truncate on the title and on the count line
-    expect(card.match(/min-w-0 flex-1 flex-col/g)).toHaveLength(2);
-    expect(card.match(/type-body-strong truncate/g)).toHaveLength(2);
-    expect(card.match(/truncate text-text-secondary/g)).toHaveLength(2);
-    // the same fixed height class as the short card
-    expect(card.match(/h-\[var\(--list-card-height,80px\)\]/g)).toHaveLength(2);
-    // the full title is in the link's accessible name
-    expect(card).toContain(`aria-label="${long.title}, 6 steps"`);
   });
 });
 
@@ -195,7 +169,7 @@ describe("a Steps topic screen", () => {
   it("goes back through the history, and keeps no progress code", () => {
     const code = readFileSync("components/StepsView/StepsTopic.tsx", "utf8");
     expect(code).toContain("router.back()");
-    expect(code).toContain('router.push("/checklists")');
+    expect(code).toContain("router.push(STEP_GUIDES_PATH)");
     expect(code).not.toMatch(/ArrowCircle|steps-progress|usePractise|toggleStep/);
   });
 });

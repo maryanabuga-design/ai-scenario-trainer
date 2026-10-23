@@ -9,7 +9,7 @@ export type Step = {
   details: string[];
 };
 
-/** A topic's step guide. */
+/** A step guide (the file and routes still say "checklist"). */
 export type Checklist = {
   id: string;
   title: string;
@@ -31,8 +31,15 @@ export function getChecklist(id: string): Checklist | undefined {
   return checklists.find((checklist) => checklist.id === id);
 }
 
-export const STEPS_TITLE = "Steps";
-export const STEPS_SUBTITLE = "Short step-by-step guides for each topic.";
+export const STEPS_TITLE = "Step guides";
+export const STEPS_SUBTITLE = "Short step-by-step guides for the topics that have one.";
+
+/** The Materials view of the step guides (`/materials?view=steps`). */
+export const STEP_GUIDES_PATH = "/materials?view=steps";
+
+/** "6 steps · S1": the second line of a step guide row. */
+export const stepGuideLine = (checklist: Checklist) =>
+  `${stepCountLabel(checklist.steps.length)} · ${checklist.topic}`;
 
 /** "6 steps", or "1 step". */
 export function stepCountLabel(count: number): string {

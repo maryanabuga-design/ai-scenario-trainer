@@ -42,7 +42,7 @@ export function topicFor(id: string): Topic | undefined {
   return allTopics().find((topic) => topic.id === id);
 }
 
-/** The first Quick checklist that covers a topic, or nothing. */
+/** The step guide attached to a topic (S1, S7, S8), or nothing: a guide that only draws on a section does not count. */
 export function stepsFor(topicId: string) {
-  return checklists.find((checklist) => checklist.guideRef.includes(topicId));
+  return checklists.find((checklist) => checklist.topic === topicId);
 }

@@ -174,19 +174,12 @@ describe("readiness", () => {
 
 describe("the tiles", () => {
   const counts = homeCounts({ history: [], saved: ["q-scn-s01-001", "q-s2-1", "gone"] });
-  const exam = (at: number, percent: number): FinishedSession => ({
-    ...finished(at, [["q-quiz-s01-001", true]]),
-    kind: "exam",
-    exam: { percent, questions: 20, timeUsedSeconds: 600 },
-  });
 
-  it("counts exam, saved questions, weak sections and checklists", () => {
+  it("counts the assigned exam, saved questions and weak sections", () => {
     expect(counts).toEqual({
       assigned: null,
-      bestExam: null,
       weakSections: 0,
       saved: 2,
-      checklists: 3,
     });
   });
 
@@ -210,22 +203,23 @@ describe("the tiles", () => {
     expect(homeCounts({ history: cleared, saved: null }).weakSections).toBe(1);
   });
 
-  it("are exactly four: Exam, Steps, Weak topics and Saved questions, and no Materials tile", () => {
+  it("are exactly four: Exam, Mini-quiz, Weak topics and Saved questions, and no Steps or Materials tile", () => {
     const tiles = homeTiles(counts);
     expect(tiles.map((tile) => [tile.title, tile.count, tile.href])).toEqual([
-      ["Exam", "Not taken yet", "/exam"],
-      ["Steps", "3 checklists", "/checklists"],
+      ["Exam", "No exams assigned", "/exam"],
+      ["Mini-quiz", "Choose topics and length", "/mini-quiz?from=home"],
       ["Weak topics", "Nothing to repeat", "/weak-topics"],
       ["Saved questions", "2 saved", "/saved"],
     ]);
     expect(tiles.some((tile) => /materials|guide/i.test(tile.title + tile.href))).toBe(false);
   });
 
-  it("shows the best exam result as a count once an exam was taken, never a percentage", () => {
-    const history = [exam(1, 70), exam(2, 85), exam(3, 60)];
-    // the fake exams answer one question correctly; the best percent decides which one is the best
-    expect(homeCounts({ history, saved: null }).bestExam).toEqual({ correct: 1, questions: 20 });
-    expect(homeTiles(homeCounts({ history, saved: null }))[0].count).toBe("Best: 1 of 20");
+  it("shows the assigned exam on the Exam tile, otherwise that none is assigned (no result, no percentage)", () => {
+    expect(homeTiles({ ...counts, assigned: "1 assigned · due 27 Oct" })[0].count).toBe(
+      "1 assigned · due 27 Oct",
+    );
+    expect(homeTiles(counts)[0].count).toBe("No exams assigned");
+    expect(homeTiles(counts).some((tile) => tile.count.includes("%"))).toBe(false);
   });
 
   it("says how many sections are to repeat, in the singular too", () => {

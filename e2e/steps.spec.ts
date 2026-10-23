@@ -24,58 +24,23 @@ const headers = (page: Page) => page.locator("main ol button[aria-expanded]:visi
 test.describe("Steps", () => {
   test.use({ viewport: { width: 360, height: 800 } });
 
-  test("the list shows every topic with only its step count, as bordered cards inside the gutters", async ({
+  test("Materials lists the three step guides as rows: neutral tile, title, '6 steps · S1', chevron, inside the gutters", async ({
     page,
   }) => {
-    await open(page, "/");
-    await page.getByRole("link", { name: /^Steps/ }).click();
-    await expect(page).toHaveURL(/\/checklists$/);
-    // the band: the hero-card colour, edge to edge, dark text, with Back, the title and the subtitle inside
-    const band = page.locator("[data-page-header-band]:visible");
-    const box = (await band.boundingBox())!;
-    expect(await band.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
-      "rgb(240, 236, 230)",
-    );
-    // a 1px hairline in the normal border colour closes the band
-    expect(
-      await band.evaluate((el) => {
-        const css = getComputedStyle(el);
-        return [css.borderBottomWidth, css.borderBottomStyle, css.borderBottomColor];
-      }),
-    ).toEqual(["1px", "solid", "rgb(228, 223, 213)"]);
-    // the title and the subtitle are dark, Back is a white circle
-    expect(
-      await band.evaluate((el) => [
-        getComputedStyle(el.querySelector("h1")!).color,
-        getComputedStyle(el.querySelector("p")!).color,
-        getComputedStyle(el.querySelector("a")!).backgroundColor,
-      ]),
-    ).toEqual(["rgb(26, 26, 26)", "rgb(26, 26, 26)", "rgb(255, 255, 255)"]);
-    expect(box.y).toBe(0);
-    expect(box.x).toBeLessThanOrEqual(1);
-    expect(box.x + box.width).toBeGreaterThanOrEqual(359);
-    await expect(band.getByRole("link", { name: "Back to Home" })).toBeVisible();
-    await expect(band.getByRole("heading", { name: "Steps", level: 1 })).toBeVisible();
-    await expect(band.getByText("Short step-by-step guides for each topic.")).toBeVisible();
-    const inside = await band.evaluate((el) =>
-      [...el.querySelectorAll("a, h1, p")].map((node) => node.getBoundingClientRect().left),
-    );
-    for (const left of inside) expect(left).toBeGreaterThanOrEqual(16);
-    // the cards start below the band, one gutter lower
-    const cards = page.locator("main ul li:visible a");
-    await expect(cards).toHaveCount(3);
-    expect((await cards.first().boundingBox())!.y - (box.y + box.height)).toBeCloseTo(16, 0);
-    // every card is 80px high, with a 44px rounded-square neutral tile, the text after a 12px gap
+    await open(page, "/materials?view=steps");
+    await expect(page.getByRole("radio", { name: /Step guides \(3\)/ })).toBeChecked();
+    const rows = page.locator("[data-step-guide]:visible");
+    await expect(rows).toHaveCount(3);
     const icons: string[] = [];
     for (let n = 0; n < 3; n++) {
-      const card = cards.nth(n);
-      const look = await card.evaluate((el) => {
+      const look = await rows.nth(n).evaluate((el) => {
         const box = el.getBoundingClientRect();
         const tile = el.querySelector("span[aria-hidden]")!;
         const tileBox = tile.getBoundingClientRect();
         const tileCss = getComputedStyle(tile);
-        const text = el.querySelector("span.truncate")!.parentElement!.getBoundingClientRect();
-        const chevron = el.querySelector("span[aria-hidden]:last-of-type")!.getBoundingClientRect();
+        const text = el
+          .querySelector("span.type-body-strong")!
+          .parentElement!.getBoundingClientRect();
         return {
           height: box.height,
           tile: [
@@ -84,93 +49,43 @@ test.describe("Steps", () => {
             tileCss.borderTopLeftRadius,
             tileCss.backgroundColor,
           ],
-          tileLeft: tileBox.left - box.left,
-          gap: text.left - tileBox.right,
-          tileCenter: tileBox.top + tileBox.height / 2 - (box.top + box.height / 2),
-          chevronInside: chevron.right <= box.right,
-          icon: tile.querySelector("svg")!.getAttribute("class"),
           ink: [getComputedStyle(tile).color, getComputedStyle(tile.querySelector("svg")!).stroke],
+          gap: text.left - tileBox.right,
+          left: box.left,
+          chevron: !!el.querySelector("svg.lucide-chevron-right"),
+          icon: tile.querySelector("svg")!.getAttribute("class"),
         };
       });
-      expect(look.height).toBe(80);
+      expect(look.height).toBeGreaterThanOrEqual(44);
       expect(look.tile).toEqual([44, 44, "12px", "rgb(226, 222, 214)"]);
-      // the icon is drawn in the icon ink
       expect(look.ink).toEqual(["rgb(92, 90, 86)", "rgb(92, 90, 86)"]);
-      expect(look.tileLeft).toBeCloseTo(17, 0);
       expect(look.gap).toBe(12);
-      expect(Math.abs(look.tileCenter)).toBeLessThanOrEqual(1);
-      expect(look.chevronInside).toBe(true);
+      expect(look.left).toBeGreaterThanOrEqual(16);
+      expect(look.chevron).toBe(true);
       icons.push(look.icon!);
     }
-    // three different icons
     expect(new Set(icons).size).toBe(3);
-    await expect(cards.nth(0)).toContainText("Leaving a building during an alarm");
-    await expect(cards.nth(0)).toContainText("6 steps");
-    await expect(cards.nth(1)).toContainText("Severe bleeding");
-    await expect(cards.nth(2)).toContainText("5 steps");
-    for (const text of await cards.allTextContents()) expect(text).not.toMatch(/done|·/);
-    const look = await cards.first().evaluate((card) => {
-      const css = getComputedStyle(card);
-      const box = card.getBoundingClientRect();
-      return {
-        background: css.backgroundColor,
-        border: [css.borderTopWidth, css.borderTopColor],
-        radius: css.borderTopLeftRadius,
-        padding: [css.paddingTop, css.paddingRight, css.paddingBottom, css.paddingLeft],
-        height: box.height,
-        left: box.left,
-        right: document.documentElement.clientWidth - box.right,
-        shadow: css.boxShadow,
-      };
-    });
-    expect(look.background).toBe("rgb(250, 247, 244)");
-    expect(look.border).toEqual(["1px", "rgb(228, 223, 213)"]);
-    expect(look.radius).toBe("24px");
-    expect(look.padding[1]).toBe("16px");
-    expect(look.padding[3]).toBe("16px");
-    expect(look.height).toBe(80);
-    expect(look.left).toBeGreaterThanOrEqual(16);
-    expect(look.right).toBeGreaterThanOrEqual(16);
-    expect(look.shadow).toBe("none");
+    await expect(rows.nth(0)).toContainText("Leaving a building during an alarm");
+    await expect(rows.nth(0)).toContainText("6 steps · S1");
+    await expect(rows.nth(1)).toContainText("6 steps · S7");
+    await expect(rows.nth(2)).toContainText("5 steps · S8");
+    for (const text of await rows.allTextContents()) expect(text).not.toMatch(/done|checklist/i);
     expect(await noSidewaysScroll(page)).toBe(true);
-    await page.getByRole("link", { name: "Back to Home" }).click();
-    await expect(page).toHaveURL(/\/$/);
   });
 
-  test("a very long title stays on one line with an ellipsis: the card keeps 80px and the chevron stays inside", async ({
+  test("the old link /checklists still works: the band, Back to Materials and the three rows", async ({
     page,
   }) => {
     await open(page, "/checklists");
-    const cards = page.locator("main ul li:visible a");
-    await expect(cards).toHaveCount(3);
-    const result = await cards.first().evaluate((card) => {
-      const title = card.querySelector("span.truncate")!;
-      title.textContent =
-        "A very long title of a step guide that goes on and on and on and on and on and on and on";
-      const box = card.getBoundingClientRect();
-      const chevron = card.querySelector("span[aria-hidden]:last-of-type")!.getBoundingClientRect();
-      const css = getComputedStyle(title);
-      return {
-        length: title.textContent!.length,
-        height: box.height,
-        chevronInside: chevron.right <= box.right && chevron.left >= box.left,
-        ellipsis: css.textOverflow,
-        whiteSpace: css.whiteSpace,
-        truncated: title.scrollWidth > title.clientWidth,
-        lineHeight: title.getBoundingClientRect().height,
-        sideways: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
-      };
-    });
-    expect(result.length).toBeGreaterThan(80);
-    expect(result.height).toBe(80);
-    expect(result.chevronInside).toBe(true);
-    expect(result.ellipsis).toBe("ellipsis");
-    expect(result.whiteSpace).toBe("nowrap");
-    expect(result.truncated).toBe(true);
-    expect(result.lineHeight).toBeLessThan(30);
-    expect(result.sideways).toBe(true);
-    // the real cards keep their full title for assistive technology
-    await expect(page.getByRole("link", { name: "Burns, 5 steps" })).toBeVisible();
+    const band = page.locator("[data-page-header-band]:visible");
+    expect(await band.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
+      "rgb(240, 236, 230)",
+    );
+    await expect(band.getByRole("heading", { name: "Step guides", level: 1 })).toBeVisible();
+    await expect(page.locator("[data-step-guide]:visible")).toHaveCount(3);
+    expect(await noSidewaysScroll(page)).toBe(true);
+    await band.getByRole("link", { name: "Back to Materials" }).click();
+    await expect(page).toHaveURL(/\/materials\?view=steps$/);
   });
 
   test("the topic screen has the olive band edge to edge with the summary card over its bottom edge", async ({
@@ -340,7 +255,7 @@ test.describe("Steps", () => {
     await open(page, "/checklists/leaving-a-building");
     await expect(page.getByRole("button", { name: "Practise this topic" })).toHaveCount(0);
     await expect(
-      page.getByRole("link", { name: /Steps for this topic|Read the material/ }),
+      page.getByRole("link", { name: /Step guide for this topic|Read the material/ }),
     ).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Back" })).toHaveCount(1);
     // the only buttons in the page are Back and the step headers
@@ -373,16 +288,16 @@ test.describe("Steps", () => {
     await expect(page.getByRole("heading", { name: "Burns", level: 1 })).toBeVisible();
   });
 
-  test("Back goes to the Steps list from the list, and to the reading screen from Steps for this topic", async ({
+  test("Back goes to the Step guides view from a guide, and to the reading screen from the step guide button", async ({
     page,
   }) => {
-    await open(page, "/checklists");
+    await open(page, "/materials?view=steps");
     await page.getByRole("link", { name: /^Burns/ }).click();
     await expect(page).toHaveURL(/\/checklists\/burns$/);
     await page.getByRole("button", { name: "Back" }).click();
-    await expect(page).toHaveURL(/\/checklists$/);
+    await expect(page).toHaveURL(/\/materials\?view=steps$/);
     await page.goto("/materials/read/S8");
-    await page.getByRole("link", { name: "Steps for this topic" }).click();
+    await page.getByRole("link", { name: "Step guide for this topic" }).click();
     await expect(page).toHaveURL(/\/checklists\/burns$/);
     await page.getByRole("button", { name: "Back" }).click();
     await expect(page).toHaveURL(/\/materials\/read\/S8$/);
@@ -392,7 +307,7 @@ test.describe("Steps", () => {
     page,
   }) => {
     await open(page, "/materials/read/S9");
-    await expect(page.getByRole("link", { name: "Steps for this topic" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Step guide for this topic" })).toHaveCount(0);
   });
 
   test("the whole screen keeps the gutters outside the frame and does not scroll sideways", async ({

@@ -82,6 +82,25 @@ describe("targets", () => {
   });
 });
 
+describe("the step guides target", () => {
+  it("opens Materials with the Step guides view, and an old /checklists target is moved there", () => {
+    expect(isValidTarget("/materials?view=steps")).toBe(true);
+    const cleaned = cleanNotifications([
+      {
+        id: "a",
+        type: "message",
+        title: "t",
+        text: "",
+        target: "/checklists",
+        createdAt: 1,
+        read: false,
+      },
+    ]);
+    expect(cleaned?.[0].target).toBe("/materials?view=steps");
+    expect(seedNotifications(NOW).some((n) => n.target === "/checklists")).toBe(false);
+  });
+});
+
 describe("unread count and read state", () => {
   it("counts the unread ones", () => {
     expect(unreadCount([])).toBe(0);

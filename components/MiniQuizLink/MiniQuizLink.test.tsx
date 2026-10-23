@@ -17,14 +17,10 @@ describe("the shared Mini-quiz row and card", () => {
     expect(html.indexOf("<img")).toBeLessThan(html.indexOf(">Mini-quiz<"));
   });
 
-  it("is the one component Home and Training use (no copy of the markup left)", () => {
-    for (const file of [
-      "components/HomeView/HomeView.tsx",
-      "components/TrainingView/TrainingView.tsx",
-    ]) {
-      const code = readFileSync(file, "utf8");
-      expect(code).toContain("<MiniQuizLink");
-      expect(code).not.toContain('<span className="type-body-strong">Mini-quiz</span>');
-    }
+  it("is the one component of the Training card, and Home has a tile instead (no wide row)", () => {
+    const training = readFileSync("components/TrainingView/TrainingView.tsx", "utf8");
+    expect(training).toContain("<MiniQuizLink");
+    expect(training).not.toContain('<span className="type-body-strong">Mini-quiz</span>');
+    expect(readFileSync("components/HomeView/HomeView.tsx", "utf8")).not.toContain("MiniQuizLink");
   });
 });

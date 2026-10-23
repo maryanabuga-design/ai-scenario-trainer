@@ -26,6 +26,6 @@ export function readingLabel(minutes: number): string {
   return `${minutes} min read`;
 }
 
-/** The labels of the quick-actions bar (shorter than the end block's "Steps for this topic" and "Practise this topic"). */
-export const QUICK_STEPS_LABEL = "Steps";
+/** The labels of the quick-actions bar (shorter than the end block's "Step guide for this topic" and "Practise this topic"). */
+export const QUICK_STEPS_LABEL = "Step guide";
 export const QUICK_PRACTISE_LABEL = "Practise topic";

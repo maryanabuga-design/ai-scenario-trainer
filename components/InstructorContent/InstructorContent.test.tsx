@@ -53,12 +53,14 @@ describe("the Content tab", () => {
     expect(withSets).toContain("S3 Topic S3 · 20 questions");
     expect(withSets).toContain('data-set-status="draft"');
     expect(withSets).toContain('data-set-status="published"');
-    expect(withSets).toContain("dashed");
+    expect(withSets).not.toContain("dashed");
+    expect(withSets).toContain("bg-neutral-tile-bg");
+    expect(withSets).toContain("Materials and questions for your students");
     expect(withSets).toContain('href="/instructor/content/c0"');
     expect(withSets).not.toContain("%");
   });
 
-  it("has the built-in toggle with its count, then the read-only 72px rows without chevrons", () => {
+  it("has the built-in toggle with its count, then 72px rows labelled Built-in · read-only that open the read-only detail", () => {
     expect(withSets).toContain("Show built-in topics (10)");
     expect(withSets).toContain("BUILT-IN TOPICS");
     expect(withSets.match(/data-built-in=/g)).toHaveLength(10);
@@ -67,9 +69,11 @@ describe("the Content tab", () => {
       withSets.indexOf("Show built-in"),
     );
     expect(list.match(/h-\[72px\]/g)).toHaveLength(10);
-    expect(list).not.toContain("<a ");
-    expect(list).not.toContain("lucide-chevron-right");
-    expect(list).toContain("12 questions");
+    expect(list.match(/<a /g)).toHaveLength(10);
+    expect(list.match(/lucide-chevron-right/g)).toHaveLength(10);
+    expect(list.match(/Built-in · read-only/g)).toHaveLength(10);
+    expect(list).toContain('href="/instructor/content/built-in/S1"');
+    expect(list).not.toContain("12 questions");
     expect(withSets).toContain('inert=""');
     const open = renderToStaticMarkup(
       <ContentView sets={[]} builtIn={builtIn} topicTitle={titleOf} initiallyOpen />,

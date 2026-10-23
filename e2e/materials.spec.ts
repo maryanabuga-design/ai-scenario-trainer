@@ -199,7 +199,7 @@ test.describe("Materials", () => {
     await expect(page.getByRole("heading", { name: "Stairs, not elevators" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Responding to an alarm" })).toHaveCount(1);
     await expect(page.getByRole("button", { name: "Practise this topic" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Steps for this topic" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Step guide for this topic" })).toBeVisible();
     // no pager: the header arrows are the only way between topics
     await expect(page.getByRole("button", { name: "Next topic" })).toBeEnabled();
     // the bottom navigation is not on a reading screen
@@ -259,14 +259,14 @@ test.describe("Materials", () => {
     await expect(page.getByRole("heading", { name: "Checking the route", level: 1 })).toBeVisible();
   });
 
-  test("Steps for this topic opens the Steps, and a topic without steps has no such button", async ({
+  test("Step guide for this topic opens the Steps, and a topic without steps has no such button", async ({
     page,
   }) => {
     await open(page, "/materials/read/S7");
-    await page.getByRole("link", { name: "Steps for this topic" }).click();
+    await page.getByRole("link", { name: "Step guide for this topic" }).click();
     await expect(page).toHaveURL(/\/checklists\/severe-bleeding$/);
     await open(page, "/materials/read/S9");
-    await expect(page.getByRole("link", { name: "Steps for this topic" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Step guide for this topic" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Practise this topic" })).toBeVisible();
   });
 
@@ -297,10 +297,10 @@ test.describe("Materials", () => {
     page,
   }) => {
     await page.setViewportSize({ width: 360, height: 844 });
-    await open(page, "/materials/read/S2");
+    await open(page, "/materials/read/S8");
     const targets = [
       page.getByRole("button", { name: "Practise this topic" }),
-      page.getByRole("link", { name: "Steps for this topic" }),
+      page.getByRole("link", { name: "Step guide for this topic" }),
     ];
     for (const target of targets) {
       const box = (await target.boundingBox())!;
@@ -416,14 +416,19 @@ test.describe("Materials", () => {
     expect(errors).toEqual([]);
   });
 
-  test("the end block holds only the Practise and Steps buttons, and no Previous or Next", async ({
+  test("the end block holds only the Practise button and, for S1, S7 and S8, the step guide button, and no Previous or Next", async ({
     page,
   }) => {
     for (const id of ["S1", "S2", "S10"]) {
       await open(page, `/materials/read/${id}`);
       const end = page.getByRole("region", { name: "What next" });
       const labels = await end.locator("a, button").allTextContents();
-      expect(labels).toEqual(["Practise this topic", "Steps for this topic"]);
+      // only S1, S7 and S8 have an attached step guide
+      expect(labels).toEqual(
+        id === "S1"
+          ? ["Practise this topic", "Step guide for this topic"]
+          : ["Practise this topic"],
+      );
       await expect(end).not.toContainText(/Previous|Next/);
       // no divider and no navigation row in it
       await expect(end.getByRole("navigation")).toHaveCount(0);
@@ -436,8 +441,10 @@ test.describe("Materials", () => {
 
   test("the last button has the page gutter below it", async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 844 });
-    await open(page, "/materials/read/S10");
-    const last = (await page.getByRole("link", { name: "Steps for this topic" }).boundingBox())!;
+    await open(page, "/materials/read/S8");
+    const last = (await page
+      .getByRole("link", { name: "Step guide for this topic" })
+      .boundingBox())!;
     const height = await page.evaluate(() => window.innerHeight);
     expect(Math.abs(height - 16 - (last.y + last.height))).toBeLessThanOrEqual(1);
   });
@@ -539,7 +546,7 @@ test.describe("Materials", () => {
       await expect(
         bar(page).getByRole("button", { name: "Practise topic", exact: true }),
       ).toBeVisible();
-      await expect(bar(page).getByRole("link", { name: "Steps", exact: true })).toBeVisible();
+      await expect(bar(page).getByRole("link", { name: "Step guide", exact: true })).toBeVisible();
       // down again: hidden
       await scrollTo(page, 1800);
       await expect(bar(page)).toBeHidden();
@@ -598,7 +605,7 @@ test.describe("Materials", () => {
       expect(await noSidewaysScroll(page)).toBe(true);
     });
 
-    test("the bar's labels are Steps and Practise topic, each on one line, and the end block keeps its own", async ({
+    test("the bar's labels are Step guide and Practise topic, each on one line, and the end block keeps its own", async ({
       page,
     }) => {
       await open(page, "/materials/read/S1");
@@ -618,12 +625,12 @@ test.describe("Materials", () => {
           }),
         );
       expect(lines).toEqual([
-        { text: "Steps", lines: 1, fits: true },
+        { text: "Step guide", lines: 1, fits: true },
         { text: "Practise topic", lines: 1, fits: true },
       ]);
       await scrollTo(page, 99999);
       await expect(page.getByRole("button", { name: "Practise this topic" })).toBeVisible();
-      await expect(page.getByRole("link", { name: "Steps for this topic" })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Step guide for this topic" })).toBeVisible();
     });
 
     test("the bar's buttons start the right flows", async ({ page }) => {
@@ -636,7 +643,7 @@ test.describe("Materials", () => {
       await open(page, "/materials/read/S1");
       await scrollTo(page, 1800);
       await scrollTo(page, 1700);
-      await bar(page).getByRole("link", { name: "Steps", exact: true }).click();
+      await bar(page).getByRole("link", { name: "Step guide", exact: true }).click();
       await expect(page).toHaveURL(/\/checklists\/leaving-a-building$/);
     });
 
@@ -775,7 +782,7 @@ test.describe("Materials", () => {
     await expect(page.locator("main strong", { hasText: "Depth and current." })).toBeVisible();
     await expect(page.locator("main li:visible")).toHaveCount(4);
     await expect(page.getByRole("button", { name: "Practise this topic" })).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "Steps for this topic" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Step guide for this topic" })).toHaveCount(0);
     await expect(page.getByRole("region", { name: "What next" })).toHaveCount(0);
     expect(await noSidewaysScroll(page)).toBe(true);
   });

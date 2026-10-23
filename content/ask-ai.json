@@ -227,7 +227,7 @@
   },
   "examples": {
     "rescue": {
-      "S1": "On shift at the station, the building alarm sounds. You stop the checklist, leave the equipment and use the stairs, like any other occupant.",
+      "S1": "On shift at the station, the building alarm sounds. You stop what you are doing, leave the equipment and use the stairs, like any other occupant.",
       "S2": "Before leading visitors out, you touch the corridor door with the back of your hand and send them to the second stairwell when it is warm.",
       "S3": "A corridor is hazy with smoke. You stay low, keep a hand on the wall and guide the people behind you to the nearest exit.",
       "S4": "At the assembly point you give the warden a clear count and name the one colleague you have not seen since the second floor.",

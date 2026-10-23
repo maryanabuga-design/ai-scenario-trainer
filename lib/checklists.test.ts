@@ -81,8 +81,8 @@ describe("quick checklists", () => {
 
   it("finds a checklist by id and words the number of steps", () => {
     expect(getChecklist("burns")?.title).toBe("Burns");
-    expect(STEPS_TITLE).toBe("Steps");
-    expect(STEPS_SUBTITLE).toBe("Short step-by-step guides for each topic.");
+    expect(STEPS_TITLE).toBe("Step guides");
+    expect(STEPS_SUBTITLE).toBe("Short step-by-step guides for the topics that have one.");
     expect(getChecklist("nope")).toBeUndefined();
     expect(stepCountLabel(6)).toBe("6 steps");
     expect(stepCountLabel(1)).toBe("1 step");

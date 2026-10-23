@@ -231,7 +231,7 @@ export type ReadOutcome = {
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
-/** The text of a recognised row: "Guide · 4 sections", "Steps · 2 checklists, 7 steps", ... */
+/** The text of a recognised row: "Guide · 4 sections", "Steps · 2 step guides, 7 steps", ... */
 export function labelOf(kind: PartKind, data: PackageData): string {
   const name = PART_LABELS[kind];
   if (kind === "topic") return `${name} · ${data.title || "no title"}`;
@@ -239,7 +239,7 @@ export function labelOf(kind: PartKind, data: PackageData): string {
     return `${name} · ${plural(data.guide?.length ?? 0, "section", "sections")}`;
   if (kind === "steps") {
     const lists = data.steps ?? [];
-    return `${name} · ${plural(lists.length, "checklist", "checklists")}, ${plural(
+    return `${name} · ${plural(lists.length, "step guide", "step guides")}, ${plural(
       lists.reduce((n, list) => n + list.steps.length, 0),
       "step",
       "steps",

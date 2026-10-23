@@ -1,5 +1,6 @@
 "use client";
 
+import { BuiltInTopicView } from "@/components/InstructorContent/BuiltInTopicView";
 import { StepsTopicView } from "@/components/StepsView/StepsTopic";
 import { checklists } from "@/lib/checklists";
 import { QuickActionsBar } from "@/components/QuickActionsBar/QuickActionsBar";
@@ -2010,6 +2011,29 @@ export function PackageSample({
       data={good}
       partHref={(part) => `#${part}`}
       back={{ label: "Back to Materials", href: "#materials" }}
+    />
+  );
+}
+
+/** A built-in topic for the Instructor (read-only), with or without a Steps tab. */
+export function BuiltInTopicSample({
+  id,
+  tab = "overview",
+}: {
+  id: string;
+  tab?: "overview" | "steps";
+}) {
+  const { sections } = useSourceSheet();
+  const section = sections.find((entry) => entry.id === id);
+  const guide = checklists.find((entry) => entry.topic === id);
+  return (
+    <BuiltInTopicView
+      id={id}
+      title={section?.title ?? id}
+      questions={12}
+      minutes={4}
+      guide={guide}
+      tab={tab}
     />
   );
 }

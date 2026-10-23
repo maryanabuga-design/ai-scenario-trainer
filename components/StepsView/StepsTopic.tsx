@@ -7,7 +7,7 @@ import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { StepCard, stepsCard } from "@/components/StepsView/StepCard";
 import { TopicTile } from "@/components/TopicTile/TopicTile";
 import { initialOpen, toggleOpen } from "@/lib/accordion";
-import { stepCountLabel } from "@/lib/checklists";
+import { STEP_GUIDES_PATH, stepCountLabel } from "@/lib/checklists";
 import type { Checklist } from "@/lib/checklists";
 
 /** The presentation of one topic's steps, with the open step passed in (the screen review page shows fixed states). */
@@ -70,7 +70,7 @@ export function StepsTopicView({
 }
 
 /**
- * One topic's steps, informational only: the olive header frame with Back and the title, the
+ * One step guide, informational only: the olive header frame with Back and the title, the
  * summary card over its edge, and an accordion of step cards (one open at a time, step 1 open at
  * first), then the optional Source row. No completion tracking and no action buttons.
  */
@@ -82,7 +82,7 @@ export function StepsTopic({ checklist }: { checklist: Checklist }) {
     <StepsTopicView
       checklist={checklist}
       open={open}
-      onBack={() => (window.history.length > 1 ? router.back() : router.push("/checklists"))}
+      onBack={() => (window.history.length > 1 ? router.back() : router.push(STEP_GUIDES_PATH))}
       onToggleOpen={(id) => setOpen((current) => toggleOpen(current, id))}
     />
   );

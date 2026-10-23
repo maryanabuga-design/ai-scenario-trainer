@@ -1,11 +1,16 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { Chip } from "@/components/Chip/Chip";
 import { FromInstructor } from "@/components/MaterialsTopics/FromInstructor";
+import { MaterialsViews } from "@/components/MaterialsTopics/MaterialsViews";
+import type { MaterialsView } from "@/components/MaterialsTopics/MaterialsViews";
+import { StepGuideRows } from "@/components/MaterialsTopics/StepGuideRows";
 import { ListScroll } from "@/components/MaterialsTopics/ListScroll";
 import { ProfileAvatar } from "@/components/ProfileAvatar/ProfileAvatar";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { TopicTile } from "@/components/TopicTile/TopicTile";
+import { checklists } from "@/lib/checklists";
 import { allTopics } from "@/lib/materials-topics";
 import type { Topic } from "@/lib/materials-topics";
 import { MATERIALS_SUBTITLE, MATERIALS_TITLE, readingLabel, readingPath } from "@/lib/reading";
@@ -31,10 +36,17 @@ function TopicRow({ topic }: { topic: Topic }) {
 }
 
 /**
- * The Materials tab: the title, the subtitle and every topic of every guide as a flat list with
- * dividers, grouped by guide (a heading and a count chip each).
+ * The Materials tab: the title, the subtitle, the selector "Topics | Step guides" and, by default, every topic of
+ * every guide as a flat list with dividers, grouped by guide (a heading and a count chip each).
  */
-export function MaterialsTopics({ topics = allTopics() }: { topics?: Topic[] }) {
+export function MaterialsTopics({
+  topics = allTopics(),
+  view,
+}: {
+  topics?: Topic[];
+  /** For the review page: the view without reading the URL. */
+  view?: MaterialsView;
+}) {
   const guides = [...new Set(topics.map((topic) => topic.guideId))].map((id) => ({
     id,
     title: topics.find((topic) => topic.guideId === id)!.guideTitle,
@@ -48,37 +60,47 @@ export function MaterialsTopics({ topics = allTopics() }: { topics?: Topic[] }) 
         subtitle={MATERIALS_SUBTITLE}
         action={<ProfileAvatar />}
       />
-      <div className="flex flex-col gap-8">
-        {guides.map((guide) => (
-          <section
-            key={guide.id}
-            aria-labelledby={`guide-${guide.id}`}
-            className="flex flex-col gap-3"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <h2 id={`guide-${guide.id}`} className="type-item-title min-w-0 flex-1">
-                {guide.title}
-              </h2>
-              <Chip tone="olive" size="caption">
-                {guide.topics.length} topics
-              </Chip>
-            </div>
-            <ul>
-              {guide.topics.map((topic, index) => (
-                <li
-                  key={topic.id}
-                  className={
-                    index < guide.topics.length - 1 ? "border-b border-selectable-stroke" : ""
-                  }
+      <Suspense fallback={null}>
+        <MaterialsViews
+          topicsCount={topics.length}
+          stepGuidesCount={checklists.length}
+          view={view}
+          topics={
+            <div className="flex flex-col gap-8">
+              {guides.map((guide) => (
+                <section
+                  key={guide.id}
+                  aria-labelledby={`guide-${guide.id}`}
+                  className="flex flex-col gap-3"
                 >
-                  <TopicRow topic={topic} />
-                </li>
+                  <div className="flex items-start justify-between gap-3">
+                    <h2 id={`guide-${guide.id}`} className="type-item-title min-w-0 flex-1">
+                      {guide.title}
+                    </h2>
+                    <Chip tone="olive" size="caption">
+                      {guide.topics.length} topics
+                    </Chip>
+                  </div>
+                  <ul>
+                    {guide.topics.map((topic, index) => (
+                      <li
+                        key={topic.id}
+                        className={
+                          index < guide.topics.length - 1 ? "border-b border-selectable-stroke" : ""
+                        }
+                      >
+                        <TopicRow topic={topic} />
+                      </li>
+                    ))}
+                  </ul>
+                </section>
               ))}
-            </ul>
-          </section>
-        ))}
-        <FromInstructor />
-      </div>
+              <FromInstructor />
+            </div>
+          }
+          steps={<StepGuideRows />}
+        />
+      </Suspense>
     </div>
   );
 }

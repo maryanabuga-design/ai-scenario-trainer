@@ -1,8 +1,16 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { MaterialsTopics } from "@/components/MaterialsTopics/MaterialsTopics";
 import { allTopics } from "@/lib/materials-topics";
 import { readingPath } from "@/lib/reading";
+
+let query = "";
+const push = vi.fn();
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push, replace: () => undefined }),
+  useSearchParams: () => new URLSearchParams(query),
+  usePathname: () => "/materials",
+}));
 
 const html = renderToStaticMarkup(<MaterialsTopics />);
 /** The list under the header band. */
@@ -104,5 +112,43 @@ describe("the Materials list", () => {
   it("gives reading times of at least 1 minute", () => {
     for (const topic of allTopics()) expect(topic.minutes).toBeGreaterThanOrEqual(1);
     expect(html.match(/\d+ min read/g)).toHaveLength(17);
+  });
+});
+
+describe("the selector and the step guides view", () => {
+  const steps = (() => {
+    query = "view=steps";
+    const markup = renderToStaticMarkup(<MaterialsTopics />);
+    query = "";
+    return markup;
+  })();
+
+  it("has the segmented selector 'Topics (17) | Step guides (3)' under the band, Topics chosen by default, on one line", () => {
+    expect(html.indexOf("data-page-header-band")).toBeLessThan(html.indexOf('role="radiogroup"'));
+    expect(html).toContain("Topics (17)");
+    expect(html).toContain("Step guides (3)");
+    expect(html).toMatch(/checked=""[^>]*value="topics"/);
+    const group = html.slice(html.indexOf('role="radiogroup"'), html.indexOf("</fieldset>"));
+    expect(group.match(/whitespace-nowrap/g)).toHaveLength(2);
+    expect(html).toContain('href="/materials/read/S1"');
+    expect(html).not.toContain("data-step-guides");
+  });
+
+  it("shows the 3 step guides as rows when the URL says ?view=steps, and no topics", () => {
+    expect(steps).toMatch(/checked=""[^>]*value="steps"/);
+    expect(steps.match(/data-step-guide=/g)).toHaveLength(3);
+    expect(steps).not.toContain('href="/materials/read/');
+    for (const [id, line] of [
+      ["leaving-a-building", "6 steps · S1"],
+      ["severe-bleeding", "6 steps · S7"],
+      ["burns", "5 steps · S8"],
+    ]) {
+      const start = steps.lastIndexOf("<a ", steps.indexOf(`href="/checklists/${id}"`));
+      const row = steps.slice(start, steps.indexOf("</a>", start));
+      expect(row, id).toContain(line);
+      expect(row).toContain("h-11 w-11");
+      expect(row).toContain("lucide-chevron-right");
+    }
+    expect(steps).not.toMatch(/checklist(?!s\/)/i);
   });
 });

@@ -496,7 +496,7 @@ test.describe("Exam readiness", () => {
     ).toEqual(["rgb(226, 222, 214)", "rgb(92, 90, 86)", "rgb(92, 90, 86)"]);
   });
 
-  test("the Steps list tiles use the same neutral tile", async ({ page }) => {
+  test("the step guide rows use the same neutral tile", async ({ page }) => {
     await open(page, "/checklists");
     const tile = page.locator("main ul li a span[aria-hidden]").first();
     await expect(tile).toBeVisible();

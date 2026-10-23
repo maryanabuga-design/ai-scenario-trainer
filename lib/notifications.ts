@@ -40,10 +40,13 @@ const STATIC_TARGETS = [
   "/materials",
   "/weak-topics",
   "/saved",
-  "/checklists",
+  "/materials?view=steps",
   "/mini-quiz",
   "/profile",
 ];
+
+/** A target saved before the step guides moved into Materials still opens them. */
+const OLD_STEP_GUIDES = "/checklists";
 
 /** A screen a notification may open: a known route, or the reading screen of a topic. */
 export function isValidTarget(target: string): boolean {
@@ -53,6 +56,12 @@ export function isValidTarget(target: string): boolean {
     /^\/exam\?id=[A-Za-z0-9-]+$/.test(target)
   );
 }
+
+const cleanTarget = (target: unknown): string | null => {
+  if (typeof target !== "string") return null;
+  if (target === OLD_STEP_GUIDES) return "/materials?view=steps";
+  return isValidTarget(target) ? target : null;
+};
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
@@ -88,7 +97,7 @@ export function cleanNotifications(value: unknown): AppNotification[] | null {
         type: type as NotificationType,
         title,
         text: typeof text === "string" ? text : "",
-        target: typeof target === "string" && isValidTarget(target) ? target : null,
+        target: cleanTarget(target),
         createdAt,
         read: read === true,
       },

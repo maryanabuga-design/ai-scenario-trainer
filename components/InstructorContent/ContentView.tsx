@@ -1,10 +1,13 @@
 "use client";
 
 import { ChevronDown, FileText } from "lucide-react";
+import Link from "next/link";
 import { useRef, useState } from "react";
 import type { MouseEvent } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
+import { Chevron } from "@/components/Chevron/Chevron";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
+import { BUILT_IN_LABEL } from "@/components/InstructorContent/BuiltInTopicView";
 import { PackageCard } from "@/components/InstructorContent/PackageCard";
 import { SetCard } from "@/components/InstructorContent/SetCard";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
@@ -56,7 +59,7 @@ export function ContentView({
     <div className="flex flex-col gap-4 pb-4">
       <PageHeaderBand
         title="Content"
-        subtitle="Questions for your students"
+        subtitle="Materials and questions for your students"
         action={<ProfileAvatar />}
       />
       <ButtonLink href="/instructor/content/import" onClick={clearDraft}>
@@ -112,26 +115,32 @@ export function ContentView({
               </h2>
               <ul className="flex flex-col gap-2">
                 {builtIn.map((topic) => (
-                  <li
-                    key={topic.id}
-                    data-built-in={topic.id}
-                    className="flex h-[72px] items-center gap-3 rounded-card bg-card px-4 shadow-(--card-shadow)"
-                  >
-                    <span
-                      aria-hidden="true"
-                      className="type-caption flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-olive-tint text-text"
+                  <li key={topic.id}>
+                    <Link
+                      href={`/instructor/content/built-in/${topic.id}`}
+                      data-built-in={topic.id}
+                      className="flex h-[72px] items-center gap-3 rounded-card bg-card px-4 shadow-(--card-shadow) has-focus-visible:outline-2"
                     >
-                      {topic.id}
-                    </span>
-                    <span className="flex min-w-0 flex-1 flex-col">
-                      <span className="type-body-strong truncate">
-                        <span className="sr-only">{topic.id} </span>
-                        {topic.title}
+                      <span
+                        aria-hidden="true"
+                        className="type-caption flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-olive-tint text-text"
+                      >
+                        {topic.id}
                       </span>
-                      <span className="type-small text-text-secondary">
-                        {topic.count} {topic.count === 1 ? "question" : "questions"}
+                      <span className="flex min-w-0 flex-1 flex-col">
+                        <span className="type-body-strong truncate">
+                          <span className="sr-only">{topic.id} </span>
+                          {topic.title}
+                        </span>
+                        <span
+                          data-built-in-label
+                          className="type-small truncate text-text-secondary"
+                        >
+                          {BUILT_IN_LABEL}
+                        </span>
                       </span>
-                    </span>
+                      <Chevron />
+                    </Link>
                   </li>
                 ))}
               </ul>

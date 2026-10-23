@@ -233,9 +233,11 @@ for (const width of [360, 430]) {
       const closedRow = page.locator('[data-history-row="notice-' + b + '"]');
       expect(await closedRow.evaluate((el) => el.tagName)).toBe("DIV");
       await expect(closedRow.locator("svg.lucide-chevron-right")).toHaveCount(0);
-      // the tile is back to the old text
+      // the tile says that none is assigned any more
       await page.goto("/");
-      await expect(page.getByRole("link", { name: /^Exam/ }).first()).not.toContainText("assigned");
+      await expect(page.getByRole("link", { name: /^Exam/ }).first()).toContainText(
+        "No exams assigned",
+      );
 
       expect(requests.filter((url) => !url.startsWith("http://localhost:3100"))).toEqual([]);
     });

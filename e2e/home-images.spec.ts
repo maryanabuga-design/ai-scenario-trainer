@@ -28,16 +28,12 @@ for (const width of [360, 430]) {
   test.describe(`Home pictures at ${width}px`, () => {
     test.use({ viewport: { width, height: 800 } });
 
-    test("both pictures load, are decorative and fill fixed frames (76 by 60 and 64 by 60) with no background, border or shadow", async ({
+    test("the hero picture loads, is decorative and fills its fixed frame (76 by 60) with no background, border or shadow", async ({
       page,
     }) => {
       await openHome(page);
       const hero = page.getByRole("region", { name: "Training materials" });
-      const row = page.getByRole("link", { name: /Mini-quiz/ });
-      for (const [slot, [frameW, frameH]] of [
-        [hero, [76, 60]],
-        [row, [64, 60]],
-      ] as const) {
+      for (const [slot, [frameW, frameH]] of [[hero, [76, 60]]] as const) {
         const img = slot.locator("img");
         await expect(img).toHaveCount(1);
         const info = await img.evaluate((el) => {
@@ -82,14 +78,8 @@ for (const width of [360, 430]) {
       page,
     }) => {
       await openHome(page);
-      for (const [name, frameW, frameH] of [
-        ["Training materials", 76, 60],
-        ["Mini-quiz", 64, 60],
-      ] as const) {
-        const slot =
-          name === "Mini-quiz"
-            ? page.getByRole("link", { name: /Mini-quiz/ })
-            : page.getByRole("region", { name });
+      for (const [name, frameW, frameH] of [["Training materials", 76, 60]] as const) {
+        const slot = page.getByRole("region", { name });
         // lazy pictures below a short screen load only when scrolled to
         await slot.locator("img").scrollIntoViewIfNeeded();
         await expect
@@ -199,43 +189,13 @@ for (const width of [360, 430]) {
       expect(Math.abs(width - (card.x + card.width) - 16)).toBeLessThanOrEqual(0.5);
     });
 
-    test("the Mini-quiz row: 64 by 60 frame at the left, centred on the text, 12px to the text, no taller than before", async ({
+    test("Home has no Mini-quiz row and no clipboard picture: Mini-quiz is a tile", async ({
       page,
     }) => {
       await openHome(page);
-      const row = page.getByRole("link", { name: /Mini-quiz/ });
-      const rowBox = await box(row);
-      const frame = await box(row.locator("[data-picture-frame]"));
-      const title = await box(row.getByText("Mini-quiz", { exact: true }));
-      const description = await box(row.getByText("Pick topics and how many questions"));
-      expect([frame.width, frame.height]).toEqual([64, 60]);
-      expect(intersects(frame, title)).toBe(false);
-      expect(intersects(frame, description)).toBe(false);
-      const textLeft = Math.min(title.x, description.x);
-      expect(textLeft - (frame.x + frame.width)).toBeCloseTo(12, 0);
-      // the text starts where it did with the 72px placeholder (16px padding + 72 + 12), +4 at most
-      expect(textLeft).toBeLessThanOrEqual(16 + 16 + 72 + 12 + 4);
-      // centred on the text block (title top to description bottom) and in the row, 2px
-      const blockCentre =
-        (Math.min(title.y, description.y) +
-          Math.max(title.y + title.height, description.y + description.height)) /
-        2;
-      expect(Math.abs(frame.y + frame.height / 2 - blockCentre)).toBeLessThanOrEqual(2);
-      expect(
-        Math.abs(frame.y + frame.height / 2 - (rowBox.y + rowBox.height / 2)),
-      ).toBeLessThanOrEqual(2);
-      // the row is not taller than with the placeholder (104px minimum), +4 at most
-      expect(rowBox.height).toBeLessThanOrEqual(104 + 4);
-      // the chevron stays on the right
-      const chevron = await box(row.locator("svg").last());
-      expect(chevron.x).toBeGreaterThan(description.x + description.width - 1);
-      expect(chevron.x + chevron.width).toBeLessThanOrEqual(rowBox.x + rowBox.width);
-      expect(Math.abs(rowBox.x - 16)).toBeLessThanOrEqual(0.5);
-      expect(
-        await page.evaluate(
-          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
-        ),
-      ).toBe(true);
+      await expect(page.locator("[data-mini-quiz]")).toHaveCount(0);
+      await expect(page.locator('img[src="/heroes/icon-miniquiz.webp"]')).toHaveCount(0);
+      await expect(page.getByRole("link", { name: /Mini-quiz/ })).toHaveCount(1);
     });
   });
 }

@@ -131,13 +131,15 @@ test("the whole clean package: recognised parts, four tabs, coverage, publish, s
   await page.locator("[data-package-topic]").first().click();
   for (const label of [
     "Read the guide",
-    "Follow the steps",
+    "Read the step guide",
     "Practise the scenario",
     "Take the quiz",
   ]) {
     await expect(page.getByText(label)).toBeVisible();
   }
   await page.getByText("Take the quiz").click();
+  await expect(page.getByRole("heading", { name: "Take the quiz", level: 1 })).toBeVisible();
+  await page.waitForLoadState("networkidle");
   for (let i = 0; i < 10; i += 1) {
     await page.locator('input[type="radio"]').first().check({ force: true });
     await page.getByRole("button", { name: i === 9 ? "Finish" : "Next" }).click();

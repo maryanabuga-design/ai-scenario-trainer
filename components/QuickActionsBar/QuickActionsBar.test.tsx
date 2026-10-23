@@ -8,14 +8,14 @@ const render = (props: Partial<Parameters<typeof QuickActionsBar>[0]> = {}) =>
   );
 
 describe("the quick-actions bar", () => {
-  it("has Steps and Practise topic side by side with equal widths, with their own labels", () => {
+  it("has Step guide and Practise topic side by side with equal widths, with their own labels", () => {
     const html = render();
-    expect(html).toContain(">Steps<");
+    expect(html).toContain(">Step guide<");
     expect(html).toContain(">Practise topic<");
     // not the end block's labels
-    expect(html).not.toContain("Steps for this topic");
+    expect(html).not.toContain("Step guide for this topic");
     expect(html).not.toContain("Practise this topic");
-    expect(html.indexOf(">Steps<")).toBeLessThan(html.indexOf(">Practise topic<"));
+    expect(html.indexOf(">Step guide<")).toBeLessThan(html.indexOf(">Practise topic<"));
     expect(html.match(/flex-1/g)).toHaveLength(2);
     expect(html).toContain("gap-3");
     expect(html).not.toContain("flex-[");
@@ -23,7 +23,7 @@ describe("the quick-actions bar", () => {
 
   it("with no steps, Practise is the only button and takes the full width", () => {
     const html = render({ stepsHref: null });
-    expect(html).not.toContain(">Steps<");
+    expect(html).not.toContain(">Step guide<");
     expect(html.match(/flex-1/g)).toHaveLength(1);
   });
 

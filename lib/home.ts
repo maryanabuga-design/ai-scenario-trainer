@@ -1,8 +1,6 @@
 import { findItem } from "@/lib/items";
 import { weakItemsFromHistory } from "@/lib/progress";
 import type { FinishedSession, Session } from "@/lib/session";
-import { checklists } from "@/lib/checklists";
-import { examResults } from "@/lib/exam";
 
 export { readinessOf as readiness } from "@/lib/part-progress";
 
@@ -57,16 +55,16 @@ export { ARTWORK_FILL, artworkTransform, homeArtwork, homeFrames } from "@/lib/m
 export type { Artwork } from "@/lib/media-frames";
 
 export type HomeCounts = {
-  /** The best exam result in percent, or null when no exam was taken. */
-  bestExam: { correct: number; questions: number } | null;
   /** "1 assigned · due 23 Oct" when a group exam is waiting for this student. */
   assigned?: string | null;
   weakSections: number;
   saved: number;
-  checklists: number;
 };
 
-export type HomeTileId = "exam" | "steps" | "weak" | "saved";
+/** What the Mini-quiz tile opens (the screen where topics and length are chosen). */
+export const MINI_QUIZ_PATH = "/mini-quiz?from=home";
+
+export type HomeTileId = "exam" | "mini-quiz" | "weak" | "saved";
 
 export type HomeTile = {
   id: HomeTileId;
@@ -76,24 +74,20 @@ export type HomeTile = {
   href: string;
 };
 
-/** The four tiles (all in the one neutral tile), each with its count line and where it goes. */
+/** The four tiles of the 2 by 2 grid (all in the one neutral tile), each with its second line and where it goes. */
 export function homeTiles(counts: HomeCounts): HomeTile[] {
   return [
     {
       id: "exam",
       title: "Exam",
-      count:
-        counts.assigned ??
-        (counts.bestExam === null
-          ? "Not taken yet"
-          : `Best: ${counts.bestExam.correct} of ${counts.bestExam.questions}`),
+      count: counts.assigned ?? "No exams assigned",
       href: "/exam",
     },
     {
-      id: "steps",
-      title: "Steps",
-      count: plural(counts.checklists, "checklist", "checklists"),
-      href: "/checklists",
+      id: "mini-quiz",
+      title: "Mini-quiz",
+      count: "Choose topics and length",
+      href: MINI_QUIZ_PATH,
     },
     {
       id: "weak",
@@ -124,12 +118,9 @@ export function homeCounts({
   assigned?: string | null;
 }): HomeCounts {
   const weak = weakItemsFromHistory(history);
-  const bestAttempt = examResults(history).best;
   return {
     assigned,
-    bestExam: bestAttempt && { correct: bestAttempt.correct, questions: bestAttempt.questions },
     weakSections: new Set(weak.map((item) => item.section)).size,
     saved: (saved ?? []).filter((id) => findItem(id) !== undefined).length,
-    checklists: checklists.length,
   };
 }

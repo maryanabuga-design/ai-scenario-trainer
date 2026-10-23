@@ -531,7 +531,7 @@ test.describe("Home", () => {
     await expect(page.getByText(/Readiness|How it works|How the app works/)).toHaveCount(0);
     // the seeded group exam is waiting, so the Exam tile shows the assigned line
     await expect(page.getByText(/^1 assigned · due \d{1,2} \w{3}$/)).toBeVisible();
-    for (const text of ["Nothing to repeat", "0 saved", "3 checklists"]) {
+    for (const text of ["Nothing to repeat", "0 saved", "Choose topics and length"]) {
       await expect(page.getByText(text, { exact: true })).toBeVisible();
     }
     await expect(page.getByText(/Average result|Session history|Sessions/)).toHaveCount(0);
@@ -611,13 +611,14 @@ test.describe("Home", () => {
     await expect(page).toHaveURL(/\/training$/);
   });
 
-  test("has exactly four tiles and no Materials tile, while the Materials tab still works", async ({
+  test("has exactly four tiles in a 2 by 2 grid, no Steps and no Materials tile, while the Materials tab still works", async ({
     page,
   }) => {
     await home(page, null);
     const tiles = page.locator("main ul:visible a");
     await expect(tiles).toHaveCount(4);
-    await expect(tiles).toContainText(["Exam", "Steps", "Weak topics", "Saved questions"]);
+    await expect(tiles).toContainText(["Exam", "Mini-quiz", "Weak topics", "Saved questions"]);
+    await expect(page.getByRole("link", { name: /^Steps/ })).toHaveCount(0);
     await expect(page.locator("main a[href='/materials']:visible")).toHaveCount(0);
     await page.getByRole("link", { name: /Saved questions/ }).click();
     await expect(page).toHaveURL(/\/saved$/);
@@ -632,7 +633,7 @@ test.describe("Home", () => {
     await expect(page).toHaveURL(/\/materials$/);
   });
 
-  test("opens the Mini-quiz screen from the Home row", async ({ page }) => {
+  test("opens the Mini-quiz screen from the Home tile", async ({ page }) => {
     await home(page, null);
     await page.getByRole("link", { name: /Mini-quiz/ }).click();
     await expect(page).toHaveURL(/\/mini-quiz\?from=home$/);
@@ -641,19 +642,22 @@ test.describe("Home", () => {
     await expect(page).toHaveURL(/\/$/);
   });
 
-  test("opens the Steps list, a topic screen, and goes back step by step", async ({ page }) => {
+  test("opens the step guides from Materials, a guide screen, and goes back step by step", async ({
+    page,
+  }) => {
     await home(page, null);
-    await page.getByRole("link", { name: /^Steps/ }).click();
-    await expect(page).toHaveURL(/\/checklists$/);
-    await expect(page.getByRole("heading", { name: "Steps", level: 1 })).toBeVisible();
-    await expect(page.locator("main li:visible")).toHaveCount(3);
+    await page
+      .getByRole("navigation", { name: "Main" })
+      .getByRole("link", { name: "Materials" })
+      .click();
+    await page.getByRole("radio", { name: /Step guides/ }).click({ force: true });
+    await expect(page).toHaveURL(/\/materials\?view=steps$/);
+    await expect(page.locator("[data-step-guide]:visible")).toHaveCount(3);
     await page.getByRole("link", { name: /Severe bleeding/ }).click();
     await expect(page).toHaveURL(/\/checklists\/severe-bleeding$/);
     await expect(page.locator("main ol li:visible")).toHaveCount(6);
     await page.getByRole("button", { name: "Back" }).click();
-    await expect(page).toHaveURL(/\/checklists$/);
-    await page.getByRole("link", { name: "Back to Home" }).click();
-    await expect(page).toHaveURL(/\/$/);
+    await expect(page).toHaveURL(/\/materials\?view=steps$/);
   });
 });
 

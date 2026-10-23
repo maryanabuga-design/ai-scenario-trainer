@@ -22,7 +22,7 @@ export type ReadingTopic = {
   body: string;
   /** Whether the topic has scenario steps or quiz questions to practise (the flood topics have not). */
   canPractise: boolean;
-  /** The Quick checklist covering the topic, if any. */
+  /** The step guide attached to the topic, if any (S1, S7, S8). */
   stepsHref: string | null;
   /** The place in its guide: 3 of 10. */
   position: number;
@@ -52,7 +52,7 @@ const BAR_CLEARANCE = 100;
 /**
  * The reading screen of one topic: the sticky header (Back, "S3 · 3 of 10", the previous and next
  * topic arrows), the title, one meta line, the text, and at the end of the column (not sticky, not
- * fixed) the action block: Practise this topic and Steps for this topic.
+ * fixed) the action block: Practise this topic and Step guide for this topic.
  * A short text leaves the block at the bottom of the screen, a long one lets it follow the text. On
  * a long topic a quick-actions bar appears when the reader scrolls up. Reading changes no progress;
  * only tapping Practise starts or resumes a session.
@@ -142,7 +142,7 @@ export function ReadingView({ topic }: { topic: ReadingTopic }) {
           {topic.canPractise && <Button onClick={practise}>Practise this topic</Button>}
           {topic.stepsHref && (
             <ButtonLink href={topic.stepsHref} variant="secondary">
-              Steps for this topic
+              Step guide for this topic
             </ButtonLink>
           )}
         </section>

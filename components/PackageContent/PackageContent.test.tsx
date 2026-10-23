@@ -11,7 +11,11 @@ import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
 import { PackageCard } from "@/components/InstructorContent/PackageCard";
 import { PackageImportView } from "@/components/InstructorContent/PackageImportView";
 import { PackageTopicView } from "@/components/InstructorContent/PackageTopicView";
-import { GuideSections, ScenarioCards } from "@/components/PackageContent/PackageParts";
+import {
+  ChecklistCards,
+  GuideSections,
+  ScenarioCards,
+} from "@/components/PackageContent/PackageParts";
 import { PackageRunner } from "@/components/PackageContent/PackageRunner";
 import {
   PackagePartView,
@@ -96,7 +100,7 @@ describe("the import screen", () => {
     for (const label of [
       "Topic · Evacuating a crowded hall",
       "Guide · 4 sections",
-      "Steps · 2 checklists, 7 steps",
+      "Steps · 2 step guides, 7 steps",
       "Scenario · 4 steps",
       "Questions · 10 questions",
       "Images · 2 of 2 found",
@@ -333,6 +337,21 @@ describe("plain text everywhere", () => {
   });
 });
 
+describe("the demo step guide for a student", () => {
+  it("is read-only accordion cards: no tick, no checked state and nothing saved", () => {
+    const html = renderToStaticMarkup(<ChecklistCards data={topic} guideHref={(s) => `#${s}`} />);
+    expect(html).toContain("When the alarm sounds");
+    expect(html).not.toMatch(/type="checkbox"|aria-checked|role="checkbox"|role="switch"/);
+    expect(html.replace(/<[^>]+>/g, " ")).not.toMatch(/checklist/i);
+    for (const file of [
+      "components/PackageContent/PackageParts.tsx",
+      "components/StepsView/StepCard.tsx",
+    ]) {
+      expect(readFileSync(file, "utf8"), file).not.toMatch(/localStorage|createStore|checkbox/);
+    }
+  });
+});
+
 describe("the student screens", () => {
   it("lists the parts in the learning path order with the plain sentence about being separate", () => {
     const html = renderToStaticMarkup(
@@ -346,13 +365,17 @@ describe("the student screens", () => {
     );
     const order = [
       "Read the guide",
-      "Follow the steps",
+      "Read the step guide",
       "Practise the scenario",
       "Take the quiz",
     ].map((t) => html.indexOf(t));
     expect(order.every((i) => i >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
-    expect(html).toContain("FROM YOUR INSTRUCTOR");
+    // two small labels: READ (guide, step guide) and PRACTISE (scenario, quiz)
+    expect(html.indexOf(">READ<")).toBeLessThan(html.indexOf("Read the guide"));
+    expect(html.indexOf("Read the step guide")).toBeLessThan(html.indexOf(">PRACTISE<"));
+    expect(html.indexOf(">PRACTISE<")).toBeLessThan(html.indexOf("Practise the scenario"));
+    expect(html).not.toMatch(/checklist/i);
     expect(html.match(/h-\[88px\]/g)).toHaveLength(4);
     expect(html).not.toContain("data-preview-bar");
   });

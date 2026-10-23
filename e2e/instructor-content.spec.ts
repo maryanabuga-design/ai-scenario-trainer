@@ -142,8 +142,17 @@ for (const width of [360, 430]) {
         expect((await row.boundingBox())!.height).toBe(72);
         expect(await bg(row)).toBe(CARD);
       }
-      await expect(page.locator("[data-built-in] a, [data-built-in] svg")).toHaveCount(0);
-      await expect(page.locator("[data-built-in]").first()).toContainText(/\d+ questions?/);
+      // each row opens the read-only detail and carries the label
+      await expect(page.locator("[data-built-in-label]:visible")).toHaveText(
+        Array(10).fill("Built-in · read-only"),
+      );
+      await expect(page.locator("[data-built-in]").first()).toHaveAttribute(
+        "href",
+        "/instructor/content/built-in/S1",
+      );
+      await expect(page.locator("[data-page-header-band]:visible")).toContainText(
+        "Materials and questions for your students",
+      );
       await page.getByRole("button", { name: "Hide built-in topics" }).click();
       await page.waitForTimeout(350);
       await expect(page.locator("[data-built-in]:visible")).toHaveCount(0);

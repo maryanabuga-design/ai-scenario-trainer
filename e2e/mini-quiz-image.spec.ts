@@ -21,7 +21,7 @@ for (const width of [360, 430]) {
   test.describe(`Mini-quiz picture at ${width}px`, () => {
     test.use({ viewport: { width, height: 800 } });
 
-    test("Home row and the Training Quiz card show the same picture, frame and centring", async ({
+    test("the Training Quiz card shows the clipboard picture in its frame, centred on the text; Home has a tile instead", async ({
       page,
     }) => {
       await page.addInitScript(
@@ -32,12 +32,12 @@ for (const width of [360, 430]) {
         [profile],
       );
       await page.goto("/");
-      const home = await measure(page);
+      await expect(page.locator("a[data-mini-quiz]")).toHaveCount(0);
       await page.getByRole("link", { name: "Choose a topic" }).click();
       await expect(page).toHaveURL(/\/training$/);
       await page.getByRole("radio", { name: "Quiz" }).check({ force: true });
       const training = await measure(page);
-      for (const shown of [home, training]) {
+      for (const shown of [training]) {
         expect([shown.frame.width, shown.frame.height]).toEqual([64, 60]);
         expect(
           Math.abs(shown.frame.y + shown.frame.height / 2 - (shown.text.y + shown.text.height / 2)),
@@ -49,9 +49,7 @@ for (const width of [360, 430]) {
         // the text starts at the same distance from the card's left edge
         expect(shown.frame.x - shown.row.x).toBe(16);
       }
-      expect(training.text.x - training.row.x).toBe(home.text.x - home.row.x);
-      // Home keeps its 104px row; Training grows only as far as the 60px picture needs
-      expect(home.row.height).toBeGreaterThanOrEqual(104);
+      // Training grows only as far as the 60px picture needs
       expect(training.row.height).toBeLessThanOrEqual(100);
       const scroll = await page.evaluate(
         () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,

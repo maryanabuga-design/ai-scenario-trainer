@@ -61,7 +61,7 @@ describe("the sample package", () => {
     expect(recognised.map((r) => r.label)).toEqual([
       "Topic · Evacuating a crowded hall",
       "Guide · 4 sections",
-      "Steps · 2 checklists, 7 steps",
+      "Steps · 2 step guides, 7 steps",
       "Scenario · 4 steps",
       "Questions · 10 questions",
     ]);
