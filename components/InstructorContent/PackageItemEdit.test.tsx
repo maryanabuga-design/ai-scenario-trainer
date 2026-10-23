@@ -63,7 +63,7 @@ describe("the edit screen of an item", () => {
   it("in a guided review: '1 of N' in the header, Save and next (Primary) and Skip (Secondary)", () => {
     const html = render(bad, "questions:3", { position: 1, total: 6 });
     expect(html).toContain(">Question 4</h1>");
-    expect(html).toContain("1 of 6");
+    expect(html).toContain("Item 1 of 6");
     expect(bar(html)).toMatch(/bg-primary[^>]*>Save and next</);
     expect(bar(html)).toMatch(/bg-olive-tint[^>]*>Skip</);
     expect(bar(html)).not.toContain(">Save<");
@@ -120,7 +120,28 @@ describe("the edit screen of an item", () => {
     expect(question.match(/type="radio"/g)!.length).toBeGreaterThanOrEqual(4);
   });
 
-  it("a picture that is not in the package yet says so and offers Add image", () => {
+  it("Save and next is disabled with ONE plain sentence while the item cannot be passed, enabled otherwise", () => {
+    const missing = {
+      ...clean,
+      questions: clean.questions!.map((q, i) =>
+        i === 0 ? { ...q, imageFile: "door-check.png" } : q,
+      ),
+    };
+    const html = render(missing, "questions:0", { position: 2, total: 5 });
+    expect(bar(html)).toMatch(/<button[^>]* disabled=""[^>]*>Save and next</);
+    expect(html).toContain("Choose the image file or remove the image to continue.");
+    expect(html.match(/data-needs/g)).toHaveLength(1);
+    const noCorrect = render(bad, "questions:3", { position: 1, total: 6 });
+    expect(bar(noCorrect)).toMatch(/<button[^>]* disabled=""[^>]*>Save and next</);
+    expect(noCorrect).toContain("Fix the point above to continue.");
+    const fine = render(clean, "questions:0", { position: 1, total: 1 });
+    expect(bar(fine)).not.toMatch(/ disabled=""/);
+    expect(fine).not.toContain("data-needs");
+    // opened from a card the form can be saved part way
+    expect(bar(render(missing, "questions:0"))).not.toMatch(/ disabled=""/);
+  });
+
+  it("a picture that is not in the package yet says so and offers Choose image", () => {
     const data = {
       ...clean,
       questions: clean.questions!.map((q, i) =>
@@ -129,7 +150,7 @@ describe("the edit screen of an item", () => {
     };
     const html = render(data, "questions:0");
     expect(html).toContain("door-check.png is not in the package yet.");
-    expect(html).toMatch(/bg-olive-tint[^>]*>Add image</);
+    expect(html).toMatch(/bg-olive-tint[^>]*>Choose image</);
   });
 
   it("has the discard dialog for leaving with changes (closed until needed) and no bottom sheet", () => {

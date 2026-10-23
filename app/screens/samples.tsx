@@ -135,6 +135,7 @@ import { readinessAfter, scopeItemIds } from "@/lib/readiness";
 import { topicIdsOf } from "@/lib/session";
 import { PackageImportView } from "@/components/InstructorContent/PackageImportView";
 import { PackageItemEdit } from "@/components/InstructorContent/PackageItemEdit";
+import { PackageReviewSummary } from "@/components/InstructorContent/PackageReviewSummary";
 import { PackageTopicView } from "@/components/InstructorContent/PackageTopicView";
 import { PackageStudentScreen } from "@/components/PackageContent/PackageStudentScreen";
 import type { StudentPart } from "@/components/PackageContent/PackageStudentScreen";
@@ -1920,6 +1921,9 @@ export function PackageSample({
     | "topic-confirm"
     | "review-step"
     | "review-confirm"
+    | "review-image"
+    | "summary-done"
+    | "summary-left"
     | "published"
     | "publish"
     | "student-guide"
@@ -2018,6 +2022,41 @@ export function PackageSample({
         onSave={noop}
         onSkip={noop}
         onLeave={noop}
+      />
+    );
+  }
+  if (state === "review-image") {
+    const missing = {
+      ...good,
+      questions: good.questions!.map((q, i) =>
+        i === 0 ? { ...q, imageFile: "door-check.png" } : q,
+      ),
+    };
+    return (
+      <PackageItemEdit
+        data={missing}
+        itemKey="questions:0"
+        review={{ position: 6, total: 6 }}
+        initialIssues={checkPackage(missing)}
+        onSave={noop}
+        onSkip={noop}
+        onLeave={noop}
+      />
+    );
+  }
+  if (state === "summary-done" || state === "summary-left") {
+    const source = state === "summary-done" ? good : { ...bad, id: good.id };
+    return (
+      <PackageReviewSummary
+        topic={source}
+        issues={checkPackage(source)}
+        onPublishAsk={noop}
+        onPublish={noop}
+        onPublishCancel={noop}
+        onReview={noop}
+        onPreview={noop}
+        onBack={noop}
+        dialogInline
       />
     );
   }

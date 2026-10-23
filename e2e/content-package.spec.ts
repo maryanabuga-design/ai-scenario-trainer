@@ -261,7 +261,7 @@ for (const width of [360, 430]) {
       await expect(page.getByText("Previewing as student")).toBeVisible();
     });
 
-    test("the guided review: 1 of N in order, Save and next, Skip keeps the item, Add image, then back on the topic screen with Publish", async ({
+    test("the guided review: 1 of N in order, Save and next, Skip keeps the item, Choose image (Save and next disabled until then), then the review summary with Publish", async ({
       page,
     }) => {
       await importFiles(page, PROBLEMS, "Problem topic");
@@ -273,7 +273,11 @@ for (const width of [360, 430]) {
       await expect(header).toContainText("1 of 6");
       await expect(header).toContainText("Step 3 of When the alarm sounds");
       await expect(primary("Save and next")).toBeVisible();
-      expect(await bg(primary("Save and next"))).toBe("rgb(63, 70, 56)");
+      // the guide link points at a section that does not exist: not passable yet, with its sentence
+      await expect(primary("Save and next")).toBeDisabled();
+      await expect(page.locator("[data-needs]:visible")).toHaveText(
+        "Fix the point above to continue.",
+      );
       expect(await bg(primary("Skip"))).toBe("rgb(224, 230, 214)");
       // leaving with unsaved changes asks first
       await page.getByRole("textbox", { name: "Action" }).fill("Walk steadily");
@@ -283,6 +287,9 @@ for (const width of [360, 430]) {
       await page
         .locator("fieldset[role=radiogroup] label", { hasText: "3. Help others safely" })
         .click();
+      await expect(primary("Save and next")).toBeEnabled();
+      expect(await bg(primary("Save and next"))).toBe("rgb(63, 70, 56)");
+      await expect(page.locator("[data-needs]")).toHaveCount(0);
       await primary("Save and next").click();
       // 2 of 6: a step without an action
       await expect(header).toContainText("2 of 6");
@@ -308,28 +315,49 @@ for (const width of [360, 430]) {
       await expect(page.locator("[data-image-missing]:visible")).toContainText(
         "door-check.png is not in the package yet.",
       );
+      // it cannot be passed with Save and next: the button is disabled and one sentence says what is needed
+      await expect(primary("Save and next")).toBeDisabled();
+      await expect(page.locator("[data-needs]:visible")).toHaveText(
+        "Choose the image file or remove the image to continue.",
+      );
+      await expect(page.getByRole("button", { name: "Choose image" })).toBeVisible();
       await page.locator("[data-image-input]:visible").setInputFiles({
         name: "door-check.png",
         mimeType: "image/png",
         buffer: readFileSync("public/templates/sample-package/exit-sign.png"),
       });
       await page.locator("input[name=alt]:visible").fill("A hand feeling a closed door");
+      await expect(primary("Save and next")).toBeEnabled();
       await primary("Save and next").click();
-      // back on the topic screen: the skipped question is still flagged
-      await expect(page).toHaveURL(/\/instructor\/content\/package\/[a-z0-9]+(\?.*)?$/);
+      // the review ends on its summary, never silently on the topic: the skipped question is left
+      await expect(page).toHaveURL(/\/package\/[a-z0-9]+\/review$/);
+      await expect(page.locator("#review-summary")).toContainText(
+        "1 item still needs your attention",
+      );
+      await expect(page.locator("[data-remaining] li")).toHaveCount(1);
+      await expect(page.locator("[data-remaining]")).toContainText("Question 5");
+      await expect(primary("Review remaining 1")).toBeVisible();
+      await expect(page.getByRole("button", { name: "Publish", exact: true })).toHaveCount(0);
+      await page.locator("button:visible", { hasText: "Back to topic" }).last().click();
       await expect(page.locator("#package-status")).toContainText("1 item to review");
       await expect(page.getByRole("button", { name: "Review 1 item" })).toBeVisible();
       await expect(page.getByRole("button", { name: "Publish", exact: true })).toHaveCount(0);
       // the next Review tap visits the skipped item again
       await page.getByRole("button", { name: "Review 1 item" }).click();
-      await expect(header).toContainText("1 of 1");
+      await expect(header).toContainText("Item 1 of 1");
       await expect(header).toContainText("Question 5");
       await page
         .getByRole("textbox", { name: "QUESTION" })
         .fill("Who should you tell about a missing person?");
       await primary("Save and next").click();
-      // all checked: the success notice and the Primary Publish over the Secondary Preview
-      await expect(page).toHaveURL(/\/instructor\/content\/package\/[a-z0-9]+(\?.*)?$/);
+      // all checked: the summary shows the success notice, Primary Publish over Secondary Preview
+      await expect(page).toHaveURL(/\/package\/[a-z0-9]+\/review$/);
+      await expect(page.locator("#review-summary")).toContainText("All items checked");
+      expect(await bg(page.getByRole("button", { name: "Publish", exact: true }))).toBe(
+        "rgb(63, 70, 56)",
+      );
+      await expect(page.getByRole("button", { name: "Preview as student" })).toBeVisible();
+      await page.goto(page.url().replace(/\/review$/, ""));
       await expect(page.locator("#package-status")).toContainText("All items checked");
       await expect(page.locator("[data-issue-pill]:visible")).toHaveCount(0);
       expect(await bg(page.getByRole("button", { name: "Publish", exact: true }))).toBe(
@@ -363,8 +391,10 @@ for (const width of [360, 430]) {
       await expect(page.getByText(/was matched automatically/)).toBeVisible();
       await expect(page.getByRole("button", { name: "Save and next" })).toHaveCount(0);
       await page.getByRole("button", { name: "Mark as OK" }).click();
-      await expect(page.locator("#package-status")).toContainText("All items checked");
+      await expect(page.locator("#review-summary")).toContainText("All items checked");
       await expect(page.getByRole("button", { name: "Publish", exact: true })).toBeVisible();
+      await page.goto(page.url().replace(/\/review$/, ""));
+      await expect(page.locator("#package-status")).toContainText("All items checked");
       await expect(page.locator("[data-issue-pill]:visible")).toHaveCount(0);
     });
 
@@ -378,7 +408,11 @@ for (const width of [360, 430]) {
       await page.reload();
       await page.getByRole("button", { name: "Review 1 item" }).click();
       await page.getByRole("button", { name: "Skip", exact: true }).click();
-      await expect(page).toHaveURL(/\/instructor\/content\/package\/[a-z0-9]+$/);
+      await expect(page).toHaveURL(/\/package\/[a-z0-9]+\/review$/);
+      await expect(page.locator("#review-summary")).toContainText(
+        "1 item still needs your attention",
+      );
+      await page.locator("button:visible", { hasText: "Back to topic" }).last().click();
       await expect(page.getByRole("button", { name: "Review 1 item" })).toBeVisible();
     });
 

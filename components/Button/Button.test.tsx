@@ -189,6 +189,7 @@ describe("a secondary always comes with a primary above it", () => {
       // beside the topic, Delete demo topic under Publish, the question editor's Cancel.
       "components/InstructorContent/PackageImportView.tsx",
       "components/InstructorContent/PackageItemEdit.tsx",
+      "components/InstructorContent/PackageReviewSummary.tsx",
       "components/InstructorContent/PackageTopicView.tsx",
       "components/InstructorContent/ReviewView.tsx",
       "components/InstructorExams/AssignExamView.tsx",

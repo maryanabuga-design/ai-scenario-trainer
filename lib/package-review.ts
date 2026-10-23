@@ -91,6 +91,42 @@ export function partCounts(items: FlaggedItem[]): string {
   }).join(" · ");
 }
 
+/**
+ * The ONE plain sentence under a disabled "Save and next": what the item still needs, or "" when it
+ * is resolvable. A picture problem is fixed with the image block, the rest in the fields above.
+ */
+export function needsSentence(problems: Issue[]): string {
+  if (problems.length === 0) return "";
+  if (
+    problems.some((issue) =>
+      /^Image .* was not selected|larger than 300 KB|not a png/.test(issue.reason),
+    )
+  )
+    return "Choose the image file or remove the image to continue.";
+  if (problems.some((issue) => /has no alt text/.test(issue.reason)))
+    return "Add an image description to continue.";
+  return problems.length === 1
+    ? "Fix the point above to continue."
+    : "Fix the points above to continue.";
+}
+
+/**
+ * The round after a save: the items already visited stay (so "Item N of M" keeps its place) followed by
+ * the items of the old round that are still flagged. `next` is the index to open, or null at the end.
+ */
+export function nextRound(
+  round: string[],
+  at: number,
+  flagged: Set<string>,
+): { round: string[]; next: number | null } {
+  const visited = round.slice(0, at + 1);
+  const rest = round.slice(at + 1).filter((key) => flagged.has(key));
+  return {
+    round: [...visited, ...rest],
+    next: rest.length > 0 ? at + 1 : null,
+  };
+}
+
 // ---- keys in addresses and the items of a package -------------------------------------------
 
 /** "steps:0:2" in an address: "steps-0-2". */

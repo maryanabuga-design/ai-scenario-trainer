@@ -1075,6 +1075,21 @@ export default function Screens() {
               <PackageSample files={packageFiles} state="review-step" />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Guided review: a missing picture file (Save and next disabled, one sentence, Choose image)">
+            <Screen>
+              <PackageSample files={packageFiles} state="review-image" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Guided review summary: all items checked (Publish, Preview as student)">
+            <Screen>
+              <PackageSample files={packageFiles} state="summary-done" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Guided review summary: items still need attention (Review remaining N, Back to topic)">
+            <Screen>
+              <PackageSample files={packageFiles} state="summary-left" />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Guided review: a Please confirm item (Mark as OK, Skip)">
             <Screen>
               <PackageSample files={packageFiles} state="review-confirm" />

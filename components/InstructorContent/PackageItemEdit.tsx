@@ -23,7 +23,7 @@ import type {
   ScenarioStep,
   StepItem,
 } from "@/lib/package-read";
-import { itemName, parseKey } from "@/lib/package-review";
+import { itemName, needsSentence, parseKey } from "@/lib/package-review";
 
 const areaClass =
   "type-body w-full rounded-[14px] border border-selectable-stroke bg-card px-[var(--gutter,1rem)] py-3 text-text focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primary";
@@ -194,7 +194,10 @@ function ImageBlock({
       if (typeof reader.result !== "string") return;
       onChange({
         imageFile: file.name,
-        picture: { name: file.name, image: { data: reader.result, size: file.size } },
+        picture: {
+          name: file.name,
+          image: { data: reader.result, size: file.size },
+        },
       });
     };
     reader.readAsDataURL(file);
@@ -226,7 +229,7 @@ function ImageBlock({
         }}
       />
       <Button variant="secondary" onClick={() => input.current?.click()}>
-        {imageFile === "" ? "Add image" : present ? "Change image" : "Add image"}
+        {present ? "Change image" : imageFile === "" ? "Add image" : "Choose image"}
       </Button>
       {imageFile !== "" && (
         <div className="-ml-3 self-start">
@@ -313,12 +316,13 @@ export function PackageItemEdit({
     <ImageBlock data={{ ...data, images }} imageFile={d.imageFile} alt={d.alt} onChange={picture} />
   );
   const auto = (draft as { refAuto?: boolean }).refAuto === true;
+  const needs = needsSentence(problems);
 
   return (
     <div className="flex flex-col gap-6 pb-4">
       <PageHeaderBand
         title={name}
-        subtitle={review ? `${review.position} of ${review.total}` : undefined}
+        subtitle={review ? `Item ${review.position} of ${review.total}` : undefined}
         back={{
           label: review ? "Leave the review" : "Back to topic",
           onClick: () => (dirty ? setConfirming(true) : onLeave()),
@@ -446,7 +450,12 @@ export function PackageItemEdit({
       <ActionBar>
         {review ? (
           <>
-            <Button onClick={() => onSave(confirmed(draft), images)}>
+            {needs && (
+              <p data-needs role="status" className="type-small text-center text-text-secondary">
+                {needs}
+              </p>
+            )}
+            <Button disabled={needs !== ""} onClick={() => onSave(confirmed(draft), images)}>
               {onlyConfirm ? "Mark as OK" : "Save and next"}
             </Button>
             <Button variant="secondary" onClick={onSkip}>
@@ -502,7 +511,7 @@ export function PackagePartStep({
     <div className="flex flex-col gap-6 pb-4">
       <PageHeaderBand
         title={title}
-        subtitle={review ? `${review.position} of ${review.total}` : undefined}
+        subtitle={review ? `Item ${review.position} of ${review.total}` : undefined}
         back={{ label: "Leave the review", onClick: onLeave }}
       />
       <Notice variant="to-fix" clamp={false} title="This is fixed in your files">

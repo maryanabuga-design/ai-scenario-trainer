@@ -8,6 +8,8 @@ import {
   itemName,
   keyOfSlug,
   keySlug,
+  needsSentence,
+  nextRound,
   nothingFlagged,
   parseKey,
   partCounts,
@@ -20,7 +22,11 @@ const DIR = "public/templates/sample-package";
 const sample = (name: string): PackageFile => {
   const bytes = readFileSync(`${DIR}/${name}`);
   return name.endsWith(".png")
-    ? { name, size: bytes.length, dataUrl: `data:image/png;base64,${bytes.toString("base64")}` }
+    ? {
+        name,
+        size: bytes.length,
+        dataUrl: `data:image/png;base64,${bytes.toString("base64")}`,
+      }
     : { name, size: bytes.length, text: bytes.toString("utf8") };
 };
 const clean = readPackage(
@@ -48,7 +54,10 @@ describe("flagged items and pills", () => {
       kind: "must",
     });
     expect(pillOf(issues, "steps:0:1")).toBeNull();
-    expect(pillOf(issues, "questions:3")).toEqual({ text: "No correct answer", kind: "must" });
+    expect(pillOf(issues, "questions:3")).toEqual({
+      text: "No correct answer",
+      kind: "must",
+    });
     expect(nothingFlagged(issues)).toBe(false);
     expect(partCounts(flaggedItems(issues))).toBe("Steps 2 · Quiz 4");
   });
@@ -72,7 +81,10 @@ describe("flagged items and pills", () => {
       questions: clean.questions!.map((q, i) => (i === 1 ? { ...q, refAuto: true } : q)),
     };
     const issues = checkPackage(data);
-    expect(pillOf(issues, "questions:1")).toEqual({ text: "Please confirm", kind: "confirm" });
+    expect(pillOf(issues, "questions:1")).toEqual({
+      text: "Please confirm",
+      kind: "confirm",
+    });
     expect(issues.filter((issue) => issue.blocking)).toHaveLength(0);
     expect(flaggedItems(issues)).toHaveLength(1);
     expect(nothingFlagged(issues)).toBe(false);
@@ -92,7 +104,10 @@ describe("flagged items and pills", () => {
   it("fixing an item removes its pill", () => {
     const issues = checkPackage(bad);
     const key = "questions:3";
-    const fixed = setItem(bad, key, { ...getItem(bad, key)!, correct: "b" } as never);
+    const fixed = setItem(bad, key, {
+      ...getItem(bad, key)!,
+      correct: "b",
+    } as never);
     expect(pillOf(checkPackage(fixed), key)).toBeNull();
     expect(flaggedItems(checkPackage(fixed))).toHaveLength(flaggedItems(issues).length - 1);
   });
@@ -119,7 +134,11 @@ describe("item keys and edits", () => {
 
   it("finds, names and replaces an item of every part without touching the others", () => {
     expect(parseKey(clean, "guide:1")).toEqual({ part: "guide", index: 1 });
-    expect(parseKey(clean, "steps:1:0")).toEqual({ part: "steps", list: 1, index: 0 });
+    expect(parseKey(clean, "steps:1:0")).toEqual({
+      part: "steps",
+      list: 1,
+      index: 0,
+    });
     expect(parseKey(clean, "scenario:9")).toBeNull();
     expect(itemName(clean, "guide:1")).toBe("Guide section 2");
     expect(itemName(clean, "steps:0:2")).toContain("Step 3 of");
@@ -141,7 +160,10 @@ describe("item keys and edits", () => {
     );
     let full = clean;
     for (let n = 0; n < 6; n += 1)
-      full = withImage(full, `p${n}.png`, { data: "data:image/png;base64,AA", size: 10 });
+      full = withImage(full, `p${n}.png`, {
+        data: "data:image/png;base64,AA",
+        size: 10,
+      });
     expect(Object.keys(full.images).length).toBeGreaterThanOrEqual(6);
     expect(imageProblem(full, { name: "seventh.png", size: 10 })).toContain("at most");
     expect(
@@ -164,5 +186,72 @@ describe("item keys and edits", () => {
       alt: "A green exit sign",
     } as never);
     expect(pillOf(checkPackage(fixed), "questions:0")).toBeNull();
+  });
+});
+
+describe("resolving an item in the guided review", () => {
+  const bad = readPackage(
+    ["guide", "steps-with-problems", "scenario", "questions-with-problems"]
+      .map((n) => sample(`${n}.csv`))
+      .concat([sample("exit-sign.png")]),
+  ).data;
+  const image = (data: typeof bad) =>
+    flaggedItems(checkPackage(data)).find((i) => i.primary.reason.includes("was not selected"))!;
+
+  it("keeps a picture-file problem after a save with the file still missing, and says what is needed", () => {
+    const item = image(bad);
+    const saved = setItem(bad, item.key, confirmed(getItem(bad, item.key)!));
+    expect(flaggedItems(checkPackage(saved)).some((i) => i.key === item.key)).toBe(true);
+    expect(needsSentence(item.issues.filter((i) => i.kind === "must"))).toBe(
+      "Choose the image file or remove the image to continue.",
+    );
+  });
+
+  it("resolves it once the picture is chosen or removed, and the count drops", () => {
+    const item = image(bad);
+    const before = flaggedItems(checkPackage(bad)).length;
+    const removed = setItem(bad, item.key, {
+      ...getItem(bad, item.key)!,
+      imageFile: "",
+      alt: "",
+    } as never);
+    expect(flaggedItems(checkPackage(removed)).some((i) => i.key === item.key)).toBe(false);
+    expect(flaggedItems(checkPackage(removed)).length).toBe(before - 1);
+  });
+
+  it("Mark as OK resolves a please-confirm item", () => {
+    const base = readPackage(
+      ["guide", "steps", "scenario", "questions"]
+        .map((n) => sample(`${n}.csv`))
+        .concat([sample("exit-sign.png"), sample("assembly-point.png")]),
+    ).data;
+    const auto = {
+      ...base,
+      questions: base.questions!.map((q, i) => (i === 1 ? { ...q, refAuto: true } : q)),
+    };
+    expect(flaggedItems(checkPackage(auto)).map((i) => i.key)).toEqual(["questions:1"]);
+    const ok = setItem(auto, "questions:1", confirmed(getItem(auto, "questions:1")!));
+    expect(nothingFlagged(checkPackage(ok))).toBe(true);
+  });
+
+  it("keeps the visited items in the round and moves on to the next one still flagged", () => {
+    const round = ["a", "b", "c", "d"];
+    expect(nextRound(round, 0, new Set(["b", "d"]))).toEqual({
+      round: ["a", "b", "d"],
+      next: 1,
+    });
+    expect(nextRound(round, 3, new Set(["a"]))).toEqual({ round, next: null });
+  });
+
+  it("has a sentence for the other must fixes and none when nothing blocks", () => {
+    const issue = (reason: string) => ({ reason }) as never;
+    expect(needsSentence([])).toBe("");
+    expect(needsSentence([issue("Image a.png has no alt text")])).toBe(
+      "Add an image description to continue.",
+    );
+    expect(needsSentence([issue("No title")])).toBe("Fix the point above to continue.");
+    expect(needsSentence([issue("No title"), issue("No text")])).toBe(
+      "Fix the points above to continue.",
+    );
   });
 });

@@ -11,6 +11,7 @@ import {
   itemName,
   keyOfSlug,
   keySlug,
+  nextRound,
   parseKey,
   tabOfKey,
 } from "@/lib/package-review";
@@ -19,7 +20,7 @@ import { NO_ROOM, readPackages, updatePackage, usePackages } from "@/lib/package
 /**
  * The edit screen of one item of a demo topic, alone or as a step of the guided review
  * (`?r=<items of the round>&i=<position>`). Saving and skipping go to the next item of the round that
- * is still flagged; after the last one the review returns to the topic screen.
+ * is still flagged; after the last one the review ends on its summary screen.
  */
 function Edit() {
   const params = useParams<{ id: string; item: string }>();
@@ -42,19 +43,14 @@ function Edit() {
   const tab = tabOfKey(itemKey) ?? "guide";
   const leave = () => router.push(`${base}?tab=${tab}`);
 
-  /** On to the next item of the round that is still flagged; the topic screen after the last. */
+  /** On to the next item of the round that is still flagged; the review summary after the last one. */
   function goNext() {
     const fresh = readPackages().find((entry) => entry.id === topic!.id);
     if (!review || !fresh) return router.push(base);
     const flagged = new Set(flaggedItems(checkPackage(fresh)).map((item) => item.key));
-    for (let n = at + 1; n < round.length; n += 1) {
-      if (flagged.has(round[n])) {
-        return router.push(
-          `${base}/edit/${keySlug(round[n])}?r=${round.map(keySlug).join(",")}&i=${n}`,
-        );
-      }
-    }
-    router.push(base);
+    const { round: next, next: n } = nextRound(round, at, flagged);
+    if (n === null) return router.push(`${base}/review`);
+    router.push(`${base}/edit/${keySlug(next[n])}?r=${next.map(keySlug).join(",")}&i=${n}`);
   }
 
   const issues = checkPackage(topic);
@@ -97,8 +93,8 @@ function Edit() {
             setProblem(NO_ROOM);
             return;
           }
-          goNext();
-          if (!review) leave();
+          if (review) goNext();
+          else leave();
         }}
       />
     </>

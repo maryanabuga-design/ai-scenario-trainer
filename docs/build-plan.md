@@ -152,3 +152,4 @@ One commit per screen group, in this order. Steps 1 to 82 are built (step 81, th
 150. Content package review flow and preview parity (3 Nov 2026): Import -> Fix -> Preview -> Publish, the shared Notice, "To fix" wording, Show next issue, and Preview as student as the student's own screens. Screenshots: `docs/screens/160-*`.
 151. Calmer package review screens (4 Nov 2026): the white Notice with a coloured tile, one notice and one Primary on the review screen, the ⋯ menu for Delete, corner x buttons and thumbnails on the import rows. Screenshots: `docs/screens/161-*`.
 152. Guided review of a content package (5 Nov 2026): item pills and pencils, Review N items, edit screens for every part with Add image, Mark as OK and Skip. Screenshots: `docs/screens/162-*`.
+153. Guided review fix (23 Oct 2026): Save and next disabled until the item is resolvable, Choose image, live recount and an end-of-review summary. Screenshots: `docs/screens/163-*`.
