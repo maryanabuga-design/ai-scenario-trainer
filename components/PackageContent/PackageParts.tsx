@@ -1,17 +1,17 @@
 "use client";
 
-import { FileText } from "lucide-react";
+import { FileText, Pencil } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { ButtonLink } from "@/components/Button/Button";
 import { Chip } from "@/components/Chip/Chip";
-import { Chevron } from "@/components/Chevron/Chevron";
 import { OptionResult } from "@/components/OptionCard/OptionCard";
 import { SituationCard } from "@/components/SituationCard/SituationCard";
 import { StepCard } from "@/components/StepsView/StepCard";
 import { optionState } from "@/lib/option-state";
 import { LETTERS, coverage, findImage, usedByText } from "@/lib/package-read";
+import { pillOf } from "@/lib/package-review";
 import type { Issue, PackageData } from "@/lib/package-read";
 
 /**
@@ -68,54 +68,79 @@ export function GuidePill({ section, href }: { section: string; href: string }) 
 }
 
 /**
- * A flagged item: the amber "To fix" pill with the reasons under it and what to do: a Secondary
- * "Edit question" when the fix is in the question editor (`editHref`), otherwise the text "Fix this
- * in the files, then replace them." The element carries the ids of its issues so "Show next issue"
- * can find it, take the focus to it and outline it.
+ * The ONE small pill of an item card (DESIGN.md: Guided review of a content package): the most
+ * important issue as text, no dot and no coloured card. Must fix uses the attention style, please
+ * confirm the neutral one; an item without an issue has none.
  */
-export function NeedsAttention({
-  issues,
-  editHref,
-  replaceHref,
+export function IssuePill({ issues, itemKey }: { issues: Issue[]; itemKey: string }) {
+  const pill = pillOf(issues, itemKey);
+  if (!pill) return null;
+  return (
+    <span
+      data-issue-pill={pill.kind}
+      className={`type-caption w-fit max-w-full truncate rounded-full px-2.5 py-0.5 ${
+        pill.kind === "must"
+          ? "bg-status-attention-bg text-status-attention-ink"
+          : "bg-neutral-tile-bg text-neutral-tile-ink"
+      }`}
+    >
+      {pill.text}
+    </span>
+  );
+}
+
+/** The small pencil of a card: a 28px neutral circle in a 44px tap area at the top-right, "Edit <name>". */
+export function PencilButton({
+  href,
+  label,
+  className = "absolute top-0 right-0",
 }: {
-  issues: Issue[];
-  editHref?: string;
-  /** Where "Replace files" goes (the import with the title kept). */
-  replaceHref?: string;
+  href: string;
+  label: string;
+  className?: string;
 }) {
-  const blocking = issues.filter((issue) => issue.blocking);
-  if (blocking.length === 0) return null;
-  const editable = editHref !== undefined && blocking.some((issue) => issue.fix === "edit");
-  const inFiles = blocking.some((issue) => issue.fix === "files");
+  return (
+    <Link
+      href={href}
+      aria-label={label}
+      data-pencil
+      className={`${className} flex h-11 w-11 items-center justify-center has-focus-visible:outline-2 focus-visible:outline-2`}
+    >
+      <span
+        aria-hidden="true"
+        className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-tile-bg text-neutral-tile-ink"
+      >
+        <Pencil size={14} strokeWidth={2.25} />
+      </span>
+    </Link>
+  );
+}
+
+/**
+ * A note about a whole part (section numbers that are not consecutive, more than ten steps): it has
+ * no item of its own, so it shows once at the top of its tab with the underlined link "Replace files".
+ */
+export function PartNote({ issues, replaceHref }: { issues: Issue[]; replaceHref: string }) {
+  const notes = issues.filter((issue) => issue.kind === "must");
+  if (notes.length === 0) return null;
   return (
     <div
-      data-to-fix
-      data-issue-ids={blocking.map((issue) => issue.id).join(" ")}
-      tabIndex={-1}
-      className="flex flex-col items-start gap-1 rounded-[10px] outline-offset-4 data-[flash=true]:outline-2 data-[flash=true]:outline-status-attention-ink"
+      data-part-note
+      className="flex flex-col items-start gap-1 rounded-card border border-selectable-stroke bg-card p-3"
     >
       <span className="type-caption rounded-full bg-status-attention-bg px-2.5 py-0.5 whitespace-nowrap text-status-attention-ink">
-        To fix
+        Must fix
       </span>
-      {blocking.map((issue) => (
-        <p key={issue.id} className="type-small text-status-attention-ink">
+      {notes.map((issue) => (
+        <p key={issue.id} className="type-small text-text-secondary">
           {issue.reason}
         </p>
       ))}
-      {editable && (
-        <div className="mt-1 w-full">
-          <ButtonLink href={editHref} variant="secondary">
-            Edit question
-          </ButtonLink>
-        </div>
-      )}
-      {inFiles && replaceHref && (
-        <div className="-ml-3">
-          <ButtonLink href={replaceHref} variant="tertiary">
-            Replace files
-          </ButtonLink>
-        </div>
-      )}
+      <div className="-ml-3">
+        <ButtonLink href={replaceHref} variant="tertiary">
+          Replace files
+        </ButtonLink>
+      </div>
     </div>
   );
 }
@@ -124,44 +149,49 @@ export function NeedsAttention({
 export const issuesOfKey = (issues: Issue[], key: string) =>
   issues.filter((issue) => issue.key === key);
 
-/** The Guide: numbered section cards with their pictures; the Instructor's tab adds the "Used by" line. */
+/** The Guide: numbered section cards with their pictures; the Instructor's tab adds the pill, the pencil and the "Used by" line. */
 export function GuideSections({
   data,
   issues = [],
   showUse = false,
-  replaceHref,
+  editHref,
 }: {
   data: PackageData;
   issues?: Issue[];
   showUse?: boolean;
-  replaceHref?: string;
+  /** The edit screen of an item key; the cards of the Instructor's tab show a pencil for it. */
+  editHref?: (key: string) => string;
 }) {
   const use = coverage(data).sections;
   return (
     <ol className="flex flex-col gap-3">
-      {(data.guide ?? []).map((section, index) => (
-        <li
-          key={index}
-          id={`section-${section.section}`}
-          data-guide-section={section.section}
-          className={`${card} flex scroll-mt-4 flex-col gap-3 p-[var(--gutter,1rem)]`}
-        >
-          <h3 className="type-item-title">
-            {section.section}. {section.title}
-          </h3>
-          <PackageImage data={data} file={section.imageFile} alt={section.alt} />
-          <p className="type-body whitespace-pre-line">{section.text}</p>
-          {showUse && (
-            <p data-used-by className="type-small text-text-secondary">
-              {usedByText(use[index])}
-            </p>
-          )}
-          <NeedsAttention
-            issues={issuesOfKey(issues, `guide:${index}`)}
-            replaceHref={replaceHref}
-          />
-        </li>
-      ))}
+      {(data.guide ?? []).map((section, index) => {
+        const key = `guide:${index}`;
+        const name = `Guide section ${section.section || index + 1}`;
+        return (
+          <li
+            key={index}
+            id={`section-${section.section}`}
+            data-guide-section={section.section}
+            className={`${card} relative flex scroll-mt-4 flex-col gap-3 p-[var(--gutter,1rem)]`}
+          >
+            <div className={`flex flex-col items-start gap-1 ${editHref ? "pr-10" : ""}`}>
+              <h3 className="type-item-title">
+                {section.section}. {section.title}
+              </h3>
+              <IssuePill issues={issues} itemKey={key} />
+            </div>
+            <PackageImage data={data} file={section.imageFile} alt={section.alt} />
+            <p className="type-body whitespace-pre-line">{section.text}</p>
+            {showUse && (
+              <p data-used-by className="type-small text-text-secondary">
+                {usedByText(use[index])}
+              </p>
+            )}
+            {editHref && <PencilButton href={editHref(key)} label={`Edit ${name}`} />}
+          </li>
+        );
+      })}
     </ol>
   );
 }
@@ -171,12 +201,12 @@ export function ChecklistCards({
   data,
   issues = [],
   guideHref,
-  replaceHref,
+  editHref,
 }: {
   data: PackageData;
   issues?: Issue[];
   guideHref: (section: string) => string;
-  replaceHref?: string;
+  editHref?: (key: string) => string;
 }) {
   const [open, setOpen] = useState<string | null>(null);
   return (
@@ -187,7 +217,8 @@ export function ChecklistCards({
           <ol className="flex flex-col gap-3">
             {list.steps.map((step, si) => {
               const id = `${li}-${si}`;
-              const own = issuesOfKey(issues, `steps:${li}:${si}`);
+              const key = `steps:${li}:${si}`;
+              const flagged = pillOf(issues, key) !== null;
               return (
                 <StepCard
                   key={id}
@@ -210,9 +241,14 @@ export function ChecklistCards({
                       )}
                     </div>
                   }
-                  flag={
-                    own.some((issue) => issue.blocking) ? (
-                      <NeedsAttention issues={own} replaceHref={replaceHref} />
+                  flag={flagged ? <IssuePill issues={issues} itemKey={key} /> : undefined}
+                  edit={
+                    editHref ? (
+                      <PencilButton
+                        href={editHref(key)}
+                        label={`Edit step ${step.step || si + 1} of ${list.title}`}
+                        className="absolute top-0 right-9"
+                      />
                     ) : undefined
                   }
                 />
@@ -233,91 +269,95 @@ export function ScenarioCards({
   data,
   issues = [],
   guideHref,
-  replaceHref,
+  editHref,
 }: {
   data: PackageData;
   issues?: Issue[];
   guideHref: (section: string) => string;
-  replaceHref?: string;
+  editHref?: (key: string) => string;
 }) {
   return (
     <ol className="flex flex-col gap-6">
-      {(data.scenario ?? []).map((step, index) => (
-        <li key={index} data-scenario-step={index} className="flex flex-col gap-3">
-          <h3 className="type-label text-text-secondary">STEP {step.step || index + 1}</h3>
-          <PackageImage data={data} file={step.imageFile} alt={step.alt} />
-          {step.situation && <SituationCard text={step.situation} />}
-          <p className="type-item-title">{step.question}</p>
-          <ul className="flex flex-col gap-2">
-            {optionsOf(step.options).map((option) => (
-              <OptionResult
-                key={option.id}
-                state={optionState({
-                  mode: "training",
-                  optionId: option.id,
-                  choice: null,
-                  checked: true,
-                  correctOptionId: step.correct ?? "",
-                })}
-              >
-                {option.text}
-              </OptionResult>
-            ))}
-          </ul>
-          <div className="flex flex-col items-start gap-2">
-            {step.why && <p className="type-small text-text-secondary">{step.why}</p>}
-            {step.guideRef.trim() !== "" && (
-              <GuidePill section={step.guideRef.trim()} href={guideHref(step.guideRef.trim())} />
+      {(data.scenario ?? []).map((step, index) => {
+        const key = `scenario:${index}`;
+        return (
+          <li key={index} data-scenario-step={index} className="relative flex flex-col gap-3">
+            <div className={`flex flex-col items-start gap-1 ${editHref ? "pr-10" : ""}`}>
+              <h3 className="type-label text-text-secondary">STEP {step.step || index + 1}</h3>
+              <IssuePill issues={issues} itemKey={key} />
+            </div>
+            <PackageImage data={data} file={step.imageFile} alt={step.alt} />
+            {step.situation && <SituationCard text={step.situation} />}
+            <p className="type-item-title">{step.question}</p>
+            <ul className="flex flex-col gap-2">
+              {optionsOf(step.options).map((option) => (
+                <OptionResult
+                  key={option.id}
+                  state={optionState({
+                    mode: "training",
+                    optionId: option.id,
+                    choice: null,
+                    checked: true,
+                    correctOptionId: step.correct ?? "",
+                  })}
+                >
+                  {option.text}
+                </OptionResult>
+              ))}
+            </ul>
+            <div className="flex flex-col items-start gap-2">
+              {step.why && <p className="type-small text-text-secondary">{step.why}</p>}
+              {step.guideRef.trim() !== "" && (
+                <GuidePill section={step.guideRef.trim()} href={guideHref(step.guideRef.trim())} />
+              )}
+            </div>
+            {editHref && (
+              <PencilButton
+                href={editHref(key)}
+                label={`Edit scenario step ${step.step || index + 1}`}
+              />
             )}
-            <NeedsAttention
-              issues={issuesOfKey(issues, `scenario:${index}`)}
-              replaceHref={replaceHref}
-            />
-          </div>
-        </li>
-      ))}
+          </li>
+        );
+      })}
     </ol>
   );
 }
 
-/** The Quiz: a row per question (72px) that opens the read-only question, with the guide pill and any problem. */
+/** The Quiz: a compact card per question (the number, the question, the guide pill, one pill for the most important issue and a pencil). */
 export function QuizRows({
   data,
   issues = [],
-  questionHref,
   editHref,
-  replaceHref,
   guideHref,
 }: {
   data: PackageData;
   issues?: Issue[];
-  questionHref: (index: number) => string;
-  replaceHref?: string;
-  /** The question editor of a question (the Secondary "Edit question" of a flagged one). */
-  editHref?: (index: number) => string;
+  /** The edit screen of an item key. */
+  editHref?: (key: string) => string;
   guideHref: (section: string) => string;
 }) {
   return (
     <ul className="flex flex-col gap-3">
       {(data.questions ?? []).map((question, index) => {
-        const own = issuesOfKey(issues, `questions:${index}`);
+        const key = `questions:${index}`;
         return (
-          <li key={index} data-quiz-row={index} className={`${card} flex flex-col gap-2 p-3`}>
-            <Link
-              href={questionHref(index)}
-              className="flex min-h-12 items-center gap-3 has-focus-visible:outline-2"
-            >
+          <li
+            key={index}
+            data-quiz-row={index}
+            className={`${card} relative flex flex-col gap-2 p-3`}
+          >
+            <div className={`flex min-h-12 items-start gap-3 ${editHref ? "pr-9" : ""}`}>
               <span
                 aria-hidden="true"
                 className="type-caption-strong flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full bg-olive-tint px-2"
               >
                 {index + 1}
               </span>
-              <span className="type-body-strong line-clamp-2 min-w-0 flex-1">
+              <span className="type-body-strong line-clamp-2 min-w-0 flex-1 pt-1">
                 {question.text || "(no question text)"}
               </span>
-              <Chevron />
-            </Link>
+            </div>
             <div className="flex flex-col items-start gap-2 pl-12">
               {question.guideRef.trim() !== "" && (
                 <GuidePill
@@ -325,8 +365,9 @@ export function QuizRows({
                   href={guideHref(question.guideRef.trim())}
                 />
               )}
-              <NeedsAttention issues={own} editHref={editHref?.(index)} replaceHref={replaceHref} />
+              <IssuePill issues={issues} itemKey={key} />
             </div>
+            {editHref && <PencilButton href={editHref(key)} label={`Edit question ${index + 1}`} />}
           </li>
         );
       })}

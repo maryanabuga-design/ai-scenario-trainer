@@ -188,7 +188,7 @@ describe("a secondary always comes with a primary above it", () => {
       // Content package import: Cancel under Import and review, Replace files / Preview as student
       // beside the topic, Delete demo topic under Publish, the question editor's Cancel.
       "components/InstructorContent/PackageImportView.tsx",
-      "components/InstructorContent/PackageQuestionViews.tsx",
+      "components/InstructorContent/PackageItemEdit.tsx",
       "components/InstructorContent/PackageTopicView.tsx",
       "components/InstructorContent/ReviewView.tsx",
       "components/InstructorExams/AssignExamView.tsx",
@@ -211,9 +211,7 @@ describe("a secondary always comes with a primary above it", () => {
       // Material page: Create again and Read the sample guide, below the primary action.
       "components/MaterialView/MaterialView.tsx",
       // Progress: the Exam readiness card's Repeat weak topics, its one action (documented exception).
-      // Demo topic: Edit question under a flagged question; Try again under the result's Primary
-      // Done; the slim preview bar's Exit preview.
-      "components/PackageContent/PackageParts.tsx",
+      // Demo topic: Try again under the result's Primary Done; the slim preview bar's Exit preview.
       "components/PackageContent/PackageStudentScreen.tsx",
       "components/ProgressView/ProgressView.tsx",
       // The reading screen's quick-actions bar: Steps next to the primary Practise this topic.

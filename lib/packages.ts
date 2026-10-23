@@ -59,6 +59,7 @@ const cleanStep = (e: Record<string, unknown>): StepItem => ({
   action: str(e.action, 300),
   detail: str(e.detail, 600),
   guideRef: str(e.guideRef, 8),
+  ...(e.refAuto === true && { refAuto: true }),
   imageFile: str(e.imageFile, 120),
   alt: str(e.alt, 200),
 });
@@ -111,6 +112,7 @@ export function cleanPackages(value: unknown): DemoTopic[] | null {
       correct: letter(e.correct),
       why: str(e.why, 800),
       guideRef: str(e.guideRef, 8),
+      ...(e.refAuto === true && { refAuto: true }),
       imageFile: str(e.imageFile, 120),
       alt: str(e.alt, 200),
     }));
@@ -121,6 +123,7 @@ export function cleanPackages(value: unknown): DemoTopic[] | null {
       correct: letter(e.correct),
       explanation: str(e.explanation, 800),
       guideRef: str(e.guideRef, 8),
+      ...(e.refAuto === true && { refAuto: true }),
       imageFile: str(e.imageFile, 120),
       alt: str(e.alt, 200),
     }));

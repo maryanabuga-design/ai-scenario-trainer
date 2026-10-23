@@ -28,11 +28,10 @@ import {
   checkPackage,
   fixMessage,
   missingImages,
-  nextIssue,
-  orderedIssues,
   readPackage,
   shortName,
 } from "@/lib/package-read";
+import { flaggedItems } from "@/lib/package-review";
 import type { PackageFile } from "@/lib/package-read";
 import { createTopic } from "@/lib/packages";
 
@@ -236,7 +235,7 @@ describe("the review screen", () => {
         onAsk={noop}
         onConfirm={noop}
         onCancelDialog={noop}
-        onNextIssue={noop}
+        onReview={noop}
         onPreview={noop}
         dialogInline
         {...over}
@@ -255,66 +254,76 @@ describe("the review screen", () => {
     expect(html).toContain('aria-label="Back to Content"');
   });
 
-  it("clean: ONE success Notice 'Nothing to fix', no to fix Notice, no dots, Publish and Preview enabled", () => {
+  it("clean: ONE success Notice 'All items checked', no pills, Publish and Preview offered", () => {
     const html = render();
+    expect(html.match(/data-notice=/g)).toHaveLength(1);
     expect(html).toContain('data-notice="success"');
-    expect(html).toContain("Nothing to fix");
+    expect(html).toContain("All items checked");
     expect(html).toContain("Preview as student, then publish.");
     expect(html).not.toContain('data-notice="to-fix"');
+    expect(html).not.toContain("data-issue-pill");
     expect(html).not.toContain("data-tab-dot");
-    const bar = html.slice(html.indexOf("data-bar"));
-    expect(bar).not.toMatch(/disabled=""[^>]*>Publish</);
-    expect(bar).not.toMatch(/disabled=""[^>]*>[\s\S]*Preview as student</);
+    expect(html).toContain("data-pencil");
   });
 
-  it("with issues: ONE to fix Notice with the count and the counts per part as plain text, no button or link inside", () => {
+  it("with issues: ONE notice with the number of items to review and the items per part", () => {
     const html = render({ topic: bad });
-    const count = blockingIssues(checkPackage(bad)).length;
-    expect(count).toBe(6);
+    expect(flaggedItems(checkPackage(bad))).toHaveLength(6);
     expect(html.match(/data-notice=/g)).toHaveLength(1);
     const notice = html.slice(html.indexOf('data-notice="to-fix"'), html.indexOf("</section>"));
-    expect(notice).toContain(`${count} to fix before you can publish`);
+    expect(notice).toContain("6 items to review");
     expect(notice).toContain("Steps 2 · Quiz 4");
     expect(notice).not.toMatch(/<a |<button/);
-    expect(html).not.toContain("Preview and Publish unlock");
     expect(html).not.toContain("to fix in this tab");
-    expect(html).not.toContain('data-notice="success"');
     expect(html).not.toContain("Needs attention");
   });
 
-  it("the four-option selector stays on one line, has no dot and keeps its accessible names", () => {
+  it("the four-option selector stays on one line, has no dot and keeps accessible names", () => {
     const html = render({ topic: bad, tab: "steps" });
     const radios = group(html);
     for (const label of ["Guide", "Steps", "Scenario", "Quiz"]) expect(radios).toContain(label);
     expect(radios.match(/whitespace-nowrap/g)).toHaveLength(4);
     expect(html).not.toContain("data-tab-dot");
-    expect(radios).toContain('aria-label="Steps, 2 to fix"');
-    expect(radios).toContain('aria-label="Quiz, 4 to fix"');
+    expect(radios).toContain('aria-label="Steps, 2 to review"');
+    expect(radios).toContain('aria-label="Quiz, 4 to review"');
     expect(radios).not.toContain('aria-label="Guide');
   });
 
-  it("flagged items keep the amber To fix pill and the reason; file problems get an underlined Replace files link", () => {
+  it("item cards: at most one small text pill with the most important issue, no reason lists, a pencil on every card", () => {
     const steps = render({ topic: bad, tab: "steps" });
-    expect(steps.match(/data-to-fix=/g)).toHaveLength(2);
-    expect(steps).toContain(">To fix<");
-    expect(steps).toContain("Guide section 7 does not exist");
-    expect(steps).toContain("No action");
-    const links = steps.match(/underline[^>]*>Replace files</g) ?? [];
-    // one in the meta row and one on each flagged item
-    expect(links.length).toBe(3);
-    expect(steps).toContain(`href="/instructor/content/import?replace=${bad.id}&amp;fix=steps"`);
+    expect(steps.match(/data-issue-pill="must"/g)).toHaveLength(2);
+    expect(steps).toMatch(
+      /data-issue-pill="must"[^>]*bg-status-attention-bg[^>]*>Guide section 7 does not exist</,
+    );
+    expect(steps).toMatch(/data-issue-pill="must"[^>]*>No action</);
+    expect(steps).not.toContain(">To fix<");
     expect(steps).not.toContain("Edit question");
-    expect(steps).not.toContain("Fix this in the files, then replace them.");
+    expect(steps).not.toContain("Replace files</span></a></div><p");
+    // a pencil on every step card, named after the step, at least 44px
+    expect(steps.match(/data-pencil/g)).toHaveLength(7);
+    expect(steps).toContain('aria-label="Edit step 3 of When the alarm sounds"');
+    expect(steps).toMatch(/data-pencil[^>]*h-11 w-11/);
+    const quiz = render({ topic: bad, tab: "quiz" });
+    expect(quiz.match(/data-issue-pill=/g)).toHaveLength(4);
+    expect(quiz.match(/data-pencil/g)).toHaveLength(10);
+    expect(quiz).toContain('aria-label="Edit question 4"');
+    expect(quiz).toContain(`href="/instructor/content/package/${bad.id}/edit/questions-3"`);
+    // no yellow card background on an item
+    expect(quiz.slice(quiz.indexOf("data-quiz-row"))).not.toMatch(
+      /rounded-card[^"]*bg-status-attention-bg/,
+    );
   });
 
-  it("flagged questions get a Secondary 'Edit question' that opens the editor; the picture problem gets Replace files", () => {
-    const quiz = render({ topic: bad, tab: "quiz" });
-    expect(quiz.match(/data-to-fix=/g)).toHaveLength(4);
-    expect(quiz.match(/>Edit question</g)).toHaveLength(3);
-    expect(quiz).toContain(`/instructor/content/package/${bad.id}/question/3/edit`);
-    expect(quiz).toMatch(/bg-olive-tint[^>]*>Edit question</);
-    expect(quiz).toContain("Image door-check.png was not selected");
-    expect(quiz).toContain(`href="/instructor/content/import?replace=${bad.id}&amp;fix=quiz"`);
+  it("a please-confirm item has the neutral pill and counts as an item to review", () => {
+    const withConfirm = {
+      ...topic,
+      questions: topic.questions!.map((q, i) => (i === 1 ? { ...q, refAuto: true } : q)),
+    };
+    const html = render({ topic: withConfirm, tab: "quiz" });
+    expect(html.match(/data-issue-pill=/g)).toHaveLength(1);
+    expect(html).toMatch(/data-issue-pill="confirm"[^>]*bg-neutral-tile-bg[^>]*>Please confirm</);
+    expect(html).toContain("1 item to review");
+    expect(html).toMatch(/h-\[52px\] bg-primary[^>]*>Review 1 item</);
   });
 
   it("the meta row is 'Draft · Last edited today' followed by an underlined tertiary Replace files link", () => {
@@ -345,7 +354,7 @@ describe("the review screen", () => {
     expect(open.slice(open.indexOf("data-bar"))).not.toContain("Delete demo topic");
   });
 
-  it("the pinned area has exactly the right buttons in each state: issues, clean, published", () => {
+  it("the pinned area has exactly the right buttons in each state: items to review, nothing left, published", () => {
     const bar = (html: string) => html.slice(html.indexOf("data-bar"));
     const buttons = (html: string) =>
       [...bar(html).matchAll(/<button[^>]*>([\s\S]*?)<\/button>/g)].map((m) =>
@@ -353,9 +362,11 @@ describe("the review screen", () => {
       );
     const primaries = (html: string) => bar(html).match(/h-\[52px\] bg-primary/g)?.length ?? 0;
     const issues = render({ topic: bad });
-    expect(buttons(issues)).toEqual(["Show next issue"]);
+    expect(buttons(issues)).toEqual(["Review 6 items", "Preview as student"]);
     expect(primaries(issues)).toBe(1);
     expect(bar(issues)).not.toMatch(/disabled=/);
+    // Publish is never offered while something is flagged
+    expect(issues).not.toContain(">Publish<");
     const cleanHtml = render();
     expect(buttons(cleanHtml)).toEqual(["Publish", "Preview as student"]);
     expect(primaries(cleanHtml)).toBe(1);
@@ -368,6 +379,7 @@ describe("the review screen", () => {
     );
     for (const html of [issues, cleanHtml, published]) {
       expect(buttons(html).length).toBeLessThanOrEqual(2);
+      expect(html).not.toContain("Show next issue");
     }
   });
 
@@ -398,58 +410,21 @@ describe("the review screen", () => {
   });
 });
 
-describe("Show next issue", () => {
+describe("the issues of a package and the guided review", () => {
   const issues = checkPackage(bad);
 
-  it("visits every issue in order (Guide, Steps, Scenario, Quiz; items in order) and wraps around", () => {
-    const ordered = orderedIssues(issues);
-    expect(ordered).toHaveLength(6);
-    expect(ordered.map((issue) => issue.part)).toEqual([
-      "steps",
-      "steps",
-      "questions",
-      "questions",
-      "questions",
-      "questions",
+  it("the review visits every flagged item in order (Guide, Steps, Scenario, Quiz; items in order)", () => {
+    const items = flaggedItems(issues);
+    expect(items.map((item) => item.key)).toEqual([
+      "steps:0:2",
+      "steps:1:1",
+      "questions:3",
+      "questions:4",
+      "questions:6",
+      "questions:9",
     ]);
-    const visited: string[] = [];
-    let after: string | null = null;
-    for (let n = 0; n < ordered.length + 2; n += 1) {
-      const next = nextIssue(issues, after);
-      visited.push(next!.id);
-      after = next!.id;
-    }
-    expect(visited.slice(0, 6)).toEqual(ordered.map((issue) => issue.id));
-    // after the last it wraps to the first
-    expect(visited[6]).toBe(ordered[0].id);
-    expect(visited[7]).toBe(ordered[1].id);
-    expect(nextIssue([], null)).toBeNull();
-    expect(nextIssue(issues, "gone")?.id).toBe(ordered[0].id);
-  });
-
-  it("every flagged item carries the ids of its issues, so the page can find it, focus it and outline it", () => {
-    const html = wrap(
-      <PackageTopicView
-        topic={bad}
-        tab="quiz"
-        issues={issues}
-        now={NOW}
-        dialog={null}
-        onTab={noop}
-        onAsk={noop}
-        onConfirm={noop}
-        onCancelDialog={noop}
-        onNextIssue={noop}
-        onPreview={noop}
-        dialogInline
-      />,
-    );
-    const questionIssues = orderedIssues(issues).filter((issue) => issue.part === "questions");
-    for (const issue of questionIssues) expect(html).toContain(issue.id);
-    expect(html).toContain('tabindex="-1"');
-    expect(html).toContain("data-[flash=true]:outline-2");
-    expect(html).toContain("data-[flash=true]:outline-status-attention-ink");
-    expect(html).not.toMatch(/transition|animate-/);
+    expect(items.every((item) => item.kind === "must")).toBe(true);
+    expect(blockingIssues(issues)).toHaveLength(6);
   });
 
   it("words the reopened import with what to fix in that tab", () => {

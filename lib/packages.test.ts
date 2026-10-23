@@ -118,7 +118,13 @@ describe("a demo topic is isolated from the rest of the app", () => {
   const libFiles = readdirSync("lib").filter((f) => f.endsWith(".ts") && !f.endsWith(".test.ts"));
 
   it("is imported by no module of readiness, Progress, exams, Assign exam, Weakest topics, Hardest questions, Ask AI or the built-in content", () => {
-    const allowed = new Set(["packages.ts", "package-read.ts", "package-student.ts"]);
+    const allowed = new Set([
+      "packages.ts",
+      "package-read.ts",
+      "package-student.ts",
+      "package-edit.ts",
+      "package-review.ts",
+    ]);
     const importers = libFiles.filter((file) => {
       if (allowed.has(file)) return false;
       const code = readFileSync(`lib/${file}`, "utf8");

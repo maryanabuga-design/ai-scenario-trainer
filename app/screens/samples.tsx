@@ -134,6 +134,7 @@ import { seedNotifications } from "@/lib/notifications";
 import { readinessAfter, scopeItemIds } from "@/lib/readiness";
 import { topicIdsOf } from "@/lib/session";
 import { PackageImportView } from "@/components/InstructorContent/PackageImportView";
+import { PackageItemEdit } from "@/components/InstructorContent/PackageItemEdit";
 import { PackageTopicView } from "@/components/InstructorContent/PackageTopicView";
 import { PackageStudentScreen } from "@/components/PackageContent/PackageStudentScreen";
 import type { StudentPart } from "@/components/PackageContent/PackageStudentScreen";
@@ -1916,6 +1917,9 @@ export function PackageSample({
     | "topic-quiz"
     | "topic-clean"
     | "topic-menu"
+    | "topic-confirm"
+    | "review-step"
+    | "review-confirm"
     | "published"
     | "publish"
     | "student-guide"
@@ -1990,12 +1994,33 @@ export function PackageSample({
       onAsk={noop}
       onConfirm={noop}
       onCancelDialog={noop}
-      onNextIssue={noop}
+      onReview={noop}
       onPreview={noop}
       dialogInline
       menuOpen={menuOpen}
     />
   );
+  // one question is waiting for "Mark as OK": its guide section was matched automatically
+  const confirmTopic = {
+    ...good,
+    questions: good.questions!.map((q, i) => (i === 1 ? { ...q, refAuto: true } : q)),
+  };
+  if (state === "topic-confirm") return topicView(confirmTopic, "quiz");
+  if (state === "review-step" || state === "review-confirm") {
+    const source = state === "review-step" ? bad : confirmTopic;
+    const key = state === "review-step" ? "questions:3" : "questions:1";
+    return (
+      <PackageItemEdit
+        data={source}
+        itemKey={key}
+        review={{ position: 1, total: state === "review-step" ? 6 : 1 }}
+        initialIssues={checkPackage(source)}
+        onSave={noop}
+        onSkip={noop}
+        onLeave={noop}
+      />
+    );
+  }
   if (state === "topic-menu") return topicView(good, "guide", null, true);
   if (state === "topic-guide") return topicView(bad, "guide");
   if (state === "topic-steps") return topicView(bad, "steps");

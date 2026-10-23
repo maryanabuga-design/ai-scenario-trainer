@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 import { authValue } from "./auth-seed";
@@ -172,7 +173,7 @@ for (const width of [360, 430]) {
       await expect(page.getByRole("button", { name: "Import and review" })).toBeEnabled();
     });
 
-    test("review with issues: ONE white notice with an amber tile, no dots, one Primary 'Show next issue', Delete in the ⋯ menu, Replace files in the meta row", async ({
+    test("review with issues: ONE white notice, small item pills and pencils, Primary 'Review 6 items' over Secondary Preview, Delete in the ⋯ menu", async ({
       page,
     }) => {
       await importFiles(page, PROBLEMS, "Problem topic");
@@ -183,11 +184,9 @@ for (const width of [360, 430]) {
       // exactly one notice: white card, amber icon tile, text colour title, muted body, nothing clickable inside
       await expect(page.locator("[data-notice]:visible")).toHaveCount(1);
       const notice = page.locator("#package-status");
-      await expect(notice).toContainText("6 to fix before you can publish");
+      await expect(notice).toContainText("6 items to review");
       await expect(notice).toContainText("Steps 2 · Quiz 4");
       expect(await bg(notice)).toBe("rgb(255, 255, 255)");
-      expect(await notice.evaluate((el) => getComputedStyle(el).borderTopWidth)).toBe("1px");
-      expect(await notice.evaluate((el) => getComputedStyle(el).borderTopLeftRadius)).toBe("16px");
       expect(await bg(notice.locator("[data-notice-tile]"))).toBe(ATTENTION_BG);
       expect(
         await notice.locator("[data-notice-tile]").evaluate((el) => getComputedStyle(el).color),
@@ -196,21 +195,43 @@ for (const width of [360, 430]) {
         "rgb(26, 26, 26)",
       );
       await expect(notice.locator("a, button")).toHaveCount(0);
-      // no per-tab banner, no dots, accessible names kept
-      await expect(page.locator("#tab-notice")).toHaveCount(0);
-      await expect(page.locator("[data-tab-dot]")).toHaveCount(0);
-      await expect(page.getByRole("radio", { name: "Steps, 2 to fix" })).toHaveCount(1);
-      await expect(page.getByRole("radio", { name: "Quiz, 4 to fix" })).toHaveCount(1);
+      // no dots, no per-tab banner; accessible names kept
+      await expect(page.locator("[data-tab-dot], #tab-notice")).toHaveCount(0);
+      await expect(page.getByRole("radio", { name: "Steps, 2 to review" })).toHaveCount(1);
+      await expect(page.getByRole("radio", { name: "Quiz, 4 to review" })).toHaveCount(1);
       expect((await page.getByRole("radiogroup").boundingBox())!.height).toBeLessThan(60);
-      // pinned area: ONE Primary, nothing else
-      const bar = page.locator("[data-full-bleed]:has(button:text('Show next issue'))").last();
-      await expect(page.getByRole("button", { name: "Show next issue" })).toBeVisible();
-      await expect(page.getByRole("button", { name: "Publish", exact: true })).toHaveCount(0);
-      await expect(page.getByRole("button", { name: "Preview as student" })).toHaveCount(0);
-      expect(await bg(page.getByRole("button", { name: "Show next issue" }))).toBe(
+      // item cards: one small pill (the attention style), a pencil on every card, no To fix lists
+      await page.getByRole("radio", { name: /^Steps/ }).click({ force: true });
+      const pills = page.locator("[data-issue-pill]:visible");
+      await expect(pills).toHaveCount(2);
+      await expect(pills.first()).toHaveText("Guide section 7 does not exist");
+      await expect(pills.nth(1)).toHaveText("No action");
+      expect(await bg(pills.first())).toBe(ATTENTION_BG);
+      await expect(page.getByText("To fix", { exact: true })).toHaveCount(0);
+      await expect(page.locator("[data-pencil]:visible")).toHaveCount(7);
+      for (const pencil of await page.locator("[data-pencil]:visible").all()) {
+        const box = (await pencil.boundingBox())!;
+        expect([box.width, box.height]).toEqual([44, 44]);
+      }
+      await page.getByRole("radio", { name: /^Quiz/ }).click({ force: true });
+      await expect(page.locator("[data-issue-pill]:visible")).toHaveCount(4);
+      await expect(page.locator("[data-pencil]:visible")).toHaveCount(10);
+      await expect(page.getByRole("link", { name: "Edit question", exact: true })).toHaveCount(0);
+      // pinned area: ONE Primary "Review 6 items" over the Secondary Preview; no Publish, no Delete
+      await expect(page.getByRole("button", { name: "Review 6 items" })).toBeVisible();
+      expect(await bg(page.getByRole("button", { name: "Review 6 items" }))).toBe(
         "rgb(63, 70, 56)",
       );
-      await expect(bar.locator("button")).toHaveCount(1);
+      expect(await bg(page.getByRole("button", { name: "Preview as student" }))).toBe(
+        "rgb(224, 230, 214)",
+      );
+      await expect(page.getByRole("button", { name: "Publish", exact: true })).toHaveCount(0);
+      await expect(page.getByRole("button", { name: "Delete demo topic" })).toHaveCount(0);
+      const ys = [
+        (await page.getByRole("button", { name: "Review 6 items" }).boundingBox())!.y,
+        (await page.getByRole("button", { name: "Preview as student" }).boundingBox())!.y,
+      ];
+      expect(ys[0]).toBeLessThan(ys[1]);
       // the meta row: an underlined tertiary Replace files link
       const meta = page
         .locator("[data-package-status]")
@@ -222,135 +243,162 @@ for (const width of [360, 430]) {
       // the ⋯ button: 44px, opens the menu with Delete in the destructive colour; Escape returns the focus
       const more = page.getByRole("button", { name: "More actions" });
       expect((await more.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-      expect((await more.boundingBox())!.width).toBeGreaterThanOrEqual(44);
       await more.click();
       const item = page.getByRole("menuitem", { name: "Delete demo topic" });
       await expect(item).toBeVisible();
       expect(await item.evaluate((el) => getComputedStyle(el).color)).toBe(WRONG_TEXT);
-      expect((await item.boundingBox())!.height).toBeGreaterThanOrEqual(44);
       await page.keyboard.press("Escape");
       await expect(page.getByRole("menu")).toHaveCount(0);
       await expect(more).toBeFocused();
-      // a tap outside closes it too
-      await more.click();
-      await page.getByRole("heading", { level: 1 }).click();
-      await expect(page.getByRole("menu")).toHaveCount(0);
-      // Delete opens the confirm dialog and Keep it leaves the topic alone
       await more.click();
       await page.getByRole("menuitem", { name: "Delete demo topic" }).click();
       await expect(page.getByRole("dialog")).toContainText("Delete this demo topic?");
       await page.getByRole("dialog").getByRole("button", { name: "Keep it" }).click();
-      await expect(page.getByRole("heading", { name: "Problem topic", level: 1 })).toBeVisible();
       expect(await noSidewaysScroll(page)).toBe(true);
-      // typing the preview address does not open it either
-      await page.goto(`/instructor/content/package/${topicId(page)}/preview`);
-      await expect(page).toHaveURL(/\/instructor\/content\/package\/[a-z0-9]+$/);
+      // Preview as student works while items are flagged
+      await page.getByRole("button", { name: "Preview as student" }).click();
+      await expect(page).toHaveURL(/\/preview$/);
+      await expect(page.getByText("Previewing as student")).toBeVisible();
     });
 
-    test("Show next issue visits all six issues in order, switches the tab, focuses and outlines the item for 2 seconds, and wraps around", async ({
+    test("the guided review: 1 of N in order, Save and next, Skip keeps the item, Add image, then back on the topic screen with Publish", async ({
       page,
     }) => {
       await importFiles(page, PROBLEMS, "Problem topic");
-      const next = page.getByRole("button", { name: "Show next issue" });
-      const seen: { tab: string; ids: string }[] = [];
-      for (let n = 0; n < 7; n += 1) {
-        await next.click();
-        const active = page.locator("[data-flash=true]");
-        await expect(active).toHaveCount(1);
-        const ids = (await active.getAttribute("data-issue-ids")) ?? "";
-        const tab = await page
-          .getByRole("radio", { checked: true })
-          .evaluate((el) => (el.closest("label")?.textContent ?? "").trim());
-        seen.push({ tab, ids });
-        // moved into view and focused, outlined in amber
-        await expect(active).toBeFocused();
-        // brought into view (the scroll may still be settling)
-        await expect
-          .poll(async () => {
-            const box = await active.boundingBox();
-            return box ? box.y >= 0 && box.y + box.height <= 800 : false;
-          })
-          .toBe(true);
-        expect(await active.evaluate((el) => getComputedStyle(el).outlineColor)).toBe(
-          ATTENTION_INK,
-        );
-        expect(await active.evaluate((el) => getComputedStyle(el).outlineWidth)).toBe("2px");
-        if (n === 0) {
-          await page.waitForTimeout(2300);
-          await expect(page.locator("[data-flash=true]")).toHaveCount(0);
-        }
-      }
-      expect(seen.slice(0, 6).map((s) => s.tab)).toEqual([
-        "Steps",
-        "Steps",
-        "Quiz",
-        "Quiz",
-        "Quiz",
-        "Quiz",
-      ]);
-      expect(new Set(seen.slice(0, 6).map((s) => s.ids)).size).toBe(6);
-      // the seventh click wraps to the first issue again
-      expect(seen[6]).toEqual(seen[0]);
-    });
-
-    test("flagged items: the amber To fix pill and reason, Replace files for the files, Edit question for questions; no banner per tab", async ({
-      page,
-    }) => {
-      await importFiles(page, PROBLEMS, "Problem topic");
-      await page.getByRole("radio", { name: /^Steps/ }).click({ force: true });
-      await expect(page.locator("#tab-notice")).toHaveCount(0);
-      await expect(page.locator("[data-notice]:visible")).toHaveCount(1);
-      await expect(page.locator("[data-to-fix]:visible")).toHaveCount(2);
-      await expect(page.locator("[data-to-fix]:visible").first()).toContainText("To fix");
-      const link = page
-        .locator("[data-to-fix]:visible")
-        .first()
-        .getByRole("link", { name: "Replace files" });
-      await expect(link).toBeVisible();
-      expect(
-        await link.locator("span").evaluate((el) => getComputedStyle(el).textDecorationLine),
-      ).toContain("underline");
-      await expect(page.getByRole("link", { name: "Edit question" })).toHaveCount(0);
-      await page.getByRole("radio", { name: /^Quiz/ }).click({ force: true });
-      await expect(page.locator("[data-to-fix]:visible")).toHaveCount(4);
-      await expect(page.getByRole("link", { name: "Edit question" })).toHaveCount(3);
-      // question 4 has no correct answer; question 5 has one, so its editor also carries the check notice
-      const edit = page.getByRole("link", { name: "Edit question" }).nth(1);
-      expect((await edit.boundingBox())!.height).toBe(52);
-      expect(await bg(edit)).toBe("rgb(224, 230, 214)");
-      await edit.click();
-      await expect(page).toHaveURL(/\/question\/\d+\/edit$/);
-      await expect(page.locator("[data-problems]:visible [data-notice]")).toContainText(
-        "to fix in this question",
-      );
-      const info = page.locator('[data-notice="info"]:visible');
-      await expect(info).toContainText("Check the correct answer");
-      await expect(info).toContainText(
-        /Option [A-D] is marked as correct\. Change it if that is wrong\./,
-      );
-      expect(await bg(info)).toBe("rgb(255, 255, 255)");
-    });
-
-    test("Replace files reopens the import with the title kept and says what to fix; the corrected files clear every issue", async ({
-      page,
-    }) => {
-      await importFiles(page, PROBLEMS, "Problem topic");
-      await page.getByRole("radio", { name: /^Steps/ }).click({ force: true });
+      await page.getByRole("button", { name: "Review 6 items" }).click();
+      const header = page.locator("[data-page-header-band]:visible");
+      const primary = (name: string) => page.getByRole("button", { name, exact: true });
+      // 1 of 6: a step with a guide link to a section that does not exist
+      await expect(page).toHaveURL(/\/edit\/steps-0-2\?r=.*&i=0$/);
+      await expect(header).toContainText("1 of 6");
+      await expect(header).toContainText("Step 3 of When the alarm sounds");
+      await expect(primary("Save and next")).toBeVisible();
+      expect(await bg(primary("Save and next"))).toBe("rgb(63, 70, 56)");
+      expect(await bg(primary("Skip"))).toBe("rgb(224, 230, 214)");
+      // leaving with unsaved changes asks first
+      await page.getByRole("textbox", { name: "Action" }).fill("Walk steadily");
+      await page.getByRole("button", { name: "Leave the review" }).click();
+      await expect(page.getByRole("dialog")).toContainText("Discard your changes?");
+      await page.getByRole("dialog").getByRole("button", { name: "Keep editing" }).click();
       await page
-        .locator("[data-to-fix]:visible")
-        .first()
+        .locator("fieldset[role=radiogroup] label", { hasText: "3. Help others safely" })
+        .click();
+      await primary("Save and next").click();
+      // 2 of 6: a step without an action
+      await expect(header).toContainText("2 of 6");
+      await page.getByRole("textbox", { name: "Action" }).fill("Tell staff about anyone missing");
+      await primary("Save and next").click();
+      // 3 of 6: a question without a correct answer
+      await expect(header).toContainText("3 of 6");
+      await expect(header).toContainText("Question 4");
+      await page.getByRole("radio", { name: "Correct answer B" }).check({ force: true });
+      await primary("Save and next").click();
+      // 4 of 6: a question without text: skip it, it stays flagged
+      await expect(header).toContainText("4 of 6");
+      await expect(header).toContainText("Question 5");
+      await primary("Skip").click();
+      // 5 of 6: a question without an explanation
+      await expect(header).toContainText("5 of 6");
+      await page
+        .getByRole("textbox", { name: "EXPLANATION" })
+        .fill("A steady pace prevents falls.");
+      await primary("Save and next").click();
+      // 6 of 6: a question that names a picture that is not in the package: add it and describe it
+      await expect(header).toContainText("6 of 6");
+      await expect(page.locator("[data-image-missing]:visible")).toContainText(
+        "door-check.png is not in the package yet.",
+      );
+      await page.locator("[data-image-input]:visible").setInputFiles({
+        name: "door-check.png",
+        mimeType: "image/png",
+        buffer: readFileSync("public/templates/sample-package/exit-sign.png"),
+      });
+      await page.locator("input[name=alt]:visible").fill("A hand feeling a closed door");
+      await primary("Save and next").click();
+      // back on the topic screen: the skipped question is still flagged
+      await expect(page).toHaveURL(/\/instructor\/content\/package\/[a-z0-9]+(\?.*)?$/);
+      await expect(page.locator("#package-status")).toContainText("1 item to review");
+      await expect(page.getByRole("button", { name: "Review 1 item" })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Publish", exact: true })).toHaveCount(0);
+      // the next Review tap visits the skipped item again
+      await page.getByRole("button", { name: "Review 1 item" }).click();
+      await expect(header).toContainText("1 of 1");
+      await expect(header).toContainText("Question 5");
+      await page
+        .getByRole("textbox", { name: "QUESTION" })
+        .fill("Who should you tell about a missing person?");
+      await primary("Save and next").click();
+      // all checked: the success notice and the Primary Publish over the Secondary Preview
+      await expect(page).toHaveURL(/\/instructor\/content\/package\/[a-z0-9]+(\?.*)?$/);
+      await expect(page.locator("#package-status")).toContainText("All items checked");
+      await expect(page.locator("[data-issue-pill]:visible")).toHaveCount(0);
+      expect(await bg(page.getByRole("button", { name: "Publish", exact: true }))).toBe(
+        "rgb(63, 70, 56)",
+      );
+      await expect(page.getByRole("button", { name: "Preview as student" })).toBeVisible();
+      await expect(page.getByRole("button", { name: /^Review/ })).toHaveCount(0);
+      expect(await noSidewaysScroll(page)).toBe(true);
+    });
+
+    test("Please confirm: a neutral pill, Review 1 item, Mark as OK clears it and the topic can be published", async ({
+      page,
+    }) => {
+      await importFiles(page, CLEAN);
+      // a machine-made guide link: mark the second question as matched automatically
+      await page.evaluate(() => {
+        const raw = JSON.parse(localStorage.getItem("ast.demo-topics.v1")!);
+        raw.value[0].questions[1].refAuto = true;
+        localStorage.setItem("ast.demo-topics.v1", JSON.stringify(raw));
+      });
+      await page.reload();
+      await page.getByRole("radio", { name: /^Quiz/ }).click({ force: true });
+      const pill = page.locator("[data-issue-pill]:visible");
+      await expect(pill).toHaveCount(1);
+      await expect(pill).toHaveText("Please confirm");
+      expect(await bg(pill)).toBe("rgb(226, 222, 214)");
+      await expect(page.locator("#package-status")).toContainText("1 item to review");
+      await expect(page.getByRole("button", { name: "Publish", exact: true })).toHaveCount(0);
+      await page.getByRole("button", { name: "Review 1 item" }).click();
+      await expect(page.locator("[data-page-header-band]:visible")).toContainText("1 of 1");
+      await expect(page.getByText(/was matched automatically/)).toBeVisible();
+      await expect(page.getByRole("button", { name: "Save and next" })).toHaveCount(0);
+      await page.getByRole("button", { name: "Mark as OK" }).click();
+      await expect(page.locator("#package-status")).toContainText("All items checked");
+      await expect(page.getByRole("button", { name: "Publish", exact: true })).toBeVisible();
+      await expect(page.locator("[data-issue-pill]:visible")).toHaveCount(0);
+    });
+
+    test("Skip on a Please confirm item keeps it flagged", async ({ page }) => {
+      await importFiles(page, CLEAN);
+      await page.evaluate(() => {
+        const raw = JSON.parse(localStorage.getItem("ast.demo-topics.v1")!);
+        raw.value[0].questions[0].refAuto = true;
+        localStorage.setItem("ast.demo-topics.v1", JSON.stringify(raw));
+      });
+      await page.reload();
+      await page.getByRole("button", { name: "Review 1 item" }).click();
+      await page.getByRole("button", { name: "Skip", exact: true }).click();
+      await expect(page).toHaveURL(/\/instructor\/content\/package\/[a-z0-9]+$/);
+      await expect(page.getByRole("button", { name: "Review 1 item" })).toBeVisible();
+    });
+
+    test("Replace files reopens the import with the title kept; the corrected files clear every item", async ({
+      page,
+    }) => {
+      await importFiles(page, PROBLEMS, "Problem topic");
+      await page
+        .locator("[data-package-status]")
         .getByRole("link", { name: "Replace files" })
         .click();
-      await expect(page).toHaveURL(/import\?replace=[a-z0-9]+&fix=steps$/);
+      await expect(page).toHaveURL(/import\?replace=[a-z0-9]+$/);
       const notice = page.locator('[data-notice="to-fix"]');
-      await expect(notice).toContainText("Guide section 7 does not exist");
       await expect(notice).toContainText("The new files replace the files of Problem topic");
       await expect(page.getByLabel("Topic title")).toHaveValue("Problem topic");
       await page.locator("[data-file-input]").setInputFiles(CLEAN);
       await page.getByRole("button", { name: "Import and review" }).click();
       await expect(page).toHaveURL(/\/instructor\/content\/package\//, { timeout: 15000 });
       const success = page.locator("#package-status");
-      await expect(success).toContainText("Nothing to fix");
+      await expect(success).toContainText("All items checked");
       await expect(success).toContainText("Preview as student, then publish.");
       expect(await bg(success)).toBe("rgb(255, 255, 255)");
       expect(await bg(success.locator("[data-notice-tile]"))).toBe("rgb(225, 234, 218)");

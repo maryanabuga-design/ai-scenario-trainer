@@ -1065,6 +1065,21 @@ export default function Screens() {
               <PackageSample files={packageFiles} state="topic-clean" />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Content package review: a Please confirm card (Quiz tab), Review 1 item">
+            <Screen>
+              <PackageSample files={packageFiles} state="topic-confirm" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Guided review: step 1 of 6, a question to fix (Save and next, Skip)">
+            <Screen>
+              <PackageSample files={packageFiles} state="review-step" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Guided review: a Please confirm item (Mark as OK, Skip)">
+            <Screen>
+              <PackageSample files={packageFiles} state="review-confirm" />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Content package review: the ⋯ menu open (Delete demo topic)">
             <Screen>
               <PackageSample files={packageFiles} state="topic-menu" />

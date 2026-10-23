@@ -18,6 +18,7 @@ export function StepCard({
   onToggleOpen,
   footer,
   flag,
+  edit,
 }: {
   step: Step;
   index: number;
@@ -27,11 +28,13 @@ export function StepCard({
   footer?: ReactNode;
   /** Always visible under the header, even while the step is closed (a flagged step of a demo topic). */
   flag?: ReactNode;
+  /** A control at the top-right, left of the chevron (the pencil of a demo topic's step). */
+  edit?: ReactNode;
 }) {
   const headerId = `${step.id}-header`;
   const panelId = `${step.id}-panel`;
   return (
-    <li className="overflow-hidden rounded-card border border-selectable-stroke bg-card">
+    <li className="relative overflow-hidden rounded-card border border-selectable-stroke bg-card">
       <button
         type="button"
         id={headerId}
@@ -52,6 +55,7 @@ export function StepCard({
         />
       </button>
       {flag && <div className="px-[var(--gutter,1rem)] pb-[var(--gutter,1rem)]">{flag}</div>}
+      {edit}
       <div
         id={panelId}
         role="region"

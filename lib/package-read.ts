@@ -86,6 +86,8 @@ export type StepItem = {
   action: string;
   detail: string;
   guideRef: string;
+  /** The guide section was matched automatically and is waiting for "Mark as OK" (Please confirm). */
+  refAuto?: boolean;
   imageFile: string;
   alt: string;
 };
@@ -98,6 +100,8 @@ export type ScenarioStep = {
   correct: Letter | null;
   why: string;
   guideRef: string;
+  /** The guide section was matched automatically and is waiting for "Mark as OK" (Please confirm). */
+  refAuto?: boolean;
   imageFile: string;
   alt: string;
 };
@@ -108,6 +112,8 @@ export type PackageQuestion = {
   correct: Letter | null;
   explanation: string;
   guideRef: string;
+  /** The guide section was matched automatically and is waiting for "Mark as OK" (Please confirm). */
+  refAuto?: boolean;
   imageFile: string;
   alt: string;
 };
@@ -453,9 +459,11 @@ export type Issue = {
   /** The row: "Q004", "Section 3", "When the alarm sounds, step 2". */
   where: string;
   reason: string;
-  /** To fix (blocks Preview and Publish); false for the informational notes. */
+  /** Must fix (blocks Publish); false for a please-confirm item and for the informational notes. */
   blocking: boolean;
-  /** Where the fix is made: in the question editor, or in the files (then they are replaced). */
+  /** "must" blocks Publish, "confirm" is a machine-made choice to confirm, "note" is only information. */
+  kind: "must" | "confirm" | "note";
+  /** Where the fix is made: in the item's edit screen, or in the files (then they are replaced). */
   fix: "edit" | "files";
   /** Which item it belongs to, e.g. "questions:3", so a tab can flag it. */
   key: string;
@@ -476,17 +484,25 @@ export const refExists = (data: PackageData, ref: string) =>
  */
 export function checkPackage(data: PackageData): Issue[] {
   const issues: Issue[] = [];
-  const add = (part: IssuePart, key: string, where: string, reason: string, blocking = true) =>
+  const add = (
+    part: IssuePart,
+    key: string,
+    where: string,
+    reason: string,
+    blocking = true,
+    kind: Issue["kind"] = blocking ? "must" : "note",
+  ) =>
     issues.push({
       id: `${key}:${issues.length}`,
       part,
       where,
       reason,
       blocking,
+      kind,
       key,
-      // a question's text, answers, explanation and guide link are fixed in the editor; anything
-      // about a picture, and every other part, is fixed in the files
-      fix: part === "questions" && !/^Image |picture|larger than/.test(reason) ? "edit" : "files",
+      // every item of every part has an edit screen; only a note about a whole part (a key ending in
+      // ":all") and a note about a picture nothing uses are fixed in the files
+      fix: key.endsWith(":all") || part === "images" ? "files" : "edit",
     });
   const hasGuide = data.guide !== null && data.guide.length > 0;
 
@@ -508,11 +524,14 @@ export function checkPackage(data: PackageData): Issue[] {
     }
     if (alt === "") add(part, key, where, `Image ${file} has no alt text`);
   };
-  const link = (part: IssuePart, key: string, where: string, ref: string) => {
+  const link = (part: IssuePart, key: string, where: string, ref: string, auto = false) => {
     if (!hasGuide) return;
     if (ref.trim() === "") add(part, key, where, "Not linked to the guide");
     else if (!refExists(data, ref))
       add(part, key, where, `Guide section ${ref.trim()} does not exist`);
+    else if (auto) {
+      add(part, key, where, "Guide section matched automatically", false, "confirm");
+    }
   };
   const consecutive = (numbers: number[]) => numbers.every((n, i) => n === i + 1);
 
@@ -543,7 +562,7 @@ export function checkPackage(data: PackageData): Issue[] {
       const where = `${list.title}, step ${step.step || si + 1}`;
       const key = `steps:${li}:${si}`;
       if (step.action === "") add("steps", key, where, "No action");
-      link("steps", key, where, step.guideRef);
+      link("steps", key, where, step.guideRef, step.refAuto === true);
       image("steps", key, where, step.imageFile, step.alt);
     });
   });
@@ -568,7 +587,7 @@ export function checkPackage(data: PackageData): Issue[] {
       add("scenario", key, where, `Correct answer ${step.correct.toUpperCase()} has no text`);
     }
     if (step.why === "") add("scenario", key, where, "No explanation (why)");
-    link("scenario", key, where, step.guideRef);
+    link("scenario", key, where, step.guideRef, step.refAuto === true);
     image("scenario", key, where, step.imageFile, step.alt);
   });
 
@@ -594,7 +613,7 @@ export function checkPackage(data: PackageData): Issue[] {
       add("questions", key, where, `An answer is longer than ${OPTION_MAX} characters`);
     }
     if (question.explanation === "") add("questions", key, where, "No explanation");
-    link("questions", key, where, question.guideRef);
+    link("questions", key, where, question.guideRef, question.refAuto === true);
     image("questions", key, where, question.imageFile, question.alt);
   });
 
@@ -736,14 +755,6 @@ export function shortName(name: string, max = 26): string {
   return `${name.slice(0, keep - tail)}…${name.slice(name.length - tail)}`;
 }
 
-/** The issue "Show next issue" visits after the one with this id (the first when none): in order, wrapping around. */
-export function nextIssue(issues: Issue[], afterId: string | null): Issue | null {
-  const list = orderedIssues(issues);
-  if (list.length === 0) return null;
-  const at = afterId === null ? -1 : list.findIndex((issue) => issue.id === afterId);
-  return list[(at + 1) % list.length];
-}
-
 /** "Fix these in your files: Steps, step 3: Guide section 7 does not exist; ..." for the reopened import. */
 export function fixMessage(issues: Issue[], tab: PathPart | null): string {
   const list = orderedIssues(issues).filter((issue) =>
@@ -753,18 +764,4 @@ export function fixMessage(issues: Issue[], tab: PathPart | null): string {
   const shown = list.slice(0, 4).map((issue) => `${issue.where}: ${issue.reason}`);
   const more = list.length > 4 ? ` and ${list.length - 4} more` : "";
   return `Fix these in your files, then choose them together: ${shown.join("; ")}${more}.`;
-}
-
-/** "Guide 2 · Steps 4 · Scenario 1 · Quiz 4": the issues to fix per part, parts with none left out. */
-export function partCounts(issues: Issue[]): string {
-  const names: Record<PathPart, string> = {
-    guide: "Guide",
-    steps: "Steps",
-    scenario: "Scenario",
-    quiz: "Quiz",
-  };
-  return LEARNING_PATH.flatMap((part) => {
-    const n = issues.filter((issue) => issue.blocking && tabOfIssue(issue) === part).length;
-    return n > 0 ? [`${names[part]} ${n}`] : [];
-  }).join(" · ");
 }

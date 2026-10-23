@@ -9,14 +9,15 @@ import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import {
   ChecklistCards,
   GuideSections,
-  NeedsAttention,
+  PartNote,
   QuizRows,
   ScenarioCards,
 } from "@/components/PackageContent/PackageParts";
 import { Notice } from "@/components/Notice/Notice";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
-import { blockingIssues, coverageLine, partCounts, partsOf } from "@/lib/package-read";
+import { coverageLine, partsOf } from "@/lib/package-read";
+import { flaggedItems, keySlug, partCounts, reviewLabel } from "@/lib/package-review";
 import type { Issue, PathPart } from "@/lib/package-read";
 import { editedText } from "@/lib/packages";
 import type { DemoTopic } from "@/lib/packages";
@@ -44,12 +45,13 @@ export function issuesOfPart(issues: Issue[], part: PathPart): Issue[] {
 }
 
 /**
- * The demo topic of the Instructor (DESIGN.md: Content package review): the band with the title, the
- * meta line "Draft · Last edited today", ONE notice (to fix, with "Show next issue", or "Nothing to
- * fix"), the coverage, the four-option selector (an amber dot on a tab with issues, a missing part
- * disabled), the tab with its own notice and the flagged items, and the pinned area: Primary Publish,
- * Secondary Preview as student (both off while anything is to fix) and the destructive text link
- * Delete demo topic; a Published topic has Secondary Unpublish and Secondary Preview as student.
+ * The demo topic of the Instructor (DESIGN.md: Guided review of a content package): the band with the
+ * title and the ⋯ menu, the meta line "Draft · Last edited today" with Replace files, ONE notice (the
+ * items to review per part, or "All items checked"), the coverage, the four-option selector, the tab
+ * with compact item cards (one pill and a pencil each), and the pinned area. A draft with flagged
+ * items has the Primary "Review N items" and the Secondary "Preview as student"; when nothing is
+ * flagged, the Primary "Publish" and the same Secondary. A Published topic has Secondary Unpublish and
+ * Secondary Preview as student.
  */
 export function PackageTopicView({
   topic,
@@ -61,7 +63,7 @@ export function PackageTopicView({
   onAsk,
   onConfirm,
   onCancelDialog,
-  onNextIssue,
+  onReview,
   onPreview,
   dialogInline = false,
   menuOpen = false,
@@ -75,8 +77,8 @@ export function PackageTopicView({
   onAsk: (dialog: Exclude<PackageDialog, null>) => void;
   onConfirm: () => void;
   onCancelDialog: () => void;
-  /** "Show next issue". */
-  onNextIssue: () => void;
+  /** "Review N items": opens the first flagged item. */
+  onReview: () => void;
   /** Opens Preview as student. */
   onPreview: () => void;
   dialogInline?: boolean;
@@ -85,18 +87,17 @@ export function PackageTopicView({
 }) {
   const [closed, setClosed] = useState(false);
   const present = partsOf(topic);
-  const blocking = blockingIssues(issues);
+  const flagged = flaggedItems(issues);
   const own = issuesOfPart(issues, tab);
   const base = `/instructor/content/package/${topic.id}`;
   const guideHref = (section: string) => `${base}?tab=guide#section-${section}`;
+  const editHref = (key: string) => `${base}/edit/${keySlug(key)}`;
   const replaceHref = `/instructor/content/import?replace=${topic.id}&fix=${tab}`;
   const coverage = coverageLine(topic);
   const published = topic.status === "published";
-  const toFix = blocking.length > 0;
-  // notes about a whole part (no item of their own) show at the top of its tab
-  const partNotes = own.filter(
-    (issue) => issue.blocking && (issue.key.endsWith(":all") || !issue.key.includes(":")),
-  );
+  const toReview = flagged.length > 0;
+  // notes about a whole part (no item of their own) show once at the top of their tab
+  const partNotes = own.filter((issue) => issue.key.endsWith(":all"));
   return (
     <div className="flex flex-col gap-4 pb-4">
       <PageHeaderBand
@@ -148,20 +149,20 @@ export function PackageTopicView({
         )}
       </div>
 
-      {toFix ? (
+      {toReview ? (
         <Notice
           variant="to-fix"
           id="package-status"
-          title={`${blocking.length} to fix before you can publish`}
+          title={`${flagged.length} ${flagged.length === 1 ? "item" : "items"} to review`}
         >
-          {partCounts(issues)}
+          {partCounts(flagged)}
         </Notice>
       ) : (
         !closed && (
           <Notice
             variant="success"
             id="package-status"
-            title="Nothing to fix"
+            title="All items checked"
             onClose={() => setClosed(true)}
           >
             Preview as student, then publish.
@@ -175,11 +176,11 @@ export function PackageTopicView({
         hideLegend
         dense
         options={tabs.map((entry) => {
-          const count = issuesOfPart(issues, entry.value).filter((issue) => issue.blocking).length;
+          const count = flagged.filter((item) => item.tab === entry.value).length;
           return {
             ...entry,
             disabled: !present.includes(entry.value),
-            ariaLabel: count > 0 ? `${entry.label}, ${count} to fix` : undefined,
+            ariaLabel: count > 0 ? `${entry.label}, ${count} to review` : undefined,
           };
         })}
         value={tab}
@@ -195,42 +196,26 @@ export function PackageTopicView({
         </div>
       ) : (
         <>
-          {partNotes.length > 0 && (
-            <div className="rounded-card border border-selectable-stroke bg-card p-3">
-              <NeedsAttention issues={partNotes} replaceHref={replaceHref} />
-            </div>
-          )}
+          {partNotes.length > 0 && <PartNote issues={partNotes} replaceHref={replaceHref} />}
           {tab === "guide" && (
-            <GuideSections data={topic} issues={issues} showUse replaceHref={replaceHref} />
+            <GuideSections data={topic} issues={issues} showUse editHref={editHref} />
           )}
           {tab === "steps" && (
             <ChecklistCards
               data={topic}
               issues={issues}
               guideHref={guideHref}
-              replaceHref={replaceHref}
+              editHref={editHref}
             />
           )}
           {tab === "scenario" && (
-            <ScenarioCards
-              data={topic}
-              issues={issues}
-              guideHref={guideHref}
-              replaceHref={replaceHref}
-            />
+            <ScenarioCards data={topic} issues={issues} guideHref={guideHref} editHref={editHref} />
           )}
           {tab === "quiz" && (
-            <QuizRows
-              data={topic}
-              issues={issues}
-              guideHref={guideHref}
-              replaceHref={replaceHref}
-              questionHref={(index) => `${base}/question/${index}`}
-              editHref={(index) => `${base}/question/${index}/edit`}
-            />
+            <QuizRows data={topic} issues={issues} guideHref={guideHref} editHref={editHref} />
           )}
           {own
-            .filter((issue) => !issue.blocking)
+            .filter((issue) => issue.kind === "note")
             .map((issue) => (
               <p key={issue.id} data-info-note className="type-small text-text-secondary">
                 {issue.reason}
@@ -249,9 +234,7 @@ export function PackageTopicView({
       </p>
 
       <ActionBar>
-        {toFix ? (
-          <Button onClick={onNextIssue}>Show next issue</Button>
-        ) : published ? (
+        {published ? (
           <>
             <Button variant="secondary" onClick={() => onAsk("unpublish")}>
               Unpublish
@@ -262,7 +245,11 @@ export function PackageTopicView({
           </>
         ) : (
           <>
-            <Button onClick={() => onAsk("publish")}>Publish</Button>
+            {toReview ? (
+              <Button onClick={onReview}>{reviewLabel(flagged.length)}</Button>
+            ) : (
+              <Button onClick={() => onAsk("publish")}>Publish</Button>
+            )}
             <Button variant="secondary" icon={Eye} onClick={onPreview}>
               Preview as student
             </Button>

@@ -176,7 +176,7 @@ describe("every choice uses SelectableRow", () => {
       "FilterChips",
       "OptionCard",
       "EditQuestionView",
-      "PackageQuestionViews",
+      "PackageItemEdit",
     ];
     const own = [...files("components"), ...files("app")].filter((file) => {
       if (allowed.some((name) => file.includes(name))) return false;
