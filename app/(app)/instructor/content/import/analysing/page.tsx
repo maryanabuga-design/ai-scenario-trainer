@@ -116,6 +116,7 @@ function Analysing() {
       done={phase === "running" ? done : STAGES.length}
       results={results}
       counts={analysis?.counts ?? { guide: 0, steps: 0, scenario: 0, questions: 0 }}
+      linkProblems={analysis?.linkProblems ?? 0}
       partialLine={analysis ? missingLine(analysis.missing) : ""}
       reviewCount={flagged.length}
       onCancel={() => router.push("/instructor/content/import")}

@@ -1010,11 +1010,6 @@ export default function Screens() {
               <PackageSample files={packageFiles} state="import-empty" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Import content: What to include open">
-            <Screen>
-              <PackageSample files={packageFiles} state="import-include" />
-            </Screen>
-          </PhoneFrame>
           <PhoneFrame label="Import content: a file chosen, one file card, Add images">
             <Screen>
               <PackageSample files={packageFiles} state="import-file" />

@@ -1,10 +1,10 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { Check, FileText, LoaderCircle } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button } from "@/components/Button/Button";
 import { Notice } from "@/components/Notice/Notice";
-import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 
 export const STAGES = [
   "Reading the text",
@@ -14,16 +14,93 @@ export const STAGES = [
   "Checking links to the guide",
 ] as const;
 
+export const ANALYSING_IMAGE = "/images/instructor/import-analysing.webp";
+export const SUCCESS_IMAGE = "/images/instructor/import-success.webp";
+
 export type AnalysingPhase = "running" | "finished" | "partial" | "error";
 
 export type StageResult = string;
 
 /**
- * The Analysing screen (DESIGN.md: One document in, a draft topic out): the file name, "Reading your
- * document...", five stages (done check, current, waiting) with the real result of each finished
- * stage, a calm line, and Secondary Cancel. Then the end states: Finished ("Draft is ready" with the
- * counts), Partial (a part is missing) and Error. No percentages, no AI wording. The stage changes are
- * announced in a polite live region.
+ * The picture at the top of the screen (about 160px). `src` is null for the partial and error states:
+ * then, and when the file is missing, the neutral document icon shows instead, so nothing breaks.
+ */
+function Art({ src }: { src: string | null }) {
+  const [failed, setFailed] = useState(false);
+  const image = useRef<HTMLImageElement>(null);
+  // an error that happened before this component was hydrated is not reported by onError
+  useEffect(() => {
+    const el = image.current;
+    if (el && el.complete && el.naturalWidth === 0) setFailed(true);
+  }, []);
+  if (src === null || failed) {
+    return (
+      <div
+        data-art-fallback
+        className="flex h-40 w-40 items-center justify-center rounded-full bg-secondary-sand"
+      >
+        <FileText size={56} strokeWidth={1.75} aria-hidden="true" className="text-text-secondary" />
+      </div>
+    );
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      ref={image}
+      key={src}
+      data-art
+      src={src}
+      alt=""
+      width={160}
+      height={160}
+      className="h-40 w-40 object-contain"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
+/** A stage's state mark: a check in a round success tile, a calm spinner (a static dot with reduced motion) or an empty ring. */
+function Mark({ state }: { state: "done" | "current" | "waiting" }) {
+  if (state === "done") {
+    return (
+      <span
+        aria-hidden="true"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-status-success-bg text-status-success-ink"
+      >
+        <Check size={16} strokeWidth={2.5} />
+      </span>
+    );
+  }
+  if (state === "current") {
+    return (
+      <span
+        aria-hidden="true"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-selectable-stroke text-primary"
+      >
+        <LoaderCircle size={18} strokeWidth={2} className="animate-spin motion-reduce:hidden" />
+        <span
+          data-static-dot
+          className="hidden size-2 rounded-full bg-primary motion-reduce:block"
+        />
+      </span>
+    );
+  }
+  return (
+    <span
+      aria-hidden="true"
+      className="h-8 w-8 shrink-0 rounded-full border border-selectable-stroke"
+    />
+  );
+}
+
+/**
+ * The Analysing and result screen (DESIGN.md: Simpler Import content, and a centred Analysing and
+ * result screen): everything centred, top to bottom a 160px picture, the title, the file name in
+ * muted text and the content block, with the buttons pinned at the bottom. While reading: five compact
+ * stage rows with the real result of each finished stage, a calm line and Secondary Cancel. Finished:
+ * the rows collapse away, the picture changes and one summary card shows the counts and the Links to
+ * the guide row under a small success badge. Partial and error use the neutral icon. No percentages,
+ * no AI wording. Stage changes are announced in a polite live region.
  */
 export function DocumentAnalysingView({
   fileName,
@@ -31,6 +108,7 @@ export function DocumentAnalysingView({
   done,
   results,
   counts,
+  linkProblems = 0,
   partialLine = "",
   reviewCount = 0,
   onCancel,
@@ -47,6 +125,8 @@ export function DocumentAnalysingView({
   /** The result of each finished stage ("4 found"). */
   results: StageResult[];
   counts: { guide: number; steps: number; scenario: number; questions: number };
+  /** Items whose link to the guide needs attention (0: "all linked"). */
+  linkProblems?: number;
   /** The partial state's sentence ("We could not find questions in this document."). */
   partialLine?: string;
   /** Items the review would visit; 0 offers Preview as student instead. */
@@ -68,102 +148,118 @@ export function DocumentAnalysingView({
       : phase === "partial"
         ? partialLine
         : "We could not read this file.";
+  const title = running
+    ? "Reading your document…"
+    : phase === "finished"
+      ? "Draft is ready"
+      : "Your document";
   return (
-    <div className="flex flex-col gap-6 pb-4">
-      <PageHeaderBand
-        title={
-          running
-            ? "Reading your document…"
-            : phase === "finished"
-              ? "Draft is ready"
-              : "Your document"
-        }
-        subtitle={
-          <span data-file-name className="break-words">
-            {fileName}
-          </span>
-        }
-      />
+    <div data-analysing className="flex flex-col items-center gap-4 pt-6 pb-4 text-center">
+      <Art src={running ? ANALYSING_IMAGE : phase === "finished" ? SUCCESS_IMAGE : null} />
+      <h1 className="type-page-title">{title}</h1>
+      <p
+        data-file-name
+        className="type-body max-w-full text-text-secondary [overflow-wrap:anywhere]"
+      >
+        {fileName}
+      </p>
       <p className="sr-only" role="status" aria-live="polite" data-announce>
         {announce}
       </p>
 
-      {(running || phase === "partial" || phase === "finished") && (
-        <ol data-stages className="flex flex-col gap-2">
-          {STAGES.map((label, index) => {
-            const state = index < done ? "done" : running && index === done ? "current" : "waiting";
-            return (
-              <li
-                key={label}
-                data-stage={state}
-                className="flex min-h-14 items-center gap-3 rounded-card border border-selectable-stroke bg-card px-3 py-2"
-              >
-                <span
-                  aria-hidden="true"
-                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                    state === "done"
-                      ? "bg-status-success-bg text-status-success-ink"
-                      : state === "current"
-                        ? "border-2 border-primary text-primary"
-                        : "border border-selectable-stroke text-text-secondary"
-                  }`}
-                >
-                  {state === "done" ? <Check size={16} strokeWidth={2.5} /> : null}
-                </span>
-                <span className="flex min-w-0 flex-1 flex-col">
-                  <span
-                    className={
-                      state === "waiting" ? "type-body text-text-secondary" : "type-body-strong"
-                    }
-                  >
-                    {label}
-                    <span className="sr-only">{`, ${state === "done" ? "done" : state === "current" ? "in progress" : "waiting"}`}</span>
-                  </span>
-                  {state === "done" && results[index] && (
-                    <span data-stage-result className="type-small text-text-secondary">
-                      {results[index]}
-                    </span>
-                  )}
-                </span>
-              </li>
-            );
-          })}
-        </ol>
-      )}
-
       {running && (
-        <p className="type-small text-center text-text-secondary">
-          This is a draft. You will review everything before it is published.
-        </p>
+        <>
+          <ol data-stages className="flex w-full max-w-[360px] flex-col gap-2 text-left">
+            {STAGES.map((label, index) => {
+              const state = index < done ? "done" : index === done ? "current" : "waiting";
+              return (
+                <li
+                  key={label}
+                  data-stage={state}
+                  className="flex min-h-14 items-center gap-3 rounded-card border border-selectable-stroke bg-card px-3 py-2"
+                >
+                  <Mark state={state} />
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span
+                      className={
+                        state === "waiting" ? "type-body text-text-secondary" : "type-body-strong"
+                      }
+                    >
+                      {label}
+                      <span className="sr-only">
+                        {`, ${state === "done" ? "done" : state === "current" ? "in progress" : "waiting"}`}
+                      </span>
+                    </span>
+                    {state === "done" && results[index] && (
+                      <span data-stage-result className="type-small text-text-secondary">
+                        {results[index]}
+                      </span>
+                    )}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+          <p className="type-small text-text-secondary">
+            This is a draft. You will review everything before it is published.
+          </p>
+        </>
       )}
 
       {phase === "finished" && (
-        <dl
-          data-counts
-          className="flex flex-col gap-2 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)]"
+        <div
+          data-summary
+          className="relative mt-3 w-full max-w-[360px] rounded-[14px] border border-selectable-stroke bg-card px-4 py-4 text-left"
         >
-          {[
-            ["Guide sections", counts.guide],
-            ["Steps", counts.steps],
-            ["Scenario steps", counts.scenario],
-            ["Questions", counts.questions],
-          ].map(([label, value]) => (
-            <div key={label} className="flex items-baseline justify-between gap-3">
-              <dt className="type-body text-text-secondary">{label}</dt>
-              <dd className="type-body-strong">{value}</dd>
+          <span
+            aria-hidden="true"
+            data-badge
+            className="absolute top-0 left-1/2 flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-status-success-ink text-white"
+          >
+            <Check size={16} strokeWidth={3} />
+          </span>
+          <dl data-counts className="flex flex-col gap-2">
+            {[
+              ["Guide sections", counts.guide],
+              ["Steps", counts.steps],
+              ["Scenario steps", counts.scenario],
+              ["Questions", counts.questions],
+            ].map(([label, value]) => (
+              <div key={label} className="flex items-baseline justify-between gap-3">
+                <dt className="type-body text-text-secondary">{label}</dt>
+                <dd className="type-body-strong">{value}</dd>
+              </div>
+            ))}
+            <div data-links-row className="flex items-center justify-between gap-3">
+              <dt className="type-body text-text-secondary">Links to the guide</dt>
+              <dd className="type-body-strong flex items-center gap-1.5">
+                {linkProblems === 0 && (
+                  <Check
+                    size={16}
+                    strokeWidth={2.5}
+                    aria-hidden="true"
+                    className="text-status-success-ink"
+                  />
+                )}
+                {linkProblems === 0 ? "all linked" : `${linkProblems} need attention`}
+              </dd>
             </div>
-          ))}
-        </dl>
+          </dl>
+        </div>
       )}
       {phase === "partial" && (
-        <Notice variant="info" id="draft-partial" title="Some parts are missing" clamp={false}>
-          {partialLine}
-        </Notice>
+        <div className="w-full max-w-[360px] text-left">
+          <Notice variant="info" id="draft-partial" title="Some parts are missing" clamp={false}>
+            {partialLine}
+          </Notice>
+        </div>
       )}
       {phase === "error" && (
-        <Notice variant="to-fix" alert id="draft-error" title="File not readable" clamp={false}>
-          We could not read this file. Try another file.
-        </Notice>
+        <div className="w-full max-w-[360px] text-left">
+          <Notice variant="to-fix" alert id="draft-error" title="File not readable" clamp={false}>
+            We could not read this file. Try another file.
+          </Notice>
+        </div>
       )}
 
       <ActionBar>

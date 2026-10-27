@@ -1888,7 +1888,6 @@ export function PackageSample({
   files: Record<string, string>;
   state:
     | "import-empty"
-    | "import-include"
     | "import-file"
     | "import-type"
     | "import-size"
@@ -1946,13 +1945,12 @@ export function PackageSample({
   const importView = (
     file: { name: string; size: number } | null,
     message = "",
-    options: { images?: string[]; open?: boolean } = {},
+    options: { images?: string[] } = {},
   ) => (
     <PackageImportView
       file={file}
       message={message}
       images={options.images ?? []}
-      includeOpen={options.open}
       onFile={noop}
       onRemove={noop}
       onSample={noop}
@@ -1979,6 +1977,7 @@ export function PackageSample({
         "all linked",
       ]}
       counts={{ guide: 4, steps: 7, scenario: 4, questions: 10 }}
+      linkProblems={0}
       partialLine="We could not find questions in this document."
       reviewCount={reviewCount}
       onCancel={noop}
@@ -1990,7 +1989,6 @@ export function PackageSample({
     />
   );
   if (state === "import-empty") return importView(null);
-  if (state === "import-include") return importView(null, "", { open: true });
   if (state === "import-file") return importView(doc, "", { images: ["exit-sign.png"] });
   if (state === "import-type")
     return importView({ name: "notes.docx", size: 20_000 }, MESSAGES.type);

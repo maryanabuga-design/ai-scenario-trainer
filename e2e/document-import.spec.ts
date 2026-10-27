@@ -49,7 +49,7 @@ for (const width of [360, 430]) {
   test.describe(`Import one document at ${width}px`, () => {
     test.use({ viewport: { width, height: 800 } });
 
-    test("empty: one large dashed card, the muted line, two compact buttons, What to include collapsed, one disabled Primary", async ({
+    test("empty: one large dashed card, the muted line, two plain links, no What to include, one disabled Primary", async ({
       page,
     }) => {
       await page.goto("/instructor/content/import");
@@ -62,17 +62,11 @@ for (const width of [360, 430]) {
       await expect(page.getByText("IMAGES (OPTIONAL)")).toHaveCount(0);
       await expect(importButton(page)).toBeDisabled();
       expect(await primaries(page)).toBe(0);
-      const row = page.getByRole("button", { name: "What to include" });
-      await expect(row).toHaveAttribute("aria-expanded", "false");
-      expect((await row.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-      await row.click();
-      const panel = page.locator("#include-panel");
-      await expect(panel).toContainText("Guide");
-      await expect(panel.locator("li")).toHaveCount(5);
+      await expect(page.locator("main")).not.toContainText("What to include");
       expect(await noSidewaysScroll(page)).toBe(true);
     });
 
-    test("the helper line is in the header band; the two outlined tertiary buttons are equal, one line, not filled, not underlined; What to include has its icon tile", async ({
+    test("the helper line is in the header band; the two plain underlined links are in one row with their edges on the content edges, 44px tap areas, no icons, border or fill; no What to include anywhere", async ({
       page,
     }) => {
       await page.goto("/instructor/content/import");
@@ -81,48 +75,38 @@ for (const width of [360, 430]) {
         "Upload one Excel document. We will read it and prepare a draft topic for you to review.",
       );
       expect(await helper.evaluate((el) => getComputedStyle(el).color)).toBe("rgb(92, 90, 85)");
-      const lines = await helper.evaluate(
-        (el) => el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight),
-      );
-      expect(lines).toBeLessThanOrEqual(2.1);
       const title = (await page.getByRole("heading", { name: "Import content" }).boundingBox())!;
       const h = (await helper.boundingBox())!;
       expect(Math.round(h.y - (title.y + title.height))).toBe(8);
       const download = page.getByRole("link", { name: "Download blank template" });
       const example = page.getByRole("button", { name: "Try an example" });
-      await expect(download).toHaveText("Blank template");
+      await expect(download).toHaveText("Download blank template");
+      await expect(example).toHaveText("Try an example");
       const [a, b] = [(await download.boundingBox())!, (await example.boundingBox())!];
-      expect(Math.abs(a.width - b.width)).toBeLessThanOrEqual(1);
-      expect(a.height).toBe(44);
-      expect(b.height).toBe(44);
+      expect(a.height).toBeGreaterThanOrEqual(44);
+      expect(b.height).toBeGreaterThanOrEqual(44);
       expect(a.y).toBe(b.y);
-      expect(Math.round(b.x - (a.x + a.width))).toBe(12);
-      expect(b.x + b.width).toBeLessThanOrEqual(width);
-      for (const button of [download, example]) {
-        expect(await bg(button)).toBe("rgb(255, 255, 255)");
-        const style = await button.evaluate((el) => {
+      for (const link of [download, example]) {
+        const style = await link.evaluate((el) => {
           const css = getComputedStyle(el);
-          return [css.borderTopWidth, css.borderTopColor, css.borderRadius, css.textDecorationLine];
+          const label = getComputedStyle(el.querySelector("span")!);
+          return [css.backgroundColor, css.borderTopWidth, label.textDecorationLine];
         });
-        expect(style).toEqual(["1px", "rgb(228, 223, 213)", "14px", "none"]);
-        // one line: the label never wraps or is cut off
-        expect(
-          await button.evaluate(
-            (el) => el.scrollWidth <= el.clientWidth + 1 && el.clientHeight <= 44,
-          ),
-        ).toBe(true);
-        await expect(button.locator("svg")).toHaveCount(1);
+        expect(style).toEqual(["rgba(0, 0, 0, 0)", "0px", "underline"]);
+        await expect(link.locator("svg")).toHaveCount(0);
       }
-      const tile = page.locator("[data-include-tile]");
-      expect((await tile.boundingBox())!.width).toBe(40);
-      expect(await bg(tile)).toBe("rgb(226, 222, 214)");
-      expect(
-        (await page.getByRole("button", { name: "What to include" }).boundingBox())!.height,
-      ).toBeGreaterThanOrEqual(44);
-      await page.getByRole("button", { name: "What to include" }).click();
-      await expect(page.locator("#include-panel li")).toHaveCount(5);
+      // the text edges sit on the content edges (16px gutter): the first on the left, the second on the right
+      const textBox = async (locator: typeof download) =>
+        (await locator.locator("span").boundingBox())!;
+      const [ta, tb] = [await textBox(download), await textBox(example)];
+      expect(Math.round(ta.x)).toBe(16);
+      expect(Math.round(tb.x + tb.width)).toBe(width - 16);
       expect(await noSidewaysScroll(page)).toBe(true);
       expect(await primaries(page)).toBe(0);
+      await choose(page, `${FIXTURES}clean.xlsx`);
+      await expect(page.locator("main")).not.toContainText("What to include");
+      await expect(page.getByText("IMAGES (OPTIONAL)")).toBeVisible();
+      expect(await noSidewaysScroll(page)).toBe(true);
     });
 
     test("the template downloads and the example loads and continues to Analysing", async ({
@@ -148,27 +132,6 @@ for (const width of [360, 430]) {
       );
       await page.goto(`/instructor/content/package/${id}`);
       await expect(page.locator("#package-status")).toContainText("All items checked");
-    });
-
-    test("What to include shows five lines and the Section sentence; no question-set link remains", async ({
-      page,
-    }) => {
-      await page.goto("/instructor/content/import");
-      await page.getByRole("button", { name: "What to include" }).click();
-      const panel = page.locator("#include-panel");
-      await expect(panel.locator("li")).toHaveText([
-        "Topic: title and short description (required)",
-        "Guide: the text people read, in numbered sections (required)",
-        "Steps: short action lists (optional)",
-        "Scenario: situations with four answers (optional)",
-        "Questions: quiz questions (optional)",
-      ]);
-      await expect(panel).toContainText(
-        "Steps, scenario steps and questions name the guide section they are based on (Section column).",
-      );
-      await expect(page.locator("main")).not.toContainText(/Only questions|question set/i);
-      await expect(page.locator('a[href*="import/questions"]')).toHaveCount(0);
-      expect(await noSidewaysScroll(page)).toBe(true);
     });
 
     test("the old Import questions route redirects to Import content; Content has the new labels and empty state", async ({
@@ -319,7 +282,34 @@ for (const width of [360, 430]) {
         page.getByText("This is a draft. You will review everything before it is published."),
       ).toBeVisible();
       await expect(page.locator("main")).not.toContainText(/%|thinking/i);
+      // everything is centred: the picture, the title, the file name and the stage rows
+      const centre = async (selector: string) => {
+        const box = (await page.locator(selector).first().boundingBox())!;
+        return Math.round(box.x + box.width / 2);
+      };
+      for (const selector of ["[data-art]", "h1", "[data-file-name]", "[data-stages]"]) {
+        expect(Math.abs((await centre(selector)) - width / 2), selector).toBeLessThanOrEqual(1);
+      }
+      const art = (await page.locator("[data-art]").boundingBox())!;
+      expect([art.width, art.height]).toEqual([160, 160]);
+      await expect(page.locator("[data-art]")).toHaveAttribute(
+        "src",
+        "/images/instructor/import-analysing.webp",
+      );
+      const stages = (await page.locator("[data-stages]").boundingBox())!;
+      expect(stages.width).toBeLessThanOrEqual(360);
+      // the stages tick in order with their real results
       await expect(page.locator("[data-stage-result]").first()).toContainText("5 sheets read", {
+        timeout: 4000,
+      });
+      await expect(page.locator("[data-stage-result]").nth(1)).toHaveText("4 found", {
+        timeout: 4000,
+      });
+      await expect(page.locator("[data-stage-result]").nth(2)).toHaveText(
+        "7 steps, 4 scenario steps",
+        { timeout: 4000 },
+      );
+      await expect(page.locator("[data-stage-result]").nth(3)).toHaveText("10 questions", {
         timeout: 4000,
       });
       // nothing is saved while the stages run
@@ -329,14 +319,37 @@ for (const width of [360, 430]) {
       await expect(page.getByRole("heading", { name: "Draft is ready" })).toBeVisible({
         timeout: 8000,
       });
-      await expect(page.locator("[data-stage=done]")).toHaveCount(5);
-      await expect(page.locator("[data-stage-result]").nth(1)).toHaveText("4 found");
-      await expect(page.locator("[data-stage-result]").nth(2)).toHaveText(
-        "7 steps, 4 scenario steps",
+      // finished: the stage rows collapse, the success picture and ONE summary card with its badge
+      await expect(page.locator("[data-stages]")).toHaveCount(0);
+      await expect(page.locator("[data-art]")).toHaveAttribute(
+        "src",
+        "/images/instructor/import-success.webp",
       );
-      await expect(page.locator("[data-stage-result]").nth(3)).toHaveText("10 questions");
-      await expect(page.locator("[data-counts]")).toContainText("Guide sections4");
-      await expect(page.locator("[data-counts]")).toContainText("Questions10");
+      const card = page.locator("[data-summary]");
+      const c = (await card.boundingBox())!;
+      expect(c.width).toBeLessThanOrEqual(360);
+      expect(Math.abs(c.x + c.width / 2 - width / 2)).toBeLessThanOrEqual(1);
+      expect(
+        await card.evaluate((el) => {
+          const css = getComputedStyle(el);
+          return [css.backgroundColor, css.borderTopWidth, css.borderTopColor, css.borderRadius];
+        }),
+      ).toEqual(["rgb(255, 255, 255)", "1px", "rgb(228, 223, 213)", "14px"]);
+      const badge = page.locator("[data-badge]");
+      const bb = (await badge.boundingBox())!;
+      expect(Math.abs(bb.x + bb.width / 2 - (c.x + c.width / 2))).toBeLessThanOrEqual(1);
+      expect(Math.abs(bb.y + bb.height / 2 - c.y)).toBeLessThanOrEqual(1.5);
+      expect(await bg(badge)).toBe("rgb(68, 104, 58)");
+      await expect(badge).toHaveAttribute("aria-hidden", "true");
+      await expect(card.locator("dt")).toHaveText([
+        "Guide sections",
+        "Steps",
+        "Scenario steps",
+        "Questions",
+        "Links to the guide",
+      ]);
+      await expect(card.locator("dd")).toHaveText(["4", "7", "4", "10", "all linked"]);
+      await expect(card.locator("[data-links-row] svg")).toHaveCount(1);
       // the sample comes with its pictures: nothing to review, so Preview as student
       expect(await storedTopics(page)).toContain("Evacuating a crowded hall");
       await expect(page.getByRole("button", { name: "Preview as student" })).toBeVisible();
@@ -387,6 +400,10 @@ for (const width of [360, 430]) {
           timeout: 10000,
         },
       );
+      // centred in the same layout, with the neutral icon instead of a picture
+      await expect(page.locator("[data-art-fallback]")).toBeVisible();
+      const f = (await page.locator("[data-art-fallback]").boundingBox())!;
+      expect(Math.abs(f.x + f.width / 2 - width / 2)).toBeLessThanOrEqual(1);
       // the draft is not created yet
       expect(await storedTopics(page)).toBeNull();
       expect(await primaries(page)).toBe(1);
@@ -406,6 +423,9 @@ for (const width of [360, 430]) {
       await expect(page.locator("#draft-error")).toContainText(
         "We could not read this file. Try another file.",
       );
+      await expect(page.locator("[data-art-fallback]")).toBeVisible();
+      const f = (await page.locator("[data-art-fallback]").boundingBox())!;
+      expect(Math.abs(f.x + f.width / 2 - width / 2)).toBeLessThanOrEqual(1);
       expect(await storedTopics(page)).toBeNull();
       expect(await primaries(page)).toBe(1);
       await page.getByRole("button", { name: "Choose another file" }).click();
@@ -422,7 +442,8 @@ for (const width of [360, 430]) {
       await expect(page.getByRole("heading", { name: "Draft is ready" })).toBeVisible({
         timeout: 1500,
       });
-      await expect(page.locator("[data-stage=done]")).toHaveCount(5);
+      await expect(page.locator("[data-stages]")).toHaveCount(0);
+      await expect(page.locator("[data-summary]")).toBeVisible();
     });
 
     test("stage changes are announced in a polite live region", async ({ page }) => {
@@ -433,6 +454,25 @@ for (const width of [360, 430]) {
       await expect(live).toHaveAttribute("aria-live", "polite");
       await expect(live).toHaveText(/Reading the text/);
       await expect(live).toHaveText(/Finding guide sections/, { timeout: 3000 });
+    });
+
+    test("when a picture is missing the neutral icon shows instead, centred, while reading and when finished", async ({
+      page,
+    }) => {
+      await page.route("**/images/instructor/import-*.webp", (route) => route.abort());
+      await page.goto("/instructor/content/import");
+      await choose(page, `${FIXTURES}clean.xlsx`);
+      await page.locator("[data-image-input]").setInputFiles(PICTURES);
+      await importButton(page).click();
+      await expect(page.locator("[data-art-fallback]")).toBeVisible();
+      await expect(page.locator("[data-art]")).toHaveCount(0);
+      const f = (await page.locator("[data-art-fallback]").boundingBox())!;
+      expect(Math.abs(f.x + f.width / 2 - width / 2)).toBeLessThanOrEqual(1);
+      await expect(page.getByRole("heading", { name: "Draft is ready" })).toBeVisible({
+        timeout: 8000,
+      });
+      await expect(page.locator("[data-art-fallback]")).toBeVisible();
+      expect(await noSidewaysScroll(page)).toBe(true);
     });
 
     test("the topic menu: Edit title and summary saves plain text; Delete topic asks first", async ({

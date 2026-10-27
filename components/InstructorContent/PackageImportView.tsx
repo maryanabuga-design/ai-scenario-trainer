@@ -1,9 +1,9 @@
 "use client";
 
-import { ChevronDown, Download, FileSpreadsheet, ListChecks, Sparkles, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { FileSpreadsheet, X } from "lucide-react";
+import { useRef } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
-import { Button } from "@/components/Button/Button";
+import { Button, ButtonLink } from "@/components/Button/Button";
 import { Amber } from "@/components/InstructorContent/Amber";
 import { Notice } from "@/components/Notice/Notice";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
@@ -12,24 +12,11 @@ import { sizeText } from "@/lib/content-import";
 export const CHOOSE_TITLE = "Choose a document";
 export const CHOOSE_HELP = "Excel (.xlsx), up to 10 MB";
 export const IMAGES_LINE = "You can also add them later.";
-/** Two equal outlined tertiary actions in one row: white, 1px border, radius 14, 44px, one line, no underline. */
-const rowButton =
-  "type-button flex min-h-11 min-w-0 flex-1 basis-0 items-center justify-center gap-2 rounded-button border border-selectable-stroke bg-card px-3 whitespace-nowrap text-primary focus-visible:outline-2";
 export const ACCEPT = ".xlsx";
 export const IMAGE_ACCEPT = ".png,.jpg,.jpeg,.webp";
 
 export const HELPER =
   "Upload one Excel document. We will read it and prepare a draft topic for you to review.";
-export const SECTION_LINE =
-  "Steps, scenario steps and questions name the guide section they are based on (Section column).";
-export const INCLUDE: { name: string; note: string }[] = [
-  { name: "Topic", note: "title and short description (required)" },
-  { name: "Guide", note: "the text people read, in numbered sections (required)" },
-  { name: "Steps", note: "short action lists (optional)" },
-  { name: "Scenario", note: "situations with four answers (optional)" },
-  { name: "Questions", note: "quiz questions (optional)" },
-];
-
 /**
  * A small "x" in the top-right corner of a card: a 28px neutral circle inside a 44px tap area that
  * extends inward, so nothing overlaps the text next to it.
@@ -55,8 +42,8 @@ function RemoveCorner({ label, onClick }: { label: string; onClick: () => void }
 
 /**
  * Import content (DESIGN.md: One document in, a draft topic out): ONE large card "Choose a document"
- * that becomes ONE file card (name, size, a corner x), the two compact buttons "Download blank template" and
- * "Try an example", the collapsed row "What to include", the optional images, plain messages
+ * that becomes ONE file card (name, size, a corner x), the two plain links "Download blank template" and
+ * "Try an example", the optional images, plain messages
  * under the file card, and the pinned Primary "Import and review" above Secondary "Cancel". Nothing
  * is uploaded: the document is read on this device.
  */
@@ -66,7 +53,6 @@ export function PackageImportView({
   images,
   imageMessage = "",
   notice = "",
-  includeOpen = false,
   onFile,
   onRemove,
   onSample,
@@ -82,8 +68,6 @@ export function PackageImportView({
   imageMessage?: string;
   /** Replace document: what the new document replaces. */
   notice?: string;
-  /** For the review page: "What to include" drawn open. */
-  includeOpen?: boolean;
   onFile: (file: File) => void;
   onRemove: () => void;
   onSample: () => void;
@@ -93,7 +77,6 @@ export function PackageImportView({
 }) {
   const input = useRef<HTMLInputElement>(null);
   const pictures = useRef<HTMLInputElement>(null);
-  const [open, setOpen] = useState(includeOpen);
   const canImport = file !== null && message === "";
   return (
     <div className="flex flex-col gap-6 pb-4">
@@ -157,69 +140,19 @@ export function PackageImportView({
           </button>
         )}
         {message && <Amber id="import-message">{message}</Amber>}
-        <div data-actions-row className="flex gap-3">
-          <a
+        <div data-actions-row className="-mx-3 flex items-center justify-between">
+          <ButtonLink
             href="/templates/guide-template.xlsx"
             download="guide-template.xlsx"
-            aria-label="Download blank template"
-            className={rowButton}
+            variant="tertiary"
+            wide={false}
           >
-            <Download size={18} strokeWidth={2} aria-hidden="true" className="shrink-0" />
-            <span>Blank template</span>
-          </a>
-          <button
-            type="button"
-            aria-label="Try an example"
-            onClick={onSample}
-            className={rowButton}
-          >
-            <Sparkles size={18} strokeWidth={2} aria-hidden="true" className="shrink-0" />
-            <span>Try an example</span>
-          </button>
+            Download blank template
+          </ButtonLink>
+          <Button variant="tertiary" onClick={onSample}>
+            Try an example
+          </Button>
         </div>
-      </section>
-
-      <section
-        aria-label="What to include"
-        className="rounded-card border border-selectable-stroke bg-card"
-      >
-        <button
-          type="button"
-          aria-expanded={open}
-          aria-controls="include-panel"
-          onClick={() => setOpen(!open)}
-          className="flex min-h-11 w-full items-center gap-3 px-[var(--gutter,1rem)] py-3 text-left focus-visible:outline-2"
-        >
-          <span
-            aria-hidden="true"
-            data-include-tile
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-tile-bg text-neutral-tile-ink"
-          >
-            <ListChecks size={20} strokeWidth={2} />
-          </span>
-          <span className="type-body-strong min-w-0 flex-1">What to include</span>
-          <ChevronDown
-            size={20}
-            aria-hidden="true"
-            className={`shrink-0 text-text-secondary ${open ? "rotate-180" : ""}`}
-          />
-        </button>
-        {open && (
-          <div id="include-panel" className="flex flex-col gap-3 px-[var(--gutter,1rem)] pb-4">
-            <ul className="flex flex-col gap-2">
-              {INCLUDE.map((part) => (
-                <li key={part.name} className="type-small text-text-secondary">
-                  <span className="type-body-strong text-text">{part.name}</span>
-                  {": "}
-                  {part.note}
-                </li>
-              ))}
-            </ul>
-            <p data-section-line className="type-small text-text-secondary">
-              {SECTION_LINE}
-            </p>
-          </div>
-        )}
       </section>
 
       {file && (

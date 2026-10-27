@@ -87,7 +87,7 @@ const importView = (extra: Partial<Parameters<typeof PackageImportView>[0]> = {}
 const doc = { name: "evacuation-guide.xlsx", size: 34_000 };
 
 describe("the import screen", () => {
-  it("empty: ONE large dashed card, the muted line, two compact buttons, a collapsed What to include, Import disabled", () => {
+  it("empty: ONE large dashed card, the muted line, two plain links, no What to include, Import disabled", () => {
     const html = importView();
     expect(html).toContain(">Import content</h1>");
     expect(html).toContain("Choose a document");
@@ -96,8 +96,7 @@ describe("the import screen", () => {
     expect(html).toContain('accept=".xlsx"');
     expect(html).not.toMatch(/multiple=""[^>]*data-file-input|data-file-input[^>]*multiple=""/);
     expect(html).toContain('href="/templates/guide-template.xlsx"');
-    expect(html).toContain('aria-expanded="false"');
-    expect(html).not.toContain('id="include-panel"');
+    expect(html).not.toMatch(/What to include|include-panel|aria-expanded/);
     expect(html).not.toContain("Images (optional)".toUpperCase());
     expect(html).not.toContain("CSV");
     expect(html).not.toContain('name="topic-summary"');
@@ -105,7 +104,7 @@ describe("the import screen", () => {
     expect(html.indexOf("Import and review")).toBeLessThan(html.indexOf(">Cancel<"));
   });
 
-  it("has the helper line in the header band and ONE row of two equal outlined tertiary buttons with icons", () => {
+  it("has the helper line in the header band and ONE row of two plain underlined links, edges aligned, no icons, border or fill", () => {
     const html = importView();
     const band = html.slice(html.indexOf("data-page-header-band"), html.indexOf("</h1>") + 700);
     expect(band).toContain(
@@ -115,54 +114,18 @@ describe("the import screen", () => {
     expect(band).toContain("text-text-secondary");
     expect(band).toContain("line-clamp-2");
     expect(html.indexOf("data-helper")).toBeGreaterThan(html.indexOf(">Import content</h1>"));
-    const row = html.slice(html.indexOf("data-actions-row"), html.indexOf("What to include"));
-    expect(row).toContain("Blank template");
-    expect(row).toContain("Try an example");
-    expect(row).toContain('aria-label="Download blank template"');
-    expect(row).toContain('aria-label="Try an example"');
+    const row = html.slice(html.indexOf("data-actions-row"), html.indexOf("</section>"));
+    expect(row).toContain("-mx-3 flex items-center justify-between");
+    expect(row).toMatch(/underline[^>]*>Download blank template</);
+    expect(row).toMatch(/underline[^>]*>Try an example</);
+    // the visible text is the accessible name: "Download blank template" and "Try an example"
     expect(row).toContain('href="/templates/guide-template.xlsx"');
-    expect(row).toContain("lucide-download");
-    expect(row).toContain("lucide-sparkles");
-    // equal widths, 44px, white with a 1px border, radius 14, one line, no underline, no tint fill
-    expect(row.match(/flex-1 basis-0/g)).toHaveLength(2);
     expect(row.match(/min-h-11/g)).toHaveLength(2);
-    expect(row.match(/bg-card/g)).toHaveLength(2);
-    expect(row.match(/border-selectable-stroke/g)).toHaveLength(2);
-    expect(row.match(/rounded-button/g)).toHaveLength(2);
-    expect(row.match(/whitespace-nowrap/g)).toHaveLength(2);
-    expect(row).toContain("gap-3");
-    expect(row).not.toMatch(/bg-olive-tint|underline/);
-    expect(html).not.toContain("Use sample document");
-  });
-
-  it("What to include starts with the round info tint tile, then the title, then the chevron", () => {
-    const html = importView();
-    const row = html.slice(html.indexOf('aria-controls="include-panel"'));
-    expect(row.indexOf("data-include-tile")).toBeLessThan(row.indexOf("What to include"));
-    expect(row.indexOf("What to include")).toBeLessThan(row.indexOf("lucide-chevron-down"));
-    expect(row).toContain("rounded-full bg-neutral-tile-bg");
-  });
-
-  it("What to include opens to five lines and the Section sentence; there is no question-set link", () => {
-    const html = importView({ includeOpen: true });
-    expect(html).toContain('aria-expanded="true"');
-    const panel = html.slice(html.indexOf('id="include-panel"'));
-    expect(panel.match(/<li /g)).toHaveLength(5);
-    for (const line of [
-      "Topic</span>: title and short description (required)",
-      "Guide</span>: the text people read, in numbered sections (required)",
-      "Steps</span>: short action lists (optional)",
-      "Scenario</span>: situations with four answers (optional)",
-      "Questions</span>: quiz questions (optional)",
-    ]) {
-      expect(panel, line).toContain(line);
-    }
-    expect(panel).toContain(
-      "Steps, scenario steps and questions name the guide section they are based on (Section column).",
+    expect(row).not.toMatch(
+      /<svg|bg-card|bg-olive-tint|border-selectable-stroke|rounded-button border/,
     );
-    expect(html).not.toContain("Only questions?");
-    expect(html).not.toContain("question set");
-    expect(html).not.toContain("/import/questions");
+    expect(row.indexOf("Download blank template")).toBeLessThan(row.indexOf("Try an example"));
+    expect(html).not.toMatch(/What to include|Blank template<|Use sample document/);
   });
 
   it("a file chosen: the dashed card is replaced by ONE file card with a corner x, the Images row appears, Import is enabled", () => {
@@ -240,14 +203,29 @@ describe("the analysing screen", () => {
       />,
     );
 
-  it("running: the file name, the title, five stages with states and the real results, the calm line, only Cancel", () => {
+  it("running: a centred 160px picture, the title, the file name, five compact stage rows with real results, the calm line, only Cancel", () => {
     const html = view();
-    expect(html).toContain(">Reading your document…</h1>");
+    expect(html).toContain("items-center gap-4 pt-6 pb-4 text-center");
+    expect(html).toContain('src="/images/instructor/import-analysing.webp"');
+    expect(html).toContain("h-40 w-40");
+    expect(html.indexOf("data-art")).toBeLessThan(html.indexOf(">Reading your document…</h1>"));
+    expect(html.indexOf(">Reading your document…</h1>")).toBeLessThan(
+      html.indexOf("data-file-name"),
+    );
+    expect(html.indexOf("data-file-name")).toBeLessThan(html.indexOf("data-stages"));
     expect(html).toContain("evacuation-guide.xlsx");
     for (const label of STAGES) expect(html).toContain(label);
+    expect(html).toContain("w-full max-w-[360px]");
     expect(html.match(/data-stage="done"/g)).toHaveLength(2);
     expect(html.match(/data-stage="current"/g)).toHaveLength(1);
     expect(html.match(/data-stage="waiting"/g)).toHaveLength(2);
+    // done: a check in a round success tile; current: a spinner and a static dot for reduced motion
+    expect(html.match(/rounded-full bg-status-success-bg text-status-success-ink/g)).toHaveLength(
+      2,
+    );
+    expect(html).toContain("animate-spin motion-reduce:hidden");
+    expect(html).toContain("data-static-dot");
+    expect(html).toContain("motion-reduce:block");
     expect(html).toContain("5 sheets read");
     expect(html).toContain("4 found");
     expect(html).not.toContain("10 questions");
@@ -258,11 +236,42 @@ describe("the analysing screen", () => {
     expect(html.match(/h-\[52px\] bg-primary/g)).toBeNull();
   });
 
-  it("finished: Draft is ready with the counts, Primary Review N items over Secondary Back to Content", () => {
+  it("finished: the stage rows collapse, the success picture, a summary card with a badge, the counts and the Links to the guide row", () => {
     const html = view({ phase: "finished", done: 5, reviewCount: 6 });
     expect(html).toContain(">Draft is ready</h1>");
-    expect(html).toContain("Guide sections");
-    expect(html.match(/data-stage="done"/g)).toHaveLength(5);
+    expect(html).toContain('src="/images/instructor/import-success.webp"');
+    expect(html).not.toContain("data-stages");
+    expect(html).not.toContain("data-stage=");
+    const card = html.slice(html.indexOf("data-summary"));
+    expect(card).toContain("rounded-[14px] border border-selectable-stroke bg-card");
+    expect(card).toContain("max-w-[360px]");
+    // the badge: a white check on success green, centred on the top edge, half outside, aria-hidden
+    const badge = card.slice(
+      card.indexOf("data-badge") - 40,
+      card.indexOf("</span>", card.indexOf("data-badge")),
+    );
+    expect(badge).toContain('aria-hidden="true"');
+    expect(badge).toContain("bg-status-success-ink");
+    expect(badge).toContain("text-white");
+    expect(badge).toContain("top-0 left-1/2");
+    expect(badge).toContain("-translate-x-1/2 -translate-y-1/2");
+    expect(badge).toContain("lucide-check");
+    // the rows: muted label on the left, a bold number on the right
+    for (const [label, value] of [
+      ["Guide sections", 4],
+      ["Steps", 7],
+      ["Scenario steps", 4],
+      ["Questions", 10],
+    ]) {
+      expect(card).toMatch(
+        new RegExp(`text-text-secondary">${label}</dt><dd class="type-body-strong">${value}</dd>`),
+      );
+    }
+    const links = card.slice(card.indexOf("data-links-row"));
+    expect(links).toContain("Links to the guide");
+    expect(links).toContain("lucide-check");
+    expect(links).toContain("all linked");
+    expect(view({ phase: "finished", done: 5, linkProblems: 3 })).toContain("3 need attention");
     expect(html).toMatch(/h-\[52px\] bg-primary[^>]*>Review 6 items</);
     expect(html).toMatch(/bg-olive-tint[^>]*>Back to Content</);
     expect(html.match(/h-\[52px\] bg-primary/g)).toHaveLength(1);
@@ -275,23 +284,36 @@ describe("the analysing screen", () => {
     expect(html).not.toContain("Review 0");
   });
 
-  it("partial: the missing part sentence, Primary Continue over Secondary Choose another file", () => {
+  it("partial: centred with the neutral icon, the missing part sentence, Primary Continue over Secondary Choose another file", () => {
     const html = view({
       phase: "partial",
       done: 5,
       partialLine: "We could not find questions in this document.",
     });
+    expect(html).toContain("text-center");
+    expect(html).toContain("data-art-fallback");
+    expect(html).not.toContain("data-art ");
     expect(html).toContain("We could not find questions in this document.");
     expect(html).toMatch(/h-\[52px\] bg-primary[^>]*>Continue</);
     expect(html).toMatch(/bg-olive-tint[^>]*>Choose another file</);
   });
 
-  it("error: the plain sentence, Primary Choose another file over Secondary Cancel, no stages", () => {
+  it("error: centred with the neutral icon, the plain sentence, Primary Choose another file over Secondary Cancel, no stages", () => {
     const html = view({ phase: "error", done: 0 });
+    expect(html).toContain("data-art-fallback");
     expect(html).toContain("We could not read this file. Try another file.");
     expect(html).toMatch(/h-\[52px\] bg-primary[^>]*>Choose another file</);
     expect(html).toMatch(/bg-olive-tint[^>]*>Cancel</);
     expect(html).not.toContain("data-stages");
+  });
+
+  it("the two pictures exist as 640px webp files; the success one has an alpha channel", () => {
+    for (const name of ["import-analysing", "import-success"]) {
+      const bytes = readFileSync(`public/images/instructor/${name}.webp`);
+      expect(bytes.subarray(0, 4).toString()).toBe("RIFF");
+      expect(bytes.subarray(8, 12).toString()).toBe("WEBP");
+      expect(bytes.length).toBeLessThan(80 * 1024);
+    }
   });
 });
 
