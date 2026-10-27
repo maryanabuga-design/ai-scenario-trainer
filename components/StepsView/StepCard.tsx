@@ -18,7 +18,6 @@ export function StepCard({
   onToggleOpen,
   footer,
   flag,
-  edit,
 }: {
   step: Step;
   index: number;
@@ -28,35 +27,30 @@ export function StepCard({
   footer?: ReactNode;
   /** Always visible under the header, even while the step is closed (a flagged step of a demo topic). */
   flag?: ReactNode;
-  /** A control inside the header row, left of the chevron on the same centre line (the pencil of a demo topic's step). */
-  edit?: ReactNode;
 }) {
   const headerId = `${step.id}-header`;
   const panelId = `${step.id}-panel`;
   return (
     <li className="relative overflow-hidden rounded-card border border-selectable-stroke bg-card">
-      <div className="relative">
-        <button
-          type="button"
-          id={headerId}
-          aria-expanded={open}
-          aria-controls={panelId}
-          onClick={onToggleOpen}
-          className="flex min-h-11 w-full items-center gap-3 p-[var(--gutter,1rem)] text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
-        >
-          <span className={`flex min-w-0 flex-1 flex-col gap-0.5 ${edit ? "pr-[52px]" : ""}`}>
-            <span className="type-label text-step-caption">Step {index + 1}</span>
-            <span className="type-body-strong text-text">{step.title}</span>
-          </span>
-          <ChevronDown
-            size={20}
-            strokeWidth={2}
-            aria-hidden="true"
-            className={`shrink-0 text-text transition-transform duration-200 motion-reduce:transition-none ${open ? "rotate-180" : ""}`}
-          />
-        </button>
-        {edit}
-      </div>
+      <button
+        type="button"
+        id={headerId}
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={onToggleOpen}
+        className="flex min-h-11 w-full items-center gap-3 p-[var(--gutter,1rem)] text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
+      >
+        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className="type-label text-step-caption">Step {index + 1}</span>
+          <span className="type-body-strong text-text">{step.title}</span>
+        </span>
+        <ChevronDown
+          size={20}
+          strokeWidth={2}
+          aria-hidden="true"
+          className={`shrink-0 text-text transition-transform duration-200 motion-reduce:transition-none ${open ? "rotate-180" : ""}`}
+        />
+      </button>
       {flag && <div className="px-[var(--gutter,1rem)] pb-[var(--gutter,1rem)]">{flag}</div>}
       <div
         id={panelId}

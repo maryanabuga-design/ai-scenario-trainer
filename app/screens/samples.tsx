@@ -1900,6 +1900,8 @@ export function PackageSample({
     | "analysing-error"
     | "topic-guide"
     | "topic-steps"
+    | "topic-steps-open"
+    | "published-steps"
     | "topic-scenario"
     | "topic-quiz"
     | "topic-clean"
@@ -2010,6 +2012,7 @@ export function PackageSample({
     tab: "guide" | "steps" | "scenario" | "quiz",
     dialog: "publish" | null = null,
     menuOpen = false,
+    stepOpen = false,
   ) => (
     <PackageTopicView
       topic={topic}
@@ -2027,6 +2030,7 @@ export function PackageSample({
       onReplace={noop}
       dialogInline
       menuOpen={menuOpen}
+      stepOpen={stepOpen}
     />
   );
   // one question is waiting for "Mark as OK": its guide section was matched automatically
@@ -2088,6 +2092,8 @@ export function PackageSample({
   if (state === "topic-menu") return topicView(good, "guide", null, true);
   if (state === "topic-guide") return topicView(bad, "guide");
   if (state === "topic-steps") return topicView(bad, "steps");
+  if (state === "topic-steps-open") return topicView(good, "steps", null, false, true);
+  if (state === "published-steps") return topicView({ ...good, status: "published" }, "steps");
   if (state === "topic-scenario") return topicView(bad, "scenario");
   if (state === "topic-quiz") return topicView(bad, "quiz");
   if (state === "topic-clean") return topicView(good, "guide");

@@ -3,6 +3,7 @@
 import { FileText, Pencil } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Chevron } from "@/components/Chevron/Chevron";
 import { useState } from "react";
 import { ButtonLink } from "@/components/Button/Button";
 import { Chip } from "@/components/Chip/Chip";
@@ -121,6 +122,25 @@ export function PencilButton({
 }
 
 /**
+ * "Edit step" (DESIGN.md: Edit pattern): the tertiary outlined button that ends an expanded step, so
+ * the collapsed row has one control only. White, 1px border, radius 14, 44px high, a pencil and the
+ * label, left aligned, no underline.
+ */
+export function EditStepLink({ href, label }: { href: string; label: string }) {
+  return (
+    <Link
+      href={href}
+      aria-label={label}
+      data-edit-step
+      className="type-button inline-flex min-h-11 items-center gap-2 rounded-button border border-selectable-stroke bg-card px-4 text-primary focus-visible:outline-2"
+    >
+      <Pencil size={16} strokeWidth={2.25} aria-hidden="true" />
+      <span>Edit step</span>
+    </Link>
+  );
+}
+
+/**
  * A note about a whole part (section numbers that are not consecutive, more than ten steps): it has
  * no item of its own, so it shows once at the top of its tab with the underlined link "Replace document".
  */
@@ -206,13 +226,16 @@ export function ChecklistCards({
   issues = [],
   guideHref,
   editHref,
+  initialOpen = null,
 }: {
   data: PackageData;
   issues?: Issue[];
   guideHref: (section: string) => string;
   editHref?: (key: string) => string;
+  /** For the screen review page: a step drawn open ("0-0"). */
+  initialOpen?: string | null;
 }) {
-  const [open, setOpen] = useState<string | null>(null);
+  const [open, setOpen] = useState<string | null>(initialOpen);
   return (
     <div className="flex flex-col gap-6">
       {(data.steps ?? []).map((list, li) => (
@@ -243,18 +266,15 @@ export function ChecklistCards({
                           href={guideHref(step.guideRef.trim())}
                         />
                       )}
+                      {editHref && (
+                        <EditStepLink
+                          href={editHref(key)}
+                          label={`Edit step ${step.step || si + 1} of ${list.title}`}
+                        />
+                      )}
                     </div>
                   }
                   flag={flagged ? <IssuePill issues={issues} itemKey={key} /> : undefined}
-                  edit={
-                    editHref ? (
-                      <PencilButton
-                        href={editHref(key)}
-                        label={`Edit step ${step.step || si + 1} of ${list.title}`}
-                        className="absolute top-1/2 right-[38px] -translate-y-1/2"
-                      />
-                    ) : undefined
-                  }
                 />
               );
             })}
@@ -357,7 +377,7 @@ export function QuizRows({
             data-quiz-row={index}
             className={`${card} relative flex flex-col gap-2 p-3`}
           >
-            <div className={`flex min-h-12 items-start gap-3 ${editHref ? "pr-10" : ""}`}>
+            <div className={`flex min-h-12 items-start gap-3 ${editHref ? "pr-8" : ""}`}>
               <span
                 aria-hidden="true"
                 className="type-caption-strong flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full bg-olive-tint px-2"
@@ -370,14 +390,32 @@ export function QuizRows({
             </div>
             <div className="flex flex-col items-start gap-2 pl-12">
               {question.guideRef.trim() !== "" && (
-                <GuidePill
-                  section={question.guideRef.trim()}
-                  href={guideHref(question.guideRef.trim())}
-                />
+                <span className={editHref ? "relative z-10" : undefined}>
+                  <GuidePill
+                    section={question.guideRef.trim()}
+                    href={guideHref(question.guideRef.trim())}
+                  />
+                </span>
               )}
               <IssuePill issues={issues} itemKey={key} />
             </div>
-            {editHref && <PencilButton href={editHref(key)} label={`Edit question ${index + 1}`} />}
+            {editHref && (
+              <>
+                {/* the whole row opens the edit screen; the guide pill stays above it */}
+                <Link
+                  href={editHref(key)}
+                  aria-label={`Edit question ${index + 1}`}
+                  data-quiz-open
+                  className="absolute inset-0 rounded-card focus-visible:outline-2"
+                />
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute top-1/2 right-0 -translate-y-1/2"
+                >
+                  <Chevron />
+                </span>
+              </>
+            )}
           </li>
         );
       })}

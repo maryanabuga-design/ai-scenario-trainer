@@ -50,6 +50,19 @@ async function importFiles(page: Page, files: string[]) {
   await expect(page.locator("[data-package-status]")).toBeVisible();
 }
 
+/** The visible Primary buttons (52px, olive): a screen has at most one. */
+const primaries = (page: Page) =>
+  page
+    .locator("button:visible, a:visible")
+    .evaluateAll(
+      (nodes) =>
+        nodes.filter(
+          (el) =>
+            getComputedStyle(el).backgroundColor === "rgb(63, 70, 56)" &&
+            el.getBoundingClientRect().height >= 52,
+        ).length,
+    );
+
 const topicId = (page: Page) => /package\/([a-z0-9]+)/.exec(page.url())![1];
 
 async function asStudent(page: Page) {
@@ -91,7 +104,7 @@ for (const width of [360, 430]) {
       await expect(page.getByRole("radio", { name: "Steps, 2 to review" })).toHaveCount(1);
       await expect(page.getByRole("radio", { name: "Quiz, 4 to review" })).toHaveCount(1);
       expect((await page.getByRole("radiogroup").boundingBox())!.height).toBeLessThan(60);
-      // item cards: one small pill (the attention style), a pencil on every card, no To fix lists
+      // item cards: one small pill (the attention style), no To fix lists
       await page.getByRole("radio", { name: /^Steps/ }).click({ force: true });
       const pills = page.locator("[data-issue-pill]:visible");
       await expect(pills).toHaveCount(2);
@@ -99,15 +112,13 @@ for (const width of [360, 430]) {
       await expect(pills.nth(1)).toHaveText("No action");
       expect(await bg(pills.first())).toBe(ATTENTION_BG);
       await expect(page.getByText("To fix", { exact: true })).toHaveCount(0);
-      await expect(page.locator("[data-pencil]:visible")).toHaveCount(7);
-      for (const pencil of await page.locator("[data-pencil]:visible").all()) {
-        const box = (await pencil.boundingBox())!;
-        expect([box.width, box.height]).toEqual([44, 44]);
-      }
+      // a step row only expands: no pencil on it
+      await expect(page.locator("[data-pencil]:visible")).toHaveCount(0);
       await page.getByRole("radio", { name: /^Quiz/ }).click({ force: true });
       await expect(page.locator("[data-issue-pill]:visible")).toHaveCount(4);
-      await expect(page.locator("[data-pencil]:visible")).toHaveCount(10);
-      await expect(page.getByRole("link", { name: "Edit question", exact: true })).toHaveCount(0);
+      // a question row opens its edit screen itself: no pencil
+      await expect(page.locator("[data-pencil]:visible")).toHaveCount(0);
+      await expect(page.locator("[data-quiz-open]:visible")).toHaveCount(10);
       // pinned area: ONE Primary "Review 6 items" over the Secondary Preview; no Publish, no Delete
       await expect(page.getByRole("button", { name: "Review 6 items" })).toBeVisible();
       expect(await bg(page.getByRole("button", { name: "Review 6 items" }))).toBe(
@@ -258,26 +269,31 @@ for (const width of [360, 430]) {
       expect(await noSidewaysScroll(page)).toBe(true);
     });
 
-    test("the pencil sits inside its card in the corner on the Guide, Steps, Scenario and Quiz tabs, never over the text", async ({
+    test("one row, one main action: corner pencils only on guide and scenario cards, Edit step inside the expanded step, quiz rows open their edit screen", async ({
       page,
     }) => {
       await importFiles(page, CLEAN);
       const base = page.url().split("?")[0];
-      for (const tab of ["Guide", "Steps", "Scenario", "Quiz"]) {
-        await page.goto(`${base}?tab=${tab === "Quiz" ? "quiz" : tab.toLowerCase()}`);
-        await expect(page.locator("[data-pencil]:visible").first()).toBeVisible();
-        await page.waitForTimeout(300);
+      const open = async (tab: string) => {
+        await page.goto(`${base}?tab=${tab}`);
+        await page.waitForTimeout(400);
+      };
+      // Guide and Scenario: the corner pencil inside the card, 12px in, never over the text
+      for (const [tab, host] of [
+        ["guide", "[data-guide-section]"],
+        ["scenario", "[data-situation-card]"],
+      ] as const) {
+        await open(tab);
         const count = await page.locator("[data-pencil]:visible").count();
         expect(count, tab).toBeGreaterThan(0);
         for (let i = 0; i < count; i++) {
           const pencil = page.locator("[data-pencil]:visible").nth(i);
           await pencil.scrollIntoViewIfNeeded();
-          const m = await pencil.evaluate((el) => {
-            const rect = (node: Element) => node.getBoundingClientRect();
-            const area = rect(el);
-            const tile = rect(el.querySelector("span")!);
-            const host = el.closest("[data-situation-card], li")!;
-            const card = rect(host);
+          const m = await pencil.evaluate((el, selector) => {
+            const area = el.getBoundingClientRect();
+            const tile = el.querySelector("span")!.getBoundingClientRect();
+            const card = el.closest(selector)!.getBoundingClientRect();
+            const host = el.closest(selector)!;
             const walker = document.createTreeWalker(host, NodeFilter.SHOW_TEXT);
             let overlap = false;
             for (let node = walker.nextNode(); node; node = walker.nextNode()) {
@@ -300,43 +316,93 @@ for (const width of [360, 430]) {
               tile: [tile.width, tile.height],
               right: card.right - tile.right,
               top: tile.top - card.top,
-              inside: tile.left >= card.left && tile.right <= card.right && tile.top >= card.top,
-              centreY: tile.top + tile.height / 2,
-              cardTop: card.top,
               overlap,
-              host: host.tagName,
+              chevron: host.querySelectorAll("svg.lucide-chevron-right, svg.lucide-chevron-down")
+                .length,
             };
-          });
+          }, host);
           expect(m.area, tab).toEqual([44, 44]);
           expect(m.tile, tab).toEqual([32, 32]);
-          expect(m.inside, `${tab} ${i} inside`).toBe(true);
+          expect([12, 13], tab).toContain(Math.round(m.right));
+          expect([12, 13], tab).toContain(Math.round(m.top));
           expect(m.overlap, `${tab} ${i} text under the pencil`).toBe(false);
-          if (tab !== "Steps") {
-            // 12px from the inner edge of the card; the 1px border makes it 12 or 13 from the outer edge
-            expect([12, 13]).toContain(Math.round(m.right));
-            expect([12, 13]).toContain(Math.round(m.top));
-          }
+          expect(m.chevron, `${tab} ${i}: a pencil and a chevron on one card`).toBe(0);
         }
         expect(await noSidewaysScroll(page), tab).toBe(true);
-        if (tab === "Scenario") {
-          // the STEP label stays above its situation card
-          const label = (await page.getByText("STEP 1").first().boundingBox())!;
-          const sit = (await page.locator("[data-situation-card]").first().boundingBox())!;
-          expect(label.y + label.height).toBeLessThanOrEqual(sit.y);
-        }
-        if (tab === "Steps") {
-          // a step card: the pencil is left of the chevron on the same centre line
-          const first = page.locator("[data-pencil]:visible").first();
-          const chevron = first
-            .locator("xpath=ancestor::li[1]")
-            .locator("svg.lucide-chevron-down")
-            .first();
-          const p = (await first.locator("span").boundingBox())!;
-          const c = (await chevron.boundingBox())!;
-          expect(p.x + p.width).toBeLessThanOrEqual(c.x);
-          expect(Math.abs(p.y + p.height / 2 - (c.y + c.height / 2))).toBeLessThanOrEqual(1);
-        }
       }
+      await open("scenario");
+      const label = (await page.getByText("STEP 1").first().boundingBox())!;
+      const sit = (await page.locator("[data-situation-card]").first().boundingBox())!;
+      expect(label.y + label.height).toBeLessThanOrEqual(sit.y);
+
+      // Steps: no pencil; the collapsed row has the chevron only; Edit step is inside the expanded step
+      await open("steps");
+      await expect(page.locator("[data-pencil]:visible")).toHaveCount(0);
+      await expect(page.locator("[data-edit-step]:visible")).toHaveCount(0);
+      const header = page.locator("main ol li button[aria-expanded]:visible").first();
+      const row = header.locator("xpath=ancestor::li[1]");
+      await expect(row.locator("a:visible").first()).toHaveCount(0);
+      const chevron = (await header.locator("svg").boundingBox())!;
+      const box = (await header.boundingBox())!;
+      expect(
+        Math.abs(chevron.y + chevron.height / 2 - (box.y + box.height / 2)),
+      ).toBeLessThanOrEqual(1);
+      await header.click();
+      const edit = row.locator("[data-edit-step]");
+      await expect(edit).toBeVisible();
+      const e = (await edit.boundingBox())!;
+      expect(e.height).toBe(44);
+      expect(await bg(edit)).toBe("rgb(255, 255, 255)");
+      expect(
+        await edit.evaluate((el) => {
+          const css = getComputedStyle(el);
+          return [css.borderTopWidth, css.borderTopColor, css.borderRadius, css.textDecorationLine];
+        }),
+      ).toEqual(["1px", "rgb(228, 223, 213)", "14px", "none"]);
+      await expect(edit).toHaveText("Edit step");
+      expect(await primaries(page)).toBeLessThanOrEqual(1);
+      expect(await noSidewaysScroll(page)).toBe(true);
+      await edit.click();
+      await expect(page).toHaveURL(/\/edit\/steps-0-0$/);
+      await expect(page.locator("[data-page-header-band]:visible")).toContainText("Step 1 of");
+      await page.goBack();
+
+      // Quiz: the whole row opens its edit screen; no pencil; the guide pill stays a guide link
+      await open("quiz");
+      await expect(page.locator("[data-pencil]:visible")).toHaveCount(0);
+      const quizRow = page.locator("[data-quiz-row]:visible").first();
+      const q = (await quizRow.boundingBox())!;
+      expect(q.height).toBeGreaterThanOrEqual(44);
+      await expect(quizRow.locator("svg.lucide-chevron-right")).toHaveCount(1);
+      await quizRow.locator("[data-quiz-open]").click({ position: { x: 40, y: 8 } });
+      await expect(page).toHaveURL(/\/edit\/questions-0$/);
+      await page.goBack();
+      await open("quiz");
+      await page.locator("[data-quiz-row]:visible").first().locator("[data-guide-pill]").click();
+      await expect(page).toHaveURL(/tab=guide/);
+    });
+
+    test("a published topic is read-only: no pencils, no Edit step buttons, no editing rows on any tab", async ({
+      page,
+    }) => {
+      await importFiles(page, CLEAN);
+      const base = page.url().split("?")[0];
+      await page.getByRole("button", { name: "Publish", exact: true }).click();
+      await page.getByRole("dialog").getByRole("button", { name: "Publish", exact: true }).click();
+      await expect(page.getByRole("button", { name: "Unpublish" })).toBeVisible();
+      for (const tab of ["guide", "steps", "scenario", "quiz"]) {
+        await page.goto(`${base}?tab=${tab}`);
+        await page.waitForTimeout(300);
+        if (tab === "steps")
+          await page.locator("main ol li button[aria-expanded]:visible").first().click();
+        await expect(
+          page.locator("[data-pencil], [data-edit-step], [data-quiz-open]"),
+          tab,
+        ).toHaveCount(0);
+        expect(await noSidewaysScroll(page), tab).toBe(true);
+      }
+      // one Primary: Preview as student
+      expect(await primaries(page)).toBe(1);
     });
 
     test("Please confirm: a neutral pill, Review 1 item, Mark as OK clears it and the topic can be published", async ({

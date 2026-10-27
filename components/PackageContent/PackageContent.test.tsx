@@ -342,6 +342,14 @@ describe("the review screen", () => {
     expect(html).toContain("data-pencil");
   });
 
+  it("a published topic is read-only: no pencils, no Edit step buttons and no editing rows on any tab", () => {
+    const published = { ...topic, status: "published" as const };
+    for (const tab of ["guide", "steps", "scenario", "quiz"] as const) {
+      const html = render({ topic: published, tab });
+      expect(html, tab).not.toMatch(/data-pencil|data-edit-step|data-quiz-open|Edit /);
+    }
+  });
+
   it("with issues: ONE notice with the number of items to review and the items per part", () => {
     const html = render({ topic: bad });
     expect(flaggedItems(checkPackage(bad))).toHaveLength(6);
@@ -375,13 +383,16 @@ describe("the review screen", () => {
     expect(steps).not.toContain(">To fix<");
     expect(steps).not.toContain("Edit question");
     expect(steps).not.toContain("Replace files</span></a></div><p");
-    // a pencil on every step card, named after the step, at least 44px
-    expect(steps.match(/data-pencil/g)).toHaveLength(7);
+    // a step row only expands: no pencil; "Edit step" is in the expanded content, named after the step
+    expect(steps).not.toContain("data-pencil");
+    expect(steps.match(/data-edit-step/g)).toHaveLength(7);
     expect(steps).toContain('aria-label="Edit step 3 of When the alarm sounds"');
-    expect(steps).toMatch(/data-pencil[^>]*h-11 w-11/);
+    expect(steps).toMatch(/data-edit-step[^>]*min-h-11/);
     const quiz = render({ topic: bad, tab: "quiz" });
     expect(quiz.match(/data-issue-pill=/g)).toHaveLength(4);
-    expect(quiz.match(/data-pencil/g)).toHaveLength(10);
+    // a question row opens its edit screen itself: no pencil
+    expect(quiz).not.toContain("data-pencil");
+    expect(quiz.match(/data-quiz-open/g)).toHaveLength(10);
     expect(quiz).toContain('aria-label="Edit question 4"');
     expect(quiz).toContain(`href="/instructor/content/package/${bad.id}/edit/questions-3"`);
     // no yellow card background on an item
@@ -701,7 +712,7 @@ describe("the corner pencil", () => {
   const pencils = [...html.matchAll(/<a [^>]*data-pencil[^>]*>[\s\S]*?<\/a>/g)].map((m) => m[0]);
 
   it("is one shared component: a 32px sand tile in a 44px tap area, labelled Edit <item>", () => {
-    expect(pencils.length).toBe(4 + 7 + 4 + 10);
+    expect(pencils.length).toBe(4 + 4);
     for (const pencil of pencils) {
       expect(pencil).toContain("h-11 w-11");
       expect(pencil).toContain("h-8 w-8");
@@ -711,7 +722,7 @@ describe("the corner pencil", () => {
   });
 
   it("sits 12px inside the corner (6px offsets for the 44px area) on guide, scenario and quiz cards", () => {
-    for (const label of ["Edit Guide section 1", "Edit scenario step 1", "Edit question 1"]) {
+    for (const label of ["Edit Guide section 1", "Edit scenario step 1"]) {
       const pencil = pencils.find((p) => p.includes(`aria-label="${label}"`))!;
       expect(pencil, label).toContain("absolute top-[6px] right-[6px]");
     }
@@ -727,12 +738,39 @@ describe("the corner pencil", () => {
     expect(step.indexOf("STEP 1")).toBeLessThan(step.indexOf("data-situation-card"));
   });
 
-  it("the step pencil shares the chevron's centre line, to the left of it, inside the header row", () => {
-    const pencil = pencils.find((p) => p.includes("Edit step 1"))!;
-    expect(pencil).toContain("top-1/2");
-    expect(pencil).toContain("-translate-y-1/2");
-    expect(pencil).toContain("right-[38px]");
-    const card = html.slice(html.indexOf('aria-expanded="false"'));
-    expect(card).toContain("pr-[52px]");
+  it("no row has a pencil together with a chevron or an expand control", () => {
+    const steps = html.slice(html.indexOf("data-checklist"), html.indexOf("data-scenario-step"));
+    expect(steps).toContain('aria-expanded="false"');
+    expect(steps).not.toContain("data-pencil");
+    const quiz = html.slice(html.indexOf("data-quiz-row"));
+    expect(quiz).not.toContain("data-pencil");
+    // the pencils left are on the guide sections (4) and the scenario situation cards (4)
+    expect(pencils).toHaveLength(8);
+    expect(pencils.every((p) => /aria-label="Edit (Guide section|scenario step) /.test(p))).toBe(
+      true,
+    );
+  });
+
+  it("Edit step is a tertiary outlined button inside the expandable panel: white, 1px border, radius 14, 44px, a pencil and the label", () => {
+    const panel = html.slice(html.indexOf('role="region"'));
+    const at = panel.indexOf("data-edit-step");
+    const button = panel.slice(panel.lastIndexOf("<a ", at), panel.indexOf("</a>", at));
+    expect(button).toContain("data-edit-step");
+    expect(button).toContain("min-h-11");
+    expect(button).toContain("bg-card");
+    expect(button).toContain("border-selectable-stroke");
+    expect(button).toContain("rounded-button");
+    expect(button).toContain("lucide-pencil");
+    expect(button).toContain(">Edit step<");
+    expect(button).not.toMatch(/underline|bg-olive-tint/);
+    expect(html.indexOf("inert")).toBeGreaterThan(-1);
+  });
+
+  it("a quiz row opens the edit screen from the whole row, with a chevron, and the guide pill stays clickable above it", () => {
+    const quiz = html.slice(html.indexOf("data-quiz-row"));
+    expect(quiz).toContain('href="/edit/questions:0"');
+    expect(quiz).toContain("absolute inset-0");
+    expect(quiz).toContain("lucide-chevron-right");
+    expect(quiz).toContain("relative z-10");
   });
 });

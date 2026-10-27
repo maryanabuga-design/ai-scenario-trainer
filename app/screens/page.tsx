@@ -1070,6 +1070,16 @@ export default function Screens() {
               <PackageSample files={packageFiles} state="topic-steps" />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Edit pattern: a step expanded (Edit step at the end, no pencil)">
+            <Screen>
+              <PackageSample files={packageFiles} state="topic-steps-open" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Edit pattern: a published topic, Steps tab (read-only, no edit controls)">
+            <Screen>
+              <PackageSample files={packageFiles} state="published-steps" />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Content package review: Scenario tab with issues">
             <Screen>
               <PackageSample files={packageFiles} state="topic-scenario" />

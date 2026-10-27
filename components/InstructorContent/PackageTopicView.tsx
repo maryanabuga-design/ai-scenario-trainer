@@ -69,6 +69,7 @@ export function PackageTopicView({
   onReplace,
   dialogInline = false,
   menuOpen = false,
+  stepOpen = false,
 }: {
   topic: DemoTopic;
   tab: PathPart;
@@ -90,6 +91,8 @@ export function PackageTopicView({
   dialogInline?: boolean;
   /** For the review page: the "⋯" menu drawn open. */
   menuOpen?: boolean;
+  /** For the review page: the first step drawn open. */
+  stepOpen?: boolean;
 }) {
   const [closed, setClosed] = useState(false);
   const present = partsOf(topic);
@@ -97,10 +100,11 @@ export function PackageTopicView({
   const own = issuesOfPart(issues, tab);
   const base = `/instructor/content/package/${topic.id}`;
   const guideHref = (section: string) => `${base}?tab=guide#section-${section}`;
-  const editHref = (key: string) => `${base}/edit/${keySlug(key)}`;
+  const published = topic.status === "published";
+  // a published topic is read-only: no pencils, no Edit buttons, no editing rows
+  const editHref = published ? undefined : (key: string) => `${base}/edit/${keySlug(key)}`;
   const replaceHref = `/instructor/content/import?replace=${topic.id}`;
   const coverage = coverageLine(topic);
-  const published = topic.status === "published";
   const toReview = flagged.length > 0;
   // notes about a whole part (no item of their own) show once at the top of their tab
   const partNotes = own.filter((issue) => issue.key.endsWith(":all"));
@@ -207,6 +211,7 @@ export function PackageTopicView({
               issues={issues}
               guideHref={guideHref}
               editHref={editHref}
+              initialOpen={stepOpen ? "0-0" : null}
             />
           )}
           {tab === "scenario" && (
