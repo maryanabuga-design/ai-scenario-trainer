@@ -72,36 +72,55 @@ for (const width of [360, 430]) {
       expect(await noSidewaysScroll(page)).toBe(true);
     });
 
-    test("the helper line and the two equal compact buttons: same width, 44px or more, no overflow, wrapping instead of truncating", async ({
+    test("the helper line is in the header band; the two outlined tertiary buttons are equal, one line, not filled, not underlined; What to include has its icon tile", async ({
       page,
     }) => {
       await page.goto("/instructor/content/import");
-      await expect(page.locator("[data-helper]")).toHaveText(
+      const helper = page.locator("[data-page-header-band] [data-helper]");
+      await expect(helper).toHaveText(
         "Upload one Excel document. We will read it and prepare a draft topic for you to review.",
       );
-      expect(await page.locator("[data-helper]").evaluate((el) => getComputedStyle(el).color)).toBe(
-        "rgb(92, 90, 85)",
+      expect(await helper.evaluate((el) => getComputedStyle(el).color)).toBe("rgb(92, 90, 85)");
+      const lines = await helper.evaluate(
+        (el) => el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight),
       );
+      expect(lines).toBeLessThanOrEqual(2.1);
+      const title = (await page.getByRole("heading", { name: "Import content" }).boundingBox())!;
+      const h = (await helper.boundingBox())!;
+      expect(Math.round(h.y - (title.y + title.height))).toBe(8);
       const download = page.getByRole("link", { name: "Download blank template" });
       const example = page.getByRole("button", { name: "Try an example" });
+      await expect(download).toHaveText("Blank template");
       const [a, b] = [(await download.boundingBox())!, (await example.boundingBox())!];
       expect(Math.abs(a.width - b.width)).toBeLessThanOrEqual(1);
-      expect(a.height).toBeGreaterThanOrEqual(44);
-      expect(b.height).toBeGreaterThanOrEqual(44);
+      expect(a.height).toBe(44);
+      expect(b.height).toBe(44);
       expect(a.y).toBe(b.y);
       expect(Math.round(b.x - (a.x + a.width))).toBe(12);
-      expect(a.x).toBeGreaterThanOrEqual(0);
       expect(b.x + b.width).toBeLessThanOrEqual(width);
       for (const button of [download, example]) {
-        expect(await bg(button)).toBe("rgb(224, 230, 214)");
-        // the label is never cut off: all its text is inside the button
+        expect(await bg(button)).toBe("rgb(255, 255, 255)");
+        const style = await button.evaluate((el) => {
+          const css = getComputedStyle(el);
+          return [css.borderTopWidth, css.borderTopColor, css.borderRadius, css.textDecorationLine];
+        });
+        expect(style).toEqual(["1px", "rgb(228, 223, 213)", "14px", "none"]);
+        // one line: the label never wraps or is cut off
         expect(
           await button.evaluate(
-            (el) => el.scrollWidth <= el.clientWidth + 1 && el.scrollHeight <= el.clientHeight + 1,
+            (el) => el.scrollWidth <= el.clientWidth + 1 && el.clientHeight <= 44,
           ),
         ).toBe(true);
         await expect(button.locator("svg")).toHaveCount(1);
       }
+      const tile = page.locator("[data-include-tile]");
+      expect((await tile.boundingBox())!.width).toBe(40);
+      expect(await bg(tile)).toBe("rgb(226, 222, 214)");
+      expect(
+        (await page.getByRole("button", { name: "What to include" }).boundingBox())!.height,
+      ).toBeGreaterThanOrEqual(44);
+      await page.getByRole("button", { name: "What to include" }).click();
+      await expect(page.locator("#include-panel li")).toHaveCount(5);
       expect(await noSidewaysScroll(page)).toBe(true);
       expect(await primaries(page)).toBe(0);
     });
@@ -160,20 +179,20 @@ for (const width of [360, 430]) {
       await expect(page.getByRole("heading", { name: "Import content" })).toBeVisible();
       await page.goto("/instructor/content");
       await expect(page.getByRole("heading", { name: "YOUR TOPICS" })).toBeVisible();
-      await expect(
-        page.getByText("You have no topics of your own yet. Import a document to create one."),
-      ).toBeVisible();
+      await expect(page.getByText("Import a document to create your first topic.")).toBeVisible();
       await expect(
         page.locator('a[href*="import/questions"], a[href*="import/topic"]'),
       ).toHaveCount(0);
-      await page.getByRole("button", { name: "Show course topics (10)" }).click();
-      await page.waitForTimeout(350);
-      await expect(page.getByRole("heading", { name: "COURSE TOPICS" })).toBeVisible();
+      expect(await primaries(page)).toBe(1);
+      await page.locator("[data-course-row]").click();
+      await expect(page.getByRole("heading", { name: "Course topics", level: 1 })).toBeVisible();
       await expect(page.locator("[data-built-in-label]:visible")).toHaveText(
         Array(10).fill("Course topic · read-only"),
       );
-      await expect(page.locator("main")).not.toContainText(/IMPORTED SETS|BUILT-IN TOPICS/);
-      expect(await primaries(page)).toBe(1);
+      await expect(page.locator("main")).not.toContainText(
+        /IMPORTED SETS|BUILT-IN TOPICS|Show course topics/,
+      );
+      expect(await primaries(page)).toBe(0);
     });
 
     test("choose, remove and replace a file: one file card with a corner x, the Images row, Import enabled", async ({

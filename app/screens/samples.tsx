@@ -42,6 +42,7 @@ import { overviewModel } from "@/lib/overview-model";
 import { examPeople, groupById, inScope } from "@/lib/groups";
 import { InviteView } from "@/components/InstructorStudents/InviteView";
 import { reminderFor, unfinishedExam } from "@/lib/reminders";
+import { CourseTopicsView } from "@/components/InstructorContent/CourseTopicsView";
 import { ContentView } from "@/components/InstructorContent/ContentView";
 import { EditQuestionView } from "@/components/InstructorContent/EditQuestionView";
 import { ReviewView } from "@/components/InstructorContent/ReviewView";
@@ -1730,7 +1731,8 @@ export function InstructorContentSample({
     title: titleOf(id),
     count: topicQuestionCount(id),
   }));
-  if (state === "empty" || state === "sets" || state === "built-in") {
+  if (state === "built-in") return <CourseTopicsView topics={builtIn} />;
+  if (state === "empty" || state === "sets") {
     return (
       <ContentView
         sets={
@@ -1743,7 +1745,6 @@ export function InstructorContentSample({
         }
         builtIn={builtIn}
         topicTitle={titleOf}
-        initiallyOpen={state === "built-in"}
       />
     );
   }

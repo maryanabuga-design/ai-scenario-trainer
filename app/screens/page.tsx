@@ -875,7 +875,7 @@ export default function Screens() {
               <InstructorContentSample state="sets" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Content: built-in topics open">
+          <PhoneFrame label="Content: the full-screen list of course topics">
             <Screen nav="/instructor/content" role="instructor">
               <InstructorContentSample state="built-in" />
             </Screen>

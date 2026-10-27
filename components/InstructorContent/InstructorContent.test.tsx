@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
+import { CourseTopicsView } from "@/components/InstructorContent/CourseTopicsView";
 import { ContentView } from "@/components/InstructorContent/ContentView";
 import { EditQuestionView } from "@/components/InstructorContent/EditQuestionView";
 import { ReviewView } from "@/components/InstructorContent/ReviewView";
@@ -56,27 +57,35 @@ describe("the Content tab", () => {
     expect(withSets).toContain('data-set-status="published"');
     expect(withSets).not.toContain("dashed");
     expect(withSets).toContain("bg-neutral-tile-bg");
-    expect(withSets).toContain("Materials and questions for your students");
+    expect(withSets).toContain("Materials for your students");
     expect(withSets).toContain('href="/instructor/content/c0"');
     expect(withSets).not.toContain("%");
   });
 
-  it("has the built-in toggle with its count, then 72px rows labelled Course topic · read-only that open the read-only detail", () => {
-    expect(withSets).toContain("Show course topics (10)");
-    expect(withSets).toContain("COURSE TOPICS");
-    expect(withSets.match(/data-built-in=/g)).toHaveLength(10);
-    const list = withSets.slice(withSets.indexOf("COURSE TOPICS"), withSets.indexOf("Show course"));
-    expect(list.match(/h-\[72px\]/g)).toHaveLength(10);
-    expect(list.match(/<a /g)).toHaveLength(10);
-    expect(list.match(/lucide-chevron-right/g)).toHaveLength(10);
-    expect(list.match(/Course topic · read-only/g)).toHaveLength(10);
-    expect(list).toContain('href="/instructor/content/built-in/S1"');
-    expect(list).not.toContain("12 questions");
-    expect(withSets).toContain('inert=""');
-    const open = renderToStaticMarkup(
-      <ContentView sets={[]} builtIn={builtIn} topicTitle={titleOf} initiallyOpen />,
-    );
-    expect(open).toContain("Hide course topics");
+  it("has ONE Course topics row with the count and subtitle that opens the list, and no expand pill", () => {
+    expect(withSets).toContain("Course topics (10)");
+    expect(withSets).toContain("Provided with the product · read-only");
+    expect(withSets).toContain('href="/instructor/content/course"');
+    expect(withSets.match(/data-course-row/g)).toHaveLength(1);
+    expect(withSets).not.toMatch(/Show course topics|Hide course topics|Show built-in/);
+    expect(withSets).not.toContain("data-built-in=");
+    expect(withSets).not.toContain('inert=""');
+    // the one Primary has a leading document-plus icon
+    expect(withSets.match(/h-\[52px\] bg-primary/g)).toHaveLength(1);
+    expect(withSets).toContain("lucide-file-plus");
+  });
+
+  it("the course list has ten 72px read-only rows with the S1 to S10 tile, the label, a chevron and Back to Content", () => {
+    const html = renderToStaticMarkup(<CourseTopicsView topics={builtIn} />);
+    expect(html).toContain(">Course topics</h1>");
+    expect(html).toContain('aria-label="Back to Content"');
+    expect(html.match(/data-built-in=/g)).toHaveLength(10);
+    expect(html.match(/h-\[72px\]/g)).toHaveLength(10);
+    expect(html.match(/<a /g)).toHaveLength(11);
+    expect(html.match(/lucide-chevron-right/g)).toHaveLength(10);
+    expect(html.match(/Course topic · read-only/g)).toHaveLength(10);
+    expect(html).toContain('href="/instructor/content/built-in/S1"');
+    expect(html).not.toContain("12 questions");
   });
 
   it("lists the topics from documents first and earlier question sets after, in ONE section", () => {
@@ -94,10 +103,21 @@ describe("the Content tab", () => {
     const empty = renderToStaticMarkup(
       <ContentView sets={[]} builtIn={builtIn} topicTitle={titleOf} />,
     );
-    expect(empty).toContain("You have no topics of your own yet. Import a document to create one.");
+    expect(empty).toContain("You have no topics yet.");
+    expect(empty).toContain("Import a document to create your first topic.");
     expect(empty).toContain("YOUR TOPICS");
+    // the illustration in a 144px sand circle with three dashes on each side
+    expect(empty).toContain("h-36 w-36");
+    expect(empty).toContain("bg-secondary-sand");
+    expect(empty).toContain('src="/images/instructor/content-empty.webp"');
+    expect(empty.match(/bg-sage-dash/g)).toHaveLength(6);
     expect(empty).not.toContain("data-set-card");
-    expect(empty).toContain("Imported content stays in this browser (prototype).");
+    expect(empty).toContain("Your topics stay in this browser (prototype).");
+    // the info card: sand, radius 14, a tint tile with the lightbulb, a thin divider
+    const note = empty.slice(empty.indexOf("data-content-note"));
+    expect(note).toContain("rounded-[14px] bg-secondary-sand");
+    expect(note).toContain("lucide-lightbulb");
+    expect(note).toContain("h-8 w-px");
   });
 });
 

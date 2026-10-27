@@ -89,11 +89,15 @@ export function IssuePill({ issues, itemKey }: { issues: Issue[]; itemKey: strin
   );
 }
 
-/** The small pencil of a card: a 28px neutral circle in a 44px tap area at the top-right, "Edit <name>". */
+/**
+ * The pencil of a card (DESIGN.md: Corner pencil): a 32px light sand tile with a muted icon INSIDE its
+ * card, 12px from the top and right edges (a 44px tap area centred on it), "Edit <name>". `className`
+ * moves it for the step card, where it shares the chevron's centre line.
+ */
 export function PencilButton({
   href,
   label,
-  className = "absolute top-0 right-0",
+  className = "absolute top-[6px] right-[6px]",
 }: {
   href: string;
   label: string;
@@ -108,9 +112,9 @@ export function PencilButton({
     >
       <span
         aria-hidden="true"
-        className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-tile-bg text-neutral-tile-ink"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-tile-bg text-neutral-tile-ink"
       >
-        <Pencil size={14} strokeWidth={2.25} />
+        <Pencil size={16} strokeWidth={2.25} />
       </span>
     </Link>
   );
@@ -247,7 +251,7 @@ export function ChecklistCards({
                       <PencilButton
                         href={editHref(key)}
                         label={`Edit step ${step.step || si + 1} of ${list.title}`}
-                        className="absolute top-0 right-9"
+                        className="absolute top-1/2 right-[38px] -translate-y-1/2"
                       />
                     ) : undefined
                   }
@@ -282,12 +286,24 @@ export function ScenarioCards({
         const key = `scenario:${index}`;
         return (
           <li key={index} data-scenario-step={index} className="relative flex flex-col gap-3">
-            <div className={`flex flex-col items-start gap-1 ${editHref ? "pr-10" : ""}`}>
+            <div className="flex flex-col items-start gap-1">
               <h3 className="type-label text-text-secondary">STEP {step.step || index + 1}</h3>
               <IssuePill issues={issues} itemKey={key} />
             </div>
             <PackageImage data={data} file={step.imageFile} alt={step.alt} />
-            {step.situation && <SituationCard text={step.situation} />}
+            {(step.situation || editHref) && (
+              <SituationCard
+                text={step.situation || "(no situation)"}
+                corner={
+                  editHref ? (
+                    <PencilButton
+                      href={editHref(key)}
+                      label={`Edit scenario step ${step.step || index + 1}`}
+                    />
+                  ) : undefined
+                }
+              />
+            )}
             <p className="type-item-title">{step.question}</p>
             <ul className="flex flex-col gap-2">
               {optionsOf(step.options).map((option) => (
@@ -311,12 +327,6 @@ export function ScenarioCards({
                 <GuidePill section={step.guideRef.trim()} href={guideHref(step.guideRef.trim())} />
               )}
             </div>
-            {editHref && (
-              <PencilButton
-                href={editHref(key)}
-                label={`Edit scenario step ${step.step || index + 1}`}
-              />
-            )}
           </li>
         );
       })}
@@ -347,7 +357,7 @@ export function QuizRows({
             data-quiz-row={index}
             className={`${card} relative flex flex-col gap-2 p-3`}
           >
-            <div className={`flex min-h-12 items-start gap-3 ${editHref ? "pr-9" : ""}`}>
+            <div className={`flex min-h-12 items-start gap-3 ${editHref ? "pr-10" : ""}`}>
               <span
                 aria-hidden="true"
                 className="type-caption-strong flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full bg-olive-tint px-2"

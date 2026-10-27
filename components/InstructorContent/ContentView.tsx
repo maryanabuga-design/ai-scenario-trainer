@@ -1,13 +1,10 @@
 "use client";
 
-import { ChevronDown, FileText } from "lucide-react";
+import { FilePlus, Lightbulb } from "lucide-react";
 import Link from "next/link";
-import { useRef, useState } from "react";
-import type { MouseEvent } from "react";
-import { Button, ButtonLink } from "@/components/Button/Button";
+import { ButtonLink } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
-import { EmptyState } from "@/components/EmptyState/EmptyState";
-import { BUILT_IN_LABEL } from "@/components/InstructorContent/BuiltInTopicView";
+import { ContentEmpty } from "@/components/InstructorContent/ContentEmpty";
 import { PackageCard } from "@/components/InstructorContent/PackageCard";
 import { SetCard } from "@/components/InstructorContent/SetCard";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
@@ -15,60 +12,46 @@ import { ProfileAvatar } from "@/components/ProfileAvatar/ProfileAvatar";
 import type { ContentSet } from "@/lib/content-sets";
 import type { DemoTopic } from "@/lib/packages";
 
-export const CONTENT_EMPTY = "You have no topics of your own yet. Import a document to create one.";
-export const CONTENT_NOTE = "Imported content stays in this browser (prototype).";
+export const CONTENT_NOTE = "Your topics stay in this browser (prototype).";
+export const COURSE_SUBTITLE = "Provided with the product · read-only";
 
 export type BuiltInTopic = { id: string; title: string; count: number };
 
 /**
- * The Content tab of the Instructor (DESIGN.md: Instructor, Content): the band, the Primary "Import
- * content", YOUR TOPICS (topics from documents first, earlier question sets after, 88px cards), and at the
- * end the toggle of the "Other topics" pattern that opens the read-only COURSE TOPICS (72px rows, not tappable, no chevron).
+ * The Content tab of the Instructor (DESIGN.md: Content page): the band, the one Primary "Import
+ * content" with a document-plus icon, YOUR TOPICS (the illustrated empty state, or the cards of the
+ * topics from documents first and earlier question sets after), ONE row card "Course topics (10)" that
+ * opens the full-screen list, and the info card with the lightbulb.
  */
 export function ContentView({
   sets,
   packages = [],
   builtIn,
   topicTitle,
-  initiallyOpen = false,
 }: {
   sets: ContentSet[];
-  /** The demo topics of the package import (the section YOUR TOPICS). */
+  /** The topics made from documents. */
   packages?: DemoTopic[];
   builtIn: BuiltInTopic[];
   topicTitle: (id: string) => string;
-  /** Only for the screen review page: the built-in topics start open. */
-  initiallyOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(initiallyOpen);
-  const wrapper = useRef<HTMLDivElement>(null);
-
-  function toggle(event: MouseEvent<HTMLButtonElement>) {
-    // Safari does not focus a button on click: keep the focus on the toggle
-    event.currentTarget.focus();
-    const closing = open;
-    setOpen(!open);
-    if (!closing) return;
-    window.setTimeout(() => {
-      wrapper.current?.querySelector("button")?.scrollIntoView({ block: "nearest" });
-    }, 220);
-  }
-
   return (
     <div className="flex flex-col gap-4 pb-4">
       <PageHeaderBand
         title="Content"
-        subtitle="Materials and questions for your students"
+        subtitle={<span className="text-text-secondary">Materials for your students</span>}
         action={<ProfileAvatar />}
       />
-      <ButtonLink href="/instructor/content/import">Import content</ButtonLink>
+      <ButtonLink href="/instructor/content/import" icon={FilePlus}>
+        Import content
+      </ButtonLink>
 
       <section aria-labelledby="sets-title" data-your-topics className="flex flex-col gap-3">
         <h2 id="sets-title" className="type-label text-text-secondary">
           YOUR TOPICS
         </h2>
         {sets.length === 0 && packages.length === 0 ? (
-          <EmptyState icon={FileText} text={CONTENT_EMPTY} />
+          <ContentEmpty />
         ) : (
           <ul className="flex flex-col gap-3">
             {packages.map((topic) => (
@@ -85,74 +68,31 @@ export function ContentView({
         )}
       </section>
 
-      <div ref={wrapper} className="flex flex-col">
-        <div
-          id="built-in-topics"
-          inert={!open}
-          className={`grid transition-[grid-template-rows,visibility] duration-200 motion-reduce:transition-none ${open ? "visible grid-rows-[1fr]" : "invisible grid-rows-[0fr]"}`}
-        >
-          <div className="min-h-0 overflow-hidden">
-            <section aria-labelledby="built-in-title" className="flex flex-col gap-3 pb-3">
-              <h2 id="built-in-title" className="type-label text-text-secondary">
-                COURSE TOPICS
-              </h2>
-              <ul className="flex flex-col gap-2">
-                {builtIn.map((topic) => (
-                  <li key={topic.id}>
-                    <Link
-                      href={`/instructor/content/built-in/${topic.id}`}
-                      data-built-in={topic.id}
-                      className="flex h-[72px] items-center gap-3 rounded-card bg-card px-4 shadow-(--card-shadow) has-focus-visible:outline-2"
-                    >
-                      <span
-                        aria-hidden="true"
-                        className="type-caption flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-olive-tint text-text"
-                      >
-                        {topic.id}
-                      </span>
-                      <span className="flex min-w-0 flex-1 flex-col">
-                        <span className="type-body-strong truncate">
-                          <span className="sr-only">{topic.id} </span>
-                          {topic.title}
-                        </span>
-                        <span
-                          data-built-in-label
-                          className="type-small truncate text-text-secondary"
-                        >
-                          {BUILT_IN_LABEL}
-                        </span>
-                      </span>
-                      <Chevron />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </div>
-        </div>
-        <div className="-ml-3 self-start">
-          <Button
-            variant="tertiary"
-            aria-expanded={open}
-            aria-controls="built-in-topics"
-            onClick={toggle}
-            trailing={
-              <ChevronDown
-                size={16}
-                strokeWidth={2}
-                aria-hidden="true"
-                className={`shrink-0 transition-transform duration-200 motion-reduce:transition-none ${open ? "rotate-180" : ""}`}
-              />
-            }
-          >
-            {open ? "Hide course topics" : `Show course topics (${builtIn.length})`}
-          </Button>
-        </div>
-      </div>
+      <Link
+        href="/instructor/content/course"
+        data-course-row
+        className="flex h-[72px] items-center gap-3 rounded-card border border-selectable-stroke bg-card px-4 shadow-(--card-shadow) has-focus-visible:outline-2"
+      >
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className="type-body-strong truncate">Course topics ({builtIn.length})</span>
+          <span className="type-small truncate text-text-secondary">{COURSE_SUBTITLE}</span>
+        </span>
+        <Chevron />
+      </Link>
 
-      <p data-content-note className="type-small text-center text-text-secondary">
-        {CONTENT_NOTE}
-      </p>
+      <div
+        data-content-note
+        className="flex items-center gap-3 rounded-[14px] bg-secondary-sand px-4 py-3"
+      >
+        <span
+          aria-hidden="true"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-tile-bg text-neutral-tile-ink"
+        >
+          <Lightbulb size={20} strokeWidth={2} />
+        </span>
+        <span aria-hidden="true" className="h-8 w-px shrink-0 bg-selectable-stroke" />
+        <p className="type-small min-w-0 flex-1 text-text-secondary">{CONTENT_NOTE}</p>
+      </div>
     </div>
   );
 }

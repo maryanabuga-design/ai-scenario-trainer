@@ -24,6 +24,7 @@ import { PackageTopicView } from "@/components/InstructorContent/PackageTopicVie
 import {
   ChecklistCards,
   GuideSections,
+  QuizRows,
   ScenarioCards,
 } from "@/components/PackageContent/PackageParts";
 import { PackageStudentScreen } from "@/components/PackageContent/PackageStudentScreen";
@@ -104,27 +105,42 @@ describe("the import screen", () => {
     expect(html.indexOf("Import and review")).toBeLessThan(html.indexOf(">Cancel<"));
   });
 
-  it("has the helper line under the title and ONE row of two equal compact Secondary buttons with icons", () => {
+  it("has the helper line in the header band and ONE row of two equal outlined tertiary buttons with icons", () => {
     const html = importView();
-    expect(html).toContain(
+    const band = html.slice(html.indexOf("data-page-header-band"), html.indexOf("</h1>") + 700);
+    expect(band).toContain(
       "Upload one Excel document. We will read it and prepare a draft topic for you to review.",
     );
+    expect(band).toContain("data-helper");
+    expect(band).toContain("text-text-secondary");
+    expect(band).toContain("line-clamp-2");
     expect(html.indexOf("data-helper")).toBeGreaterThan(html.indexOf(">Import content</h1>"));
     const row = html.slice(html.indexOf("data-actions-row"), html.indexOf("What to include"));
-    expect(row).toContain("Download blank template");
+    expect(row).toContain("Blank template");
     expect(row).toContain("Try an example");
+    expect(row).toContain('aria-label="Download blank template"');
+    expect(row).toContain('aria-label="Try an example"');
     expect(row).toContain('href="/templates/guide-template.xlsx"');
     expect(row).toContain("lucide-download");
     expect(row).toContain("lucide-sparkles");
-    // equal widths (flex-1 basis-0), 44px at least, the label may wrap, gap 12px, no underline
+    // equal widths, 44px, white with a 1px border, radius 14, one line, no underline, no tint fill
     expect(row.match(/flex-1 basis-0/g)).toHaveLength(2);
     expect(row.match(/min-h-11/g)).toHaveLength(2);
+    expect(row.match(/bg-card/g)).toHaveLength(2);
+    expect(row.match(/border-selectable-stroke/g)).toHaveLength(2);
+    expect(row.match(/rounded-button/g)).toHaveLength(2);
+    expect(row.match(/whitespace-nowrap/g)).toHaveLength(2);
     expect(row).toContain("gap-3");
-    expect(row).toMatch(/bg-olive-tint/);
-    expect(row).not.toContain("underline");
-    expect(row).not.toContain("truncate");
+    expect(row).not.toMatch(/bg-olive-tint|underline/);
     expect(html).not.toContain("Use sample document");
-    expect(html).not.toContain("Download template<");
+  });
+
+  it("What to include starts with the round info tint tile, then the title, then the chevron", () => {
+    const html = importView();
+    const row = html.slice(html.indexOf('aria-controls="include-panel"'));
+    expect(row.indexOf("data-include-tile")).toBeLessThan(row.indexOf("What to include"));
+    expect(row.indexOf("What to include")).toBeLessThan(row.indexOf("lucide-chevron-down"));
+    expect(row).toContain("rounded-full bg-neutral-tile-bg");
   });
 
   it("What to include opens to five lines and the Section sentence; there is no question-set link", () => {
@@ -669,5 +685,54 @@ describe("preview parity: the student route and the preview route draw the same 
       expect(html).not.toContain('aria-label="Hint"');
       expect(html).not.toMatch(/AI|bot\b/);
     }
+  });
+});
+
+describe("the corner pencil", () => {
+  const edit = (key: string) => `/edit/${key}`;
+  const html = wrap(
+    <>
+      <GuideSections data={topic} editHref={edit} />
+      <ChecklistCards data={topic} guideHref={() => "#"} editHref={edit} />
+      <ScenarioCards data={topic} guideHref={() => "#"} editHref={edit} />
+      <QuizRows data={topic} guideHref={() => "#"} editHref={edit} />
+    </>,
+  );
+  const pencils = [...html.matchAll(/<a [^>]*data-pencil[^>]*>[\s\S]*?<\/a>/g)].map((m) => m[0]);
+
+  it("is one shared component: a 32px sand tile in a 44px tap area, labelled Edit <item>", () => {
+    expect(pencils.length).toBe(4 + 7 + 4 + 10);
+    for (const pencil of pencils) {
+      expect(pencil).toContain("h-11 w-11");
+      expect(pencil).toContain("h-8 w-8");
+      expect(pencil).toContain("rounded-full bg-neutral-tile-bg text-neutral-tile-ink");
+      expect(pencil).toMatch(/aria-label="Edit [^"]+"/);
+    }
+  });
+
+  it("sits 12px inside the corner (6px offsets for the 44px area) on guide, scenario and quiz cards", () => {
+    for (const label of ["Edit Guide section 1", "Edit scenario step 1", "Edit question 1"]) {
+      const pencil = pencils.find((p) => p.includes(`aria-label="${label}"`))!;
+      expect(pencil, label).toContain("absolute top-[6px] right-[6px]");
+    }
+  });
+
+  it("the scenario pencil is inside the situation card, whose text keeps 52px on the right; STEP stays above", () => {
+    const step = html.slice(html.indexOf("data-scenario-step"));
+    const card = step.slice(step.indexOf("data-situation-card"));
+    expect(card.slice(0, card.indexOf("</section>"))).toContain(
+      'aria-label="Edit scenario step 1"',
+    );
+    expect(card).toContain("pr-[52px]");
+    expect(step.indexOf("STEP 1")).toBeLessThan(step.indexOf("data-situation-card"));
+  });
+
+  it("the step pencil shares the chevron's centre line, to the left of it, inside the header row", () => {
+    const pencil = pencils.find((p) => p.includes("Edit step 1"))!;
+    expect(pencil).toContain("top-1/2");
+    expect(pencil).toContain("-translate-y-1/2");
+    expect(pencil).toContain("right-[38px]");
+    const card = html.slice(html.indexOf('aria-expanded="false"'));
+    expect(card).toContain("pr-[52px]");
   });
 });

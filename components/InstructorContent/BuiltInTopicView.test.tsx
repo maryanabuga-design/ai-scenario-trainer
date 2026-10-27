@@ -16,10 +16,10 @@ const render = (id: string, tab?: "overview" | "steps") =>
   ).replace(/<!-- -->/g, "");
 
 describe("the built-in topic for the Instructor", () => {
-  it("is read-only with the label and Back to Content", () => {
+  it("is read-only with the label and Back to Course topics", () => {
     const html = render("S2");
     expect(html).toContain("S2 · Course topic · read-only");
-    expect(html).toContain('aria-label="Back to Content"');
+    expect(html).toContain('aria-label="Back to Course topics"');
     expect(html).toContain("12 questions");
     expect(html).toContain("4 min read");
     expect(html).not.toMatch(/<button|<textarea|<input type="text"/);

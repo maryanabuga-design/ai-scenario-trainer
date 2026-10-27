@@ -131,26 +131,39 @@ for (const width of [360, 430]) {
       expect([b.height, b.x, b.width]).toEqual([52, 16, width - 32]);
       const band = (await page.locator("[data-page-header-band]").boundingBox())!;
       expect(b.y - (band.y + band.height)).toBeLessThanOrEqual(20);
-      await expect(
-        page.getByText("You have no topics of your own yet. Import a document to create one."),
-      ).toBeVisible();
       await expect(page.getByRole("heading", { name: "YOUR TOPICS" })).toBeVisible();
-      await expect(page.locator("[data-content-note]")).toHaveText(
-        "Imported content stays in this browser (prototype).",
-      );
+      // the illustrated empty state
+      await expect(page.getByRole("heading", { name: "You have no topics yet." })).toBeVisible();
+      await expect(page.getByText("Import a document to create your first topic.")).toBeVisible();
+      const circle = (await page.locator("[data-empty-circle]").boundingBox())!;
+      expect([circle.width, circle.height]).toEqual([144, 144]);
+      expect(await bg(page.locator("[data-empty-circle]"))).toBe("rgb(240, 236, 230)");
+      expect(Math.round(circle.x + circle.width / 2)).toBe(Math.round(width / 2));
+      await expect(page.locator("[data-dashes=left] span")).toHaveCount(3);
+      await expect(page.locator("[data-dashes=right] span")).toHaveCount(3);
+      // the info card
+      const note = page.locator("[data-content-note]");
+      await expect(note).toHaveText("Your topics stay in this browser (prototype).");
+      expect(await bg(note)).toBe("rgb(240, 236, 230)");
+      expect(await note.evaluate((el) => getComputedStyle(el).borderRadius)).toBe("14px");
       expect(await primaries(page)).toBe(1);
       expect(await noSidewaysScroll(page)).toBe(true);
-      // the built-in toggle
-      const toggle = page.getByRole("button", { name: "Show course topics (10)" });
-      await toggle.click();
-      await page.waitForTimeout(350);
+      // ONE Course topics row, no expand pill, no inline list
+      await expect(page.getByRole("button", { name: /course topics/i })).toHaveCount(0);
+      await expect(page.locator("[data-built-in]")).toHaveCount(0);
+      const row = page.locator("[data-course-row]");
+      await expect(row).toContainText("Course topics (10)");
+      await expect(row).toContainText("Provided with the product · read-only");
+      expect((await row.boundingBox())!.height).toBe(72);
+      await row.click();
+      await expect(page).toHaveURL(/\/instructor\/content\/course$/);
+      await expect(page.getByRole("heading", { name: "Course topics", level: 1 })).toBeVisible();
       const rows = page.locator("[data-built-in]:visible");
       await expect(rows).toHaveCount(10);
-      for (const row of await rows.all()) {
-        expect((await row.boundingBox())!.height).toBe(72);
-        expect(await bg(row)).toBe(CARD);
+      for (const r of await rows.all()) {
+        expect((await r.boundingBox())!.height).toBe(72);
+        expect(await bg(r)).toBe(CARD);
       }
-      // each row opens the read-only detail and carries the label
       await expect(page.locator("[data-built-in-label]:visible")).toHaveText(
         Array(10).fill("Course topic · read-only"),
       );
@@ -158,12 +171,39 @@ for (const width of [360, 430]) {
         "href",
         "/instructor/content/built-in/S1",
       );
-      await expect(page.locator("[data-page-header-band]:visible")).toContainText(
-        "Materials and questions for your students",
-      );
-      await page.getByRole("button", { name: "Hide course topics" }).click();
-      await page.waitForTimeout(350);
-      await expect(page.locator("[data-built-in]:visible")).toHaveCount(0);
+      expect(await noSidewaysScroll(page)).toBe(true);
+      // a course topic opens its detail; Back returns to the list, and Back again to Content
+      await rows.first().click();
+      await page.getByRole("link", { name: "Back to Course topics" }).click();
+      await expect(page).toHaveURL(/\/instructor\/content\/course$/);
+      await page.getByRole("link", { name: "Back to Content" }).click();
+      await expect(page).toHaveURL(/\/instructor\/content$/);
+    });
+
+    test("the empty illustration falls back to the neutral icon when the picture is missing", async ({
+      page,
+    }) => {
+      await page.route("**/images/instructor/content-empty.webp", (route) => route.abort());
+      await page.goto("/instructor/content");
+      await expect(page.locator("[data-empty-fallback]")).toBeVisible();
+      await expect(page.locator("[data-empty-circle] img")).toHaveCount(0);
+      expect(await noSidewaysScroll(page)).toBe(true);
+    });
+
+    test("with topics the empty state is gone: cards with the pill and a chevron, the Course topics row and the info card stay", async ({
+      page,
+    }) => {
+      await importFile(page, csvFile(makeCsv(3)), "Evacuation routes");
+      await page.goto("/instructor/content");
+      await expect(page.locator("[data-content-empty]")).toHaveCount(0);
+      const card = page.locator("[data-set-card]");
+      await expect(card).toContainText("Evacuation routes");
+      await expect(card.locator("[data-set-status]")).toHaveText("Draft");
+      await expect(card.locator("svg").last()).toBeVisible();
+      await expect(page.locator("[data-course-row]")).toBeVisible();
+      await expect(page.locator("[data-content-note]")).toBeVisible();
+      expect(await primaries(page)).toBe(1);
+      expect(await noSidewaysScroll(page)).toBe(true);
     });
 
     test("an earlier set: 20 ready; Publish, Unpublish and Delete set", async ({ page }) => {
@@ -380,7 +420,7 @@ for (const width of [360, 430]) {
       await expect(page.locator("[data-set-card]")).toContainText("Kept set");
       await page.evaluate(() => localStorage.setItem("ast.content-sets.v1", "{not json"));
       await page.reload();
-      await expect(page.getByText("You have no topics of your own yet.")).toBeVisible();
+      await expect(page.getByText("You have no topics yet.")).toBeVisible();
     });
 
     test("markup in a file is shown as text and never runs", async ({ page }) => {

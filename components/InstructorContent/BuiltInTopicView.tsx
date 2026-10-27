@@ -47,7 +47,7 @@ export function BuiltInTopicView({
       <PageHeaderBand
         title={title}
         subtitle={`${id} · ${BUILT_IN_LABEL}`}
-        back={{ label: "Back to Content", href: "/instructor/content" }}
+        back={{ label: "Back to Course topics", href: "/instructor/content/course" }}
       />
       {guide && (
         <SegmentedControl

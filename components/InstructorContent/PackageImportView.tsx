@@ -1,9 +1,9 @@
 "use client";
 
-import { ChevronDown, Download, FileSpreadsheet, Sparkles, X } from "lucide-react";
+import { ChevronDown, Download, FileSpreadsheet, ListChecks, Sparkles, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
-import { Button, buttonClasses } from "@/components/Button/Button";
+import { Button } from "@/components/Button/Button";
 import { Amber } from "@/components/InstructorContent/Amber";
 import { Notice } from "@/components/Notice/Notice";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
@@ -12,8 +12,9 @@ import { sizeText } from "@/lib/content-import";
 export const CHOOSE_TITLE = "Choose a document";
 export const CHOOSE_HELP = "Excel (.xlsx), up to 10 MB";
 export const IMAGES_LINE = "You can also add them later.";
-/** Two equal compact Secondary buttons in one row: 44px high at least, a label that wraps, never truncated. */
-const rowButton = `${buttonClasses({ variant: "secondary", compact: true, wide: false })} h-auto! min-h-11 min-w-0 flex-1 basis-0 px-3 py-2 leading-tight`;
+/** Two equal outlined tertiary actions in one row: white, 1px border, radius 14, 44px, one line, no underline. */
+const rowButton =
+  "type-button flex min-h-11 min-w-0 flex-1 basis-0 items-center justify-center gap-2 rounded-button border border-selectable-stroke bg-card px-3 whitespace-nowrap text-primary focus-visible:outline-2";
 export const ACCEPT = ".xlsx";
 export const IMAGE_ACCEPT = ".png,.jpg,.jpeg,.webp";
 
@@ -98,11 +99,9 @@ export function PackageImportView({
     <div className="flex flex-col gap-6 pb-4">
       <PageHeaderBand
         title="Import content"
+        helper={HELPER}
         back={{ label: "Back to Content", href: "/instructor/content" }}
       />
-      <p data-helper className="type-body text-text-secondary">
-        {HELPER}
-      </p>
       {notice && (
         <Notice variant="info" clamp={false} title="Replace document">
           {notice}
@@ -162,12 +161,18 @@ export function PackageImportView({
           <a
             href="/templates/guide-template.xlsx"
             download="guide-template.xlsx"
-            className={`${rowButton} text-center`}
+            aria-label="Download blank template"
+            className={rowButton}
           >
             <Download size={18} strokeWidth={2} aria-hidden="true" className="shrink-0" />
-            <span>Download blank template</span>
+            <span>Blank template</span>
           </a>
-          <button type="button" onClick={onSample} className={rowButton}>
+          <button
+            type="button"
+            aria-label="Try an example"
+            onClick={onSample}
+            className={rowButton}
+          >
             <Sparkles size={18} strokeWidth={2} aria-hidden="true" className="shrink-0" />
             <span>Try an example</span>
           </button>
@@ -183,9 +188,16 @@ export function PackageImportView({
           aria-expanded={open}
           aria-controls="include-panel"
           onClick={() => setOpen(!open)}
-          className="flex min-h-11 w-full items-center justify-between gap-3 px-[var(--gutter,1rem)] py-3 text-left focus-visible:outline-2"
+          className="flex min-h-11 w-full items-center gap-3 px-[var(--gutter,1rem)] py-3 text-left focus-visible:outline-2"
         >
-          <span className="type-body-strong">What to include</span>
+          <span
+            aria-hidden="true"
+            data-include-tile
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-tile-bg text-neutral-tile-ink"
+          >
+            <ListChecks size={20} strokeWidth={2} />
+          </span>
+          <span className="type-body-strong min-w-0 flex-1">What to include</span>
           <ChevronDown
             size={20}
             aria-hidden="true"

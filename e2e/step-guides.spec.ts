@@ -204,10 +204,10 @@ for (const width of [360, 430]) {
     }) => {
       await page.goto("/instructor/content");
       await expect(page.locator("[data-page-header-band]:visible")).toContainText(
-        "Materials and questions for your students",
+        "Materials for your students",
       );
-      await page.getByRole("button", { name: /Show course topics/ }).click();
-      await page.waitForTimeout(350);
+      await page.locator("[data-course-row]").click();
+      await expect(page).toHaveURL(/\/instructor\/content\/course$/);
       await expect(page.locator("[data-built-in-label]:visible")).toHaveCount(10);
       for (const id of ["S1", "S7", "S8"]) {
         await page.goto(`/instructor/content/built-in/${id}`);

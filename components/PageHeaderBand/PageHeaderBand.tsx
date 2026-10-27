@@ -14,6 +14,7 @@ type Back = { label: string } & ({ href: string } | { onClick: () => void });
 export function PageHeaderBand({
   title,
   subtitle,
+  helper,
   back,
   action,
   titleAccessory,
@@ -21,6 +22,8 @@ export function PageHeaderBand({
 }: {
   title: string;
   subtitle?: ReactNode;
+  /** A muted line under the title, 8px below it, at most two lines (the Import helper). */
+  helper?: ReactNode;
   back?: Back;
   /** A control at the top right (the avatar button on the tab screens). */
   action?: ReactNode;
@@ -51,6 +54,11 @@ export function PageHeaderBand({
             <h1 className="type-page-title text-text line-clamp-2">{title}</h1>
           )}
           {subtitle && <p className="type-body text-text">{subtitle}</p>}
+          {helper && (
+            <p data-helper className="type-body mt-1 line-clamp-2 text-text-secondary">
+              {helper}
+            </p>
+          )}
         </div>
         {!back && action}
       </div>

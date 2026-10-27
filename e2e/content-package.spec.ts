@@ -258,6 +258,87 @@ for (const width of [360, 430]) {
       expect(await noSidewaysScroll(page)).toBe(true);
     });
 
+    test("the pencil sits inside its card in the corner on the Guide, Steps, Scenario and Quiz tabs, never over the text", async ({
+      page,
+    }) => {
+      await importFiles(page, CLEAN);
+      const base = page.url().split("?")[0];
+      for (const tab of ["Guide", "Steps", "Scenario", "Quiz"]) {
+        await page.goto(`${base}?tab=${tab === "Quiz" ? "quiz" : tab.toLowerCase()}`);
+        await expect(page.locator("[data-pencil]:visible").first()).toBeVisible();
+        await page.waitForTimeout(300);
+        const count = await page.locator("[data-pencil]:visible").count();
+        expect(count, tab).toBeGreaterThan(0);
+        for (let i = 0; i < count; i++) {
+          const pencil = page.locator("[data-pencil]:visible").nth(i);
+          await pencil.scrollIntoViewIfNeeded();
+          const m = await pencil.evaluate((el) => {
+            const rect = (node: Element) => node.getBoundingClientRect();
+            const area = rect(el);
+            const tile = rect(el.querySelector("span")!);
+            const host = el.closest("[data-situation-card], li")!;
+            const card = rect(host);
+            const walker = document.createTreeWalker(host, NodeFilter.SHOW_TEXT);
+            let overlap = false;
+            for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+              if (!node.textContent?.trim() || el.contains(node)) continue;
+              const range = document.createRange();
+              range.selectNodeContents(node);
+              for (const r of Array.from(range.getClientRects())) {
+                if (
+                  r.width > 0 &&
+                  r.left < tile.right &&
+                  r.right > tile.left &&
+                  r.top < tile.bottom &&
+                  r.bottom > tile.top
+                )
+                  overlap = true;
+              }
+            }
+            return {
+              area: [area.width, area.height],
+              tile: [tile.width, tile.height],
+              right: card.right - tile.right,
+              top: tile.top - card.top,
+              inside: tile.left >= card.left && tile.right <= card.right && tile.top >= card.top,
+              centreY: tile.top + tile.height / 2,
+              cardTop: card.top,
+              overlap,
+              host: host.tagName,
+            };
+          });
+          expect(m.area, tab).toEqual([44, 44]);
+          expect(m.tile, tab).toEqual([32, 32]);
+          expect(m.inside, `${tab} ${i} inside`).toBe(true);
+          expect(m.overlap, `${tab} ${i} text under the pencil`).toBe(false);
+          if (tab !== "Steps") {
+            // 12px from the inner edge of the card; the 1px border makes it 12 or 13 from the outer edge
+            expect([12, 13]).toContain(Math.round(m.right));
+            expect([12, 13]).toContain(Math.round(m.top));
+          }
+        }
+        expect(await noSidewaysScroll(page), tab).toBe(true);
+        if (tab === "Scenario") {
+          // the STEP label stays above its situation card
+          const label = (await page.getByText("STEP 1").first().boundingBox())!;
+          const sit = (await page.locator("[data-situation-card]").first().boundingBox())!;
+          expect(label.y + label.height).toBeLessThanOrEqual(sit.y);
+        }
+        if (tab === "Steps") {
+          // a step card: the pencil is left of the chevron on the same centre line
+          const first = page.locator("[data-pencil]:visible").first();
+          const chevron = first
+            .locator("xpath=ancestor::li[1]")
+            .locator("svg.lucide-chevron-down")
+            .first();
+          const p = (await first.locator("span").boundingBox())!;
+          const c = (await chevron.boundingBox())!;
+          expect(p.x + p.width).toBeLessThanOrEqual(c.x);
+          expect(Math.abs(p.y + p.height / 2 - (c.y + c.height / 2))).toBeLessThanOrEqual(1);
+        }
+      }
+    });
+
     test("Please confirm: a neutral pill, Review 1 item, Mark as OK clears it and the topic can be published", async ({
       page,
     }) => {
