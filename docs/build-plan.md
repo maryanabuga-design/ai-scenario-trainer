@@ -154,3 +154,4 @@ One commit per screen group, in this order. Steps 1 to 82 are built (step 81, th
 152. Guided review of a content package (5 Nov 2026): item pills and pencils, Review N items, edit screens for every part with Add image, Mark as OK and Skip. Screenshots: `docs/screens/162-*`.
 153. Guided review fix (23 Oct 2026): Save and next disabled until the item is resolvable, Choose image, live recount and an end-of-review summary. Screenshots: `docs/screens/163-*`.
 154. One document in, a draft topic out (26 Oct 2026): one Excel document, the Analysing screen, the topic menu (Edit title and summary, Replace document, Delete topic), template and sample documents. Screenshots: `docs/screens/164-*`.
+155. Import polished, question-set import retired (27 Oct 2026): helper line, two compact buttons, five-line What to include, redirect of the old route, Content labels (Your topics, Course topics). Screenshots: `docs/screens/165-*`.

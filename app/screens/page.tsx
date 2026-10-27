@@ -895,21 +895,6 @@ export default function Screens() {
               <BuiltInTopicSample id="S2" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Import: empty">
-            <Screen role="instructor">
-              <InstructorContentSample state="import" />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Import: filled (topic found in the file)">
-            <Screen role="instructor">
-              <InstructorContentSample state="import-filled" />
-            </Screen>
-          </PhoneFrame>
-          <PhoneFrame label="Import: a file problem (amber)">
-            <Screen role="instructor">
-              <InstructorContentSample state="import-error" />
-            </Screen>
-          </PhoneFrame>
           <PhoneFrame label="Review: 18 ready, 2 need attention">
             <Screen role="instructor">
               <InstructorContentSample state="review-flags" />

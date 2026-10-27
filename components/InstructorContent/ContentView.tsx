@@ -13,18 +13,17 @@ import { SetCard } from "@/components/InstructorContent/SetCard";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { ProfileAvatar } from "@/components/ProfileAvatar/ProfileAvatar";
 import type { ContentSet } from "@/lib/content-sets";
-import { clearDraft } from "@/lib/import-draft";
 import type { DemoTopic } from "@/lib/packages";
 
-export const CONTENT_EMPTY = "No imported sets yet. Import questions from a file to create one.";
+export const CONTENT_EMPTY = "You have no topics of your own yet. Import a document to create one.";
 export const CONTENT_NOTE = "Imported content stays in this browser (prototype).";
 
 export type BuiltInTopic = { id: string; title: string; count: number };
 
 /**
  * The Content tab of the Instructor (DESIGN.md: Instructor, Content): the band, the Primary "Import
- * questions", the IMPORTED SETS cards (88px), and at the end the toggle of the "Other topics" pattern
- * that opens the read-only BUILT-IN TOPICS (72px rows, not tappable, no chevron).
+ * content", YOUR TOPICS (topics from documents first, earlier question sets after, 88px cards), and at the
+ * end the toggle of the "Other topics" pattern that opens the read-only COURSE TOPICS (72px rows, not tappable, no chevron).
  */
 export function ContentView({
   sets,
@@ -62,18 +61,21 @@ export function ContentView({
         subtitle="Materials and questions for your students"
         action={<ProfileAvatar />}
       />
-      <ButtonLink href="/instructor/content/import" onClick={clearDraft}>
-        Import content
-      </ButtonLink>
+      <ButtonLink href="/instructor/content/import">Import content</ButtonLink>
 
-      <section aria-labelledby="sets-title" className="flex flex-col gap-3">
+      <section aria-labelledby="sets-title" data-your-topics className="flex flex-col gap-3">
         <h2 id="sets-title" className="type-label text-text-secondary">
-          IMPORTED SETS
+          YOUR TOPICS
         </h2>
-        {sets.length === 0 ? (
+        {sets.length === 0 && packages.length === 0 ? (
           <EmptyState icon={FileText} text={CONTENT_EMPTY} />
         ) : (
           <ul className="flex flex-col gap-3">
+            {packages.map((topic) => (
+              <li key={topic.id}>
+                <PackageCard topic={topic} />
+              </li>
+            ))}
             {sets.map((set) => (
               <li key={set.id}>
                 <SetCard set={set} topicTitle={topicTitle(set.topic)} />
@@ -82,25 +84,6 @@ export function ContentView({
           </ul>
         )}
       </section>
-
-      {packages.length > 0 && (
-        <section
-          aria-labelledby="your-topics-title"
-          data-your-topics
-          className="flex flex-col gap-3"
-        >
-          <h2 id="your-topics-title" className="type-label text-text-secondary">
-            YOUR TOPICS
-          </h2>
-          <ul className="flex flex-col gap-3">
-            {packages.map((topic) => (
-              <li key={topic.id}>
-                <PackageCard topic={topic} />
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
 
       <div ref={wrapper} className="flex flex-col">
         <div
@@ -111,7 +94,7 @@ export function ContentView({
           <div className="min-h-0 overflow-hidden">
             <section aria-labelledby="built-in-title" className="flex flex-col gap-3 pb-3">
               <h2 id="built-in-title" className="type-label text-text-secondary">
-                BUILT-IN TOPICS
+                COURSE TOPICS
               </h2>
               <ul className="flex flex-col gap-2">
                 {builtIn.map((topic) => (
@@ -162,7 +145,7 @@ export function ContentView({
               />
             }
           >
-            {open ? "Hide built-in topics" : `Show built-in topics (${builtIn.length})`}
+            {open ? "Hide course topics" : `Show course topics (${builtIn.length})`}
           </Button>
         </div>
       </div>

@@ -71,7 +71,9 @@ Build order and decisions: `docs/build-plan.md`.
 
 - Document analysis is simulated in the prototype: the Instructor imports ONE Excel document (`.xlsx`, up to 10 MB, read on this device, nothing is uploaded) and an Analysing screen shows the stages while the template is read; there is no live AI, and Word and PDF documents are not read. A person always reviews the draft before it is published. Parts with a whole-part problem (section numbers that are not consecutive, more than ten steps) have no edit screen: they keep "Replace document".
 
-- Content import (Instructor, question sets): only CSV files are read (locally, nothing is uploaded). Word files are not parsed in this prototype and a prepared sample result is shown instead; a live product would parse Word and always ask a person to review before publishing. Imported sets stay in this browser, and publishing is a human decision. Published sets appear in Training only and never change readiness or the exam.
+- Importing only questions is not part of this prototype; one document creates one topic. Question sets saved earlier in this browser still display and work (Review, Edit question, Publish), but no new ones can be created.
+
+- (Earlier question-set import, now retired): only CSV files were read (locally, nothing is uploaded). Word files are not parsed in this prototype and a prepared sample result is shown instead; a live product would parse Word and always ask a person to review before publishing. Imported sets stay in this browser, and publishing is a human decision. Published sets appear in Training only and never change readiness or the exam.
 
 - The Instructor demo uses simulated group data: two demo groups, Rescue team (14 invented students) and Military training (12), in `content/demo-cohort.json`, plus the accounts of this browser (they join Rescue team). Groups are demo data: they cannot be created, renamed or changed (next steps). Exams, results and notices are kept in this browser only; there is no server, no real group and no real people.
 

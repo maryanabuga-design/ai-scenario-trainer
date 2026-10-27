@@ -5,8 +5,9 @@ import { describe, expect, it } from "vitest";
 import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
 import { ContentView } from "@/components/InstructorContent/ContentView";
 import { EditQuestionView } from "@/components/InstructorContent/EditQuestionView";
-import { ImportView } from "@/components/InstructorContent/ImportView";
 import { ReviewView } from "@/components/InstructorContent/ReviewView";
+import { emptyData } from "@/lib/package-read";
+import { createTopic } from "@/lib/packages";
 import { sampleQuestions } from "@/lib/content-import";
 import type { ContentSet } from "@/lib/content-sets";
 
@@ -44,11 +45,11 @@ describe("the Content tab", () => {
     />,
   );
 
-  it("has the band, the one Primary Import questions right under it, and 88px set cards", () => {
+  it("has the band, the one Primary Import content right under it, and 88px set cards", () => {
     expect(withSets).toContain("data-page-header-band");
     expect(withSets).toContain(">Content</h1>");
     expect(withSets.indexOf("Import content")).toBeGreaterThan(withSets.indexOf("Content</h1>"));
-    expect(withSets.indexOf("Import content")).toBeLessThan(withSets.indexOf("IMPORTED SETS"));
+    expect(withSets.indexOf("Import content")).toBeLessThan(withSets.indexOf("YOUR TOPICS"));
     expect(withSets.match(/h-\[88px\]/g)).toHaveLength(2);
     expect(withSets).toContain("S3 Topic S3 · 20 questions");
     expect(withSets).toContain('data-set-status="draft"');
@@ -60,116 +61,43 @@ describe("the Content tab", () => {
     expect(withSets).not.toContain("%");
   });
 
-  it("has the built-in toggle with its count, then 72px rows labelled Built-in · read-only that open the read-only detail", () => {
-    expect(withSets).toContain("Show built-in topics (10)");
-    expect(withSets).toContain("BUILT-IN TOPICS");
+  it("has the built-in toggle with its count, then 72px rows labelled Course topic · read-only that open the read-only detail", () => {
+    expect(withSets).toContain("Show course topics (10)");
+    expect(withSets).toContain("COURSE TOPICS");
     expect(withSets.match(/data-built-in=/g)).toHaveLength(10);
-    const list = withSets.slice(
-      withSets.indexOf("BUILT-IN TOPICS"),
-      withSets.indexOf("Show built-in"),
-    );
+    const list = withSets.slice(withSets.indexOf("COURSE TOPICS"), withSets.indexOf("Show course"));
     expect(list.match(/h-\[72px\]/g)).toHaveLength(10);
     expect(list.match(/<a /g)).toHaveLength(10);
     expect(list.match(/lucide-chevron-right/g)).toHaveLength(10);
-    expect(list.match(/Built-in · read-only/g)).toHaveLength(10);
+    expect(list.match(/Course topic · read-only/g)).toHaveLength(10);
     expect(list).toContain('href="/instructor/content/built-in/S1"');
     expect(list).not.toContain("12 questions");
     expect(withSets).toContain('inert=""');
     const open = renderToStaticMarkup(
       <ContentView sets={[]} builtIn={builtIn} topicTitle={titleOf} initiallyOpen />,
     );
-    expect(open).toContain("Hide built-in topics");
+    expect(open).toContain("Hide course topics");
+  });
+
+  it("lists the topics from documents first and earlier question sets after, in ONE section", () => {
+    const topic = createTopic(emptyData(), "From a document", "", 0, []);
+    const html = renderToStaticMarkup(
+      <ContentView sets={[set()]} packages={[topic]} builtIn={builtIn} topicTitle={titleOf} />,
+    );
+    expect(html.match(/YOUR TOPICS/g)).toHaveLength(1);
+    expect(html).not.toContain("IMPORTED SETS");
+    expect(html.indexOf("From a document")).toBeLessThan(html.indexOf("Evacuation routes"));
+    expect(html).not.toContain("You have no topics of your own yet.");
   });
 
   it("has the empty state and the note about the browser", () => {
     const empty = renderToStaticMarkup(
       <ContentView sets={[]} builtIn={builtIn} topicTitle={titleOf} />,
     );
-    expect(empty).toContain("No imported sets yet. Import questions from a file to create one.");
+    expect(empty).toContain("You have no topics of your own yet. Import a document to create one.");
+    expect(empty).toContain("YOUR TOPICS");
     expect(empty).not.toContain("data-set-card");
     expect(empty).toContain("Imported content stays in this browser (prototype).");
-  });
-});
-
-describe("the Import screen", () => {
-  const importView = (
-    draft: {
-      title?: string;
-      topic?: string | null;
-      detected?: string | null;
-      file?: { name: string; size: number } | null;
-    } = {},
-    extra: { reading?: boolean; readError?: string } = {},
-  ) =>
-    render(
-      <ImportView
-        draft={{ title: "", topic: null, detected: null, file: null, ...draft }}
-        topicTitle={titleOf}
-        onFile={noop}
-        onRemoveFile={noop}
-        onTitle={noop}
-        onImport={noop}
-        onCancel={noop}
-        {...extra}
-      />,
-    );
-  const html = importView();
-
-  it("is in the order FILE, TITLE, TOPIC, with one visible label for the title and the template link", () => {
-    const at = (label: string) => html.indexOf(`>${label}</h2>`);
-    expect(at("FILE")).toBeGreaterThan(-1);
-    expect(at("FILE")).toBeLessThan(at("TITLE"));
-    expect(at("TITLE")).toBeLessThan(at("TOPIC"));
-    expect(html).not.toContain("SET TITLE");
-    expect(html).toContain('aria-label="Choose file"');
-    // the title input has a label for screen readers only, not a second visible one
-    expect(html).toMatch(/<label[^>]*class="sr-only"[^>]*>Set title<\/label>/);
-    expect(html).toContain("h-[52px]");
-    expect(html).toContain("CSV file · up to 5 MB");
-    expect(html).toContain("Word, Excel and PDF files are not read in this prototype.");
-    expect(html).toContain('accept=".csv"');
-    expect(html).toContain('href="/templates/question-template.csv"');
-    expect(html).toContain("Download CSV template");
-  });
-
-  it("has the short info card and no column list", () => {
-    expect(html).toContain("One row is one question");
-    expect(html).toContain("Download the template, fill it in and choose it above.");
-    expect(html).toContain("A person always reviews before publishing.");
-    expect(html).not.toContain("option_a");
-    expect(html).not.toContain("How the file is read");
-  });
-
-  it("shows one 64px Topic row with a chevron to the picker, or the detected topic read-only", () => {
-    expect(html).toContain('href="/instructor/content/import/topic"');
-    expect(html).toContain("Choose a topic");
-    const row = html.slice(html.indexOf("data-topic-row"), html.indexOf("data-topic-row") + 700);
-    expect(row).toContain("h-16");
-    expect(row).toContain("lucide-chevron-right");
-    expect(importView({ topic: "S3" })).toContain("S3 Topic S3");
-    const detected = importView({ detected: "S3" });
-    expect(detected).toContain("Detected from file: S3 Topic S3");
-    expect(detected).not.toContain('href="/instructor/content/import/topic"');
-    expect(detected).not.toContain("data-topic-row");
-  });
-
-  it("shows the chosen file with its size and Remove, and the reading state", () => {
-    const filled = importView({ title: "q", file: { name: "q.csv", size: 2048 } });
-    expect(filled).toContain("q.csv");
-    expect(filled).toContain("2 KB");
-    expect(filled).toContain(">Remove<");
-    const reading = importView({}, { reading: true });
-    expect(reading).toContain("Reading questions...");
-    expect(reading).toContain("motion-reduce:animate-none");
-  });
-
-  it("shows a file problem in the amber tone, never red", () => {
-    const code = readFileSync("components/InstructorContent/Amber.tsx", "utf8");
-    expect(code).toContain("text-status-attention-ink");
-    expect(code).not.toMatch(/text-wrong|\bred\b|text-red/);
-    const html2 = importView({}, { readError: "The file is empty." });
-    expect(html2).toContain("data-amber");
-    expect(html2).toContain("The file is empty.");
   });
 });
 
@@ -299,12 +227,10 @@ describe("the Edit question screen", () => {
 
   it("never loads anything over the network: no external addresses or fetch in the Content code", () => {
     for (const file of [
-      "components/InstructorContent/ImportView.tsx",
       "components/InstructorContent/EditQuestionView.tsx",
       "components/InstructorContent/ReviewView.tsx",
       "lib/content-import.ts",
       "lib/content-sets.ts",
-      "app/(app)/instructor/content/import/questions/page.tsx",
     ]) {
       const code = readFileSync(file, "utf8");
       expect(code, file).not.toMatch(

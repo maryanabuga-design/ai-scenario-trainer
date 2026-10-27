@@ -185,7 +185,6 @@ describe("a secondary always comes with a primary above it", () => {
       "components/FieldOfWork/FieldPickerView.tsx",
       "components/InstructorContent/DocumentAnalysingView.tsx",
       "components/InstructorContent/EditQuestionView.tsx",
-      "components/InstructorContent/ImportView.tsx",
       // Content package import: Cancel under Import and review, Replace files / Preview as student
       // beside the topic, Delete demo topic under Publish, the question editor's Cancel.
       "components/InstructorContent/PackageDetailsEdit.tsx",

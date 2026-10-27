@@ -1,7 +1,7 @@
-import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 import { authValue } from "./auth-seed";
+import { seedSet } from "./seed-set";
 
 const instructor = {
   cookies: [],
@@ -58,27 +58,34 @@ const primaries = (page: Page) =>
       PRIMARY,
     );
 
-/** Picks a topic on its own screen (a file without a topic column). */
-async function pickTopic(page: Page, name = "Checking the route") {
-  await page.locator("[data-topic-row]").click();
-  await expect(page).toHaveURL(/\/instructor\/content\/import\/topic$/);
-  await page.locator("fieldset label", { hasText: name }).click();
-  await expect(page).toHaveURL(/\/instructor\/content\/import\/questions$/);
-}
-
-/** Imports a file through the screen (file, title, topic) and stops on the Review. */
+/**
+ * Puts an earlier question set into this browser (the screen that created them is retired; sets that
+ * already exist keep working) and opens its Review. `text` is the CSV of makeCsv.
+ */
 async function importFile(
   page: Page,
   file: { name: string; mimeType: string; buffer: Buffer },
   title = "Evacuation routes",
+  status: "draft" | "published" = "draft",
 ) {
-  await page.goto("/instructor/content/import/questions");
-  await page.locator("[data-file-input]").setInputFiles(file);
-  await page.getByRole("textbox", { name: "Set title" }).fill(title);
-  // a CSV with a topic column names its topic; any other file asks for one
-  if ((await page.locator("[data-topic-detected]").count()) === 0) await pickTopic(page);
-  await page.getByRole("button", { name: "Import and review" }).click();
-  await expect(page).toHaveURL(/\/instructor\/content\/c[a-z0-9]+$/, { timeout: 10_000 });
+  const lines = file.buffer.toString("utf8").split("\n").slice(1);
+  const questions = lines.map((line, i) => {
+    const cells = line
+      .match(/("([^"]|"")*"|[^,]*)(,|$)/g)!
+      .map((c) => c.replace(/,$/, "").replace(/^"|"$/g, ""));
+    return {
+      id: `q${i + 1}`,
+      text: cells[1],
+      options: [cells[2], cells[3], cells[4], cells[5]] as [string, string, string, string],
+      correct: cells[6] === "" ? null : cells[6].toLowerCase(),
+      explanation: cells[7],
+      guideRef: cells[8],
+      imageUrl: "",
+    };
+  });
+  const id = await seedSet(page, { title, status, questions });
+  await page.goto(`/instructor/content/${id}`);
+  await expect(page).toHaveURL(/\/instructor\/content\/c[a-z0-9]+$/);
 }
 
 const csvFile = (text: string, name = "questions.csv") => ({
@@ -125,15 +132,16 @@ for (const width of [360, 430]) {
       const band = (await page.locator("[data-page-header-band]").boundingBox())!;
       expect(b.y - (band.y + band.height)).toBeLessThanOrEqual(20);
       await expect(
-        page.getByText("No imported sets yet. Import questions from a file to create one."),
+        page.getByText("You have no topics of your own yet. Import a document to create one."),
       ).toBeVisible();
+      await expect(page.getByRole("heading", { name: "YOUR TOPICS" })).toBeVisible();
       await expect(page.locator("[data-content-note]")).toHaveText(
         "Imported content stays in this browser (prototype).",
       );
       expect(await primaries(page)).toBe(1);
       expect(await noSidewaysScroll(page)).toBe(true);
       // the built-in toggle
-      const toggle = page.getByRole("button", { name: "Show built-in topics (10)" });
+      const toggle = page.getByRole("button", { name: "Show course topics (10)" });
       await toggle.click();
       await page.waitForTimeout(350);
       const rows = page.locator("[data-built-in]:visible");
@@ -144,7 +152,7 @@ for (const width of [360, 430]) {
       }
       // each row opens the read-only detail and carries the label
       await expect(page.locator("[data-built-in-label]:visible")).toHaveText(
-        Array(10).fill("Built-in · read-only"),
+        Array(10).fill("Course topic · read-only"),
       );
       await expect(page.locator("[data-built-in]").first()).toHaveAttribute(
         "href",
@@ -153,163 +161,18 @@ for (const width of [360, 430]) {
       await expect(page.locator("[data-page-header-band]:visible")).toContainText(
         "Materials and questions for your students",
       );
-      await page.getByRole("button", { name: "Hide built-in topics" }).click();
+      await page.getByRole("button", { name: "Hide course topics" }).click();
       await page.waitForTimeout(350);
       await expect(page.locator("[data-built-in]:visible")).toHaveCount(0);
     });
 
-    test("the CSV template downloads with the documented header row", async ({ page }) => {
-      await page.goto("/instructor/content/import/questions");
-      const [download] = await Promise.all([
-        page.waitForEvent("download"),
-        page.getByRole("link", { name: "Download CSV template" }).click(),
-      ]);
-      expect(download.suggestedFilename()).toBe("question-template.csv");
-      const path = await download.path();
-      const text = readFileSync(path!, "utf8");
-      expect(text.split("\n")[0]).toBe(HEADER);
-    });
-
-    test("Import: the order File, Title, Topic; the title follows the file name; the topic is found or picked", async ({
-      page,
-    }) => {
-      await page.goto("/instructor/content/import/questions");
-      await expect(page.getByRole("heading", { name: "Import questions", level: 1 })).toBeVisible();
-      const y = async (label: string) =>
-        (await page.getByRole("heading", { name: label, level: 2, exact: true }).boundingBox())!.y;
-      expect(await y("FILE")).toBeLessThan(await y("TITLE"));
-      expect(await y("TITLE")).toBeLessThan(await y("TOPIC"));
-      await expect(page.getByText("SET TITLE", { exact: true })).toHaveCount(0);
-      // one visible label for the title: the input is named for screen readers only
-      const title = page.getByRole("textbox", { name: "Set title" });
-      expect((await title.boundingBox())!.height).toBe(52);
-      await expect(page.locator("label:not(.sr-only)", { hasText: "Set title" })).toHaveCount(0);
-      await expect(page.locator("[data-file-area]")).toContainText("CSV file · up to 5 MB");
-      await expect(page.getByText("One row is one question")).toBeVisible();
-      await expect(page.getByText("option_a")).toHaveCount(0);
-      expect(await noSidewaysScroll(page)).toBe(true);
-      const read = page.getByRole("button", { name: "Import and review" });
-      await expect(read).toBeDisabled();
-      // a CSV with a topic column: the title comes from the file name, the topic is detected
-      await page
-        .locator("[data-file-input]")
-        .setInputFiles(csvFile(makeCsv(3), "evacuation routes.csv"));
-      await expect(title).toHaveValue("evacuation routes");
-      await expect(page.locator("[data-topic-detected]")).toContainText("Detected from file: S3");
-      expect((await page.locator("[data-topic-detected]").boundingBox())!.height).toBe(64);
-      await expect(page.locator("[data-topic-row]")).toHaveCount(0);
-      await expect(read).toBeEnabled();
-      expect(await bg(read)).toBe(PRIMARY);
-      expect(await primaries(page)).toBe(1);
-      // the title stays editable, and an edited title is not replaced by a new file
-      await title.fill("Mine");
-      await page.locator("[data-file-input]").setInputFiles(csvFile(makeCsv(2), "other.csv"));
-      await expect(title).toHaveValue("Mine");
-      // a file without a topic column: one 64px row opens the picker, a choice applies and returns
-      await page.getByRole("button", { name: "Remove" }).click();
-      await page
-        .locator("[data-file-input]")
-        .setInputFiles(csvFile("question,correct\nWhat?,A", "plain.csv"));
-      await expect(page.locator("[data-topic-detected]")).toHaveCount(0);
-      await expect(read).toBeDisabled();
-      const row = page.locator("[data-topic-row]");
-      expect((await row.boundingBox())!.height).toBe(64);
-      await expect(page.locator("[data-topic-value]")).toHaveText("Choose a topic");
-      await row.click();
-      await expect(page).toHaveURL(/\/instructor\/content\/import\/topic$/);
-      await expect(page.getByRole("link", { name: "Back to Import" })).toBeVisible();
-      const rows = page.locator("fieldset label:visible");
-      await expect(rows).toHaveCount(10);
-      for (const r of await rows.all()) expect((await r.boundingBox())!.height).toBe(64);
-      expect(await noSidewaysScroll(page)).toBe(true);
-      await page.locator("fieldset label", { hasText: "Burns" }).click();
-      await expect(page).toHaveURL(/\/instructor\/content\/import\/questions$/);
-      await expect(page.locator("[data-topic-value]")).toContainText("S8");
-      // the file and the title were kept while the picker was open
-      await expect(page.locator("[data-file-name]")).toHaveText("plain.csv");
-      await expect(title).toHaveValue("Mine");
-      await expect(read).toBeEnabled();
-    });
-
-    test("Import: which files are accepted, which are refused (amber), and Cancel", async ({
-      page,
-    }) => {
-      await page.goto("/instructor/content/import/questions");
-      const read = page.getByRole("button", { name: "Import and review" });
-      const input = page.locator("[data-file-input]");
-      await expect(input).toHaveAttribute("accept", ".csv");
-      // other extensions, empty files and files over the limit are refused in amber
-      await input.setInputFiles({
-        name: "q.txt",
-        mimeType: "text/plain",
-        buffer: Buffer.from("x"),
-      });
-      await expect(page.locator("[data-amber]:visible")).toContainText(
-        "Choose a CSV file. Word, Excel and PDF files are not read in this prototype.",
-      );
-      expect(await colour(page.locator("[data-amber]:visible"))).toBe(ATTENTION_INK);
-      await expect(page.locator("[data-file-row]")).toHaveCount(0);
-      await input.setInputFiles({ name: "q.csv", mimeType: "text/csv", buffer: Buffer.alloc(0) });
-      await expect(page.locator("[data-amber]:visible")).toContainText("The file is empty.");
-      await input.setInputFiles({
-        name: "big.csv",
-        mimeType: "text/csv",
-        buffer: Buffer.alloc(1024 * 1024 + 1, "a"),
-      });
-      await expect(page.locator("[data-amber]:visible")).toContainText(
-        "A CSV file may be up to 1 MB.",
-      );
-      await input.setInputFiles({
-        name: "big.pdf",
-        mimeType: "application/pdf",
-        buffer: Buffer.alloc(5 * 1024 * 1024 + 1, "a"),
-      });
-      await expect(page.locator("[data-amber]:visible")).toContainText(
-        "The file is larger than 5 MB.",
-      );
-      await expect(read).toBeDisabled();
-      // a PDF, Word or Excel file up to 5 MB is still let through for the prepared sample (it is not read)
-      for (const name of ["a.pdf", "a.docx", "a.xlsx"]) {
-        await input.setInputFiles({
-          name,
-          mimeType: "application/octet-stream",
-          buffer: Buffer.alloc(2 * 1024 * 1024, "a"),
-        });
-        await expect(page.locator("[data-amber]:visible")).toHaveCount(0);
-        await expect(page.locator("[data-file-name]")).toHaveText(name);
-        await expect(page.locator("[data-file-row]")).toContainText("2.0 MB");
-      }
-      // Cancel: asks first because something was entered, then Discard leaves
-      await page.getByRole("button", { name: "Cancel" }).click();
-      const dialog = page.locator("dialog[open]");
-      expect(await bg(dialog.getByRole("button", { name: "Discard" }))).toBe(PRIMARY);
-      expect(await bg(dialog.getByRole("button", { name: "Keep editing" }))).toBe(OLIVE_TINT);
-      await dialog.getByRole("button", { name: "Keep editing" }).click();
-      await expect(page.getByRole("textbox", { name: "Set title" })).toHaveValue("a");
-      await page.getByRole("button", { name: "Cancel" }).click();
-      await dialog.getByRole("button", { name: "Discard" }).click();
-      await expect(page).toHaveURL(/\/instructor\/content$/);
-      // and with nothing entered Cancel leaves at once (the form starts empty again)
-      await page.goto("/instructor/content/import/questions");
-      await expect(page.getByRole("textbox", { name: "Set title" })).toHaveValue("");
-      await page.getByRole("button", { name: "Cancel" }).click();
-      await expect(page).toHaveURL(/\/instructor\/content$/);
-    });
-
-    test("a valid CSV: Reading questions, then 20 ready; Publish, Unpublish and Delete set", async ({
-      page,
-    }) => {
+    test("an earlier set: 20 ready; Publish, Unpublish and Delete set", async ({ page }) => {
       const requests: string[] = [];
       page.on("request", (r) => {
         const url = r.url();
         if (!url.startsWith("data:") && !url.startsWith("blob:")) requests.push(url);
       });
-      await page.goto("/instructor/content/import/questions");
-      await page.locator("[data-file-input]").setInputFiles(csvFile(makeCsv(20)));
-      await page.getByRole("textbox", { name: "Set title" }).fill("Evacuation routes");
-      await page.getByRole("button", { name: "Import and review" }).click();
-      await expect(page.locator("[data-reading]")).toHaveText("Reading questions...");
-      await expect(page).toHaveURL(/\/instructor\/content\/c[a-z0-9]+$/, { timeout: 10_000 });
+      await importFile(page, csvFile(makeCsv(20)));
       await expect(count(page, "ready")).toHaveText("20");
       await expect(count(page, "attention")).toHaveText("0");
       await expect(page.getByRole("heading", { level: 1 })).toHaveText("Evacuation routes");
@@ -510,22 +373,6 @@ for (const width of [360, 430]) {
       expect(stored.data).toMatch(/^data:image\/png;base64,/);
     });
 
-    test("a Word file shows the prepared sample with its label (topic chosen by hand); 18 ready and 2 need attention", async ({
-      page,
-    }) => {
-      await importFile(page, {
-        name: "notes.docx",
-        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        buffer: Buffer.from("PK not really a document"),
-      });
-      await expect(page.locator("[data-sample-label]")).toHaveText(
-        "Sample result. This file type is not read in this prototype.",
-      );
-      await expect(count(page, "ready")).toHaveText("18");
-      await expect(count(page, "attention")).toHaveText("2");
-      await expect(page.locator("[data-publish-hint]")).toHaveText("Fix 2 questions to publish");
-    });
-
     test("drafts survive a reload, and a broken saved value never crashes", async ({ page }) => {
       await importFile(page, csvFile(makeCsv(4)), "Kept set");
       await page.goto("/instructor/content");
@@ -533,7 +380,7 @@ for (const width of [360, 430]) {
       await expect(page.locator("[data-set-card]")).toContainText("Kept set");
       await page.evaluate(() => localStorage.setItem("ast.content-sets.v1", "{not json"));
       await page.reload();
-      await expect(page.getByText("No imported sets yet.")).toBeVisible();
+      await expect(page.getByText("You have no topics of your own yet.")).toBeVisible();
     });
 
     test("markup in a file is shown as text and never runs", async ({ page }) => {

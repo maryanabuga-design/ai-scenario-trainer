@@ -10,13 +10,13 @@ import { initialOpen, toggleOpen } from "@/lib/accordion";
 import { stepCountLabel } from "@/lib/checklists";
 import type { Checklist } from "@/lib/checklists";
 
-export const BUILT_IN_LABEL = "Built-in · read-only";
+export const BUILT_IN_LABEL = "Course topic · read-only";
 
 export type BuiltInTab = "overview" | "steps";
 
 /**
  * A built-in topic for the Instructor (DESIGN.md: Steps in Materials, Content labels): read-only. The
- * band names the topic and says "Built-in · read-only"; the Overview card counts its questions and
+ * band names the topic and says "Course topic · read-only"; the Overview card counts its questions and
  * names its guide section; only a topic with an attached step guide (S1, S7, S8) has the second tab
  * "Steps", which lists that guide's steps as the shared read-only step cards.
  */

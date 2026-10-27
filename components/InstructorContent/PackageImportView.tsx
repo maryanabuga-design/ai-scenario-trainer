@@ -1,10 +1,9 @@
 "use client";
 
-import { FileSpreadsheet, X } from "lucide-react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Download, FileSpreadsheet, Sparkles, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
-import { Button, ButtonLink } from "@/components/Button/Button";
+import { Button, buttonClasses } from "@/components/Button/Button";
 import { Amber } from "@/components/InstructorContent/Amber";
 import { Notice } from "@/components/Notice/Notice";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
@@ -13,14 +12,21 @@ import { sizeText } from "@/lib/content-import";
 export const CHOOSE_TITLE = "Choose a document";
 export const CHOOSE_HELP = "Excel (.xlsx), up to 10 MB";
 export const IMAGES_LINE = "You can also add them later.";
+/** Two equal compact Secondary buttons in one row: 44px high at least, a label that wraps, never truncated. */
+const rowButton = `${buttonClasses({ variant: "secondary", compact: true, wide: false })} h-auto! min-h-11 min-w-0 flex-1 basis-0 px-3 py-2 leading-tight`;
 export const ACCEPT = ".xlsx";
 export const IMAGE_ACCEPT = ".png,.jpg,.jpeg,.webp";
 
-const INCLUDE: { name: string; note: string; required?: boolean }[] = [
-  { name: "Guide", note: "The sections people learn from, in order. Required.", required: true },
-  { name: "Steps", note: "Short step guides that rely on a guide section. Optional." },
-  { name: "Scenario", note: "Situations with four answers and one correct. Optional." },
-  { name: "Questions", note: "Quiz questions with four answers and one correct. Optional." },
+export const HELPER =
+  "Upload one Excel document. We will read it and prepare a draft topic for you to review.";
+export const SECTION_LINE =
+  "Steps, scenario steps and questions name the guide section they are based on (Section column).";
+export const INCLUDE: { name: string; note: string }[] = [
+  { name: "Topic", note: "title and short description (required)" },
+  { name: "Guide", note: "the text people read, in numbered sections (required)" },
+  { name: "Steps", note: "short action lists (optional)" },
+  { name: "Scenario", note: "situations with four answers (optional)" },
+  { name: "Questions", note: "quiz questions (optional)" },
 ];
 
 /**
@@ -48,8 +54,8 @@ function RemoveCorner({ label, onClick }: { label: string; onClick: () => void }
 
 /**
  * Import content (DESIGN.md: One document in, a draft topic out): ONE large card "Choose a document"
- * that becomes ONE file card (name, size, a corner x), the tertiary links "Download template" and
- * "Use sample document", the collapsed row "What to include", the optional images, plain messages
+ * that becomes ONE file card (name, size, a corner x), the two compact buttons "Download blank template" and
+ * "Try an example", the collapsed row "What to include", the optional images, plain messages
  * under the file card, and the pinned Primary "Import and review" above Secondary "Cancel". Nothing
  * is uploaded: the document is read on this device.
  */
@@ -94,6 +100,9 @@ export function PackageImportView({
         title="Import content"
         back={{ label: "Back to Content", href: "/instructor/content" }}
       />
+      <p data-helper className="type-body text-text-secondary">
+        {HELPER}
+      </p>
       {notice && (
         <Notice variant="info" clamp={false} title="Replace document">
           {notice}
@@ -149,18 +158,19 @@ export function PackageImportView({
           </button>
         )}
         {message && <Amber id="import-message">{message}</Amber>}
-        <div className="flex flex-wrap items-center gap-x-2">
-          <ButtonLink
+        <div data-actions-row className="flex gap-3">
+          <a
             href="/templates/guide-template.xlsx"
             download="guide-template.xlsx"
-            variant="tertiary"
-            wide={false}
+            className={`${rowButton} text-center`}
           >
-            Download template
-          </ButtonLink>
-          <Button variant="tertiary" onClick={onSample}>
-            Use sample document
-          </Button>
+            <Download size={18} strokeWidth={2} aria-hidden="true" className="shrink-0" />
+            <span>Download blank template</span>
+          </a>
+          <button type="button" onClick={onSample} className={rowButton}>
+            <Sparkles size={18} strokeWidth={2} aria-hidden="true" className="shrink-0" />
+            <span>Try an example</span>
+          </button>
         </div>
       </section>
 
@@ -188,21 +198,13 @@ export function PackageImportView({
               {INCLUDE.map((part) => (
                 <li key={part.name} className="type-small text-text-secondary">
                   <span className="type-body-strong text-text">{part.name}</span>
-                  {" · "}
+                  {": "}
                   {part.note}
                 </li>
               ))}
             </ul>
-            <p className="type-small text-text-secondary">
-              Every step, scenario step and question points to a guide section. Only questions?{" "}
-              <ButtonLink
-                href="/instructor/content/import/questions"
-                variant="tertiary"
-                compact
-                wide={false}
-              >
-                Import a question set
-              </ButtonLink>
+            <p data-section-line className="type-small text-text-secondary">
+              {SECTION_LINE}
             </p>
           </div>
         )}

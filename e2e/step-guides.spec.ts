@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 import { authValue } from "./auth-seed";
+import { seedSet } from "./seed-set";
 
 const profile = { direction: "building-evacuation", onboarded: true };
 const instructor = {
@@ -13,7 +14,6 @@ const instructor = {
   ],
 };
 const NEUTRAL_TILE = "rgb(226, 222, 214)";
-const D = "public/templates/sample-package/";
 
 const noSidewaysScroll = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
@@ -206,13 +206,13 @@ for (const width of [360, 430]) {
       await expect(page.locator("[data-page-header-band]:visible")).toContainText(
         "Materials and questions for your students",
       );
-      await page.getByRole("button", { name: /Show built-in topics/ }).click();
+      await page.getByRole("button", { name: /Show course topics/ }).click();
       await page.waitForTimeout(350);
       await expect(page.locator("[data-built-in-label]:visible")).toHaveCount(10);
       for (const id of ["S1", "S7", "S8"]) {
         await page.goto(`/instructor/content/built-in/${id}`);
         await expect(page.locator("[data-page-header-band]:visible")).toContainText(
-          `${id} · Built-in · read-only`,
+          `${id} · Course topic · read-only`,
         );
         await page.getByRole("radio", { name: "Steps" }).check({ force: true });
         const steps = page.locator("[data-built-in-steps]:visible > li");
@@ -230,9 +230,20 @@ for (const width of [360, 430]) {
     test("an imported set card uses the neutral icon tile, not the dashed 3D placeholder", async ({
       page,
     }) => {
-      await page.goto("/instructor/content/import/questions");
-      await page.locator("input[type=file]").setInputFiles(`${D}questions.csv`);
-      await expect(page.getByLabel(/Set title|title/i).first()).toBeVisible();
+      await seedSet(page, {
+        title: "Evacuation routes",
+        questions: [
+          {
+            id: "q1",
+            text: "What is safest?",
+            options: ["Marked exit", "Lift", "Wait", ""],
+            correct: "a",
+            explanation: "The marked exit.",
+            guideRef: "S3",
+            imageUrl: "",
+          },
+        ],
+      });
       await page.goto("/instructor/content");
       // no dashed placeholder anywhere on the screen
       await expect(page.locator("[data-media3d]:visible")).toHaveCount(0);
@@ -248,16 +259,15 @@ for (const width of [360, 430]) {
       page,
     }) => {
       await page.goto("/instructor/content/import");
-      await page
-        .locator("[data-file-input]")
-        .setInputFiles(
-          ["topic", "guide", "steps", "scenario", "questions"]
-            .map((n) => `${D}${n}.csv`)
-            .concat([`${D}exit-sign.png`, `${D}assembly-point.png`]),
-        );
-      await expect(page.locator("[data-recognised-row]").first()).toBeVisible();
+      await page.getByRole("button", { name: "Try an example" }).click();
       await page.getByRole("button", { name: "Import and review" }).click();
-      await expect(page).toHaveURL(/\/instructor\/content\/package\//, { timeout: 15000 });
+      await expect(page.getByRole("heading", { name: "Draft is ready" })).toBeVisible({
+        timeout: 15000,
+      });
+      const id = await page.evaluate(
+        () => JSON.parse(localStorage.getItem("ast.demo-topics.v1")!).value[0].id as string,
+      );
+      await page.goto(`/instructor/content/package/${id}`);
       await page.getByRole("button", { name: "Publish", exact: true }).click();
       await page.getByRole("dialog").getByRole("button", { name: "Publish", exact: true }).click();
       await expect(page.getByRole("button", { name: "Unpublish" })).toBeVisible();

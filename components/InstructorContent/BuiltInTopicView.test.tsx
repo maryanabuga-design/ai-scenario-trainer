@@ -18,7 +18,7 @@ const render = (id: string, tab?: "overview" | "steps") =>
 describe("the built-in topic for the Instructor", () => {
   it("is read-only with the label and Back to Content", () => {
     const html = render("S2");
-    expect(html).toContain("S2 · Built-in · read-only");
+    expect(html).toContain("S2 · Course topic · read-only");
     expect(html).toContain('aria-label="Back to Content"');
     expect(html).toContain("12 questions");
     expect(html).toContain("4 min read");

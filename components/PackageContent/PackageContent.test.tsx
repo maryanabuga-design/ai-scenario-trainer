@@ -28,12 +28,7 @@ import {
 } from "@/components/PackageContent/PackageParts";
 import { PackageStudentScreen } from "@/components/PackageContent/PackageStudentScreen";
 import type { StudentPart } from "@/components/PackageContent/PackageStudentScreen";
-import {
-  blockingIssues,
-  checkPackage,
-  fixMessage,
-  readPackage,
-} from "@/lib/package-read";
+import { blockingIssues, checkPackage, fixMessage, readPackage } from "@/lib/package-read";
 import { flaggedItems } from "@/lib/package-review";
 import type { PackageFile } from "@/lib/package-read";
 import { createTopic } from "@/lib/packages";
@@ -91,7 +86,7 @@ const importView = (extra: Partial<Parameters<typeof PackageImportView>[0]> = {}
 const doc = { name: "evacuation-guide.xlsx", size: 34_000 };
 
 describe("the import screen", () => {
-  it("empty: ONE large dashed card, the muted line, two tertiary links, a collapsed What to include, Import disabled", () => {
+  it("empty: ONE large dashed card, the muted line, two compact buttons, a collapsed What to include, Import disabled", () => {
     const html = importView();
     expect(html).toContain(">Import content</h1>");
     expect(html).toContain("Choose a document");
@@ -99,8 +94,6 @@ describe("the import screen", () => {
     expect(html).toContain("border-dashed");
     expect(html).toContain('accept=".xlsx"');
     expect(html).not.toMatch(/multiple=""[^>]*data-file-input|data-file-input[^>]*multiple=""/);
-    expect(html).toMatch(/underline[^>]*>Download template</);
-    expect(html).toMatch(/underline[^>]*>Use sample document</);
     expect(html).toContain('href="/templates/guide-template.xlsx"');
     expect(html).toContain('aria-expanded="false"');
     expect(html).not.toContain('id="include-panel"');
@@ -111,13 +104,49 @@ describe("the import screen", () => {
     expect(html.indexOf("Import and review")).toBeLessThan(html.indexOf(">Cancel<"));
   });
 
-  it("What to include opens to four lines: Guide required, Steps, Scenario and Questions optional", () => {
+  it("has the helper line under the title and ONE row of two equal compact Secondary buttons with icons", () => {
+    const html = importView();
+    expect(html).toContain(
+      "Upload one Excel document. We will read it and prepare a draft topic for you to review.",
+    );
+    expect(html.indexOf("data-helper")).toBeGreaterThan(html.indexOf(">Import content</h1>"));
+    const row = html.slice(html.indexOf("data-actions-row"), html.indexOf("What to include"));
+    expect(row).toContain("Download blank template");
+    expect(row).toContain("Try an example");
+    expect(row).toContain('href="/templates/guide-template.xlsx"');
+    expect(row).toContain("lucide-download");
+    expect(row).toContain("lucide-sparkles");
+    // equal widths (flex-1 basis-0), 44px at least, the label may wrap, gap 12px, no underline
+    expect(row.match(/flex-1 basis-0/g)).toHaveLength(2);
+    expect(row.match(/min-h-11/g)).toHaveLength(2);
+    expect(row).toContain("gap-3");
+    expect(row).toMatch(/bg-olive-tint/);
+    expect(row).not.toContain("underline");
+    expect(row).not.toContain("truncate");
+    expect(html).not.toContain("Use sample document");
+    expect(html).not.toContain("Download template<");
+  });
+
+  it("What to include opens to five lines and the Section sentence; there is no question-set link", () => {
     const html = importView({ includeOpen: true });
     expect(html).toContain('aria-expanded="true"');
-    for (const line of ["Guide", "Steps", "Scenario", "Questions"]) expect(html).toContain(line);
-    expect(html).toContain("Required.");
-    expect(html.match(/Optional\./g)).toHaveLength(3);
-    expect(html).toContain("Import a question set");
+    const panel = html.slice(html.indexOf('id="include-panel"'));
+    expect(panel.match(/<li /g)).toHaveLength(5);
+    for (const line of [
+      "Topic</span>: title and short description (required)",
+      "Guide</span>: the text people read, in numbered sections (required)",
+      "Steps</span>: short action lists (optional)",
+      "Scenario</span>: situations with four answers (optional)",
+      "Questions</span>: quiz questions (optional)",
+    ]) {
+      expect(panel, line).toContain(line);
+    }
+    expect(panel).toContain(
+      "Steps, scenario steps and questions name the guide section they are based on (Section column).",
+    );
+    expect(html).not.toContain("Only questions?");
+    expect(html).not.toContain("question set");
+    expect(html).not.toContain("/import/questions");
   });
 
   it("a file chosen: the dashed card is replaced by ONE file card with a corner x, the Images row appears, Import is enabled", () => {

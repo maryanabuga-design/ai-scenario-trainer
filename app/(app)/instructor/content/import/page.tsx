@@ -83,7 +83,7 @@ function Import() {
           return {
             name: SAMPLE_IMAGES[i],
             size: blob.size,
-            dataUrl: await readUrl(new File([blob], SAMPLE_IMAGES[i])),
+            dataUrl: await readUrl(new File([blob], SAMPLE_IMAGES[i], { type: "image/png" })),
           };
         }),
       );

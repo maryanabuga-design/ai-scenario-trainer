@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 import { authValue, emptyBrowser } from "./auth-seed";
+import { seedSet } from "./seed-set";
 
 const quizBank: { id: string; correctOptionId: string }[] = JSON.parse(
   readFileSync("content/quiz-bank.json", "utf8"),
@@ -281,14 +282,22 @@ for (const width of [360, 430]) {
     test("a draft set is a row that opens its Review; publishing it removes the row", async ({
       page,
     }) => {
-      await page.goto("/instructor/content/import/questions");
-      const csv =
-        "topic,question,option_a,option_b,option_c,option_d,correct,explanation,guide_reference,image_url\nS2,What is safest?,Marked exit,Lift,Wait,,A,The marked exit.,S2,";
-      await page
-        .locator("[data-file-input]")
-        .setInputFiles({ name: "my set.csv", mimeType: "text/csv", buffer: Buffer.from(csv) });
-      await page.getByRole("button", { name: "Import and review" }).click();
-      await expect(page).toHaveURL(/\/instructor\/content\/c[a-z0-9]+$/, { timeout: 10_000 });
+      const setId = await seedSet(page, {
+        title: "my set",
+        topic: "S2",
+        questions: [
+          {
+            id: "q1",
+            text: "What is safest?",
+            options: ["Marked exit", "Lift", "Wait", ""],
+            correct: "a",
+            explanation: "The marked exit.",
+            guideRef: "S2",
+            imageUrl: "",
+          },
+        ],
+      });
+      await page.goto(`/instructor/content/${setId}`);
       const reviewUrl = page.url();
       await page.goto("/instructor");
       const row = page.locator('[data-action="draft-set"]');

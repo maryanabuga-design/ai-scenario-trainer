@@ -33,6 +33,8 @@ const primaries = (page: Page) =>
       }).length,
     PRIMARY,
   );
+const bg = (loc: ReturnType<Page["locator"]>) =>
+  loc.evaluate((el) => getComputedStyle(el).backgroundColor);
 const storedTopics = (page: Page) =>
   page.evaluate(() => localStorage.getItem("ast.demo-topics.v1"));
 const choose = async (
@@ -47,7 +49,7 @@ for (const width of [360, 430]) {
   test.describe(`Import one document at ${width}px`, () => {
     test.use({ viewport: { width, height: 800 } });
 
-    test("empty: one large dashed card, the muted line, two tertiary links, What to include collapsed, one disabled Primary", async ({
+    test("empty: one large dashed card, the muted line, two compact buttons, What to include collapsed, one disabled Primary", async ({
       page,
     }) => {
       await page.goto("/instructor/content/import");
@@ -57,17 +59,6 @@ for (const width of [360, 430]) {
       await expect(card).toContainText("Excel (.xlsx), up to 10 MB");
       expect(await card.evaluate((el) => getComputedStyle(el).borderStyle)).toBe("dashed");
       expect((await card.boundingBox())!.height).toBeGreaterThanOrEqual(120);
-      for (const name of ["Download template", "Use sample document"]) {
-        const link = page.getByRole("link", { name }).or(page.getByRole("button", { name }));
-        const box = (await link.first().boundingBox())!;
-        expect(box.height).toBeGreaterThanOrEqual(44);
-        expect(
-          await link
-            .first()
-            .locator("span")
-            .evaluate((el) => getComputedStyle(el).textDecorationLine),
-        ).toContain("underline");
-      }
       await expect(page.getByText("IMAGES (OPTIONAL)")).toHaveCount(0);
       await expect(importButton(page)).toBeDisabled();
       expect(await primaries(page)).toBe(0);
@@ -77,9 +68,112 @@ for (const width of [360, 430]) {
       await row.click();
       const panel = page.locator("#include-panel");
       await expect(panel).toContainText("Guide");
-      await expect(panel).toContainText("Required.");
-      await expect(panel.locator("li")).toHaveCount(4);
+      await expect(panel.locator("li")).toHaveCount(5);
       expect(await noSidewaysScroll(page)).toBe(true);
+    });
+
+    test("the helper line and the two equal compact buttons: same width, 44px or more, no overflow, wrapping instead of truncating", async ({
+      page,
+    }) => {
+      await page.goto("/instructor/content/import");
+      await expect(page.locator("[data-helper]")).toHaveText(
+        "Upload one Excel document. We will read it and prepare a draft topic for you to review.",
+      );
+      expect(await page.locator("[data-helper]").evaluate((el) => getComputedStyle(el).color)).toBe(
+        "rgb(92, 90, 85)",
+      );
+      const download = page.getByRole("link", { name: "Download blank template" });
+      const example = page.getByRole("button", { name: "Try an example" });
+      const [a, b] = [(await download.boundingBox())!, (await example.boundingBox())!];
+      expect(Math.abs(a.width - b.width)).toBeLessThanOrEqual(1);
+      expect(a.height).toBeGreaterThanOrEqual(44);
+      expect(b.height).toBeGreaterThanOrEqual(44);
+      expect(a.y).toBe(b.y);
+      expect(Math.round(b.x - (a.x + a.width))).toBe(12);
+      expect(a.x).toBeGreaterThanOrEqual(0);
+      expect(b.x + b.width).toBeLessThanOrEqual(width);
+      for (const button of [download, example]) {
+        expect(await bg(button)).toBe("rgb(224, 230, 214)");
+        // the label is never cut off: all its text is inside the button
+        expect(
+          await button.evaluate(
+            (el) => el.scrollWidth <= el.clientWidth + 1 && el.scrollHeight <= el.clientHeight + 1,
+          ),
+        ).toBe(true);
+        await expect(button.locator("svg")).toHaveCount(1);
+      }
+      expect(await noSidewaysScroll(page)).toBe(true);
+      expect(await primaries(page)).toBe(0);
+    });
+
+    test("the template downloads and the example loads and continues to Analysing", async ({
+      page,
+    }) => {
+      await page.goto("/instructor/content/import");
+      const [download] = await Promise.all([
+        page.waitForEvent("download"),
+        page.getByRole("link", { name: "Download blank template" }).click(),
+      ]);
+      expect(download.suggestedFilename()).toBe("guide-template.xlsx");
+      await page.getByRole("button", { name: "Try an example" }).click();
+      await expect(page.locator("[data-file-card]")).toContainText("sample-document.xlsx");
+      await importButton(page).click();
+      await expect(page).toHaveURL(/\/import\/analysing$/);
+      await expect(page.getByRole("heading", { name: "Reading your document…" })).toBeVisible();
+      // saved and read back, the example still has its pictures: nothing is flagged on the topic
+      await expect(page.getByRole("heading", { name: "Draft is ready" })).toBeVisible({
+        timeout: 10000,
+      });
+      const id = await page.evaluate(
+        () => JSON.parse(localStorage.getItem("ast.demo-topics.v1")!).value[0].id as string,
+      );
+      await page.goto(`/instructor/content/package/${id}`);
+      await expect(page.locator("#package-status")).toContainText("All items checked");
+    });
+
+    test("What to include shows five lines and the Section sentence; no question-set link remains", async ({
+      page,
+    }) => {
+      await page.goto("/instructor/content/import");
+      await page.getByRole("button", { name: "What to include" }).click();
+      const panel = page.locator("#include-panel");
+      await expect(panel.locator("li")).toHaveText([
+        "Topic: title and short description (required)",
+        "Guide: the text people read, in numbered sections (required)",
+        "Steps: short action lists (optional)",
+        "Scenario: situations with four answers (optional)",
+        "Questions: quiz questions (optional)",
+      ]);
+      await expect(panel).toContainText(
+        "Steps, scenario steps and questions name the guide section they are based on (Section column).",
+      );
+      await expect(page.locator("main")).not.toContainText(/Only questions|question set/i);
+      await expect(page.locator('a[href*="import/questions"]')).toHaveCount(0);
+      expect(await noSidewaysScroll(page)).toBe(true);
+    });
+
+    test("the old Import questions route redirects to Import content; Content has the new labels and empty state", async ({
+      page,
+    }) => {
+      await page.goto("/instructor/content/import/questions");
+      await expect(page).toHaveURL(/\/instructor\/content\/import$/);
+      await expect(page.getByRole("heading", { name: "Import content" })).toBeVisible();
+      await page.goto("/instructor/content");
+      await expect(page.getByRole("heading", { name: "YOUR TOPICS" })).toBeVisible();
+      await expect(
+        page.getByText("You have no topics of your own yet. Import a document to create one."),
+      ).toBeVisible();
+      await expect(
+        page.locator('a[href*="import/questions"], a[href*="import/topic"]'),
+      ).toHaveCount(0);
+      await page.getByRole("button", { name: "Show course topics (10)" }).click();
+      await page.waitForTimeout(350);
+      await expect(page.getByRole("heading", { name: "COURSE TOPICS" })).toBeVisible();
+      await expect(page.locator("[data-built-in-label]:visible")).toHaveText(
+        Array(10).fill("Course topic · read-only"),
+      );
+      await expect(page.locator("main")).not.toContainText(/IMPORTED SETS|BUILT-IN TOPICS/);
+      expect(await primaries(page)).toBe(1);
     });
 
     test("choose, remove and replace a file: one file card with a corner x, the Images row, Import enabled", async ({
@@ -166,7 +260,7 @@ for (const width of [360, 430]) {
       );
     });
 
-    test("Download template and Use sample document use the two Excel files", async ({
+    test("Download template and Try an example use the two Excel files", async ({
       page,
       request,
     }) => {
@@ -176,10 +270,10 @@ for (const width of [360, 430]) {
         expect((await response.body()).length).toBeGreaterThan(2000);
       }
       await page.goto("/instructor/content/import");
-      const template = page.getByRole("link", { name: "Download template" });
+      const template = page.getByRole("link", { name: "Download blank template" });
       await expect(template).toHaveAttribute("href", "/templates/guide-template.xlsx");
       await expect(template).toHaveAttribute("download", "guide-template.xlsx");
-      await page.getByRole("button", { name: "Use sample document" }).click();
+      await page.getByRole("button", { name: "Try an example" }).click();
       await expect(page.locator("[data-file-card]")).toContainText("sample-document.xlsx");
       await expect(page.locator("[data-images]")).toContainText("2 images added");
       await expect(importButton(page)).toBeEnabled();
@@ -189,7 +283,7 @@ for (const width of [360, 430]) {
       page,
     }) => {
       await page.goto("/instructor/content/import");
-      await page.getByRole("button", { name: "Use sample document" }).click();
+      await page.getByRole("button", { name: "Try an example" }).click();
       await importButton(page).click();
       await expect(page).toHaveURL(/\/import\/analysing$/);
       await expect(page.getByRole("heading", { name: "Reading your document…" })).toBeVisible();
@@ -326,7 +420,7 @@ for (const width of [360, 430]) {
       page,
     }) => {
       await page.goto("/instructor/content/import");
-      await page.getByRole("button", { name: "Use sample document" }).click();
+      await page.getByRole("button", { name: "Try an example" }).click();
       await importButton(page).click();
       await expect(page.getByRole("heading", { name: "Draft is ready" })).toBeVisible({
         timeout: 10000,
@@ -364,7 +458,7 @@ for (const width of [360, 430]) {
           external.push(url);
       });
       await page.goto("/instructor/content/import");
-      await page.getByRole("button", { name: "Use sample document" }).click();
+      await page.getByRole("button", { name: "Try an example" }).click();
       await importButton(page).click();
       await expect(page.getByRole("heading", { name: "Draft is ready" })).toBeVisible({
         timeout: 10000,

@@ -44,7 +44,6 @@ import { InviteView } from "@/components/InstructorStudents/InviteView";
 import { reminderFor, unfinishedExam } from "@/lib/reminders";
 import { ContentView } from "@/components/InstructorContent/ContentView";
 import { EditQuestionView } from "@/components/InstructorContent/EditQuestionView";
-import { ImportView } from "@/components/InstructorContent/ImportView";
 import { ReviewView } from "@/components/InstructorContent/ReviewView";
 import { sampleQuestions } from "@/lib/content-import";
 import type { ContentSet } from "@/lib/content-sets";
@@ -1695,9 +1694,6 @@ export function InstructorContentSample({
     | "empty"
     | "sets"
     | "built-in"
-    | "import"
-    | "import-filled"
-    | "import-error"
     | "review-flags"
     | "review-ready"
     | "review-published"
@@ -1748,26 +1744,6 @@ export function InstructorContentSample({
         builtIn={builtIn}
         topicTitle={titleOf}
         initiallyOpen={state === "built-in"}
-      />
-    );
-  }
-  if (state === "import" || state === "import-filled" || state === "import-error") {
-    return (
-      <ImportView
-        topicTitle={titleOf}
-        draft={{
-          title: state === "import" ? "" : "Evacuation routes",
-          topic: null,
-          detected: state === "import-filled" ? "S2" : null,
-          file: state === "import" ? null : { name: "evacuation routes.csv", size: 18_400 },
-        }}
-        onFile={() => undefined}
-        onRemoveFile={() => undefined}
-        onTitle={() => undefined}
-        onImport={() => undefined}
-        onCancel={() => undefined}
-        readError={state === "import-error" ? "A CSV file may be up to 1 MB." : ""}
-        dialogInline
       />
     );
   }
