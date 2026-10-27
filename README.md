@@ -65,11 +65,13 @@ Build order and decisions: `docs/build-plan.md`.
 
 ## Known limitations
 
-- Invitations and reminders to the invented students are simulated: no email is sent and nothing leaves the browser (a reminder to a local student account appears in that account's Notifications). Word, Excel and PDF files are not parsed; only CSV files are read.
+- Invitations and reminders to the invented students are simulated: no email is sent and nothing leaves the browser (a reminder to a local student account appears in that account's Notifications). Word and PDF files are not parsed.
 
 - Field of work (Student) is stored only in this browser and only tunes the prepared examples of the simulated Ask AI. In a real product it would be sensitive and optional.
 
-- Content import (Instructor): only CSV files are read (locally, nothing is uploaded). Word files are not parsed in this prototype and a prepared sample result is shown instead; a live product would parse Word and always ask a person to review before publishing. Imported sets stay in this browser, and publishing is a human decision. Published sets appear in Training only and never change readiness or the exam.
+- Document analysis is simulated in the prototype: the Instructor imports ONE Excel document (`.xlsx`, up to 10 MB, read on this device, nothing is uploaded) and an Analysing screen shows the stages while the template is read; there is no live AI, and Word and PDF documents are not read. A person always reviews the draft before it is published. Parts with a whole-part problem (section numbers that are not consecutive, more than ten steps) have no edit screen: they keep "Replace document".
+
+- Content import (Instructor, question sets): only CSV files are read (locally, nothing is uploaded). Word files are not parsed in this prototype and a prepared sample result is shown instead; a live product would parse Word and always ask a person to review before publishing. Imported sets stay in this browser, and publishing is a human decision. Published sets appear in Training only and never change readiness or the exam.
 
 - The Instructor demo uses simulated group data: two demo groups, Rescue team (14 invented students) and Military training (12), in `content/demo-cohort.json`, plus the accounts of this browser (they join Rescue team). Groups are demo data: they cannot be created, renamed or changed (next steps). Exams, results and notices are kept in this browser only; there is no server, no real group and no real people.
 
@@ -77,7 +79,7 @@ Build order and decisions: `docs/build-plan.md`.
 
 - Invitations are simulated: no email is sent; the join link only works in this browser. Moving or removing students and messaging are not in the prototype.
 
-- Content package import is a demonstration: it reads CSV files and images only. A real product would read one Excel workbook (sheets Guide, Steps, Scenario, Questions) plus Word, PDF and ZIP packages, use stable ids to update existing content, and offer AI-assisted conversion of a raw document into the template, with every item shown next to its source passage and always reviewed by a person before publishing. Demo topics are isolated from the rest of the app: they are not part of readiness, Progress, exams or Ask AI. The sample package is in `public/templates/sample-package/` (and as `sample-package.zip`).
+- Content package import is a demonstration: it reads one Excel workbook (`.xlsx`, sheets Topic, Guide, Steps, Scenario, Questions) plus optional images, on this device. Document analysis is simulated in the prototype. A real product would also read Word and PDF documents, use stable ids to update existing content, and offer AI-assisted conversion of a raw document into the template, with every item shown next to its source passage and always reviewed by a person before publishing. Demo topics are isolated from the rest of the app: they are not part of readiness, Progress, exams or Ask AI. The template is `public/templates/guide-template.xlsx` and the sample is `public/templates/sample-document.xlsx`.
 
 The five CSV formats (the sample package is the reference example; headers are matched case-insensitively):
 

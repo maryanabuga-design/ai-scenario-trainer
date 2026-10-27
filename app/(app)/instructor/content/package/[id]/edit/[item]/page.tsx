@@ -61,7 +61,7 @@ function Edit() {
         title={itemName(topic, itemKey)}
         review={review}
         reasons={reasons.map((issue) => issue.reason)}
-        replaceHref={`/instructor/content/import?replace=${topic.id}&fix=${tab}`}
+        replaceHref={`/instructor/content/import?replace=${topic.id}`}
         onSkip={goNext}
         onLeave={() => router.push(base)}
       />

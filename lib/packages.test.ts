@@ -124,6 +124,8 @@ describe("a demo topic is isolated from the rest of the app", () => {
       "package-student.ts",
       "package-edit.ts",
       "package-review.ts",
+      "document-read.ts",
+      "document-draft.ts",
     ]);
     const importers = libFiles.filter((file) => {
       if (allowed.has(file)) return false;

@@ -1,45 +1,27 @@
 "use client";
 
-import {
-  BookOpen,
-  FileText,
-  Image as ImageIcon,
-  ListChecks,
-  LoaderCircle,
-  X,
-  Route,
-  ClipboardCheck,
-  Shapes,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import Image from "next/image";
-import { useRef } from "react";
+import { FileSpreadsheet, X } from "lucide-react";
+import { ChevronDown } from "lucide-react";
+import { useRef, useState } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { Amber } from "@/components/InstructorContent/Amber";
 import { Notice } from "@/components/Notice/Notice";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
-import { SelectableRow } from "@/components/SelectableRow/SelectableRow";
-import { TextField } from "@/components/TextField/TextField";
-import { LucideTile } from "@/components/TopicTile/TopicTile";
-import { checkPackage, imagesLabel, missingImages, shortName } from "@/lib/package-read";
-import type { PartKind, ReadOutcome } from "@/lib/package-read";
+import { sizeText } from "@/lib/content-import";
 
-export const FILES_HELP = "CSV files and images · choose them together";
-export const INFO_TITLE = "How the package is read";
-export const INFO_TEXT =
-  "Each CSV describes one part: topic, guide, steps, scenario or questions. Choose all files together, with the images they mention. Steps, scenario and questions should point to the guide section they rely on. Word, Excel and PDF files are not read in this prototype. A person always reviews before publishing.";
-export const FIX_IN_REVIEW = "You can import now and fix the issues in the review.";
-export const ACCEPT = ".csv,.png,.jpg,.jpeg,.webp";
+export const CHOOSE_TITLE = "Choose a document";
+export const CHOOSE_HELP = "Excel (.xlsx), up to 10 MB";
+export const IMAGES_LINE = "You can also add them later.";
+export const ACCEPT = ".xlsx";
+export const IMAGE_ACCEPT = ".png,.jpg,.jpeg,.webp";
 
-const ICONS: Record<PartKind | "images", LucideIcon> = {
-  topic: Shapes,
-  guide: BookOpen,
-  steps: ListChecks,
-  scenario: Route,
-  questions: ClipboardCheck,
-  images: ImageIcon,
-};
+const INCLUDE: { name: string; note: string; required?: boolean }[] = [
+  { name: "Guide", note: "The sections people learn from, in order. Required.", required: true },
+  { name: "Steps", note: "Short step guides that rely on a guide section. Optional." },
+  { name: "Scenario", note: "Situations with four answers and one correct. Optional." },
+  { name: "Questions", note: "Quiz questions with four answers and one correct. Optional." },
+];
 
 /**
  * A small "x" in the top-right corner of a card: a 28px neutral circle inside a 44px tap area that
@@ -52,7 +34,7 @@ function RemoveCorner({ label, onClick }: { label: string; onClick: () => void }
       aria-label={label}
       onClick={onClick}
       data-remove
-      className="absolute top-0 right-0 flex h-11 w-11 items-start justify-end p-1.5 has-focus-visible:outline-2 focus-visible:outline-2"
+      className="absolute top-0 right-0 flex h-11 w-11 items-start justify-end p-1.5 focus-visible:outline-2"
     >
       <span
         aria-hidden="true"
@@ -64,336 +46,199 @@ function RemoveCorner({ label, onClick }: { label: string; onClick: () => void }
   );
 }
 
-export type QuestionsChoice = "builtin" | "package" | null;
-
 /**
- * Import content (DESIGN.md: Instructor, content package import and demo topics): FILES (choose
- * several at once, what was recognised, one row per part with its status pill and Remove), the
- * download links, TITLE and SUMMARY, and the pinned Primary "Import and review" above Secondary
- * "Cancel". Nothing is uploaded: the files are read on this device.
+ * Import content (DESIGN.md: One document in, a draft topic out): ONE large card "Choose a document"
+ * that becomes ONE file card (name, size, a corner x), the tertiary links "Download template" and
+ * "Use sample document", the collapsed row "What to include", the optional images, plain messages
+ * under the file card, and the pinned Primary "Import and review" above Secondary "Cancel". Nothing
+ * is uploaded: the document is read on this device.
  */
 export function PackageImportView({
-  outcome,
-  title,
-  summary,
-  reading = false,
+  file,
+  message = "",
+  images,
+  imageMessage = "",
   notice = "",
-  extraMessage = "",
-  onlyQuestions = false,
-  questionsChoice,
-  onChoice,
-  onFiles,
+  includeOpen = false,
+  onFile,
   onRemove,
-  onTitle,
-  onSummary,
+  onSample,
+  onImages,
   onImport,
   onCancel,
 }: {
-  outcome: ReadOutcome;
-  title: string;
-  summary: string;
-  reading?: boolean;
-  /** A clear message at the top (Replace files, a full device). */
+  file: { name: string; size: number } | null;
+  /** The plain message under the file card; any message blocks the Primary. */
+  message?: string;
+  /** The names of the pictures added so far. */
+  images: string[];
+  imageMessage?: string;
+  /** Replace document: what the new document replaces. */
   notice?: string;
-  extraMessage?: string;
-  /** Only a questions file was chosen: ask where it goes. */
-  onlyQuestions?: boolean;
-  questionsChoice: QuestionsChoice;
-  onChoice: (choice: Exclude<QuestionsChoice, null>) => void;
-  onFiles: (files: File[]) => void;
-  /** Removes the file (or all pictures) of a recognised row. */
-  onRemove: (row: { part: PartKind | "images"; fileName?: string }) => void;
-  onTitle: (value: string) => void;
-  onSummary: (value: string) => void;
+  /** For the review page: "What to include" drawn open. */
+  includeOpen?: boolean;
+  onFile: (file: File) => void;
+  onRemove: () => void;
+  onSample: () => void;
+  onImages: (files: File[]) => void;
   onImport: () => void;
   onCancel: () => void;
 }) {
   const input = useRef<HTMLInputElement>(null);
-  const issues = checkPackage(outcome.data);
-  const blockingBy = (part: string) => issues.filter((i) => i.blocking && i.part === part).length;
-  const rows = [
-    ...outcome.recognised,
-    ...(imagesLabel(outcome.data)
-      ? [{ part: "images" as const, label: imagesLabel(outcome.data)! }]
-      : []),
-  ];
-  const ready = outcome.recognised.length > 0 && title.trim() !== "";
-  const canImport = ready && !reading && (!onlyQuestions || questionsChoice !== null);
+  const pictures = useRef<HTMLInputElement>(null);
+  const [open, setOpen] = useState(includeOpen);
+  const canImport = file !== null && message === "";
   return (
     <div className="flex flex-col gap-6 pb-4">
       <PageHeaderBand
         title="Import content"
-        subtitle="Create a demo topic from files"
         back={{ label: "Back to Content", href: "/instructor/content" }}
       />
       {notice && (
-        <Notice variant="to-fix" alert clamp={false} title="Choose the corrected files">
+        <Notice variant="info" clamp={false} title="Replace document">
           {notice}
         </Notice>
       )}
 
-      <section aria-labelledby="files-label" className="flex flex-col gap-3">
-        <h2 id="files-label" className="type-label text-text-secondary">
-          FILES
-        </h2>
-        <div
-          data-drop-area
-          className="flex flex-col items-center gap-3 rounded-card border border-dashed border-placeholder-stroke bg-card p-[var(--gutter,1rem)] text-center"
+      <section aria-label="Document" className="flex flex-col gap-3">
+        <input
+          ref={input}
+          type="file"
+          accept={ACCEPT}
+          aria-label="Choose a document"
+          data-file-input
+          className="sr-only"
+          tabIndex={-1}
+          onChange={(event) => {
+            const chosen = event.target.files?.[0];
+            if (chosen) onFile(chosen);
+            event.target.value = "";
+          }}
+        />
+        {file ? (
+          <div
+            data-file-card
+            className="relative flex min-h-[72px] items-center gap-3 rounded-card border border-selectable-stroke bg-card px-3 py-2 pr-12"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-tile-bg text-neutral-tile-ink">
+              <FileSpreadsheet size={20} strokeWidth={1.75} aria-hidden="true" />
+            </span>
+            <span className="flex min-w-0 flex-col">
+              <span data-file-name className="type-body-strong break-words">
+                {file.name}
+              </span>
+              <span className="type-small text-text-secondary">{sizeText(file.size)}</span>
+            </span>
+            <RemoveCorner label="Remove file" onClick={onRemove} />
+          </div>
+        ) : (
+          <button
+            type="button"
+            data-drop-area
+            onClick={() => input.current?.click()}
+            className="flex min-h-[160px] w-full flex-col items-center justify-center gap-2 rounded-card border border-dashed border-placeholder-stroke bg-card p-[var(--gutter,1rem)] text-center focus-visible:outline-2"
+          >
+            <FileSpreadsheet
+              size={28}
+              strokeWidth={1.75}
+              aria-hidden="true"
+              className="text-text-secondary"
+            />
+            <span className="type-body-strong">{CHOOSE_TITLE}</span>
+            <span className="type-small text-text-secondary">{CHOOSE_HELP}</span>
+          </button>
+        )}
+        {message && <Amber id="import-message">{message}</Amber>}
+        <div className="flex flex-wrap items-center gap-x-2">
+          <ButtonLink
+            href="/templates/guide-template.xlsx"
+            download="guide-template.xlsx"
+            variant="tertiary"
+            wide={false}
+          >
+            Download template
+          </ButtonLink>
+          <Button variant="tertiary" onClick={onSample}>
+            Use sample document
+          </Button>
+        </div>
+      </section>
+
+      <section
+        aria-label="What to include"
+        className="rounded-card border border-selectable-stroke bg-card"
+      >
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls="include-panel"
+          onClick={() => setOpen(!open)}
+          className="flex min-h-11 w-full items-center justify-between gap-3 px-[var(--gutter,1rem)] py-3 text-left focus-visible:outline-2"
         >
-          <FileText
-            size={28}
-            strokeWidth={1.75}
+          <span className="type-body-strong">What to include</span>
+          <ChevronDown
+            size={20}
             aria-hidden="true"
-            className="text-text-secondary"
+            className={`shrink-0 text-text-secondary ${open ? "rotate-180" : ""}`}
           />
-          <p className="type-body-strong">{FILES_HELP}</p>
+        </button>
+        {open && (
+          <div id="include-panel" className="flex flex-col gap-3 px-[var(--gutter,1rem)] pb-4">
+            <ul className="flex flex-col gap-2">
+              {INCLUDE.map((part) => (
+                <li key={part.name} className="type-small text-text-secondary">
+                  <span className="type-body-strong text-text">{part.name}</span>
+                  {" · "}
+                  {part.note}
+                </li>
+              ))}
+            </ul>
+            <p className="type-small text-text-secondary">
+              Every step, scenario step and question points to a guide section. Only questions?{" "}
+              <ButtonLink
+                href="/instructor/content/import/questions"
+                variant="tertiary"
+                compact
+                wide={false}
+              >
+                Import a question set
+              </ButtonLink>
+            </p>
+          </div>
+        )}
+      </section>
+
+      {file && (
+        <section aria-labelledby="images-label" className="flex flex-col gap-3">
+          <h2 id="images-label" className="type-label text-text-secondary">
+            IMAGES (OPTIONAL)
+          </h2>
           <input
-            ref={input}
+            ref={pictures}
             type="file"
             multiple
-            accept={ACCEPT}
-            aria-label="Choose files"
-            data-file-input
+            accept={IMAGE_ACCEPT}
+            aria-label="Choose images"
+            data-image-input
             className="sr-only"
             tabIndex={-1}
             onChange={(event) => {
-              onFiles(Array.from(event.target.files ?? []));
+              onImages(Array.from(event.target.files ?? []));
               event.target.value = "";
             }}
           />
-          <Button variant="secondary" onClick={() => input.current?.click()}>
-            Choose files
+          <Button variant="secondary" onClick={() => pictures.current?.click()}>
+            Add images
           </Button>
-        </div>
-
-        {outcome.messages.map((message) => (
-          <Amber key={message}>{message}</Amber>
-        ))}
-        {extraMessage && <Amber>{extraMessage}</Amber>}
-
-        {rows.length > 0 && (
-          <ul data-recognised className="flex flex-col gap-2">
-            {rows.map((row) => {
-              const fileName =
-                "fileName" in row ? (row as { fileName?: string }).fileName : undefined;
-              const missing = row.part === "images" ? missingImages(outcome.data) : [];
-              const problems = row.part === "images" ? missing.length : blockingBy(row.part);
-              const pill =
-                row.part === "images" && problems > 0
-                  ? `${problems} to add`
-                  : problems > 0
-                    ? `${problems} to fix`
-                    : "Ready";
-              const isImages = row.part === "images";
-              const pictures = isImages ? Object.entries(outcome.data.images) : [];
-              return (
-                <li
-                  key={`${row.part}-${fileName ?? ""}`}
-                  data-recognised-row={row.part}
-                  className="relative flex min-h-[72px] flex-col gap-3 rounded-card border border-selectable-stroke bg-card px-3 py-2"
-                >
-                  <div className="flex items-center gap-3 pr-8">
-                    <LucideTile icon={ICONS[row.part]} size="tile" />
-                    <span className="flex min-w-0 flex-1 flex-col gap-1">
-                      <span className="type-body-strong">{row.label}</span>
-                      <span
-                        data-row-pill={problems > 0 ? "to-fix" : "ready"}
-                        className={`type-caption w-fit rounded-full px-2.5 py-0.5 whitespace-nowrap ${
-                          problems > 0
-                            ? "bg-status-attention-bg text-status-attention-ink"
-                            : "bg-status-success-bg text-status-success-ink"
-                        }`}
-                      >
-                        {pill}
-                      </span>
-                      {missing.length > 0 && (
-                        <span data-missing className="type-small text-text-secondary">
-                          Missing: {missing.join(", ")}
-                        </span>
-                      )}
-                      {fileName && (
-                        <span
-                          data-file-name
-                          aria-label={fileName}
-                          className="type-small text-text-secondary"
-                        >
-                          <span aria-hidden="true">{shortName(fileName)}</span>
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                  {isImages && (pictures.length > 0 || missing.length > 0) && (
-                    <ul data-thumbnails className="flex flex-wrap gap-3">
-                      {pictures.map(([name, picture]) => (
-                        <li
-                          key={name}
-                          data-thumbnail={name}
-                          className="flex w-16 flex-col items-start gap-1"
-                        >
-                          <span className="relative block h-14 w-14">
-                            <Image
-                              src={picture.data}
-                              alt=""
-                              width={56}
-                              height={56}
-                              unoptimized
-                              className="h-14 w-14 rounded-[12px] border border-selectable-stroke object-cover"
-                            />
-                            <RemoveCorner
-                              label={`Remove ${name}`}
-                              onClick={() => onRemove({ part: "images", fileName: name })}
-                            />
-                          </span>
-                          <span
-                            aria-label={name}
-                            className="type-caption w-full truncate text-text-secondary"
-                          >
-                            <span aria-hidden="true">{shortName(name, 12)}</span>
-                          </span>
-                        </li>
-                      ))}
-                      {missing.map((name) => (
-                        <li
-                          key={name}
-                          data-thumbnail-missing={name}
-                          className="flex w-16 flex-col items-start gap-1"
-                        >
-                          <span
-                            aria-hidden="true"
-                            className="flex h-14 w-14 items-center justify-center rounded-[12px] border-[1.5px] border-dashed border-placeholder-stroke text-text-secondary"
-                          >
-                            <ImageIcon size={20} strokeWidth={1.75} />
-                          </span>
-                          <span
-                            aria-label={`${name}, missing`}
-                            className="type-caption w-full truncate text-text-secondary"
-                          >
-                            <span aria-hidden="true">{shortName(name, 12)}</span>
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  {!isImages && (
-                    <RemoveCorner
-                      label={`Remove ${fileName ?? row.part}`}
-                      onClick={() => onRemove({ part: row.part, fileName })}
-                    />
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        )}
-
-        {rows.some((row) =>
-          row.part === "images" ? missingImages(outcome.data).length > 0 : blockingBy(row.part) > 0,
-        ) && (
-          <p data-fix-in-review className="type-small text-text-secondary">
-            {FIX_IN_REVIEW}
-          </p>
-        )}
-
-        <div className="flex flex-wrap items-center gap-x-2">
-          <ButtonLink
-            href="/templates/csv-templates.zip"
-            download="csv-templates.zip"
-            variant="tertiary"
-          >
-            Download templates
-          </ButtonLink>
-          <ButtonLink
-            href="/templates/sample-package.zip"
-            download="sample-package.zip"
-            variant="tertiary"
-          >
-            Download sample package
-          </ButtonLink>
-        </div>
-      </section>
-
-      <div className="flex flex-col gap-1">
-        <Notice variant="info" clamp={false} title={INFO_TITLE}>
-          {INFO_TEXT}
-        </Notice>
-        <div className="-ml-3 self-start">
-          <ButtonLink href="/instructor/content/import/questions" variant="tertiary">
-            Import questions to a built-in topic
-          </ButtonLink>
-        </div>
-      </div>
-
-      {onlyQuestions && (
-        <section aria-labelledby="where-label" className="flex flex-col gap-3">
-          <h2 id="where-label" className="type-label text-text-secondary">
-            WHERE SHOULD THE QUESTIONS GO?
-          </h2>
-          <fieldset
-            role="radiogroup"
-            aria-labelledby="where-label"
-            className="flex min-w-0 flex-col gap-2"
-          >
-            <SelectableRow
-              name="questions-choice"
-              value="builtin"
-              compact
-              checked={questionsChoice === "builtin"}
-              onChange={() => onChoice("builtin")}
-            >
-              <span className="type-body-strong">Add to a built-in topic</span>
-            </SelectableRow>
-            <SelectableRow
-              name="questions-choice"
-              value="package"
-              compact
-              checked={questionsChoice === "package"}
-              onChange={() => onChoice("package")}
-            >
-              <span className="type-body-strong">Create a demo topic</span>
-            </SelectableRow>
-          </fieldset>
+          {images.length > 0 ? (
+            <p data-images className="type-small text-text-secondary">
+              {images.length} {images.length === 1 ? "image" : "images"} added: {images.join(", ")}
+            </p>
+          ) : (
+            <p className="type-small text-text-secondary">{IMAGES_LINE}</p>
+          )}
+          {imageMessage && <Amber>{imageMessage}</Amber>}
         </section>
-      )}
-
-      <section aria-labelledby="title-label" className="flex flex-col gap-2">
-        <h2 id="title-label" className="type-label text-text-secondary">
-          TITLE
-        </h2>
-        <TextField
-          label="Topic title"
-          hideLabel
-          name="topic-title"
-          value={title}
-          onChange={onTitle}
-        />
-      </section>
-      <section aria-labelledby="summary-label" className="flex flex-col gap-2">
-        <h2 id="summary-label" className="type-label text-text-secondary">
-          SUMMARY
-        </h2>
-        <TextField
-          label="Summary"
-          hideLabel
-          name="topic-summary"
-          rows={2}
-          value={summary}
-          onChange={onSummary}
-        />
-      </section>
-
-      {reading && (
-        <p
-          role="status"
-          data-reading
-          className="type-small flex items-center justify-center gap-2 text-text-secondary"
-        >
-          <LoaderCircle
-            size={16}
-            aria-hidden="true"
-            className="animate-spin motion-reduce:animate-none"
-          />
-          Reading the files
-        </p>
       )}
 
       <ActionBar>

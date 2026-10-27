@@ -1020,24 +1020,59 @@ export default function Screens() {
               <InstructorStudentsSample state="join" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Content package: Import content, empty">
+          <PhoneFrame label="Import content: empty, one large Choose a document card">
             <Screen>
               <PackageSample files={packageFiles} state="import-empty" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Content package: Import content, the whole package recognised">
+          <PhoneFrame label="Import content: What to include open">
             <Screen>
-              <PackageSample files={packageFiles} state="import-files" />
+              <PackageSample files={packageFiles} state="import-include" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Content package: Import content, images missing (N to add)">
+          <PhoneFrame label="Import content: a file chosen, one file card, Add images">
             <Screen>
-              <PackageSample files={packageFiles} state="import-missing" />
+              <PackageSample files={packageFiles} state="import-file" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Content package: Import content, files with problems (N to fix)">
+          <PhoneFrame label="Import content: unsupported file type">
             <Screen>
-              <PackageSample files={packageFiles} state="import-problems" />
+              <PackageSample files={packageFiles} state="import-type" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Import content: file too large">
+            <Screen>
+              <PackageSample files={packageFiles} state="import-size" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Import content: no content in the file">
+            <Screen>
+              <PackageSample files={packageFiles} state="import-empty-file" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Import content: no Guide sheet">
+            <Screen>
+              <PackageSample files={packageFiles} state="import-no-guide" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Analysing: stages in progress with real results">
+            <Screen>
+              <PackageSample files={packageFiles} state="analysing-running" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Analysing: Draft is ready, Review N items">
+            <Screen>
+              <PackageSample files={packageFiles} state="analysing-finished" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Analysing: a part is missing (Continue)">
+            <Screen>
+              <PackageSample files={packageFiles} state="analysing-partial" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Analysing: the file could not be read">
+            <Screen>
+              <PackageSample files={packageFiles} state="analysing-error" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Content package review: Guide tab with issues, Show next issue">

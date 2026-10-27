@@ -133,7 +133,9 @@ import { demoExam } from "@/lib/assigned-exams";
 import { seedNotifications } from "@/lib/notifications";
 import { readinessAfter, scopeItemIds } from "@/lib/readiness";
 import { topicIdsOf } from "@/lib/session";
+import { DocumentAnalysingView } from "@/components/InstructorContent/DocumentAnalysingView";
 import { PackageImportView } from "@/components/InstructorContent/PackageImportView";
+import { MESSAGES } from "@/lib/document-read";
 import { PackageItemEdit } from "@/components/InstructorContent/PackageItemEdit";
 import { PackageReviewSummary } from "@/components/InstructorContent/PackageReviewSummary";
 import { PackageTopicView } from "@/components/InstructorContent/PackageTopicView";
@@ -1909,9 +1911,16 @@ export function PackageSample({
   files: Record<string, string>;
   state:
     | "import-empty"
-    | "import-files"
-    | "import-missing"
-    | "import-problems"
+    | "import-include"
+    | "import-file"
+    | "import-type"
+    | "import-size"
+    | "import-empty-file"
+    | "import-no-guide"
+    | "analysing-running"
+    | "analysing-finished"
+    | "analysing-partial"
+    | "analysing-error"
     | "topic-guide"
     | "topic-steps"
     | "topic-scenario"
@@ -1955,28 +1964,65 @@ export function PackageSample({
     sample("questions-with-problems.csv"),
     ...pictures,
   ];
-  const importView = (list: PackageFile[]) => {
-    const outcome = readPackage(list);
-    return (
-      <PackageImportView
-        outcome={outcome}
-        title={outcome.data.title}
-        summary={outcome.data.summary}
-        questionsChoice={null}
-        onChoice={noop}
-        onFiles={noop}
-        onRemove={noop}
-        onTitle={noop}
-        onSummary={noop}
-        onImport={noop}
-        onCancel={noop}
-      />
-    );
-  };
-  if (state === "import-empty") return importView([]);
-  if (state === "import-files") return importView([...clean, ...pictures]);
-  if (state === "import-missing") return importView([...clean, pictures[0]]);
-  if (state === "import-problems") return importView(withProblems);
+  const importView = (
+    file: { name: string; size: number } | null,
+    message = "",
+    options: { images?: string[]; open?: boolean } = {},
+  ) => (
+    <PackageImportView
+      file={file}
+      message={message}
+      images={options.images ?? []}
+      includeOpen={options.open}
+      onFile={noop}
+      onRemove={noop}
+      onSample={noop}
+      onImages={noop}
+      onImport={noop}
+      onCancel={noop}
+    />
+  );
+  const doc = { name: "evacuation-guide.xlsx", size: 34_000 };
+  const analysing = (
+    phase: "running" | "finished" | "partial" | "error",
+    done: number,
+    reviewCount = 0,
+  ) => (
+    <DocumentAnalysingView
+      fileName={doc.name}
+      phase={phase}
+      done={done}
+      results={[
+        "5 sheets read",
+        "4 found",
+        "7 steps, 4 scenario steps",
+        "10 questions",
+        "all linked",
+      ]}
+      counts={{ guide: 4, steps: 7, scenario: 4, questions: 10 }}
+      partialLine="We could not find questions in this document."
+      reviewCount={reviewCount}
+      onCancel={noop}
+      onContinue={noop}
+      onChooseAnother={noop}
+      onReview={noop}
+      onPreview={noop}
+      onBackToContent={noop}
+    />
+  );
+  if (state === "import-empty") return importView(null);
+  if (state === "import-include") return importView(null, "", { open: true });
+  if (state === "import-file") return importView(doc, "", { images: ["exit-sign.png"] });
+  if (state === "import-type")
+    return importView({ name: "notes.docx", size: 20_000 }, MESSAGES.type);
+  if (state === "import-size")
+    return importView({ name: "big-guide.xlsx", size: 12 * 1024 * 1024 }, MESSAGES.size);
+  if (state === "import-empty-file") return importView(doc, MESSAGES.empty);
+  if (state === "import-no-guide") return importView(doc, MESSAGES.noGuide);
+  if (state === "analysing-running") return analysing("running", 2);
+  if (state === "analysing-finished") return analysing("finished", 5, 6);
+  if (state === "analysing-partial") return analysing("partial", 5);
+  if (state === "analysing-error") return analysing("error", 0);
 
   const title = "Evacuating a crowded hall";
   const summary = "How to leave a busy indoor space calmly.";
@@ -2000,6 +2046,8 @@ export function PackageSample({
       onCancelDialog={noop}
       onReview={noop}
       onPreview={noop}
+      onEditDetails={noop}
+      onReplace={noop}
       dialogInline
       menuOpen={menuOpen}
     />

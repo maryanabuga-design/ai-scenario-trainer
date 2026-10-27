@@ -490,7 +490,7 @@ export function PackageItemEdit({
 
 /**
  * A review step for a problem with a whole part (section numbers that are not consecutive, more than
- * ten steps): there is no item to edit, so the reason is shown with Replace files and Skip.
+ * ten steps): there is no item to edit, so the reason is shown with Replace document and Skip.
  */
 export function PackagePartStep({
   title,
@@ -522,7 +522,7 @@ export function PackagePartStep({
         </ul>
       </Notice>
       <ActionBar>
-        <ButtonLink href={replaceHref}>Replace files</ButtonLink>
+        <ButtonLink href={replaceHref}>Replace document</ButtonLink>
         <Button variant="secondary" onClick={onSkip}>
           Skip
         </Button>

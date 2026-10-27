@@ -160,7 +160,7 @@ describe("the edit screen of an item", () => {
     expect(html).not.toMatch(/role="dialog"[^>]*open/);
   });
 
-  it("a problem with a whole part has no form: the reason, Replace files (Primary) and Skip", () => {
+  it("a problem with a whole part has no form: the reason, Replace document (Primary) and Skip", () => {
     const html = renderToStaticMarkup(
       <PackagePartStep
         title="Guide"
@@ -173,7 +173,7 @@ describe("the edit screen of an item", () => {
     );
     expect(html).toContain("2 of 3");
     expect(html).toContain("Section numbers are not consecutive from 1");
-    expect(html).toContain("Replace files");
+    expect(html).toContain("Replace document");
     expect(html).toContain("Skip");
     expect(html).not.toContain("<textarea");
   });

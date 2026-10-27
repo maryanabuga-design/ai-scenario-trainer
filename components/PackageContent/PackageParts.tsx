@@ -118,7 +118,7 @@ export function PencilButton({
 
 /**
  * A note about a whole part (section numbers that are not consecutive, more than ten steps): it has
- * no item of its own, so it shows once at the top of its tab with the underlined link "Replace files".
+ * no item of its own, so it shows once at the top of its tab with the underlined link "Replace document".
  */
 export function PartNote({ issues, replaceHref }: { issues: Issue[]; replaceHref: string }) {
   const notes = issues.filter((issue) => issue.kind === "must");
@@ -138,7 +138,7 @@ export function PartNote({ issues, replaceHref }: { issues: Issue[]; replaceHref
       ))}
       <div className="-ml-3">
         <ButtonLink href={replaceHref} variant="tertiary">
-          Replace files
+          Replace document
         </ButtonLink>
       </div>
     </div>

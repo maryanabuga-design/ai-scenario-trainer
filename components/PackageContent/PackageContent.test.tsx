@@ -14,7 +14,12 @@ vi.mock("next/navigation", () => ({
 }));
 import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
 import { PackageCard } from "@/components/InstructorContent/PackageCard";
+import {
+  DocumentAnalysingView,
+  STAGES,
+} from "@/components/InstructorContent/DocumentAnalysingView";
 import { PackageImportView } from "@/components/InstructorContent/PackageImportView";
+import { MESSAGES } from "@/lib/document-read";
 import { PackageTopicView } from "@/components/InstructorContent/PackageTopicView";
 import {
   ChecklistCards,
@@ -27,9 +32,7 @@ import {
   blockingIssues,
   checkPackage,
   fixMessage,
-  missingImages,
   readPackage,
-  shortName,
 } from "@/lib/package-read";
 import { flaggedItems } from "@/lib/package-review";
 import type { PackageFile } from "@/lib/package-read";
@@ -71,153 +74,179 @@ const wrap = (node: React.ReactNode) =>
   renderToStaticMarkup(<ActionBarProvider>{node}</ActionBarProvider>).replace(/<!-- -->/g, "");
 const noop = () => undefined;
 
-const importView = (
-  files: PackageFile[],
-  extra: Partial<Parameters<typeof PackageImportView>[0]> = {},
-) => {
-  const outcome = readPackage(files);
-  return wrap(
+const importView = (extra: Partial<Parameters<typeof PackageImportView>[0]> = {}) =>
+  wrap(
     <PackageImportView
-      outcome={outcome}
-      title={outcome.data.title}
-      summary={outcome.data.summary}
-      questionsChoice={null}
-      onChoice={noop}
-      onFiles={noop}
+      file={null}
+      images={[]}
+      onFile={noop}
       onRemove={noop}
-      onTitle={noop}
-      onSummary={noop}
+      onSample={noop}
+      onImages={noop}
       onImport={noop}
       onCancel={noop}
       {...extra}
     />,
   );
-};
+const doc = { name: "evacuation-guide.xlsx", size: 34_000 };
 
 describe("the import screen", () => {
-  it("empty: the dashed area, the download links, the info Notice with the Word, Excel and PDF line, the tertiary link under it, Import disabled", () => {
-    const html = importView([]);
+  it("empty: ONE large dashed card, the muted line, two tertiary links, a collapsed What to include, Import disabled", () => {
+    const html = importView();
     expect(html).toContain(">Import content</h1>");
-    expect(html).toContain("CSV files and images · choose them together");
-    expect(html).toMatch(/multiple=""/);
-    expect(html).toContain('accept=".csv,.png,.jpg,.jpeg,.webp"');
-    expect(html).toMatch(/underline[^>]*>Download templates</);
-    expect(html).toMatch(/underline[^>]*>Download sample package</);
-    expect(html).toContain('data-notice="info"');
-    expect(html).toContain("How the package is read");
-    expect(html).toContain("Word, Excel and PDF files are not read in this prototype.");
-    expect(html).toContain("A person always reviews before publishing.");
-    expect(html).not.toContain("data-recognised");
+    expect(html).toContain("Choose a document");
+    expect(html).toContain("Excel (.xlsx), up to 10 MB");
+    expect(html).toContain("border-dashed");
+    expect(html).toContain('accept=".xlsx"');
+    expect(html).not.toMatch(/multiple=""[^>]*data-file-input|data-file-input[^>]*multiple=""/);
+    expect(html).toMatch(/underline[^>]*>Download template</);
+    expect(html).toMatch(/underline[^>]*>Use sample document</);
+    expect(html).toContain('href="/templates/guide-template.xlsx"');
+    expect(html).toContain('aria-expanded="false"');
+    expect(html).not.toContain('id="include-panel"');
+    expect(html).not.toContain("Images (optional)".toUpperCase());
+    expect(html).not.toContain("CSV");
+    expect(html).not.toContain('name="topic-summary"');
     expect(html).toMatch(/disabled=""[^>]*>Import and review</);
-    // an underlined tertiary link right under the Notice, not a button
-    const link = html.slice(html.indexOf('href="/instructor/content/import/questions"') - 300);
-    expect(link).toMatch(/underline[^>]*>Import questions to a built-in topic</);
-    expect(html.indexOf("How the package is read")).toBeLessThan(
-      html.indexOf("Import questions to a built-in topic"),
-    );
-    expect(html).not.toMatch(/bg-olive-tint[^>]*>Import questions to a built-in topic</);
     expect(html.indexOf("Import and review")).toBeLessThan(html.indexOf(">Cancel<"));
-    // the summary is a two-line text area
-    expect(html).toMatch(/<textarea[^>]*name="topic-summary"[^>]*rows="2"/);
   });
 
-  it("with the whole package: three-line rows (label, Ready pill, file name), a corner x on each file row, thumbnails for the pictures", () => {
-    const html = importView(clean);
-    for (const label of [
-      "Topic · Evacuating a crowded hall",
-      "Guide · 4 sections",
-      "Steps · 2 step guides, 7 steps",
-      "Scenario · 4 steps",
-      "Questions · 10 questions",
-      "Images · 2 of 2 found",
-    ]) {
-      expect(html).toContain(label);
-    }
-    expect(html.match(/data-recognised-row=/g)).toHaveLength(6);
-    expect(html.match(/data-row-pill="ready"/g)).toHaveLength(6);
-    expect(html).not.toContain("Needs attention");
-    expect(html).not.toContain("data-missing");
-    expect(html).not.toContain("data-fix-in-review");
-    // a small corner x: a 28px neutral circle in a 44px tap area at the top-right of the card
-    expect(html).not.toContain(">Remove<");
-    expect(html).toContain('aria-label="Remove guide.csv"');
-    const corner = html.slice(html.indexOf('aria-label="Remove guide.csv"') - 160);
+  it("What to include opens to four lines: Guide required, Steps, Scenario and Questions optional", () => {
+    const html = importView({ includeOpen: true });
+    expect(html).toContain('aria-expanded="true"');
+    for (const line of ["Guide", "Steps", "Scenario", "Questions"]) expect(html).toContain(line);
+    expect(html).toContain("Required.");
+    expect(html.match(/Optional\./g)).toHaveLength(3);
+    expect(html).toContain("Import a question set");
+  });
+
+  it("a file chosen: the dashed card is replaced by ONE file card with a corner x, the Images row appears, Import is enabled", () => {
+    const html = importView({ file: doc });
+    expect(html).toContain("evacuation-guide.xlsx");
+    expect(html).toContain("33 KB");
+    expect(html).not.toContain("data-drop-area");
+    expect(html.match(/data-file-card/g)).toHaveLength(1);
+    expect(html).toContain('aria-label="Remove file"');
+    const corner = html.slice(html.indexOf('aria-label="Remove file"') - 160);
     expect(corner).toMatch(/absolute top-0 right-0 flex h-11 w-11/);
     expect(corner).toMatch(/h-7 w-7[^"]*rounded-full bg-neutral-tile-bg/);
-    // the text block keeps a right padding so nothing sits under the x
-    expect(html).toMatch(/flex items-center gap-3 pr-8/);
-    // five file rows have the x; the pictures have their own x on each thumbnail
-    expect(html.match(/data-remove/g)).toHaveLength(7);
-    expect(html.match(/data-thumbnail=/g)).toHaveLength(2);
-    expect(html).toContain('aria-label="Remove exit-sign.png"');
-    expect(html).not.toContain("Remove all images");
-    // line 1 label, line 2 the pill, line 3 the file name
-    const row = html.slice(html.indexOf('data-recognised-row="scenario"'));
-    expect(row.indexOf("Scenario · 4 steps")).toBeLessThan(row.indexOf("data-row-pill"));
-    expect(row.indexOf("data-row-pill")).toBeLessThan(row.indexOf("data-file-name"));
-    expect(html).toContain('value="Evacuating a crowded hall"');
+    expect(html).toContain("IMAGES (OPTIONAL)");
+    expect(html).toMatch(/bg-olive-tint[^>]*>Add images</);
+    expect(html).toContain("You can also add them later.");
     expect(html).not.toMatch(/disabled=""[^>]*>Import and review</);
+    expect(html).toContain('accept=".png,.jpg,.jpeg,.webp"');
   });
 
-  it("the Images row is never Ready while a picture is missing: an amber 'N to add' pill and 'Missing: ...'", () => {
-    const html = importView([...clean.slice(0, 5), sample("exit-sign.png")]);
-    expect(html).toContain("Images · 1 of 2 found");
-    const row = html.slice(html.indexOf('data-recognised-row="images"'));
-    expect(row).toMatch(/data-row-pill="to-fix"[^>]*bg-status-attention-bg[^>]*>1 to add</);
-    expect(row).not.toContain(">Ready<");
-    expect(row).toContain("Missing: assembly-point.png");
-    // a thumbnail for the one chosen, a dashed placeholder with the name for the missing one
-    expect(row.match(/data-thumbnail=/g)).toHaveLength(1);
-    expect(row).toContain('data-thumbnail-missing="assembly-point.png"');
-    expect(row).toContain("border-dashed");
-    expect(html).toContain("You can import now and fix the issues in the review.");
-    // none selected: every named picture is missing
-    const none = importView(clean.slice(0, 5));
-    expect(none).toContain("Missing: exit-sign.png, assembly-point.png");
-    expect(missingImages(readPackage(clean.slice(0, 5)).data)).toEqual([
-      "exit-sign.png",
-      "assembly-point.png",
-    ]);
+  it("lists the pictures that were added", () => {
+    const html = importView({ file: doc, images: ["exit-sign.png", "assembly-point.png"] });
+    expect(html).toContain("2 images added: exit-sign.png, assembly-point.png");
+    expect(html).not.toContain("You can also add them later.");
   });
 
-  it("with problems: the part pills say 'N to fix', one muted line says you can fix in the review, a wrong file is amber", () => {
-    const html = importView([
-      sample("guide.csv"),
-      sample("steps-with-problems.csv"),
-      { name: "x.pdf", size: 3 },
-    ]);
-    expect(html).toMatch(/data-row-pill="to-fix"[^>]*>2 to fix</);
-    expect(html).not.toContain("Needs attention");
-    expect(html).toContain("You can import now and fix the issues in the review.");
-    expect(html).toContain(
-      "x.pdf is not a CSV file or a png, jpg or webp picture, so it was left out.",
+  it("each message shows under the file card and blocks the Primary", () => {
+    for (const message of [MESSAGES.type, MESSAGES.size, MESSAGES.empty, MESSAGES.noGuide]) {
+      const html = importView({ file: doc, message });
+      expect(html).toContain(message);
+      expect(html.indexOf("data-file-card")).toBeLessThan(html.indexOf(message));
+      expect(html).toMatch(/disabled=""[^>]*>Import and review</);
+    }
+    expect(MESSAGES.type).toBe("This file type is not supported. Use an Excel file (.xlsx).");
+  });
+
+  it("has exactly one Primary, the old several-files wording is gone, and Replace document says what it replaces", () => {
+    const html = importView({ file: doc, notice: "The new document replaces the content of T." });
+    expect(html.match(/h-\[52px\] bg-primary/g)).toHaveLength(1);
+    for (const gone of [
+      "choose them together",
+      "Choose files",
+      "Download templates",
+      "sample package",
+    ]) {
+      expect(html).not.toContain(gone);
+    }
+    expect(html).toContain("The new document replaces the content of T.");
+  });
+});
+
+describe("the analysing screen", () => {
+  const results = [
+    "5 sheets read",
+    "4 found",
+    "7 steps, 4 scenario steps",
+    "10 questions",
+    "all linked",
+  ];
+  const counts = { guide: 4, steps: 7, scenario: 4, questions: 10 };
+  const view = (over: Partial<Parameters<typeof DocumentAnalysingView>[0]> = {}) =>
+    wrap(
+      <DocumentAnalysingView
+        fileName="evacuation-guide.xlsx"
+        phase="running"
+        done={2}
+        results={results}
+        counts={counts}
+        onCancel={noop}
+        onContinue={noop}
+        onChooseAnother={noop}
+        onReview={noop}
+        onPreview={noop}
+        onBackToContent={noop}
+        {...over}
+      />,
     );
-    expect(html).toContain("data-amber");
+
+  it("running: the file name, the title, five stages with states and the real results, the calm line, only Cancel", () => {
+    const html = view();
+    expect(html).toContain(">Reading your document…</h1>");
+    expect(html).toContain("evacuation-guide.xlsx");
+    for (const label of STAGES) expect(html).toContain(label);
+    expect(html.match(/data-stage="done"/g)).toHaveLength(2);
+    expect(html.match(/data-stage="current"/g)).toHaveLength(1);
+    expect(html.match(/data-stage="waiting"/g)).toHaveLength(2);
+    expect(html).toContain("5 sheets read");
+    expect(html).toContain("4 found");
+    expect(html).not.toContain("10 questions");
+    expect(html).toContain("This is a draft. You will review everything before it is published.");
+    expect(html).toMatch(/aria-live="polite"/);
+    expect(html).toMatch(/<button[^>]*>Cancel</);
+    expect(html).not.toMatch(/%|thinking|\bAI\b/);
+    expect(html.match(/h-\[52px\] bg-primary/g)).toBeNull();
   });
 
-  it("shortens a long file name in the middle and keeps the full name as the aria-label", () => {
-    expect(shortName("short.csv")).toBe("short.csv");
-    const long = "a-very-long-file-name-for-the-guide-of-the-hall.csv";
-    const short = shortName(long);
-    expect(short.length).toBeLessThanOrEqual(26);
-    expect(short).toContain("…");
-    expect(short.endsWith(".csv")).toBe(true);
-    const html = importView([{ ...sample("guide.csv"), name: long }]);
-    expect(html).toContain(`aria-label="${long}"`);
-    expect(html).toContain(`aria-label="Remove ${long}"`);
+  it("finished: Draft is ready with the counts, Primary Review N items over Secondary Back to Content", () => {
+    const html = view({ phase: "finished", done: 5, reviewCount: 6 });
+    expect(html).toContain(">Draft is ready</h1>");
+    expect(html).toContain("Guide sections");
+    expect(html.match(/data-stage="done"/g)).toHaveLength(5);
+    expect(html).toMatch(/h-\[52px\] bg-primary[^>]*>Review 6 items</);
+    expect(html).toMatch(/bg-olive-tint[^>]*>Back to Content</);
+    expect(html.match(/h-\[52px\] bg-primary/g)).toHaveLength(1);
+    expect(view({ phase: "finished", done: 5, reviewCount: 1 })).toContain("Review 1 item<");
   });
 
-  it("asks where a questions file goes when it is the only file", () => {
-    const html = importView([sample("questions.csv")], { onlyQuestions: true });
-    expect(html).toContain("Add to a built-in topic");
-    expect(html).toContain("Create a demo topic");
-    expect(html).toMatch(/disabled=""[^>]*>Import and review</);
+  it("finished with nothing to review offers Preview as student", () => {
+    const html = view({ phase: "finished", done: 5, reviewCount: 0 });
+    expect(html).toMatch(/h-\[52px\] bg-primary[^>]*>Preview as student</);
+    expect(html).not.toContain("Review 0");
   });
 
-  it("shows the Replace files message as a to fix Notice", () => {
-    const html = importView([], { notice: "Fix these in your files." });
-    expect(html).toContain('data-notice="to-fix"');
-    expect(html).toContain("Fix these in your files.");
+  it("partial: the missing part sentence, Primary Continue over Secondary Choose another file", () => {
+    const html = view({
+      phase: "partial",
+      done: 5,
+      partialLine: "We could not find questions in this document.",
+    });
+    expect(html).toContain("We could not find questions in this document.");
+    expect(html).toMatch(/h-\[52px\] bg-primary[^>]*>Continue</);
+    expect(html).toMatch(/bg-olive-tint[^>]*>Choose another file</);
+  });
+
+  it("error: the plain sentence, Primary Choose another file over Secondary Cancel, no stages", () => {
+    const html = view({ phase: "error", done: 0 });
+    expect(html).toContain("We could not read this file. Try another file.");
+    expect(html).toMatch(/h-\[52px\] bg-primary[^>]*>Choose another file</);
+    expect(html).toMatch(/bg-olive-tint[^>]*>Cancel</);
+    expect(html).not.toContain("data-stages");
   });
 });
 
@@ -237,6 +266,8 @@ describe("the review screen", () => {
         onCancelDialog={noop}
         onReview={noop}
         onPreview={noop}
+        onEditDetails={noop}
+        onReplace={noop}
         dialogInline
         {...over}
       />,
@@ -326,13 +357,11 @@ describe("the review screen", () => {
     expect(html).toMatch(/h-\[52px\] bg-primary[^>]*>Review 1 item</);
   });
 
-  it("the meta row is 'Draft · Last edited today' followed by an underlined tertiary Replace files link", () => {
+  it("the meta row is 'Draft · Last edited today' with no Replace files link (it moved into the menu)", () => {
     const html = render();
     const meta = html.slice(html.indexOf("data-package-status"), html.indexOf("data-coverage"));
     expect(meta.replace(/<[^>]+>/g, "")).toContain("Draft · Last edited today");
-    expect(meta).toMatch(/underline[^>]*>Replace files</);
-    expect(meta.indexOf("Last edited")).toBeLessThan(meta.indexOf("Replace files"));
-    expect(meta).toContain(`href="/instructor/content/import?replace=${topic.id}"`);
+    expect(meta).not.toContain("Replace");
   });
 
   it("has Back on the left and a ⋯ More actions button on the right; Delete is in its menu, not in the pinned area", () => {
@@ -343,15 +372,16 @@ describe("the review screen", () => {
     expect(closed).toContain("lucide-ellipsis");
     expect(closed).toContain("h-11 w-11");
     expect(closed).not.toContain('role="menu"');
-    expect(closed).not.toContain("Delete demo topic");
+    expect(closed).not.toContain("Delete topic");
     expect(closed.indexOf('aria-label="Back to Content"')).toBeLessThan(
       closed.indexOf('aria-label="More actions"'),
     );
     const open = render({ menuOpen: true });
     expect(open).toContain('role="menu"');
-    expect(open).toMatch(/role="menuitem"[^>]*>Delete demo topic</);
-    expect(open).toContain("text-wrong-text");
-    expect(open.slice(open.indexOf("data-bar"))).not.toContain("Delete demo topic");
+    const items = [...open.matchAll(/role="menuitem"[^>]*>([^<]*)</g)].map((m) => m[1]);
+    expect(items).toEqual(["Edit title and summary", "Replace document…", "Delete topic"]);
+    expect(open).toMatch(/text-wrong-text[^>]*>Delete topic</);
+    expect(open.slice(open.indexOf("data-bar"))).not.toContain("Delete topic");
   });
 
   it("the pinned area has exactly the right buttons in each state: items to review, nothing left, published", () => {
@@ -372,8 +402,8 @@ describe("the review screen", () => {
     expect(primaries(cleanHtml)).toBe(1);
     expect(bar(cleanHtml)).not.toMatch(/disabled=/);
     const published = render({ topic: { ...topic, status: "published" } });
-    expect(buttons(published)).toEqual(["Unpublish", "Preview as student"]);
-    expect(primaries(published)).toBe(0);
+    expect(buttons(published)).toEqual(["Preview as student", "Unpublish"]);
+    expect(primaries(published)).toBe(1);
     expect(published).toContain(
       "Visible to students in Materials, in the section From your instructor.",
     );
@@ -405,7 +435,7 @@ describe("the review screen", () => {
     expect(unpublish).toContain("Unpublish this demo topic?");
     expect(unpublish).toContain(">Keep published<");
     const remove = render({ dialog: "delete" });
-    expect(remove).toContain("Delete this demo topic?");
+    expect(remove).toContain("Delete this topic?");
     expect(remove).toContain(">Keep it<");
   });
 });

@@ -67,6 +67,8 @@ function Topic() {
           if (round.length > 0) router.push(`${base}/edit/${round[0]}?r=${round.join(",")}&i=0`);
         }}
         onPreview={() => router.push(`${base}/preview`)}
+        onEditDetails={() => router.push(`${base}/details`)}
+        onReplace={() => router.push(`/instructor/content/import?replace=${topic.id}`)}
         onAsk={setDialog}
         onConfirm={confirm}
         onCancelDialog={() => setDialog(null)}

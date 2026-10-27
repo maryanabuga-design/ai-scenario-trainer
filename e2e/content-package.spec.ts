@@ -17,15 +17,10 @@ test.setTimeout(90_000);
 
 const DIR = "public/templates/sample-package/";
 const f = (name: string) => `${DIR}${name}`;
-const CSVS = ["topic.csv", "guide.csv", "steps.csv", "scenario.csv", "questions.csv"].map(f);
 const PICTURES = [f("exit-sign.png"), f("assembly-point.png")];
-const CLEAN = [...CSVS, ...PICTURES];
-const PROBLEMS = [
-  f("guide.csv"),
-  f("steps-with-problems.csv"),
-  f("questions-with-problems.csv"),
-  ...PICTURES,
-];
+const FIXTURES = "e2e/fixtures/";
+const CLEAN = [`${FIXTURES}clean.xlsx`, ...PICTURES];
+const PROBLEMS = [`${FIXTURES}problems.xlsx`, ...PICTURES];
 const ATTENTION_BG = "rgb(241, 228, 200)";
 const ATTENTION_INK = "rgb(111, 81, 32)";
 const WRONG_TEXT = "rgb(155, 44, 31)";
@@ -35,15 +30,24 @@ const noSidewaysScroll = (page: Page) =>
 const bg = (loc: ReturnType<Page["locator"]>) =>
   loc.evaluate((el) => getComputedStyle(el).backgroundColor);
 
-async function importFiles(page: Page, files: string[], title = "") {
+/** Imports one document (and its pictures) through the Import and Analysing screens, then opens the new topic. */
+async function importFiles(page: Page, files: string[]) {
   await page.goto("/instructor/content/import");
-  await page.locator("[data-file-input]").setInputFiles(files);
-  await expect(page.locator("[data-recognised-row]").first()).toBeVisible();
-  if (title) await page.getByLabel("Topic title").fill(title);
+  await page.locator("[data-file-input]").setInputFiles(files[0]);
+  if (files.length > 1) await page.locator("[data-image-input]").setInputFiles(files.slice(1));
   await page.getByRole("button", { name: "Import and review" }).click();
-  await expect(page).toHaveURL(/\/instructor\/content\/package\/[a-z0-9]+(\?.*)?$/, {
-    timeout: 15000,
-  });
+  await expect(page).toHaveURL(/\/import\/analysing/);
+  // a document without every part stops at the partial state first
+  const ready = page.getByRole("heading", { name: "Draft is ready" });
+  const partial = page.getByRole("button", { name: "Continue" });
+  await expect(ready.or(partial)).toBeVisible({ timeout: 15000 });
+  if (await partial.isVisible()) await partial.click();
+  await expect(ready).toBeVisible();
+  const id = await page.evaluate(
+    () => JSON.parse(localStorage.getItem("ast.demo-topics.v1")!).value[0].id as string,
+  );
+  await page.goto(`/instructor/content/package/${id}`);
+  await expect(page.locator("[data-package-status]")).toBeVisible();
 }
 
 const topicId = (page: Page) => /package\/([a-z0-9]+)/.exec(page.url())![1];
@@ -60,123 +64,10 @@ for (const width of [360, 430]) {
   test.describe(`Content package at ${width}px`, () => {
     test.use({ viewport: { width, height: 800 } });
 
-    test("the sample package files exist and the zip is served", async ({ page, request }) => {
-      const response = await request.get("/templates/sample-package.zip");
-      expect(response.ok()).toBe(true);
-      await page.goto("/instructor/content/import");
-      await expect(page.getByRole("link", { name: "Download sample package" })).toBeVisible();
-      await expect(page.getByRole("link", { name: "Download templates" })).toBeVisible();
-    });
-
-    test("the empty import screen: the info Notice says Word, Excel and PDF are not read, the tertiary link sits under it, no sideways scroll", async ({
-      page,
-    }) => {
-      await page.goto("/instructor/content/import");
-      await expect(page.getByRole("heading", { name: "Import content" })).toBeVisible();
-      await expect(page.getByRole("button", { name: "Import and review" })).toBeDisabled();
-      const info = page.locator('[data-notice="info"]:visible');
-      await expect(info).toContainText("Word, Excel and PDF files are not read in this prototype.");
-      expect(await bg(info)).toBe("rgb(255, 255, 255)");
-      const link = page.getByRole("link", { name: "Import questions to a built-in topic" });
-      expect(
-        await link.evaluate((el) => getComputedStyle(el.querySelector("span")!).textDecorationLine),
-      ).toContain("underline");
-      expect(await bg(link)).toBe("rgba(0, 0, 0, 0)");
-      const a = (await info.boundingBox())!;
-      const b = (await link.boundingBox())!;
-      expect(b.y).toBeGreaterThan(a.y + a.height - 1);
-      expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-      // the summary is a two-line text area
-      await expect(page.locator("textarea[name=topic-summary]")).toHaveAttribute("rows", "2");
-      expect(await noSidewaysScroll(page)).toBe(true);
-    });
-
-    test("images missing: the Images row is amber 'N to add' with 'Missing: ...', never Ready; rows are three lines with 44px icon Remove buttons", async ({
-      page,
-    }) => {
-      await page.goto("/instructor/content/import");
-      await page.locator("[data-file-input]").setInputFiles(CSVS);
-      const images = page.locator('[data-recognised-row="images"]');
-      await expect(images).toContainText("Images · 0 of 2 found");
-      await expect(images.locator("[data-row-pill]")).toHaveText("2 to add");
-      expect(await bg(images.locator("[data-row-pill]"))).toBe(ATTENTION_BG);
-      await expect(images.locator("[data-missing]")).toHaveText(
-        "Missing: exit-sign.png, assembly-point.png",
-      );
-      await expect(images).not.toContainText("Ready");
-      await expect(page.locator("[data-fix-in-review]")).toHaveText(
-        "You can import now and fix the issues in the review.",
-      );
-      // one picture added: one still missing
-      await page.locator("[data-file-input]").setInputFiles(PICTURES[0]);
-      await expect(images.locator("[data-row-pill]")).toHaveText("1 to add");
-      await expect(images.locator("[data-missing]")).toHaveText("Missing: assembly-point.png");
-      // both: Ready
-      await page.locator("[data-file-input]").setInputFiles(PICTURES);
-      await expect(images.locator("[data-row-pill]")).toHaveText("Ready");
-      await expect(page.locator("[data-fix-in-review]")).toHaveCount(0);
-      // layout of a row: label, pill, file name; the remove button is a 44px icon named after the file
-      const row = page.locator('[data-recognised-row="scenario"]');
-      const label = (await row.getByText("Scenario · 4 steps").boundingBox())!;
-      const pill = (await row.locator("[data-row-pill]").boundingBox())!;
-      const name = (await row.locator("[data-file-name]").boundingBox())!;
-      expect(pill.y).toBeGreaterThan(label.y);
-      expect(name.y).toBeGreaterThan(pill.y);
-      const remove = row.getByRole("button", { name: "Remove scenario.csv" });
-      // a small corner x: a 28px neutral circle inside a 44px tap area at the top-right of the card
-      const box = (await remove.boundingBox())!;
-      const card = (await row.boundingBox())!;
-      expect([box.width, box.height]).toEqual([44, 44]);
-      expect(box.x + box.width).toBeGreaterThanOrEqual(card.x + card.width - 1);
-      expect(box.y).toBeLessThanOrEqual(card.y + 1);
-      const circle = remove.locator("span").first();
-      const dot = (await circle.boundingBox())!;
-      expect([dot.width, dot.height]).toEqual([28, 28]);
-      expect(await bg(circle)).toBe("rgb(226, 222, 214)");
-      await expect(row.getByText("Remove", { exact: true })).toHaveCount(0);
-      // nothing in the row overlaps the x
-      for (const part of [
-        row.getByText("Scenario · 4 steps"),
-        row.locator("[data-row-pill]"),
-        row.locator("[data-file-name]"),
-      ]) {
-        const text = (await part.boundingBox())!;
-        expect(text.x + text.width).toBeLessThanOrEqual(box.x + 14);
-      }
-      // the pictures show as thumbnails, each with its own corner x
-      const thumbs = page.locator("[data-thumbnail]");
-      await expect(thumbs).toHaveCount(2);
-      const thumb = thumbs.first().locator("img");
-      const tb = (await thumb.boundingBox())!;
-      expect([tb.width, tb.height]).toEqual([56, 56]);
-      const thumbX = thumbs.first().getByRole("button", { name: /^Remove / });
-      expect((await thumbX.boundingBox())!.height).toBe(44);
-      await remove.click();
-      await expect(page.locator('[data-recognised-row="scenario"]')).toHaveCount(0);
-      expect(await noSidewaysScroll(page)).toBe(true);
-    });
-
-    test("problems: part pills 'N to fix', the Import button stays enabled", async ({ page }) => {
-      await page.goto("/instructor/content/import");
-      await page.locator("[data-file-input]").setInputFiles(PROBLEMS);
-      await expect(page.locator('[data-recognised-row="steps"] [data-row-pill]')).toHaveText(
-        "2 to fix",
-      );
-      await page.getByLabel("Topic title").fill("Problem topic");
-      await expect(page.locator('[data-recognised-row="questions"] [data-row-pill]')).toHaveText(
-        "4 to fix",
-      );
-      expect(await bg(page.locator('[data-recognised-row="steps"] [data-row-pill]'))).toBe(
-        ATTENTION_BG,
-      );
-      await expect(page.locator("main")).not.toContainText("Needs attention");
-      await expect(page.getByRole("button", { name: "Import and review" })).toBeEnabled();
-    });
-
     test("review with issues: ONE white notice, small item pills and pencils, Primary 'Review 6 items' over Secondary Preview, Delete in the ⋯ menu", async ({
       page,
     }) => {
-      await importFiles(page, PROBLEMS, "Problem topic");
+      await importFiles(page, PROBLEMS);
       await expect(page.locator("[data-package-status]")).toContainText(
         "Draft · Last edited today",
       );
@@ -226,33 +117,32 @@ for (const width of [360, 430]) {
         "rgb(224, 230, 214)",
       );
       await expect(page.getByRole("button", { name: "Publish", exact: true })).toHaveCount(0);
-      await expect(page.getByRole("button", { name: "Delete demo topic" })).toHaveCount(0);
+      await expect(page.getByRole("button", { name: "Delete topic" })).toHaveCount(0);
       const ys = [
         (await page.getByRole("button", { name: "Review 6 items" }).boundingBox())!.y,
         (await page.getByRole("button", { name: "Preview as student" }).boundingBox())!.y,
       ];
       expect(ys[0]).toBeLessThan(ys[1]);
-      // the meta row: an underlined tertiary Replace files link
-      const meta = page
-        .locator("[data-package-status]")
-        .getByRole("link", { name: "Replace files" });
-      expect(
-        await meta.locator("span").evaluate((el) => getComputedStyle(el).textDecorationLine),
-      ).toContain("underline");
-      expect((await meta.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-      // the ⋯ button: 44px, opens the menu with Delete in the destructive colour; Escape returns the focus
+      // the meta row has no Replace link: it moved into the menu
+      await expect(page.locator("[data-package-status]").getByRole("link")).toHaveCount(0);
+      // the ⋯ button: 44px, opens the menu with three items; Delete is in the destructive colour; Escape returns the focus
       const more = page.getByRole("button", { name: "More actions" });
       expect((await more.boundingBox())!.height).toBeGreaterThanOrEqual(44);
       await more.click();
-      const item = page.getByRole("menuitem", { name: "Delete demo topic" });
+      await expect(page.getByRole("menuitem")).toHaveText([
+        "Edit title and summary",
+        "Replace document…",
+        "Delete topic",
+      ]);
+      const item = page.getByRole("menuitem", { name: "Delete topic" });
       await expect(item).toBeVisible();
       expect(await item.evaluate((el) => getComputedStyle(el).color)).toBe(WRONG_TEXT);
       await page.keyboard.press("Escape");
       await expect(page.getByRole("menu")).toHaveCount(0);
       await expect(more).toBeFocused();
       await more.click();
-      await page.getByRole("menuitem", { name: "Delete demo topic" }).click();
-      await expect(page.getByRole("dialog")).toContainText("Delete this demo topic?");
+      await page.getByRole("menuitem", { name: "Delete topic" }).click();
+      await expect(page.getByRole("dialog")).toContainText("Delete this topic?");
       await page.getByRole("dialog").getByRole("button", { name: "Keep it" }).click();
       expect(await noSidewaysScroll(page)).toBe(true);
       // Preview as student works while items are flagged
@@ -264,7 +154,7 @@ for (const width of [360, 430]) {
     test("the guided review: 1 of N in order, Save and next, Skip keeps the item, Choose image (Save and next disabled until then), then the review summary with Publish", async ({
       page,
     }) => {
-      await importFiles(page, PROBLEMS, "Problem topic");
+      await importFiles(page, PROBLEMS);
       await page.getByRole("button", { name: "Review 6 items" }).click();
       const header = page.locator("[data-page-header-band]:visible");
       const primary = (name: string) => page.getByRole("button", { name, exact: true });
@@ -416,21 +306,26 @@ for (const width of [360, 430]) {
       await expect(page.getByRole("button", { name: "Review 1 item" })).toBeVisible();
     });
 
-    test("Replace files reopens the import with the title kept; the corrected files clear every item", async ({
+    test("Replace document (topic menu) reopens the import and analysing screens, keeps the topic and its title; the corrected document clears every item", async ({
       page,
     }) => {
-      await importFiles(page, PROBLEMS, "Problem topic");
-      await page
-        .locator("[data-package-status]")
-        .getByRole("link", { name: "Replace files" })
-        .click();
+      await importFiles(page, PROBLEMS);
+      const id = topicId(page);
+      await page.getByRole("button", { name: "More actions" }).click();
+      await page.getByRole("menuitem", { name: "Replace document…" }).click();
       await expect(page).toHaveURL(/import\?replace=[a-z0-9]+$/);
-      const notice = page.locator('[data-notice="to-fix"]');
-      await expect(notice).toContainText("The new files replace the files of Problem topic");
-      await expect(page.getByLabel("Topic title")).toHaveValue("Problem topic");
-      await page.locator("[data-file-input]").setInputFiles(CLEAN);
+      await expect(page.locator('[data-notice="info"]')).toContainText(
+        "The new document replaces the content of Evacuating a crowded hall",
+      );
+      await page.locator("[data-file-input]").setInputFiles(CLEAN[0]);
+      await page.locator("[data-image-input]").setInputFiles(PICTURES);
       await page.getByRole("button", { name: "Import and review" }).click();
-      await expect(page).toHaveURL(/\/instructor\/content\/package\//, { timeout: 15000 });
+      await expect(page.getByRole("heading", { name: "Draft is ready" })).toBeVisible({
+        timeout: 15000,
+      });
+      await page.getByRole("button", { name: "Preview as student" }).click();
+      await expect(page).toHaveURL(new RegExp(`/package/${id}/preview$`));
+      await page.goto(`/instructor/content/package/${id}`);
       const success = page.locator("#package-status");
       await expect(success).toContainText("All items checked");
       await expect(success).toContainText("Preview as student, then publish.");
@@ -602,24 +497,6 @@ for (const width of [360, 430]) {
       await asStudent(page);
       await page.goto("/materials");
       await expect(page.getByText("FROM YOUR INSTRUCTOR")).toHaveCount(0);
-    });
-
-    test("a wrong file type and an oversize picture are left out with an amber message", async ({
-      page,
-    }) => {
-      await page.goto("/instructor/content/import");
-      await page
-        .locator("[data-file-input]")
-        .setInputFiles([
-          { name: "notes.pdf", mimeType: "application/pdf", buffer: Buffer.from("x") },
-        ]);
-      await expect(page.getByText("notes.pdf is not a CSV file")).toBeVisible();
-      await page
-        .locator("[data-file-input]")
-        .setInputFiles([
-          { name: "big.png", mimeType: "image/png", buffer: Buffer.alloc(320 * 1024) },
-        ]);
-      await expect(page.getByText("big.png is larger than 300 KB.")).toBeVisible();
     });
 
     test("no external requests while importing and reading", async ({ page }) => {

@@ -183,10 +183,12 @@ describe("a secondary always comes with a primary above it", () => {
       // (Delete question, Add image, Remove image), each under at most one Primary.
       // Field of work: the picker (Clear selection). The step has only the corner Skip (tertiary) and Continue.
       "components/FieldOfWork/FieldPickerView.tsx",
+      "components/InstructorContent/DocumentAnalysingView.tsx",
       "components/InstructorContent/EditQuestionView.tsx",
       "components/InstructorContent/ImportView.tsx",
       // Content package import: Cancel under Import and review, Replace files / Preview as student
       // beside the topic, Delete demo topic under Publish, the question editor's Cancel.
+      "components/InstructorContent/PackageDetailsEdit.tsx",
       "components/InstructorContent/PackageImportView.tsx",
       "components/InstructorContent/PackageItemEdit.tsx",
       "components/InstructorContent/PackageReviewSummary.tsx",

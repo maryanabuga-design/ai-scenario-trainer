@@ -1,145 +1,131 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { PackageImportView } from "@/components/InstructorContent/PackageImportView";
-import type { QuestionsChoice } from "@/components/InstructorContent/PackageImportView";
-import { chooseDraftFile, clearDraft } from "@/lib/import-draft";
-import { checkPackage, csvPart, fileKind, fixMessage, readPackage } from "@/lib/package-read";
-import type { PathPart } from "@/lib/package-read";
+import { clearDocumentDraft, setDocumentDraft } from "@/lib/document-draft";
+import { checkDocument, checkFile } from "@/lib/document-read";
+import { MAX_IMAGES, MAX_IMAGE_BYTES, fileKind } from "@/lib/package-read";
 import type { PackageFile } from "@/lib/package-read";
-import {
-  NO_ROOM,
-  addPackage,
-  createTopic,
-  readPackages,
-  replaceFiles,
-  savePackages,
-  usePackages,
-} from "@/lib/packages";
+import { usePackages } from "@/lib/packages";
 
-const readAs = (file: File, mode: "text" | "url") =>
+const SAMPLE = "/templates/sample-document.xlsx";
+const SAMPLE_IMAGES = ["exit-sign.png", "assembly-point.png"];
+
+const readUrl = (file: File) =>
   new Promise<string>((resolve) => {
     const reader = new FileReader();
     reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
     reader.onerror = () => resolve("");
-    if (mode === "text") reader.readAsText(file, "UTF-8");
-    else reader.readAsDataURL(file);
+    reader.readAsDataURL(file);
   });
 
-const tabFrom = (value: string): PathPart | null =>
-  value === "guide" || value === "steps" || value === "scenario" || value === "quiz" ? value : null;
-
-const clock = () => Date.now();
-const pause = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
-const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+type Chosen = { name: string; size: number; bytes: Uint8Array | null };
 
 function Import() {
   const router = useRouter();
   const query = useSearchParams();
   const replaceId = query.get("replace");
-  const fixTab = query.get("fix");
   const topics = usePackages();
-  const [files, setFiles] = useState<PackageFile[]>([]);
-  const [title, setTitle] = useState<string | null>(null);
-  const [summary, setSummary] = useState<string | null>(null);
-  const [reading, setReading] = useState(false);
-  const [problem, setProblem] = useState("");
-  const [choice, setChoice] = useState<QuestionsChoice>(null);
-  const outcome = useMemo(() => readPackage(files), [files]);
+  const [file, setFile] = useState<Chosen | null>(null);
+  const [message, setMessage] = useState("");
+  const [images, setImages] = useState<PackageFile[]>([]);
+  const [imageMessage, setImageMessage] = useState("");
   if (topics === "loading") return null;
   const target = replaceId ? topics.find((t) => t.id === replaceId) : undefined;
 
-  const shownTitle = title ?? (outcome.data.title || target?.title || "");
-  const shownSummary = summary ?? (outcome.data.summary || target?.summary || "");
-  const onlyQuestions =
-    outcome.recognised.length === 1 && outcome.recognised[0].part === "questions" && !target;
-
-  async function choose(chosen: File[]) {
-    const next = await Promise.all(
-      chosen.map(async (file): Promise<PackageFile> => {
-        const kind = fileKind(file.name);
-        if (kind === "csv" && file.size <= 1024 * 1024) {
-          return { name: file.name, size: file.size, text: await readAs(file, "text") };
-        }
-        if (kind === "image" && file.size <= 300 * 1024) {
-          return { name: file.name, size: file.size, dataUrl: await readAs(file, "url") };
-        }
-        return { name: file.name, size: file.size };
-      }),
-    );
-    setProblem("");
-    // a file chosen later replaces an earlier one of the same name or of the same part
-    const parts = new Set(next.map(csvPart).filter((part) => part !== null));
-    setFiles((current) => [
-      ...current.filter((existing) => {
-        const part = csvPart(existing);
-        return !next.some((entry) => entry.name === existing.name) && !(part && parts.has(part));
-      }),
-      ...next,
-    ]);
+  /** A chosen file: the type and size first, then whether it has a Guide sheet. */
+  async function choose(chosen: File) {
+    setImageMessage("");
+    const blocked = checkFile(chosen.name, chosen.size);
+    if (blocked) {
+      setFile({ name: chosen.name, size: chosen.size, bytes: null });
+      setMessage(blocked);
+      return;
+    }
+    const bytes = new Uint8Array(await chosen.arrayBuffer());
+    setFile({ name: chosen.name, size: chosen.size, bytes });
+    // a file that looks like Excel but cannot be opened is not blocked here: the analysis says so
+    setMessage(checkDocument(bytes) ?? "");
   }
 
-  async function run() {
-    if (outcome.recognised.length === 0 || shownTitle.trim() === "") return;
-    setProblem("");
-    if (onlyQuestions && choice === "builtin") {
-      const questions = files.find((f) => fileKind(f.name) === "csv" && f.text !== undefined)!;
-      clearDraft();
-      chooseDraftFile(new File([questions.text ?? ""], questions.name, { type: "text/csv" }), null);
-      router.push("/instructor/content/import/questions");
-      return;
+  async function addImages(chosen: File[]) {
+    const next = [...images];
+    let problem = "";
+    for (const picture of chosen) {
+      if (fileKind(picture.name) !== "image")
+        problem = `${picture.name} is not a png, jpg or webp picture.`;
+      else if (picture.size > MAX_IMAGE_BYTES) problem = `${picture.name} is larger than 300 KB.`;
+      else if (next.length >= MAX_IMAGES && !next.some((i) => i.name === picture.name))
+        problem = `Add at most ${MAX_IMAGES} images.`;
+      else {
+        const entry = { name: picture.name, size: picture.size, dataUrl: await readUrl(picture) };
+        const at = next.findIndex((i) => i.name === picture.name);
+        if (at >= 0) next[at] = entry;
+        else next.push(entry);
+      }
     }
-    setReading(true);
-    if (!reduced()) await pause(1200);
-    const now = clock();
-    const existing = readPackages();
-    const topic = target
-      ? replaceFiles(target, outcome.data, shownTitle, shownSummary, now)
-      : createTopic(outcome.data, shownTitle, shownSummary, now, existing);
-    const saved = target
-      ? savePackages(existing.map((t) => (t.id === target.id ? topic : t)))
-      : addPackage(topic);
-    if (!saved) {
-      savePackages(existing);
-      setReading(false);
-      setProblem(NO_ROOM);
-      return;
+    setImages(next);
+    setImageMessage(problem);
+  }
+
+  async function sample() {
+    try {
+      const [sheet, ...pictures] = await Promise.all(
+        [SAMPLE, ...SAMPLE_IMAGES.map((n) => `/templates/sample-package/${n}`)].map((url) =>
+          fetch(url),
+        ),
+      );
+      const bytes = new Uint8Array(await sheet.arrayBuffer());
+      const files: PackageFile[] = await Promise.all(
+        pictures.map(async (response, i) => {
+          const blob = await response.blob();
+          return {
+            name: SAMPLE_IMAGES[i],
+            size: blob.size,
+            dataUrl: await readUrl(new File([blob], SAMPLE_IMAGES[i])),
+          };
+        }),
+      );
+      setFile({ name: "sample-document.xlsx", size: bytes.length, bytes });
+      setImages(files);
+      setImageMessage("");
+      setMessage(checkDocument(bytes) ?? "");
+    } catch {
+      setMessage("The sample document could not be loaded. Try again.");
     }
-    router.push(`/instructor/content/package/${topic.id}`);
+  }
+
+  function start() {
+    if (!file?.bytes || message) return;
+    setDocumentDraft({ name: file.name, size: file.size, bytes: file.bytes, images });
+    router.push(`/instructor/content/import/analysing${target ? `?replace=${target.id}` : ""}`);
   }
 
   return (
     <PackageImportView
-      outcome={outcome}
-      title={shownTitle}
-      summary={shownSummary}
-      reading={reading}
+      file={file}
+      message={message}
+      images={images.map((i) => i.name)}
+      imageMessage={imageMessage}
       notice={
-        target
-          ? `${
-              fixTab ? `${fixMessage(checkPackage(target), tabFrom(fixTab))} ` : ""
-            }The new files replace the files of ${target.title}; the title is kept.`
-          : ""
+        target ? `The new document replaces the content of ${target.title}. The title is kept.` : ""
       }
-      extraMessage={problem}
-      onlyQuestions={onlyQuestions}
-      questionsChoice={choice}
-      onChoice={setChoice}
-      onFiles={(chosen) => void choose(chosen)}
-      onRemove={({ part, fileName }) =>
-        setFiles((current) =>
-          part === "images" && fileName === undefined
-            ? current.filter((f) => fileKind(f.name) !== "image")
-            : current.filter((f) => f.name !== fileName),
-        )
-      }
-      onTitle={setTitle}
-      onSummary={setSummary}
-      onImport={() => void run()}
-      onCancel={() =>
-        router.push(target ? `/instructor/content/package/${target.id}` : "/instructor/content")
-      }
+      onFile={(chosen) => void choose(chosen)}
+      onRemove={() => {
+        clearDocumentDraft();
+        setFile(null);
+        setMessage("");
+        setImages([]);
+        setImageMessage("");
+      }}
+      onSample={() => void sample()}
+      onImages={(chosen) => void addImages(chosen)}
+      onImport={start}
+      onCancel={() => {
+        clearDocumentDraft();
+        router.push(target ? `/instructor/content/package/${target.id}` : "/instructor/content");
+      }}
     />
   );
 }

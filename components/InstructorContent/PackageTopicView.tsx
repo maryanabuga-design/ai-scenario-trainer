@@ -3,7 +3,7 @@
 import { Eye } from "lucide-react";
 import { useState } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
-import { Button, ButtonLink } from "@/components/Button/Button";
+import { Button } from "@/components/Button/Button";
 import { DropdownMenu } from "@/components/DropdownMenu/DropdownMenu";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import {
@@ -46,7 +46,7 @@ export function issuesOfPart(issues: Issue[], part: PathPart): Issue[] {
 
 /**
  * The demo topic of the Instructor (DESIGN.md: Guided review of a content package): the band with the
- * title and the ⋯ menu, the meta line "Draft · Last edited today" with Replace files, ONE notice (the
+ * title and the ⋯ menu, the meta line "Draft · Last edited today", ONE notice (the
  * items to review per part, or "All items checked"), the coverage, the four-option selector, the tab
  * with compact item cards (one pill and a pencil each), and the pinned area. A draft with flagged
  * items has the Primary "Review N items" and the Secondary "Preview as student"; when nothing is
@@ -65,6 +65,8 @@ export function PackageTopicView({
   onCancelDialog,
   onReview,
   onPreview,
+  onEditDetails,
+  onReplace,
   dialogInline = false,
   menuOpen = false,
 }: {
@@ -81,6 +83,10 @@ export function PackageTopicView({
   onReview: () => void;
   /** Opens Preview as student. */
   onPreview: () => void;
+  /** Menu: "Edit title and summary". */
+  onEditDetails: () => void;
+  /** Menu: "Replace document...". */
+  onReplace: () => void;
   dialogInline?: boolean;
   /** For the review page: the "⋯" menu drawn open. */
   menuOpen?: boolean;
@@ -92,7 +98,7 @@ export function PackageTopicView({
   const base = `/instructor/content/package/${topic.id}`;
   const guideHref = (section: string) => `${base}?tab=guide#section-${section}`;
   const editHref = (key: string) => `${base}/edit/${keySlug(key)}`;
-  const replaceHref = `/instructor/content/import?replace=${topic.id}&fix=${tab}`;
+  const replaceHref = `/instructor/content/import?replace=${topic.id}`;
   const coverage = coverageLine(topic);
   const published = topic.status === "published";
   const toReview = flagged.length > 0;
@@ -109,9 +115,11 @@ export function PackageTopicView({
             label="More actions"
             initiallyOpen={menuOpen}
             items={[
+              { id: "details", label: "Edit title and summary", onSelect: onEditDetails },
+              { id: "replace", label: "Replace document…", onSelect: onReplace },
               {
                 id: "delete",
-                label: "Delete demo topic",
+                label: "Delete topic",
                 destructive: true,
                 onSelect: () => onAsk("delete"),
               },
@@ -134,13 +142,6 @@ export function PackageTopicView({
           <span className="text-text-secondary">
             · Last edited {editedText(topic.editedAt, now)}
           </span>
-          <ButtonLink
-            href={`/instructor/content/import?replace=${topic.id}`}
-            variant="tertiary"
-            compact
-          >
-            Replace files
-          </ButtonLink>
         </p>
         {coverage && (
           <p data-coverage className="type-small text-text-secondary">
@@ -236,11 +237,11 @@ export function PackageTopicView({
       <ActionBar>
         {published ? (
           <>
+            <Button icon={Eye} onClick={onPreview}>
+              Preview as student
+            </Button>
             <Button variant="secondary" onClick={() => onAsk("unpublish")}>
               Unpublish
-            </Button>
-            <Button variant="secondary" icon={Eye} onClick={onPreview}>
-              Preview as student
             </Button>
           </>
         ) : (
@@ -285,9 +286,9 @@ export function PackageTopicView({
         <ConfirmDialog
           open={dialog === "delete"}
           inline={dialogInline}
-          title="Delete this demo topic?"
+          title="Delete this topic?"
           description="This cannot be undone."
-          confirmLabel="Delete demo topic"
+          confirmLabel="Delete topic"
           cancelLabel="Keep it"
           onConfirm={onConfirm}
           onCancel={onCancelDialog}
