@@ -731,29 +731,53 @@ describe("one edit pattern for all four tabs", () => {
     expect([...quiz.matchAll(/<a /g)]).toHaveLength(10);
   });
 
-  it("a step card shows STEP n, the action, the muted detail and Based on: <guide section title>", () => {
+  it("a step card shows STEP n, the action, the muted detail and the GUIDE SECTION block", () => {
     const card = html.slice(html.indexOf('data-step-card="0-1"'));
     const one = card.slice(0, card.indexOf("</li>"));
     expect(one).toContain("STEP 2");
     expect(one).toContain("Find the nearest marked exit");
     expect(one).toContain("Follow the green exit signs.");
     expect(one).toContain("text-text-secondary");
-    expect(one).toContain("Based on: Know your exits");
+    expect(one).toMatch(/GUIDE SECTION<\/span><p[^>]*>1\. Know your exits</);
+    expect(one).not.toContain("Based on");
     expect(one).toContain("pr-[52px]");
   });
 
-  it("a quiz card shows the question, the answers with the correct one marked, and Based on", () => {
+  it("a quiz card shows the question, CORRECT ANSWER with a success check and GUIDE SECTION, and no list of wrong options", () => {
     const card = html.slice(html.indexOf('data-quiz-row="0"'));
     const one = card.slice(0, card.indexOf('data-quiz-row="1"'));
     expect(one).toContain("What should you do first when you enter a crowded hall?");
-    expect(one.match(/data-quiz-options/g)).toHaveLength(1);
-    expect(one.match(/type-small flex flex-col items-start/g)).toHaveLength(4);
+    expect(one).toMatch(/CORRECT ANSWER<\/span>/);
+    expect(one).toMatch(/lucide-check[^>]*text-status-success-ink/);
     expect(one).toContain("Find the two nearest exits");
-    expect(one.match(/Correct answer/g)).toHaveLength(1);
-    expect(one).toContain("lucide-check");
-    expect(one).toContain("text-status-success-ink");
-    expect(one).toContain("Based on: Know your exits");
+    expect(one).toMatch(/GUIDE SECTION<\/span><p[^>]*>1\. Know your exits</);
+    // the wrong options and the old lines are gone
+    for (const wrong of ["Find a seat close to the stage", "Take a photo of the room"]) {
+      expect(one).not.toContain(wrong);
+    }
+    expect(one).not.toMatch(/data-quiz-options|>Correct answer<|Based on/);
+    // no green fill: the answer line has the text colour
+    expect(one).not.toMatch(/bg-correct|bg-status-success-bg/);
     expect(one).toContain("pr-[52px]");
+  });
+
+  it("the labels use ONE style on both cards: small caps muted, 4.5:1 on white", () => {
+    const labels = [
+      ...html.matchAll(/<span class="([^"]*)">(?:GUIDE SECTION|CORRECT ANSWER)<\/span>/g),
+    ];
+    expect(labels.length).toBe(7 + 10 + 10);
+    expect(new Set(labels.map((m) => m[1]))).toEqual(new Set(["type-label text-text-secondary"]));
+    const css = readFileSync("app/globals.css", "utf8");
+    const hex = (name: string) =>
+      /#([0-9a-f]{6})/i.exec(new RegExp(`--${name}:\\s*([^;]+);`).exec(css)![1])![1];
+    const luminance = (h: string) => {
+      const c = [0, 2, 4]
+        .map((i) => parseInt(h.slice(i, i + 2), 16) / 255)
+        .map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+      return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    };
+    const [a, b] = [luminance(hex("text-secondary")), luminance("ffffff")].sort((x, y) => y - x);
+    expect((a + 0.05) / (b + 0.05)).toBeGreaterThanOrEqual(4.5);
   });
 
   it("the scenario pencil is inside the situation card, whose text keeps 52px on the right; STEP stays above", () => {

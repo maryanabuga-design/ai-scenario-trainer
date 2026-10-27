@@ -351,13 +351,27 @@ for (const width of [360, 430]) {
       await expect(step).toContainText("STEP 2");
       await expect(step).toContainText("Find the nearest marked exit");
       await expect(step).toContainText("Follow the green exit signs.");
-      await expect(step.locator("[data-based-on]")).toHaveText("Based on: Know your exits");
+      await expect(step.locator("[data-guide-block]")).toContainText("GUIDE SECTION");
+      await expect(step.locator("[data-guide-block]")).toContainText("1. Know your exits");
       await page.goto(`${base}?tab=quiz`);
       const q = page.locator("[data-quiz-row]:visible").first();
       await expect(q).toContainText("What should you do first when you enter a crowded hall?");
-      await expect(q.locator("[data-quiz-options] li")).toHaveCount(4);
-      await expect(q.getByText("Correct answer")).toHaveCount(1);
-      await expect(q.locator("[data-based-on]")).toHaveText("Based on: Know your exits");
+      await expect(q.locator("[data-correct-block]")).toContainText("CORRECT ANSWER");
+      await expect(q.locator("[data-correct-block]")).toContainText("Find the two nearest exits");
+      await expect(q.locator("[data-guide-block]")).toContainText("GUIDE SECTION");
+      await expect(q.locator("[data-guide-block]")).toContainText("1. Know your exits");
+      // the wrong options are not listed here
+      await expect(q).not.toContainText("Take a photo of the room");
+      // the check is success green, the labels are small caps muted
+      expect(
+        await q.locator("[data-correct-block] svg").evaluate((el) => getComputedStyle(el).color),
+      ).toBe("rgb(68, 104, 58)");
+      expect(
+        await q
+          .locator("[data-correct-block] span")
+          .first()
+          .evaluate((el) => getComputedStyle(el).color),
+      ).toBe("rgb(92, 90, 85)");
       // a tap on a card does nothing
       await q.click({ position: { x: 60, y: 30 } });
       await expect(page).toHaveURL(/tab=quiz/);
@@ -385,7 +399,7 @@ for (const width of [360, 430]) {
           t.steps[0].steps[0].action = long;
           t.steps[0].steps[0].detail = long;
           t.questions[0].text = long;
-          t.questions[0].options[0] = long;
+          t.questions[0].options[1] = long;
           localStorage.setItem("ast.demo-topics.v1", JSON.stringify(raw));
         },
         { long },

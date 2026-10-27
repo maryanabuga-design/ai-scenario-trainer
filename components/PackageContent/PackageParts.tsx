@@ -118,15 +118,24 @@ export function PencilButton({
   );
 }
 
-/** The muted line "Based on: <guide section title>" of a step or a question (nothing when it names no section). */
-export function BasedOn({ data, section }: { data: PackageData; section: string }) {
+/** The small caps muted label of a block on a Steps or Quiz card ("GUIDE SECTION", "CORRECT ANSWER"). */
+const blockLabel = "type-label text-text-secondary";
+
+/**
+ * The block "GUIDE SECTION" of a step or a question: the label and "<number>. <title>" in muted text
+ * (nothing when it names no section).
+ */
+export function GuideSectionBlock({ data, section }: { data: PackageData; section: string }) {
   const ref = section.trim();
   if (ref === "") return null;
   const title = (data.guide ?? []).find((entry) => String(entry.section) === ref)?.title;
   return (
-    <p data-based-on className="type-small text-text-secondary">
-      Based on: {title || `section ${ref}`}
-    </p>
+    <div data-guide-block className="flex flex-col gap-0.5">
+      <span className={blockLabel}>GUIDE SECTION</span>
+      <p className="type-small [overflow-wrap:anywhere] text-text-secondary">
+        {title ? `${ref}. ${title}` : `${ref}`}
+      </p>
+    </div>
   );
 }
 
@@ -213,7 +222,7 @@ export function GuideSections({
 /**
  * The Steps of a draft topic (DESIGN.md: One edit pattern): a card per step that shows everything,
  * does nothing when tapped and has one corner pencil: "STEP n", the action as the title, the detail
- * in the muted colour, the picture, "Based on: <guide section title>" and the issue pill.
+ * in the muted colour, the picture, the GUIDE SECTION block and the issue pill.
  */
 export function ChecklistCards({
   data,
@@ -248,7 +257,7 @@ export function ChecklistCards({
                     </p>
                   )}
                   <PackageImage data={data} file={step.imageFile} alt={step.alt} />
-                  <BasedOn data={data} section={step.guideRef} />
+                  <GuideSectionBlock data={data} section={step.guideRef} />
                   <IssuePill issues={issues} itemKey={key} />
                   {editHref && (
                     <PencilButton
@@ -336,9 +345,10 @@ export function ScenarioCards({
 }
 
 /**
- * The Quiz of a draft topic (DESIGN.md: One edit pattern): a card per question that shows everything,
- * does nothing when tapped and has one corner pencil: the number and the question, the answers as a
- * compact plain list with the correct one marked, "Based on: <guide section title>" and the issue pill.
+ * The Quiz of a draft topic (DESIGN.md: Clear, compact Quiz and Steps cards): a card per question
+ * that does nothing when tapped and has one corner pencil: the number and the question, the block
+ * CORRECT ANSWER (a success check and the text), the block GUIDE SECTION and the issue pill. The wrong
+ * options are not listed here: they are in Preview as student and in the edit screen.
  */
 export function QuizRows({
   data,
@@ -354,6 +364,8 @@ export function QuizRows({
     <ul className="flex flex-col gap-3">
       {(data.questions ?? []).map((question, index) => {
         const key = `questions:${index}`;
+        const letterAt = LETTERS.indexOf(question.correct as (typeof LETTERS)[number]);
+        const correct = letterAt >= 0 ? question.options[letterAt] : "";
         return (
           <li
             key={index}
@@ -371,29 +383,24 @@ export function QuizRows({
                 {question.text || "(no question text)"}
               </h4>
             </div>
-            <ul data-quiz-options className="flex flex-col gap-1.5 pl-12">
-              {LETTERS.map((letter, i) =>
-                question.options[i] === "" ? null : (
-                  <li
-                    key={letter}
-                    data-correct={question.correct === letter ? "" : undefined}
-                    className="type-small flex flex-col items-start"
-                  >
-                    <span className="max-w-full [overflow-wrap:anywhere] text-text">
-                      {question.options[i]}
-                    </span>
-                    {question.correct === letter && (
-                      <span className="flex items-center gap-1 text-status-success-ink">
-                        <Check size={14} strokeWidth={2.5} aria-hidden="true" />
-                        Correct answer
-                      </span>
-                    )}
-                  </li>
-                ),
-              )}
-            </ul>
-            <div className="flex flex-col items-start gap-2 pl-12">
-              <BasedOn data={data} section={question.guideRef} />
+            <div className="flex flex-col gap-3 pl-12">
+              <div data-correct-block className="flex flex-col gap-0.5">
+                <span className={blockLabel}>CORRECT ANSWER</span>
+                {correct ? (
+                  <p className="type-small flex items-start gap-1.5 text-text">
+                    <Check
+                      size={16}
+                      strokeWidth={2.5}
+                      aria-hidden="true"
+                      className="mt-0.5 shrink-0 text-status-success-ink"
+                    />
+                    <span className="min-w-0 [overflow-wrap:anywhere]">{correct}</span>
+                  </p>
+                ) : (
+                  <p className="type-small text-text-secondary">(none chosen)</p>
+                )}
+              </div>
+              <GuideSectionBlock data={data} section={question.guideRef} />
               <IssuePill issues={issues} itemKey={key} />
             </div>
             {editHref && <PencilButton href={editHref(key)} label={`Edit question ${index + 1}`} />}

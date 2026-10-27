@@ -1903,6 +1903,7 @@ export function PackageSample({
     | "published-steps"
     | "topic-scenario"
     | "topic-quiz"
+    | "topic-quiz-long"
     | "topic-clean"
     | "topic-menu"
     | "topic-confirm"
@@ -2092,6 +2093,21 @@ export function PackageSample({
   if (state === "published-steps") return topicView({ ...good, status: "published" }, "steps");
   if (state === "topic-scenario") return topicView(bad, "scenario");
   if (state === "topic-quiz") return topicView(bad, "quiz");
+  if (state === "topic-quiz-long") {
+    const long =
+      "When the alarm sounds in a crowded hall and the lights stay on, what is the safest thing to do first, before you speak to anyone around you?";
+    return topicView(
+      {
+        ...good,
+        questions: good.questions!.map((q, i) =>
+          i === 0
+            ? { ...q, text: long, options: [q.options[0], long, q.options[2], q.options[3]] }
+            : q,
+        ),
+      },
+      "quiz",
+    );
+  }
   if (state === "topic-clean") return topicView(good, "guide");
   if (state === "published") return topicView({ ...good, status: "published" }, "guide");
   if (state === "publish") return topicView(good, "guide", "publish");

@@ -1085,6 +1085,11 @@ export default function Screens() {
               <PackageSample files={packageFiles} state="topic-quiz" />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Quiz tab: a long question and a long correct answer wrap inside the card">
+            <Screen>
+              <PackageSample files={packageFiles} state="topic-quiz-long" />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Content package review: nothing to fix">
             <Screen>
               <PackageSample files={packageFiles} state="topic-clean" />
