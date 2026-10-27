@@ -129,11 +129,10 @@ describe("every button goes through the Button component", () => {
     // The inline action with an icon ("Ask AI about this question", DESIGN.md: Tertiary inline action with an icon)
     // draws the same underline; it is allowed in scrolling content only (the next test).
     // The Import screen's two outlined tertiary actions (DESIGN.md: Corner pencil, Import header, and
-    // the Content page) are a white row of two equal buttons, so they have their own look; the same goes for "Edit step" at the end of an expanded step.
+    // the Content page) are a white row of two equal buttons, so they have their own look.
     expect(own).toEqual([
       "components/AskAiRow/AskAiRow.tsx",
       "components/InstructorContent/PackageImportView.tsx",
-      "components/PackageContent/PackageParts.tsx",
       "components/SelectionToolbar/SelectionToolbar.tsx",
     ]);
   });

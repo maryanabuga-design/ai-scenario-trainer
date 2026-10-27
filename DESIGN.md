@@ -826,3 +826,9 @@ Four changes to the Overview and the group switcher, mobile 360 and 430px.
 - Navigating rows (a quiz question row with a chevron on the right): the whole row opens the question's edit screen. No pencil on the row. The guide pill inside the row still opens the guide.
 - Topic title and summary are edited from the topic menu "⋯" ("Edit title and summary").
 - A published topic is read-only: no pencils, no Edit buttons and no editing rows (the question rows do nothing).
+
+## One edit pattern for all four tabs (30 Oct 2026; replaces the "Edit pattern: one row, one main action" section, including the "Edit step" button and the navigating quiz row)
+- The only pattern: every item card on every tab of a draft topic shows its FULL content, does nothing when tapped, and has ONE small edit pencil inside the card in the top-right corner. No chevrons, no expand or collapse, no separate "Edit" buttons on cards, no row that navigates.
+- Pencil: a sand tile of about 32px with a muted icon, a 44px tap area, 12px from the card's top and right edges (like the x in the compact Notice), `aria-label` "Edit <item name>". Text keeps at least 52px of right padding so it never runs under the pencil. The pencil opens the matching edit screen.
+- Guide: a card per section, unchanged. Steps: a card per step, no accordion and no chevron: "STEP n", the action as the title, the detail in the muted colour, the picture if there is one, a muted line "Based on: <guide section title>", the issue pill if any. Scenario: unchanged (the pencil inside the situation card; the STEP label stays above). Quiz: a card per question with the question text, the answers as a compact plain list with the correct one marked (a small success check and the words "Correct answer"), the muted line "Based on: <guide section title>" and the issue pill if any.
+- A published topic is read-only: no pencils.

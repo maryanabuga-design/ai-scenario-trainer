@@ -69,7 +69,6 @@ export function PackageTopicView({
   onReplace,
   dialogInline = false,
   menuOpen = false,
-  stepOpen = false,
 }: {
   topic: DemoTopic;
   tab: PathPart;
@@ -91,8 +90,6 @@ export function PackageTopicView({
   dialogInline?: boolean;
   /** For the review page: the "⋯" menu drawn open. */
   menuOpen?: boolean;
-  /** For the review page: the first step drawn open. */
-  stepOpen?: boolean;
 }) {
   const [closed, setClosed] = useState(false);
   const present = partsOf(topic);
@@ -205,21 +202,11 @@ export function PackageTopicView({
           {tab === "guide" && (
             <GuideSections data={topic} issues={issues} showUse editHref={editHref} />
           )}
-          {tab === "steps" && (
-            <ChecklistCards
-              data={topic}
-              issues={issues}
-              guideHref={guideHref}
-              editHref={editHref}
-              initialOpen={stepOpen ? "0-0" : null}
-            />
-          )}
+          {tab === "steps" && <ChecklistCards data={topic} issues={issues} editHref={editHref} />}
           {tab === "scenario" && (
             <ScenarioCards data={topic} issues={issues} guideHref={guideHref} editHref={editHref} />
           )}
-          {tab === "quiz" && (
-            <QuizRows data={topic} issues={issues} guideHref={guideHref} editHref={editHref} />
-          )}
+          {tab === "quiz" && <QuizRows data={topic} issues={issues} editHref={editHref} />}
           {own
             .filter((issue) => issue.kind === "note")
             .map((issue) => (

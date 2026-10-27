@@ -342,11 +342,11 @@ describe("the review screen", () => {
     expect(html).toContain("data-pencil");
   });
 
-  it("a published topic is read-only: no pencils, no Edit step buttons and no editing rows on any tab", () => {
+  it("a published topic is read-only: no pencils on any tab", () => {
     const published = { ...topic, status: "published" as const };
     for (const tab of ["guide", "steps", "scenario", "quiz"] as const) {
       const html = render({ topic: published, tab });
-      expect(html, tab).not.toMatch(/data-pencil|data-edit-step|data-quiz-open|Edit /);
+      expect(html, tab).not.toMatch(/data-pencil|Edit /);
     }
   });
 
@@ -383,16 +383,13 @@ describe("the review screen", () => {
     expect(steps).not.toContain(">To fix<");
     expect(steps).not.toContain("Edit question");
     expect(steps).not.toContain("Replace files</span></a></div><p");
-    // a step row only expands: no pencil; "Edit step" is in the expanded content, named after the step
-    expect(steps).not.toContain("data-pencil");
-    expect(steps.match(/data-edit-step/g)).toHaveLength(7);
+    // one corner pencil on every step card, named after the step, 44px
+    expect(steps.match(/data-pencil/g)).toHaveLength(7);
     expect(steps).toContain('aria-label="Edit step 3 of When the alarm sounds"');
-    expect(steps).toMatch(/data-edit-step[^>]*min-h-11/);
+    expect(steps).toMatch(/data-pencil[^>]*h-11 w-11/);
     const quiz = render({ topic: bad, tab: "quiz" });
     expect(quiz.match(/data-issue-pill=/g)).toHaveLength(4);
-    // a question row opens its edit screen itself: no pencil
-    expect(quiz).not.toContain("data-pencil");
-    expect(quiz.match(/data-quiz-open/g)).toHaveLength(10);
+    expect(quiz.match(/data-pencil/g)).toHaveLength(10);
     expect(quiz).toContain('aria-label="Edit question 4"');
     expect(quiz).toContain(`href="/instructor/content/package/${bad.id}/edit/questions-3"`);
     // no yellow card background on an item
@@ -574,8 +571,8 @@ describe("plain text everywhere", () => {
 });
 
 describe("the instructor's tab keeps the review components; the student screens have no tick state", () => {
-  it("is read-only accordion cards: no tick, no checked state and nothing saved", () => {
-    const html = renderToStaticMarkup(<ChecklistCards data={topic} guideHref={(s) => `#${s}`} />);
+  it("is read-only cards: no tick, no checked state and nothing saved", () => {
+    const html = renderToStaticMarkup(<ChecklistCards data={topic} />);
     expect(html).toContain("When the alarm sounds");
     expect(html).not.toMatch(/type="checkbox"|aria-checked|role="checkbox"|role="switch"/);
     expect(html.replace(/<[^>]+>/g, " ")).not.toMatch(/checklist/i);
@@ -699,33 +696,64 @@ describe("preview parity: the student route and the preview route draw the same 
   });
 });
 
-describe("the corner pencil", () => {
+describe("one edit pattern for all four tabs", () => {
   const edit = (key: string) => `/edit/${key}`;
   const html = wrap(
     <>
       <GuideSections data={topic} editHref={edit} />
-      <ChecklistCards data={topic} guideHref={() => "#"} editHref={edit} />
+      <ChecklistCards data={topic} editHref={edit} />
       <ScenarioCards data={topic} guideHref={() => "#"} editHref={edit} />
-      <QuizRows data={topic} guideHref={() => "#"} editHref={edit} />
+      <QuizRows data={topic} editHref={edit} />
     </>,
   );
   const pencils = [...html.matchAll(/<a [^>]*data-pencil[^>]*>[\s\S]*?<\/a>/g)].map((m) => m[0]);
 
-  it("is one shared component: a 32px sand tile in a 44px tap area, labelled Edit <item>", () => {
-    expect(pencils.length).toBe(4 + 4);
+  it("is one shared pencil: a 32px sand tile in a 44px tap area, labelled Edit <item>, one per card", () => {
+    expect(pencils.length).toBe(4 + 7 + 4 + 10);
     for (const pencil of pencils) {
       expect(pencil).toContain("h-11 w-11");
       expect(pencil).toContain("h-8 w-8");
       expect(pencil).toContain("rounded-full bg-neutral-tile-bg text-neutral-tile-ink");
       expect(pencil).toMatch(/aria-label="Edit [^"]+"/);
+      expect(pencil).toContain("absolute top-[6px] right-[6px]");
     }
   });
 
-  it("sits 12px inside the corner (6px offsets for the 44px area) on guide, scenario and quiz cards", () => {
-    for (const label of ["Edit Guide section 1", "Edit scenario step 1"]) {
-      const pencil = pencils.find((p) => p.includes(`aria-label="${label}"`))!;
-      expect(pencil, label).toContain("absolute top-[6px] right-[6px]");
-    }
+  it("no card has a chevron, an expand control, a second link or an Edit button", () => {
+    expect(html).not.toMatch(
+      /aria-expanded|lucide-chevron|data-edit-step|data-quiz-open|role="region"|inert/,
+    );
+    expect(html).not.toContain(">Edit step<");
+    // on Steps and Quiz the only links are the pencils (the guide pill belongs to the scenario cards)
+    const steps = html.slice(html.indexOf("data-checklist"), html.indexOf("data-scenario-step"));
+    const quiz = html.slice(html.indexOf("data-quiz-row"));
+    expect([...steps.matchAll(/<a /g)]).toHaveLength(7);
+    expect([...quiz.matchAll(/<a /g)]).toHaveLength(10);
+  });
+
+  it("a step card shows STEP n, the action, the muted detail and Based on: <guide section title>", () => {
+    const card = html.slice(html.indexOf('data-step-card="0-1"'));
+    const one = card.slice(0, card.indexOf("</li>"));
+    expect(one).toContain("STEP 2");
+    expect(one).toContain("Find the nearest marked exit");
+    expect(one).toContain("Follow the green exit signs.");
+    expect(one).toContain("text-text-secondary");
+    expect(one).toContain("Based on: Know your exits");
+    expect(one).toContain("pr-[52px]");
+  });
+
+  it("a quiz card shows the question, the answers with the correct one marked, and Based on", () => {
+    const card = html.slice(html.indexOf('data-quiz-row="0"'));
+    const one = card.slice(0, card.indexOf('data-quiz-row="1"'));
+    expect(one).toContain("What should you do first when you enter a crowded hall?");
+    expect(one.match(/data-quiz-options/g)).toHaveLength(1);
+    expect(one.match(/type-small flex flex-col items-start/g)).toHaveLength(4);
+    expect(one).toContain("Find the two nearest exits");
+    expect(one.match(/Correct answer/g)).toHaveLength(1);
+    expect(one).toContain("lucide-check");
+    expect(one).toContain("text-status-success-ink");
+    expect(one).toContain("Based on: Know your exits");
+    expect(one).toContain("pr-[52px]");
   });
 
   it("the scenario pencil is inside the situation card, whose text keeps 52px on the right; STEP stays above", () => {
@@ -736,41 +764,5 @@ describe("the corner pencil", () => {
     );
     expect(card).toContain("pr-[52px]");
     expect(step.indexOf("STEP 1")).toBeLessThan(step.indexOf("data-situation-card"));
-  });
-
-  it("no row has a pencil together with a chevron or an expand control", () => {
-    const steps = html.slice(html.indexOf("data-checklist"), html.indexOf("data-scenario-step"));
-    expect(steps).toContain('aria-expanded="false"');
-    expect(steps).not.toContain("data-pencil");
-    const quiz = html.slice(html.indexOf("data-quiz-row"));
-    expect(quiz).not.toContain("data-pencil");
-    // the pencils left are on the guide sections (4) and the scenario situation cards (4)
-    expect(pencils).toHaveLength(8);
-    expect(pencils.every((p) => /aria-label="Edit (Guide section|scenario step) /.test(p))).toBe(
-      true,
-    );
-  });
-
-  it("Edit step is a tertiary outlined button inside the expandable panel: white, 1px border, radius 14, 44px, a pencil and the label", () => {
-    const panel = html.slice(html.indexOf('role="region"'));
-    const at = panel.indexOf("data-edit-step");
-    const button = panel.slice(panel.lastIndexOf("<a ", at), panel.indexOf("</a>", at));
-    expect(button).toContain("data-edit-step");
-    expect(button).toContain("min-h-11");
-    expect(button).toContain("bg-card");
-    expect(button).toContain("border-selectable-stroke");
-    expect(button).toContain("rounded-button");
-    expect(button).toContain("lucide-pencil");
-    expect(button).toContain(">Edit step<");
-    expect(button).not.toMatch(/underline|bg-olive-tint/);
-    expect(html.indexOf("inert")).toBeGreaterThan(-1);
-  });
-
-  it("a quiz row opens the edit screen from the whole row, with a chevron, and the guide pill stays clickable above it", () => {
-    const quiz = html.slice(html.indexOf("data-quiz-row"));
-    expect(quiz).toContain('href="/edit/questions:0"');
-    expect(quiz).toContain("absolute inset-0");
-    expect(quiz).toContain("lucide-chevron-right");
-    expect(quiz).toContain("relative z-10");
   });
 });

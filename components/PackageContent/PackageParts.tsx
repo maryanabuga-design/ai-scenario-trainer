@@ -1,15 +1,12 @@
 "use client";
 
-import { FileText, Pencil } from "lucide-react";
+import { Check, FileText, Pencil } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Chevron } from "@/components/Chevron/Chevron";
-import { useState } from "react";
 import { ButtonLink } from "@/components/Button/Button";
 import { Chip } from "@/components/Chip/Chip";
 import { OptionResult } from "@/components/OptionCard/OptionCard";
 import { SituationCard } from "@/components/SituationCard/SituationCard";
-import { StepCard } from "@/components/StepsView/StepCard";
 import { optionState } from "@/lib/option-state";
 import { LETTERS, coverage, findImage, usedByText } from "@/lib/package-read";
 import { pillOf } from "@/lib/package-review";
@@ -121,22 +118,15 @@ export function PencilButton({
   );
 }
 
-/**
- * "Edit step" (DESIGN.md: Edit pattern): the tertiary outlined button that ends an expanded step, so
- * the collapsed row has one control only. White, 1px border, radius 14, 44px high, a pencil and the
- * label, left aligned, no underline.
- */
-export function EditStepLink({ href, label }: { href: string; label: string }) {
+/** The muted line "Based on: <guide section title>" of a step or a question (nothing when it names no section). */
+export function BasedOn({ data, section }: { data: PackageData; section: string }) {
+  const ref = section.trim();
+  if (ref === "") return null;
+  const title = (data.guide ?? []).find((entry) => String(entry.section) === ref)?.title;
   return (
-    <Link
-      href={href}
-      aria-label={label}
-      data-edit-step
-      className="type-button inline-flex min-h-11 items-center gap-2 rounded-button border border-selectable-stroke bg-card px-4 text-primary focus-visible:outline-2"
-    >
-      <Pencil size={16} strokeWidth={2.25} aria-hidden="true" />
-      <span>Edit step</span>
-    </Link>
+    <p data-based-on className="type-small text-text-secondary">
+      Based on: {title || `section ${ref}`}
+    </p>
   );
 }
 
@@ -220,22 +210,20 @@ export function GuideSections({
   );
 }
 
-/** The Steps: each checklist with its steps as the student's accordion cards, the picture and the guide pill inside. */
+/**
+ * The Steps of a draft topic (DESIGN.md: One edit pattern): a card per step that shows everything,
+ * does nothing when tapped and has one corner pencil: "STEP n", the action as the title, the detail
+ * in the muted colour, the picture, "Based on: <guide section title>" and the issue pill.
+ */
 export function ChecklistCards({
   data,
   issues = [],
-  guideHref,
   editHref,
-  initialOpen = null,
 }: {
   data: PackageData;
   issues?: Issue[];
-  guideHref: (section: string) => string;
   editHref?: (key: string) => string;
-  /** For the screen review page: a step drawn open ("0-0"). */
-  initialOpen?: string | null;
 }) {
-  const [open, setOpen] = useState<string | null>(initialOpen);
   return (
     <div className="flex flex-col gap-6">
       {(data.steps ?? []).map((list, li) => (
@@ -243,39 +231,32 @@ export function ChecklistCards({
           <h3 className="type-item-title">{list.title}</h3>
           <ol className="flex flex-col gap-3">
             {list.steps.map((step, si) => {
-              const id = `${li}-${si}`;
               const key = `steps:${li}:${si}`;
-              const flagged = pillOf(issues, key) !== null;
               return (
-                <StepCard
-                  key={id}
-                  index={si}
-                  open={open === id}
-                  onToggleOpen={() => setOpen(open === id ? null : id)}
-                  step={{
-                    id,
-                    title: step.action || "(no action)",
-                    details: step.detail ? [step.detail] : [],
-                  }}
-                  footer={
-                    <div className="flex flex-col items-start gap-3" data-step={id}>
-                      <PackageImage data={data} file={step.imageFile} alt={step.alt} />
-                      {step.guideRef.trim() !== "" && (
-                        <GuidePill
-                          section={step.guideRef.trim()}
-                          href={guideHref(step.guideRef.trim())}
-                        />
-                      )}
-                      {editHref && (
-                        <EditStepLink
-                          href={editHref(key)}
-                          label={`Edit step ${step.step || si + 1} of ${list.title}`}
-                        />
-                      )}
-                    </div>
-                  }
-                  flag={flagged ? <IssuePill issues={issues} itemKey={key} /> : undefined}
-                />
+                <li
+                  key={si}
+                  data-step-card={`${li}-${si}`}
+                  className={`${card} relative flex flex-col items-start gap-2 p-[var(--gutter,1rem)] ${editHref ? "pr-[52px]" : ""}`}
+                >
+                  <span className="type-label text-text-secondary">STEP {si + 1}</span>
+                  <h4 className="type-body-strong max-w-full [overflow-wrap:anywhere]">
+                    {step.action || "(no action)"}
+                  </h4>
+                  {step.detail && (
+                    <p className="type-body max-w-full [overflow-wrap:anywhere] whitespace-pre-line text-text-secondary">
+                      {step.detail}
+                    </p>
+                  )}
+                  <PackageImage data={data} file={step.imageFile} alt={step.alt} />
+                  <BasedOn data={data} section={step.guideRef} />
+                  <IssuePill issues={issues} itemKey={key} />
+                  {editHref && (
+                    <PencilButton
+                      href={editHref(key)}
+                      label={`Edit step ${si + 1} of ${list.title}`}
+                    />
+                  )}
+                </li>
               );
             })}
           </ol>
@@ -354,18 +335,20 @@ export function ScenarioCards({
   );
 }
 
-/** The Quiz: a compact card per question (the number, the question, the guide pill, one pill for the most important issue and a pencil). */
+/**
+ * The Quiz of a draft topic (DESIGN.md: One edit pattern): a card per question that shows everything,
+ * does nothing when tapped and has one corner pencil: the number and the question, the answers as a
+ * compact plain list with the correct one marked, "Based on: <guide section title>" and the issue pill.
+ */
 export function QuizRows({
   data,
   issues = [],
   editHref,
-  guideHref,
 }: {
   data: PackageData;
   issues?: Issue[];
   /** The edit screen of an item key. */
   editHref?: (key: string) => string;
-  guideHref: (section: string) => string;
 }) {
   return (
     <ul className="flex flex-col gap-3">
@@ -375,47 +358,45 @@ export function QuizRows({
           <li
             key={index}
             data-quiz-row={index}
-            className={`${card} relative flex flex-col gap-2 p-3`}
+            className={`${card} relative flex flex-col gap-3 p-3 ${editHref ? "pr-[52px]" : ""}`}
           >
-            <div className={`flex min-h-12 items-start gap-3 ${editHref ? "pr-8" : ""}`}>
+            <div className="flex items-start gap-3">
               <span
                 aria-hidden="true"
                 className="type-caption-strong flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full bg-olive-tint px-2"
               >
                 {index + 1}
               </span>
-              <span className="type-body-strong line-clamp-2 min-w-0 flex-1 pt-1">
+              <h4 className="type-body-strong min-w-0 flex-1 pt-1 [overflow-wrap:anywhere]">
                 {question.text || "(no question text)"}
-              </span>
+              </h4>
             </div>
-            <div className="flex flex-col items-start gap-2 pl-12">
-              {question.guideRef.trim() !== "" && (
-                <span className={editHref ? "relative z-10" : undefined}>
-                  <GuidePill
-                    section={question.guideRef.trim()}
-                    href={guideHref(question.guideRef.trim())}
-                  />
-                </span>
+            <ul data-quiz-options className="flex flex-col gap-1.5 pl-12">
+              {LETTERS.map((letter, i) =>
+                question.options[i] === "" ? null : (
+                  <li
+                    key={letter}
+                    data-correct={question.correct === letter ? "" : undefined}
+                    className="type-small flex flex-col items-start"
+                  >
+                    <span className="max-w-full [overflow-wrap:anywhere] text-text">
+                      {question.options[i]}
+                    </span>
+                    {question.correct === letter && (
+                      <span className="flex items-center gap-1 text-status-success-ink">
+                        <Check size={14} strokeWidth={2.5} aria-hidden="true" />
+                        Correct answer
+                      </span>
+                    )}
+                  </li>
+                ),
               )}
+            </ul>
+            <div className="flex flex-col items-start gap-2 pl-12">
+              <BasedOn data={data} section={question.guideRef} />
               <IssuePill issues={issues} itemKey={key} />
             </div>
-            {editHref && (
-              <>
-                {/* the whole row opens the edit screen; the guide pill stays above it */}
-                <Link
-                  href={editHref(key)}
-                  aria-label={`Edit question ${index + 1}`}
-                  data-quiz-open
-                  className="absolute inset-0 rounded-card focus-visible:outline-2"
-                />
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute top-1/2 right-0 -translate-y-1/2"
-                >
-                  <Chevron />
-                </span>
-              </>
-            )}
+            {editHref && <PencilButton href={editHref(key)} label={`Edit question ${index + 1}`} />}
           </li>
         );
       })}
