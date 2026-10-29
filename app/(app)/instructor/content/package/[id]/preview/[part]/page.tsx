@@ -1,10 +1,20 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { PackageStudentRoute } from "@/components/PackageContent/PackageStudentRoute";
 
 /** Preview as student: the student's step guide and practice screens with the preview bar. */
-export default function PackagePreviewPartPage() {
+function Preview() {
   const { id, part } = useParams<{ id: string; part: string }>();
-  return <PackageStudentRoute id={id} part={part} preview />;
+  const from = useSearchParams().get("from") ?? undefined;
+  return <PackageStudentRoute id={id} part={part} preview from={from} />;
+}
+
+export default function PackagePreviewPartPage() {
+  return (
+    <Suspense fallback={null}>
+      <Preview />
+    </Suspense>
+  );
 }

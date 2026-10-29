@@ -18,23 +18,24 @@ export const IMAGE_ACCEPT = ".png,.jpg,.jpeg,.webp";
 export const HELPER =
   "Upload one Excel document. We will read it and prepare a draft topic for you to review.";
 /**
- * A small "x" in the top-right corner of a card: a 28px neutral circle inside a 44px tap area that
- * extends inward, so nothing overlaps the text next to it.
+ * The small x of a row (DESIGN.md: Instructor content flow polish): a 32px light tile in a 44px tap
+ * area, in the row, vertically centred, 12px from the row's right edge (the row has 12px padding and
+ * the button reaches 6px into it).
  */
-function RemoveCorner({ label, onClick }: { label: string; onClick: () => void }) {
+function RemoveButton({ label, onClick }: { label: string; onClick: () => void }) {
   return (
     <button
       type="button"
       aria-label={label}
       onClick={onClick}
       data-remove
-      className="absolute top-0 right-0 flex h-11 w-11 items-start justify-end p-1.5 focus-visible:outline-2"
+      className="-mr-1.5 flex h-11 w-11 shrink-0 items-center justify-center focus-visible:outline-2"
     >
       <span
         aria-hidden="true"
-        className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-tile-bg text-neutral-tile-ink"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-tile-bg text-neutral-tile-ink"
       >
-        <X size={14} strokeWidth={2.25} />
+        <X size={16} strokeWidth={2.25} />
       </span>
     </button>
   );
@@ -57,14 +58,15 @@ export function PackageImportView({
   onRemove,
   onSample,
   onImages,
+  onRemoveImage,
   onImport,
   onCancel,
 }: {
   file: { name: string; size: number } | null;
   /** The plain message under the file card; any message blocks the Primary. */
   message?: string;
-  /** The names of the pictures added so far. */
-  images: string[];
+  /** The pictures added so far: a name and a thumbnail. */
+  images: { name: string; src: string }[];
   imageMessage?: string;
   /** Replace document: what the new document replaces. */
   notice?: string;
@@ -72,6 +74,7 @@ export function PackageImportView({
   onRemove: () => void;
   onSample: () => void;
   onImages: (files: File[]) => void;
+  onRemoveImage: (name: string) => void;
   onImport: () => void;
   onCancel: () => void;
 }) {
@@ -109,18 +112,18 @@ export function PackageImportView({
         {file ? (
           <div
             data-file-card
-            className="relative flex min-h-[72px] items-center gap-3 rounded-card border border-selectable-stroke bg-card px-3 py-2 pr-12"
+            className="flex items-center gap-3 rounded-card border border-selectable-stroke bg-card p-3"
           >
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-tile-bg text-neutral-tile-ink">
               <FileSpreadsheet size={20} strokeWidth={1.75} aria-hidden="true" />
             </span>
-            <span className="flex min-w-0 flex-col">
+            <span className="flex min-w-0 flex-1 flex-col">
               <span data-file-name className="type-body-strong break-words">
                 {file.name}
               </span>
               <span className="type-small text-text-secondary">{sizeText(file.size)}</span>
             </span>
-            <RemoveCorner label="Remove file" onClick={onRemove} />
+            <RemoveButton label="Remove file" onClick={onRemove} />
           </div>
         ) : (
           <button
@@ -178,9 +181,29 @@ export function PackageImportView({
             Add images
           </Button>
           {images.length > 0 ? (
-            <p data-images className="type-small text-text-secondary">
-              {images.length} {images.length === 1 ? "image" : "images"} added: {images.join(", ")}
-            </p>
+            <ul data-image-rows className="flex flex-col gap-2">
+              {images.map((image) => (
+                <li
+                  key={image.name}
+                  data-image-row
+                  className="flex items-center gap-3 rounded-panel border border-selectable-stroke bg-card p-2"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={image.src}
+                    alt=""
+                    width={40}
+                    height={40}
+                    className="h-10 w-10 shrink-0 rounded-[8px] object-cover"
+                  />
+                  <span className="type-small min-w-0 flex-1 break-words">{image.name}</span>
+                  <RemoveButton
+                    label={`Remove ${image.name}`}
+                    onClick={() => onRemoveImage(image.name)}
+                  />
+                </li>
+              ))}
+            </ul>
           ) : (
             <p className="type-small text-text-secondary">{IMAGES_LINE}</p>
           )}

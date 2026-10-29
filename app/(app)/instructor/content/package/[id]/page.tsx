@@ -7,6 +7,7 @@ import { PackageTopicView } from "@/components/InstructorContent/PackageTopicVie
 import type { PackageDialog } from "@/components/InstructorContent/PackageTopicView";
 import { checkPackage, isPathPart, partsOf } from "@/lib/package-read";
 import { flaggedItems, keySlug, nothingFlagged } from "@/lib/package-review";
+import { setFlash } from "@/lib/flash";
 import { NO_ROOM, removePackage, updatePackage, usePackages } from "@/lib/packages";
 
 function Topic() {
@@ -30,6 +31,7 @@ function Topic() {
     const at = Date.now();
     if (dialog === "delete") {
       removePackage(topic!.id);
+      setFlash("Topic deleted", "/instructor/content");
       router.push("/instructor/content");
       return;
     }
@@ -44,6 +46,7 @@ function Topic() {
         : { ...t, status: "draft", editedAt: at },
     );
     setProblem(saved ? "" : NO_ROOM);
+    if (saved && dialog === "publish") setFlash("Topic published", base);
     setDialog(null);
   }
 
@@ -66,7 +69,11 @@ function Topic() {
           const round = flaggedItems(issues).map((item) => keySlug(item.key));
           if (round.length > 0) router.push(`${base}/edit/${round[0]}?r=${round.join(",")}&i=0`);
         }}
-        onPreview={() => router.push(`${base}/preview`)}
+        onPreview={() => {
+          // the student version of the tab that is open, carrying the tab so the way back keeps it
+          const route = { guide: "", steps: "/steps", scenario: "/scenario", quiz: "/quiz" }[tab];
+          router.push(`${base}/preview${route}?from=${tab}`);
+        }}
         onEditDetails={() => router.push(`${base}/details`)}
         onReplace={() => router.push(`/instructor/content/import?replace=${topic.id}`)}
         onAsk={setDialog}

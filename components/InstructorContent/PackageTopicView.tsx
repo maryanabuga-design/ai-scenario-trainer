@@ -14,6 +14,7 @@ import {
   ScenarioCards,
 } from "@/components/PackageContent/PackageParts";
 import { Notice } from "@/components/Notice/Notice";
+import { FlashNotice } from "@/components/FlashNotice/FlashNotice";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
 import { coverageLine, partsOf } from "@/lib/package-read";
@@ -128,6 +129,7 @@ export function PackageTopicView({
           />
         }
       />
+      <FlashNotice />
       <div className="flex flex-col gap-1">
         <p data-package-status className="type-small flex flex-wrap items-center gap-x-2">
           <span

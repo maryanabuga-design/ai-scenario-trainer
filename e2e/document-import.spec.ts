@@ -174,15 +174,16 @@ for (const width of [360, 430]) {
       const x = page.getByRole("button", { name: "Remove file" });
       const box = (await x.boundingBox())!;
       expect([box.width, box.height]).toEqual([44, 44]);
-      expect((await x.locator("span").boundingBox())!.width).toBe(28);
+      expect((await x.locator("span").boundingBox())!.width).toBe(32);
       expect(await x.locator("span").evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
         "rgb(226, 222, 214)",
       );
       // pictures are added here, and named
       await page.locator("[data-image-input]").setInputFiles(PICTURES);
-      await expect(page.locator("[data-images]")).toContainText(
-        "2 images added: exit-sign.png, assembly-point.png",
-      );
+      await expect(page.locator("[data-image-row]")).toHaveText([
+        "exit-sign.png",
+        "assembly-point.png",
+      ]);
       // a wrong picture is refused with a plain line
       await page.locator("[data-image-input]").setInputFiles({
         name: "big.png",
@@ -257,7 +258,7 @@ for (const width of [360, 430]) {
       await expect(template).toHaveAttribute("download", "guide-template.xlsx");
       await page.getByRole("button", { name: "Try an example" }).click();
       await expect(page.locator("[data-file-card]")).toContainText("sample-document.xlsx");
-      await expect(page.locator("[data-images]")).toContainText("2 images added");
+      await expect(page.locator("[data-image-row]")).toHaveCount(2);
       await expect(importButton(page)).toBeEnabled();
     });
 
@@ -338,8 +339,15 @@ for (const width of [360, 430]) {
       const badge = page.locator("[data-badge]");
       const bb = (await badge.boundingBox())!;
       expect(Math.abs(bb.x + bb.width / 2 - (c.x + c.width / 2))).toBeLessThanOrEqual(1);
-      expect(Math.abs(bb.y + bb.height / 2 - c.y)).toBeLessThanOrEqual(1.5);
-      expect(await bg(badge)).toBe("rgb(68, 104, 58)");
+      // inside the card, centred at the top: 56px, light success background
+      expect([bb.width, bb.height]).toEqual([56, 56]);
+      expect(bb.y).toBeGreaterThanOrEqual(c.y + 12);
+      expect(bb.y + bb.height).toBeLessThanOrEqual(c.y + c.height);
+      expect(bb.y - c.y).toBeLessThanOrEqual(20);
+      expect(await bg(badge)).toBe("rgb(225, 234, 218)");
+      expect(await badge.locator("svg").evaluate((el) => getComputedStyle(el).color)).toBe(
+        "rgb(68, 104, 58)",
+      );
       await expect(badge).toHaveAttribute("aria-hidden", "true");
       await expect(card.locator("dt")).toHaveText([
         "Guide sections",
@@ -350,9 +358,9 @@ for (const width of [360, 430]) {
       ]);
       await expect(card.locator("dd")).toHaveText(["4", "7", "4", "10", "all linked"]);
       await expect(card.locator("[data-links-row] svg")).toHaveCount(1);
-      // the sample comes with its pictures: nothing to review, so Preview as student
+      // the draft is saved; the result screen offers Open draft
       expect(await storedTopics(page)).toContain("Evacuating a crowded hall");
-      await expect(page.getByRole("button", { name: "Preview as student" })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Open draft", exact: true })).toBeVisible();
       expect(await primaries(page)).toBe(1);
       await expect(page.getByRole("button", { name: "Back to Content" })).toBeVisible();
       expect(await noSidewaysScroll(page)).toBe(true);
@@ -369,7 +377,7 @@ for (const width of [360, 430]) {
       expect(await storedTopics(page)).toBeNull();
     });
 
-    test("a finished draft with problems offers Review N items, which opens the guided review", async ({
+    test("a finished draft offers Open draft, which opens the topic screen that holds the review", async ({
       page,
     }) => {
       await page.goto("/instructor/content/import");
@@ -378,11 +386,18 @@ for (const width of [360, 430]) {
       await importButton(page).click();
       // this document has no scenario sheet: the partial state first, then the finished draft
       await page.getByRole("button", { name: "Continue" }).click({ timeout: 10000 });
-      const review = page.getByRole("button", { name: "Review 6 items" });
-      await expect(review).toBeVisible();
+      // the result screen has Open draft (the Primary) and Back to Content; no Review or Preview here
+      const open = page.getByRole("button", { name: "Open draft", exact: true });
+      await expect(open).toBeVisible();
       await expect(page.getByRole("button", { name: "Back to Content" })).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: /Review \d+ items|Preview as student/ }),
+      ).toHaveCount(0);
       expect(await primaries(page)).toBe(1);
-      await review.click();
+      await open.click();
+      // the topic screen holds the review
+      await expect(page).toHaveURL(/\/instructor\/content\/package\/[a-z0-9]+$/);
+      await page.getByRole("button", { name: "Review 6 items" }).click();
       await expect(page).toHaveURL(/\/edit\/steps-0-2\?r=.*&i=0$/);
       await expect(page.locator("[data-page-header-band]:visible")).toContainText("Item 1 of 6");
     });

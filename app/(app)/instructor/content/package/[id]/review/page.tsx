@@ -6,6 +6,7 @@ import { ExamNotFound } from "@/components/InstructorExams/ExamDetailView";
 import { PackageReviewSummary } from "@/components/InstructorContent/PackageReviewSummary";
 import { checkPackage } from "@/lib/package-read";
 import { flaggedItems, keySlug, nothingFlagged } from "@/lib/package-review";
+import { setFlash } from "@/lib/flash";
 import { NO_ROOM, updatePackage, usePackages } from "@/lib/packages";
 
 /** Where the guided review ends: a summary of what is checked and what still needs attention. */
@@ -36,6 +37,7 @@ function Summary() {
       setPublishing(false);
       return;
     }
+    setFlash("Topic published", base);
     router.push(base);
   }
 

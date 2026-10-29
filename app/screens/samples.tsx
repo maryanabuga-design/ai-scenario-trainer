@@ -134,6 +134,7 @@ import { seedNotifications } from "@/lib/notifications";
 import { readinessAfter, scopeItemIds } from "@/lib/readiness";
 import { topicIdsOf } from "@/lib/session";
 import { DocumentAnalysingView } from "@/components/InstructorContent/DocumentAnalysingView";
+import { Notice } from "@/components/Notice/Notice";
 import { PackageImportView } from "@/components/InstructorContent/PackageImportView";
 import { MESSAGES } from "@/lib/document-read";
 import { PackageItemEdit } from "@/components/InstructorContent/PackageItemEdit";
@@ -1909,6 +1910,8 @@ export function PackageSample({
     | "review-step"
     | "review-confirm"
     | "review-image"
+    | "edit-answers"
+    | "saved-notice"
     | "summary-done"
     | "summary-left"
     | "published"
@@ -1950,7 +1953,8 @@ export function PackageSample({
     <PackageImportView
       file={file}
       message={message}
-      images={options.images ?? []}
+      images={(options.images ?? []).map((name) => ({ name, src: PIXEL }))}
+      onRemoveImage={noop}
       onFile={noop}
       onRemove={noop}
       onSample={noop}
@@ -1960,11 +1964,7 @@ export function PackageSample({
     />
   );
   const doc = { name: "evacuation-guide.xlsx", size: 34_000 };
-  const analysing = (
-    phase: "running" | "finished" | "partial" | "error",
-    done: number,
-    reviewCount = 0,
-  ) => (
+  const analysing = (phase: "running" | "finished" | "partial" | "error", done: number) => (
     <DocumentAnalysingView
       fileName={doc.name}
       phase={phase}
@@ -1979,17 +1979,16 @@ export function PackageSample({
       counts={{ guide: 4, steps: 7, scenario: 4, questions: 10 }}
       linkProblems={0}
       partialLine="We could not find questions in this document."
-      reviewCount={reviewCount}
       onCancel={noop}
       onContinue={noop}
       onChooseAnother={noop}
-      onReview={noop}
-      onPreview={noop}
+      onOpenDraft={noop}
       onBackToContent={noop}
     />
   );
   if (state === "import-empty") return importView(null);
-  if (state === "import-file") return importView(doc, "", { images: ["exit-sign.png"] });
+  if (state === "import-file")
+    return importView(doc, "", { images: ["exit-sign.png", "assembly-point.png"] });
   if (state === "import-type")
     return importView({ name: "notes.docx", size: 20_000 }, MESSAGES.type);
   if (state === "import-size")
@@ -1997,7 +1996,7 @@ export function PackageSample({
   if (state === "import-empty-file") return importView(doc, MESSAGES.empty);
   if (state === "import-no-guide") return importView(doc, MESSAGES.noGuide);
   if (state === "analysing-running") return analysing("running", 2);
-  if (state === "analysing-finished") return analysing("finished", 5, 6);
+  if (state === "analysing-finished") return analysing("finished", 5);
   if (state === "analysing-partial") return analysing("partial", 5);
   if (state === "analysing-error") return analysing("error", 0);
 
@@ -2048,6 +2047,27 @@ export function PackageSample({
         onSkip={noop}
         onLeave={noop}
       />
+    );
+  }
+  if (state === "edit-answers") {
+    return (
+      <PackageItemEdit
+        data={good}
+        itemKey="questions:1"
+        review={null}
+        initialIssues={checkPackage(good)}
+        onSave={noop}
+        onSkip={noop}
+        onLeave={noop}
+      />
+    );
+  }
+  if (state === "saved-notice") {
+    return (
+      <div className="flex flex-col gap-4">
+        <Notice variant="success" title="Changes saved" onClose={noop} />
+        {topicView(good, "quiz")}
+      </div>
     );
   }
   if (state === "review-image") {

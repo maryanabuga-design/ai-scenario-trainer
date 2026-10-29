@@ -27,7 +27,11 @@ import {
   QuizRows,
   ScenarioCards,
 } from "@/components/PackageContent/PackageParts";
-import { PackageStudentScreen } from "@/components/PackageContent/PackageStudentScreen";
+import {
+  PackageStudentScreen,
+  fromTab,
+  packagePaths,
+} from "@/components/PackageContent/PackageStudentScreen";
 import type { StudentPart } from "@/components/PackageContent/PackageStudentScreen";
 import { blockingIssues, checkPackage, fixMessage, readPackage } from "@/lib/package-read";
 import { flaggedItems } from "@/lib/package-review";
@@ -79,6 +83,7 @@ const importView = (extra: Partial<Parameters<typeof PackageImportView>[0]> = {}
       onRemove={noop}
       onSample={noop}
       onImages={noop}
+      onRemoveImage={noop}
       onImport={noop}
       onCancel={noop}
       {...extra}
@@ -135,9 +140,16 @@ describe("the import screen", () => {
     expect(html).not.toContain("data-drop-area");
     expect(html.match(/data-file-card/g)).toHaveLength(1);
     expect(html).toContain('aria-label="Remove file"');
+    // ONE row, 12px padding on all sides, everything vertically centred, the card radius (not a pill)
+    const card = html.slice(html.indexOf("data-file-card"), html.indexOf("data-file-card") + 400);
+    expect(card).toContain(
+      "flex items-center gap-3 rounded-card border border-selectable-stroke bg-card p-3",
+    );
+    // the x: a 32px tile in a 44px tap area, in the row, 6px reaching into the 12px padding
     const corner = html.slice(html.indexOf('aria-label="Remove file"') - 160);
-    expect(corner).toMatch(/absolute top-0 right-0 flex h-11 w-11/);
-    expect(corner).toMatch(/h-7 w-7[^"]*rounded-full bg-neutral-tile-bg/);
+    expect(corner).toContain("-mr-1.5 flex h-11 w-11");
+    expect(corner).toMatch(/h-8 w-8[^"]*rounded-full bg-neutral-tile-bg/);
+    expect(corner).not.toContain("absolute");
     expect(html).toContain("IMAGES (OPTIONAL)");
     expect(html).toMatch(/bg-olive-tint[^>]*>Add images</);
     expect(html).toContain("You can also add them later.");
@@ -145,10 +157,28 @@ describe("the import screen", () => {
     expect(html).toContain('accept=".png,.jpg,.jpeg,.webp"');
   });
 
-  it("lists the pictures that were added", () => {
-    const html = importView({ file: doc, images: ["exit-sign.png", "assembly-point.png"] });
-    expect(html).toContain("2 images added: exit-sign.png, assembly-point.png");
-    expect(html).not.toContain("You can also add them later.");
+  it("shows each added picture as a compact row (a 40px thumbnail, the name, a small x) and no sentence", () => {
+    const html = importView({
+      file: doc,
+      images: [
+        { name: "exit-sign.png", src: "data:image/png;base64,AA" },
+        { name: "assembly-point.png", src: "data:image/png;base64,AA" },
+      ],
+    });
+    expect(html.match(/data-image-row=/g)).toHaveLength(2);
+    expect(html).not.toMatch(/images added|image added|You can also add them later/);
+    const row = html.slice(html.indexOf("data-image-row="));
+    expect(row).toContain('width="40" height="40"');
+    expect(row).toContain("h-10 w-10");
+    expect(row).toContain("exit-sign.png");
+    expect(row).toContain('aria-label="Remove exit-sign.png"');
+    expect(row).toContain("rounded-panel border border-selectable-stroke bg-card");
+    expect(row).toContain("h-8 w-8");
+    expect(row).toContain("h-11 w-11");
+    // nothing added: no rows and the muted line
+    const none = importView({ file: doc });
+    expect(none).not.toContain("data-image-row=");
+    expect(none).toContain("You can also add them later.");
   });
 
   it("each message shows under the file card and blocks the Primary", () => {
@@ -196,8 +226,7 @@ describe("the analysing screen", () => {
         onCancel={noop}
         onContinue={noop}
         onChooseAnother={noop}
-        onReview={noop}
-        onPreview={noop}
+        onOpenDraft={noop}
         onBackToContent={noop}
         {...over}
       />,
@@ -236,8 +265,8 @@ describe("the analysing screen", () => {
     expect(html.match(/h-\[52px\] bg-primary/g)).toBeNull();
   });
 
-  it("finished: the stage rows collapse, the success picture, a summary card with a badge, the counts and the Links to the guide row", () => {
-    const html = view({ phase: "finished", done: 5, reviewCount: 6 });
+  it("finished: the stage rows collapse, the success picture, a summary card with a badge INSIDE it, the counts and the Links to the guide row", () => {
+    const html = view({ phase: "finished", done: 5 });
     expect(html).toContain(">Draft is ready</h1>");
     expect(html).toContain('src="/images/instructor/import-success.webp"');
     expect(html).not.toContain("data-stages");
@@ -245,18 +274,18 @@ describe("the analysing screen", () => {
     const card = html.slice(html.indexOf("data-summary"));
     expect(card).toContain("rounded-[14px] border border-selectable-stroke bg-card");
     expect(card).toContain("max-w-[360px]");
-    // the badge: a white check on success green, centred on the top edge, half outside, aria-hidden
+    expect(card).toContain("p-4");
+    // the badge is a block inside the card, centred at the top: 56px, light success, a 28px check
     const badge = card.slice(
       card.indexOf("data-badge") - 40,
       card.indexOf("</span>", card.indexOf("data-badge")),
     );
     expect(badge).toContain('aria-hidden="true"');
-    expect(badge).toContain("bg-status-success-ink");
-    expect(badge).toContain("text-white");
-    expect(badge).toContain("top-0 left-1/2");
-    expect(badge).toContain("-translate-x-1/2 -translate-y-1/2");
-    expect(badge).toContain("lucide-check");
-    // the rows: muted label on the left, a bold number on the right
+    expect(badge).toContain("mx-auto mb-4 flex h-14 w-14");
+    expect(badge).toContain("bg-status-success-bg text-status-success-ink");
+    expect(badge).toContain('width="28"');
+    expect(badge).not.toMatch(/absolute|-translate|bg-status-success-ink text-white/);
+    expect(card.indexOf("data-badge")).toBeLessThan(card.indexOf("data-counts"));
     for (const [label, value] of [
       ["Guide sections", 4],
       ["Steps", 7],
@@ -269,19 +298,13 @@ describe("the analysing screen", () => {
     }
     const links = card.slice(card.indexOf("data-links-row"));
     expect(links).toContain("Links to the guide");
-    expect(links).toContain("lucide-check");
     expect(links).toContain("all linked");
     expect(view({ phase: "finished", done: 5, linkProblems: 3 })).toContain("3 need attention");
-    expect(html).toMatch(/h-\[52px\] bg-primary[^>]*>Review 6 items</);
+    // Primary Open draft over Secondary Back to Content; no Review or Preview here
+    expect(html).toMatch(/h-\[52px\] bg-primary[^>]*>Open draft</);
     expect(html).toMatch(/bg-olive-tint[^>]*>Back to Content</);
     expect(html.match(/h-\[52px\] bg-primary/g)).toHaveLength(1);
-    expect(view({ phase: "finished", done: 5, reviewCount: 1 })).toContain("Review 1 item<");
-  });
-
-  it("finished with nothing to review offers Preview as student", () => {
-    const html = view({ phase: "finished", done: 5, reviewCount: 0 });
-    expect(html).toMatch(/h-\[52px\] bg-primary[^>]*>Preview as student</);
-    expect(html).not.toContain("Review 0");
+    expect(html).not.toMatch(/Review \d|Preview as student/);
   });
 
   it("partial: centred with the neutral icon, the missing part sentence, Primary Continue over Secondary Choose another file", () => {
@@ -810,5 +833,60 @@ describe("one edit pattern for all four tabs", () => {
     );
     expect(card).toContain("pr-[52px]");
     expect(step.indexOf("STEP 1")).toBeLessThan(step.indexOf("data-situation-card"));
+  });
+});
+
+describe("the preview card and the contextual preview", () => {
+  const draw = (part: StudentPart, from: string) =>
+    wrap(
+      <PackageStudentScreen
+        id={topic.id}
+        title={topic.title}
+        data={topic}
+        part={part}
+        preview
+        from={from}
+      />,
+    );
+
+  it("is ONE compact white card, not a dark band: an eye in a sand tile, the text and a tertiary underlined Exit preview", () => {
+    const html = draw("guide", "guide");
+    const card = html.slice(html.indexOf("data-preview-bar"), html.indexOf("</a>") + 4);
+    expect(card).toContain("rounded-[14px] border border-selectable-stroke bg-card");
+    expect(card).not.toMatch(/sticky|bg-secondary-sand px|border-b|h-12/);
+    expect(card).toContain("lucide-eye");
+    expect(card).toContain("bg-secondary-sand");
+    expect(card).toContain(">Previewing as student<");
+    expect(card).toMatch(/underline[^>]*>Exit preview</);
+    expect(card).toContain("min-h-11");
+    expect(html).not.toContain('style="--preview-bar');
+  });
+
+  it("leaves to the topic screen on the same tab and carries the tab in every preview address", () => {
+    for (const from of ["guide", "steps", "scenario", "quiz"]) {
+      const paths = packagePaths(topic.id, true, from);
+      expect(paths.leave).toBe(`/instructor/content/package/${topic.id}?tab=${from}`);
+      expect(paths.reading).toContain(`?from=${from}`);
+      expect(paths.steps).toContain(`?from=${from}`);
+      expect(paths.guideSection("2")).toBe(
+        `/instructor/content/package/${topic.id}/preview?from=${from}#section-2`,
+      );
+      expect(draw("guide", from)).toContain(`href="${paths.leave}"`);
+    }
+    // a student goes to Materials and the addresses carry no tab
+    expect(packagePaths(topic.id, false).leave).toBe("/materials");
+    expect(packagePaths(topic.id, false).steps).not.toContain("from=");
+    // an unknown tab falls back to the guide
+    expect(fromTab("nonsense")).toBe("guide");
+    expect(fromTab("quiz")).toBe("quiz");
+    expect(fromTab(null)).toBe("guide");
+  });
+
+  it("opens the quiz and the scenario from the first question or step, and the steps as the step guide", () => {
+    const quiz = draw("quiz", "quiz");
+    expect(quiz).toContain("Question 1 of");
+    const scenario = draw("scenario", "scenario");
+    expect(scenario).toContain("Step 1 of");
+    expect(draw("steps", "steps")).toContain("Step-by-step guide");
   });
 });

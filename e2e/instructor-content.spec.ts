@@ -321,7 +321,7 @@ for (const width of [360, 430]) {
       // fix the second: choose the correct answer
       await page.locator(`[data-question-row="7"]`).click();
       await expect(page.locator("[data-problems]:visible")).toContainText("No correct answer");
-      await page.locator("[data-correct=b]:visible").click();
+      await page.locator("[data-correct=b]:visible").click({ position: { x: 6, y: 6 } });
       await expect(page.locator("[data-problems]:visible")).toHaveCount(0);
       await page.getByRole("button", { name: "Save question" }).click();
       await expect(count(page, "ready")).toHaveText("20");
@@ -342,7 +342,20 @@ for (const width of [360, 430]) {
         expect((await field.boundingBox())!.height).toBe(52);
       }
       await expect(page.getByLabel("Answer D")).toHaveValue("");
-      await expect(page.locator("[data-correct=b] input")).toBeChecked();
+      await expect(page.locator("[data-correct=b] input[type=radio]")).toBeChecked();
+      // the selected card has a 1.5px olive border; the radio is inside the card, on the right
+      const selected = page.locator("[data-correct=b]:visible");
+      expect(
+        await selected.evaluate((el) => [
+          el.className.includes("border-[1.5px]"),
+          getComputedStyle(el).borderTopColor,
+        ]),
+      ).toEqual([true, "rgb(63, 70, 56)"]);
+      const ring = (await selected.locator("span[aria-hidden=true]").last().boundingBox())!;
+      const cardBox = (await selected.boundingBox())!;
+      expect(ring.x + ring.width).toBeLessThanOrEqual(cardBox.x + cardBox.width);
+      expect(ring.x).toBeGreaterThan(cardBox.x + cardBox.width / 2);
+      await expect(page.locator("[data-correct=a] input[type=radio]")).not.toBeChecked();
       expect(
         (await page.locator("[data-correct=b]:visible").boundingBox())!.width,
       ).toBeGreaterThanOrEqual(44);
@@ -351,6 +364,9 @@ for (const width of [360, 430]) {
       await expect(page.locator("[data-problems]:visible")).toContainText("longer than 300");
       await page.locator("textarea[name=question]").fill("");
       await expect(page.locator("[data-problems]:visible")).toContainText("No question text");
+      // a tap on the text field edits it and does not select the card
+      await page.getByLabel("Answer A").click();
+      await expect(page.locator("[data-correct=a] input[type=radio]")).not.toBeChecked();
       await page.getByLabel("Answer A").fill("");
       await page.getByLabel("Answer B").fill("");
       await expect(page.locator("[data-problems]:visible")).toContainText("Fewer than 2 answers");

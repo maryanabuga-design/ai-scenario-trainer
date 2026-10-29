@@ -15,6 +15,7 @@ import {
   parseKey,
   tabOfKey,
 } from "@/lib/package-review";
+import { pathOf, setFlash } from "@/lib/flash";
 import { NO_ROOM, readPackages, updatePackage, usePackages } from "@/lib/packages";
 
 /**
@@ -43,15 +44,16 @@ function Edit() {
   const tab = tabOfKey(itemKey) ?? "guide";
   const leave = () => router.push(`${base}?tab=${tab}`);
 
-  /** On to the next item of the round that is still flagged; the review summary after the last one. */
-  function goNext() {
+  /** Where the review goes on: the next item still flagged, or the summary after the last one. */
+  function nextUrl(): string {
     const fresh = readPackages().find((entry) => entry.id === topic!.id);
-    if (!review || !fresh) return router.push(base);
+    if (!review || !fresh) return base;
     const flagged = new Set(flaggedItems(checkPackage(fresh)).map((item) => item.key));
     const { round: next, next: n } = nextRound(round, at, flagged);
-    if (n === null) return router.push(`${base}/review`);
-    router.push(`${base}/edit/${keySlug(next[n])}?r=${next.map(keySlug).join(",")}&i=${n}`);
+    if (n === null) return `${base}/review`;
+    return `${base}/edit/${keySlug(next[n])}?r=${next.map(keySlug).join(",")}&i=${n}`;
   }
+  const goNext = () => router.push(nextUrl());
 
   const issues = checkPackage(topic);
   if (itemKey.endsWith(":all")) {
@@ -93,8 +95,11 @@ function Edit() {
             setProblem(NO_ROOM);
             return;
           }
-          if (review) goNext();
-          else leave();
+          // "Changes saved" shows on the screen the person lands on; the end of the review keeps its
+          // own "All items checked" notice
+          const target = review ? nextUrl() : `${base}?tab=${tab}`;
+          if (!target.endsWith("/review")) setFlash("Changes saved", pathOf(target));
+          router.push(target);
         }}
       />
     </>

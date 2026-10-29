@@ -5,6 +5,7 @@ import { useId, useRef, useState } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button } from "@/components/Button/Button";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
+import { AnswerChoice } from "@/components/AnswerChoice/AnswerChoice";
 import { Amber } from "@/components/InstructorContent/Amber";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { SelectableRow } from "@/components/SelectableRow/SelectableRow";
@@ -135,43 +136,17 @@ export function EditQuestionView({
         </p>
         <fieldset role="radiogroup" aria-labelledby={`${id}-a`} className="flex flex-col gap-2">
           {LETTERS.map((letter, i) => (
-            <div key={letter} className="flex items-center gap-3">
-              <span
-                aria-hidden="true"
-                className="type-caption flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-olive-tint text-text"
-              >
-                {letter.toUpperCase()}
-              </span>
-              <input
-                aria-label={`Answer ${letter.toUpperCase()}`}
-                name={`answer-${letter}`}
-                value={draft.options[i]}
-                onChange={(event) => setOption(i, event.target.value)}
-                className="type-body h-[52px] min-w-0 flex-1 rounded-[14px] border border-selectable-stroke bg-card px-[var(--gutter,1rem)] text-text focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primary"
-              />
-              <label
-                data-correct={letter}
-                className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent"
-              >
-                <input
-                  type="radio"
-                  name="correct"
-                  value={letter}
-                  checked={draft.correct === letter}
-                  onChange={() => change({ correct: letter as Letter })}
-                  aria-label={`Correct answer: ${letter.toUpperCase()}`}
-                  className="sr-only"
-                />
-                <span
-                  aria-hidden="true"
-                  className="flex h-5 w-5 items-center justify-center rounded-full border border-primary"
-                >
-                  {draft.correct === letter && (
-                    <span className="h-2.5 w-2.5 rounded-full bg-primary" />
-                  )}
-                </span>
-              </label>
-            </div>
+            <AnswerChoice
+              key={letter}
+              letter={letter}
+              value={draft.options[i]}
+              checked={draft.correct === letter}
+              radioLabel={`Correct answer: ${letter.toUpperCase()}`}
+              fieldLabel={`Answer ${letter.toUpperCase()}`}
+              fieldName={`answer-${letter}`}
+              onValue={(value) => setOption(i, value)}
+              onChoose={() => change({ correct: letter as Letter })}
+            />
           ))}
         </fieldset>
         {problemFor(["answers", "Correct answer", "correct answer", "An answer"]) && (

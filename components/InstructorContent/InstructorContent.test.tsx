@@ -198,7 +198,7 @@ describe("the Edit question screen", () => {
       />,
     );
 
-  it("has the fields, 52px answers with a circle each, the counter and the pinned buttons", () => {
+  it("has the fields, four answer cards with the radio inside, the counter and the pinned buttons", () => {
     const html = edit(set(), 0);
     for (const label of [
       "QUESTION",
@@ -211,7 +211,7 @@ describe("the Edit question screen", () => {
     }
     expect(html.match(/aria-label="Answer [A-D]"/g)).toHaveLength(4);
     expect(html.match(/name="correct"/g)).toHaveLength(4);
-    expect(html.match(/h-\[52px\]/g)!.length).toBeGreaterThanOrEqual(4);
+    expect(html.match(/data-answer-card/g)).toHaveLength(4);
     expect(html).toMatch(/data-counter[^>]*>\s*\d+ of 300/);
     expect(html).toContain(">Add image<");
     expect(html).toContain('accept=".png,.jpg,.jpeg,.webp"');

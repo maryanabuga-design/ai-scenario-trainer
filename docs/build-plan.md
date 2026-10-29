@@ -159,3 +159,4 @@ One commit per screen group, in this order. Steps 1 to 82 are built (step 81, th
 157. One edit pattern for all four tabs (30 Oct 2026, replaces the 29 Oct rule): every card shows its full content with one corner pencil, no chevrons or expand, Steps and Quiz cards with "Based on: <guide section title>". Screenshots: `docs/screens/168-*`.
 158. Clear, compact Quiz and Steps cards (31 Oct 2026): CORRECT ANSWER and GUIDE SECTION labels, no list of wrong options. Screenshots: `docs/screens/169-*`.
 159. Simpler Import and a centred Analysing and result screen (1 Nov 2026): no What to include, two plain links, illustrations, centred stage rows, a summary card with a badge. Screenshots: `docs/screens/170-*`.
+160. Instructor content flow polish (2 Nov 2026): image rows, file card alignment, summary badge, Open draft, preview card and contextual preview, answer cards, success Notice after actions. Screenshots: `docs/screens/171-*`.

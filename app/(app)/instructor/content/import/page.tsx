@@ -106,7 +106,11 @@ function Import() {
     <PackageImportView
       file={file}
       message={message}
-      images={images.map((i) => i.name)}
+      images={images.map((i) => ({ name: i.name, src: i.dataUrl ?? "" }))}
+      onRemoveImage={(name) => {
+        setImages((current) => current.filter((i) => i.name !== name));
+        setImageMessage("");
+      }}
       imageMessage={imageMessage}
       notice={
         target ? `The new document replaces the content of ${target.title}. The title is kept.` : ""

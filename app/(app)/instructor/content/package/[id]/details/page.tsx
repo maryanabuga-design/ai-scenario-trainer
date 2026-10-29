@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { ExamNotFound } from "@/components/InstructorExams/ExamDetailView";
 import { PackageDetailsEdit } from "@/components/InstructorContent/PackageDetailsEdit";
+import { setFlash } from "@/lib/flash";
 import { NO_ROOM, updatePackage, usePackages } from "@/lib/packages";
 
 function Details() {
@@ -33,8 +34,10 @@ function Details() {
             summary: summary.trim().slice(0, 400),
             editedAt: Date.now(),
           }));
-          if (saved) router.push(base);
-          else setProblem(NO_ROOM);
+          if (saved) {
+            setFlash("Title and summary saved", base);
+            router.push(base);
+          } else setProblem(NO_ROOM);
         }}
         onCancel={() => router.push(base)}
       />

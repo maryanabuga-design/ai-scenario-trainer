@@ -1,8 +1,11 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useRef, useState } from "react";
+import { AnswerChoice } from "@/components/AnswerChoice/AnswerChoice";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button, ButtonLink } from "@/components/Button/Button";
+import { FlashNotice } from "@/components/FlashNotice/FlashNotice";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { Amber } from "@/components/InstructorContent/Amber";
 import { Notice } from "@/components/Notice/Notice";
@@ -23,6 +26,7 @@ import type {
   ScenarioStep,
   StepItem,
 } from "@/lib/package-read";
+import { setFlash } from "@/lib/flash";
 import { itemName, needsSentence, parseKey } from "@/lib/package-review";
 
 const areaClass =
@@ -80,35 +84,26 @@ function AnswersBlock({
         </Notice>
       )}
       {LETTERS.map((letter, i) => (
-        <div key={letter} className="flex items-center gap-2">
-          <label className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center">
-            <input
-              type="radio"
-              name="correct"
-              value={letter}
-              aria-label={`Correct answer ${letter.toUpperCase()}`}
-              checked={correct === letter}
-              onChange={() => onChange({ correct: letter as Letter })}
-              className="size-5 accent-primary"
-            />
-          </label>
-          <input
-            aria-label={`Answer ${letter.toUpperCase()}`}
-            name={`option-${letter}`}
-            value={options[i]}
-            onChange={(event) =>
-              onChange({
-                options: options.map((o, n) => (n === i ? event.target.value : o)) as [
-                  string,
-                  string,
-                  string,
-                  string,
-                ],
-              })
-            }
-            className="type-body h-[52px] min-w-0 flex-1 rounded-[14px] border border-selectable-stroke bg-card px-[var(--gutter,1rem)] text-text focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primary"
-          />
-        </div>
+        <AnswerChoice
+          key={letter}
+          letter={letter}
+          value={options[i]}
+          checked={correct === letter}
+          radioLabel={`Correct answer ${letter.toUpperCase()}`}
+          fieldLabel={`Answer ${letter.toUpperCase()}`}
+          fieldName={`option-${letter}`}
+          onValue={(value) =>
+            onChange({
+              options: options.map((o, n) => (n === i ? value : o)) as [
+                string,
+                string,
+                string,
+                string,
+              ],
+            })
+          }
+          onChoose={() => onChange({ correct: letter as Letter })}
+        />
       ))}
     </section>
   );
@@ -148,6 +143,7 @@ function GuideLinkBlock({
             name="guide-ref"
             value={String(section.section)}
             compact
+            emphasis
             checked={value.trim() === String(section.section)}
             onChange={onChange}
           >
@@ -283,6 +279,7 @@ export function PackageItemEdit({
   const [draft, setDraft] = useState<ItemDraft>(start ?? ({} as ItemDraft));
   const [images, setImages] = useState(data.images);
   const [confirming, setConfirming] = useState(confirmingInitially);
+  const pathname = usePathname();
   const ref = parseKey(data, itemKey);
   if (!start || !ref) return null;
 
@@ -302,6 +299,9 @@ export function PackageItemEdit({
     alt?: string;
     picture?: { name: string; image: Picture };
   }) => {
+    // adding or removing a picture is confirmed on this screen
+    if (part.picture) setFlash("Image added", pathname);
+    else if (part.imageFile === "") setFlash("Image removed", pathname);
     if (part.picture)
       setImages(
         (current) =>
@@ -328,6 +328,7 @@ export function PackageItemEdit({
           onClick: () => (dirty ? setConfirming(true) : onLeave()),
         }}
       />
+      <FlashNotice />
       {problems.length > 0 && (
         <div data-problems>
           <Notice variant="to-fix" clamp={false} title={`${problems.length} to fix in this item`}>

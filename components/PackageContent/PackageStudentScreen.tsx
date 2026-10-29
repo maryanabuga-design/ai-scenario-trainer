@@ -1,5 +1,6 @@
 "use client";
 
+import { Eye } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ButtonLink, Button } from "@/components/Button/Button";
@@ -24,30 +25,49 @@ export type StudentPart = "guide" | "steps" | "scenario" | "quiz" | "practise";
 export const isStudentPart = (value: string): value is Exclude<StudentPart, "guide"> =>
   value === "steps" || value === "scenario" || value === "quiz" || value === "practise";
 
+/** The tabs of the topic screen the preview can come from; the preview returns to the same one. */
+const FROM_TABS = ["guide", "steps", "scenario", "quiz"];
+export const fromTab = (value: string | null | undefined): string =>
+  value && FROM_TABS.includes(value) ? value : "guide";
+
 /** The routes of a demo topic: the student's, or the preview of them (the same pages, one flag). */
-export function packagePaths(id: string, preview: boolean) {
+export function packagePaths(id: string, preview: boolean, from = "guide") {
   const base = preview ? `/instructor/content/package/${id}/preview` : `/materials/package/${id}`;
+  // the preview carries the tab it came from, so a reload and the way back keep working
+  const q = preview ? `?from=${from}` : "";
   return {
-    reading: base,
-    steps: `${base}/steps`,
-    practise: `${base}/practise`,
-    guideSection: (section: string) => `${base}#section-${section}`,
-    /** Where Back and Exit go: Materials for a student, the topic screen for the Instructor. */
-    leave: preview ? `/instructor/content/package/${id}` : "/materials",
+    reading: `${base}${q}`,
+    steps: `${base}/steps${q}`,
+    practise: `${base}/practise${q}`,
+    guideSection: (section: string) => `${base}${q}#section-${section}`,
+    /** Where Back and Exit go: Materials for a student, the topic screen (same tab) for the Instructor. */
+    leave: preview ? `/instructor/content/package/${id}?tab=${from}` : "/materials",
   };
 }
 
-/** The slim bar of the preview: "Previewing as student" and a Secondary "Exit preview". */
+/**
+ * The preview card (DESIGN.md: Instructor content flow polish): one compact white card at the top of
+ * the student screen content: an eye in a sand tile, "Previewing as student" and the tertiary link
+ * "Exit preview". It has no nested blocks so it can be taken out of the page as one piece.
+ */
 export function PreviewBar({ exitHref }: { exitHref: string }) {
   return (
     <div
       data-preview-bar
-      className="sticky top-0 z-30 -mx-[var(--gutter,1rem)] flex h-12 items-center justify-between gap-3 border-b border-selectable-stroke bg-secondary-sand px-[var(--gutter,1rem)]"
+      className="mb-4 flex min-h-14 items-center gap-3 rounded-[14px] border border-selectable-stroke bg-card px-3 py-1"
     >
-      <p className="type-small-strong">Previewing as student</p>
-      <ButtonLink href={exitHref} variant="secondary" wide={false} compact>
-        Exit preview
-      </ButtonLink>
+      <span
+        aria-hidden="true"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary-sand text-text-secondary"
+      >
+        <Eye size={18} strokeWidth={2} />
+      </span>
+      <p className="type-small-strong min-w-0 flex-1 whitespace-nowrap">Previewing as student</p>
+      <span className="-mr-2 shrink-0">
+        <ButtonLink href={exitHref} variant="tertiary" wide={false}>
+          Exit preview
+        </ButtonLink>
+      </span>
     </div>
   );
 }
@@ -76,14 +96,16 @@ function Reading({
   title,
   data,
   preview,
+  from,
 }: {
   id: string;
   title: string;
   data: PackageData;
   preview: boolean;
+  from: string;
 }) {
   const router = useRouter();
-  const paths = packagePaths(id, preview);
+  const paths = packagePaths(id, preview, from);
   const minutes = demoMinutes(data);
   const hasSteps = partsOf(data).includes("steps");
   const canPractise = demoItems(data, "practise").length > 0;
@@ -119,14 +141,16 @@ function StepGuide({
   title,
   data,
   preview,
+  from,
 }: {
   id: string;
   title: string;
   data: PackageData;
   preview: boolean;
+  from: string;
 }) {
   const router = useRouter();
-  const paths = packagePaths(id, preview);
+  const paths = packagePaths(id, preview, from);
   const guide = demoStepGuide(data, title);
   const [open, setOpen] = useState<string | null>(() =>
     initialOpen((guide?.steps ?? []).map((step) => step.id)),
@@ -137,7 +161,7 @@ function StepGuide({
     <StepsTopicView
       checklist={guide}
       open={open}
-      onBack={() => router.push(paths.reading)}
+      onBack={() => router.push(preview ? paths.leave : paths.reading)}
       onToggleOpen={(stepId) => setOpen((current) => toggleOpen(current, stepId))}
       footerFor={(_, index) => {
         const extra = extras[index];
@@ -165,14 +189,16 @@ export function PackagePlayer({
   data,
   part,
   preview,
+  from = "guide",
 }: {
   id: string;
   data: PackageData;
   part: PracticePart;
   preview: boolean;
+  from?: string;
 }) {
   const router = useRouter();
-  const paths = packagePaths(id, preview);
+  const paths = packagePaths(id, preview, from);
   const items = demoItems(data, part);
   const [round, setRound] = useState(0);
   const [index, setIndex] = useState(0);
@@ -180,7 +206,8 @@ export function PackagePlayer({
   const [finished, setFinished] = useState(false);
 
   if (items.length === 0) return null;
-  const topicHref = paths.reading;
+  // the preview goes back to the topic screen on the same tab, the student to the reading screen
+  const topicHref = preview ? paths.leave : paths.reading;
   if (finished) {
     const scored = items.map((item, i) => scoreItem(item, choices[i]?.id ?? ""));
     return (
@@ -290,29 +317,31 @@ export function PackageStudentScreen({
   data,
   part,
   preview = false,
+  from = "guide",
 }: {
   id: string;
   title: string;
   data: PackageData;
   part: StudentPart;
   preview?: boolean;
+  /** The tab of the topic screen the preview came from. */
+  from?: string;
 }) {
-  const paths = packagePaths(id, preview);
+  const paths = packagePaths(id, preview, from);
   return (
-    <div
-      className="flex flex-1 flex-col"
-      style={preview ? ({ "--preview-bar": "48px" } as React.CSSProperties) : undefined}
-    >
+    <div className="flex flex-1 flex-col">
       {preview && <PreviewBar exitHref={paths.leave} />}
       {part === "guide" && (
         // the reading header tucks into the page's top padding: the preview bar needs it back
         <div className={preview ? "flex flex-1 flex-col pt-6" : "flex flex-1 flex-col"}>
-          <Reading id={id} title={title} data={data} preview={preview} />
+          <Reading id={id} title={title} data={data} preview={preview} from={from} />
         </div>
       )}
-      {part === "steps" && <StepGuide id={id} title={title} data={data} preview={preview} />}
+      {part === "steps" && (
+        <StepGuide id={id} title={title} data={data} preview={preview} from={from} />
+      )}
       {(part === "scenario" || part === "quiz" || part === "practise") && (
-        <PackagePlayer key={part} id={id} data={data} part={part} preview={preview} />
+        <PackagePlayer key={part} id={id} data={data} part={part} preview={preview} from={from} />
       )}
     </div>
   );

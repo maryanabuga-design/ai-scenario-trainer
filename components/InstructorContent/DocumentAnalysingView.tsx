@@ -4,6 +4,7 @@ import { Check, FileText, LoaderCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button } from "@/components/Button/Button";
+import { FlashNotice } from "@/components/FlashNotice/FlashNotice";
 import { Notice } from "@/components/Notice/Notice";
 
 export const STAGES = [
@@ -110,12 +111,10 @@ export function DocumentAnalysingView({
   counts,
   linkProblems = 0,
   partialLine = "",
-  reviewCount = 0,
   onCancel,
   onContinue,
   onChooseAnother,
-  onReview,
-  onPreview,
+  onOpenDraft,
   onBackToContent,
 }: {
   fileName: string;
@@ -129,13 +128,10 @@ export function DocumentAnalysingView({
   linkProblems?: number;
   /** The partial state's sentence ("We could not find questions in this document."). */
   partialLine?: string;
-  /** Items the review would visit; 0 offers Preview as student instead. */
-  reviewCount?: number;
   onCancel: () => void;
   onContinue: () => void;
   onChooseAnother: () => void;
-  onReview: () => void;
-  onPreview: () => void;
+  onOpenDraft: () => void;
   onBackToContent: () => void;
 }) {
   const running = phase === "running";
@@ -155,6 +151,7 @@ export function DocumentAnalysingView({
       : "Your document";
   return (
     <div data-analysing className="flex flex-col items-center gap-4 pt-6 pb-4 text-center">
+      <FlashNotice narrow />
       <Art src={running ? ANALYSING_IMAGE : phase === "finished" ? SUCCESS_IMAGE : null} />
       <h1 className="type-page-title">{title}</h1>
       <p
@@ -209,14 +206,14 @@ export function DocumentAnalysingView({
       {phase === "finished" && (
         <div
           data-summary
-          className="relative mt-3 w-full max-w-[360px] rounded-[14px] border border-selectable-stroke bg-card px-4 py-4 text-left"
+          className="mt-1 w-full max-w-[360px] rounded-[14px] border border-selectable-stroke bg-card p-4 text-left"
         >
           <span
             aria-hidden="true"
             data-badge
-            className="absolute top-0 left-1/2 flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-status-success-ink text-white"
+            className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-status-success-bg text-status-success-ink"
           >
-            <Check size={16} strokeWidth={3} />
+            <Check size={28} strokeWidth={2.5} />
           </span>
           <dl data-counts className="flex flex-col gap-2">
             {[
@@ -270,13 +267,7 @@ export function DocumentAnalysingView({
         )}
         {phase === "finished" && (
           <>
-            {reviewCount > 0 ? (
-              <Button onClick={onReview}>
-                Review {reviewCount} {reviewCount === 1 ? "item" : "items"}
-              </Button>
-            ) : (
-              <Button onClick={onPreview}>Preview as student</Button>
-            )}
+            <Button onClick={onOpenDraft}>Open draft</Button>
             <Button variant="secondary" onClick={onBackToContent}>
               Back to Content
             </Button>

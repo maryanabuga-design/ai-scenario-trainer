@@ -10,8 +10,7 @@ import type { AnalysingPhase } from "@/components/InstructorContent/DocumentAnal
 import { titleFromFileName } from "@/lib/content-import";
 import { clearDocumentDraft, getDocumentDraft } from "@/lib/document-draft";
 import { analyse, missingLine, readDocument } from "@/lib/document-read";
-import { flaggedItems, keySlug } from "@/lib/package-review";
-import { checkPackage } from "@/lib/package-read";
+import { pathOf, setFlash } from "@/lib/flash";
 import { addPackage, createTopic, readPackages, replaceFiles, savePackages } from "@/lib/packages";
 import type { DemoTopic } from "@/lib/packages";
 
@@ -77,6 +76,7 @@ function Analysing() {
       return null;
     }
     clearDocumentDraft();
+    if (target) setFlash("Document replaced", pathOf(window.location.pathname));
     setTopic(next);
     return next;
   }
@@ -108,7 +108,6 @@ function Analysing() {
 
   if (!draft && !topic) return null;
   const base = topic ? `/instructor/content/package/${topic.id}` : "";
-  const flagged = topic ? flaggedItems(checkPackage(topic)) : [];
   return (
     <DocumentAnalysingView
       fileName={draft?.name ?? ""}
@@ -118,7 +117,6 @@ function Analysing() {
       counts={analysis?.counts ?? { guide: 0, steps: 0, scenario: 0, questions: 0 }}
       linkProblems={analysis?.linkProblems ?? 0}
       partialLine={analysis ? missingLine(analysis.missing) : ""}
-      reviewCount={flagged.length}
       onCancel={() => router.push("/instructor/content/import")}
       onContinue={() => {
         if (save()) setPhase("finished");
@@ -127,11 +125,7 @@ function Analysing() {
         clearDocumentDraft();
         router.push(`/instructor/content/import${replaceId ? `?replace=${replaceId}` : ""}`);
       }}
-      onReview={() => {
-        const round = flagged.map((item) => keySlug(item.key));
-        router.push(`${base}/edit/${round[0]}?r=${round.join(",")}&i=0`);
-      }}
-      onPreview={() => router.push(`${base}/preview`)}
+      onOpenDraft={() => router.push(base)}
       onBackToContent={() => router.push("/instructor/content")}
     />
   );

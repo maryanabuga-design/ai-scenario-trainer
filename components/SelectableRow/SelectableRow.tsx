@@ -15,6 +15,8 @@ type Props = {
   compact?: boolean;
   /** A check box drawn as a circle (the Instructor's multi-select rows): the same choice, a round indicator. */
   round?: boolean;
+  /** A 1.5px olive border on the selected row (the pickers of the Instructor's edit screens). */
+  emphasis?: boolean;
   /** A letter badge before the content (A, B, C), for answer options. */
   letter?: string;
   children: ReactNode;
@@ -37,11 +39,14 @@ export function SelectableRow({
   compact = false,
   round = false,
   letter,
+  emphasis = false,
   children,
 }: Props) {
   const state = disabled
     ? "cursor-not-allowed border border-secondary-sand-pressed bg-secondary-sand text-text-secondary"
-    : "cursor-pointer border border-selectable-stroke bg-card active:bg-secondary-sand";
+    : emphasis
+      ? `cursor-pointer border-[1.5px] bg-card active:bg-secondary-sand ${checked ? "border-primary" : "border-selectable-stroke"}`
+      : "cursor-pointer border border-selectable-stroke bg-card active:bg-secondary-sand";
   return (
     <label
       className={`flex ${tall ? "h-[72px] px-[var(--gutter,1rem)]" : compact ? "h-16 px-[var(--gutter,1rem)]" : "min-h-11 p-[var(--gutter,1rem)]"} items-center gap-3 rounded-card has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${state}`}

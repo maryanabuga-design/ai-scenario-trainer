@@ -6,6 +6,7 @@ import { ButtonLink } from "@/components/Button/Button";
 import { EditQuestionView } from "@/components/InstructorContent/EditQuestionView";
 import { Amber } from "@/components/InstructorContent/Amber";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
+import { setFlash } from "@/lib/flash";
 import { NO_ROOM, updateSet, useContentSets } from "@/lib/content-sets";
 
 export default function EditQuestionPage() {
@@ -59,6 +60,7 @@ export default function EditQuestionPage() {
             questions: s.questions.map((q, i) => (i === index ? question : q)),
           }));
           if (!saved) return setNoRoom(true);
+          setFlash("Changes saved", back);
           router.push(back);
         }}
         onDelete={() => {

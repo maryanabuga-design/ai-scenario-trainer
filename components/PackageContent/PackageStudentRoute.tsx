@@ -4,6 +4,7 @@ import { ExamNotFound } from "@/components/InstructorExams/ExamDetailView";
 import {
   PackageGone,
   PackageStudentScreen,
+  fromTab,
   isStudentPart,
 } from "@/components/PackageContent/PackageStudentScreen";
 import type { StudentPart } from "@/components/PackageContent/PackageStudentScreen";
@@ -18,11 +19,14 @@ export function PackageStudentRoute({
   id,
   part: asked,
   preview,
+  from,
 }: {
   id: string;
   /** The last part of the address: nothing for the reading screen. */
   part?: string;
   preview: boolean;
+  /** The tab of the topic screen the preview came from. */
+  from?: string;
 }) {
   const topics = usePackages();
   const topic =
@@ -42,6 +46,7 @@ export function PackageStudentRoute({
       data={topic}
       part={part}
       preview={preview}
+      from={fromTab(from)}
     />
   );
 }

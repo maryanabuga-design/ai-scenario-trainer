@@ -4,6 +4,7 @@ import { FilePlus, Lightbulb } from "lucide-react";
 import Link from "next/link";
 import { ButtonLink } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
+import { FlashNotice } from "@/components/FlashNotice/FlashNotice";
 import { ContentEmpty } from "@/components/InstructorContent/ContentEmpty";
 import { PackageCard } from "@/components/InstructorContent/PackageCard";
 import { SetCard } from "@/components/InstructorContent/SetCard";
@@ -42,6 +43,7 @@ export function ContentView({
         subtitle={<span className="text-text-secondary">Materials for your students</span>}
         action={<ProfileAvatar />}
       />
+      <FlashNotice />
       <ButtonLink href="/instructor/content/import" icon={FilePlus}>
         Import content
       </ButtonLink>

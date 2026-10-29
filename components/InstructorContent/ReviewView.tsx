@@ -10,6 +10,7 @@ import { Chevron } from "@/components/Chevron/Chevron";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { IconTile } from "@/components/IconTile/IconTile";
 import { QuestionStatusLine } from "@/components/InstructorContent/StatusLine";
+import { FlashNotice } from "@/components/FlashNotice/FlashNotice";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
 import {
@@ -110,6 +111,7 @@ export function ReviewView({
         subtitle={`${set.topic} ${topicTitle}`}
         back={{ label: "Back to Content", href: "/instructor/content" }}
       />
+      <FlashNotice />
       <p role="status" data-message className="type-body text-center not-empty:py-1">
         {message}
       </p>

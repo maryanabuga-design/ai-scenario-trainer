@@ -156,7 +156,7 @@ for (const width of [360, 430]) {
       expect(await noSidewaysScroll(page)).toBe(true);
       // Preview as student works while items are flagged
       await page.getByRole("button", { name: "Preview as student" }).click();
-      await expect(page).toHaveURL(/\/preview$/);
+      await expect(page).toHaveURL(/\/preview\/quiz\?from=quiz$/);
       await expect(page.getByText("Previewing as student")).toBeVisible();
     });
 
@@ -197,7 +197,7 @@ for (const width of [360, 430]) {
       // 3 of 6: a question without a correct answer
       await expect(header).toContainText("3 of 6");
       await expect(header).toContainText("Question 4");
-      await page.getByRole("radio", { name: "Correct answer B" }).check({ force: true });
+      await page.locator('[data-correct="b"]:visible').click({ position: { x: 6, y: 6 } });
       await primary("Save and next").click();
       // 4 of 6: a question without text: skip it, it stays flagged
       await expect(header).toContainText("4 of 6");
@@ -498,9 +498,10 @@ for (const width of [360, 430]) {
       await expect(page.getByRole("heading", { name: "Draft is ready" })).toBeVisible({
         timeout: 15000,
       });
-      await page.getByRole("button", { name: "Preview as student" }).click();
-      await expect(page).toHaveURL(new RegExp(`/package/${id}/preview$`));
-      await page.goto(`/instructor/content/package/${id}`);
+      // "Document replaced" is confirmed on the result screen, then Open draft goes to the topic
+      await expect(page.locator("[data-flash]")).toContainText("Document replaced");
+      await page.getByRole("button", { name: "Open draft", exact: true }).click();
+      await expect(page).toHaveURL(new RegExp(`/package/${id}$`));
       const success = page.locator("#package-status");
       await expect(success).toContainText("All items checked");
       await expect(success).toContainText("Preview as student, then publish.");

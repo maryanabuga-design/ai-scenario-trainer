@@ -1010,7 +1010,7 @@ export default function Screens() {
               <PackageSample files={packageFiles} state="import-empty" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Import content: a file chosen, one file card, Add images">
+          <PhoneFrame label="Import content: a file chosen, one file card and two picture rows">
             <Screen>
               <PackageSample files={packageFiles} state="import-file" />
             </Screen>
@@ -1113,6 +1113,16 @@ export default function Screens() {
           <PhoneFrame label="Guided review summary: items still need attention (Review remaining N, Back to topic)">
             <Screen>
               <PackageSample files={packageFiles} state="summary-left" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Quiz question edit: answer cards with the radio inside, one selected">
+            <Screen>
+              <PackageSample files={packageFiles} state="edit-answers" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="The success Notice after Save, at the top of the topic screen">
+            <Screen>
+              <PackageSample files={packageFiles} state="saved-notice" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Guided review: a Please confirm item (Mark as OK, Skip)">
