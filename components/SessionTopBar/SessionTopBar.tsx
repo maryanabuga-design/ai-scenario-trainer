@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { Button } from "@/components/Button/Button";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
+import { PreviewLabel } from "@/components/PreviewLabel/PreviewLabel";
 import { StepStrip } from "@/components/StepStrip/StepStrip";
 import type { StripState } from "@/components/StepStrip/StepStrip";
 
@@ -61,7 +62,8 @@ export function SessionTopBar({
             <span className="type-caption max-w-full truncate text-text-secondary">{subtitle}</span>
           )}
         </span>
-        <div className="-mr-3">
+        <div className="-mr-3 flex items-center gap-1">
+          <PreviewLabel />
           <Button variant="tertiary" onClick={() => setConfirming(true)}>
             Exit
           </Button>

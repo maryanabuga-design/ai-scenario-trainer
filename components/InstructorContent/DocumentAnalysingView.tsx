@@ -151,7 +151,7 @@ export function DocumentAnalysingView({
       : "Your document";
   return (
     <div data-analysing className="flex flex-col items-center gap-4 pt-6 pb-4 text-center">
-      <FlashNotice narrow />
+      <FlashNotice />
       <Art src={running ? ANALYSING_IMAGE : phase === "finished" ? SUCCESS_IMAGE : null} />
       <h1 className="type-page-title">{title}</h1>
       <p
@@ -208,13 +208,6 @@ export function DocumentAnalysingView({
           data-summary
           className="mt-1 w-full max-w-[360px] rounded-[14px] border border-selectable-stroke bg-card p-4 text-left"
         >
-          <span
-            aria-hidden="true"
-            data-badge
-            className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-status-success-bg text-status-success-ink"
-          >
-            <Check size={28} strokeWidth={2.5} />
-          </span>
           <dl data-counts className="flex flex-col gap-2">
             {[
               ["Guide sections", counts.guide],
@@ -229,16 +222,10 @@ export function DocumentAnalysingView({
             ))}
             <div data-links-row className="flex items-center justify-between gap-3">
               <dt className="type-body text-text-secondary">Links to the guide</dt>
-              <dd className="type-body-strong flex items-center gap-1.5">
-                {linkProblems === 0 && (
-                  <Check
-                    size={16}
-                    strokeWidth={2.5}
-                    aria-hidden="true"
-                    className="text-status-success-ink"
-                  />
-                )}
-                {linkProblems === 0 ? "all linked" : `${linkProblems} need attention`}
+              <dd
+                className={`type-body-strong ${linkProblems === 0 ? "" : "text-status-attention-ink"}`}
+              >
+                {linkProblems === 0 ? "All linked" : `${linkProblems} need attention`}
               </dd>
             </div>
           </dl>

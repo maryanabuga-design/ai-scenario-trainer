@@ -2,6 +2,7 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { PreviewLabel } from "@/components/PreviewLabel/PreviewLabel";
 import { CircleBackButton, circleLook } from "@/components/CircleBackButton/CircleBackButton";
 import { readingPath } from "@/lib/reading";
 
@@ -43,25 +44,31 @@ export function ReadingHeader({
           <CircleBackButton size="small" label="Back" onClick={onBack} />
         </div>
         <p className="type-small text-text-secondary tabular-nums">{label}</p>
-        <div className="flex gap-2 justify-self-end">
-          <button
-            type="button"
-            aria-label="Previous topic"
-            disabled={!previousId}
-            onClick={go(previousId)}
-            className={arrow}
-          >
-            <ChevronLeft size={20} strokeWidth={2} aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            aria-label="Next topic"
-            disabled={!nextId}
-            onClick={go(nextId)}
-            className={arrow}
-          >
-            <ChevronRight size={20} strokeWidth={2} aria-hidden="true" />
-          </button>
+        <div className="flex items-center gap-2 justify-self-end">
+          <PreviewLabel />
+          {/* a demo topic has no neighbours: no arrows, which leaves room for the Preview label */}
+          {(previousId || nextId) && (
+            <>
+              <button
+                type="button"
+                aria-label="Previous topic"
+                disabled={!previousId}
+                onClick={go(previousId)}
+                className={arrow}
+              >
+                <ChevronLeft size={20} strokeWidth={2} aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                aria-label="Next topic"
+                disabled={!nextId}
+                onClick={go(nextId)}
+                className={arrow}
+              >
+                <ChevronRight size={20} strokeWidth={2} aria-hidden="true" />
+              </button>
+            </>
+          )}
         </div>
       </div>
     </header>

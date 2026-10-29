@@ -33,8 +33,6 @@ const primaries = (page: Page) =>
       }).length,
     PRIMARY,
   );
-const bg = (loc: ReturnType<Page["locator"]>) =>
-  loc.evaluate((el) => getComputedStyle(el).backgroundColor);
 const storedTopics = (page: Page) =>
   page.evaluate(() => localStorage.getItem("ast.demo-topics.v1"));
 const choose = async (
@@ -336,19 +334,10 @@ for (const width of [360, 430]) {
           return [css.backgroundColor, css.borderTopWidth, css.borderTopColor, css.borderRadius];
         }),
       ).toEqual(["rgb(255, 255, 255)", "1px", "rgb(228, 223, 213)", "14px"]);
-      const badge = page.locator("[data-badge]");
-      const bb = (await badge.boundingBox())!;
-      expect(Math.abs(bb.x + bb.width / 2 - (c.x + c.width / 2))).toBeLessThanOrEqual(1);
-      // inside the card, centred at the top: 56px, light success background
-      expect([bb.width, bb.height]).toEqual([56, 56]);
-      expect(bb.y).toBeGreaterThanOrEqual(c.y + 12);
-      expect(bb.y + bb.height).toBeLessThanOrEqual(c.y + c.height);
-      expect(bb.y - c.y).toBeLessThanOrEqual(20);
-      expect(await bg(badge)).toBe("rgb(225, 234, 218)");
-      expect(await badge.locator("svg").evaluate((el) => getComputedStyle(el).color)).toBe(
-        "rgb(68, 104, 58)",
-      );
-      await expect(badge).toHaveAttribute("aria-hidden", "true");
+      // no badge: the card starts directly with the rows
+      await expect(page.locator("[data-badge]")).toHaveCount(0);
+      const first = (await card.locator("dl > div").first().boundingBox())!;
+      expect(first.y - c.y).toBeLessThanOrEqual(20);
       await expect(card.locator("dt")).toHaveText([
         "Guide sections",
         "Steps",
@@ -356,8 +345,15 @@ for (const width of [360, 430]) {
         "Questions",
         "Links to the guide",
       ]);
-      await expect(card.locator("dd")).toHaveText(["4", "7", "4", "10", "all linked"]);
-      await expect(card.locator("[data-links-row] svg")).toHaveCount(1);
+      await expect(card.locator("dd")).toHaveText(["4", "7", "4", "10", "All linked"]);
+      // the Links row has no icon: plain bold text
+      await expect(card.locator("[data-links-row] svg")).toHaveCount(0);
+      const weight = (selector: string) =>
+        card
+          .locator(selector)
+          .first()
+          .evaluate((el) => getComputedStyle(el).fontWeight);
+      expect(await weight("[data-links-row] dd")).toBe(await weight("dl > div dd"));
       // the draft is saved; the result screen offers Open draft
       expect(await storedTopics(page)).toContain("Evacuating a crowded hall");
       await expect(page.getByRole("button", { name: "Open draft", exact: true })).toBeVisible();

@@ -4,6 +4,7 @@ import { ExternalLink } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { ReactNode } from "react";
+import { PreviewLabel } from "@/components/PreviewLabel/PreviewLabel";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { StepCard, stepsCard } from "@/components/StepsView/StepCard";
 import { TopicTile } from "@/components/TopicTile/TopicTile";
@@ -28,7 +29,12 @@ export function StepsTopicView({
 }) {
   return (
     <div className="flex flex-col pb-[var(--gutter,1rem)]">
-      <PageHeaderBand title={checklist.title} back={{ label: "Back", onClick: onBack }} overlap />
+      <PageHeaderBand
+        title={checklist.title}
+        back={{ label: "Back", onClick: onBack }}
+        action={<PreviewLabel />}
+        overlap
+      />
 
       <section
         aria-label="Summary"

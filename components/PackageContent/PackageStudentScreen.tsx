@@ -1,9 +1,9 @@
 "use client";
 
-import { Eye } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ButtonLink, Button } from "@/components/Button/Button";
+import { PreviewProvider } from "@/components/PreviewLabel/PreviewLabel";
 import { PackageImage, GuidePill } from "@/components/PackageContent/PackageParts";
 import { QuestionScreen } from "@/components/QuestionScreen/QuestionScreen";
 import { ReadingView } from "@/components/ReadingView/ReadingView";
@@ -43,33 +43,6 @@ export function packagePaths(id: string, preview: boolean, from = "guide") {
     /** Where Back and Exit go: Materials for a student, the topic screen (same tab) for the Instructor. */
     leave: preview ? `/instructor/content/package/${id}?tab=${from}` : "/materials",
   };
-}
-
-/**
- * The preview card (DESIGN.md: Instructor content flow polish): one compact white card at the top of
- * the student screen content: an eye in a sand tile, "Previewing as student" and the tertiary link
- * "Exit preview". It has no nested blocks so it can be taken out of the page as one piece.
- */
-export function PreviewBar({ exitHref }: { exitHref: string }) {
-  return (
-    <div
-      data-preview-bar
-      className="mb-4 flex min-h-14 items-center gap-3 rounded-[14px] border border-selectable-stroke bg-card px-3 py-1"
-    >
-      <span
-        aria-hidden="true"
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary-sand text-text-secondary"
-      >
-        <Eye size={18} strokeWidth={2} />
-      </span>
-      <p className="type-small-strong min-w-0 flex-1 whitespace-nowrap">Previewing as student</p>
-      <span className="-mr-2 shrink-0">
-        <ButtonLink href={exitHref} variant="tertiary" wide={false}>
-          Exit preview
-        </ButtonLink>
-      </span>
-    </div>
-  );
 }
 
 /** The guide as the reading screen's body: headings, text and pictures in the built-in text styles. */
@@ -327,13 +300,10 @@ export function PackageStudentScreen({
   /** The tab of the topic screen the preview came from. */
   from?: string;
 }) {
-  const paths = packagePaths(id, preview, from);
-  return (
+  const screen = (
     <div className="flex flex-1 flex-col">
-      {preview && <PreviewBar exitHref={paths.leave} />}
       {part === "guide" && (
-        // the reading header tucks into the page's top padding: the preview bar needs it back
-        <div className={preview ? "flex flex-1 flex-col pt-6" : "flex flex-1 flex-col"}>
+        <div className="flex flex-1 flex-col">
           <Reading id={id} title={title} data={data} preview={preview} from={from} />
         </div>
       )}
@@ -345,4 +315,6 @@ export function PackageStudentScreen({
       )}
     </div>
   );
+  // the preview adds only the small label in the row of the back arrow: no banner, no spacing
+  return preview ? <PreviewProvider>{screen}</PreviewProvider> : screen;
 }

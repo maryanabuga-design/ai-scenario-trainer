@@ -157,7 +157,9 @@ for (const width of [360, 430]) {
       // Preview as student works while items are flagged
       await page.getByRole("button", { name: "Preview as student" }).click();
       await expect(page).toHaveURL(/\/preview\/quiz\?from=quiz$/);
-      await expect(page.getByText("Previewing as student")).toBeVisible();
+      // no banner: only the small Preview label
+      await expect(page.locator("[data-preview-label]")).toBeVisible();
+      await expect(page.getByText("Previewing as student")).toHaveCount(0);
     });
 
     test("the guided review: 1 of N in order, Save and next, Skip keeps the item, Choose image (Save and next disabled until then), then the review summary with Publish", async ({
@@ -541,12 +543,12 @@ for (const width of [360, 430]) {
           const lines = (main.innerText ?? "")
             .split("\n")
             .map((line) => line.trim())
-            .filter((line) => line && line !== "Previewing as student" && line !== "Exit preview");
+            .filter((line) => line && line !== "Preview");
           const controls = [...main.querySelectorAll("button, a")]
             .filter(
               (el) =>
                 (el as HTMLElement).offsetParent !== null &&
-                !(el as HTMLElement).closest("[data-preview-bar]"),
+                !(el as HTMLElement).closest("[data-preview-label]"),
             )
             .map((el) => (el.textContent ?? "").trim())
             .filter(Boolean);
@@ -559,7 +561,7 @@ for (const width of [360, 430]) {
             controls,
             alts,
             heads,
-            bar: !!document.querySelector("[data-preview-bar]"),
+            bar: !!document.querySelector("[data-preview-label]"),
           };
         });
         expect(info.bar).toBe(preview);

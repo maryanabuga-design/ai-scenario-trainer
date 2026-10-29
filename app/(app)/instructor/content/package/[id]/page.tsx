@@ -47,6 +47,7 @@ function Topic() {
     );
     setProblem(saved ? "" : NO_ROOM);
     if (saved && dialog === "publish") setFlash("Topic published", base);
+    if (saved && dialog === "unpublish") setFlash("Topic unpublished", base);
     setDialog(null);
   }
 

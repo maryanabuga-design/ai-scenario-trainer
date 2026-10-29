@@ -339,7 +339,12 @@ for (const width of [360, 430]) {
       await expect(page.locator("textarea[name=question]")).toHaveValue("Question number 2?");
       for (const letter of ["A", "B", "C", "D"]) {
         const field = page.getByLabel(`Answer ${letter}`);
-        expect((await field.boundingBox())!.height).toBe(52);
+        // the text is a borderless field inside the 64px card: 44px to tap
+        expect((await field.boundingBox())!.height).toBe(44);
+        expect(
+          (await page.locator(`[data-correct=${letter.toLowerCase()}]:visible`).boundingBox())!
+            .height,
+        ).toBe(64);
       }
       await expect(page.getByLabel("Answer D")).toHaveValue("");
       await expect(page.locator("[data-correct=b] input[type=radio]")).toBeChecked();

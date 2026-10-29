@@ -162,6 +162,7 @@ export function PackageTopicView({
           {partCounts(flagged)}
         </Notice>
       ) : (
+        !published &&
         !closed && (
           <Notice
             variant="success"

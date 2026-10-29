@@ -17,6 +17,10 @@ type Props = {
   round?: boolean;
   /** A 1.5px olive border on the selected row (the pickers of the Instructor's edit screens). */
   emphasis?: boolean;
+  /** The accessible name of the radio when the row's own text is not enough (an editable answer). */
+  ariaLabel?: string;
+  /** `data-*` attributes of the row, for the screens that look the row up (`{ correct: "b" }`). */
+  data?: Record<string, string>;
   /** A letter badge before the content (A, B, C), for answer options. */
   letter?: string;
   children: ReactNode;
@@ -40,6 +44,8 @@ export function SelectableRow({
   round = false,
   letter,
   emphasis = false,
+  ariaLabel,
+  data,
   children,
 }: Props) {
   const state = disabled
@@ -49,6 +55,9 @@ export function SelectableRow({
       : "cursor-pointer border border-selectable-stroke bg-card active:bg-secondary-sand";
   return (
     <label
+      {...Object.fromEntries(
+        Object.entries(data ?? {}).map(([key, value]) => [`data-${key}`, value]),
+      )}
       className={`flex ${tall ? "h-[72px] px-[var(--gutter,1rem)]" : compact ? "h-16 px-[var(--gutter,1rem)]" : "min-h-11 p-[var(--gutter,1rem)]"} items-center gap-3 rounded-card has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${state}`}
     >
       <input
@@ -57,6 +66,7 @@ export function SelectableRow({
         value={value}
         checked={checked}
         disabled={disabled}
+        aria-label={ariaLabel}
         onChange={() => onChange(value)}
         className="sr-only"
       />
@@ -69,21 +79,46 @@ export function SelectableRow({
         </span>
       )}
       <span className="flex min-w-0 flex-1 items-center gap-3">{children}</span>
-      <span
-        aria-hidden="true"
-        className={`flex h-5 w-5 shrink-0 items-center justify-center border ${
-          type === "checkbox" && !round ? "rounded-[4px]" : "rounded-full"
-        } ${disabled ? "border-dashed border-text-secondary" : "border-primary"} ${
-          checked && type === "checkbox" ? "bg-primary" : ""
-        }`}
-      >
-        {checked &&
-          (type === "checkbox" ? (
-            <Check size={14} strokeWidth={2.5} className="text-primary-text" />
-          ) : (
-            <span className="h-2.5 w-2.5 rounded-full bg-primary" />
-          ))}
-      </span>
+      {emphasis ? (
+        // a 44px tap area around the ring, which keeps its place at the card's right edge
+        <span
+          aria-hidden="true"
+          data-radio-area
+          className="-mr-3 flex h-11 w-11 shrink-0 items-center justify-center"
+        >
+          <span
+            aria-hidden="true"
+            className={`flex h-5 w-5 shrink-0 items-center justify-center border ${
+              type === "checkbox" && !round ? "rounded-[4px]" : "rounded-full"
+            } ${disabled ? "border-dashed border-text-secondary" : "border-primary"} ${
+              checked && type === "checkbox" ? "bg-primary" : ""
+            }`}
+          >
+            {checked &&
+              (type === "checkbox" ? (
+                <Check size={14} strokeWidth={2.5} className="text-primary-text" />
+              ) : (
+                <span className="h-2.5 w-2.5 rounded-full bg-primary" />
+              ))}
+          </span>
+        </span>
+      ) : (
+        <span
+          aria-hidden="true"
+          className={`flex h-5 w-5 shrink-0 items-center justify-center border ${
+            type === "checkbox" && !round ? "rounded-[4px]" : "rounded-full"
+          } ${disabled ? "border-dashed border-text-secondary" : "border-primary"} ${
+            checked && type === "checkbox" ? "bg-primary" : ""
+          }`}
+        >
+          {checked &&
+            (type === "checkbox" ? (
+              <Check size={14} strokeWidth={2.5} className="text-primary-text" />
+            ) : (
+              <span className="h-2.5 w-2.5 rounded-full bg-primary" />
+            ))}
+        </span>
+      )}
     </label>
   );
 }

@@ -265,7 +265,7 @@ describe("the analysing screen", () => {
     expect(html.match(/h-\[52px\] bg-primary/g)).toBeNull();
   });
 
-  it("finished: the stage rows collapse, the success picture, a summary card with a badge INSIDE it, the counts and the Links to the guide row", () => {
+  it("finished: the stage rows collapse, the success picture, a summary card with no badge, the counts and the Links to the guide row", () => {
     const html = view({ phase: "finished", done: 5 });
     expect(html).toContain(">Draft is ready</h1>");
     expect(html).toContain('src="/images/instructor/import-success.webp"');
@@ -275,17 +275,10 @@ describe("the analysing screen", () => {
     expect(card).toContain("rounded-[14px] border border-selectable-stroke bg-card");
     expect(card).toContain("max-w-[360px]");
     expect(card).toContain("p-4");
-    // the badge is a block inside the card, centred at the top: 56px, light success, a 28px check
-    const badge = card.slice(
-      card.indexOf("data-badge") - 40,
-      card.indexOf("</span>", card.indexOf("data-badge")),
-    );
-    expect(badge).toContain('aria-hidden="true"');
-    expect(badge).toContain("mx-auto mb-4 flex h-14 w-14");
-    expect(badge).toContain("bg-status-success-bg text-status-success-ink");
-    expect(badge).toContain('width="28"');
-    expect(badge).not.toMatch(/absolute|-translate|bg-status-success-ink text-white/);
-    expect(card.indexOf("data-badge")).toBeLessThan(card.indexOf("data-counts"));
+    // no badge at all: the card starts directly with the rows
+    expect(card).not.toMatch(/data-badge|h-14 w-14|bg-status-success-bg/);
+    expect(card.indexOf("<dl")).toBeLessThan(card.indexOf("data-links-row"));
+    expect(card.slice(0, 400)).toContain("data-counts");
     for (const [label, value] of [
       ["Guide sections", 4],
       ["Steps", 7],
@@ -298,8 +291,16 @@ describe("the analysing screen", () => {
     }
     const links = card.slice(card.indexOf("data-links-row"));
     expect(links).toContain("Links to the guide");
-    expect(links).toContain("all linked");
-    expect(view({ phase: "finished", done: 5, linkProblems: 3 })).toContain("3 need attention");
+    expect(links).toContain(">All linked<");
+    // no icon on the row; plain bold text
+    expect(
+      links.slice(0, links.indexOf("</dl>") > 0 ? links.indexOf("</dl>") : undefined),
+    ).not.toContain("<svg");
+    const problems = view({ phase: "finished", done: 5, linkProblems: 3 });
+    expect(problems).toMatch(/type-body-strong text-status-attention-ink">3 need attention</);
+    expect(
+      problems.slice(problems.indexOf("data-links-row"), problems.indexOf("</dl>")),
+    ).not.toContain("<svg");
     // Primary Open draft over Secondary Back to Content; no Review or Preview here
     expect(html).toMatch(/h-\[52px\] bg-primary[^>]*>Open draft</);
     expect(html).toMatch(/bg-olive-tint[^>]*>Back to Content</);
@@ -634,7 +635,7 @@ describe("the instructor's tab keeps the review components; the student screens 
 describe("preview parity: the student route and the preview route draw the same screens", () => {
   /** The visible text, the headings and the buttons and links, without the preview bar. */
   const shape = (html: string) => {
-    const withoutBar = html.replace(/<div data-preview-bar[\s\S]*?<\/div>/, "");
+    const withoutBar = html.replace(/<span[^>]*data-preview-label[^>]*>[\s\S]*?<\/span>/, "");
     const text = withoutBar
       .replace(/<script[\s\S]*?<\/script>/g, "")
       .replace(/<[^>]+>/g, "\n")
@@ -662,13 +663,16 @@ describe("preview parity: the student route and the preview route draw the same 
     );
 
   for (const part of ["guide", "steps", "scenario", "quiz"] as const) {
-    it(`${part}: the same headings, texts, pictures and buttons; only the preview bar is added`, () => {
+    it(`${part}: the same headings, texts, pictures and buttons; only the small Preview label is added`, () => {
       const student = draw(part, false);
       const preview = draw(part, true);
-      expect(student).not.toContain("data-preview-bar");
-      expect(preview).toContain("data-preview-bar");
-      expect(preview).toContain("Previewing as student");
-      expect(preview).toContain("Exit preview");
+      expect(student).not.toContain("data-preview-label");
+      expect(preview).toContain("data-preview-label");
+      expect(preview.match(/data-preview-label/g)).toHaveLength(1);
+      // no banner and no Exit preview anywhere
+      for (const html of [student, preview]) {
+        expect(html).not.toMatch(/Previewing as student|Exit preview|data-preview-bar/);
+      }
       const a = shape(student);
       const b = shape(preview);
       expect(b.headings).toEqual(a.headings);
@@ -849,17 +853,39 @@ describe("the preview card and the contextual preview", () => {
       />,
     );
 
-  it("is ONE compact white card, not a dark band: an eye in a sand tile, the text and a tertiary underlined Exit preview", () => {
-    const html = draw("guide", "guide");
-    const card = html.slice(html.indexOf("data-preview-bar"), html.indexOf("</a>") + 4);
-    expect(card).toContain("rounded-[14px] border border-selectable-stroke bg-card");
-    expect(card).not.toMatch(/sticky|bg-secondary-sand px|border-b|h-12/);
-    expect(card).toContain("lucide-eye");
-    expect(card).toContain("bg-secondary-sand");
-    expect(card).toContain(">Previewing as student<");
-    expect(card).toMatch(/underline[^>]*>Exit preview</);
-    expect(card).toContain("min-h-11");
-    expect(html).not.toContain('style="--preview-bar');
+  it("has no banner: the student screens start with their normal header and only a small Preview label is added", () => {
+    for (const part of ["guide", "steps", "scenario", "quiz"] as const) {
+      const html = draw(part, part);
+      expect(html, part).not.toMatch(/Previewing as student|Exit preview|data-preview-bar/);
+      expect(html, part).not.toContain('style="--preview-bar');
+      expect(html.match(/data-preview-label/g), part).toHaveLength(1);
+      const label = html.slice(
+        html.lastIndexOf("<span", html.indexOf("data-preview-label")),
+        html.indexOf("Preview</span>") + 14,
+      );
+      expect(label).toContain('aria-label="Preview mode"');
+      expect(label).toContain('role="note"');
+      expect(label).toContain("bg-secondary-sand");
+      expect(label).toContain("text-text-secondary");
+      expect(label).toContain("h-7");
+      expect(label).toContain("rounded-full");
+      expect(label).not.toMatch(/<a |<button|tabindex/);
+    }
+    // the guide screen has no extra top spacing and no previous / next arrows (a demo topic has none)
+    const guide = draw("guide", "guide");
+    expect(
+      guide.startsWith(
+        '<div class="flex flex-1 flex-col"><div class="flex flex-1 flex-col"><div class="flex flex-1 flex-col pb-',
+      ),
+    ).toBe(true);
+    expect(guide).not.toContain("Previous topic");
+  });
+
+  it("the label is never in the real student flow", () => {
+    const student = wrap(
+      <PackageStudentScreen id={topic.id} title={topic.title} data={topic} part="guide" />,
+    );
+    expect(student).not.toContain("data-preview-label");
   });
 
   it("leaves to the topic screen on the same tab and carries the tab in every preview address", () => {
@@ -871,7 +897,6 @@ describe("the preview card and the contextual preview", () => {
       expect(paths.guideSection("2")).toBe(
         `/instructor/content/package/${topic.id}/preview?from=${from}#section-2`,
       );
-      expect(draw("guide", from)).toContain(`href="${paths.leave}"`);
     }
     // a student goes to Materials and the addresses carry no tab
     expect(packagePaths(topic.id, false).leave).toBe("/materials");
