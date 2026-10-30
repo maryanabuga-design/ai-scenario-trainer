@@ -212,7 +212,7 @@ export const matchesQuery = (name: string, query: string) =>
 
 export type StudentsFilter = "all" | "needs" | "ready" | "almost" | "not-started";
 
-/** The five filter chips, in order: All and the four statuses. */
+/** The five options of the Status dropdown, in order: All and the four statuses. */
 export const filters: { value: StudentsFilter; label: string }[] = [
   { value: "all", label: "All" },
   { value: "needs", label: "Needs attention" },
@@ -222,12 +222,17 @@ export const filters: { value: StudentsFilter; label: string }[] = [
 ];
 const allFilters = filters.map((f) => f.value);
 
+/** The dropdown options with the number of students of each status (All: the total). */
+export const statusOptions = (list: StudentProfile[]) =>
+  filters.map((f) => ({
+    ...f,
+    count:
+      f.value === "all" ? list.length : list.filter((p) => profileStatus(p) === f.value).length,
+  }));
+
 /** A filter from the address, "all" when it is missing or unknown. */
 export const filterFrom = (value: string | null): StudentsFilter =>
   allFilters.includes(value as StudentsFilter) ? (value as StudentsFilter) : "all";
-
-/** Whether the filter is one of the chips. */
-export const isChipFilter = (filter: StudentsFilter) => filters.some((f) => f.value === filter);
 
 const filterWords: Record<StudentsFilter, string> = {
   all: "All",
@@ -243,8 +248,8 @@ export const originFrom = (value: string | null): FilterOrigin | null =>
   value === "overview" || value === "topics" ? value : null;
 
 /**
- * The text of the filter line: "Showing: Not started" for a status that is not a chip, "Below pass
- * mark in S3 · Moving through smoke" for a topic; null while only the chips filter.
+ * The text of the filter line: "Below pass
+ * mark in S3 · Moving through smoke" for a topic; null while no topic filters.
  */
 export function showingLine(
   filter: StudentsFilter,
@@ -254,7 +259,7 @@ export function showingLine(
     const base = `Below pass mark in ${topic.id} · ${topic.title}`;
     return filter === "all" ? base : `${base} · ${filterWords[filter]}`;
   }
-  return isChipFilter(filter) ? null : `Showing: ${filterWords[filter]}`;
+  return null;
 }
 
 const rank: Record<StudentStatus, number> = {

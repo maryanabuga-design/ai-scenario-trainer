@@ -4,17 +4,16 @@ import { Funnel, UserPlus, UserRoundSearch } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
-import { FilterChips } from "@/components/FilterChips/FilterChips";
+import { FilterSelect } from "@/components/FilterSelect/FilterSelect";
 import { GetStartedCard } from "@/components/InstructorOverview/OverviewBlocks";
 import { StudentRow, StudentRowsCard } from "@/components/InstructorStudents/StudentRow";
 import { SearchField } from "@/components/SearchField/SearchField";
 import { DEMO_NOTE } from "@/lib/cohort";
 import { getStarted } from "@/lib/get-started";
-import { profileStatus, filters, isChipFilter, rowMuted } from "@/lib/students";
+import { profileStatus, statusOptions, rowMuted } from "@/lib/students";
 import type { FilterOrigin, StudentProfile, StudentsFilter } from "@/lib/students";
 
 export const NO_SEARCH_MATCH = "No students match this search.";
-export const NO_FILTER_MATCH = "No students match this filter.";
 
 /** The address of a student detail opened from the list, so Back returns to the same filter (topic, origin). */
 export const studentHref = (
@@ -128,7 +127,7 @@ export function EmptyCard({
 
 /**
  * The Students view of the tab (DESIGN.md: Instructor, Students rebuilt): the Primary "Invite
- * students" (24px under the switch), the search field and the filter chips as ONE group (24px under the button, 12px between them), the filter line when the list comes filtered from
+ * students" (24px under the switch), the search field and the Status dropdown as ONE group (24px under the button, 12px between them), the filter line when the list comes filtered from
  * elsewhere, then ONE card of rows (or an empty state) and the demo note.
  */
 export function StudentsListView({
@@ -142,6 +141,8 @@ export function StudentsListView({
   onFilter,
   onQuery,
   onClearFilter,
+  counted = shown,
+  statusOpen = false,
 }: {
   /** The rows to show: already searched, filtered and sorted. */
   shown: StudentProfile[];
@@ -156,6 +157,10 @@ export function StudentsListView({
   onFilter: (filter: StudentsFilter) => void;
   onQuery: (query: string) => void;
   onClearFilter: () => void;
+  /** The students the status counts are for (the group, or the topic's list): not narrowed by the search or the status. */
+  counted?: StudentProfile[];
+  /** For the review page: draw the status list open. */
+  statusOpen?: boolean;
 }) {
   return (
     <>
@@ -171,12 +176,13 @@ export function StudentsListView({
             value={query}
             onChange={onQuery}
           />
-          <FilterChips
-            name="students-filter"
-            legend="Show"
-            options={filters}
-            value={isChipFilter(filter) ? filter : null}
+          <FilterSelect
+            name="students-status"
+            label="Status"
+            options={statusOptions(counted)}
+            value={filter}
             onChange={onFilter}
+            initiallyOpen={statusOpen}
           />
         </div>
       </div>
@@ -186,31 +192,23 @@ export function StudentsListView({
           steps={getStarted({ students: 0, exams: 0, publishedSets: 0 })!.slice(0, 1)}
         />
       ) : shown.length === 0 ? (
-        query.trim() !== "" ? (
-          <EmptyCard
-            dataEmpty="search"
-            art
-            title={NO_SEARCH_MATCH}
-            text="Try another name or clear the filters."
-            action={
-              <Button variant="secondary" onClick={() => onQuery("")}>
-                Clear search
-              </Button>
-            }
-          />
-        ) : (
-          <EmptyCard
-            dataEmpty="filter"
-            art
-            title={NO_FILTER_MATCH}
-            text="Try another filter."
-            action={
-              <Button variant="secondary" onClick={onClearFilter}>
-                Clear filter
-              </Button>
-            }
-          />
-        )
+        <EmptyCard
+          dataEmpty="search"
+          art
+          title={NO_SEARCH_MATCH}
+          text="Try another name or clear the filters."
+          action={
+            <Button
+              variant="secondary"
+              onClick={() => {
+                onQuery("");
+                onFilter("all");
+              }}
+            >
+              Clear search
+            </Button>
+          }
+        />
       ) : (
         <StudentRowsCard>
           {shown.map((profile) => (

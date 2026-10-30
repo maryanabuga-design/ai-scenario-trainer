@@ -173,7 +173,6 @@ describe("every choice uses SelectableRow", () => {
     const allowed = [
       "SelectableRow",
       "SegmentedControl",
-      "FilterChips",
       "OptionCard",
       "EditQuestionView",
       "PackageItemEdit",

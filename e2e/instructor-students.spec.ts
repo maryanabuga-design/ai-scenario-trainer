@@ -36,6 +36,13 @@ const chipKinds = (page: Page) =>
   rows(page).evaluateAll((els) =>
     els.map((el) => el.querySelector("[data-status-chip]")!.getAttribute("data-status-chip")!),
   );
+const statusButton = (page: Page) => page.locator("[data-select-button]:visible");
+const statusList = (page: Page) => page.locator("[data-select-list]:visible");
+/** Chooses a status in the Status dropdown. */
+const pick = async (page: Page, value: string) => {
+  await statusButton(page).click();
+  await page.locator(`[data-select-option="${value}"]:visible`).click();
+};
 const expectKinds = (page: Page, kinds: string[]) =>
   expect.poll(async () => [...new Set(await chipKinds(page))]).toEqual(kinds);
 const order = { needs: 0, almost: 1, "not-started": 2, ready: 3 } as Record<string, number>;
@@ -84,7 +91,7 @@ for (const width of [360, 430]) {
       await expect(page.getByRole("navigation", { name: "Main" })).toHaveCount(0);
     });
 
-    test("the top: the band with the title, the muted subtitle and the avatar, no group chip; the Students | Topics switch; the Primary Invite students at the top; grouped spacing; quiet chips", async ({
+    test("the top: the band with the title, the muted subtitle and the avatar, no group chip; the Students | Topics switch; the Primary Invite students at the top; grouped spacing; the Status dropdown", async ({
       page,
     }) => {
       await page.goto("/instructor/students");
@@ -115,44 +122,37 @@ for (const width of [360, 430]) {
       expect((await box(search)).height).toBe(52);
       await expect(page.locator("svg.lucide-search")).toBeVisible();
       await expect(page.getByRole("button", { name: "Clear search" })).toHaveCount(0);
-      const chips = page.locator("[data-filter-chip]");
-      await expect(chips).toHaveCount(5);
-      for (const chip of await chips.all()) {
-        expect((await box(chip)).height).toBeGreaterThanOrEqual(44);
-        expect((await box(chip.locator("span"))).height).toBe(40);
-        await expect(chip).toHaveAttribute("aria-pressed", /true|false/);
-        await expect(chip.locator("svg")).toHaveCount(0);
-      }
-      // active: tint fill, a 1px light green border, semi-bold; inactive: white, a 1px border, regular
-      const active = page.locator('[data-filter-chip="all"]');
-      await expect(active).toHaveAttribute("aria-pressed", "true");
-      const look = (c: typeof active) =>
-        c.locator("span").evaluate((el) => {
-          const css = getComputedStyle(el);
-          return [css.backgroundColor, css.borderTopColor, css.fontWeight];
-        });
-      expect(await look(active)).toEqual(["rgb(224, 230, 214)", "rgb(201, 211, 184)", "600"]);
+      await expect(page.locator("[data-filter-chip], [aria-pressed]:visible")).toHaveCount(0);
+      const status = statusButton(page);
+      await expect(status).toHaveCount(1);
+      expect((await box(status)).height).toBe(48);
+      expect(await status.evaluate((el) => getComputedStyle(el).borderTopWidth)).toBe("1px");
+      expect(await status.evaluate((el) => getComputedStyle(el).borderTopColor)).toBe(
+        "rgb(228, 223, 213)",
+      );
+      expect(await status.evaluate((el) => getComputedStyle(el).borderTopLeftRadius)).toBe("14px");
+      expect(await bg(status)).toBe(WHITE);
+      expect((await box(status)).width).toBeCloseTo((await box(search)).width, 0);
+      await expect(status).toHaveAttribute("aria-haspopup", "listbox");
+      await expect(status).toHaveAttribute("aria-expanded", "false");
+      await expect(status).toContainText("Status");
+      await expect(status.locator("[data-select-value]")).toHaveText("All");
       expect(
-        await active.locator("span").evaluate((el) => getComputedStyle(el).borderTopWidth),
-      ).toBe("1px");
-      const inactive = page.locator('[data-filter-chip="needs"]');
-      await expect(inactive).toHaveAttribute("aria-pressed", "false");
-      const l = await look(inactive);
-      expect(l[0]).toBe("rgb(255, 255, 255)");
-      expect(l[1]).toBe("rgb(228, 223, 213)");
-      expect(l[2]).toBe("400");
-      // the spacing: switch, 24px, Invite, 24px, search, 12px, chips, then the list
+        await status
+          .locator("[data-select-value]")
+          .evaluate((el) => getComputedStyle(el).fontWeight),
+      ).toBe("600");
+      await expect(status.locator("svg.lucide-chevron-down")).toHaveCount(1);
+      // the spacing: switch, 24px, Invite, 24px, search, 12px, the Status dropdown, then the list
       const sw = await box(page.getByRole("radiogroup").first());
       const gap = (a: { y: number; height: number }, b: { y: number }) =>
         Math.round(b.y - (a.y + a.height));
       expect(gap(sw, await box(invite))).toBe(24);
       expect(gap(await box(invite), await box(search))).toBe(24);
-      const firstChip = await box(chips.first());
-      expect(gap(await box(search), firstChip)).toBeLessThanOrEqual(12 + 2);
-      expect(gap(await box(search), firstChip)).toBeGreaterThanOrEqual(12);
+      expect(gap(await box(search), await box(status))).toBe(12);
       expect(await primaries(page)).toBe(1);
       expect((await box(invite)).y).toBeLessThan((await box(search)).y);
-      expect((await box(search)).y).toBeLessThan((await box(chips)).y);
+      expect((await box(search)).y).toBeLessThan((await box(status)).y);
       expect(await noSidewaysScroll(page)).toBe(true);
     });
 
@@ -227,16 +227,18 @@ for (const width of [360, 430]) {
       await expect(chip).toBeVisible();
     });
 
-    test("chips filter, search matches names in any case, and they combine", async ({ page }) => {
+    test("the status filters, search matches names in any case, and they combine", async ({
+      page,
+    }) => {
       await page.goto("/instructor/students");
-      await page.locator("[data-filter-chip=needs]").click();
+      await pick(page, "needs");
       await expect(page).toHaveURL(/filter=needs/);
       await expectKinds(page, ["needs"]);
       const needsCount = await rows(page).count();
       expect(needsCount).toBeGreaterThan(0);
-      await page.locator("[data-filter-chip=ready]").click();
+      await pick(page, "ready");
       await expectKinds(page, ["ready"]);
-      await page.locator("[data-filter-chip=all]").click();
+      await pick(page, "all");
       await expect(rows(page)).toHaveCount(15);
       // search: case-insensitive, inside the scope (Military students are not found here)
       const search = page.getByPlaceholder("Search students");
@@ -246,19 +248,19 @@ for (const width of [360, 430]) {
       await expect(page.getByRole("button", { name: "Clear search" })).toBeVisible();
       await search.fill("Eli Brandt");
       await expect(page.locator('[data-empty="search"]')).toBeVisible();
-      // search with a chip: "ra" matches several; the chip narrows them
+      // search with a chip: "ra" matches several; the status narrows them
       await search.fill("ra");
       const both = await rows(page).count();
-      await page.locator("[data-filter-chip=needs]").click();
+      await pick(page, "needs");
       await expectKinds(page, ["needs"]);
       expect(await rows(page).count()).toBeLessThanOrEqual(both);
     });
 
-    test("a search with no result: the card, the words and a Secondary 'Clear search' that clears only the search; a filter with no result has 'Clear filter'", async ({
+    test("a search with no result: the card, the words and a Secondary 'Clear search' that resets the search AND the status to All", async ({
       page,
     }) => {
       await page.goto("/instructor/students");
-      await page.locator("[data-filter-chip=ready]").click();
+      await pick(page, "ready");
       await page.getByPlaceholder("Search students").fill("Zimmerman");
       const empty = page.locator('[data-empty="search"]');
       await expect(empty).toContainText("No students match this search.");
@@ -287,24 +289,19 @@ for (const width of [360, 430]) {
       expect(await bg(clear)).toBe(OLIVE_TINT);
       await clear.click();
       await expect(page.getByPlaceholder("Search students")).toHaveValue("");
-      // the chip is still Ready: only the search was cleared
-      await expect(page.locator('[data-filter-chip="ready"]')).toHaveAttribute(
-        "aria-pressed",
-        "true",
-      );
+      // both are reset: the status is All again and the whole list is back
+      await expect(statusButton(page).locator("[data-select-value]")).toHaveText("All");
+      await expect(rows(page)).toHaveCount(15);
       await expect(page.locator("[data-empty]")).toHaveCount(0);
       expect(((await page.locator("main").innerText()).match(/COHORT/gi) ?? []).length).toBe(0);
     });
 
-    test("a status from another screen presses its chip, with no filter line; a topic filter has the filter line and Clear filter; Back returns to where the list came from", async ({
+    test("a status from another screen shows in the Status dropdown, with no filter line; a topic filter has the filter line and Clear filter; Back returns to where the list came from", async ({
       page,
     }) => {
       await page.goto("/instructor/students?filter=not-started&from=overview");
       await expect(page.locator("[data-filter-line]:visible")).toHaveCount(0);
-      await expect(page.locator('[data-filter-chip="not-started"]')).toHaveAttribute(
-        "aria-pressed",
-        "true",
-      );
+      await expect(statusButton(page).locator("[data-select-value]")).toHaveText("Not started");
       expect(new Set(await chipKinds(page))).toEqual(new Set(["not-started"]));
       await page.getByRole("link", { name: "Back to Overview" }).click();
       await expect(page).toHaveURL(/\/instructor$/);
@@ -326,77 +323,116 @@ for (const width of [360, 430]) {
       await expect(rows(page)).toHaveCount(15);
     });
 
-    test("five status chips in order, one pressed at a time; each filters by exactly its status; the search works with them; they wrap without overflow", async ({
+    test("the Status dropdown: opens under the button with five 44px options and their counts; choosing filters, closes and returns focus; it works with the search", async ({
       page,
     }) => {
       await page.goto("/instructor/students");
-      const chips = page.locator("[data-filter-chip]");
-      const names = ["All", "Needs attention", "Almost ready", "Ready", "Not started"];
-      await expect(chips).toHaveText(names);
-      for (const chip of await chips.all())
-        await expect(chip).toHaveAttribute("aria-pressed", /true|false/);
-      const kind = {
-        needs: "needs",
-        almost: "almost",
-        ready: "ready",
-        "not-started": "not-started",
-      };
-      let total = 0;
-      for (const [chip, status] of Object.entries(kind)) {
-        await page.locator(`[data-filter-chip="${chip}"]`).click();
-        await expect(page.locator('[data-filter-chip][aria-pressed="true"]')).toHaveCount(1);
-        await expect(page.locator(`[data-filter-chip="${chip}"]`)).toHaveAttribute(
-          "aria-pressed",
-          "true",
+      const button = statusButton(page);
+      await expect(statusList(page)).toHaveCount(0);
+      await button.click();
+      await expect(button).toHaveAttribute("aria-expanded", "true");
+      const listbox = statusList(page);
+      await expect(listbox).toHaveAttribute("role", "listbox");
+      const b = await box(button);
+      const l = await box(listbox);
+      expect(l.y).toBeGreaterThanOrEqual(b.y + b.height);
+      expect(Math.round(l.y - (b.y + b.height))).toBe(4);
+      expect(Math.abs(l.x - b.x)).toBeLessThanOrEqual(1);
+      expect(Math.abs(l.width - b.width)).toBeLessThanOrEqual(1);
+      expect(await bg(listbox)).toBe(WHITE);
+      expect(await listbox.evaluate((el) => getComputedStyle(el).borderTopLeftRadius)).toBe("14px");
+      const options = page.locator("[data-select-option]:visible");
+      await expect(options).toHaveText([
+        /^All\s*15$/,
+        /^Needs attention\s*\d+$/,
+        /^Almost ready\s*\d+$/,
+        /^Ready\s*\d+$/,
+        /^Not started\s*\d+$/,
+      ]);
+      for (const option of await options.all()) expect((await box(option)).height).toBe(44);
+      // the counts are the real ones and add up
+      const counts = (await page.locator("[data-select-count]:visible").allInnerTexts()).map(
+        Number,
+      );
+      expect(counts.slice(1).reduce((a, c) => a + c, 0)).toBe(counts[0]);
+      // the chosen one: tint fill, semi-bold, no check
+      const chosen = page.locator('[data-select-option="all"]:visible');
+      await expect(chosen).toHaveAttribute("aria-selected", "true");
+      expect(await bg(chosen)).toBe(OLIVE_TINT);
+      expect(await chosen.evaluate((el) => getComputedStyle(el).fontWeight)).toBe("600");
+      await expect(listbox.locator("svg")).toHaveCount(0);
+      expect(await noSidewaysScroll(page)).toBe(true);
+      // each option filters by exactly its status, and the number of rows is its count
+      const keys = ["needs", "almost", "ready", "not-started"];
+      for (let i = 0; i < keys.length; i++) {
+        await page.locator(`[data-select-option="${keys[i]}"]:visible`).click();
+        await expect(statusList(page)).toHaveCount(0);
+        await expect(button).toBeFocused();
+        await expect(button).toHaveAttribute("aria-expanded", "false");
+        await expect(button.locator("[data-select-value]")).toHaveText(
+          ["Needs attention", "Almost ready", "Ready", "Not started"][i],
         );
-        const n = await rows(page).count();
-        total += n;
-        expect(n).toBeGreaterThan(0);
-        expect(new Set(await chipKinds(page))).toEqual(new Set([status]));
+        await expectKinds(page, [keys[i]]);
+        await expect(rows(page)).toHaveCount(counts[i + 1]);
+        await button.click();
       }
-      expect(total).toBe(15);
-      await page.locator('[data-filter-chip="all"]').click();
+      await page.locator('[data-select-option="all"]:visible').click();
       await expect(rows(page)).toHaveCount(15);
-      // a status together with a search
-      await page.locator('[data-filter-chip="not-started"]').click();
+      // together with the search
+      await pick(page, "not-started");
       await page.getByPlaceholder("Search students").fill("Maryana");
       await expect(rows(page)).toHaveCount(1);
       await page.getByPlaceholder("Search students").fill("Mira");
       await expect(page.locator('[data-empty="search"]')).toContainText(
         "No students match this search.",
       );
-      await page.getByRole("button", { name: "Clear search" }).last().click();
-      await expect(page.locator('[data-filter-chip="not-started"]')).toHaveAttribute(
-        "aria-pressed",
-        "true",
-      );
-      // wrapping: nothing sideways, every pill 40px in a 44px area, 8px between pills in both directions
+    });
+
+    test("the Status dropdown closes on a tap outside and on Escape, and works with the keyboard", async ({
+      page,
+    }) => {
+      await page.goto("/instructor/students");
+      const button = statusButton(page);
+      await button.click();
+      await button.click();
+      await expect(statusList(page)).toHaveCount(0);
+      await button.click();
+      await page.getByRole("heading", { level: 1 }).click();
+      await expect(statusList(page)).toHaveCount(0);
+      await expect(button).toHaveAttribute("aria-expanded", "false");
+      await button.click();
+      await page.keyboard.press("Escape");
+      await expect(statusList(page)).toHaveCount(0);
+      await expect(button).toBeFocused();
+      // keyboard: ArrowDown opens, arrows move, Enter selects
+      await button.press("ArrowDown");
+      await expect(statusList(page)).toBeFocused();
+      await page.keyboard.press("ArrowDown");
+      await page.keyboard.press("ArrowDown");
+      await page.keyboard.press("Enter");
+      await expect(statusList(page)).toHaveCount(0);
+      await expect(button).toBeFocused();
+      await expect(button.locator("[data-select-value]")).toHaveText("Almost ready");
+      await expectKinds(page, ["almost"]);
+      await button.press("ArrowDown");
+      await page.keyboard.press("ArrowUp");
+      await page.keyboard.press("Enter");
+      await expect(button.locator("[data-select-value]")).toHaveText("Needs attention");
+    });
+
+    test("no chips and no sideways scroll, closed, open and empty", async ({ page }) => {
+      await page.goto("/instructor/students");
+      await expect(page.locator("[data-filter-chip]")).toHaveCount(0);
       expect(await noSidewaysScroll(page)).toBe(true);
-      const spans = await chips.locator("span").evaluateAll((els) =>
-        els.map((el) => {
-          const r = el.getBoundingClientRect();
-          return { x: r.x, y: r.y, right: r.right, bottom: r.bottom, height: r.height };
-        }),
-      );
-      for (const r of spans) {
-        expect(r.height).toBe(40);
-        expect(r.right).toBeLessThanOrEqual(width);
-      }
-      const lines = [...new Set(spans.map((r) => Math.round(r.y)))];
-      expect(lines.length).toBeGreaterThanOrEqual(2);
-      for (let i = 1; i < spans.length; i++) {
-        if (Math.round(spans[i].y) === Math.round(spans[i - 1].y))
-          expect(Math.round(spans[i].x - spans[i - 1].right)).toBe(8);
-      }
-      const firstLineBottom = Math.max(
-        ...spans.filter((r) => Math.round(r.y) === lines[0]).map((r) => r.bottom),
-      );
-      expect(
-        Math.round(
-          Math.min(...spans.filter((r) => Math.round(r.y) === lines[1]).map((r) => r.y)) -
-            firstLineBottom,
-        ),
-      ).toBe(8);
+      await statusButton(page).click();
+      expect(await noSidewaysScroll(page)).toBe(true);
+      const l = await box(statusList(page));
+      expect(l.x).toBeGreaterThanOrEqual(0);
+      expect(l.x + l.width).toBeLessThanOrEqual(width);
+      await page.keyboard.press("Escape");
+      await page.getByPlaceholder("Search students").fill("Zimmerman");
+      await expect(page.locator('[data-empty="search"]')).toBeVisible();
+      expect(await noSidewaysScroll(page)).toBe(true);
     });
 
     test("the Students | Topics switch: Topics shows the ten topics, weakest first, and Students returns", async ({

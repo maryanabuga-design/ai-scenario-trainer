@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
-import { FilterChips } from "@/components/FilterChips/FilterChips";
+import { FilterSelect } from "@/components/FilterSelect/FilterSelect";
 import {
   StudentDetailView,
   StudentNotFound,
@@ -64,6 +64,7 @@ const list = (
         onFilter={() => undefined}
         onQuery={() => undefined}
         onClearFilter={() => undefined}
+        counted={all}
       />,
     ),
   );
@@ -130,7 +131,7 @@ describe("the Students list", () => {
       ">Invite students<",
       "data-search-group",
       'name="student-search"',
-      "data-filter-chip",
+      "data-filter-select",
       "data-student-rows",
       "Demo group. Student data on this screen is simulated.",
     ].map((t) => html.indexOf(t));
@@ -162,54 +163,74 @@ describe("the Students list", () => {
     expect(filled).toContain("h-11 w-11");
   });
 
-  it("groups by spacing: 24px under the switch, Invite, 24px, ONE group of the search field and the chips 12px apart, 16px, the list", () => {
+  it("groups by spacing: 24px under the switch, Invite, 24px, ONE group of the search field and the Status dropdown 12px apart, 16px, the list", () => {
     expect(html).toContain("mt-2 flex flex-col gap-6");
     const group = html.slice(html.indexOf("data-search-group"), html.indexOf("data-student-rows"));
     expect(group).toContain("flex flex-col gap-3");
-    expect(group.indexOf('name="student-search"')).toBeLessThan(group.indexOf("data-filter-chip"));
+    expect(group.indexOf('name="student-search"')).toBeLessThan(
+      group.indexOf("data-filter-select"),
+    );
     // Invite is the single Primary and stays at the top of the list view
     expect(html.match(/h-\[52px\] bg-primary/g)).toHaveLength(1);
     expect(html.indexOf(">Invite students<")).toBeLessThan(html.indexOf("data-search-group"));
   });
 
-  it("has five filter chips, in order, as toggle buttons with aria-pressed: active tint + 1px light green border + semi-bold, inactive white + 1px border + regular, no check icon", () => {
-    expect(html.match(/data-filter-chip=/g)).toHaveLength(5);
-    const labels = ["All", "Needs attention", "Almost ready", "Ready", "Not started"];
-    for (const label of labels) expect(html).toContain(`${label}</span>`);
-    const at = labels.map((label) => html.indexOf(`${label}</span>`));
-    expect(at).toEqual([...at].sort((a, b) => a - b));
-    expect(html.match(/min-h-11/g)!.length).toBeGreaterThanOrEqual(5);
-    expect(html.match(/h-10 items-center/g)).toHaveLength(5);
-    expect(html.match(/aria-pressed="true"/g)).toHaveLength(1);
-    expect(html.match(/aria-pressed="false"/g)).toHaveLength(4);
-    // wraps onto more lines: 8px along, 4px between the 44px tap areas (8px between the pills)
-    expect(html).toContain("flex-wrap gap-x-2 gap-y-1");
-    const chip = (id: string) =>
-      html.slice(
-        html.indexOf(`data-filter-chip="${id}"`),
-        html.indexOf("</button>", html.indexOf(`data-filter-chip="${id}"`)),
-      );
-    expect(chip("all")).toContain("border border-chip-active-stroke bg-olive-tint");
-    expect(chip("all")).not.toMatch(/border-primary|border-\[1\.5px\]/);
-    expect(chip("all")).toContain("type-small-strong");
-    expect(chip("needs")).toContain("border border-selectable-stroke bg-card");
-    expect(chip("needs")).toMatch(/type-small /);
-    expect(chip("needs")).not.toContain("type-small-strong");
-    const chipRow = html.slice(
-      html.indexOf("data-filter-chips"),
-      html.indexOf("data-student-rows"),
+  it("has no chips: ONE Status dropdown button (white, 1px border, radius 14, 48px) with the label, the value All and a chevron", () => {
+    expect(html).not.toMatch(/data-filter-chip|aria-pressed|<fieldset|role="group"/);
+    expect(html.match(/data-select-button/g)).toHaveLength(1);
+    const button = html.slice(html.indexOf("<button", html.indexOf("data-filter-select")));
+    const tag = button.slice(0, button.indexOf(">"));
+    expect(tag).toContain('aria-haspopup="listbox"');
+    expect(tag).toContain('aria-expanded="false"');
+    expect(tag).toContain("h-12 w-full");
+    expect(tag).toContain("rounded-[14px] border border-selectable-stroke bg-card");
+    expect(button).toMatch(/>Status<\/span>[\s\S]*data-select-value[^>]*>All</);
+    expect(button).toContain("lucide-chevron-down");
+    expect(html).not.toContain("data-select-list");
+    const chosen = list("needs");
+    expect(chosen).toMatch(/data-select-value[^>]*>Needs attention</);
+    expect(list("not-started")).toMatch(/data-select-value[^>]*>Not started</);
+  });
+
+  it("opens a list of five 44px options in order with the counts, the chosen one tinted and semi-bold, no check icon", () => {
+    const open = clean(
+      renderToStaticMarkup(
+        <StudentsListView
+          shown={all}
+          total={all.length}
+          filter="almost"
+          query=""
+          onFilter={() => undefined}
+          onQuery={() => undefined}
+          onClearFilter={() => undefined}
+          counted={all}
+          statusOpen
+        />,
+      ),
     );
-    expect(chipRow).not.toContain("lucide-check");
-    // every status is a chip: Not started and Almost ready press their own chip
-    for (const id of ["almost", "not-started"]) {
-      const html = list(id as "almost");
-      expect(html.match(/aria-pressed="true"/g)).toHaveLength(1);
-      expect(html).toMatch(
-        new RegExp(
-          `data-filter-chip="${id}"[^>]*aria-pressed="true"|aria-pressed="true"[^>]*data-filter-chip="${id}"`,
-        ),
-      );
-    }
+    expect(open).toContain('role="listbox"');
+    expect(open.match(/role="option"/g)).toHaveLength(5);
+    const labels = ["All", "Needs attention", "Almost ready", "Ready", "Not started"];
+    const at = labels.map((label) => open.indexOf(`>${label}</span><span data-select-count`));
+    expect(at.every((i) => i > 0)).toBe(true);
+    expect([...at].sort((a, b) => a - b)).toEqual(at);
+    expect(open.match(/h-11 cursor-pointer/g)).toHaveLength(5);
+    expect(open.match(/aria-selected="true"/g)).toHaveLength(1);
+    expect(open).toMatch(/aria-selected="true"[^>]*class="[^"]*bg-olive-tint/);
+    expect(open).toMatch(/aria-selected="true"[^>]*class="[^"]*type-body-strong/);
+    expect(open.slice(open.indexOf("data-select-list"), open.indexOf("</ul>"))).not.toContain(
+      "lucide-check",
+    );
+    const counts = [...open.matchAll(/data-select-count[^>]*>(\d+)</g)].map((m) => Number(m[1]));
+    const statuses = (kind: string) => all.filter((p) => profileStatus(p) === kind).length;
+    expect(counts).toEqual([
+      all.length,
+      statuses("needs"),
+      statuses("almost"),
+      statuses("ready"),
+      statuses("not-started"),
+    ]);
+    expect(counts.slice(1).reduce((a, b) => a + b, 0)).toBe(counts[0]);
   });
 
   it("has ONE white card of 72px rows with hairlines; the whole row is the link, with only a chevron at its right", () => {
@@ -299,7 +320,7 @@ describe("the Students list", () => {
     expect(topic).toContain("Below pass mark in S3 · Moving through smoke");
   });
 
-  it("shows 'No students match this search.' with a Secondary Clear search, and 'No students match this filter.' with a Secondary Clear filter", () => {
+  it("shows 'No students match this search.' with a Secondary Clear search, also when only a status filters (the one card resets both)", () => {
     const search = list("all", { shown: [], query: "Zimmerman" });
     expect(search).toContain("No students match this search.");
     expect(search).toContain("Try another name or clear the filters.");
@@ -318,11 +339,11 @@ describe("the Students list", () => {
     expect(card).toMatch(/data-empty-text[^>]*class="[^"]*\bmt-1\.5\b/);
     expect(card).toMatch(/data-empty-action[^>]*class="[^"]*\bmt-6\b/);
     expect(card).not.toMatch(/data-empty="search"[^>]*\bgap-/);
-    const filter = list("needs", { shown: [] });
-    expect(filter).toContain("students-no-results.webp");
-    expect(filter).toContain("No students match this filter.");
-    expect(filter).toMatch(/bg-olive-tint[^>]*>Clear filter</);
-    expect(filter).not.toContain("Clear search");
+    const status = list("needs", { shown: [] });
+    expect(status).toContain("students-no-results.webp");
+    expect(status).toContain("No students match this search.");
+    expect(status).toMatch(/bg-olive-tint[^>]*>Clear search</);
+    expect(status).not.toContain("No students match this filter.");
   });
 
   it("shows the Get started style card with Invite students for an empty group", () => {
@@ -762,44 +783,52 @@ describe("the join screen", () => {
   });
 });
 
-describe("FilterChips", () => {
-  const chips = (value: string | null) =>
+describe("FilterSelect", () => {
+  const select = (value: string, initiallyOpen = false) =>
     clean(
       renderToStaticMarkup(
-        <FilterChips
+        <FilterSelect
           name="x"
-          legend="Show"
+          label="Status"
           options={[
-            { value: "a", label: "A" },
-            { value: "b", label: "B" },
+            { value: "a", label: "A", count: 3 },
+            { value: "b", label: "B", count: 0 },
           ]}
           value={value}
           onChange={() => undefined}
+          initiallyOpen={initiallyOpen}
         />,
       ),
     );
 
-  it("is a labelled group of toggle buttons, none pressed when the value is null, no check icon", () => {
-    const html = chips(null);
-    expect(html).toContain('role="group"');
-    expect(html).toContain('aria-label="Show"');
-    expect(html.match(/<button/g)).toHaveLength(2);
-    expect(html).not.toContain('aria-pressed="true"');
-    expect(html).not.toMatch(/type="radio"|lucide-check/);
+  it("is a closed button with aria-haspopup and aria-expanded=false, no list", () => {
+    const html = select("b");
+    expect(html).toContain('aria-haspopup="listbox"');
+    expect(html).toContain('aria-expanded="false"');
+    expect(html).toMatch(/data-select-value[^>]*>B</);
+    expect(html).not.toContain('role="listbox"');
   });
 
-  it("marks the chosen chip as pressed and keeps every tap area at 44px", () => {
-    const html = chips("b");
-    expect(html.match(/aria-pressed="true"/g)).toHaveLength(1);
-    expect(html.match(/min-h-11/g)).toHaveLength(2);
-    expect(html).toMatch(/aria-pressed="true"[^>]*>[\s\S]*?border border-chip-active-stroke/);
+  it("opens a listbox of options with aria-selected, counts and no check", () => {
+    const html = select("a", true);
+    expect(html).toContain('aria-expanded="true"');
+    expect(html).toContain('role="listbox"');
+    expect(html.match(/role="option"/g)).toHaveLength(2);
+    expect(html.match(/aria-selected="true"/g)).toHaveLength(1);
+    expect(html).not.toContain("lucide-check");
+    expect(html).toMatch(/data-select-count[^>]*>3</);
   });
 
-  it("is used by the Students list only", () => {
+  it("is used by the Students list only, and the chip component is gone", () => {
     const users = ["components", "app"]
       .flatMap((dir) => walk(dir))
-      .filter((file) => /<FilterChips\b/.test(readFileSync(file, "utf8")));
+      .filter((file) => /<FilterSelect\b/.test(readFileSync(file, "utf8")));
     expect(users).toEqual(["components/InstructorStudents/StudentsListView.tsx"]);
+    expect(
+      ["components", "app"]
+        .flatMap((dir) => walk(dir))
+        .filter((file) => /FilterChips|data-filter-chip/.test(readFileSync(file, "utf8"))),
+    ).toEqual([]);
   });
 });
 

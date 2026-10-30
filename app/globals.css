@@ -61,7 +61,6 @@
   --highlight: #ffe9a0;
   --olive-tint: #e0e6d6;
   --sage-dash: #b8c2a4;
-  --chip-active-stroke: #c9d3b8;
   --success-soft-bg: #edf2e9;
   --success-soft-stroke: #c8d8be;
   --olive-tint-pressed: #d6ddcb;
@@ -128,7 +127,6 @@
   --color-highlight: var(--highlight);
   --color-olive-tint: var(--olive-tint);
   --color-sage-dash: var(--sage-dash);
-  --color-chip-active-stroke: var(--chip-active-stroke);
   --color-success-soft-bg: var(--success-soft-bg);
   --color-success-soft-stroke: var(--success-soft-stroke);
   --color-list-card: var(--list-card);

@@ -1556,6 +1556,8 @@ export function InstructorStudentsSample({
     | "ready"
     | "almost"
     | "not-started"
+    | "status-open"
+    | "status-empty"
     | "search-empty"
     | "filter-line"
     | "group-empty"
@@ -1667,10 +1669,10 @@ export function InstructorStudentsSample({
         ? "ready"
         : state === "almost"
           ? "almost"
-          : state === "not-started" || state === "filter-line"
+          : state === "not-started" || state === "filter-line" || state === "status-empty"
             ? "not-started"
             : "all";
-  const query = state === "search-empty" ? "Zimmerman" : "";
+  const query = state === "search-empty" || state === "status-empty" ? "Zimmerman" : "";
   return (
     <div className="flex flex-col gap-4 pb-4">
       <StudentsHeader
@@ -1692,6 +1694,8 @@ export function InstructorStudentsSample({
       ) : (
         <StudentsListView
           shown={state === "group-empty" ? [] : visibleStudents(all, filter, query, null)}
+          counted={all}
+          statusOpen={state === "status-open"}
           total={state === "group-empty" ? 0 : all.length}
           filter={filter}
           query={query}

@@ -43,11 +43,8 @@ function Loaded({ accounts, scope }: { accounts: Account[]; scope: Scope }) {
     () => profiles(people, readHistories(accounts), now),
     [people, accounts, now],
   );
-  // a filter from another screen (Almost ready, Not started, a topic) shows the filter line
-  const showing =
-    origin || topic
-      ? showingLine(filter, topic ? { id: topic, title: titleOf(topic) } : null)
-      : showingLine(filter, null);
+  // a topic from another screen shows the filter line; a status shows in the Status dropdown
+  const showing = showingLine(filter, topic ? { id: topic, title: titleOf(topic) } : null);
 
   const go = (params: URLSearchParams) => {
     const text = params.toString();
@@ -99,6 +96,7 @@ function Loaded({ accounts, scope }: { accounts: Account[]; scope: Scope }) {
       ) : (
         <StudentsListView
           shown={visibleStudents(all, filter, search, topic)}
+          counted={visibleStudents(all, "all", "", topic)}
           total={all.length}
           filter={filter}
           query={search}
