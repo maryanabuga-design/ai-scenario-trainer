@@ -860,11 +860,6 @@ export default function Screens() {
               <InstructorHomeSample state="switcher-open" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor: Students, group dropdown open">
-            <Screen nav="/instructor/students" role="instructor">
-              <InstructorStudentsSample state="switcher-open" />
-            </Screen>
-          </PhoneFrame>
           <PhoneFrame label="Content: empty">
             <Screen nav="/instructor/content" role="instructor">
               <InstructorContentSample state="empty" />

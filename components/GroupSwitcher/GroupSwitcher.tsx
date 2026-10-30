@@ -12,7 +12,7 @@ import type { SwitcherRow } from "@/lib/overview";
 const EDGE = 16;
 
 /**
- * The group switcher (DESIGN.md: Instructor, Overview refinements): a pill "<Group> ⌄" with a small
+ * The group switcher (DESIGN.md: Instructor, Overview refinements; the pill exists only on the Overview): a pill "<Group> ⌄" with a small
  * neutral group icon, and under it a list over the page content (not a bottom sheet, not a page).
  * Rows: the group name, "15 students · Almost ready" and a check on the current one; "All groups" is
  * last. A row switches at once and closes the list, as do a tap outside and Escape. The pill is a
@@ -23,14 +23,11 @@ export function GroupSwitcher({
   scope,
   rows,
   onSelect,
-  compact = false,
   initiallyOpen = false,
 }: {
   scope: Scope;
   rows: SwitcherRow[];
   onSelect: (scope: Scope) => void;
-  /** The small pill of a header band (Students). */
-  compact?: boolean;
   /** For the review page and tests: draw the list open. */
   initiallyOpen?: boolean;
 }) {
@@ -96,13 +93,8 @@ export function GroupSwitcher({
     }
   };
 
-  const tile = compact ? "h-5 w-5 rounded-[6px]" : "h-6 w-6 rounded-[8px]";
   return (
-    <div
-      ref={root}
-      data-group-switcher
-      className={`relative ${compact ? "min-w-0 shrink" : "w-fit max-w-full"}`}
-    >
+    <div ref={root} data-group-switcher className="relative w-fit max-w-full">
       <button
         ref={button}
         type="button"
@@ -134,15 +126,9 @@ export function GroupSwitcher({
         }}
         className="flex min-h-11 max-w-full min-w-0 items-center has-focus-visible:outline-2"
       >
-        <span
-          className={`type-small-strong flex min-w-0 items-center gap-2 rounded-full text-text ${
-            compact
-              ? "h-8 bg-secondary-sand-pressed pr-3 pl-1.5"
-              : "h-10 bg-secondary-sand pr-4 pl-2"
-          }`}
-        >
-          <IconTile className={tile}>
-            <UsersRound size={compact ? 12 : 14} strokeWidth={2} />
+        <span className="type-small-strong flex h-10 min-w-0 items-center gap-2 rounded-full bg-secondary-sand pr-4 pl-2 text-text">
+          <IconTile className="h-6 w-6 rounded-[8px]">
+            <UsersRound size={14} strokeWidth={2} />
           </IconTile>
           <span className="truncate">{scopeName(scope)}</span>
           <ChevronDown

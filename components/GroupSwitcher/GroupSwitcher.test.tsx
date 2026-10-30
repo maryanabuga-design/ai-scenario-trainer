@@ -65,13 +65,6 @@ describe("the group switcher", () => {
     expect(html).not.toContain("%");
   });
 
-  it("has the compact pill for a header band: 32px high inside a 44px tap target", () => {
-    const html = render({ compact: true });
-    expect(html).toContain("min-h-11");
-    expect(html).toContain("h-8");
-    expect(html).toContain("h-5 w-5");
-  });
-
   it("does not animate anything", () => {
     expect(render({ initiallyOpen: true })).not.toMatch(/transition|animate-/);
   });

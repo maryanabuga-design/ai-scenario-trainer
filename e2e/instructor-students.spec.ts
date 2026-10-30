@@ -40,13 +40,29 @@ const expectKinds = (page: Page, kinds: string[]) =>
   expect.poll(async () => [...new Set(await chipKinds(page))]).toEqual(kinds);
 const order = { needs: 0, almost: 1, "not-started": 2, ready: 3 } as Record<string, number>;
 
+/** The group is chosen on the Overview (the only screen with the group chip); Students then shows it. */
 async function chooseGroup(page: Page, name: string) {
-  await page.goto("/instructor/students");
+  await page.goto("/instructor");
   await page.locator("[data-group-pill]:visible").click();
   await page.locator("[data-group-option]", { hasText: name }).click();
   await expect(page.locator("[data-group-list]")).toHaveCount(0);
-  await expect(page).toHaveURL(/\/instructor\/students$/);
+  await page.goto("/instructor/students");
+  await expect(page.locator("[data-group-pill]")).toHaveCount(0);
 }
+
+/** The visible Primary buttons (52px, olive): a screen has one. */
+const primaries = (page: Page) =>
+  page
+    .locator("button:visible, a:visible")
+    .evaluateAll(
+      (nodes, colour) =>
+        nodes.filter(
+          (el) =>
+            getComputedStyle(el).backgroundColor === colour &&
+            el.getBoundingClientRect().height >= 52,
+        ).length,
+      PRIMARY,
+    );
 
 async function verifyAs(page: Page) {
   await page.getByLabel("Digit 1 of 6").focus();
@@ -68,29 +84,29 @@ for (const width of [360, 430]) {
       await expect(page.getByRole("navigation", { name: "Main" })).toHaveCount(0);
     });
 
-    test("the top: the band with the title, the small group pill and the avatar; the Students | Topics switch; the Primary Invite students; the search; the chips", async ({
+    test("the top: the band with the title, the muted subtitle and the avatar, no group chip; the Students | Topics switch; the Primary Invite students at the top; grouped spacing; quiet chips", async ({
       page,
     }) => {
       await page.goto("/instructor/students");
       await expect(page.getByRole("heading", { level: 1 })).toHaveText("Students");
       const band = page.locator("[data-page-header-band]:visible");
       expect(await bg(band)).toBe(SAND);
-      // the pill: 32px inside a 44px tap target, the group name and a chevron
-      const pill = page.locator("[data-group-pill]:visible");
-      expect((await box(pill)).height).toBeGreaterThanOrEqual(44);
-      expect((await box(pill.locator("span").first())).height).toBe(32);
-      await expect(pill).toContainText("Rescue team");
-      await expect(pill.locator("svg.lucide-chevron-down")).toHaveCount(1);
-      // on the same row as the title, the avatar at the right
+      // the subtitle: one muted sentence under the title (it may wrap on a narrow phone)
+      const subtitle = band.getByText(
+        "See how each student is doing and who needs your attention.",
+      );
+      await expect(subtitle).toBeVisible();
+      expect(await subtitle.evaluate((el) => getComputedStyle(el).color)).toBe("rgb(92, 90, 85)");
       const h1 = await box(page.getByRole("heading", { level: 1 }));
-      const p = await box(pill);
-      expect(Math.abs(h1.y + h1.height / 2 - (p.y + p.height / 2))).toBeLessThan(20);
+      expect((await box(subtitle)).y).toBeGreaterThan(h1.y + h1.height - 2);
+      // no group chip; the avatar at the right
+      await expect(page.locator("[data-group-pill]")).toHaveCount(0);
       const avatar = page.locator("[data-avatar]:visible");
       expect((await box(avatar)).x).toBeGreaterThan(width - 80);
       // the view switch
       await expect(page.getByRole("radio", { name: "Students" })).toBeChecked();
       await expect(page.getByRole("radio", { name: "Topics" })).toHaveCount(1);
-      // the Primary Invite students with an icon, then the search (52px), then the chips
+      // the Primary Invite students with an icon at the top, the only Primary
       const invite = page.getByRole("link", { name: "Invite students" });
       expect(await bg(invite)).toBe(PRIMARY);
       expect((await box(invite)).height).toBe(52);
@@ -104,8 +120,37 @@ for (const width of [360, 430]) {
       for (const chip of await chips.all()) {
         expect((await box(chip)).height).toBeGreaterThanOrEqual(44);
         expect((await box(chip.locator("span"))).height).toBe(40);
+        await expect(chip).toHaveAttribute("aria-pressed", /true|false/);
+        await expect(chip.locator("svg")).toHaveCount(0);
       }
-      await expect(page.getByRole("radio", { name: "All" })).toBeChecked();
+      // active: tint fill, a 1.5px olive border, semi-bold; inactive: white, a 1px border, regular
+      const active = page.locator('[data-filter-chip="all"]');
+      await expect(active).toHaveAttribute("aria-pressed", "true");
+      const look = (c: typeof active) =>
+        c.locator("span").evaluate((el) => {
+          const css = getComputedStyle(el);
+          return [css.backgroundColor, css.borderTopColor, css.fontWeight];
+        });
+      expect(await look(active)).toEqual(["rgb(224, 230, 214)", "rgb(63, 70, 56)", "600"]);
+      expect(
+        await active.locator("span").evaluate((el) => el.className.includes("border-[1.5px]")),
+      ).toBe(true);
+      const inactive = page.locator('[data-filter-chip="needs"]');
+      await expect(inactive).toHaveAttribute("aria-pressed", "false");
+      const l = await look(inactive);
+      expect(l[0]).toBe("rgb(255, 255, 255)");
+      expect(l[1]).toBe("rgb(228, 223, 213)");
+      expect(l[2]).toBe("400");
+      // the spacing: switch, 24px, Invite, 24px, search, 12px, chips, then the list
+      const sw = await box(page.getByRole("radiogroup").first());
+      const gap = (a: { y: number; height: number }, b: { y: number }) =>
+        Math.round(b.y - (a.y + a.height));
+      expect(gap(sw, await box(invite))).toBe(24);
+      expect(gap(await box(invite), await box(search))).toBe(24);
+      const firstChip = await box(chips.first());
+      expect(gap(await box(search), firstChip)).toBeLessThanOrEqual(12 + 2);
+      expect(gap(await box(search), firstChip)).toBeGreaterThanOrEqual(12);
+      expect(await primaries(page)).toBe(1);
       expect((await box(invite)).y).toBeLessThan((await box(search)).y);
       expect((await box(search)).y).toBeLessThan((await box(chips)).y);
       expect(await noSidewaysScroll(page)).toBe(true);
@@ -224,7 +269,10 @@ for (const width of [360, 430]) {
       await clear.click();
       await expect(page.getByPlaceholder("Search students")).toHaveValue("");
       // the chip is still Ready: only the search was cleared
-      await expect(page.getByRole("radio", { name: "Ready" })).toBeChecked();
+      await expect(page.locator('[data-filter-chip="ready"]')).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
       await expect(page.locator("[data-empty]")).toHaveCount(0);
       expect(((await page.locator("main").innerText()).match(/COHORT/gi) ?? []).length).toBe(0);
     });
@@ -667,7 +715,7 @@ for (const width of [360, 430]) {
       await expect(page.locator('[data-pending="nina@example.com"]')).toHaveCount(0);
       await expect(page.locator("[data-pending]")).toHaveCount(0);
       await page.goto("/instructor/students");
-      await expect(page.locator("[data-group-pill]:visible")).toContainText("Military training");
+      await expect(page.locator("[data-group-pill]")).toHaveCount(0);
       await expect(rows(page)).toHaveCount(13);
       await expect(page.locator('[data-student="nina@example.com"]')).toContainText("Nina Student");
       await expect(

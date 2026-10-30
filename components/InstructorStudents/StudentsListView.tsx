@@ -79,7 +79,7 @@ export function EmptyCard({
 
 /**
  * The Students view of the tab (DESIGN.md: Instructor, Students rebuilt): the Primary "Invite
- * students", the search field, the filter chips, the filter line when the list comes filtered from
+ * students" (24px under the switch), the search field and the filter chips as ONE group (24px under the button, 12px between them), the filter line when the list comes filtered from
  * elsewhere, then ONE card of rows (or an empty state) and the demo note.
  */
 export function StudentsListView({
@@ -110,22 +110,27 @@ export function StudentsListView({
 }) {
   return (
     <>
-      <ButtonLink href="/instructor/students/invite" icon={UserPlus}>
-        Invite students
-      </ButtonLink>
-      <SearchField
-        label="Search students"
-        placeholder="Search students"
-        value={query}
-        onChange={onQuery}
-      />
-      <FilterChips
-        name="students-filter"
-        legend="Show"
-        options={filters}
-        value={isChipFilter(filter) ? filter : null}
-        onChange={onFilter}
-      />
+      {/* 24px under the switch (16px gap + 8px), then 24px under the button, grouping by spacing */}
+      <div className="mt-2 flex flex-col gap-6">
+        <ButtonLink href="/instructor/students/invite" icon={UserPlus}>
+          Invite students
+        </ButtonLink>
+        <div data-search-group className="flex flex-col gap-3">
+          <SearchField
+            label="Search students"
+            placeholder="Search students"
+            value={query}
+            onChange={onQuery}
+          />
+          <FilterChips
+            name="students-filter"
+            legend="Show"
+            options={filters}
+            value={isChipFilter(filter) ? filter : null}
+            onChange={onFilter}
+          />
+        </div>
+      </div>
       {showing && <FilterLine text={showing} onClear={onClearFilter} />}
       {total === 0 ? (
         <GetStartedCard

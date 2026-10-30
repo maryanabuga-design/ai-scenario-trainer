@@ -1,3 +1,4 @@
+import { readFileSync, readdirSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
@@ -7,7 +8,7 @@ import {
   StudentNotFound,
 } from "@/components/InstructorStudents/StudentDetailView";
 import { InviteView } from "@/components/InstructorStudents/InviteView";
-import { StudentsHeader } from "@/components/InstructorStudents/StudentsHeader";
+import { STUDENTS_SUBTITLE, StudentsHeader } from "@/components/InstructorStudents/StudentsHeader";
 import { EmptyCard, StudentsListView } from "@/components/InstructorStudents/StudentsListView";
 import { TopicStudentsView } from "@/components/InstructorTopics/TopicStudentsView";
 import { TopicsView } from "@/components/InstructorTopics/TopicsView";
@@ -18,7 +19,7 @@ import { participants } from "@/lib/cohort";
 import { seedGroupExams } from "@/lib/group-exams";
 import { loadAllSections } from "@/lib/guide";
 import { inScope } from "@/lib/groups";
-import { switcherRows, topicStandings } from "@/lib/overview";
+import { topicStandings } from "@/lib/overview";
 import {
   belowPassMark,
   examRowsFor,
@@ -65,79 +66,57 @@ const list = (
     ),
   );
 
-const rows = switcherRows(
-  profiles(
-    participants([{ name: "Ana Test", email: "ana@example.com" }]),
-    { "ana@example.com": null },
-    now,
-  ),
-);
+const walk = (dir: string): string[] =>
+  readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const path = `${dir}/${entry.name}`;
+    if (entry.isDirectory()) return walk(path);
+    return /\.tsx$/.test(entry.name) && !/\.test\./.test(entry.name) ? [path] : [];
+  });
 
 describe("the Students header", () => {
   const html = clean(
-    renderToStaticMarkup(
-      <StudentsHeader
-        scope="rescue-team"
-        rows={rows}
-        onScope={() => undefined}
-        view="students"
-        onView={() => undefined}
-      />,
-    ),
+    renderToStaticMarkup(<StudentsHeader view="students" onView={() => undefined} />),
   );
 
-  it("has the band with the title, the small group pill on the same row and the avatar", () => {
+  it("has the band with the title, the muted subtitle and the avatar, and NO group chip", () => {
     expect(html).toContain("data-page-header-band");
     expect(html).toContain(">Students</h1>");
-    const row = html.slice(html.indexOf("<h1"), html.indexOf("data-avatar"));
-    expect(row).toContain("data-group-pill");
-    expect(row).toContain("Rescue team");
-    expect(row).toContain("lucide-chevron-down");
-    expect(html).not.toContain("/instructor/groups");
-    expect(row).toContain('aria-haspopup="listbox"');
-    expect(row).toContain("bg-neutral-tile-bg");
+    expect(html).toContain("See how each student is doing and who needs your attention.");
+    expect(STUDENTS_SUBTITLE).toBe("See how each student is doing and who needs your attention.");
+    expect(html).toMatch(/text-text-secondary">See how each student/);
     expect(html).toContain("data-avatar");
-    expect(html).not.toContain('aria-label="Back');
-    // the pill is small (32px) inside a 44px tap target
-    expect(html).toContain("min-h-11");
-    expect(html).toContain("h-8");
     expect(html).not.toMatch(
-      /<h1[^>]*>Students<\/h1>[\s\S]*h-2 w-2 shrink-0 rounded-full bg-primary/,
+      /data-group-pill|data-group-switcher|aria-haspopup="listbox"|Rescue team/,
     );
+    expect(html).not.toContain('aria-label="Back');
   });
 
   it("has the segmented switch Students | Topics under the band, with the current view chosen", () => {
     expect(html.indexOf("data-page-header-band")).toBeLessThan(html.indexOf('role="radiogroup"'));
-    expect(html).toContain("Students");
     expect(html).toMatch(/checked=""[^>]*value="students"/);
     expect(html).toMatch(/value="topics"/);
     const topics = clean(
-      renderToStaticMarkup(
-        <StudentsHeader
-          scope="all"
-          rows={rows}
-          onScope={() => undefined}
-          view="topics"
-          onView={() => undefined}
-        />,
-      ),
+      renderToStaticMarkup(<StudentsHeader view="topics" onView={() => undefined} />),
     );
     expect(topics).toMatch(/checked=""[^>]*value="topics"/);
-    expect(topics).toContain("All groups");
   });
 
   it("has Back in the band for a list opened from the Overview or Topics", () => {
     const back = renderToStaticMarkup(
       <StudentsHeader
-        scope="rescue-team"
-        rows={rows}
-        onScope={() => undefined}
         view="students"
         onView={() => undefined}
         back={{ label: "Back to Overview", href: "/instructor" }}
       />,
     );
     expect(back).toContain('aria-label="Back to Overview"');
+  });
+
+  it("the group chip is only in the Overview: no other screen file draws the switcher", () => {
+    const users = ["components", "app"]
+      .flatMap((dir) => walk(dir))
+      .filter((file) => /<GroupSwitcher\b/.test(readFileSync(file, "utf8")));
+    expect(users).toEqual(["components/InstructorOverview/InstructorOverviewView.tsx"]);
   });
 });
 
@@ -147,6 +126,7 @@ describe("the Students list", () => {
   it("has the Primary Invite students with an add-person icon, the search field, the chips, the rows card and the note, in order", () => {
     const order = [
       ">Invite students<",
+      "data-search-group",
       'name="student-search"',
       "data-filter-chip",
       "data-student-rows",
@@ -180,18 +160,41 @@ describe("the Students list", () => {
     expect(filled).toContain("h-11 w-11");
   });
 
-  it("has three filter chips (All, Needs attention, Ready), 40px high in a 44px tap target, the chosen one with a check", () => {
+  it("groups by spacing: 24px under the switch, Invite, 24px, ONE group of the search field and the chips 12px apart, 16px, the list", () => {
+    expect(html).toContain("mt-2 flex flex-col gap-6");
+    const group = html.slice(html.indexOf("data-search-group"), html.indexOf("data-student-rows"));
+    expect(group).toContain("flex flex-col gap-3");
+    expect(group.indexOf('name="student-search"')).toBeLessThan(group.indexOf("data-filter-chip"));
+    // Invite is the single Primary and stays at the top of the list view
+    expect(html.match(/h-\[52px\] bg-primary/g)).toHaveLength(1);
+    expect(html.indexOf(">Invite students<")).toBeLessThan(html.indexOf("data-search-group"));
+  });
+
+  it("has three filter chips as toggle buttons with aria-pressed: active tint + 1.5px olive border + semi-bold, inactive white + 1px border + regular, no check icon", () => {
     expect(html.match(/data-filter-chip=/g)).toHaveLength(3);
     for (const label of ["All", "Needs attention", "Ready"])
       expect(html).toContain(`${label}</span>`);
     expect(html.match(/min-h-11/g)!.length).toBeGreaterThanOrEqual(3);
     expect(html.match(/h-10 items-center/g)).toHaveLength(3);
-    expect(html).toMatch(/checked=""[^>]*value="all"/);
-    expect(
-      html.slice(html.indexOf('data-filter-chip="all"'), html.indexOf('data-filter-chip="needs"')),
-    ).toContain("lucide-check");
-    // a status that is not a chip leaves none chosen
-    expect(list("not-started")).not.toMatch(/checked=""[^>]*value="(all|needs|ready)"/);
+    expect(html.match(/aria-pressed="true"/g)).toHaveLength(1);
+    expect(html.match(/aria-pressed="false"/g)).toHaveLength(2);
+    const chip = (id: string) =>
+      html.slice(
+        html.indexOf(`data-filter-chip="${id}"`),
+        html.indexOf("</button>", html.indexOf(`data-filter-chip="${id}"`)),
+      );
+    expect(chip("all")).toContain("border-[1.5px] border-primary bg-olive-tint");
+    expect(chip("all")).toContain("type-small-strong");
+    expect(chip("needs")).toContain("border border-selectable-stroke bg-card");
+    expect(chip("needs")).toMatch(/type-small /);
+    expect(chip("needs")).not.toContain("type-small-strong");
+    const chipRow = html.slice(
+      html.indexOf("data-filter-chips"),
+      html.indexOf("data-student-rows"),
+    );
+    expect(chipRow).not.toContain("lucide-check");
+    // a status that is not a chip leaves none pressed
+    expect(list("not-started")).not.toContain('aria-pressed="true"');
   });
 
   it("has ONE white card of 72px rows with hairlines; the whole row is the link, with only a chevron at its right", () => {
@@ -600,8 +603,8 @@ describe("the join screen", () => {
 });
 
 describe("FilterChips", () => {
-  it("is a radio group of pills, none chosen when the value is null", () => {
-    const html = clean(
+  const chips = (value: string | null) =>
+    clean(
       renderToStaticMarkup(
         <FilterChips
           name="x"
@@ -610,13 +613,32 @@ describe("FilterChips", () => {
             { value: "a", label: "A" },
             { value: "b", label: "B" },
           ]}
-          value={null}
+          value={value}
           onChange={() => undefined}
         />,
       ),
     );
-    expect(html).toContain('role="radiogroup"');
-    expect(html.match(/type="radio"/g)).toHaveLength(2);
-    expect(html).not.toContain("checked");
+
+  it("is a labelled group of toggle buttons, none pressed when the value is null, no check icon", () => {
+    const html = chips(null);
+    expect(html).toContain('role="group"');
+    expect(html).toContain('aria-label="Show"');
+    expect(html.match(/<button/g)).toHaveLength(2);
+    expect(html).not.toContain('aria-pressed="true"');
+    expect(html).not.toMatch(/type="radio"|lucide-check/);
+  });
+
+  it("marks the chosen chip as pressed and keeps every tap area at 44px", () => {
+    const html = chips("b");
+    expect(html.match(/aria-pressed="true"/g)).toHaveLength(1);
+    expect(html.match(/min-h-11/g)).toHaveLength(2);
+    expect(html).toMatch(/aria-pressed="true"[^>]*>[\s\S]*?border-\[1\.5px\] border-primary/);
+  });
+
+  it("is used by the Students list only", () => {
+    const users = ["components", "app"]
+      .flatMap((dir) => walk(dir))
+      .filter((file) => /<FilterChips\b/.test(readFileSync(file, "utf8")));
+    expect(users).toEqual(["components/InstructorStudents/StudentsListView.tsx"]);
   });
 });

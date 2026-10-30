@@ -107,6 +107,14 @@ const count = (page: Page, kind: string) =>
 const noPercent = async (page: Page) =>
   expect(((await page.locator("main").innerText()).match(/%/g) ?? []).length).toBe(0);
 
+/** The group is chosen on the Overview (the only place with the group chip); "All groups" lists every exam. */
+async function allGroups(page: Page) {
+  await page.goto("/instructor");
+  await page.locator("[data-group-pill]").click();
+  await page.locator("[data-group-option]", { hasText: "All groups" }).click();
+  await expect(page.locator("[data-group-list]")).toHaveCount(0);
+}
+
 for (const width of [360, 430]) {
   test.describe(`Instructor exams at ${width}px`, () => {
     test.use({ viewport: { width, height: 800 }, storageState: instructor });
@@ -129,6 +137,7 @@ for (const width of [360, 430]) {
     test("the Exams list: the band with the avatar only, the Primary Assign exam with an icon, ACTIVE with its count, 104px cards with the group name, the closed toggle", async ({
       page,
     }) => {
+      await allGroups(page);
       await page.goto("/instructor/exams");
       await expect(page.getByRole("heading", { level: 1 })).toHaveText("Exams");
       await expect(page.locator("[data-avatar]")).toBeVisible();
@@ -674,6 +683,7 @@ for (const width of [360, 430]) {
     test("a broken saved exam list loads without a crash and the seeded exams return", async ({
       page,
     }) => {
+      await allGroups(page);
       await page.addInitScript(() => localStorage.setItem("ast.group-exams.v1", "{broken"));
       await page.goto("/instructor/exams");
       await expect(page.locator("[data-exam-card]:visible")).toHaveCount(2);

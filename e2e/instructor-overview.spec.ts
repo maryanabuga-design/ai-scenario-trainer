@@ -155,13 +155,16 @@ for (const width of [360, 430]) {
       await row.click();
       await expect(page).toHaveURL(/\/instructor\/students\?filter=needs&from=overview$/);
       // "Needs attention" is one of the chips: it is chosen, and there is no filter line
-      await expect(page.getByRole("radio", { name: "Needs attention" })).toBeChecked();
+      await expect(page.locator('[data-filter-chip="needs"]')).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
       await expect(page.locator("[data-filter-line]:visible")).toHaveCount(0);
       await expect(page.locator("[data-student]:visible")).toHaveCount(n);
       for (const line of await page.locator("[data-student-line]:visible").all()) {
         await expect(line).toContainText("Needs attention");
       }
-      await page.locator("label", { hasText: /^All$/ }).click();
+      await page.locator('[data-filter-chip="all"]').click();
       await expect(page.locator("[data-student]:visible")).toHaveCount(15);
       await page.goto("/instructor");
       await row.click();

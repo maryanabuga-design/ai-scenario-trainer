@@ -141,19 +141,35 @@ for (const width of [360, 430]) {
       expect(await noSidewaysScroll(page)).toBe(true);
     });
 
-    test("Students has the same dropdown in its band, inside the screen, and switching keeps the Topics view", async ({
+    test("the group chip is only on the Overview: Students, Exams and Content have none, and the choice made here shows there", async ({
       page,
     }) => {
-      await page.goto("/instructor/students?view=topics");
+      await page.goto("/instructor");
+      await expect(pill(page)).toHaveCount(1);
       await pill(page).click();
-      const l = (await list(page).boundingBox())!;
-      expect(l.x).toBeGreaterThanOrEqual(15.5);
-      expect(l.x + l.width).toBeLessThanOrEqual(width - 16 + 0.5);
-      expect(await noSidewaysScroll(page)).toBe(true);
       await option(page, "Military training").click();
-      await expect(page).toHaveURL(/\/instructor\/students\?view=topics$/);
       await expect(pill(page)).toContainText("Military training");
+      for (const path of [
+        "/instructor/students",
+        "/instructor/students?view=topics",
+        "/instructor/exams",
+        "/instructor/content",
+        "/instructor/students/invite",
+      ]) {
+        await page.goto(path);
+        await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+        await expect(page.locator("[data-group-pill]"), path).toHaveCount(0);
+        await expect(page.locator("[data-group-switcher]"), path).toHaveCount(0);
+        expect(await noSidewaysScroll(page), path).toBe(true);
+      }
+      // the stored group drives Students: Military training has 12 students and ten topic cards
+      await page.goto("/instructor/students?view=topics");
       await expect(page.locator("[data-topic-card]")).toHaveCount(10);
+      await page.goto("/instructor/students");
+      await expect(page.locator("[data-student]:visible")).toHaveCount(12);
+      // and survives a reload
+      await page.reload();
+      await expect(page.locator("[data-student]:visible")).toHaveCount(12);
     });
 
     test("'All topics' sits in the Weakest topic header row and opens Students, Topics, for the current group", async ({
@@ -181,7 +197,7 @@ for (const width of [360, 430]) {
       await page.getByRole("link", { name: "All topics" }).click();
       await expect(page).toHaveURL(/\/instructor\/students\?view=topics$/);
       await expect(page.getByRole("radio", { name: "Topics" })).toBeChecked();
-      await expect(pill(page)).toContainText("Military training");
+      await expect(pill(page)).toHaveCount(0);
       await expect(page.locator("[data-topic-card]")).toHaveCount(10);
     });
 

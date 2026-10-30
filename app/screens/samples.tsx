@@ -37,7 +37,7 @@ import { FieldOfWorkStep } from "@/components/FieldOfWork/FieldOfWorkStep";
 import { FieldPickerView } from "@/components/FieldOfWork/FieldPickerView";
 import type { FieldOfWork } from "@/lib/field-of-work";
 import { TopicsView } from "@/components/InstructorTopics/TopicsView";
-import { switcherRows, topicStandings } from "@/lib/overview";
+import { topicStandings } from "@/lib/overview";
 import { overviewModel } from "@/lib/overview-model";
 import { examPeople, groupById, inScope } from "@/lib/groups";
 import { InviteView } from "@/components/InstructorStudents/InviteView";
@@ -1559,7 +1559,6 @@ export function InstructorStudentsSample({
     | "group-empty"
     | "topics"
     | "topics-all"
-    | "switcher-open"
     | "topic-students"
     | "detail-needs"
     | "detail-ready"
@@ -1653,10 +1652,6 @@ export function InstructorStudentsSample({
   return (
     <div className="flex flex-col gap-4 pb-4">
       <StudentsHeader
-        scope={state === "topics-all" ? "all" : scope}
-        rows={switcherRows(profiles(everyone, { "maryana@example.com": null }, now))}
-        onScope={noop}
-        switcherOpen={state === "switcher-open"}
         view={view}
         onView={noop}
         back={state === "filter-line" ? { label: "Back to Overview", href: "#" } : undefined}
@@ -1666,7 +1661,7 @@ export function InstructorStudentsSample({
           <EmptyCard
             dataEmpty="all-groups"
             title="Select a group to see topic results."
-            text="Topic results mix groups when all are shown. Choose a group with the switch at the top."
+            text="Topic results mix groups when all are shown. Choose a group on the Overview."
             action={null}
           />
         ) : (

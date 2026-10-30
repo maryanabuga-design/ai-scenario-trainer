@@ -12,8 +12,8 @@ import type { Account } from "@/lib/auth";
 import { DEMO_NOTE, participants } from "@/lib/cohort";
 import { ALL_GROUPS, inScope } from "@/lib/groups";
 import type { Scope } from "@/lib/groups";
-import { switcherRows, topicStandings } from "@/lib/overview";
-import { saveScope, useScope } from "@/lib/scope-store";
+import { topicStandings } from "@/lib/overview";
+import { useScope } from "@/lib/scope-store";
 import { readHistories } from "@/lib/student-data";
 import {
   filterFrom,
@@ -41,10 +41,6 @@ function Loaded({ accounts, scope }: { accounts: Account[]; scope: Scope }) {
   const all = useMemo(
     () => profiles(people, readHistories(accounts), now),
     [people, accounts, now],
-  );
-  const rows = useMemo(
-    () => switcherRows(profiles(participants(accounts), readHistories(accounts), now)),
-    [accounts, now],
   );
   // a filter from another screen (Almost ready, Not started, a topic) shows the filter line
   const showing =
@@ -74,14 +70,6 @@ function Loaded({ accounts, scope }: { accounts: Account[]; scope: Scope }) {
   return (
     <div className="flex flex-col gap-4 pb-4">
       <StudentsHeader
-        scope={scope}
-        rows={rows}
-        onScope={(next) => {
-          saveScope(next);
-          const params = new URLSearchParams();
-          if (view === "topics") params.set("view", "topics");
-          go(params);
-        }}
         view={view}
         back={back}
         onView={(next: StudentsView) => {
@@ -96,7 +84,7 @@ function Loaded({ accounts, scope }: { accounts: Account[]; scope: Scope }) {
             <EmptyCard
               dataEmpty="all-groups"
               title="Select a group to see topic results."
-              text="Topic results mix groups when all are shown. Choose a group with the switch at the top."
+              text="Topic results mix groups when all are shown. Choose a group on the Overview."
               action={null}
             />
             <p data-demo-note className="type-small text-center text-text-secondary">

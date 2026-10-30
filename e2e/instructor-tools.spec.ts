@@ -37,7 +37,7 @@ for (const width of [360, 430]) {
       page,
     }) => {
       await page.goto("/instructor/students");
-      await expect(page.locator("[data-group-pill]:visible")).toContainText("Rescue team");
+      await expect(page.locator("[data-group-pill]")).toHaveCount(0);
       await expect(page.locator("[data-student]:visible")).toHaveCount(15);
       // the local demo account is Not started: its chip says so and nothing else is shown for it
       const mine = page.locator('[data-student="maryana@example.com"]');

@@ -148,12 +148,14 @@ for (const width of [360, 430]) {
       // Students follows the scope
       await nav(page).getByRole("link", { name: "Students" }).click();
       await expect(page.getByRole("heading", { level: 1 })).toHaveText("Students");
-      await expect(page.locator("[data-group-pill]:visible")).toContainText("Military training");
+      // no group chip here: the group is chosen on the Overview, and Students shows its people
+      await expect(page.locator("[data-group-pill]:visible")).toHaveCount(0);
       await expect(page.locator("[data-student]:visible")).toHaveCount(12);
-      // Exams lists the exams of every group (no group switcher there)
+      // Exams lists the exams assigned to the chosen group
       await nav(page).getByRole("link", { name: "Exams" }).click();
-      await expect(page.locator("[data-exam-card]:visible")).toHaveCount(2);
-      await expect(page.locator("[data-exam-card]:visible").last()).toContainText(
+      await expect(page.locator("[data-group-pill]:visible")).toHaveCount(0);
+      await expect(page.locator("[data-exam-card]:visible")).toHaveCount(1);
+      await expect(page.locator("[data-exam-card]:visible").first()).toContainText(
         "Military training",
       );
     });
@@ -162,7 +164,7 @@ for (const width of [360, 430]) {
       await page.goto("/instructor");
       await page.locator("[data-readiness-strip]").click();
       await expect(page).toHaveURL(/\/instructor\/students/);
-      await expect(page.locator("[data-group-pill]:visible")).toContainText("Rescue team");
+      await expect(page.locator("[data-group-pill]:visible")).toHaveCount(0);
       await expect(page.locator("[data-student]:visible")).toHaveCount(15);
     });
 
@@ -201,7 +203,7 @@ for (const width of [360, 430]) {
       await choose(page, "All groups");
       await page.locator('[data-group-row="military-training"]').click();
       await expect(page).toHaveURL(/\/instructor\/students/);
-      await expect(page.locator("[data-group-pill]:visible")).toContainText("Military training");
+      await expect(page.locator("[data-group-pill]:visible")).toHaveCount(0);
       await expect(page.locator("[data-student]:visible")).toHaveCount(12);
       await page.goto("/instructor");
       await expect(page.locator("[data-group-pill]")).toContainText("Military training");
@@ -209,7 +211,9 @@ for (const width of [360, 430]) {
       const action = page.locator('[data-action="needs-attention"]').last();
       await action.click();
       await expect(page).toHaveURL(/\/instructor\/students\?filter=needs/);
-      await expect(page.locator("[data-group-pill]:visible")).toContainText("Military training");
+      await expect(page.locator("[data-group-pill]:visible")).toHaveCount(0);
+      await page.goto("/instructor");
+      await expect(page.locator("[data-group-pill]")).toContainText("Military training");
     });
 
     test("Students in All groups lists every student; the Topics view asks for a group first", async ({
@@ -217,16 +221,19 @@ for (const width of [360, 430]) {
     }) => {
       await choose(page, "All groups");
       await nav(page).getByRole("link", { name: "Students" }).click();
-      await expect(page.locator("[data-group-pill]:visible")).toContainText("All groups");
+      await expect(page.locator("[data-group-pill]:visible")).toHaveCount(0);
       await expect(page.locator("[data-student]:visible")).toHaveCount(27);
       await page.getByText("Topics", { exact: true }).click();
       await expect(page.locator('[data-empty="all-groups"]')).toContainText(
         "Select a group to see topic results.",
       );
       await expect(page.locator("[data-topic-card]")).toHaveCount(0);
-      await page.locator("[data-group-pill]:visible").click();
-      await page.locator("[data-group-option]", { hasText: "Military training" }).click();
-      await expect(page).toHaveURL(/\/instructor\/students\?view=topics$/);
+      await expect(page.locator('[data-empty="all-groups"]')).toContainText(
+        "Choose a group on the Overview.",
+      );
+      // the group is chosen on the Overview; the Topics view then shows its ten topics
+      await choose(page, "Military training");
+      await page.goto("/instructor/students?view=topics");
       await expect(page.locator("[data-topic-card]")).toHaveCount(10);
     });
 

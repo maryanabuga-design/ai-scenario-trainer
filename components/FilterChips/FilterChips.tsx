@@ -1,13 +1,10 @@
 "use client";
 
-import { Check } from "lucide-react";
-import { useId } from "react";
-
 /**
- * The single-choice filter pattern (DESIGN.md: Instructor, Students rebuilt; distinct from the
- * segmented view switch): a row of pills, each 40px high inside a 44px tap target. Native radio
- * buttons underneath, so arrow keys move the choice. The chosen pill is filled with the olive tint
- * and carries a check, so the state is not colour alone.
+ * The single-choice filter chips (DESIGN.md: Students screen redesigned): a row of toggle buttons
+ * with `aria-pressed` in one labelled group, each pill 40px high inside a 44px tap area. Active: the
+ * Secondary tint fill, a 1.5px olive border and semi-bold text, no check icon. Inactive: white, a 1px
+ * light border and regular text.
  */
 export function FilterChips<T extends string>({
   name,
@@ -24,41 +21,36 @@ export function FilterChips<T extends string>({
   value: T | null;
   onChange: (value: T) => void;
 }) {
-  const group = useId();
   return (
-    <fieldset role="radiogroup" className="min-w-0">
-      <legend className="sr-only">{legend}</legend>
-      <div className="flex flex-wrap gap-x-2">
-        {options.map((option) => {
-          const checked = option.value === value;
-          return (
-            <label
-              key={option.value}
-              data-filter-chip={option.value}
-              className="flex min-h-11 cursor-pointer items-center has-focus-visible:outline-2 has-focus-visible:outline-offset-0 has-focus-visible:outline-accent"
+    <div
+      role="group"
+      aria-label={legend}
+      data-filter-chips={name}
+      className="flex flex-wrap gap-x-2"
+    >
+      {options.map((option) => {
+        const pressed = option.value === value;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            data-filter-chip={option.value}
+            aria-pressed={pressed}
+            onClick={() => onChange(option.value)}
+            className="flex min-h-11 cursor-pointer items-center focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent"
+          >
+            <span
+              className={`flex h-10 items-center rounded-full px-4 whitespace-nowrap ${
+                pressed
+                  ? "type-small-strong border-[1.5px] border-primary bg-olive-tint text-text"
+                  : "type-small border border-selectable-stroke bg-card text-text active:bg-secondary-sand"
+              }`}
             >
-              <input
-                type="radio"
-                name={`${name}-${group}`}
-                value={option.value}
-                checked={checked}
-                onChange={() => onChange(option.value)}
-                className="sr-only"
-              />
-              <span
-                className={`type-small-strong flex h-10 items-center gap-1.5 rounded-full border px-4 whitespace-nowrap ${
-                  checked
-                    ? "border-transparent bg-olive-tint text-primary"
-                    : "border-selectable-stroke bg-card text-text active:bg-secondary-sand"
-                }`}
-              >
-                {checked && <Check size={14} strokeWidth={2.5} aria-hidden="true" />}
-                {option.label}
-              </span>
-            </label>
-          );
-        })}
-      </div>
-    </fieldset>
+              {option.label}
+            </span>
+          </button>
+        );
+      })}
+    </div>
   );
 }
