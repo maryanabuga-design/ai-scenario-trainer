@@ -230,17 +230,12 @@ export function StudentsListView({
         inline={statusOpen}
         returnFocus={filterButton}
         footer={
-          <>
-            {/* the changing count is announced */}
-            <div aria-live="polite" aria-atomic="true">
-              <Button onClick={apply}>
-                Show {draftCount} {draftCount === 1 ? "student" : "students"}
-              </Button>
-            </div>
-            <Button variant="secondary" onClick={() => setDraft("all")}>
-              Reset
+          // the changing count is announced
+          <div aria-live="polite" aria-atomic="true">
+            <Button onClick={apply}>
+              Show {draftCount} {draftCount === 1 ? "student" : "students"}
             </Button>
-          </>
+          </div>
         }
       >
         {options.map((option) => (

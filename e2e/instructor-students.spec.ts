@@ -42,7 +42,6 @@ const option = (page: Page, value: string) =>
   page.locator(`[data-filter-sheet] label:has(input[value="${value}"])`);
 const showButton = (page: Page) =>
   sheet(page).getByRole("button", { name: /^Show \d+ students?$/ });
-const resetButton = (page: Page) => sheet(page).getByRole("button", { name: "Reset" });
 const students = (n: number) => `Show ${n} ${n === 1 ? "student" : "students"}`;
 /** Chooses a status in the filter sheet and applies it with the Primary button. */
 const pick = async (page: Page, value: string) => {
@@ -405,8 +404,10 @@ for (const width of [360, 430]) {
       await expect(rows(page)).toHaveCount(15);
       await expect(filterLine(page)).toHaveCount(0);
       expect(await bg(button)).toBe(OLIVE_TINT);
-      // Reset sets the draft to All, keeps the sheet open and applies nothing
-      await resetButton(page).click();
+      // no Reset: marking All returns the draft to All, the sheet stays open and nothing is applied
+      await expect(sheet(page).getByRole("button", { name: "Reset" })).toHaveCount(0);
+      await expect(sheet(page).getByRole("button", { name: /^Show / })).toHaveCount(1);
+      await option(page, "all").click();
       await expect(sheet(page)).toBeVisible();
       await expect(showButton(page)).toHaveText(students(15));
       await expect(option(page, "all").locator("input")).toBeChecked();
@@ -441,6 +442,15 @@ for (const width of [360, 430]) {
         expect(clearBox.x + clearBox.width).toBeGreaterThan(lb.x + lb.width - 24);
         expect(await noSidewaysScroll(page)).toBe(true);
       }
+      // marking All and applying clears the filter from inside the sheet
+      await button.click();
+      await option(page, "all").click();
+      await showButton(page).click();
+      await expect(sheet(page)).toHaveCount(0);
+      await expect(filterLine(page)).toHaveCount(0);
+      await expect(rows(page)).toHaveCount(15);
+      expect(await bg(button)).toBe(OLIVE_TINT);
+      await pick(page, "not-started");
       // reopening starts from the applied status; Clear resets to All and hides the line
       await button.click();
       await expect(option(page, "not-started").locator("input")).toBeChecked();
@@ -508,7 +518,7 @@ for (const width of [360, 430]) {
       await expect(option(page, "ready").locator("input")).toBeChecked();
     });
 
-    test("on a 640px high phone the five options and both buttons fit without scrolling; the buttons stay pinned if the screen is lower", async ({
+    test("on a 640px high phone the five options and the button fit without scrolling; the buttons stay pinned if the screen is lower", async ({
       browser,
     }) => {
       const context = await browser.newContext({
@@ -525,17 +535,16 @@ for (const width of [360, 430]) {
         expect((await box(card)).height).toBe(56);
       }
       const primary = await box(showButton(page));
-      const reset = await box(resetButton(page));
       expect(primary.height).toBe(52);
-      expect(primary.y + primary.height).toBeLessThanOrEqual(reset.y);
-      expect(Math.round(reset.y - (primary.y + primary.height))).toBe(8);
-      expect(reset.y + reset.height).toBeLessThanOrEqual(640);
       expect(await bg(showButton(page))).toBe(PRIMARY);
-      expect(await bg(resetButton(page))).toBe(OLIVE_TINT);
+      expect(primary.y + primary.height).toBeLessThanOrEqual(640);
+      const panel = await box(sheet(page));
+      expect(panel.y).toBeGreaterThan(0);
+      await expect(sheet(page).getByRole("button", { name: "Reset" })).toHaveCount(0);
       expect(await noSidewaysScroll(page)).toBe(true);
       // a lower screen: the options scroll, the buttons stay visible
       await page.setViewportSize({ width, height: 460 });
-      await expect.poll(async () => (await box(resetButton(page))).y + 52).toBeLessThanOrEqual(460);
+      await expect.poll(async () => (await box(showButton(page))).y + 52).toBeLessThanOrEqual(460);
       expect(await options.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
       expect((await box(showButton(page))).y).toBeGreaterThan(0);
       await context.close();

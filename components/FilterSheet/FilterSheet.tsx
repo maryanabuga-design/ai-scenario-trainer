@@ -34,7 +34,7 @@ export function FilterSheet({
   title: string;
   onClose: () => void;
   children: ReactNode;
-  /** Pinned under the options (they scroll, this stays): the Primary and Secondary buttons. */
+  /** Pinned under the options (they scroll, this stays): the Primary button. */
   footer?: ReactNode;
   /** The button that opened the sheet: it gets the focus back (Safari does not focus a tapped button). */
   returnFocus?: RefObject<HTMLElement | null>;

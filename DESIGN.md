@@ -917,3 +917,7 @@ Four changes to the Overview and the group switcher, mobile 360 and 430px.
 - The Primary applies the draft, closes the sheet and returns focus to the icon button; the list, the darker icon button and the "Showing: ..." line update then. The close x, the scrim, Escape and a swipe down on the handle close the sheet WITHOUT applying: the draft is thrown away, and the next opening starts from the applied status again.
 - The option cards are 56px high (`SelectableRow` with the `short` size; they were about 70px) so five options and the two buttons fit on a 640px high phone. If the screen is lower still, only the options area scrolls; the handle, the title and the two buttons stay in place.
 - The Primary label sits in a polite live region, so the changing count is announced.
+
+## Filter sheet: one button only (12 Nov 2026; refines the 11 Nov 2026 section)
+- The filter sheet has ONE button: the pinned Primary "Show N students" (same live count, same apply-and-close behaviour). The Secondary "Reset" is removed. Inside the sheet "All" is the way to clear the filter (mark All, then "Show 15 students"); outside it the "Clear" link in the "Showing: ..." line clears it.
+- The option cards stay 56px; the footer is the Primary with the safe-area aware bottom padding, so the sheet is shorter and five options plus the button fit a 360 x 640 phone without scrolling.

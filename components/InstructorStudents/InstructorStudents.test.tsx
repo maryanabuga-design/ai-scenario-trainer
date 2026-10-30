@@ -246,17 +246,22 @@ describe("the Students list", () => {
     expect(sheet).toContain("rounded-t-[20px]");
     expect(sheet).toContain("data-sheet-handle");
     expect(sheet).toContain("filter-sheet");
-    // 56px cards, and no immediate apply: the Primary "Show N students" and the Secondary Reset are pinned
+    // 56px cards, and no immediate apply: only the Primary "Show N students" is pinned
     expect(sheet.match(/h-14 px-/g)).toHaveLength(5);
     expect(sheet).not.toMatch(/>Apply</);
     const from = sheet.indexOf("data-sheet-footer");
-    const footer = sheet.slice(from, sheet.indexOf(">Reset<", from) + 7);
+    const footer = sheet.slice(from);
     const almost = all.filter((p) => profileStatus(p) === "almost").length;
     expect(footer).toMatch(/aria-live="polite"[^>]*>[^]*bg-primary[^>]*>Show (<!-- -->)?\d+/);
     expect(visible(footer)).toContain(`Show ${almost} ${almost === 1 ? "student" : "students"}`);
-    expect(footer.indexOf("bg-primary")).toBeLessThan(footer.indexOf(">Reset<"));
-    expect(footer).toMatch(/bg-olive-tint[^>]*>Reset</);
     expect(footer.match(/(?<![:-])bg-primary(?![-\w])/g)).toHaveLength(1);
+    // one button only: no Reset, and no Secondary button in the sheet
+    expect(sheet).not.toMatch(/>Reset</);
+    expect(
+      sheet.slice(sheet.indexOf('role="dialog"'), sheet.indexOf("data-sheet-footer") + 600),
+    ).not.toContain('bg-olive-tint" ');
+    const buttons = sheet.slice(from, from + 900).match(/<button/g) ?? [];
+    expect(buttons).toHaveLength(1);
     // the options scroll, the footer does not
     expect(sheet.indexOf("data-sheet-options")).toBeLessThan(sheet.indexOf("data-sheet-footer"));
     expect(sheet).toMatch(/data-sheet-options[^>]*overflow-y-auto/);
