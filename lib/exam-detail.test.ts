@@ -36,17 +36,12 @@ const finished = (examId: string, correct: number, at = 1): Attempt => ({
 });
 
 describe("the words of the Exams screens (counts only)", () => {
-  it("makes the due pill amber within 3 days, neutral later", () => {
-    expect(duePill({ deadline: "2026-10-26", topicIds: ["S1"] }, now)).toEqual({
-      text: "Due in 2 days · 1 topic",
-      tone: "amber",
-    });
-    expect(duePill({ deadline: "2026-10-24", topicIds: ["S1", "S2"] }, now).text).toBe(
-      "Due today · 2 topics",
-    );
-    expect(duePill({ deadline: "2026-10-27", topicIds: ["S1"] }, now).tone).toBe("amber");
-    expect(duePill({ deadline: "2026-10-28", topicIds: ["S1", "S2"] }, now)).toEqual({
-      text: "Due 28 Oct · 2 topics",
+  it("words the due pill as the date and makes it amber within 3 days, neutral later", () => {
+    expect(duePill({ deadline: "2026-10-26" }, now)).toEqual({ text: "Due 26 Oct", tone: "amber" });
+    expect(duePill({ deadline: "2026-10-24" }, now).text).toBe("Due 24 Oct");
+    expect(duePill({ deadline: "2026-10-27" }, now).tone).toBe("amber");
+    expect(duePill({ deadline: "2026-10-28" }, now)).toEqual({
+      text: "Due 28 Oct",
       tone: "neutral",
     });
   });

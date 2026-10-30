@@ -38,15 +38,17 @@ describe("the exam card", () => {
     expect(active).toContain("h-[88px]");
     expect(active).toContain("/heroes/exam-card.webp");
     expect(active).toContain('width="56"');
-    expect(active).toContain(">Due 30 Oct · 4 topics<");
+    expect(active).toContain(">Due 30 Oct<");
     expect(active).toContain('data-due-pill="neutral"');
-    expect(active).toContain("Passed 1 of 14 · 11 not started");
+    expect(active).toContain("Passed 1 of 14");
+    // only the title, the due pill and ONE result line: no topics count, no not-started count, no group
+    expect(active).not.toMatch(/topics?<|not started|data-group-name/);
     expect(active).toContain("lucide-chevron-right");
     expect(active).toContain(`href="/instructor/exams/${exam.id}"`);
     expect(active).not.toContain("%");
   });
 
-  it("makes the pill amber within 3 days: 'Due in 2 days · 1 topic'", () => {
+  it("makes the pill amber within 3 days and still says the date: 'Due 26 Oct'", () => {
     const soon = renderToStaticMarkup(
       <ExamCard
         exam={{ ...exam, deadline: "2026-10-26", topicIds: ["S1"] }}
@@ -56,18 +58,16 @@ describe("the exam card", () => {
         now={now}
       />,
     ).replace(/<!-- -->/g, "");
-    expect(soon).toContain("Due in 2 days · 1 topic");
+    expect(soon).toContain(">Due 26 Oct<");
     expect(soon).toContain('data-due-pill="amber"');
     expect(soon).toContain("bg-status-attention-bg");
   });
 
-  it("is a fixed 104px with the group name under the title when there are several groups", () => {
-    const several = renderToStaticMarkup(
-      <ExamCard exam={exam} passed={1} total={14} now={now} groupName="Rescue team" />,
-    );
-    expect(several).toContain("h-[104px]");
-    expect(several).toContain("data-group-name");
-    expect(several.indexOf(exam.title)).toBeLessThan(several.indexOf("data-group-name"));
+  it("shows the bare row of the Overview with the not-started count after the result", () => {
+    const bare = renderToStaticMarkup(
+      <ExamCard exam={exam} passed={1} total={14} notStarted={11} bare />,
+    ).replace(/<!-- -->/g, "");
+    expect(bare).toContain("Passed 1 of 14 · 11 not started");
   });
 
   it("shows the neutral checklist tile, 'Closed 12 Oct' and 'Passed 12 of 14' when closed", () => {
@@ -101,21 +101,24 @@ describe("the Exams list", () => {
       />,
     );
 
-  it("has the band with the avatar only (no group switcher), the Primary Assign exam with a plus icon, ACTIVE with its count, the toggle and the note", () => {
+  it("has the band with the subtitle and the avatar (no group switcher), the Primary Assign exam with a plus icon, ACTIVE, the toggle and no demo line", () => {
     const html = render();
     const order = [
       "data-page-header-band",
       ">Assign exam<",
       ">ACTIVE<",
-      "2 Active",
       `data-exam-card="${allExams[0].id}"`,
       "Show closed exams (1)",
-      "Demo group. Student data on this screen is simulated.",
     ].map((t) => html.indexOf(t));
     expect(order.every((p) => p >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
     expect(html).not.toContain("data-group-pill");
     expect(html).toContain("data-avatar");
+    expect(html).toContain("Assign exams and see who has passed.");
+    // no duplicate count at the right of the section header, no demo line
+    expect(html).not.toMatch(/data-active-count|\d+ Active|>Archive</);
+    expect(html).not.toContain("data-demo-note");
+    expect(visible(html)).not.toContain("Demo group");
     const assign = html.slice(0, html.indexOf(">Assign exam<"));
     const link = assign.slice(assign.lastIndexOf("<a "));
     expect(link).toContain("bg-primary");
@@ -123,11 +126,10 @@ describe("the Exams list", () => {
     expect(visible(html)).not.toMatch(/%/);
   });
 
-  it("lists the exams of all groups, each card with its group name and a fixed 104px", () => {
+  it("lists the exams of all groups as calm 88px cards without a group name", () => {
     const html = render();
-    expect(html.match(/h-\[104px\]/g)).toHaveLength(3);
-    expect(html).toContain("Rescue team");
-    expect(html).toContain("Military training");
+    expect(html.match(/h-\[88px\]/g)).toHaveLength(3);
+    expect(html).not.toMatch(/h-\[104px\]|data-group-name/);
   });
 
   it("keeps the closed exams in an inert, collapsed group with ONE Secondary toggle before it", () => {
@@ -255,6 +257,7 @@ describe("the Exam detail", () => {
     active = true,
     attempts: Attempt[] = [],
     dialog: "remind" | "close" | null = null,
+    menuOpen = false,
   ) => {
     const group = examPeople(everyone, exam);
     const context = { attempts, now };
@@ -267,13 +270,15 @@ describe("the Exam detail", () => {
         rows={studentRows(group, exam, context)}
         hardest={hardestQuestions(group, exam, attempts, now)}
         titleOf={titleOf}
-        message=""
         dialog={dialog}
+        menuOpen={menuOpen}
         onAskRemind={() => undefined}
         onRemind={() => undefined}
         onAskClose={() => undefined}
         onClose={() => undefined}
         onCancelDialog={() => undefined}
+        onExtend={() => undefined}
+        onDuplicate={() => undefined}
         dialogInline
       />,
     );
@@ -380,18 +385,42 @@ describe("the Exam detail", () => {
     expect(hardestQuestions(group, bare, [], now)).toEqual([]);
   });
 
-  it("Active actions are four stacked Secondary buttons with icons; the dialogs have a Primary and a Secondary", () => {
-    const html = render();
-    for (const label of ["Send reminder", "Extend deadline", "Duplicate exam", "Close exam now"]) {
-      const before = html.slice(0, html.indexOf(`>${label}<`));
-      const control = before.slice(
-        Math.max(before.lastIndexOf("<button"), before.lastIndexOf("<a ")),
-      );
-      expect(control, label).toContain("bg-olive-tint");
-      expect(control, label).toMatch(/lucide-/);
+  it("has no stacked action buttons and no demo line: the actions live in the '...' menu", () => {
+    for (const html of [render(), render(exams[1], false)]) {
+      for (const label of ["Extend deadline", "Duplicate exam", "Close exam now"])
+        expect(html, label).not.toContain(`>${label}<`);
+      expect(html).not.toContain("data-demo-note");
+      expect(html).not.toContain("Demo group");
+      expect(html).not.toContain("data-message");
+      expect(html).not.toContain("Opens Assign exam with the same topics and settings.");
     }
-    expect(html).toContain(`href="/instructor/exams/${exams[0].id}/extend"`);
-    expect(html).toContain(`href="/instructor/exams/new?duplicate=${exams[0].id}"`);
+    // the band holds the menu button next to the back arrow
+    const html = render();
+    expect(html).toMatch(
+      /data-page-header-band[\s\S]*aria-label="More actions"[\s\S]*aria-haspopup="menu"/,
+    );
+  });
+
+  it("Active menu: Extend deadline, Duplicate exam, then Close exam now last, after a divider, in the destructive red", () => {
+    const html = render(exams[0], true, [], null, true);
+    const items = [...html.matchAll(/data-menu-item="([a-z]+)"/g)].map((m) => m[1]);
+    expect(items).toEqual(["extend", "duplicate", "close"]);
+    const close = html.slice(html.indexOf('data-menu-item="close"'));
+    expect(close.slice(0, close.indexOf("</li>"))).toMatch(/border-t border-soft-divider/);
+    expect(close.slice(0, close.indexOf("</li>"))).toContain("text-wrong-text");
+    expect(
+      html.slice(html.indexOf('data-menu-item="extend"'), html.indexOf('data-menu-item="close"')),
+    ).not.toContain("text-wrong-text");
+  });
+
+  it("Closed menu has only Duplicate exam", () => {
+    const html = render(exams[1], false, [], null, true);
+    expect([...html.matchAll(/data-menu-item="([a-z]+)"/g)].map((m) => m[1])).toEqual([
+      "duplicate",
+    ]);
+  });
+
+  it("the dialogs have a Primary and a Secondary", () => {
     const remind = render(exams[0], true, [], "remind");
     expect(remind).toMatch(/Remind \d+ students\?/);
     expect(remind).toContain("data-reminder-preview");
@@ -402,15 +431,6 @@ describe("the Exam detail", () => {
     expect(close).toContain("Students will no longer be able to start it. Results stay available.");
     expect(close).toContain(">Close exam<");
     expect(close).toContain(">Keep open<");
-  });
-
-  it("Closed has only Duplicate exam with its note, and no Close, Extend or Send reminder", () => {
-    const html = render(exams[1], false);
-    expect(html).toContain(">Duplicate exam<");
-    expect(html).toContain("Opens Assign exam with the same topics and settings.");
-    for (const gone of ["Send reminder", "Extend deadline", "Close exam now"]) {
-      expect(html).not.toContain(`>${gone}<`);
-    }
   });
 
   it("is the 'Exam not found' screen with a Secondary button back to Exams", () => {

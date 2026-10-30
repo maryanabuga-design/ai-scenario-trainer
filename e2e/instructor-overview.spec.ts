@@ -271,7 +271,7 @@ for (const width of [360, 430]) {
       await expect(page).toHaveURL(new RegExp(`/instructor/exams/${id}\\?from=overview$`));
       await page.getByRole("button", { name: "Send reminder" }).click();
       await page.locator("dialog[open]").getByRole("button", { name: "Send reminder" }).click();
-      await expect(page.locator("[data-message]")).toContainText("Reminder sent to");
+      await expect(page.locator("[data-flash]:visible")).toContainText("Reminder sent");
       await page.getByRole("link", { name: "Back to Overview" }).click();
       await expect(page).toHaveURL(/\/instructor$/);
       // the condition is resolved: the row is gone, the others stay
@@ -372,9 +372,10 @@ for (const width of [360, 430]) {
       page,
     }) => {
       await page.goto("/instructor/exams/seed-active");
-      await page.getByRole("button", { name: "Close exam now" }).click();
+      await page.getByRole("button", { name: "More actions" }).click();
+      await page.getByRole("menuitem", { name: "Close exam now" }).click();
       await page.locator("dialog[open]").getByRole("button", { name: "Close exam" }).click();
-      await expect(page.getByRole("button", { name: "Close exam now" })).toHaveCount(0);
+      await expect(page.locator("[data-state-pill]")).toContainText("Closed");
       await page.goto("/instructor");
       await expect(page.locator("[data-no-exam]")).toContainText("No active exam");
       // and the row "No active exam / Assign an exam to your group" opens Assign exam

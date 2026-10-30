@@ -2,9 +2,6 @@
 
 import {
   Award,
-  Bell,
-  CalendarPlus,
-  Copy,
   Lock,
   ListChecks,
   LockKeyhole,
@@ -15,13 +12,16 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
+import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { Chip } from "@/components/Chip/Chip";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
+import { DropdownMenu } from "@/components/DropdownMenu/DropdownMenu";
+import { FlashNotice } from "@/components/FlashNotice/FlashNotice";
 import { StatusAvatar, StatusPill } from "@/components/InstructorExams/ExamParts";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
-import { DEMO_NOTE, triedCount } from "@/lib/cohort";
+import { triedCount } from "@/lib/cohort";
 import type { GroupCounts, StudentRow } from "@/lib/cohort";
 import {
   attemptsAllowedLine,
@@ -111,7 +111,7 @@ function Spec({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
  * The Exam detail of the Instructor (DESIGN.md: Instructor, Exams rebuilt): the state pill, the
  * summary card (Active: topics, groups, rules, the "3 of 14 tried" bar and four count tiles;
  * Closed: group, title, specs box and Passed, Not passed, Missed), the STUDENTS roster with
- * status badges, HARDEST QUESTIONS and the actions. Counts only, never a percentage.
+ * status badges, HARDEST QUESTIONS, the "..." menu and the pinned "Send reminder". Counts only, never a percentage.
  */
 export function ExamDetailView({
   exam,
@@ -121,15 +121,17 @@ export function ExamDetailView({
   rows,
   hardest,
   titleOf,
-  message,
   dialog,
   onAskRemind,
   onRemind,
   onAskClose,
   onClose,
   onCancelDialog,
+  onExtend,
+  onDuplicate,
   fromOverview = false,
   dialogInline = false,
+  menuOpen = false,
 }: {
   exam: GroupExam;
   active: boolean;
@@ -138,17 +140,20 @@ export function ExamDetailView({
   rows: StudentRow[];
   hardest: HardQuestion[];
   titleOf: (id: string) => string;
-  /** A short confirmation ("Exam assigned…", "Reminder sent to 5 students"). */
-  message: string;
   dialog: DetailDialog;
   onAskRemind: () => void;
   onRemind: () => void;
   onAskClose: () => void;
   onClose: () => void;
   onCancelDialog: () => void;
+  /** The menu items that open another screen. */
+  onExtend: () => void;
+  onDuplicate: () => void;
   /** Opened from the Overview: Back returns there. */
   fromOverview?: boolean;
   dialogInline?: boolean;
+  /** For the review page: the "..." menu drawn open. */
+  menuOpen?: boolean;
 }) {
   const tried = triedCount(counts);
   const reminderText = `Reminder: ${exam.title} is due ${shortDate(exam.deadline)}. You have not started this exam yet.`;
@@ -162,10 +167,29 @@ export function ExamDetailView({
             ? { label: "Back to Overview", href: "/instructor" }
             : { label: "Back to Exams", href: "/instructor/exams" }
         }
+        action={
+          <DropdownMenu
+            label="More actions"
+            initiallyOpen={menuOpen}
+            items={
+              active
+                ? [
+                    { id: "extend", label: "Extend deadline", onSelect: onExtend },
+                    { id: "duplicate", label: "Duplicate exam", onSelect: onDuplicate },
+                    {
+                      id: "close",
+                      label: "Close exam now",
+                      destructive: true,
+                      dividerAbove: true,
+                      onSelect: onAskClose,
+                    },
+                  ]
+                : [{ id: "duplicate", label: "Duplicate exam", onSelect: onDuplicate }]
+            }
+          />
+        }
       />
-      <p role="status" data-message className="type-body text-center not-empty:py-1">
-        {message}
-      </p>
+      <FlashNotice />
 
       <StatePill exam={exam} active={active} />
 
@@ -355,49 +379,11 @@ export function ExamDetailView({
         </section>
       )}
 
-      {active ? (
-        <div className="flex flex-col gap-3">
-          {counts.notStarted > 0 && (
-            <Button variant="secondary" icon={Bell} onClick={onAskRemind}>
-              Send reminder
-            </Button>
-          )}
-          <ButtonLink
-            href={`/instructor/exams/${exam.id}/extend`}
-            variant="secondary"
-            icon={CalendarPlus}
-          >
-            Extend deadline
-          </ButtonLink>
-          <ButtonLink
-            href={`/instructor/exams/new?duplicate=${exam.id}`}
-            variant="secondary"
-            icon={Copy}
-          >
-            Duplicate exam
-          </ButtonLink>
-          <Button variant="secondary" icon={Lock} onClick={onAskClose}>
-            Close exam now
-          </Button>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-3">
-          <ButtonLink
-            href={`/instructor/exams/new?duplicate=${exam.id}`}
-            variant="secondary"
-            icon={Copy}
-          >
-            Duplicate exam
-          </ButtonLink>
-          <p className="type-small text-center text-text-secondary">
-            Opens Assign exam with the same topics and settings.
-          </p>
-        </div>
+      {active && counts.notStarted > 0 && (
+        <ActionBar>
+          <Button onClick={onAskRemind}>Send reminder</Button>
+        </ActionBar>
       )}
-
-      <p data-demo-note className="type-small text-center text-text-secondary">
-        {DEMO_NOTE}
-      </p>
 
       {(dialog === "remind" || !dialogInline) && (
         <ConfirmDialog

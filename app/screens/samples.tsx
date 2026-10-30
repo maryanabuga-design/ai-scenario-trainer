@@ -1453,6 +1453,8 @@ export function InstructorExamsSample({
     | "discard"
     | "detail"
     | "detail-closed"
+    | "menu"
+    | "menu-closed"
     | "remind"
     | "close"
     | "extend"
@@ -1509,7 +1511,7 @@ export function InstructorExamsSample({
       />
     );
   }
-  const closed = state === "detail-closed";
+  const closed = state === "detail-closed" || state === "menu-closed";
   const exam = closed ? exams[1] : exams[0];
   const people = examPeople(everyone, exam);
   const context = { attempts, now };
@@ -1533,13 +1535,15 @@ export function InstructorExamsSample({
       rows={studentRows(people, exam, context)}
       hardest={hardestQuestions(people, exam, attempts, now)}
       titleOf={titleOf}
-      message=""
+      menuOpen={state === "menu" || state === "menu-closed"}
       dialog={state === "remind" ? "remind" : state === "close" ? "close" : null}
       onAskRemind={() => undefined}
       onRemind={() => undefined}
       onAskClose={() => undefined}
       onClose={() => undefined}
       onCancelDialog={() => undefined}
+      onExtend={() => undefined}
+      onDuplicate={() => undefined}
       dialogInline
     />
   );

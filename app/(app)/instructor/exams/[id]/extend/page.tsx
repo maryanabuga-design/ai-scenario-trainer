@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { ExamNotFound } from "@/components/InstructorExams/ExamDetailView";
 import { ExtendDeadlineView } from "@/components/InstructorExams/ExtendDeadlineView";
+import { setFlash } from "@/lib/flash";
 import { isActive, shortDate } from "@/lib/group-exams";
 import { addNotice, extendGroupExam, useGroupExams } from "@/lib/group-store";
 
@@ -32,6 +33,7 @@ export default function ExtendDeadlinePage() {
           createdAt: Date.now(),
           groups: exam.groupIds,
         });
+        setFlash("Deadline extended", `/instructor/exams/${exam.id}`);
         router.push(`/instructor/exams/${exam.id}`);
       }}
     />

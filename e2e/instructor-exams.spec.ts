@@ -34,6 +34,13 @@ const ATTENTION_BG = "rgb(241, 228, 200)";
 const SAND = "rgb(240, 236, 230)";
 const noSidewaysScroll = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
+const primaries = (page: Page) =>
+  page
+    .locator("a:visible, button:visible")
+    .evaluateAll(
+      (els, color) => els.filter((el) => getComputedStyle(el).backgroundColor === color).length,
+      PRIMARY,
+    );
 const bg = (loc: ReturnType<Page["locator"]>) =>
   loc.evaluate((el) => getComputedStyle(el).backgroundColor);
 
@@ -134,7 +141,7 @@ for (const width of [360, 430]) {
       await expect(page.getByRole("navigation", { name: "Main" })).toHaveCount(0);
     });
 
-    test("the Exams list: the band with the avatar only, the Primary Assign exam with an icon, ACTIVE with its count, 104px cards with the group name, the closed toggle", async ({
+    test("the Exams list: the band with the subtitle and the avatar, the Primary Assign exam with an icon, ACTIVE alone, calm 88px cards, the closed toggle, no demo line", async ({
       page,
     }) => {
       await allGroups(page);
@@ -146,22 +153,24 @@ for (const width of [360, 430]) {
       expect(await bg(assign)).toBe(PRIMARY);
       expect((await assign.boundingBox())!.height).toBe(52);
       await expect(assign.locator("svg.lucide-circle-plus")).toHaveCount(1);
-      await expect(page.locator("[data-active-count]")).toHaveText("2 Active");
+      await expect(page.getByText("Assign exams and see who has passed.")).toBeVisible();
+      await expect(page.locator("[data-active-count]")).toHaveCount(0);
+      await expect(page.getByText(/^\d+ Active$/)).toHaveCount(0);
+      await expect(page.getByText("ACTIVE", { exact: true })).toBeVisible();
       const cards = page.locator("[data-exam-card]:visible");
       await expect(cards).toHaveCount(2);
       for (const card of await cards.all()) {
         const b = (await card.boundingBox())!;
-        expect([b.height, b.x, b.width]).toEqual([104, 16, width - 32]);
-        await expect(card.locator("[data-group-name]")).toBeVisible();
+        expect([b.height, b.x, b.width]).toEqual([88, 16, width - 32]);
+        await expect(card.locator("[data-group-name]")).toHaveCount(0);
         await expect(card.locator("img")).toHaveAttribute("src", "/heroes/exam-card.webp");
         expect((await card.locator("img").boundingBox())!.width).toBe(56);
         expect(await bg(card)).toBe("rgb(255, 255, 255)");
-        await expect(card).toContainText(/Passed \d+ of \d+ · \d+ not started/);
+        await expect(card).toContainText(/Passed \d+ of \d+$/);
+        expect(await card.innerText()).not.toMatch(/not started|topics?\b/i);
+        await expect(card.locator("[data-due-pill]")).toHaveText(/^Due \d+ \w{3}$/);
         await expect(card.locator("svg.lucide-chevron-right")).toHaveCount(1);
       }
-      await expect(page.locator("[data-due-pill]").first()).toContainText(
-        /^Due \d+ \w{3} · \d topics?$/,
-      );
       expect(await bg(page.locator("[data-due-pill]").first())).toBe(SAND);
       // the toggle is a full-width Secondary under the active cards, closed cards are inert until opened
       const toggle = page.getByRole("button", { name: "Show closed exams (1)" });
@@ -179,16 +188,16 @@ for (const width of [360, 430]) {
       await expect(page.getByRole("button", { name: "Hide closed exams" })).toBeVisible();
       await noPercent(page);
       expect(await noSidewaysScroll(page)).toBe(true);
-      await expect(page.locator("[data-demo-note]")).toHaveText(
-        "Demo group. Student data on this screen is simulated.",
-      );
+      await expect(page.locator("[data-demo-note]")).toHaveCount(0);
+      await expect(page.getByText("Demo group")).toHaveCount(0);
+      await expect(page.getByText("Archive", { exact: true })).toHaveCount(0);
     });
 
-    test("a due pill is amber within 3 days, with 'Due in 3 days · 2 topics'", async ({ page }) => {
+    test("a due pill is amber within 3 days and says the date: 'Due 27 Oct'", async ({ page }) => {
       const id = await assign(page, "Exam: Soon", { deadline: "In 3 days" });
       await page.goto("/instructor/exams");
       const pill = page.locator(`[data-exam-card="${id}"] [data-due-pill]`);
-      await expect(pill).toHaveText("Due in 3 days · 2 topics");
+      await expect(pill).toHaveText(/^Due \d+ \w{3}$/);
       expect(await bg(pill)).toBe(ATTENTION_BG);
     });
 
@@ -288,7 +297,7 @@ for (const width of [360, 430]) {
       page,
     }) => {
       const id = await assign(page, "Exam: Alarm and routes");
-      await expect(page.locator("[data-message]")).toHaveText(
+      await expect(page.locator("[data-flash]:visible")).toContainText(
         "Exam assigned. Students will see it on Home.",
       );
       await expect(page.locator("main h1:visible")).toHaveText("Exam: Alarm and routes");
@@ -375,15 +384,13 @@ for (const width of [360, 430]) {
       expect(await bg(page.locator("[data-count=not-passed]"))).toBe(ATTENTION_BG);
       await expect(page.locator('[data-status="not-started"]')).toHaveCount(0);
       await expect(page.locator('[data-status="missed"]').first()).toBeVisible();
-      // only Duplicate exam, with its note
-      await expect(page.getByRole("link", { name: "Duplicate exam" })).toBeVisible();
-      await expect(page.locator("main")).toContainText(
-        "Opens Assign exam with the same topics and settings.",
-      );
-      for (const gone of ["Send reminder", "Extend deadline", "Close exam now"]) {
-        await expect(page.getByRole("button", { name: gone })).toHaveCount(0);
-        await expect(page.getByRole("link", { name: gone })).toHaveCount(0);
-      }
+      // the menu has only Duplicate exam; nothing is pinned
+      await page.getByRole("button", { name: "More actions" }).click();
+      await expect(page.getByRole("menuitem")).toHaveText(["Duplicate exam"]);
+      await page.keyboard.press("Escape");
+      await expect(page.getByRole("button", { name: "Send reminder" })).toHaveCount(0);
+      expect(await primaries(page)).toBe(0);
+      await expect(page.locator("[data-demo-note]")).toHaveCount(0);
       await noPercent(page);
     });
 
@@ -410,6 +417,55 @@ for (const width of [360, 430]) {
       await expect(page).toHaveURL(/\/instructor\/exams\/seed-closed$/);
     });
 
+    test("the exam detail: no stacked buttons and no demo line; the '...' menu has Extend deadline, Duplicate exam and, last after a divider in red, Close exam now; Send reminder is the one pinned Primary", async ({
+      page,
+    }) => {
+      await assign(page, "Exam: Menu");
+      for (const name of ["Extend deadline", "Duplicate exam", "Close exam now"]) {
+        await expect(page.getByRole("button", { name })).toHaveCount(0);
+        await expect(page.getByRole("link", { name })).toHaveCount(0);
+      }
+      await expect(page.locator("[data-demo-note]")).toHaveCount(0);
+      await expect(page.locator("[data-message]")).toHaveCount(0);
+      // pinned: the single Primary, above the navigation, at the bottom of the screen
+      const send = page.getByRole("button", { name: "Send reminder" });
+      await expect(send).toBeVisible();
+      expect(await bg(send)).toBe(PRIMARY);
+      expect((await send.boundingBox())!.height).toBe(52);
+      expect(await primaries(page)).toBe(1);
+      expect(await noSidewaysScroll(page)).toBe(true);
+      // the menu, under the button, in the band next to the back arrow
+      const more = page.getByRole("button", { name: "More actions" });
+      await expect(more).toHaveAttribute("aria-haspopup", "menu");
+      const back = (await page.locator("[data-back-button]:visible").first().boundingBox())!;
+      const mb = (await more.boundingBox())!;
+      expect(Math.abs(mb.y + mb.height / 2 - (back.y + back.height / 2))).toBeLessThanOrEqual(12);
+      expect(mb.x).toBeGreaterThan(width / 2);
+      await more.click();
+      const items = page.getByRole("menuitem");
+      await expect(items).toHaveText(["Extend deadline", "Duplicate exam", "Close exam now"]);
+      const last = items.last();
+      expect(await last.evaluate((el) => getComputedStyle(el).color)).toBe("rgb(155, 44, 31)");
+      expect(await last.evaluate((el) => getComputedStyle(el).borderTopWidth)).toBe("1px");
+      expect(await items.first().evaluate((el) => getComputedStyle(el).color)).toBe(
+        "rgb(26, 26, 26)",
+      );
+      const mn = (await page.locator("[data-menu]").boundingBox())!;
+      expect(mn.x).toBeGreaterThanOrEqual(0);
+      expect(mn.x + mn.width).toBeLessThanOrEqual(width);
+      expect(await noSidewaysScroll(page)).toBe(true);
+      // Close asks first
+      await last.click();
+      const dialog = page.locator("dialog[open]");
+      await expect(dialog).toContainText("Close this exam now?");
+      await expect(dialog.getByRole("button", { name: "Close exam" })).toBeVisible();
+      await dialog.getByRole("button", { name: "Keep open" }).click();
+      await expect(page.locator("[data-state-pill]")).toContainText("Active");
+      // a closed exam has no pinned button
+      await page.goto("/instructor/exams/seed-closed");
+      await expect(page.getByRole("button", { name: "Send reminder" })).toHaveCount(0);
+    });
+
     test("Send reminder: a dialog with the message, the count after sending, and one notification however often", async ({
       page,
     }) => {
@@ -424,9 +480,7 @@ for (const width of [360, 430]) {
       expect(await bg(dialog.getByRole("button", { name: "Send reminder" }))).toBe(PRIMARY);
       expect(await bg(dialog.getByRole("button", { name: "Cancel" }))).toBe(OLIVE_TINT);
       await dialog.getByRole("button", { name: "Send reminder" }).click();
-      await expect(page.locator("[data-message]")).toHaveText(
-        `Reminder sent to ${notStarted} students`,
-      );
+      await expect(page.locator("[data-flash]:visible")).toContainText("Reminder sent");
       await page.getByRole("button", { name: "Send reminder" }).click();
       await page.locator("dialog[open]").getByRole("button", { name: "Send reminder" }).click();
       await switchRole(page, "Student");
@@ -443,7 +497,8 @@ for (const width of [360, 430]) {
         "Active · Due ",
         "",
       );
-      await page.getByRole("link", { name: "Extend deadline" }).click();
+      await page.getByRole("button", { name: "More actions" }).click();
+      await page.getByRole("menuitem", { name: "Extend deadline" }).click();
       await expect(page).toHaveURL(new RegExp(`/instructor/exams/${id}/extend$`));
       await expect(page.getByRole("link", { name: "Back to exam" })).toBeVisible();
       for (const label of ["+3 days", "+1 week", "Pick a date"]) {
@@ -456,6 +511,7 @@ for (const width of [360, 430]) {
       await expect(extend).toBeEnabled();
       await extend.click();
       await expect(page).toHaveURL(new RegExp(`/instructor/exams/${id}$`));
+      await expect(page.locator("[data-flash]:visible")).toContainText("Deadline extended");
       const next = (await page.locator("[data-state-pill]").innerText()).replace(
         "Active · Due ",
         "",
@@ -471,7 +527,8 @@ for (const width of [360, 430]) {
       page,
     }) => {
       const id = await assign(page, "Exam: Close me");
-      await page.getByRole("button", { name: "Close exam now" }).click();
+      await page.getByRole("button", { name: "More actions" }).click();
+      await page.getByRole("menuitem", { name: "Close exam now" }).click();
       const dialog = page.locator("dialog[open]");
       await expect(dialog).toContainText("Close this exam now?");
       await expect(dialog).toContainText(
@@ -480,9 +537,10 @@ for (const width of [360, 430]) {
       expect(await bg(dialog.getByRole("button", { name: "Close exam" }))).toBe(PRIMARY);
       await dialog.getByRole("button", { name: "Keep open" }).click();
       await expect(page.locator("[data-state-pill]")).toContainText("Active");
-      await page.getByRole("button", { name: "Close exam now" }).click();
+      await page.getByRole("button", { name: "More actions" }).click();
+      await page.getByRole("menuitem", { name: "Close exam now" }).click();
       await page.locator("dialog[open]").getByRole("button", { name: "Close exam" }).click();
-      await expect(page.locator("[data-message]")).toHaveText("Exam closed.");
+      await expect(page.locator("[data-flash]:visible")).toContainText("Exam closed");
       await expect(page.locator("[data-state-pill]")).toContainText("Closed");
       // a closed exam has Missed, never Not started
       await expect(page.locator("[data-count=not-started]")).toHaveCount(0);
@@ -500,7 +558,8 @@ for (const width of [360, 430]) {
       page,
     }) => {
       const id = await assign(page, "Exam: Original", { attempts: "1 attempt" });
-      await page.getByRole("link", { name: "Duplicate exam" }).click();
+      await page.getByRole("button", { name: "More actions" }).click();
+      await page.getByRole("menuitem", { name: "Duplicate exam" }).click();
       await expect(page).toHaveURL(new RegExp(`/instructor/exams/new\\?duplicate=${id}$`));
       await expect(page.getByLabel("Exam title")).toHaveValue("Exam: Original (copy)");
       await expect(page.locator("input[name=topics]:checked")).toHaveCount(2);
@@ -510,6 +569,7 @@ for (const width of [360, 430]) {
       await page.getByText("In 2 weeks", { exact: true }).click();
       await page.getByRole("button", { name: "Assign exam" }).click();
       await expect(page).toHaveURL(/assigned=1/);
+      await expect(page.locator("[data-flash]:visible")).toContainText("Exam duplicated");
       await expect(page.locator("main h1:visible")).toHaveText("Exam: Original (copy)");
       await page.goto(`/instructor/exams/${id}`);
       await expect(page.locator("main h1:visible")).toHaveText("Exam: Original");
@@ -638,7 +698,8 @@ for (const width of [360, 430]) {
       // the instructor closes it while the attempt is running
       await switchRole(page, "Instructor");
       await page.goto(`/instructor/exams/${id}`);
-      await page.getByRole("button", { name: "Close exam now" }).click();
+      await page.getByRole("button", { name: "More actions" }).click();
+      await page.getByRole("menuitem", { name: "Close exam now" }).click();
       await page.locator("dialog[open]").getByRole("button", { name: "Close exam" }).click();
       await expect(page.locator("[data-state-pill]")).toContainText("Closed");
       await switchRole(page, "Student");

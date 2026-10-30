@@ -52,9 +52,10 @@ async function assign(page: Page, title: string, preset: "In 3 days" | "In 1 wee
 
 async function closeExam(page: Page, id: string) {
   await page.goto(`/instructor/exams/${id}`);
-  await page.getByRole("button", { name: "Close exam now" }).click();
+  await page.getByRole("button", { name: "More actions" }).click();
+  await page.getByRole("menuitem", { name: "Close exam now" }).click();
   await page.locator("dialog[open]").getByRole("button", { name: "Close exam" }).click();
-  await expect(page.getByRole("button", { name: "Close exam now" })).toHaveCount(0);
+  await expect(page.locator("[data-state-pill]")).toContainText("Closed");
 }
 
 async function passExam(page: Page, id: string) {
@@ -203,7 +204,7 @@ for (const width of [360, 430]) {
         await page.goto(`/instructor/exams/${b}`);
         await page.getByRole("button", { name: "Send reminder" }).click();
         await page.locator("dialog[open]").getByRole("button", { name: "Send reminder" }).click();
-        await expect(page.locator("[data-message]")).toContainText("Reminder sent to");
+        await expect(page.locator("[data-flash]:visible")).toContainText("Reminder sent");
         await page.waitForTimeout(30);
       }
       await switchRole(page, "Student");

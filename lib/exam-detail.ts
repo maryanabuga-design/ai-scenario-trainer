@@ -1,4 +1,4 @@
-import { daysUntil, DUE_SOON_DAYS, dueReason } from "@/lib/actions";
+import { daysUntil, DUE_SOON_DAYS } from "@/lib/actions";
 import { bestAttempt, finishedOf, triedCount } from "@/lib/cohort";
 import type { Attempt, ExamStatus, GroupCounts, Participant } from "@/lib/cohort";
 import { attemptsOf } from "@/lib/cohort";
@@ -15,20 +15,16 @@ import { findItem } from "@/lib/items";
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
-export const topicsCount = (exam: Pick<GroupExam, "topicIds">) =>
-  plural(exam.topicIds.length, "topic", "topics");
-
-/** The soft pill of an active card: "Due in 2 days · 1 topic" (amber within 3 days) or "Due 26 Oct · 2 topics". */
+/** The soft pill of an active card: "Due 4 Nov", amber within 3 days, otherwise neutral. */
 export function duePill(
-  exam: Pick<GroupExam, "deadline" | "topicIds">,
+  exam: Pick<GroupExam, "deadline">,
   now: number,
 ): { text: string; tone: "amber" | "neutral" } {
   const days = daysUntil(exam.deadline, now);
-  if (days !== null && days <= DUE_SOON_DAYS) {
-    const text = dueReason(days);
-    return { text: `${text} · ${topicsCount(exam)}`, tone: "amber" };
-  }
-  return { text: `Due ${shortDate(exam.deadline)} · ${topicsCount(exam)}`, tone: "neutral" };
+  return {
+    text: `Due ${shortDate(exam.deadline)}`,
+    tone: days !== null && days <= DUE_SOON_DAYS ? "amber" : "neutral",
+  };
 }
 
 /** The day an exam closed: when it was closed by hand, else its deadline. */

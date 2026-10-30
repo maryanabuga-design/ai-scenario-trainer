@@ -155,8 +155,9 @@ for (const width of [360, 430]) {
       await nav(page).getByRole("link", { name: "Exams" }).click();
       await expect(page.locator("[data-group-pill]:visible")).toHaveCount(0);
       await expect(page.locator("[data-exam-card]:visible")).toHaveCount(1);
-      await expect(page.locator("[data-exam-card]:visible").first()).toContainText(
-        "Military training",
+      // the card no longer names its group: the one exam is the Military training exam
+      await expect(page.locator("[data-exam-card]:visible").first()).not.toContainText(
+        "Rescue team",
       );
     });
 

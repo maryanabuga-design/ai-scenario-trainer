@@ -10,6 +10,8 @@ export type MenuItem = {
   label: string;
   /** The destructive label colour (Delete). */
   destructive?: boolean;
+  /** A hairline above the item (the destructive last item of the exam menu). */
+  dividerAbove?: boolean;
   onSelect: () => void;
 };
 
@@ -118,7 +120,7 @@ export function DropdownMenu({
               onClick={() => choose(item)}
               className={`type-body-strong flex min-h-12 cursor-pointer items-center px-4 py-2 ${
                 item.destructive ? "text-wrong-text" : "text-text"
-              } ${index === active ? "bg-secondary-sand" : ""}`}
+              } ${item.dividerAbove ? "border-t border-soft-divider" : ""} ${index === active ? "bg-secondary-sand" : ""}`}
             >
               {item.label}
             </li>

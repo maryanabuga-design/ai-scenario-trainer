@@ -8,22 +8,21 @@ import { ExamCard } from "@/components/InstructorExams/ExamCard";
 import { Media3D } from "@/components/Media3D/Media3D";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { ProfileAvatar } from "@/components/ProfileAvatar/ProfileAvatar";
-import { DEMO_NOTE, groupCounts } from "@/lib/cohort";
+import { groupCounts } from "@/lib/cohort";
 import type { Attempt, Participant } from "@/lib/cohort";
 import type { GroupExam } from "@/lib/group-exams";
 import { splitExams } from "@/lib/group-exams";
-import { examPeople, groupNames, groups } from "@/lib/groups";
+import { examPeople } from "@/lib/groups";
 import { cardPictureFiles } from "@/lib/media-frames";
 
+export const EXAMS_SUBTITLE = "Assign exams and see who has passed.";
 export const EXAMS_EMPTY_TITLE = "No exams yet";
 export const EXAMS_EMPTY = "Assign the first exam to your group.";
 export const EXAMS_EMPTY_NOTE = "Exams check how well your group knows the topics you choose.";
 
 /**
- * The Exams tab of the Instructor (DESIGN.md: Instructor, Exams rebuilt): the band with the avatar
- * only, the Primary "Assign exam" with a plus icon, "ACTIVE" with its count and the active cards,
- * and the toggle "Show closed exams (n)" with the "CLOSED" cards. Exams of every group are listed;
- * with several groups each card names its group and is 104px. Empty: one card with the picture,
+ * The Exams tab of the Instructor (DESIGN.md: Instructor, Exams rebuilt): the band with the subtitle and the avatar, the Primary "Assign exam" with a plus icon, "ACTIVE" and the active cards,
+ * and the toggle "Show closed exams (n)" with the "CLOSED" cards. Exams of every group are listed. Empty: one card with the picture,
  * the words and the Primary button (which is then not repeated above).
  */
 export function InstructorExamsView({
@@ -43,7 +42,6 @@ export function InstructorExamsView({
   const { active, closed } = splitExams(exams, now);
   const [open, setOpen] = useState(initiallyOpen);
   const wrapper = useRef<HTMLDivElement>(null);
-  const several = groups.length > 1;
 
   const card = (exam: GroupExam, isClosed: boolean) => {
     const counts = groupCounts(examPeople(people, exam), exam, { attempts, now });
@@ -53,10 +51,8 @@ export function InstructorExamsView({
           exam={exam}
           passed={counts.passed}
           total={counts.total}
-          notStarted={counts.notStarted}
           now={now}
           closed={isClosed}
-          groupName={several ? groupNames(exam.groupIds) : undefined}
         />
       </li>
     );
@@ -75,7 +71,11 @@ export function InstructorExamsView({
 
   return (
     <div className="flex flex-col gap-4 pb-4">
-      <PageHeaderBand title="Exams" action={<ProfileAvatar />} />
+      <PageHeaderBand
+        title="Exams"
+        subtitle={<span className="text-text-secondary">{EXAMS_SUBTITLE}</span>}
+        action={<ProfileAvatar />}
+      />
 
       {exams.length === 0 ? (
         <div
@@ -101,14 +101,9 @@ export function InstructorExamsView({
           </ButtonLink>
           {active.length > 0 && (
             <section aria-labelledby="active-title" className="flex flex-col gap-3">
-              <div className="flex items-baseline justify-between gap-3">
-                <h2 id="active-title" className="type-label text-text-secondary">
-                  ACTIVE
-                </h2>
-                <span data-active-count className="type-small text-text-secondary">
-                  {active.length} Active
-                </span>
-              </div>
+              <h2 id="active-title" className="type-label text-text-secondary">
+                ACTIVE
+              </h2>
               <ul className="flex flex-col gap-3">{active.map((exam) => card(exam, false))}</ul>
             </section>
           )}
@@ -137,12 +132,9 @@ export function InstructorExamsView({
               >
                 <div className="min-h-0 overflow-hidden">
                   <section aria-labelledby="closed-title" className="flex flex-col gap-3 pb-3">
-                    <div className="flex items-baseline justify-between gap-3">
-                      <h2 id="closed-title" className="type-label text-text-secondary">
-                        CLOSED
-                      </h2>
-                      <span className="type-small text-text-secondary">Archive</span>
-                    </div>
+                    <h2 id="closed-title" className="type-label text-text-secondary">
+                      CLOSED
+                    </h2>
                     <ul className="flex flex-col gap-3">
                       {closed.map((exam) => card(exam, true))}
                     </ul>
@@ -153,9 +145,6 @@ export function InstructorExamsView({
           )}
         </>
       )}
-      <p data-demo-note className="type-small text-center text-text-secondary">
-        {DEMO_NOTE}
-      </p>
     </div>
   );
 }

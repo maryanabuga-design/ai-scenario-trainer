@@ -1274,6 +1274,16 @@ export default function Screens() {
               <InstructorExamsSample state="detail-closed" />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Instructor: Exam detail, the ... menu open (Close exam now last, red)">
+            <Screen nav="/instructor/exams" role="instructor">
+              <InstructorExamsSample state="menu" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Closed exam detail, the ... menu (Duplicate exam only)">
+            <Screen nav="/instructor/exams" role="instructor">
+              <InstructorExamsSample state="menu-closed" />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Instructor: Exam detail, Send reminder dialog">
             <Screen>
               <InstructorExamsSample state="remind" />

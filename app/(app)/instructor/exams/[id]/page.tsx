@@ -1,31 +1,29 @@
 "use client";
 
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { ExamDetailView, ExamNotFound } from "@/components/InstructorExams/ExamDetailView";
 import type { DetailDialog } from "@/components/InstructorExams/ExamDetailView";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { useAuth } from "@/lib/auth";
+import { setFlash } from "@/lib/flash";
 import { groupCounts, participants, studentRows } from "@/lib/cohort";
 import { hardestQuestions } from "@/lib/exam-detail";
 import { isActive, shortDate } from "@/lib/group-exams";
 import { examPeople } from "@/lib/groups";
 import { addNotice, closeGroupExam, useAttempts, useGroupExams } from "@/lib/group-store";
-import { studentsCount } from "@/lib/overview";
 
 function Detail() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const pathname = usePathname();
   const query = useSearchParams();
-  const assigned = query.get("assigned") === "1";
   const fromOverview = query.get("from") === "overview";
   const exams = useGroupExams();
   const attempts = useAttempts();
   const auth = useAuth();
   const { sections } = useSourceSheet();
   const [now] = useState(() => Date.now());
-  const [message, setMessage] = useState(
-    assigned ? "Exam assigned. Students will see it on Home." : "",
-  );
   const [dialog, setDialog] = useState<DetailDialog>(null);
   if (exams === "loading" || attempts === "loading" || auth === "loading") return null;
 
@@ -47,7 +45,6 @@ function Detail() {
       rows={studentRows(people, exam, context)}
       hardest={hardestQuestions(people, exam, attempts, now)}
       titleOf={titleOf}
-      message={message}
       fromOverview={fromOverview}
       dialog={dialog}
       onAskRemind={() => setDialog("remind")}
@@ -63,14 +60,16 @@ function Detail() {
           groups: exam.groupIds,
         });
         setDialog(null);
-        setMessage(`Reminder sent to ${studentsCount(counts.notStarted)}`);
+        setFlash("Reminder sent", pathname);
       }}
+      onExtend={() => router.push(`/instructor/exams/${exam.id}/extend`)}
+      onDuplicate={() => router.push(`/instructor/exams/new?duplicate=${exam.id}`)}
       onAskClose={() => setDialog("close")}
       onCancelDialog={() => setDialog(null)}
       onClose={() => {
         closeGroupExam(exam.id);
         setDialog(null);
-        setMessage("Exam closed.");
+        setFlash("Exam closed", pathname);
       }}
     />
   );

@@ -6,6 +6,7 @@ import { AssignExamView } from "@/components/InstructorExams/AssignExamView";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { useAuth } from "@/lib/auth";
 import { participants } from "@/lib/cohort";
+import { setFlash } from "@/lib/flash";
 import { createExam, knownTopicIds, shortDate } from "@/lib/group-exams";
 import type { GroupExam } from "@/lib/group-exams";
 import { addNotice, saveGroupExam, useGroupExams } from "@/lib/group-store";
@@ -71,6 +72,10 @@ function AssignExam({
           createdAt: at,
           groups: exam.groupIds,
         });
+        setFlash(
+          source ? "Exam duplicated" : "Exam assigned. Students will see it on Home.",
+          `/instructor/exams/${exam.id}`,
+        );
         router.push(
           `/instructor/exams/${exam.id}?assigned=1${fromOverview ? "&from=overview" : ""}`,
         );
