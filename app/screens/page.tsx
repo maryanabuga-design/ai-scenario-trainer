@@ -921,12 +921,12 @@ export default function Screens() {
               <InstructorContentSample state="edit-ok" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor: Students list (Status dropdown closed on All, search, rows with chip under the name)">
+          <PhoneFrame label="Instructor: Students list (filter icon button beside the search, search, rows with chip under the name)">
             <Screen nav="/instructor/students" role="instructor">
               <InstructorStudentsSample />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor: Students, Status dropdown open">
+          <PhoneFrame label="Instructor: Students, Filter by status sheet open">
             <Screen nav="/instructor/students" role="instructor">
               <InstructorStudentsSample state="status-open" />
             </Screen>
@@ -936,22 +936,22 @@ export default function Screens() {
               <InstructorStudentsSample state="status-empty" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor: Students, Status: Needs attention">
+          <PhoneFrame label="Instructor: Students, Showing Needs attention">
             <Screen nav="/instructor/students" role="instructor">
               <InstructorStudentsSample state="needs" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor: Students, Status: Ready">
+          <PhoneFrame label="Instructor: Students, Showing Ready">
             <Screen nav="/instructor/students" role="instructor">
               <InstructorStudentsSample state="ready" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor: Students, Status: Almost ready">
+          <PhoneFrame label="Instructor: Students, Showing Almost ready">
             <Screen nav="/instructor/students" role="instructor">
               <InstructorStudentsSample state="almost" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor: Students, Status: Not started">
+          <PhoneFrame label="Instructor: Students, Showing Not started">
             <Screen nav="/instructor/students" role="instructor">
               <InstructorStudentsSample state="not-started" />
             </Screen>

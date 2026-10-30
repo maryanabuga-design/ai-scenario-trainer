@@ -1,16 +1,17 @@
 "use client";
 
-import { Funnel, UserPlus, UserRoundSearch } from "lucide-react";
+import { Funnel, SlidersHorizontal, UserPlus, UserRoundSearch } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
-import { FilterSelect } from "@/components/FilterSelect/FilterSelect";
+import { FilterSheet } from "@/components/FilterSheet/FilterSheet";
 import { GetStartedCard } from "@/components/InstructorOverview/OverviewBlocks";
 import { StudentRow, StudentRowsCard } from "@/components/InstructorStudents/StudentRow";
 import { SearchField } from "@/components/SearchField/SearchField";
+import { SelectableRow } from "@/components/SelectableRow/SelectableRow";
 import { DEMO_NOTE } from "@/lib/cohort";
 import { getStarted } from "@/lib/get-started";
-import { profileStatus, statusOptions, rowMuted } from "@/lib/students";
+import { profileStatus, rowMuted, statusOptions } from "@/lib/students";
 import type { FilterOrigin, StudentProfile, StudentsFilter } from "@/lib/students";
 
 export const NO_SEARCH_MATCH = "No students match this search.";
@@ -127,7 +128,7 @@ export function EmptyCard({
 
 /**
  * The Students view of the tab (DESIGN.md: Instructor, Students rebuilt): the Primary "Invite
- * students" (24px under the switch), the search field and the Status dropdown as ONE group (24px under the button, 12px between them), the filter line when the list comes filtered from
+ * students" (24px under the switch), the search field with the filter icon button beside it as ONE row (24px under the button, 12px between them), the filter line when the list comes filtered from
  * elsewhere, then ONE card of rows (or an empty state) and the demo note.
  */
 export function StudentsListView({
@@ -159,9 +160,12 @@ export function StudentsListView({
   onClearFilter: () => void;
   /** The students the status counts are for (the group, or the topic's list): not narrowed by the search or the status. */
   counted?: StudentProfile[];
-  /** For the review page: draw the status list open. */
+  /** For the review page: draw the filter sheet open. */
   statusOpen?: boolean;
 }) {
+  const [sheetOpen, setSheetOpen] = useState(statusOpen);
+  const filterButton = useRef<HTMLButtonElement>(null);
+  const options = statusOptions(counted);
   return (
     <>
       {/* 24px under the switch (16px gap + 8px), then 24px under the button, grouping by spacing */}
@@ -169,23 +173,76 @@ export function StudentsListView({
         <ButtonLink href="/instructor/students/invite" icon={UserPlus}>
           Invite students
         </ButtonLink>
-        <div data-search-group className="flex flex-col gap-3">
-          <SearchField
-            label="Search students"
-            placeholder="Search students"
-            value={query}
-            onChange={onQuery}
-          />
-          <FilterSelect
-            name="students-status"
-            label="Status"
-            options={statusOptions(counted)}
-            value={filter}
-            onChange={onFilter}
-            initiallyOpen={statusOpen}
-          />
+        <div data-search-group className="flex items-start gap-3">
+          <div className="min-w-0 flex-1">
+            <SearchField
+              label="Search students"
+              placeholder="Search students"
+              value={query}
+              onChange={onQuery}
+              compact
+            />
+          </div>
+          <button
+            ref={filterButton}
+            type="button"
+            data-filter-button
+            aria-label="Filter by status"
+            aria-haspopup="dialog"
+            aria-expanded={sheetOpen}
+            onClick={() => setSheetOpen(true)}
+            className={`flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center rounded-[14px] text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+              filter === "all" ? "bg-olive-tint" : "bg-filter-active"
+            }`}
+          >
+            <SlidersHorizontal size={22} strokeWidth={2} aria-hidden="true" />
+          </button>
         </div>
       </div>
+      {filter !== "all" && (
+        <div data-status-line className="-mt-2 flex min-h-11 items-center justify-between gap-3">
+          <p className="type-small min-w-0 truncate text-text-secondary">
+            Showing: {options.find((option) => option.value === filter)?.label}
+          </p>
+          <Button variant="tertiary" onClick={() => onFilter("all")}>
+            Clear
+          </Button>
+        </div>
+      )}
+      <FilterSheet
+        open={sheetOpen}
+        title="Filter by status"
+        onClose={() => setSheetOpen(false)}
+        inline={statusOpen}
+        returnFocus={filterButton}
+      >
+        {options.map((option) => (
+          // a tap on the chosen card does not change the radio, so the card itself chooses
+          <div
+            key={option.value}
+            onClick={() => {
+              onFilter(option.value);
+              setSheetOpen(false);
+            }}
+          >
+            <SelectableRow
+              emphasis
+              name="students-status"
+              value={option.value}
+              checked={option.value === filter}
+              onChange={() => undefined}
+            >
+              <span className="type-body min-w-0">
+                {option.label}
+                <span data-option-count className="text-text-secondary">
+                  {" · "}
+                  {option.count}
+                </span>
+              </span>
+            </SelectableRow>
+          </div>
+        ))}
+      </FilterSheet>
       {showing && <FilterLine text={showing} onClear={onClearFilter} />}
       {total === 0 ? (
         <GetStartedCard

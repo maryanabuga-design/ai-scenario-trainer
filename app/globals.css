@@ -64,6 +64,7 @@
   --success-soft-bg: #edf2e9;
   --success-soft-stroke: #c8d8be;
   --olive-tint-pressed: #d6ddcb;
+  --filter-active: #d3dcc3;
   --placeholder-stroke: #b9c4ac;
   --card: #ffffff;
   --list-card: #faf7f4;
@@ -132,6 +133,7 @@
   --color-list-card: var(--list-card);
   --color-step-caption: var(--step-caption);
   --color-olive-tint-pressed: var(--olive-tint-pressed);
+  --color-filter-active: var(--filter-active);
   --color-placeholder-stroke: var(--placeholder-stroke);
   --color-card: var(--card);
 
@@ -244,6 +246,10 @@ input:autofill {
 dialog[data-sheet] {
   animation: sheet-in 200ms ease-out;
   box-shadow: 0 -4px 16px color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+.filter-sheet {
+  animation: sheet-in 200ms ease-out;
 }
 
 dialog[data-sheet]::backdrop,

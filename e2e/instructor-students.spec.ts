@@ -36,13 +36,26 @@ const chipKinds = (page: Page) =>
   rows(page).evaluateAll((els) =>
     els.map((el) => el.querySelector("[data-status-chip]")!.getAttribute("data-status-chip")!),
   );
-const statusButton = (page: Page) => page.locator("[data-select-button]:visible");
-const statusList = (page: Page) => page.locator("[data-select-list]:visible");
-/** Chooses a status in the Status dropdown. */
+const filterButton = (page: Page) => page.locator("[data-filter-button]:visible");
+const sheet = (page: Page) => page.locator("[data-filter-sheet]");
+const option = (page: Page, value: string) =>
+  page.locator(`[data-filter-sheet] label:has(input[value="${value}"])`);
+/** Chooses a status in the filter sheet. */
 const pick = async (page: Page, value: string) => {
-  await statusButton(page).click();
-  await page.locator(`[data-select-option="${value}"]:visible`).click();
+  await filterButton(page).click();
+  await option(page, value).click();
 };
+/** Waits for the slide-up of the sheet to finish: its bottom edge rests on the bottom of the screen. */
+const settled = (page: Page) =>
+  page.waitForFunction(() => {
+    const el = document.querySelector("[data-filter-sheet]");
+    return (
+      !!el &&
+      el.getAnimations().length === 0 &&
+      Math.round(el.getBoundingClientRect().bottom) === window.innerHeight
+    );
+  });
+const filterLine = (page: Page) => page.locator("[data-status-line]:visible");
 const expectKinds = (page: Page, kinds: string[]) =>
   expect.poll(async () => [...new Set(await chipKinds(page))]).toEqual(kinds);
 const order = { needs: 0, almost: 1, "not-started": 2, ready: 3 } as Record<string, number>;
@@ -119,40 +132,33 @@ for (const width of [360, 430]) {
       expect((await box(invite)).height).toBe(52);
       await expect(invite.locator("svg.lucide-user-plus")).toHaveCount(1);
       const search = page.getByPlaceholder("Search students");
-      expect((await box(search)).height).toBe(52);
+      expect((await box(search)).height).toBe(48);
       await expect(page.locator("svg.lucide-search")).toBeVisible();
       await expect(page.getByRole("button", { name: "Clear search" })).toHaveCount(0);
       await expect(page.locator("[data-filter-chip], [aria-pressed]:visible")).toHaveCount(0);
-      const status = statusButton(page);
-      await expect(status).toHaveCount(1);
-      expect((await box(status)).height).toBe(48);
-      expect(await status.evaluate((el) => getComputedStyle(el).borderTopWidth)).toBe("1px");
-      expect(await status.evaluate((el) => getComputedStyle(el).borderTopColor)).toBe(
-        "rgb(228, 223, 213)",
-      );
-      expect(await status.evaluate((el) => getComputedStyle(el).borderTopLeftRadius)).toBe("14px");
-      expect(await bg(status)).toBe(WHITE);
-      expect((await box(status)).width).toBeCloseTo((await box(search)).width, 0);
-      await expect(status).toHaveAttribute("aria-haspopup", "listbox");
-      await expect(status).toHaveAttribute("aria-expanded", "false");
-      await expect(status).toContainText("Status");
-      await expect(status.locator("[data-select-value]")).toHaveText("All");
-      expect(
-        await status
-          .locator("[data-select-value]")
-          .evaluate((el) => getComputedStyle(el).fontWeight),
-      ).toBe("600");
-      await expect(status.locator("svg.lucide-chevron-down")).toHaveCount(1);
-      // the spacing: switch, 24px, Invite, 24px, search, 12px, the Status dropdown, then the list
+      await expect(page.getByText("Status", { exact: true })).toHaveCount(0);
+      const button = filterButton(page);
+      await expect(button).toHaveCount(1);
+      await expect(button).toHaveAttribute("aria-label", "Filter by status");
+      await expect(button).toHaveAttribute("aria-haspopup", "dialog");
+      await expect(button.locator("svg.lucide-sliders-horizontal")).toHaveCount(1);
+      const bb = await box(button);
+      expect([bb.width, bb.height]).toEqual([48, 48]);
+      expect(await bg(button)).toBe(OLIVE_TINT);
+      expect(await button.evaluate((el) => getComputedStyle(el).borderTopLeftRadius)).toBe("14px");
+      // beside the search field, outside it, 12px away, the same height and the same row
+      const sb = await box(search);
+      expect(sb.height).toBe(48);
+      expect(Math.round(bb.x - (sb.x + sb.width))).toBe(12);
+      expect(Math.abs(bb.y - sb.y)).toBeLessThanOrEqual(1);
+      expect(Math.round(bb.x + bb.width)).toBe(width - 16);
       const sw = await box(page.getByRole("radiogroup").first());
       const gap = (a: { y: number; height: number }, b: { y: number }) =>
         Math.round(b.y - (a.y + a.height));
       expect(gap(sw, await box(invite))).toBe(24);
       expect(gap(await box(invite), await box(search))).toBe(24);
-      expect(gap(await box(search), await box(status))).toBe(12);
       expect(await primaries(page)).toBe(1);
       expect((await box(invite)).y).toBeLessThan((await box(search)).y);
-      expect((await box(search)).y).toBeLessThan((await box(status)).y);
       expect(await noSidewaysScroll(page)).toBe(true);
     });
 
@@ -290,7 +296,7 @@ for (const width of [360, 430]) {
       await clear.click();
       await expect(page.getByPlaceholder("Search students")).toHaveValue("");
       // both are reset: the status is All again and the whole list is back
-      await expect(statusButton(page).locator("[data-select-value]")).toHaveText("All");
+      await expect(filterLine(page)).toHaveCount(0);
       await expect(rows(page)).toHaveCount(15);
       await expect(page.locator("[data-empty]")).toHaveCount(0);
       expect(((await page.locator("main").innerText()).match(/COHORT/gi) ?? []).length).toBe(0);
@@ -301,7 +307,7 @@ for (const width of [360, 430]) {
     }) => {
       await page.goto("/instructor/students?filter=not-started&from=overview");
       await expect(page.locator("[data-filter-line]:visible")).toHaveCount(0);
-      await expect(statusButton(page).locator("[data-select-value]")).toHaveText("Not started");
+      await expect(filterLine(page)).toContainText("Showing: Not started");
       expect(new Set(await chipKinds(page))).toEqual(new Set(["not-started"]));
       await page.getByRole("link", { name: "Back to Overview" }).click();
       await expect(page).toHaveURL(/\/instructor$/);
@@ -323,61 +329,99 @@ for (const width of [360, 430]) {
       await expect(rows(page)).toHaveCount(15);
     });
 
-    test("the Status dropdown: opens under the button with five 44px options and their counts; choosing filters, closes and returns focus; it works with the search", async ({
+    test("the filter sheet: opens inside the phone column with five option cards and their counts; choosing filters and closes; the Showing line and Clear; it works with the search", async ({
       page,
     }) => {
       await page.goto("/instructor/students");
-      const button = statusButton(page);
-      await expect(statusList(page)).toHaveCount(0);
+      const button = filterButton(page);
+      await expect(sheet(page)).toHaveCount(0);
+      await expect(filterLine(page)).toHaveCount(0);
       await button.click();
+      const panel = sheet(page);
+      await expect(panel).toBeVisible();
+      await settled(page);
+      await expect(panel).toHaveAttribute("role", "dialog");
+      await expect(panel).toHaveAttribute("aria-modal", "true");
+      await expect(panel.getByRole("heading", { name: "Filter by status" })).toBeVisible();
       await expect(button).toHaveAttribute("aria-expanded", "true");
-      const listbox = statusList(page);
-      await expect(listbox).toHaveAttribute("role", "listbox");
-      const b = await box(button);
-      const l = await box(listbox);
-      expect(l.y).toBeGreaterThanOrEqual(b.y + b.height);
-      expect(Math.round(l.y - (b.y + b.height))).toBe(4);
-      expect(Math.abs(l.x - b.x)).toBeLessThanOrEqual(1);
-      expect(Math.abs(l.width - b.width)).toBeLessThanOrEqual(1);
-      expect(await bg(listbox)).toBe(WHITE);
-      expect(await listbox.evaluate((el) => getComputedStyle(el).borderTopLeftRadius)).toBe("14px");
-      const options = page.locator("[data-select-option]:visible");
-      await expect(options).toHaveText([
-        /^All\s*15$/,
-        /^Needs attention\s*\d+$/,
-        /^Almost ready\s*\d+$/,
-        /^Ready\s*\d+$/,
-        /^Not started\s*\d+$/,
+      // inside the phone column: as wide as the screen up to 430, anchored to the bottom, 20px top corners
+      const p = await box(panel);
+      const viewportHeight = await page.evaluate(() => window.innerHeight);
+      expect(Math.round(p.y + p.height)).toBe(viewportHeight);
+      expect(p.x).toBeGreaterThanOrEqual(0);
+      expect(Math.round(p.width)).toBe(Math.min(width, 430));
+      expect(await bg(panel)).toBe("rgb(246, 244, 240)");
+      expect(await panel.evaluate((el) => getComputedStyle(el).borderTopLeftRadius)).toBe("20px");
+      const scrim = page.locator("[data-sheet-scrim]");
+      expect(await scrim.evaluate((el) => getComputedStyle(el).backgroundColor)).toMatch(
+        /^(rgba\(26, 26, 26, 0\.4\)|color\(srgb 0\.1.* \/ 0\.4\))$/,
+      );
+      // the handle and the close x (a 44px tap area)
+      await expect(page.locator("[data-sheet-handle]")).toBeVisible();
+      const close = panel.getByRole("button", { name: "Close" });
+      const cb = await box(close);
+      expect([cb.width, cb.height]).toEqual([44, 44]);
+      expect(await bg(close.locator("span").first())).toBe(SAND);
+      // five cards in order, label then count in muted text, radio at the right, the chosen one outlined
+      const cards = panel.locator("label");
+      await expect(cards).toHaveText([
+        /^All · 15$/,
+        /^Needs attention · \d+$/,
+        /^Almost ready · \d+$/,
+        /^Ready · \d+$/,
+        /^Not started · \d+$/,
       ]);
-      for (const option of await options.all()) expect((await box(option)).height).toBe(44);
-      // the counts are the real ones and add up
-      const counts = (await page.locator("[data-select-count]:visible").allInnerTexts()).map(
-        Number,
+      const counts = (await panel.locator("[data-option-count]").allInnerTexts()).map((t) =>
+        Number(t.replace(/\D/g, "")),
       );
       expect(counts.slice(1).reduce((a, c) => a + c, 0)).toBe(counts[0]);
-      // the chosen one: tint fill, semi-bold, no check
-      const chosen = page.locator('[data-select-option="all"]:visible');
-      await expect(chosen).toHaveAttribute("aria-selected", "true");
-      expect(await bg(chosen)).toBe(OLIVE_TINT);
-      expect(await chosen.evaluate((el) => getComputedStyle(el).fontWeight)).toBe("600");
-      await expect(listbox.locator("svg")).toHaveCount(0);
+      for (const card of await cards.all()) {
+        expect(await bg(card)).toBe(WHITE);
+        const cardBox = await box(card);
+        const radio = await box(card.locator("[data-radio-area]"));
+        expect(radio.x + radio.width).toBeGreaterThan(cardBox.x + cardBox.width - 20);
+      }
+      expect(await option(page, "all").evaluate((el) => getComputedStyle(el).borderTopColor)).toBe(
+        PRIMARY,
+      );
+      expect(
+        await option(page, "needs").evaluate((el) => getComputedStyle(el).borderTopColor),
+      ).toBe("rgb(228, 223, 213)");
       expect(await noSidewaysScroll(page)).toBe(true);
-      // each option filters by exactly its status, and the number of rows is its count
+      // each option filters by exactly its status; the sheet closes at once; focus returns to the button
       const keys = ["needs", "almost", "ready", "not-started"];
+      const words = ["Needs attention", "Almost ready", "Ready", "Not started"];
       for (let i = 0; i < keys.length; i++) {
-        await page.locator(`[data-select-option="${keys[i]}"]:visible`).click();
-        await expect(statusList(page)).toHaveCount(0);
+        if (i > 0) await button.click();
+        await option(page, keys[i]).click();
+        await expect(sheet(page)).toHaveCount(0);
         await expect(button).toBeFocused();
         await expect(button).toHaveAttribute("aria-expanded", "false");
-        await expect(button.locator("[data-select-value]")).toHaveText(
-          ["Needs attention", "Almost ready", "Ready", "Not started"][i],
-        );
         await expectKinds(page, [keys[i]]);
         await expect(rows(page)).toHaveCount(counts[i + 1]);
-        await button.click();
+        // the active button and the Showing line with Clear
+        expect(await bg(button)).toBe("rgb(211, 220, 195)");
+        await expect(button.locator("svg.lucide-sliders-horizontal")).toHaveCount(1);
+        await expect(filterLine(page)).toContainText(`Showing: ${words[i]}`);
+        const clear = filterLine(page).getByRole("button", { name: "Clear" });
+        expect((await box(clear)).height).toBeGreaterThanOrEqual(44);
+        expect(await bg(clear)).toBe("rgba(0, 0, 0, 0)");
+        expect(
+          await clear.locator("span").evaluate((el) => getComputedStyle(el).textDecorationLine),
+        ).toBe("underline");
+        const lb = await box(filterLine(page));
+        const clearBox = await box(clear);
+        expect(clearBox.x + clearBox.width).toBeGreaterThan(lb.x + lb.width - 24);
+        expect(await noSidewaysScroll(page)).toBe(true);
       }
-      await page.locator('[data-select-option="all"]:visible').click();
+      // tapping the chosen option closes too; Clear resets to All and hides the line
+      await button.click();
+      await option(page, "not-started").click();
+      await expect(sheet(page)).toHaveCount(0);
+      await filterLine(page).getByRole("button", { name: "Clear" }).click();
+      await expect(filterLine(page)).toHaveCount(0);
       await expect(rows(page)).toHaveCount(15);
+      expect(await bg(button)).toBe(OLIVE_TINT);
       // together with the search
       await pick(page, "not-started");
       await page.getByPlaceholder("Search students").fill("Maryana");
@@ -388,51 +432,118 @@ for (const width of [360, 430]) {
       );
     });
 
-    test("the Status dropdown closes on a tap outside and on Escape, and works with the keyboard", async ({
+    test("the filter sheet closes on the scrim, the x, Escape and a swipe down on the handle; focus stays inside and returns; the page does not scroll behind", async ({
       page,
     }) => {
       await page.goto("/instructor/students");
-      const button = statusButton(page);
+      const button = filterButton(page);
+      // the scrim
       await button.click();
+      await expect(sheet(page)).toBeVisible();
+      await page.mouse.click(width / 2, 40);
+      await expect(sheet(page)).toHaveCount(0);
+      await expect(button).toBeFocused();
+      // the close x
       await button.click();
-      await expect(statusList(page)).toHaveCount(0);
-      await button.click();
-      await page.getByRole("heading", { level: 1 }).click();
-      await expect(statusList(page)).toHaveCount(0);
-      await expect(button).toHaveAttribute("aria-expanded", "false");
+      await sheet(page).getByRole("button", { name: "Close" }).click();
+      await expect(sheet(page)).toHaveCount(0);
+      await expect(button).toBeFocused();
+      // Escape
       await button.click();
       await page.keyboard.press("Escape");
-      await expect(statusList(page)).toHaveCount(0);
+      await expect(sheet(page)).toHaveCount(0);
       await expect(button).toBeFocused();
-      // keyboard: ArrowDown opens, arrows move, Enter selects
-      await button.press("ArrowDown");
-      await expect(statusList(page)).toBeFocused();
-      await page.keyboard.press("ArrowDown");
-      await page.keyboard.press("ArrowDown");
-      await page.keyboard.press("Enter");
-      await expect(statusList(page)).toHaveCount(0);
+      // a swipe down on the handle
+      await button.click();
+      await settled(page);
+      const handle = await box(page.locator("[data-sheet-handle]"));
+      const x = handle.x + handle.width / 2;
+      const y = handle.y + handle.height / 2;
+      await page.mouse.move(x, y);
+      await page.mouse.down();
+      await page.mouse.move(x, y + 30);
+      await page.mouse.move(x, y + 90);
+      await page.mouse.up();
+      await expect(sheet(page)).toHaveCount(0);
       await expect(button).toBeFocused();
-      await expect(button.locator("[data-select-value]")).toHaveText("Almost ready");
-      await expectKinds(page, ["almost"]);
-      await button.press("ArrowDown");
-      await page.keyboard.press("ArrowUp");
-      await page.keyboard.press("Enter");
-      await expect(button.locator("[data-select-value]")).toHaveText("Needs attention");
+      // a short drag does not close it
+      await button.click();
+      await settled(page);
+      const h2 = await box(page.locator("[data-sheet-handle]"));
+      await page.mouse.move(h2.x + h2.width / 2, h2.y + 10);
+      await page.mouse.down();
+      await page.mouse.move(h2.x + h2.width / 2, h2.y + 30);
+      await page.mouse.up();
+      await expect(sheet(page)).toBeVisible();
+      // focus moves in, Tab stays inside (also backwards), the page behind does not scroll
+      await expect(sheet(page)).toBeFocused();
+      const inside = () => sheet(page).evaluate((el) => el.contains(document.activeElement));
+      for (let i = 0; i < 9; i++) {
+        await page.keyboard.press("Tab");
+        expect(await inside()).toBe(true);
+      }
+      for (let i = 0; i < 9; i++) {
+        await page.keyboard.press("Shift+Tab");
+        expect(await inside()).toBe(true);
+      }
+      expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflow)).toBe(
+        "hidden",
+      );
+      await page.keyboard.press("Escape");
+      expect(
+        await page.evaluate(() => getComputedStyle(document.documentElement).overflow),
+      ).not.toBe("hidden");
     });
 
-    test("no chips and no sideways scroll, closed, open and empty", async ({ page }) => {
+    test("the filter sheet slides up in about 200ms, and without animation when the person prefers reduced motion", async ({
+      page,
+    }) => {
+      await page.goto("/instructor/students");
+      await filterButton(page).click();
+      const name = await sheet(page).evaluate((el) => getComputedStyle(el).animationName);
+      const time = await sheet(page).evaluate((el) => getComputedStyle(el).animationDuration);
+      expect(name).toBe("sheet-in");
+      expect(time).toBe("0.2s");
+      await page.keyboard.press("Escape");
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await filterButton(page).click();
+      const reduced = await sheet(page).evaluate((el) => getComputedStyle(el).animationDuration);
+      expect(parseFloat(reduced)).toBeLessThan(0.001);
+    });
+
+    test("no chips and no sideways scroll: default, sheet open and empty result; the sheet stays inside the phone column", async ({
+      page,
+    }) => {
       await page.goto("/instructor/students");
       await expect(page.locator("[data-filter-chip]")).toHaveCount(0);
       expect(await noSidewaysScroll(page)).toBe(true);
-      await statusButton(page).click();
+      await filterButton(page).click();
       expect(await noSidewaysScroll(page)).toBe(true);
-      const l = await box(statusList(page));
+      const l = await box(page.locator("[data-filter-sheet-layer]"));
       expect(l.x).toBeGreaterThanOrEqual(0);
-      expect(l.x + l.width).toBeLessThanOrEqual(width);
+      expect(l.x + l.width).toBeLessThanOrEqual(width + 0.5);
       await page.keyboard.press("Escape");
       await page.getByPlaceholder("Search students").fill("Zimmerman");
       await expect(page.locator('[data-empty="search"]')).toBeVisible();
       expect(await noSidewaysScroll(page)).toBe(true);
+    });
+
+    test("on a wide screen the sheet and its scrim stay inside the 430px column", async ({
+      browser,
+    }) => {
+      const context = await browser.newContext({
+        viewport: { width: 900, height: 800 },
+        storageState: instructor,
+      });
+      const page = await context.newPage();
+      await page.goto("/instructor/students");
+      await filterButton(page).click();
+      const layer = await box(page.locator("[data-filter-sheet-layer]"));
+      expect(Math.round(layer.width)).toBe(430);
+      expect(Math.round(layer.x)).toBe(235);
+      const panel = await box(sheet(page));
+      expect(Math.round(panel.width)).toBe(430);
+      await context.close();
     });
 
     test("the Students | Topics switch: Topics shows the ten topics, weakest first, and Students returns", async ({

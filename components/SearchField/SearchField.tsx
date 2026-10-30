@@ -12,11 +12,14 @@ export function SearchField({
   placeholder,
   value,
   onChange,
+  compact = false,
 }: {
   label: string;
   placeholder: string;
   value: string;
   onChange: (value: string) => void;
+  /** 48px high, level with a 48px icon button beside it (default 52px). */
+  compact?: boolean;
 }) {
   const id = useId();
   return (
@@ -39,7 +42,7 @@ export function SearchField({
         placeholder={placeholder}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="type-body h-[52px] w-full rounded-[14px] border border-selectable-stroke bg-card pr-12 pl-12 text-text placeholder:text-text-secondary focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primary [&::-webkit-search-cancel-button]:hidden"
+        className={`type-body ${compact ? "h-12" : "h-[52px]"} w-full rounded-[14px] border border-selectable-stroke bg-card pr-12 pl-12 text-text placeholder:text-text-secondary focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primary [&::-webkit-search-cancel-button]:hidden`}
       />
       {value !== "" && (
         <button

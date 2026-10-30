@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
-import { FilterSelect } from "@/components/FilterSelect/FilterSelect";
+import { FilterSheet } from "@/components/FilterSheet/FilterSheet";
 import {
   StudentDetailView,
   StudentNotFound,
@@ -131,7 +131,7 @@ describe("the Students list", () => {
       ">Invite students<",
       "data-search-group",
       'name="student-search"',
-      "data-filter-select",
+      "data-filter-button",
       "data-student-rows",
       "Demo group. Student data on this screen is simulated.",
     ].map((t) => html.indexOf(t));
@@ -163,36 +163,47 @@ describe("the Students list", () => {
     expect(filled).toContain("h-11 w-11");
   });
 
-  it("groups by spacing: 24px under the switch, Invite, 24px, ONE group of the search field and the Status dropdown 12px apart, 16px, the list", () => {
+  it("groups by spacing: 24px under the switch, Invite, 24px, ONE group of the search field and the filter icon button 12px apart in one row, 16px, the list", () => {
     expect(html).toContain("mt-2 flex flex-col gap-6");
     const group = html.slice(html.indexOf("data-search-group"), html.indexOf("data-student-rows"));
-    expect(group).toContain("flex flex-col gap-3");
+    expect(group).toContain("flex items-start gap-3");
     expect(group.indexOf('name="student-search"')).toBeLessThan(
-      group.indexOf("data-filter-select"),
+      group.indexOf("data-filter-button"),
     );
     // Invite is the single Primary and stays at the top of the list view
     expect(html.match(/h-\[52px\] bg-primary/g)).toHaveLength(1);
     expect(html.indexOf(">Invite students<")).toBeLessThan(html.indexOf("data-search-group"));
   });
 
-  it("has no chips: ONE Status dropdown button (white, 1px border, radius 14, 48px) with the label, the value All and a chevron", () => {
-    expect(html).not.toMatch(/data-filter-chip|aria-pressed|<fieldset|role="group"/);
-    expect(html.match(/data-select-button/g)).toHaveLength(1);
-    const button = html.slice(html.indexOf("<button", html.indexOf("data-filter-select")));
-    const tag = button.slice(0, button.indexOf(">"));
-    expect(tag).toContain('aria-haspopup="listbox"');
-    expect(tag).toContain('aria-expanded="false"');
-    expect(tag).toContain("h-12 w-full");
-    expect(tag).toContain("rounded-[14px] border border-selectable-stroke bg-card");
-    expect(button).toMatch(/>Status<\/span>[\s\S]*data-select-value[^>]*>All</);
-    expect(button).toContain("lucide-chevron-down");
-    expect(html).not.toContain("data-select-list");
-    const chosen = list("needs");
-    expect(chosen).toMatch(/data-select-value[^>]*>Needs attention</);
-    expect(list("not-started")).toMatch(/data-select-value[^>]*>Not started</);
+  it("has ONE 48px square filter icon button beside the search field, no Status row and no chips", () => {
+    expect(html).not.toMatch(/data-filter-chip|data-filter-select|data-select-button|>Status</);
+    expect(html.match(/data-filter-button/g)).toHaveLength(1);
+    const at = html.indexOf("<button", html.indexOf("data-search-group"));
+    const tag = html.slice(at, html.indexOf(">", at));
+    expect(tag).toContain('aria-label="Filter by status"');
+    expect(tag).toContain('aria-haspopup="dialog"');
+    expect(tag).toContain("h-12 w-12");
+    expect(tag).toContain("rounded-[14px]");
+    expect(tag).toContain("bg-olive-tint");
+    expect(tag).toContain("text-primary");
+    expect(html.slice(at, html.indexOf("</button>", at))).toContain("lucide-sliders-horizontal");
+    // the search field is level with it: 48px, in the same row
+    expect(html.slice(html.indexOf("data-search-group"), at)).toContain("h-12 w-full");
+    expect(html).not.toContain("data-filter-sheet");
+    expect(html).not.toContain("data-status-line");
   });
 
-  it("opens a list of five 44px options in order with the counts, the chosen one tinted and semi-bold, no check icon", () => {
+  it("darkens the button and shows the 'Showing: ...' line with a tertiary Clear while a status is chosen", () => {
+    const chosen = list("needs");
+    expect(chosen).toContain("bg-filter-active");
+    expect(chosen).toContain("data-status-line");
+    expect(chosen).toMatch(/Showing: <!-- -->Needs attention|Showing: Needs attention/);
+    expect(chosen).toMatch(/underline[^>]*>Clear</);
+    expect(list("not-started")).toContain("Showing: Not started");
+    expect(html).not.toContain("bg-filter-active");
+  });
+
+  it("opens the sheet with five options in order, counts after the label, the radio at the right and the chosen card outlined", () => {
     const open = clean(
       renderToStaticMarkup(
         <StudentsListView
@@ -208,20 +219,18 @@ describe("the Students list", () => {
         />,
       ),
     );
-    expect(open).toContain('role="listbox"');
-    expect(open.match(/role="option"/g)).toHaveLength(5);
+    expect(open).toContain('role="dialog"');
+    expect(open).toContain('aria-modal="true"');
+    expect(open).toMatch(/aria-labelledby="([^"]+)"[\s\S]*id="\1"[^>]*>Filter by status</);
+    expect(open.match(/name="students-status"/g)).toHaveLength(5);
     const labels = ["All", "Needs attention", "Almost ready", "Ready", "Not started"];
-    const at = labels.map((label) => open.indexOf(`>${label}</span><span data-select-count`));
+    const sheet = open.slice(open.indexOf("data-filter-sheet"));
+    const at = labels.map((label) => sheet.indexOf(`>${label}<span data-option-count`));
     expect(at.every((i) => i > 0)).toBe(true);
     expect([...at].sort((a, b) => a - b)).toEqual(at);
-    expect(open.match(/h-11 cursor-pointer/g)).toHaveLength(5);
-    expect(open.match(/aria-selected="true"/g)).toHaveLength(1);
-    expect(open).toMatch(/aria-selected="true"[^>]*class="[^"]*bg-olive-tint/);
-    expect(open).toMatch(/aria-selected="true"[^>]*class="[^"]*type-body-strong/);
-    expect(open.slice(open.indexOf("data-select-list"), open.indexOf("</ul>"))).not.toContain(
-      "lucide-check",
+    const counts = [...sheet.matchAll(/data-option-count[^>]*> · (\d+)</g)].map((m) =>
+      Number(m[1]),
     );
-    const counts = [...open.matchAll(/data-select-count[^>]*>(\d+)</g)].map((m) => Number(m[1]));
     const statuses = (kind: string) => all.filter((p) => profileStatus(p) === kind).length;
     expect(counts).toEqual([
       all.length,
@@ -230,7 +239,15 @@ describe("the Students list", () => {
       statuses("ready"),
       statuses("not-started"),
     ]);
-    expect(counts.slice(1).reduce((a, b) => a + b, 0)).toBe(counts[0]);
+    expect(sheet.match(/border-\[1\.5px\]/g)).toHaveLength(5);
+    expect(sheet.match(/border-primary/g)!.length).toBeGreaterThanOrEqual(1);
+    expect(sheet.match(/checked=""/g)).toHaveLength(1);
+    expect(sheet).toMatch(/data-sheet-close/);
+    expect(sheet).toContain("rounded-t-[20px]");
+    expect(sheet).toContain("data-sheet-handle");
+    expect(sheet).toContain("filter-sheet");
+    // no Apply button
+    expect(sheet).not.toMatch(/>Apply</);
   });
 
   it("has ONE white card of 72px rows with hairlines; the whole row is the link, with only a chevron at its right", () => {
@@ -783,51 +800,44 @@ describe("the join screen", () => {
   });
 });
 
-describe("FilterSelect", () => {
-  const select = (value: string, initiallyOpen = false) =>
+describe("FilterSheet", () => {
+  const sheet = (open: boolean) =>
     clean(
       renderToStaticMarkup(
-        <FilterSelect
-          name="x"
-          label="Status"
-          options={[
-            { value: "a", label: "A", count: 3 },
-            { value: "b", label: "B", count: 0 },
-          ]}
-          value={value}
-          onChange={() => undefined}
-          initiallyOpen={initiallyOpen}
-        />,
+        <FilterSheet open={open} title="Filter by status" onClose={() => undefined}>
+          <p>Options</p>
+        </FilterSheet>,
       ),
     );
 
-  it("is a closed button with aria-haspopup and aria-expanded=false, no list", () => {
-    const html = select("b");
-    expect(html).toContain('aria-haspopup="listbox"');
-    expect(html).toContain('aria-expanded="false"');
-    expect(html).toMatch(/data-select-value[^>]*>B</);
-    expect(html).not.toContain('role="listbox"');
+  it("draws nothing while closed", () => {
+    expect(sheet(false)).toBe("");
   });
 
-  it("opens a listbox of options with aria-selected, counts and no check", () => {
-    const html = select("a", true);
-    expect(html).toContain('aria-expanded="true"');
-    expect(html).toContain('role="listbox"');
-    expect(html.match(/role="option"/g)).toHaveLength(2);
-    expect(html.match(/aria-selected="true"/g)).toHaveLength(1);
-    expect(html).not.toContain("lucide-check");
-    expect(html).toMatch(/data-select-count[^>]*>3</);
+  it("is a modal dialog inside a layer as wide as the phone column, with a scrim, 20px top corners, a handle and a close x", () => {
+    const html = sheet(true);
+    expect(html).toContain("fixed inset-y-0 left-1/2 z-40 w-full max-w-app");
+    expect(html).toContain("data-sheet-scrim");
+    expect(html).toContain("color-mix(in_srgb,var(--text)_40%,transparent)");
+    expect(html).toContain('role="dialog"');
+    expect(html).toContain('aria-modal="true"');
+    expect(html).toContain("rounded-t-[20px]");
+    expect(html).toContain("bg-bg");
+    expect(html).toContain("data-sheet-handle");
+    expect(html).toContain('aria-label="Close"');
+    expect(html).toContain("h-11 w-11");
+    expect(html).toContain("pb-[max(16px,env(safe-area-inset-bottom))]");
   });
 
-  it("is used by the Students list only, and the chip component is gone", () => {
-    const users = ["components", "app"]
-      .flatMap((dir) => walk(dir))
-      .filter((file) => /<FilterSelect\b/.test(readFileSync(file, "utf8")));
-    expect(users).toEqual(["components/InstructorStudents/StudentsListView.tsx"]);
+  it("is used by the Students list only, and the dropdown component is gone", () => {
+    const files = ["components", "app"].flatMap((dir) => walk(dir));
+    expect(files.filter((file) => /<FilterSheet\b/.test(readFileSync(file, "utf8")))).toEqual([
+      "components/InstructorStudents/StudentsListView.tsx",
+    ]);
     expect(
-      ["components", "app"]
-        .flatMap((dir) => walk(dir))
-        .filter((file) => /FilterChips|data-filter-chip/.test(readFileSync(file, "utf8"))),
+      files.filter((file) =>
+        /FilterSelect|FilterChips|data-filter-chip/.test(readFileSync(file, "utf8")),
+      ),
     ).toEqual([]);
   });
 });

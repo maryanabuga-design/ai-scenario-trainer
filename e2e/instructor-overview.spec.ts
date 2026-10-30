@@ -154,15 +154,19 @@ for (const width of [360, 430]) {
       const n = Number(/(\d+) students need attention/.exec(await row.innerText())![1]);
       await row.click();
       await expect(page).toHaveURL(/\/instructor\/students\?filter=needs&from=overview$/);
-      // "Needs attention" is chosen in the Status dropdown, and there is no filter line
-      await expect(page.locator("[data-select-value]:visible")).toHaveText("Needs attention");
+      // "Needs attention" is chosen (the filter button is dark, "Showing: Needs attention"); there is no topic filter line
+      await expect(page.locator("[data-status-line]:visible")).toContainText(
+        "Showing: Needs attention",
+      );
       await expect(page.locator("[data-filter-line]:visible")).toHaveCount(0);
       await expect(page.locator("[data-student]:visible")).toHaveCount(n);
       for (const line of await page.locator("[data-student-line]:visible").all()) {
         await expect(line).toContainText("Needs attention");
       }
-      await page.locator("[data-select-button]:visible").click();
-      await page.locator('[data-select-option="all"]:visible').click();
+      await page
+        .locator("[data-status-line]:visible")
+        .getByRole("button", { name: "Clear" })
+        .click();
       await expect(page.locator("[data-student]:visible")).toHaveCount(15);
       await page.goto("/instructor");
       await row.click();
