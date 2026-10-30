@@ -102,7 +102,7 @@ describe("topics to review and the topic tags", () => {
     const below = belowPassMark(rescue, "S3");
     for (const p of below) {
       const topic = p.topics.find((t) => t.sectionId === "S3")!;
-      expect(topicMuted(p, "S3")).toBe(`· S3: ${topic.correct} of ${topic.answered} correct`);
+      expect(topicMuted(p, "S3")).toBe(`S3: ${topic.correct} of ${topic.answered} correct`);
     }
     expect(below.length).toBeGreaterThan(0);
   });
@@ -118,7 +118,7 @@ describe("the words of a row", () => {
     for (const p of rescue) {
       const status = profileStatus(p);
       if (status === "ready" || status === "not-started") expect(rowMuted(p)).toBeNull();
-      else expect(rowMuted(p)).toBe(`· ${topicsToReview(p)} to review`);
+      else expect(rowMuted(p)).toBe(`${topicsToReview(p)} to review`);
     }
   });
 

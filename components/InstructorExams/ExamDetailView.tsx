@@ -19,7 +19,10 @@ import { Chip } from "@/components/Chip/Chip";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { DropdownMenu } from "@/components/DropdownMenu/DropdownMenu";
 import { FlashNotice } from "@/components/FlashNotice/FlashNotice";
-import { StatusAvatar, StatusPill } from "@/components/InstructorExams/ExamParts";
+import { statusLabel } from "@/components/InstructorExams/ExamParts";
+import { InitialsAvatar } from "@/components/InitialsAvatar/InitialsAvatar";
+import { StatusChip, examTone } from "@/components/StatusChip/StatusChip";
+import { StatusRow } from "@/components/StatusRow/StatusRow";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { triedCount } from "@/lib/cohort";
 import type { GroupCounts, StudentRow } from "@/lib/cohort";
@@ -310,14 +313,19 @@ export function ExamDetailView({
               <Link
                 href={`/instructor/students/${encodeURIComponent(participant.id)}?from=exam&exam=${exam.id}`}
                 data-student={participant.id}
-                className="flex h-[72px] items-center gap-3 px-[var(--gutter,1rem)] has-focus-visible:outline-2"
+                className="flex min-h-[72px] items-center gap-3 px-[var(--gutter,1rem)] py-3 has-focus-visible:outline-2"
               >
-                <StatusAvatar initials={participant.initials} kind={status.kind} />
-                <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="flex min-w-0 items-center gap-2">
-                    <span className="type-body-strong truncate">{participant.name}</span>
-                    <StatusPill kind={status.kind} />
-                    {status.kind === "passed" && status.certificateId && (
+                <InitialsAvatar initials={participant.initials} />
+                <StatusRow
+                  name={participant.name}
+                  chip={
+                    <StatusChip tone={examTone[status.kind]} value={status.kind}>
+                      {statusLabel[status.kind]}
+                    </StatusChip>
+                  }
+                  description={`${participant.local ? "Your demo account · " : ""}${rosterLine(status, now)}`}
+                  after={
+                    status.kind === "passed" && status.certificateId ? (
                       <Award
                         data-certificate-badge
                         size={16}
@@ -325,13 +333,9 @@ export function ExamDetailView({
                         aria-label="Certificate"
                         className="shrink-0 text-status-success-ink"
                       />
-                    )}
-                  </span>
-                  <span className="type-small truncate text-text-secondary">
-                    {participant.local && "Your demo account · "}
-                    {rosterLine(status, now)}
-                  </span>
-                </span>
+                    ) : null
+                  }
+                />
                 <Chevron />
               </Link>
             </li>

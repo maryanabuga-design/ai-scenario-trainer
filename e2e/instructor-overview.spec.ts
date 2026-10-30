@@ -160,7 +160,7 @@ for (const width of [360, 430]) {
       );
       await expect(page.locator("[data-filter-line]:visible")).toHaveCount(0);
       await expect(page.locator("[data-student]:visible")).toHaveCount(n);
-      for (const line of await page.locator("[data-student-line]:visible").all()) {
+      for (const line of await page.locator("[data-row-status]:visible").all()) {
         await expect(line).toContainText("Needs attention");
       }
       await page

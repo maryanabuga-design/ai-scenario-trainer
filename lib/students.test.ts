@@ -127,7 +127,7 @@ describe("a student's figures", () => {
     };
     const bad = { ...base, topics: [row(10, 5), { ...row(10, 5), sectionId: "S2" }] };
     expect(rowText(bad)).toBe("Needs attention · 2 to review");
-    expect(rowMuted(bad)).toBe("· 2 to review");
+    expect(rowMuted(bad)).toBe("2 to review");
     const ready = {
       ...base,
       topics: [row(40, 38), { ...row(40, 40), sectionId: "S2", total: 40 }],

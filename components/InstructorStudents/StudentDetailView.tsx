@@ -6,9 +6,11 @@ import { useState } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
-import { StatusPill } from "@/components/InstructorExams/ExamParts";
+import { statusLabel } from "@/components/InstructorExams/ExamParts";
+import { StatusChip, examTone } from "@/components/StatusChip/StatusChip";
+import { StatusRow } from "@/components/StatusRow/StatusRow";
 import { DeltaPill } from "@/components/InstructorOverview/OverviewBlocks";
-import { statusChipLook, InitialsAvatar } from "@/components/InstructorStudents/StudentRow";
+import { InitialsAvatar } from "@/components/InstructorStudents/StudentRow";
 import { TopicBadge } from "@/components/InstructorTopics/TopicsView";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { DEMO_NOTE } from "@/lib/cohort";
@@ -17,7 +19,6 @@ import { rosterLine } from "@/lib/exam-detail";
 import {
   fieldLabel,
   lastActiveLong,
-  profileStatus,
   readinessChange,
   readinessOf,
   topicNeedsReview,
@@ -76,9 +77,7 @@ export function StudentDetailView({
 }) {
   const readiness = readinessOf(profile);
   const change = readinessChange(profile);
-  const status = profileStatus(profile);
   const [confirming, setConfirming] = useState(confirmingInitially);
-  const dot = statusChipLook[status].tone;
   // the topics in two groups, in their own order (an unpractised topic has nothing to review)
   const needsReview = profile.topics.filter(topicNeedsReview);
   const nothingToReview = profile.topics.filter((row) => !topicNeedsReview(row));
@@ -97,14 +96,7 @@ export function StudentDetailView({
         data-student-header
         className={`${card} flex items-center gap-4 p-[var(--gutter,1rem)]`}
       >
-        <span className="relative flex shrink-0">
-          <InitialsAvatar initials={profile.participant.initials} size={64} />
-          <span
-            aria-hidden="true"
-            data-status-dot={status}
-            className={`absolute right-0 bottom-0 h-4 w-4 rounded-full border-2 border-card ${dot}`}
-          />
-        </span>
+        <InitialsAvatar initials={profile.participant.initials} size={64} />
         <div className="flex min-w-0 flex-col gap-1">
           <h2 data-student-name className="type-card-title truncate">
             {profile.participant.name}
@@ -208,11 +200,16 @@ export function StudentDetailView({
             const href = certificateHref(row);
             const body = (
               <>
-                <span className="flex min-w-0 flex-1 flex-col gap-1">
-                  <span className="flex min-w-0 items-center gap-2">
-                    <span className="type-body-strong truncate">{row.exam.title}</span>
-                    <StatusPill kind={row.status.kind} />
-                    {href && (
+                <StatusRow
+                  name={row.exam.title}
+                  chip={
+                    <StatusChip tone={examTone[row.status.kind]} value={row.status.kind}>
+                      {statusLabel[row.status.kind]}
+                    </StatusChip>
+                  }
+                  description={rosterLine(row.status, now)}
+                  after={
+                    href ? (
                       <Award
                         data-certificate-badge
                         size={16}
@@ -220,12 +217,9 @@ export function StudentDetailView({
                         aria-label="Certificate"
                         className="shrink-0 text-status-success-ink"
                       />
-                    )}
-                  </span>
-                  <span className="type-small truncate text-text-secondary">
-                    {rosterLine(row.status, now)}
-                  </span>
-                </span>
+                    ) : null
+                  }
+                />
                 {href && <Chevron />}
               </>
             );

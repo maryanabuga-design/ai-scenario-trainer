@@ -45,7 +45,7 @@ for (const width of [360, 430]) {
         "data-status-chip",
         "not-started",
       );
-      await expect(mine.locator("[data-muted]")).toHaveCount(0);
+      await expect(mine.locator("[data-description]")).toHaveText("Your demo account");
       // Needs attention never lists a Not started participant; the counts agree
       await page.goto("/instructor");
       const needs = Number(
@@ -67,7 +67,7 @@ for (const width of [360, 430]) {
       page,
     }) => {
       await page.goto("/instructor/students");
-      await page.locator('[data-student-line]:has-text("Needs attention")').first().click();
+      await page.locator('[data-row-status]:has-text("Needs attention")').first().click();
       await expect(page.locator("[data-field-line]")).toBeVisible();
       const send = page.getByRole("button", { name: "Send reminder" });
       expect(await bg(send)).toBe(OLIVE_TINT);

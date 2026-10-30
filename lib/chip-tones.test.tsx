@@ -6,8 +6,7 @@ import { Chip } from "@/components/Chip/Chip";
 import type { ChipTone } from "@/components/Chip/Chip";
 import { GuideChip } from "@/components/GuideChip/GuideChip";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
-import { StatusChip, statuses } from "@/components/StatusChip/StatusChip";
-import type { Status } from "@/components/StatusChip/StatusChip";
+import { StatusChip } from "@/components/StatusChip/StatusChip";
 import { Tag } from "@/components/Tag/Tag";
 import { loadAllSections } from "@/lib/guide";
 
@@ -135,9 +134,13 @@ describe("no chip has a stroke", () => {
       `Tag ${tone}`,
       renderToStaticMarkup(<Tag tone={tone}>x</Tag>),
     ]),
-    ...(Object.keys(statuses) as Status[]).map((status): [string, string] => [
-      `StatusChip ${status}`,
-      renderToStaticMarkup(<StatusChip status={status} />),
+    ...(["positive", "attention", "neutral"] as const).map((tone): [string, string] => [
+      `StatusChip ${tone}`,
+      renderToStaticMarkup(
+        <StatusChip tone={tone} value="x">
+          x
+        </StatusChip>,
+      ),
     ]),
     ["GuideChip", withSheet(<GuideChip sectionId="S1" />).split("</button>")[0]],
   ];
@@ -160,12 +163,8 @@ describe("every chip goes through the shared Chip", () => {
       return path.endsWith(".tsx") && !path.endsWith(".test.tsx") ? [path] : [];
     });
 
-  it("the Tag, the status chip and the Guide chip render a Chip", () => {
-    for (const file of [
-      "components/Tag/Tag.tsx",
-      "components/StatusChip/StatusChip.tsx",
-      "components/GuideChip/GuideChip.tsx",
-    ]) {
+  it("the Tag and the Guide chip render a Chip (the status chip is its own one component)", () => {
+    for (const file of ["components/Tag/Tag.tsx", "components/GuideChip/GuideChip.tsx"]) {
       expect(readFileSync(file, "utf8"), file).toContain("<Chip");
     }
   });
@@ -177,25 +176,5 @@ describe("every chip goes through the shared Chip", () => {
       ),
     );
     for (const name of names) expect(pastel.map((tone) => `bg-pastel-${tone}`)).toContain(name);
-  });
-});
-
-describe("the chip colours of the statuses", () => {
-  const tone = (status: Status) => chipClass(renderToStaticMarkup(<StatusChip status={status} />));
-
-  it("keeps the meaning of each hue", () => {
-    expect(tone("ready")).toContain("bg-olive-tint");
-    expect(tone("failed")).toContain("bg-secondary-sand-pressed");
-    expect(tone("processing")).toContain("bg-pastel-sand");
-    // green and rose are not used for status: they mean answer correctness only
-    for (const status of Object.keys(statuses) as Status[]) {
-      expect(tone(status)).not.toMatch(/pastel-(green|rose)|correct|wrong/);
-    }
-  });
-
-  it("Ready has the check, Failed the alert, Processing the clock", () => {
-    expect(renderToStaticMarkup(<StatusChip status="ready" />)).toContain("lucide-check");
-    expect(renderToStaticMarkup(<StatusChip status="failed" />)).toContain("lucide-circle-alert");
-    expect(renderToStaticMarkup(<StatusChip status="processing" />)).toContain("lucide-clock");
   });
 });

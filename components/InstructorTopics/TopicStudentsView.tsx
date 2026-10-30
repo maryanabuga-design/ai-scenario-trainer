@@ -66,7 +66,6 @@ export function TopicStudentsView({
             status={profileStatus(profile)}
             muted={topicMuted(profile, id)}
             demo={profile.participant.local}
-            longMuted
           />
         ))}
       </StudentRowsCard>

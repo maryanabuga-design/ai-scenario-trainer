@@ -304,7 +304,7 @@ describe("the Students list", () => {
     expect(html.match(/data-student-rows/g)).toHaveLength(1);
     expect(html).toContain("divide-y divide-soft-divider");
     expect(html.match(/data-student=/g)).toHaveLength(15);
-    expect(html.match(/h-\[72px\]/g)).toHaveLength(15);
+    expect(html.match(/min-h-\[72px\]/g)).toHaveLength(15);
     const rows = html.slice(html.indexOf("data-student-rows"));
     expect(rows.match(/lucide-chevron-right/g)).toHaveLength(15);
     expect(rows.match(/<a /g)).toHaveLength(15);
@@ -321,8 +321,11 @@ describe("the Students list", () => {
     expect(row).not.toContain("data-status-dot");
     expect(row).toContain("data-status-chip=");
     expect(row.indexOf("truncate")).toBeLessThan(row.indexOf("data-status-chip"));
-    // the chip never wraps or shrinks
-    expect(row).toMatch(/data-status-chip="[a-z-]+" class="[^"]*shrink-0[^"]*whitespace-nowrap/);
+    // the chip never wraps or shrinks, and has no icon
+    expect(row).toMatch(
+      /data-status-chip="[a-z-]+"[^>]*class="[^"]*shrink-0[^"]*whitespace-nowrap/,
+    );
+    expect(row).not.toMatch(/data-status-chip="[^"]+"[^>]*><svg/);
     // the chip comes before the chevron, and is the only status text
     expect(row.indexOf("data-status-chip")).toBeLessThan(row.indexOf("lucide-chevron-right"));
     expect(html.match(/data-status-chip=/g)).toHaveLength(15);
@@ -330,7 +333,7 @@ describe("the Students list", () => {
     expect(visible(html)).not.toMatch(/active \d|Last active|today|yesterday/);
   });
 
-  it("shows the four statuses with icon and words, and the muted text after the chip only for Needs attention and Almost ready", () => {
+  it("shows the four statuses as words only, and the muted description after the chip only for Needs attention and Almost ready", () => {
     for (const [status, word] of [
       ["needs", "Needs attention"],
       ["almost", "Almost ready"],
@@ -340,8 +343,7 @@ describe("the Students list", () => {
       expect(html).toContain(`data-status-chip="${status}"`);
       expect(visible(html)).toContain(word);
     }
-    const chips = html.match(/data-status-chip="[a-z-]+"[^>]*>(?:<svg[^>]*>.*?<\/svg>)/g)!;
-    expect(chips.length).toBe(15);
+    expect(html.match(/data-status-chip="[a-z-]+"[^>]*>[A-Z]/g)).toHaveLength(15);
     for (const profile of all) {
       const id = profile.participant.id;
       const row = html.slice(
@@ -349,19 +351,25 @@ describe("the Students list", () => {
         html.indexOf("</a>", html.indexOf(`data-student="${id}"`)),
       );
       const status = profileStatus(profile);
-      expect(row.includes("data-muted"), id).toBe(status === "needs" || status === "almost");
+      expect(/\d+ to review/.test(row), id).toBe(status === "needs" || status === "almost");
     }
-    expect(html).toMatch(/· \d+ to review/);
+    expect(html).toMatch(/>\d+ to review</);
   });
 
-  it("drops the muted text first on a narrow row (a container query), and shows 'Your demo account' only when there is room", () => {
-    expect(html).toContain("@container");
-    expect(html).toContain("@min-[216px]:inline");
-    expect(html).toContain("@min-[330px]:inline");
-    expect(html).toMatch(/data-demo-account[^>]*>· Your demo account/);
-    // the muted text and the demo account are hidden by default, the chip is not
-    expect(html).toMatch(/data-muted="true" class="hidden /);
-    expect(html).not.toMatch(/data-status-chip="[a-z-]+" class="hidden/);
+  it("wraps the description under the chip instead of hiding it: a wrapping row, 8px apart, on the baseline", () => {
+    expect(html).not.toMatch(/@container|@min-\[|hidden whitespace-nowrap/);
+    const row = html.slice(
+      html.indexOf("data-student="),
+      html.indexOf("</li>", html.indexOf("data-student=")),
+    );
+    expect(row).toMatch(/data-row-status[^>]*class="[^"]*flex flex-wrap items-baseline gap-x-2/);
+    expect(row).toMatch(/data-description[^>]*class="[^"]*min-w-0 text-pretty text-text-secondary/);
+    // the local account's description names it after the muted text
+    const mine = all.find((p) => p.participant.local);
+    if (mine) {
+      const own = html.slice(html.indexOf(`data-student="${mine.participant.id}"`));
+      expect(own.slice(0, own.indexOf("</li>"))).toContain("Your demo account");
+    }
   });
 
   it("sorts Needs attention, Almost ready, Not started, then Ready", () => {
@@ -513,8 +521,7 @@ describe("the topic students list", () => {
     expect(html).not.toMatch(/Below pass mark in|Clear filter|data-filter-line/);
     expect(html).toContain(`${rows.length} STUDENTS BELOW PASS MARK`);
     expect(html.match(/data-student=/g)).toHaveLength(rows.length);
-    expect(html).toMatch(/· S3: \d+ of \d+ correct/);
-    expect(html).toContain("@min-[256px]:inline");
+    expect(html).toMatch(/>S3: \d+ of \d+ correct</);
     expect(html).toMatch(/bg-olive-tint[^>]*>[\s\S]*Assign exam on this topic</);
     expect(html).toContain("from=students&amp;topic=S3&amp;origin=topics");
     expect(visible(html)).not.toContain("%");
@@ -552,14 +559,14 @@ describe("the Student detail", () => {
     );
   const html = render();
 
-  it("has Back and the band 'Student detail' without an avatar, then the header card with the large avatar, status dot, name, field and group, last active", () => {
+  it("has Back and the band 'Student detail' without an avatar, then the header card with the large plain avatar (no status dot), name, field and group, last active", () => {
     expect(html).toContain('aria-label="Back to students"');
     expect(html).toContain(">Student detail</h1>");
     expect(html).toMatch(/text-text-secondary">Readiness and results for each topic\.</);
     expect(html).not.toContain('data-avatar="true"');
     expect(html).toContain("data-student-header");
     expect(html).toContain("h-16 w-16");
-    expect(html).toContain('data-status-dot="needs"');
+    expect(html).not.toContain("data-status-dot");
     expect(html).toContain(`>${person.participant.name}</h2>`);
     expect(html).toMatch(/data-field-line[^>]*>[A-Za-z ]+ · Rescue team</);
     expect(html).toMatch(
@@ -645,12 +652,13 @@ describe("the Student detail", () => {
     expect(wording("same")).toContain("Same as last week");
   });
 
-  it("has EXAMS with '2 total' as one card of hairline rows with the status pill on one line, and a chevron only for a Passed row with a certificate", () => {
+  it("has EXAMS with '2 total' as one card of hairline rows with the status chip and its description, and a chevron only for a Passed row with a certificate", () => {
     expect(html).toContain(">EXAMS<");
     expect(html).toContain(`${rows.length} total`);
     expect(html.match(/data-exam-row=/g)).toHaveLength(rows.length);
     expect(html).toContain("divide-y divide-soft-divider");
-    expect(html.match(/data-status-pill=/g)).toHaveLength(rows.length);
+    expect(html.match(/data-status-chip=/g)).toHaveLength(rows.length);
+    expect(html).not.toMatch(/data-status-pill/);
     expect(html).toMatch(/\d+ of \d+ correct · \d+ attempts?|No attempts yet|Closed without a try/);
     const examsPart = html.slice(html.indexOf(">EXAMS<"));
     expect(examsPart).not.toContain("lucide-chevron-right");

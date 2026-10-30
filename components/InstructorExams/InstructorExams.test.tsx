@@ -319,14 +319,18 @@ describe("the Exam detail", () => {
     expect(visible(html)).not.toContain("%");
   });
 
-  it("has the STUDENTS roster: one card, hairline rows of 72px, an avatar badge, a status pill, a muted line and a chevron; Not passed first, Passed last", () => {
+  it("has the STUDENTS roster: one card, hairline rows of at least 72px, a plain initials avatar, the name, the status chip with its description and a chevron; Not passed first, Passed last", () => {
     const html = render();
     expect(html).toContain(">STUDENTS<");
     expect(html).toContain("15 students");
     expect(html.match(/data-student-row=/g)).toHaveLength(15);
-    expect(html.match(/h-\[72px\]/g)).toHaveLength(15);
-    expect(html.match(/data-avatar-badge=/g)).toHaveLength(15);
-    expect(html.match(/data-status-pill=/g)).toHaveLength(15);
+    expect(html.match(/min-h-\[72px\]/g)).toHaveLength(15);
+    expect(html).not.toContain("data-avatar-badge");
+    expect(html.match(/data-initials-avatar/g)).toHaveLength(15);
+    expect(html.match(/data-status-chip=/g)).toHaveLength(15);
+    expect(html).not.toContain("data-status-pill");
+    // the same two-line layout as the Students list: the chip, then the wrapping description
+    expect(html).toMatch(/data-row-status[^>]*class="[^"]*flex flex-wrap items-baseline gap-x-2/);
     expect(html).toContain("divide-y divide-soft-divider");
     expect(html).toContain(`?from=exam&amp;exam=${exams[0].id}`);
     expect(html).toContain("Your demo account · No attempts yet");
@@ -343,12 +347,20 @@ describe("the Exam detail", () => {
     expect(kinds.map((k) => rank[k])).toEqual([...kinds.map((k) => rank[k])].sort((a, b) => a - b));
   });
 
-  it("shows a status badge per status: check, retry arrow, clock, circle (Active) and dash (Missed)", () => {
+  it("shows each exam status as the same icon-free chip with its tone", () => {
     const active = render();
-    for (const icon of ["lucide-check", "lucide-rotate-ccw", "lucide-clock", "lucide-circle"]) {
-      expect(active).toContain(icon);
+    for (const [kind, tone] of [
+      ["passed", "positive"],
+      ["not-passed", "attention"],
+      ["in-progress", "neutral"],
+      ["not-started", "neutral"],
+    ]) {
+      expect(active).toMatch(new RegExp(`data-status-chip="${kind}" data-tone="${tone}"`));
     }
-    expect(render(exams[1], false)).toContain("lucide-minus");
+    expect(render(exams[1], false)).toMatch(/data-status-chip="missed" data-tone="attention"/);
+    const rows = active.slice(active.indexOf(">STUDENTS<"));
+    expect(rows).not.toMatch(/data-status-chip="[^"]+"[^>]*><svg/);
+    expect(rows).not.toMatch(/lucide-(rotate-ccw|circle|minus|clock)\b/);
   });
 
   it("shows a certificate badge next to Passed when the attempt has a certificate", () => {

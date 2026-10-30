@@ -5,7 +5,13 @@ import { StepsTopicView } from "@/components/StepsView/StepsTopic";
 import { checklists } from "@/lib/checklists";
 import { QuickActionsBar } from "@/components/QuickActionsBar/QuickActionsBar";
 import { Tag } from "@/components/Tag/Tag";
-import { StatusChip } from "@/components/StatusChip/StatusChip";
+import {
+  StatusChip,
+  examTone,
+  materialLabel,
+  materialTone,
+  studentTone,
+} from "@/components/StatusChip/StatusChip";
 import { GuideChip } from "@/components/GuideChip/GuideChip";
 import { Chip } from "@/components/Chip/Chip";
 import { FileText, History, ListChecks, Sparkles } from "lucide-react";
@@ -929,7 +935,33 @@ export function ChipTonesSample() {
       </div>
       <div className="flex flex-wrap gap-2">
         {statuses.map((status) => (
-          <StatusChip key={status} status={status} />
+          <StatusChip key={status} tone={materialTone[status]} value={status}>
+            {materialLabel[status]}
+          </StatusChip>
+        ))}
+        {(["ready", "almost", "needs", "not-started"] as const).map((status) => (
+          <StatusChip key={status} tone={studentTone[status]} value={status}>
+            {status === "almost"
+              ? "Almost ready"
+              : status === "needs"
+                ? "Needs attention"
+                : status === "ready"
+                  ? "Ready"
+                  : "Not started"}
+          </StatusChip>
+        ))}
+        {(["passed", "not-passed", "in-progress", "not-started", "missed"] as const).map((kind) => (
+          <StatusChip key={kind} tone={examTone[kind]} value={kind}>
+            {kind === "passed"
+              ? "Passed"
+              : kind === "not-passed"
+                ? "Not passed"
+                : kind === "in-progress"
+                  ? "In progress"
+                  : kind === "not-started"
+                    ? "Not started"
+                    : "Missed"}
+          </StatusChip>
         ))}
       </div>
       <div className="flex flex-wrap items-center gap-2">

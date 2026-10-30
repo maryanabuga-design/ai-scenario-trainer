@@ -7,7 +7,7 @@ import { Chevron } from "@/components/Chevron/Chevron";
 import { HeaderRow } from "@/components/HeaderRow/HeaderRow";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { MaterialTile } from "@/components/MaterialTile/MaterialTile";
-import { StatusChip } from "@/components/StatusChip/StatusChip";
+import { StatusChip, materialLabel, materialTone } from "@/components/StatusChip/StatusChip";
 import { Tabs, tabPanelProps } from "@/components/Tabs/Tabs";
 import { TrainingTags } from "@/components/TrainingTags/TrainingTags";
 import { UploadButton } from "@/components/UploadSheet/UploadSheet";
@@ -44,7 +44,9 @@ function MaterialRow({
           </span>
         </Link>
         <div className="flex flex-wrap items-center gap-2">
-          <StatusChip status={material.status} />
+          <StatusChip tone={materialTone[material.status]} value={material.status}>
+            {materialLabel[material.status]}
+          </StatusChip>
           <TrainingTags training={training} />
         </div>
         {material.status === "processing" && (

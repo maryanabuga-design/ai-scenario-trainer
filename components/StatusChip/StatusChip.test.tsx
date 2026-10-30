@@ -1,49 +1,117 @@
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { StatusChip } from "@/components/StatusChip/StatusChip";
+import {
+  StatusChip,
+  examTone,
+  materialLabel,
+  materialTone,
+  studentTone,
+} from "@/components/StatusChip/StatusChip";
+import type { StatusTone } from "@/components/StatusChip/StatusChip";
 
-const chip = (status: "ready" | "processing" | "failed") =>
-  renderToStaticMarkup(<StatusChip status={status} />);
+const css = readFileSync("app/globals.css", "utf8");
+const token = (name: string) => {
+  const match = new RegExp(`--${name}:\\s*(#[0-9a-f]{6});`, "i").exec(css);
+  if (!match) throw new Error(`No hex value for --${name}`);
+  return match[1];
+};
+const lum = (hex: string) => {
+  const [r, g, b] = [1, 3, 5].map((i) => {
+    const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const contrast = (a: string, b: string) => {
+  const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+};
 
-describe("material status chips", () => {
-  it("Ready: an olive chip with the check icon, no stroke (green means a correct answer only)", () => {
-    const cls = /class="([^"]*)"/.exec(chip("ready"))?.[1] ?? "";
-    expect(cls).toContain("bg-olive-tint");
-    expect(cls).toContain("text-text");
-    expect(cls).not.toMatch(/green|correct/);
-    expect(cls).toContain("rounded-full");
-    expect(chip("ready")).toContain("lucide-check");
-    expect(chip("ready")).toContain(">Ready</span>");
+const chip = (tone: StatusTone, word = "Ready") =>
+  renderToStaticMarkup(
+    <StatusChip tone={tone} value="x">
+      {word}
+    </StatusChip>,
+  );
+
+const files = (dir: string): string[] =>
+  readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) return files(path);
+    return path.endsWith(".tsx") && !path.includes(".test.") ? [path] : [];
   });
 
-  it("Processing: a sand chip with dark text and the clock icon", () => {
-    expect(chip("processing")).toContain("bg-pastel-sand");
-    expect(chip("processing")).toContain("text-text");
-    expect(chip("processing")).toContain("lucide-clock");
-    expect(chip("processing")).toContain(">Processing</span>");
+describe("the one status chip", () => {
+  it("is a 24px pill with 10px side padding, 13px semi-bold text and no icon", () => {
+    const html = chip("positive");
+    expect(html).toContain("h-6");
+    expect(html).toContain("px-2.5");
+    expect(html).toContain("rounded-full");
+    expect(html).toContain("type-chip");
+    expect(html).toContain("whitespace-nowrap");
+    expect(html).not.toContain("<svg");
+    expect(html).toMatch(/>Ready<\/span>$/);
+    expect(css).toMatch(/@utility type-chip \{[^}]*font-size: 13px;[^}]*font-weight: 600;/);
   });
 
-  it("Failed: a stone chip with dark text and the alert icon (red means a wrong answer only)", () => {
-    expect(chip("failed")).toContain("bg-secondary-sand-pressed");
-    expect(chip("failed")).toContain("text-text");
-    expect(chip("failed")).not.toMatch(/rose|wrong/);
-    expect(chip("failed")).toContain("lucide-circle-alert");
-    expect(chip("failed")).toContain(">Failed</span>");
+  it("has three tones with their colours", () => {
+    expect(chip("positive")).toContain("bg-status-success-bg text-status-success-ink");
+    expect(chip("attention")).toContain("bg-status-attention-bg text-status-attention-ink");
+    expect(chip("neutral")).toContain("bg-chip-neutral-bg text-chip-neutral-ink");
+    expect(token("status-success-bg")).toBe("#e1eada");
+    expect(token("status-success-ink")).toBe("#44683a");
+    expect(token("status-attention-bg")).toBe("#f1e4c8");
+    expect(token("status-attention-ink")).toBe("#6f5120");
+    expect(token("chip-neutral-bg")).toBe("#efece6");
   });
 
-  it("Ready, Processing and Failed are all chips with a fill and no stroke", () => {
-    for (const status of ["ready", "processing", "failed"] as const) {
-      const cls = /class="([^"]*)"/.exec(chip(status))?.[1] ?? "";
-      expect(cls).toMatch(/bg-(pastel-|olive-tint|secondary-sand-pressed)/);
-      expect(cls).not.toMatch(/(^| )border/);
-      expect(cls).toContain("rounded-full");
-    }
+  it("keeps the text of every tone at 4.5:1 or more on its fill (neutral ink darkened from #6B7062)", () => {
+    expect(contrast("#6b7062", token("chip-neutral-bg"))).toBeLessThan(4.5);
+    expect(token("chip-neutral-ink")).toBe("#646a5a");
+    const pairs: [string, string][] = [
+      [token("status-success-bg"), token("status-success-ink")],
+      [token("status-attention-bg"), token("status-attention-ink")],
+      [token("chip-neutral-bg"), token("chip-neutral-ink")],
+    ];
+    for (const [bg, ink] of pairs) expect(contrast(bg, ink)).toBeGreaterThanOrEqual(4.5);
   });
 
-  it("gives the three statuses three different looks", () => {
-    const looks = (["ready", "processing", "failed"] as const).map(
-      (status) => /class="([^"]*)"/.exec(chip(status))?.[1],
+  it("maps every student status to its tone", () => {
+    expect(studentTone).toEqual({
+      ready: "positive",
+      needs: "attention",
+      almost: "neutral",
+      "not-started": "neutral",
+    });
+  });
+
+  it("maps every exam status to its tone", () => {
+    expect(examTone).toEqual({
+      passed: "positive",
+      "not-passed": "attention",
+      missed: "attention",
+      "in-progress": "neutral",
+      "not-started": "neutral",
+    });
+  });
+
+  it("maps every material status to its tone and word", () => {
+    expect(materialTone).toEqual({ ready: "positive", failed: "attention", processing: "neutral" });
+    expect(materialLabel).toEqual({ ready: "Ready", processing: "Processing", failed: "Failed" });
+  });
+
+  it("is the only status chip: no other chip, pill or avatar badge for a status exists in the code", () => {
+    const sources = [...files("components"), ...files("app")];
+    const bad = sources.filter((file) =>
+      /StatusPill\b|StatusAvatar|StudentStatusChip|statusChipLook|statusLook|data-avatar-badge|data-status-dot|StatusIcon/.test(
+        readFileSync(file, "utf8"),
+      ),
     );
-    expect(new Set(looks).size).toBe(3);
+    expect(bad).toEqual([]);
+    // every place that draws a status chip goes through the component
+    const drawn = sources.filter((file) => readFileSync(file, "utf8").includes("data-status-chip"));
+    expect(drawn).toEqual(["components/StatusChip/StatusChip.tsx"]);
   });
 });

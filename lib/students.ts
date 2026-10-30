@@ -174,23 +174,23 @@ export function lastActiveLong(days: number): string {
   return `${Math.floor(days / 7)} weeks ago`;
 }
 
-/** The muted text after the status chip of a row: "· 5 to review" (none for Ready and Not started). */
+/** The muted description after the status chip of a row: "5 to review" (none for Ready and Not started). */
 export function rowMuted(profile: StudentProfile): string | null {
   const status = profileStatus(profile);
   if (status === "ready" || status === "not-started") return null;
-  return `· ${topicsToReview(profile)} to review`;
+  return `${topicsToReview(profile)} to review`;
 }
 
-/** The muted text in the topic students list: "· S3: 2 of 5 correct". */
+/** The muted description in the topic students list: "S3: 2 of 5 correct". */
 export function topicMuted(profile: StudentProfile, topicId: string): string | null {
   const row = profile.topics.find((entry) => entry.sectionId === topicId);
-  return row ? `· ${topicId}: ${row.correct} of ${row.answered} correct` : null;
+  return row ? `${topicId}: ${row.correct} of ${row.answered} correct` : null;
 }
 
 /** The same row as plain text (for tests and screen readers): "Needs attention · 5 to review". */
 export function rowText(profile: StudentProfile): string {
   const muted = rowMuted(profile);
-  return `${statusLabels[profileStatus(profile)]}${muted ? ` ${muted}` : ""}`;
+  return `${statusLabels[profileStatus(profile)]}${muted ? ` · ${muted}` : ""}`;
 }
 
 /** The change of the readiness since last week in points, or null without history (accounts of this browser have none). */

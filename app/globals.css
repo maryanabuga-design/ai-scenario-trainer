@@ -27,6 +27,8 @@
   --status-attention-ink: #6f5120;
   --status-success-bg: #e1eada;
   --status-success-ink: #44683a;
+  --chip-neutral-bg: #efece6;
+  --chip-neutral-ink: #646a5a;
   --caution: #8a5a00;
 
   /* Results screen (soft surface), measured from the reference screens */
@@ -100,6 +102,8 @@
   --color-status-attention-ink: var(--status-attention-ink);
   --color-status-success-bg: var(--status-success-bg);
   --color-status-success-ink: var(--status-success-ink);
+  --color-chip-neutral-bg: var(--chip-neutral-bg);
+  --color-chip-neutral-ink: var(--chip-neutral-ink);
   --color-wrong-bg: var(--wrong-bg);
   --color-wrong: var(--wrong);
   --color-caution: var(--caution);
@@ -345,6 +349,13 @@ dialog[data-sheet]::backdrop,
 }
 @utility type-caption-strong {
   font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+}
+
+/* The status chip text (DESIGN.md: One status chip for the whole app). */
+@utility type-chip {
+  font-size: 13px;
   line-height: 16px;
   font-weight: 600;
 }

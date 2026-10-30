@@ -357,14 +357,19 @@ for (const width of [360, 430]) {
       expect(kinds).toEqual([...kinds].sort((x, y) => x - y));
       for (const row of await rows.all()) {
         const b = (await row.locator("a").boundingBox())!;
-        expect(b.height).toBe(72);
-        await expect(row.locator("[data-avatar-badge]")).toHaveCount(1);
-        await expect(row.locator("[data-status-pill]")).toHaveCount(1);
+        // at least 72px; a long description wraps under the chip
+        expect(b.height).toBeGreaterThanOrEqual(72);
+        await expect(row.locator("[data-avatar-badge]")).toHaveCount(0);
+        await expect(row.locator("[data-initials-avatar]")).toHaveCount(1);
+        await expect(row.locator("[data-status-chip]")).toHaveCount(1);
+        await expect(row.locator("[data-status-chip] svg")).toHaveCount(0);
+        expect((await row.locator("[data-status-chip]").boundingBox())!.height).toBe(24);
+        expect(await row.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
         await expect(row.locator("svg.lucide-chevron-right")).toHaveCount(1);
       }
-      const pass = page.locator('[data-status-pill="passed"]').first();
+      const pass = page.locator('[data-status-chip="passed"]').first();
       expect(await bg(pass)).toBe(SUCCESS_BG);
-      expect(await bg(page.locator('[data-status-pill="not-passed"]').first())).toBe(ATTENTION_BG);
+      expect(await bg(page.locator('[data-status-chip="not-passed"]').first())).toBe(ATTENTION_BG);
       await noPercent(page);
       expect(await noSidewaysScroll(page)).toBe(true);
     });

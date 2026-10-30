@@ -22,6 +22,7 @@ const PRIMARY = "rgb(63, 70, 56)";
 const SUCCESS_BG = "rgb(225, 234, 218)";
 const ATTENTION_BG = "rgb(241, 228, 200)";
 const SAND = "rgb(240, 236, 230)";
+const NEUTRAL_CHIP = "rgb(239, 236, 230)";
 const WHITE = "rgb(255, 255, 255)";
 const CODE = "482913";
 
@@ -179,8 +180,9 @@ for (const width of [360, 430]) {
       expect(kinds).toEqual([...kinds].sort((a, b) => a - b));
       for (const row of await rows(page).all()) {
         const b = await box(row);
-        expect([b.height, b.x]).toEqual([72, 17]);
-        expect(b.width).toBe(width - 34);
+        // at least 72px: a long description wraps under the chip and the row grows
+        expect(b.height).toBeGreaterThanOrEqual(72);
+        expect([b.x, b.width]).toEqual([17, width - 34]);
         const avatar = row.locator("[data-initials-avatar]");
         const a = await box(avatar);
         expect([a.width, a.height]).toEqual([48, 48]);
@@ -189,9 +191,13 @@ for (const width of [360, 430]) {
         const chip = row.locator("[data-status-chip]");
         // the chip sits under the name, never beside it, and fits on one line without cutting
         expect((await box(chip)).y).toBeGreaterThan((await box(name)).y + 10);
-        expect((await box(chip)).height).toBeLessThan(26);
+        expect((await box(chip)).height).toBe(24);
         expect(await chip.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
-        await expect(chip.locator("svg")).toHaveCount(1);
+        await expect(chip.locator("svg")).toHaveCount(0);
+        expect(await chip.evaluate((el) => getComputedStyle(el).fontSize)).toBe("13px");
+        expect(await chip.evaluate((el) => getComputedStyle(el).fontWeight)).toBe("600");
+        // nothing sticks out of the row
+        expect(await row.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
         // only the chevron is at the right: it is the last thing, and no chip is right of it
         const chev = await box(row.locator("svg.lucide-chevron-right"));
         expect((await box(chip)).x + (await box(chip)).width).toBeLessThan(chev.x);
@@ -203,38 +209,48 @@ for (const width of [360, 430]) {
       // tokens of the chips
       expect(await bg(page.locator('[data-status-chip="needs"]').first())).toBe(ATTENTION_BG);
       expect(await bg(page.locator('[data-status-chip="ready"]').first())).toBe(SUCCESS_BG);
-      expect(await bg(page.locator('[data-status-chip="not-started"]').first())).toBe(SAND);
+      expect(await bg(page.locator('[data-status-chip="not-started"]').first())).toBe(NEUTRAL_CHIP);
+      expect(await bg(page.locator('[data-status-chip="almost"]').first())).toBe(NEUTRAL_CHIP);
       await expect(page.locator('[data-status-chip="needs"]').first()).toHaveText(
         "Needs attention",
       );
       await expect(page.locator('[data-status-chip="almost"]').first()).toHaveText("Almost ready");
     });
 
-    test("the muted text '· 5 to review' follows the chip when there is room and is dropped first when there is not; the chip never changes", async ({
+    test("the description '5 to review' follows the chip, 8px away on the same baseline, and wraps under it when there is no room; the chip never changes", async ({
       page,
     }) => {
       await page.goto("/instructor/students");
       const needs = rows(page)
         .filter({ has: page.locator('[data-status-chip="needs"]') })
         .first();
-      const muted = needs.locator("[data-muted]");
-      await expect(muted).toHaveText(/^· \d+ to review$/);
-      if (width === 360) await expect(muted).toBeHidden();
-      else await expect(muted).toBeVisible();
-      // never for Ready and Not started; "Your demo account" has no room on a phone
+      const muted = needs.locator("[data-description]");
+      await expect(muted).toHaveText(/^\d+ to review$/);
+      await expect(muted).toBeVisible();
+      const chip = needs.locator("[data-status-chip]");
+      const cb = await box(chip);
+      const mb = await box(muted);
+      if (mb.y < cb.y + cb.height - 4) {
+        // beside the chip: 8px away, and the text sits on the chip's baseline (centres within 4px)
+        expect(Math.round(mb.x - (cb.x + cb.width))).toBe(8);
+        expect(Math.abs(mb.y + mb.height / 2 - (cb.y + cb.height / 2))).toBeLessThanOrEqual(4);
+      } else {
+        // wrapped under the chip, left-aligned with it
+        expect(Math.abs(mb.x - cb.x)).toBeLessThanOrEqual(1);
+      }
+      // never for Ready and Not started; the demo account's own description names it
       await expect(
         rows(page)
           .filter({ has: page.locator('[data-status-chip="ready"]') })
           .first()
-          .locator("[data-muted]"),
+          .locator("[data-description]"),
       ).toHaveCount(0);
       await expect(
-        page.locator('[data-student="maryana@example.com"] [data-demo-account]'),
-      ).toBeHidden();
-      // the chip is the same width with or without the muted text
-      const chip = needs.locator("[data-status-chip]");
-      expect((await box(chip)).width).toBeGreaterThan(80);
+        page.locator('[data-student="maryana@example.com"] [data-description]'),
+      ).toHaveText("Your demo account");
+      expect(cb.width).toBeGreaterThan(80);
       await expect(chip).toBeVisible();
+      expect(await noSidewaysScroll(page)).toBe(true);
     });
 
     test("the status filters, search matches names in any case, and they combine", async ({
@@ -716,7 +732,7 @@ for (const width of [360, 430]) {
       await expect(page.getByRole("checkbox", { name: /Military training/ })).toBeChecked();
     });
 
-    test("the students below the pass mark in a topic: Back, the summary, the filter line, the rows with '· S3: 2 of 5 correct', Assign exam on this topic", async ({
+    test("the students below the pass mark in a topic: Back, the summary, the filter line, the rows with 'S3: 2 of 5 correct', Assign exam on this topic", async ({
       page,
     }) => {
       await page.goto("/instructor/students?view=topics");
@@ -743,11 +759,12 @@ for (const width of [360, 430]) {
       await expect(page.locator("main")).toContainText(`${below} STUDENTS BELOW PASS MARK`);
       await expect(rows(page)).toHaveCount(below);
       for (const row of await rows(page).all()) {
-        expect((await box(row)).height).toBe(72);
+        expect((await box(row)).height).toBeGreaterThanOrEqual(72);
         await expect(row.locator("[data-status-chip]")).toBeVisible();
-        const muted = row.locator("[data-muted]");
-        if (await muted.isVisible())
-          await expect(muted).toHaveText(new RegExp(`^· ${id}: \\d+ of \\d+ correct$`));
+        await expect(row.locator("[data-description]")).toHaveText(
+          new RegExp(`^${id}: \\d+ of \\d+ correct$`),
+        );
+        expect(await row.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
       }
       const assign = page.getByRole("link", { name: "Assign exam on this topic" });
       expect(await bg(assign)).toBe(OLIVE_TINT);
@@ -774,7 +791,7 @@ for (const width of [360, 430]) {
       const header = page.locator("[data-student-header]");
       const avatar = header.locator("[data-initials-avatar]");
       expect((await box(avatar)).width).toBe(64);
-      await expect(header.locator("[data-status-dot]")).toBeVisible();
+      await expect(header.locator("[data-status-dot]")).toHaveCount(0);
       await expect(header.locator("[data-field-line]")).toHaveText(/^[A-Za-z ]+ · Rescue team$/);
       await expect(header.locator("[data-last-active]")).toHaveText(
         /^Last active (today|yesterday|\d+ days ago|\d+ weeks ago)$/,
@@ -812,9 +829,10 @@ for (const width of [360, 430]) {
       const exams = page.locator("[data-exam-row]");
       await expect(exams).toHaveCount(2);
       for (const row of await exams.all()) {
-        await expect(row.locator("[data-status-pill]")).toHaveCount(1);
-        const pill = await box(row.locator("[data-status-pill]"));
-        expect(pill.height).toBeLessThan(26);
+        await expect(row.locator("[data-status-chip]")).toHaveCount(1);
+        await expect(row.locator("[data-status-chip] svg")).toHaveCount(0);
+        const pill = await box(row.locator("[data-status-chip]"));
+        expect(pill.height).toBe(24);
         await expect(row.locator("svg.lucide-chevron-right")).toHaveCount(0);
       }
       // Send reminder is a Secondary button with a bell

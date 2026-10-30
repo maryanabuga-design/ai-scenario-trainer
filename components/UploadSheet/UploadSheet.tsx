@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { ARROW_CLEARANCE, ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
 import { HeaderRow } from "@/components/HeaderRow/HeaderRow";
 import { Button } from "@/components/Button/Button";
-import { StatusChip } from "@/components/StatusChip/StatusChip";
+import { StatusChip, materialLabel, materialTone } from "@/components/StatusChip/StatusChip";
 import { MaterialTile } from "@/components/MaterialTile/MaterialTile";
 import { formatSize } from "@/lib/materials";
 import { materialFromSample, sampleFiles } from "@/lib/training";
@@ -107,7 +107,9 @@ export function UploadPanel({
         <div className="flex flex-col gap-4" role="status" aria-live="polite">
           <div className="flex flex-col gap-2">
             <p className="type-body-strong break-all">{stage.material.name}</p>
-            <StatusChip status={stage.material.status} />
+            <StatusChip tone={materialTone[stage.material.status]} value={stage.material.status}>
+              {materialLabel[stage.material.status]}
+            </StatusChip>
           </div>
           {stage.material.status === "failed" ? (
             <>

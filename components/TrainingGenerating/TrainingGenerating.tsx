@@ -2,8 +2,7 @@
 
 import { Button } from "@/components/Button/Button";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
-import { Circle, Minus } from "lucide-react";
-import { StatusIcon } from "@/components/StatusChip/StatusChip";
+import { Check, Circle, Clock, Minus } from "lucide-react";
 
 export type GenerationStep = { label: string; skipped?: boolean };
 
@@ -82,8 +81,8 @@ export function TrainingGenerating({
                   state === "done" ? "text-primary" : "text-text-secondary"
                 }`}
               >
-                {state === "done" && <StatusIcon status="ready" size={14} />}
-                {state === "working" && <StatusIcon status="processing" size={14} />}
+                {state === "done" && <Check size={14} strokeWidth={2} aria-hidden="true" />}
+                {state === "working" && <Clock size={14} strokeWidth={2} aria-hidden="true" />}
                 {state === "waiting" && <Circle size={14} strokeWidth={2} aria-hidden="true" />}
                 {state === "skipped" && <Minus size={14} strokeWidth={2} aria-hidden="true" />}
                 {
