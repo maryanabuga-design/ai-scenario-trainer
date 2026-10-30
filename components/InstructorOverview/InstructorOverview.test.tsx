@@ -267,7 +267,7 @@ describe("EXAMS", () => {
 
 describe("WEAKEST TOPIC", () => {
   const html = render();
-  const section = html.slice(html.indexOf("WEAKEST TOPIC"), html.indexOf("data-demo-note"));
+  const section = html.slice(html.indexOf("WEAKEST TOPIC"));
 
   it("has the S badge and name on one row, the muted count, a Secondary with a checklist icon and the centred link", () => {
     const weak = weakestTopic(rescue)!;
@@ -321,7 +321,7 @@ describe("All groups", () => {
   it("puts the group name first in the action rows and lists the nearest exam of each group with a tag", () => {
     const actions = html.slice(html.indexOf("NEEDS YOUR ACTION"), html.indexOf(">EXAMS<"));
     expect(actions).toMatch(/Rescue team · \d+ students? needs? attention/);
-    const section = html.slice(html.indexOf(">EXAMS<"), html.indexOf("data-demo-note"));
+    const section = html.slice(html.indexOf(">EXAMS<"));
     expect(section.match(/data-exam-card=/g)).toHaveLength(2);
     expect(section).toContain("Rescue team");
     expect(section).toContain("Military training");
@@ -360,7 +360,7 @@ describe("Get started", () => {
 });
 
 describe("the whole screen", () => {
-  it("has at most one Primary button and ends with the demo note", () => {
+  it("has at most one Primary button and no demo line", () => {
     for (const html of [
       render(),
       render({ scope: "all" }),
@@ -368,7 +368,7 @@ describe("the whole screen", () => {
       render({ list: [], people: [], allExams: [] }),
     ]) {
       expect(html.match(/h-\[52px\] bg-primary/g)?.length ?? 0).toBeLessThanOrEqual(1);
-      expect(html).toContain("Demo group. Student data on this screen is simulated.");
+      expect(html).not.toMatch(/data-demo-note|Demo group/);
     }
   });
 
@@ -387,5 +387,39 @@ describe("the whole screen", () => {
   it("keeps all ten topics on the Topics screen order", () => {
     expect(topicStandings(everyone)).toHaveLength(10);
     expect(needsOf(rescue).length).toBeGreaterThan(0);
+  });
+});
+
+describe("the section labels", () => {
+  it("sit 8px above their card (gap-2), with the larger 24px gap above each label kept", () => {
+    const html = render();
+    for (const label of ["NEEDS YOUR ACTION", ">EXAMS<", "WEAKEST TOPIC"]) {
+      const at = html.indexOf(label);
+      expect(at, label).toBeGreaterThan(0);
+      const start = html.lastIndexOf("<section", at);
+      const tag = html.slice(start, html.indexOf(">", start));
+      expect(tag, label).toContain("flex flex-col gap-2");
+      expect(tag, label).not.toContain("gap-3");
+    }
+    expect(html).toContain("flex flex-col gap-6 pb-4");
+  });
+
+  it("keeps the All topics link's 44px tap area by overlapping outwards", () => {
+    const html = render();
+    expect(html).toMatch(/-my-3\.5 -mr-3[^>]*>[\s\S]*All topics/);
+  });
+
+  it("shows no demo line on any instructor screen: the sentence is gone from the code", async () => {
+    const { readdirSync } = await import("node:fs");
+    const walk = (dir: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+        const path = `${dir}/${entry.name}`;
+        if (entry.isDirectory()) return walk(path);
+        return /\.(ts|tsx)$/.test(entry.name) && !/\.test\./.test(entry.name) ? [path] : [];
+      });
+    const hits = [...walk("components"), ...walk("app"), ...walk("lib")].filter((file) =>
+      /Demo group\.|DEMO_NOTE/.test(readFileSync(file, "utf8")),
+    );
+    expect(hits).toEqual([]);
   });
 });

@@ -39,6 +39,8 @@ import type { GroupExam } from "@/lib/group-exams";
 import { groupNames, groups } from "@/lib/groups";
 import { studentsCount } from "@/lib/overview";
 
+export const EXAM_DETAIL_SUBTITLE = "Results by student and the hardest questions.";
+
 export type DetailDialog = "remind" | "close" | null;
 
 const card = "rounded-card border border-selectable-stroke bg-card shadow-(--card-shadow)";
@@ -165,6 +167,7 @@ export function ExamDetailView({
     <div className="flex flex-col gap-4 pb-4">
       <PageHeaderBand
         title={exam.title}
+        subtitle={<span className="text-text-secondary">{EXAM_DETAIL_SUBTITLE}</span>}
         back={
           fromOverview
             ? { label: "Back to Overview", href: "/instructor" }

@@ -47,6 +47,8 @@ const fromKey = (key: string): AttemptsAllowed =>
   key === "unlimited" ? null : key === "1" ? 1 : 3;
 
 /** A white section card with its small uppercase label (and an optional action at the right). */
+export const ASSIGN_SUBTITLE = "Choose the topics and give the exam a title.";
+
 function Section({
   id,
   label,
@@ -151,6 +153,7 @@ export function AssignExamView({
     <div className="flex flex-col gap-4 pb-4">
       <PageHeaderBand
         title="Assign exam"
+        subtitle={<span className="text-text-secondary">{ASSIGN_SUBTITLE}</span>}
         back={
           fromOverview
             ? { label: "Back to Overview", href: "/instructor" }
@@ -160,7 +163,7 @@ export function AssignExamView({
 
       <div
         data-specs-card
-        className="flex items-center gap-3 rounded-card border border-selectable-stroke bg-secondary-sand p-[var(--gutter,1rem)]"
+        className="flex items-center gap-3 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)]"
       >
         <LucideTile icon={ClipboardCheck} size="tile" />
         <div className="flex min-w-0 flex-col">
@@ -191,14 +194,12 @@ export function AssignExamView({
         id="topics-label"
         label="TOPICS"
         action={
-          <Button
-            variant="secondary"
-            wide={false}
-            compact
-            onClick={() => setTopics(allSelected ? [] : [...allTopics])}
-          >
-            {allSelected ? "Clear" : "Select all"}
-          </Button>
+          // a tertiary action: underlined text, a 44px tap area that overlaps the row outwards
+          <div className="-my-1 -mr-3">
+            <Button variant="tertiary" onClick={() => setTopics(allSelected ? [] : [...allTopics])}>
+              {allSelected ? "Clear all" : "Select all"}
+            </Button>
+          </div>
         }
       >
         <fieldset className="flex min-w-0 flex-col gap-2" aria-labelledby="topics-label">

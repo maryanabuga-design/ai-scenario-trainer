@@ -842,9 +842,7 @@ for (const width of [360, 430]) {
       // one percentage on the whole screen
       // the headline figure and, in its pill, the comparison value ("Up from 45% last week")
       expect(((await page.locator("main").innerText()).match(/%/g) ?? []).length).toBe(2);
-      await expect(page.locator("[data-demo-note]:visible")).toHaveText(
-        "Demo group. Student data on this screen is simulated.",
-      );
+      await expect(page.getByText("Demo group")).toHaveCount(0);
       expect(await noSidewaysScroll(page)).toBe(true);
     });
 

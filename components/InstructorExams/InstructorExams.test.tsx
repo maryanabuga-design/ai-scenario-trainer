@@ -197,6 +197,36 @@ describe("Assign exam", () => {
     expect(html).not.toContain('data-avatar="true"');
   });
 
+  it("has the muted subtitle and a white specs card like the other cards", () => {
+    const html = render();
+    expect(html).toContain("Choose the topics and give the exam a title.");
+    expect(html).toMatch(/text-text-secondary">Choose the topics and give the exam a title\.</);
+    const specs = html.slice(html.indexOf("data-specs-card"));
+    const tag = specs.slice(0, specs.indexOf(">"));
+    expect(tag).toContain("bg-card");
+    expect(tag).toContain("border border-selectable-stroke");
+    expect(tag).not.toContain("bg-secondary-sand");
+  });
+
+  it("has Select all as a tertiary action at the right of TOPICS (underlined, no fill, 44px), and Clear all when every topic is chosen", () => {
+    const html = render();
+    const topics = html.slice(
+      html.indexOf(">TOPICS<"),
+      html.indexOf("<fieldset", html.indexOf(">TOPICS<")),
+    );
+    expect(topics).toMatch(/Select all/);
+    const before = topics.slice(0, topics.indexOf(">Select all<"));
+    const button = before.slice(before.lastIndexOf("<button"));
+    expect(button).not.toContain("bg-olive-tint");
+    expect(button).not.toContain("bg-primary");
+    expect(topics).toMatch(/underline[^>]*>Select all</);
+    expect(button).toMatch(/min-h-11|h-11/);
+    expect(topics).not.toContain(">Clear<");
+    const all = render({ topics: Array.from({ length: 10 }, (_, i) => `S${i + 1}`) });
+    expect(all).toContain(">Clear all<");
+    expect(all).not.toContain(">Select all<");
+  });
+
   it("lists all ten topics with their S code and name, with selection circles and Select all", () => {
     const html = render();
     expect(html.match(/name="topics"/g)).toHaveLength(10);
@@ -395,6 +425,14 @@ describe("the Exam detail", () => {
     const bare = { ...exams[0], id: "no-results", deadline: "2030-01-01" };
     const group = examPeople(everyone, bare).filter((p) => p.local);
     expect(hardestQuestions(group, bare, [], now)).toEqual([]);
+  });
+
+  it("has the muted subtitle under the exam title", () => {
+    for (const html of [render(), render(exams[1], false)]) {
+      expect(html).toMatch(
+        /<\/h1>[\s\S]*?text-text-secondary">Results by student and the hardest questions\.</,
+      );
+    }
   });
 
   it("has no stacked action buttons and no demo line: the actions live in the '...' menu", () => {

@@ -130,8 +130,12 @@ describe("every button goes through the Button component", () => {
     // draws the same underline; it is allowed in scrolling content only (the next test).
     // The small "Copy" button inside the Invite students fields (DESIGN.md: Invite students polish) is
     // a field control, not a page button; it uses the same small action text style.
+    // The rows of the dropdown menus (DESIGN.md: Five small instructor fixes) are list rows, not
+    // buttons; they use the hover and pressed fill of the shared menu highlight.
     expect(own).toEqual([
       "components/AskAiRow/AskAiRow.tsx",
+      "components/DropdownMenu/DropdownMenu.tsx",
+      "components/GroupSwitcher/GroupSwitcher.tsx",
       "components/InstructorStudents/CopyField.tsx",
       "components/SelectionToolbar/SelectionToolbar.tsx",
     ]);

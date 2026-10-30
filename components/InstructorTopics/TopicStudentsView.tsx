@@ -7,7 +7,6 @@ import {
 } from "@/components/InstructorStudents/StudentRow";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { assignOnTopic } from "@/components/InstructorTopics/TopicsView";
-import { DEMO_NOTE } from "@/lib/cohort";
 import { PASS_MARK } from "@/lib/config";
 import type { TopicStanding } from "@/lib/overview";
 import { profileStatus, topicMuted } from "@/lib/students";
@@ -72,9 +71,6 @@ export function TopicStudentsView({
       <ButtonLink href={assignOnTopic(id)} variant="secondary" icon={FilePlus}>
         Assign exam on this topic
       </ButtonLink>
-      <p data-demo-note className="type-small text-center text-text-secondary">
-        {DEMO_NOTE}
-      </p>
     </div>
   );
 }

@@ -115,13 +115,13 @@ for (const width of [360, 430]) {
       await expect(link.locator("svg.lucide-check")).toHaveCount(1);
     });
 
-    test("the Prototype and Demo group lines are gone from Invite students", async ({ page }) => {
+    test("the Prototype and Demo group lines are gone from Invite students and Students", async ({
+      page,
+    }) => {
       await expect(page.getByText("Prototype: no emails are sent.")).toHaveCount(0);
       await expect(page.getByText("Demo group.")).toHaveCount(0);
       await page.goto("/instructor/students");
-      await expect(page.locator("[data-demo-note]:visible")).toHaveText(
-        "Demo group. Student data on this screen is simulated.",
-      );
+      await expect(page.getByText("Demo group")).toHaveCount(0);
     });
 
     test("the success notice floats over the header under the back arrow, moves nothing and goes by itself", async ({

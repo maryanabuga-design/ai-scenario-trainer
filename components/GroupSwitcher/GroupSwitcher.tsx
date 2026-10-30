@@ -32,12 +32,8 @@ export function GroupSwitcher({
   initiallyOpen?: boolean;
 }) {
   const [open, setOpen] = useState(initiallyOpen);
-  const [active, setActive] = useState(() =>
-    Math.max(
-      0,
-      rows.findIndex((row) => row.id === scope),
-    ),
-  );
+  // the keyboard-active row; -1 while nothing is marked (a mouse or touch opening)
+  const [active, setActive] = useState(-1);
   const [shift, setShift] = useState(0);
   const root = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
@@ -84,10 +80,10 @@ export function GroupSwitcher({
       setActive((index) => (index + 1) % rows.length);
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
-      setActive((index) => (index - 1 + rows.length) % rows.length);
+      setActive((index) => (index <= 0 ? rows.length - 1 : index - 1));
     } else if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      choose(rows[active].id);
+      if (active >= 0) choose(rows[active].id);
     } else if (event.key === "Tab") {
       setOpen(false);
     }
@@ -103,12 +99,15 @@ export function GroupSwitcher({
         aria-expanded={open}
         aria-controls={open ? listId : undefined}
         aria-label={`Group: ${scopeName(scope)}. Change group`}
-        onClick={() => {
+        onClick={(event) => {
+          // Enter or Space on the pill (detail 0) is a keyboard opening: the current row is marked
           setActive(
-            Math.max(
-              0,
-              rows.findIndex((row) => row.id === scope),
-            ),
+            event.detail === 0
+              ? Math.max(
+                  0,
+                  rows.findIndex((row) => row.id === scope),
+                )
+              : -1,
           );
           setOpen((value) => !value);
         }}
@@ -146,7 +145,7 @@ export function GroupSwitcher({
           role="listbox"
           tabIndex={-1}
           aria-label="Group"
-          aria-activedescendant={`${listId}-${rows[active]?.id}`}
+          aria-activedescendant={active >= 0 ? `${listId}-${rows[active]?.id}` : undefined}
           onKeyDown={onListKey}
           data-group-list
           style={{ left: shift }}
@@ -162,8 +161,12 @@ export function GroupSwitcher({
                 aria-selected={selected}
                 data-group-option={row.id}
                 onClick={() => choose(row.id)}
-                className={`flex min-h-14 cursor-pointer items-center gap-3 px-4 py-2 ${
-                  index === active ? "bg-secondary-sand" : ""
+                className={`flex min-h-14 cursor-pointer items-center gap-3 px-4 py-2 hover:bg-menu-highlight active:bg-menu-highlight ${
+                  selected ? "bg-menu-highlight" : ""
+                } ${
+                  index === active
+                    ? "bg-menu-highlight outline-2 -outline-offset-2 outline-primary"
+                    : ""
                 } ${index > 0 ? "border-t border-soft-divider" : ""}`}
               >
                 <span className="flex min-w-0 flex-1 flex-col">

@@ -13,7 +13,6 @@ import { DeltaPill } from "@/components/InstructorOverview/OverviewBlocks";
 import { InitialsAvatar } from "@/components/InstructorStudents/StudentRow";
 import { TopicBadge } from "@/components/InstructorTopics/TopicsView";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
-import { DEMO_NOTE } from "@/lib/cohort";
 import { PASS_MARK } from "@/lib/config";
 import { rosterLine } from "@/lib/exam-detail";
 import {
@@ -262,10 +261,6 @@ export function StudentDetailView({
           onCancel={() => setConfirming(false)}
         />
       )}
-
-      <p data-demo-note className="type-small text-center text-text-secondary">
-        {DEMO_NOTE}
-      </p>
     </div>
   );
 }

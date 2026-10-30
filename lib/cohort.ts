@@ -30,7 +30,6 @@ export type SeededStudent = {
 export const seededStudents = cohort.students as SeededStudent[];
 /** What a student is told about the Instructor (Profile and Create account). */
 export const INSTRUCTOR_SEES = "Your instructor can see your progress and exam results.";
-export const DEMO_NOTE = "Demo group. Student data on this screen is simulated.";
 
 export type Participant = {
   /** A seeded student id ("stu-01") or the email of a local account. */

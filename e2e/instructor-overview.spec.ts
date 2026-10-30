@@ -116,9 +116,7 @@ for (const width of [360, 430]) {
       // one headline percentage plus the comparison value in the trend line
       const text = await page.locator("main").innerText();
       expect(text.match(/%/g)).toHaveLength(2);
-      await expect(page.locator("[data-demo-note]")).toHaveText(
-        "Demo group. Student data on this screen is simulated.",
-      );
+      await expect(page.getByText("Demo group")).toHaveCount(0);
       await expect(nav(page).getByRole("link")).toHaveText([
         "Overview",
         "Exams",
@@ -228,7 +226,7 @@ for (const width of [360, 430]) {
         expect(await card.innerText()).not.toContain("%");
       }
       expect(shares).toEqual([...shares].sort((a, b) => a - b));
-      await expect(page.locator("[data-demo-note]:visible")).toBeVisible();
+      await expect(page.getByText("Demo group")).toHaveCount(0);
       expect(await noSidewaysScroll(page)).toBe(true);
       const first = cards.first();
       const id = (await first.getAttribute("data-topic-card"))!;

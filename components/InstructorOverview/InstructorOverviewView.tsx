@@ -10,7 +10,6 @@ import {
   ReadinessCard,
   WeakestCard,
 } from "@/components/InstructorOverview/OverviewBlocks";
-import { DEMO_NOTE } from "@/lib/cohort";
 import { ALL_GROUPS, scopeSubtitle } from "@/lib/groups";
 import type { OverviewModel } from "@/lib/overview-model";
 
@@ -87,10 +86,6 @@ export function InstructorOverviewView({
           )}
         </>
       )}
-
-      <p data-demo-note className="type-small text-center text-text-secondary">
-        {DEMO_NOTE}
-      </p>
     </div>
   );
 }

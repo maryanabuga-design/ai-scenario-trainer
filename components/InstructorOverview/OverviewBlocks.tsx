@@ -197,7 +197,7 @@ export function GroupsCard({
   onSelect: (id: string) => void;
 }) {
   return (
-    <section aria-labelledby="groups-title" data-groups-card className="flex flex-col gap-3">
+    <section aria-labelledby="groups-title" data-groups-card className="flex flex-col gap-2">
       <BlockLabel id="groups-title">GROUPS</BlockLabel>
       <ul className={`${card} ${divided}`}>
         {rows.map(({ group, students, needs }) => (
@@ -239,7 +239,7 @@ export function ActionsCard({
   onSelect: (id: string) => void;
 }) {
   return (
-    <section aria-labelledby="actions-title" className="flex flex-col gap-3">
+    <section aria-labelledby="actions-title" className="flex flex-col gap-2">
       <BlockLabel id="actions-title">NEEDS YOUR ACTION</BlockLabel>
       {actions.length === 0 ? (
         <div
@@ -283,7 +283,7 @@ export function ActionsCard({
  */
 export function ExamsCard({ rows, activeCount }: { rows: ExamRow[]; activeCount: number }) {
   return (
-    <section aria-labelledby="exams-title" className="flex flex-col gap-3">
+    <section aria-labelledby="exams-title" className="flex flex-col gap-2">
       <BlockLabel id="exams-title" note={`${activeCount} Active`}>
         EXAMS
       </BlockLabel>
@@ -352,12 +352,13 @@ export function WeakestCard({
   students: number;
 }) {
   return (
-    <section aria-labelledby="weakest-title" className="flex flex-col gap-3">
+    <section aria-labelledby="weakest-title" className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-3">
         <h2 id="weakest-title" className="type-label text-text-secondary">
           WEAKEST TOPIC
         </h2>
-        <div className="-mr-3">
+        {/* the 44px tap area overlaps the gaps outwards, so the label stays 8px above the card */}
+        <div className="-my-3.5 -mr-3">
           <ButtonLink href="/instructor/students?view=topics" variant="tertiary">
             All topics
           </ButtonLink>
@@ -387,7 +388,7 @@ export function WeakestCard({
 /** Get started (a group with no students and no exams): three rows, each done, next or locked, each opening its screen. */
 export function GetStartedCard({ steps }: { steps: StartStep[] }) {
   return (
-    <section aria-labelledby="start-title" data-get-started className="flex flex-col gap-3">
+    <section aria-labelledby="start-title" data-get-started className="flex flex-col gap-2">
       <BlockLabel id="start-title">{GET_STARTED.toUpperCase()}</BlockLabel>
       <ul className={`${card} ${divided}`}>
         {steps.map((step) => (

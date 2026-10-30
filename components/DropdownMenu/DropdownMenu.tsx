@@ -34,7 +34,8 @@ export function DropdownMenu({
   initiallyOpen?: boolean;
 }) {
   const [open, setOpen] = useState(initiallyOpen);
-  const [active, setActive] = useState(0);
+  // the keyboard-active row; -1 while nothing is highlighted (a mouse or touch opening)
+  const [active, setActive] = useState(-1);
   const root = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
   const list = useRef<HTMLUListElement>(null);
@@ -67,10 +68,10 @@ export function DropdownMenu({
       setActive((index) => (index + 1) % items.length);
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
-      setActive((index) => (index - 1 + items.length) % items.length);
+      setActive((index) => (index <= 0 ? items.length - 1 : index - 1));
     } else if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      choose(items[active]);
+      if (active >= 0) choose(items[active]);
     } else if (event.key === "Tab") {
       setOpen(false);
     }
@@ -89,8 +90,9 @@ export function DropdownMenu({
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? listId : undefined}
-        onClick={() => {
-          setActive(0);
+        onClick={(event) => {
+          // Enter or Space on the button (detail 0) is a keyboard opening: the first row is marked
+          setActive(event.detail === 0 ? 0 : -1);
           setOpen((value) => !value);
         }}
         className="flex h-11 w-11 items-center justify-center has-focus-visible:outline-2 focus-visible:outline-2"
@@ -106,7 +108,7 @@ export function DropdownMenu({
           role="menu"
           tabIndex={-1}
           aria-label={label}
-          aria-activedescendant={`${listId}-${items[active]?.id}`}
+          aria-activedescendant={active >= 0 ? `${listId}-${items[active]?.id}` : undefined}
           onKeyDown={onKey}
           data-menu
           className="absolute top-full right-0 z-30 mt-1 w-max max-w-[min(280px,calc(100vw-32px))] min-w-48 overflow-hidden rounded-[16px] border border-selectable-stroke bg-card shadow-(--card-shadow) outline-none"
@@ -118,9 +120,13 @@ export function DropdownMenu({
               role="menuitem"
               data-menu-item={item.id}
               onClick={() => choose(item)}
-              className={`type-body-strong flex min-h-12 cursor-pointer items-center px-4 py-2 ${
+              className={`type-body-strong flex min-h-12 cursor-pointer items-center px-4 py-2 hover:bg-menu-highlight active:bg-menu-highlight ${
                 item.destructive ? "text-wrong-text" : "text-text"
-              } ${item.dividerAbove ? "border-t border-soft-divider" : ""} ${index === active ? "bg-secondary-sand" : ""}`}
+              } ${item.dividerAbove ? "border-t border-soft-divider" : ""} ${
+                index === active
+                  ? "bg-menu-highlight outline-2 -outline-offset-2 outline-primary"
+                  : ""
+              }`}
             >
               {item.label}
             </li>

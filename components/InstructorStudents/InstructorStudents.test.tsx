@@ -126,14 +126,13 @@ describe("the Students header", () => {
 describe("the Students list", () => {
   const html = list();
 
-  it("has the Primary Invite students with an add-person icon, the search field, the chips, the rows card and the note, in order", () => {
+  it("has the Primary Invite students with an add-person icon, the search field, the filter button and the rows card, in order", () => {
     const order = [
       ">Invite students<",
       "data-search-group",
       'name="student-search"',
       "data-filter-button",
       "data-student-rows",
-      "Demo group. Student data on this screen is simulated.",
     ].map((t) => html.indexOf(t));
     expect(order.every((i) => i >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
@@ -461,7 +460,7 @@ describe("the Topics view", () => {
     expect(html.match(/lucide-chevron-right/g)!.length).toBeGreaterThan(0);
   });
 
-  it("ends with the Secondary Assign exam on weakest topic that opens Assign exam with the topic, then the note", () => {
+  it("ends with the Secondary Assign exam on weakest topic that opens Assign exam with the topic, and no note", () => {
     const weak = standings.find((s) => s.total > 0)!;
     expect(html).toContain(
       `href="/instructor/exams/new?topic=${weak.sectionId}&amp;from=students"`,
@@ -469,9 +468,7 @@ describe("the Topics view", () => {
     expect(html).toMatch(
       /bg-olive-tint[^>]*>[\s\S]*lucide-file-plus[\s\S]*Assign exam on weakest topic</,
     );
-    expect(html.indexOf("Assign exam on weakest topic")).toBeLessThan(
-      html.indexOf("data-demo-note"),
-    );
+    expect(html).not.toMatch(/data-demo-note|Demo group/);
   });
 
   it("shows a message and a Secondary Choose group instead of the list in All groups", () => {
@@ -525,7 +522,7 @@ describe("the topic students list", () => {
     expect(html).toMatch(/bg-olive-tint[^>]*>[\s\S]*Assign exam on this topic</);
     expect(html).toContain("from=students&amp;topic=S3&amp;origin=topics");
     expect(visible(html)).not.toContain("%");
-    expect(html).toContain("Demo group. Student data on this screen is simulated.");
+    expect(html).not.toMatch(/data-demo-note|Demo group/);
   });
 });
 
@@ -670,8 +667,8 @@ describe("the Student detail", () => {
     expect(linkedPart.match(/lucide-chevron-right/g)).toHaveLength(rows.length);
   });
 
-  it("has the Secondary Send reminder with a bell, then the note; the dialog has the muted message and Primary and Secondary buttons", () => {
-    expect(html.indexOf(">Send reminder<")).toBeLessThan(html.indexOf("data-demo-note"));
+  it("has the Secondary Send reminder with a bell, with no demo line; the dialog has the muted message and Primary and Secondary buttons", () => {
+    expect(html).not.toMatch(/data-demo-note|Demo group/);
     const before = html.slice(0, html.indexOf(">Send reminder<"));
     const button = before.slice(before.lastIndexOf("<button"));
     expect(button).toContain("bg-olive-tint");

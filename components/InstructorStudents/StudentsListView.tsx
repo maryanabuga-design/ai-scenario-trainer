@@ -9,7 +9,6 @@ import { GetStartedCard } from "@/components/InstructorOverview/OverviewBlocks";
 import { StudentRow, StudentRowsCard } from "@/components/InstructorStudents/StudentRow";
 import { SearchField } from "@/components/SearchField/SearchField";
 import { SelectableRow } from "@/components/SelectableRow/SelectableRow";
-import { DEMO_NOTE } from "@/lib/cohort";
 import { getStarted } from "@/lib/get-started";
 import { profileStatus, rowMuted, statusOptions } from "@/lib/students";
 import type { FilterOrigin, StudentProfile, StudentsFilter } from "@/lib/students";
@@ -299,9 +298,6 @@ export function StudentsListView({
           ))}
         </StudentRowsCard>
       )}
-      <p data-demo-note className="type-small text-center text-text-secondary">
-        {DEMO_NOTE}
-      </p>
     </>
   );
 }

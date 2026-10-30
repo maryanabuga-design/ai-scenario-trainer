@@ -112,9 +112,7 @@ for (const width of [360, 430]) {
           PRIMARY,
         );
       expect(primaries).toBe(0);
-      await expect(page.locator("[data-demo-note]")).toHaveText(
-        "Demo group. Student data on this screen is simulated.",
-      );
+      await expect(page.getByText("Demo group")).toHaveCount(0);
     });
 
     test("a decrease is a muted plain line, never red or amber (Military training)", async ({

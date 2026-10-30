@@ -3,7 +3,6 @@ import Link from "next/link";
 import { ButtonLink } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { stepsCard } from "@/components/StepsView/StepCard";
-import { DEMO_NOTE } from "@/lib/cohort";
 import { needsReviewTag } from "@/lib/overview";
 import { assignOnTopicParams } from "@/lib/students";
 import type { TopicStanding } from "@/lib/overview";
@@ -100,9 +99,6 @@ export function TopicsView({
           Assign exam on weakest topic
         </ButtonLink>
       )}
-      <p data-demo-note className="type-small text-center text-text-secondary">
-        {DEMO_NOTE}
-      </p>
     </>
   );
 }

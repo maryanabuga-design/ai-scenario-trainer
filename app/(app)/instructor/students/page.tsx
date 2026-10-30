@@ -10,7 +10,7 @@ import { TopicsView } from "@/components/InstructorTopics/TopicsView";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { useAuth } from "@/lib/auth";
 import type { Account } from "@/lib/auth";
-import { DEMO_NOTE, participants } from "@/lib/cohort";
+import { participants } from "@/lib/cohort";
 import { ALL_GROUPS, inScope } from "@/lib/groups";
 import type { Scope } from "@/lib/groups";
 import { topicStandings } from "@/lib/overview";
@@ -79,17 +79,12 @@ function Loaded({ accounts, scope }: { accounts: Account[]; scope: Scope }) {
       />
       {view === "topics" ? (
         scope === ALL_GROUPS ? (
-          <>
-            <EmptyCard
-              dataEmpty="all-groups"
-              title="Select a group to see topic results."
-              text="Topic results mix groups when all are shown. Choose a group on the Overview."
-              action={null}
-            />
-            <p data-demo-note className="type-small text-center text-text-secondary">
-              {DEMO_NOTE}
-            </p>
-          </>
+          <EmptyCard
+            dataEmpty="all-groups"
+            title="Select a group to see topic results."
+            text="Topic results mix groups when all are shown. Choose a group on the Overview."
+            action={null}
+          />
         ) : (
           <TopicsView standings={topicStandings(all)} titleOf={titleOf} />
         )
