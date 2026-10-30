@@ -233,15 +233,14 @@ for (const width of [360, 430]) {
       const passing = /(\d+) of (\d+)/.exec(await first.innerText())!;
       await first.locator("a").click();
       await expect(page).toHaveURL(new RegExp(`/instructor/students/topic/${id}$`));
-      await expect(page.locator("[data-showing]:visible")).toHaveText(`Below pass mark in ${id}`);
+      await expect(page.locator("[data-showing]:visible")).toHaveCount(0);
       await expect(page.locator("[data-student]:visible")).toHaveCount(
         Number(passing[2]) - Number(passing[1]),
       );
       await page.getByRole("link", { name: "Back to Topics" }).click();
       await expect(page).toHaveURL(/\/instructor\/students\?view=topics$/);
       await cards.first().locator("a").click();
-      await page.getByRole("button", { name: "Clear filter" }).click();
-      await expect(page).toHaveURL(/\/instructor\/students\?view=topics$/);
+      await expect(page.getByRole("button", { name: "Clear filter" })).toHaveCount(0);
     });
 
     test("an exam due soon with students not started is the first row; Remind removes it", async ({

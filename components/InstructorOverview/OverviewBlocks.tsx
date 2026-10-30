@@ -113,8 +113,8 @@ const deltaLook = {
   neutral: "bg-secondary-sand text-text-secondary",
 } as const;
 
-/** The soft pill with the weekly change: "+4 points this week" (arrow up), "No change this week", "-3 points this week" (arrow down, amber, never red). */
-export function DeltaPill({ delta }: { delta: number }) {
+/** The soft pill with the weekly comparison: "Up from 45% last week" (arrow up), "Same as last week", "Down from 50% last week" (arrow down, amber, never red). */
+export function DeltaPill({ current, delta }: { current: number; delta: number }) {
   const tone = deltaTone(delta);
   return (
     <span
@@ -124,7 +124,7 @@ export function DeltaPill({ delta }: { delta: number }) {
     >
       {delta > 0 && <ArrowUp size={14} strokeWidth={2.25} aria-hidden="true" />}
       {delta < 0 && <ArrowDown size={14} strokeWidth={2.25} aria-hidden="true" />}
-      {deltaLine(delta)}
+      {deltaLine(current, delta)}
     </span>
   );
 }

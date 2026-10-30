@@ -42,7 +42,7 @@ export function FilterChips<T extends string>({
             <span
               className={`flex h-10 items-center rounded-full px-4 whitespace-nowrap ${
                 pressed
-                  ? "type-small-strong border-[1.5px] border-primary bg-olive-tint text-text"
+                  ? "type-small-strong border border-chip-active-stroke bg-olive-tint text-text"
                   : "type-small border border-selectable-stroke bg-card text-text active:bg-secondary-sand"
               }`}
             >

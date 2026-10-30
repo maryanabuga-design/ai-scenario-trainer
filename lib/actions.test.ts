@@ -155,10 +155,13 @@ describe("the trend line", () => {
     expect(trendLine(groupReadiness(list), groups[0].lastWeekReadiness)?.tone).toBe("up");
   });
 
-  it("keeps the student weekly change wording (Student detail)", () => {
-    expect(deltaLine(4)).toBe("+4 points this week");
-    expect(deltaLine(-3)).toBe("-3 points this week");
-    expect(deltaLine(0)).toBe("No change this week");
+  it("says the student's week-over-week comparison in plain words (Student detail)", () => {
+    expect(deltaLine(49, 4)).toBe("Up from 45% last week");
+    expect(deltaLine(47, -3)).toBe("Down from 50% last week");
+    expect(deltaLine(60, 0)).toBe("Same as last week");
+    // the previous value stays between 0 and 100
+    expect(deltaLine(2, 9)).toBe("Up from 0% last week");
+    expect(deltaLine(100, -9)).toBe("Down from 100% last week");
   });
 });
 

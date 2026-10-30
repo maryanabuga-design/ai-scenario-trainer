@@ -28,6 +28,7 @@ import {
   showingLine,
   sortProfiles,
   visibleStudents,
+  readinessOf,
 } from "@/lib/students";
 import type { StudentsFilter } from "@/lib/students";
 
@@ -170,7 +171,7 @@ describe("the Students list", () => {
     expect(html.indexOf(">Invite students<")).toBeLessThan(html.indexOf("data-search-group"));
   });
 
-  it("has three filter chips as toggle buttons with aria-pressed: active tint + 1.5px olive border + semi-bold, inactive white + 1px border + regular, no check icon", () => {
+  it("has three filter chips as toggle buttons with aria-pressed: active tint + 1px light green border + semi-bold, inactive white + 1px border + regular, no check icon", () => {
     expect(html.match(/data-filter-chip=/g)).toHaveLength(3);
     for (const label of ["All", "Needs attention", "Ready"])
       expect(html).toContain(`${label}</span>`);
@@ -183,7 +184,8 @@ describe("the Students list", () => {
         html.indexOf(`data-filter-chip="${id}"`),
         html.indexOf("</button>", html.indexOf(`data-filter-chip="${id}"`)),
       );
-    expect(chip("all")).toContain("border-[1.5px] border-primary bg-olive-tint");
+    expect(chip("all")).toContain("border border-chip-active-stroke bg-olive-tint");
+    expect(chip("all")).not.toMatch(/border-primary|border-\[1\.5px\]/);
     expect(chip("all")).toContain("type-small-strong");
     expect(chip("needs")).toContain("border border-selectable-stroke bg-card");
     expect(chip("needs")).toMatch(/type-small /);
@@ -287,7 +289,16 @@ describe("the Students list", () => {
     expect(search).toContain("Try another name or clear the filters.");
     expect(search).toMatch(/bg-olive-tint[^>]*>Clear search</);
     expect(search).not.toContain("COHORT");
+    // the picture: about 120px, decorative, centred above the title; the icon tile is only the fallback
+    const card = search.slice(search.indexOf('data-empty="search"'));
+    expect(card).toContain('src="/images/instructor/students-no-results.webp"');
+    expect(card).toContain('alt=""');
+    expect(card).toContain("h-[120px] w-[120px]");
+    expect(card).not.toContain("data-empty-tile");
+    expect(card.indexOf("data-no-results-art")).toBeLessThan(card.indexOf("No students match"));
+    expect(card).toContain("items-center");
     const filter = list("needs", { shown: [] });
+    expect(filter).toContain("students-no-results.webp");
     expect(filter).toContain("No students match this filter.");
     expect(filter).toMatch(/bg-olive-tint[^>]*>Clear filter</);
     expect(filter).not.toContain("Clear search");
@@ -367,26 +378,30 @@ describe("the topic students list", () => {
   const rows = sortProfiles(belowPassMark(all, "S3"));
   const html = clean(
     renderToStaticMarkup(
-      <TopicStudentsView
-        id="S3"
-        title="Topic S3"
-        standing={standing}
-        rows={rows}
-        onClear={() => undefined}
-      />,
+      <TopicStudentsView id="S3" title="Topic S3" standing={standing} rows={rows} />,
     ),
   );
 
-  it("has Back to Topics, the summary card, the filter line, the count label, the rows and the Secondary Assign exam on this topic", () => {
+  it("has Back to Topics, the title, the muted subtitle, a white summary card with Topic S3, the count label, the rows and the Secondary Assign exam on this topic", () => {
     expect(html).toContain('aria-label="Back to Topics"');
     expect(html).toContain('href="/instructor/students?view=topics"');
     expect(html).toContain(">Topic S3</h1>");
-    expect(html).toContain("data-topic-summary");
-    expect(html).toContain(
+    expect(html).toMatch(/text-text-secondary">Students below the pass mark on this topic\.</);
+    const card = html.slice(html.indexOf("data-topic-summary"), html.indexOf("BELOW PASS MARK"));
+    // white, like the student card of the detail screen: same radius, padding and tile
+    expect(card).toContain("rounded-card border border-selectable-stroke bg-card");
+    expect(card).toContain("p-[var(--gutter,1rem)]");
+    expect(card).not.toContain("bg-secondary-sand");
+    expect(card).toContain("data-initials-avatar");
+    expect(card).toContain("h-16 w-16");
+    expect(card).toMatch(/>Topic S3<\/h2>/);
+    expect(card).toContain(
       `Pass mark: 80 · ${standing.passing} of ${standing.total} students on track`,
     );
-    expect(html).toContain("Below pass mark in S3");
-    expect(html).toMatch(/underline[^>]*>Clear filter</);
+    // the title above holds the topic name, the card does not repeat it
+    expect(card).not.toContain("Topic S3</p>");
+    // no filter strip and no filter control
+    expect(html).not.toMatch(/Below pass mark in|Clear filter|data-filter-line/);
     expect(html).toContain(`${rows.length} STUDENTS BELOW PASS MARK`);
     expect(html.match(/data-student=/g)).toHaveLength(rows.length);
     expect(html).toMatch(/· S3: \d+ of \d+ correct/);
@@ -431,6 +446,7 @@ describe("the Student detail", () => {
   it("has Back and the band 'Student detail' without an avatar, then the header card with the large avatar, status dot, name, field and group, last active", () => {
     expect(html).toContain('aria-label="Back to students"');
     expect(html).toContain(">Student detail</h1>");
+    expect(html).toMatch(/text-text-secondary">Readiness and results for each topic\.</);
     expect(html).not.toContain('data-avatar="true"');
     expect(html).toContain("data-student-header");
     expect(html).toContain("h-16 w-16");
@@ -445,8 +461,11 @@ describe("the Student detail", () => {
   it("has READINESS with the large figure (the ONLY percentage), the weekly pill and the two-cell strip", () => {
     expect(html).toContain(">READINESS<");
     expect(html).toMatch(/data-readiness-number[^>]*>\d+%</);
-    expect(visible(html).match(/%/g)).toHaveLength(1);
-    expect(html).toMatch(/data-delta[^>]*>[\s\S]*points? this week/);
+    // ONE headline percentage; the comparison value in its pill ("Up from 45% last week") is allowed
+    expect(html.match(/data-readiness-number/g)).toHaveLength(1);
+    expect(visible(html).match(/%/g)).toHaveLength(2);
+    expect(html).toMatch(/data-delta[^>]*>[\s\S]*(Up|Down) from \d+% last week|Same as last week/);
+    expect(html).not.toMatch(/points? this week|No change this week/);
     expect(html).toContain("Pass mark: 80");
     expect(html).toMatch(/Practised (\d+ times|once) this week|No practice this week/);
     // no delta for an account without history
@@ -455,18 +474,66 @@ describe("the Student detail", () => {
     expect(visible(local).match(/%/g)).toHaveLength(1);
   });
 
-  it("has BY TOPIC with '10 topics', S1 to S10 in order as 80px cards, an amber tag or a green check, and no chevron", () => {
-    expect(html).toContain(">BY TOPIC<");
-    expect(html).toContain("10 topics");
-    const ids = [...html.matchAll(/data-topic-row="(S\d+)"/g)].map((m) => m[1]);
-    expect(ids).toEqual(["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10"]);
+  it("has the topics in two labelled groups with counts, no BY TOPIC row, no per-row badge and no chevron", () => {
+    expect(html).not.toMatch(/>BY TOPIC<|10 topics/);
+    const labels = [...html.matchAll(/type-label text-text-secondary">([^<]+)<\/h2>/g)]
+      .map((m) => m[1].replace(/<!-- -->/g, ""))
+      .filter((l) => /REVIEW/.test(l));
+    expect(labels).toHaveLength(2);
+    expect(labels[0]).toMatch(/^NEEDS REVIEW · \d+$/);
+    expect(labels[1]).toMatch(/^NOTHING TO REVIEW · \d+$/);
+    const counts = labels.map((l) => Number(l.split("· ")[1]));
+    expect(counts[0] + counts[1]).toBe(10);
+    // the count matches the rows of each group, and the order inside a group is the topic order
+    for (const [i, id] of ["review", "clear"].entries()) {
+      const section = html.slice(html.indexOf(`data-topic-group="${id}"`));
+      const part = section.slice(0, section.indexOf("</section>"));
+      const ids = [...part.matchAll(/data-topic-row="(S\d+)"/g)].map((m) => Number(m[1].slice(1)));
+      expect(ids).toHaveLength(counts[i]);
+      expect(ids).toEqual([...ids].sort((a, b) => a - b));
+    }
+    expect(html.indexOf('data-topic-group="review"')).toBeLessThan(
+      html.indexOf('data-topic-group="clear"'),
+    );
     expect(html.match(/h-\[var\(--list-card-height,80px\)\]/g)).toHaveLength(10);
-    const part = html.slice(html.indexOf(">BY TOPIC<"), html.indexOf(">EXAMS<"));
-    expect(part).not.toContain("lucide-chevron-right");
-    expect(part).toContain("data-needs-review");
+    const part = html.slice(html.indexOf("data-topic-group"), html.indexOf(">EXAMS<"));
+    expect(part).not.toMatch(
+      /lucide-chevron-right|data-needs-review|data-on-track|data-review-tag|Needs review|lucide-check/,
+    );
     expect(part).toMatch(/\d+ of \d+ correct/);
-    expect(part.includes("data-on-track")).toBe(part.includes("bg-status-success-bg"));
-    expect(part).toContain("bg-status-attention-bg");
+  });
+
+  it("hides a group that is empty", () => {
+    const allClear = {
+      ...person,
+      topics: person.topics.map((row) => ({
+        ...row,
+        correct: row.answered,
+        answered: row.answered,
+      })),
+    };
+    const clear = render(allClear);
+    expect(clear).not.toContain('data-topic-group="review"');
+    expect(clear).toContain('data-topic-group="clear"');
+    expect(clear).toMatch(/NOTHING TO REVIEW · 10/);
+    const allReview = render({
+      ...person,
+      topics: person.topics.map((row) => ({ ...row, answered: 10, correct: 1 })),
+    });
+    expect(allReview).not.toContain('data-topic-group="clear"');
+    expect(allReview).toMatch(/NEEDS REVIEW · 10/);
+  });
+
+  it("says the comparison in plain words in all three cases", () => {
+    const base = { ...person, readinessPrev: null };
+    const wording = (delta: number | "same") => {
+      const current = readinessOf(person);
+      const prev = delta === "same" ? current : current - delta;
+      return render({ ...base, readinessPrev: prev });
+    };
+    expect(wording(4)).toMatch(/Up from \d+% last week/);
+    expect(wording(-3)).toMatch(/Down from \d+% last week/);
+    expect(wording("same")).toContain("Same as last week");
   });
 
   it("has EXAMS with '2 total' as one card of hairline rows with the status pill on one line, and a chevron only for a Passed row with a certificate", () => {
@@ -632,7 +699,7 @@ describe("FilterChips", () => {
     const html = chips("b");
     expect(html.match(/aria-pressed="true"/g)).toHaveLength(1);
     expect(html.match(/min-h-11/g)).toHaveLength(2);
-    expect(html).toMatch(/aria-pressed="true"[^>]*>[\s\S]*?border-\[1\.5px\] border-primary/);
+    expect(html).toMatch(/aria-pressed="true"[^>]*>[\s\S]*?border border-chip-active-stroke/);
   });
 
   it("is used by the Students list only", () => {

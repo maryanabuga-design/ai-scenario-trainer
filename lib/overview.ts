@@ -82,11 +82,14 @@ export function nearestActiveExam(exams: GroupExam[], now: number): GroupExam | 
 /** "5 students" or "1 student". */
 export const studentsCount = (n: number) => `${n} ${n === 1 ? "student" : "students"}`;
 
-/** "+4 points this week", "-3 points this week", "No change this week" (no percent sign). */
-export function deltaLine(delta: number): string {
-  if (delta === 0) return "No change this week";
-  const n = Math.abs(delta);
-  return `${delta > 0 ? "+" : "-"}${n} ${n === 1 ? "point" : "points"} this week`;
+/**
+ * The week-over-week comparison in plain words: "Up from 45% last week", "Down from 50% last week" or
+ * "Same as last week". The previous value is the current readiness minus the change.
+ */
+export function deltaLine(current: number, delta: number): string {
+  if (delta === 0) return "Same as last week";
+  const previous = Math.min(100, Math.max(0, current - delta));
+  return `${delta > 0 ? "Up" : "Down"} from ${previous}% last week`;
 }
 
 /** Which tone the delta pill takes: success for an increase, neutral for no change, attention (never red) for a decrease. */

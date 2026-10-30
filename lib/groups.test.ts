@@ -131,10 +131,9 @@ describe("scope-aware figures", () => {
   });
 
   it("names the three delta tones and wording", () => {
-    expect(deltaLine(4)).toBe("+4 points this week");
-    expect(deltaLine(-3)).toBe("-3 points this week");
-    expect(deltaLine(0)).toBe("No change this week");
-    expect(deltaLine(1)).toBe("+1 point this week");
+    expect(deltaLine(49, 4)).toBe("Up from 45% last week");
+    expect(deltaLine(47, -3)).toBe("Down from 50% last week");
+    expect(deltaLine(60, 0)).toBe("Same as last week");
     expect(deltaTone(4)).toBe("success");
     expect(deltaTone(0)).toBe("neutral");
     expect(deltaTone(-3)).toBe("attention");

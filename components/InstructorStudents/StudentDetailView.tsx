@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Check, Clock, Flag, Repeat, Award } from "lucide-react";
+import { Bell, Clock, Flag, Repeat, Award } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
@@ -9,7 +9,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { StatusPill } from "@/components/InstructorExams/ExamParts";
 import { DeltaPill } from "@/components/InstructorOverview/OverviewBlocks";
 import { statusChipLook, InitialsAvatar } from "@/components/InstructorStudents/StudentRow";
-import { ReviewTag, TopicBadge } from "@/components/InstructorTopics/TopicsView";
+import { TopicBadge } from "@/components/InstructorTopics/TopicsView";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { DEMO_NOTE } from "@/lib/cohort";
 import { PASS_MARK } from "@/lib/config";
@@ -24,6 +24,8 @@ import {
 } from "@/lib/students";
 import type { StudentExamRow, StudentProfile } from "@/lib/students";
 
+export const DETAIL_SUBTITLE = "Readiness and results for each topic.";
+
 const card = "rounded-card border border-selectable-stroke bg-card shadow-(--card-shadow)";
 
 /** "Practised 3 times this week", "Practised once this week", "No practice this week". */
@@ -37,7 +39,7 @@ export const practicedLine = (n: number) =>
 /**
  * The Student detail of the Instructor (DESIGN.md: Instructor, Students rebuilt): READ-ONLY. Back and
  * the band "Student detail" (no avatar), the header card, READINESS (the ONE percentage of the
- * screen, with the weekly change), BY TOPIC (80px cards, not tappable), EXAMS (hairline rows; only a
+ * screen, with the week-over-week comparison), the topics in two groups NEEDS REVIEW and NOTHING TO REVIEW (80px cards, not tappable), EXAMS (hairline rows; only a
  * Passed row with a certificate opens it) and the Secondary "Send reminder" with its dialog.
  */
 export function StudentDetailView({
@@ -77,9 +79,16 @@ export function StudentDetailView({
   const status = profileStatus(profile);
   const [confirming, setConfirming] = useState(confirmingInitially);
   const dot = statusChipLook[status].tone;
+  // the topics in two groups, in their own order (an unpractised topic has nothing to review)
+  const needsReview = profile.topics.filter(topicNeedsReview);
+  const nothingToReview = profile.topics.filter((row) => !topicNeedsReview(row));
   return (
     <div className="flex flex-col gap-4 pb-4">
-      <PageHeaderBand title="Student detail" back={{ label: backLabel, href: backHref }} />
+      <PageHeaderBand
+        title="Student detail"
+        subtitle={<span className="text-text-secondary">{DETAIL_SUBTITLE}</span>}
+        back={{ label: backLabel, href: backHref }}
+      />
       <p role="status" data-message className="type-body text-center not-empty:py-1">
         {sentMessage}
       </p>
@@ -123,7 +132,7 @@ export function StudentDetailView({
           <p data-readiness-number className="type-display tabular-nums">
             {readiness}%
           </p>
-          {change !== null && <DeltaPill delta={change} />}
+          {change !== null && <DeltaPill current={readiness} delta={change} />}
         </div>
         <div className="grid grid-cols-2 gap-2 rounded-[14px] bg-secondary-sand p-3">
           <p data-pass-mark className="type-small flex items-center gap-2">
@@ -147,55 +156,45 @@ export function StudentDetailView({
         </div>
       </section>
 
-      <section aria-labelledby="student-topics" className="flex flex-col gap-3">
-        <div className="flex items-baseline justify-between gap-3">
-          <h2 id="student-topics" className="type-label text-text-secondary">
-            BY TOPIC
-          </h2>
-          <span className="type-small text-text-secondary">{profile.topics.length} topics</span>
-        </div>
-        <ul className="flex flex-col gap-3">
-          {profile.topics.map((row) => {
-            const review = topicNeedsReview(row);
-            const passed = row.answered > 0 && !review;
-            return (
-              <li
-                key={row.sectionId}
-                data-topic-row={row.sectionId}
-                className={`${card} flex h-[var(--list-card-height,80px)] items-center gap-3 px-[var(--gutter,1rem)]`}
-              >
-                <TopicBadge id={row.sectionId} />
-                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <span data-topic-title className="type-body-strong truncate">
-                    <span className="sr-only">{row.sectionId} </span>
-                    {titleOf(row.sectionId)}
+      {[
+        { id: "review", label: "NEEDS REVIEW", rows: needsReview },
+        { id: "clear", label: "NOTHING TO REVIEW", rows: nothingToReview },
+      ]
+        .filter((group) => group.rows.length > 0)
+        .map((group) => (
+          <section
+            key={group.id}
+            aria-labelledby={`student-topics-${group.id}`}
+            data-topic-group={group.id}
+            className="flex flex-col gap-3"
+          >
+            <h2 id={`student-topics-${group.id}`} className="type-label text-text-secondary">
+              {group.label} · {group.rows.length}
+            </h2>
+            <ul className="flex flex-col gap-3">
+              {group.rows.map((row) => (
+                <li
+                  key={row.sectionId}
+                  data-topic-row={row.sectionId}
+                  className={`${card} flex h-[var(--list-card-height,80px)] items-center gap-3 px-[var(--gutter,1rem)]`}
+                >
+                  <TopicBadge id={row.sectionId} />
+                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <span data-topic-title className="type-body-strong truncate">
+                      <span className="sr-only">{row.sectionId} </span>
+                      {titleOf(row.sectionId)}
+                    </span>
+                    <span className="type-small text-text-secondary tabular-nums">
+                      {row.answered === 0
+                        ? "Not practised yet"
+                        : `${row.correct} of ${row.answered} correct`}
+                    </span>
                   </span>
-                  <span className="type-small text-text-secondary tabular-nums">
-                    {row.answered === 0
-                      ? "Not practised yet"
-                      : `${row.correct} of ${row.answered} correct`}
-                  </span>
-                </span>
-                {review && (
-                  <span data-needs-review>
-                    <ReviewTag />
-                  </span>
-                )}
-                {passed && (
-                  <span
-                    data-on-track
-                    role="img"
-                    aria-label="At or above the pass mark"
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-status-success-bg text-status-success-ink"
-                  >
-                    <Check size={16} strokeWidth={2.5} aria-hidden="true" />
-                  </span>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      </section>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
 
       <section aria-labelledby="student-exams" className="flex flex-col gap-3">
         <div className="flex items-baseline justify-between gap-3">

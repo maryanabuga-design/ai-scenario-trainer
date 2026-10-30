@@ -123,7 +123,7 @@ for (const width of [360, 430]) {
         await expect(chip).toHaveAttribute("aria-pressed", /true|false/);
         await expect(chip.locator("svg")).toHaveCount(0);
       }
-      // active: tint fill, a 1.5px olive border, semi-bold; inactive: white, a 1px border, regular
+      // active: tint fill, a 1px light green border, semi-bold; inactive: white, a 1px border, regular
       const active = page.locator('[data-filter-chip="all"]');
       await expect(active).toHaveAttribute("aria-pressed", "true");
       const look = (c: typeof active) =>
@@ -131,10 +131,10 @@ for (const width of [360, 430]) {
           const css = getComputedStyle(el);
           return [css.backgroundColor, css.borderTopColor, css.fontWeight];
         });
-      expect(await look(active)).toEqual(["rgb(224, 230, 214)", "rgb(63, 70, 56)", "600"]);
+      expect(await look(active)).toEqual(["rgb(224, 230, 214)", "rgb(201, 211, 184)", "600"]);
       expect(
-        await active.locator("span").evaluate((el) => el.className.includes("border-[1.5px]")),
-      ).toBe(true);
+        await active.locator("span").evaluate((el) => getComputedStyle(el).borderTopWidth),
+      ).toBe("1px");
       const inactive = page.locator('[data-filter-chip="needs"]');
       await expect(inactive).toHaveAttribute("aria-pressed", "false");
       const l = await look(inactive);
@@ -264,6 +264,18 @@ for (const width of [360, 430]) {
       await expect(empty).toContainText("No students match this search.");
       await expect(empty).toContainText("Try another name or clear the filters.");
       expect(await bg(empty)).toBe(WHITE);
+      // the picture: about 120px, centred above the title, decorative
+      const art = empty.locator("[data-no-results-art]");
+      await expect(art).toHaveAttribute("src", "/images/instructor/students-no-results.webp");
+      await expect(art).toHaveAttribute("alt", "");
+      const a = (await box(art))!;
+      const e = (await box(empty))!;
+      expect([a.width, a.height]).toEqual([120, 120]);
+      expect(Math.abs(a.x + a.width / 2 - (e.x + e.width / 2))).toBeLessThanOrEqual(1);
+      expect(a.y).toBeLessThan((await box(empty.getByRole("heading")))!.y);
+      await expect(empty.locator("[data-empty-tile]")).toHaveCount(0);
+      expect(await art.evaluate((el: HTMLImageElement) => el.naturalWidth > 0)).toBe(true);
+      expect(await noSidewaysScroll(page)).toBe(true);
       const clear = empty.getByRole("button", { name: "Clear search" });
       expect(await bg(clear)).toBe(OLIVE_TINT);
       await clear.click();
@@ -373,8 +385,14 @@ for (const width of [360, 430]) {
       await expect(summary).toContainText(
         `Pass mark: 80 · ${counts[1]} of ${counts[2]} students on track`,
       );
-      expect(await bg(summary)).toBe(SAND);
-      await expect(page.locator("[data-showing]")).toHaveText(`Below pass mark in ${id}`);
+      // a white card like the student card of the detail screen, with "Topic S4" and no repeated name
+      expect(await bg(summary)).toBe(WHITE);
+      await expect(summary.locator("h2")).toHaveText(`Topic ${id}`);
+      await expect(summary.locator("[data-initials-avatar]")).toHaveText(id);
+      await expect(page.getByText("Students below the pass mark on this topic.")).toBeVisible();
+      // no filter strip and no filter control
+      await expect(page.locator("[data-showing], [data-filter-line]")).toHaveCount(0);
+      await expect(page.getByRole("button", { name: "Clear filter" })).toHaveCount(0);
       const below = Number(counts[2]) - Number(counts[1]);
       await expect(page.locator("main")).toContainText(`${below} STUDENTS BELOW PASS MARK`);
       await expect(rows(page)).toHaveCount(below);
@@ -396,16 +414,16 @@ for (const width of [360, 430]) {
       await rows(page).first().click();
       await page.getByRole("link", { name: "Back to topic" }).click();
       await expect(page).toHaveURL(new RegExp(`/instructor/students/topic/${id}$`));
-      await page.getByRole("button", { name: "Clear filter" }).click();
-      await expect(page).toHaveURL(/\/instructor\/students\?view=topics$/);
+      expect(await noSidewaysScroll(page)).toBe(true);
     });
 
-    test("the Student detail: the header card, READINESS, BY TOPIC, EXAMS, Send reminder; the only percentage is the Readiness figure", async ({
+    test("the Student detail: the subtitle, the header card, READINESS, two topic groups, EXAMS, Send reminder; the only percentage is the Readiness figure", async ({
       page,
     }) => {
       await page.goto("/instructor/students");
       await rows(page).first().click();
       await expect(page.getByRole("heading", { level: 1 })).toHaveText("Student detail");
+      await expect(page.getByText("Readiness and results for each topic.")).toBeVisible();
       await expect(page.locator("[data-avatar]:visible")).toHaveCount(0);
       const header = page.locator("[data-student-header]");
       const avatar = header.locator("[data-initials-avatar]");
@@ -419,24 +437,30 @@ for (const width of [360, 430]) {
       // READINESS
       await expect(page.locator("main")).toContainText("READINESS");
       await expect(page.locator("[data-readiness-number]")).toHaveText(/^\d+%$/);
-      await expect(page.locator("[data-delta]")).toHaveText(/^[+-]\d+ points? this week$/);
+      await expect(page.locator("[data-delta]")).toHaveText(
+        /^(Up from \d+% last week|Down from \d+% last week|Same as last week)$/,
+      );
       await expect(page.locator("[data-pass-mark]")).toHaveText("Pass mark: 80");
       await expect(page.locator("[data-practice]")).toHaveText(
         /^(Practised \d+ times this week|Practised once this week|No practice this week)$/,
       );
-      // BY TOPIC
-      await expect(page.locator("main")).toContainText("10 topics");
+      // two labelled groups with counts, no BY TOPIC row, no per-row badges
+      await expect(page.locator("main")).not.toContainText("BY TOPIC");
+      await expect(page.locator("main")).not.toContainText("10 topics");
+      const groupLabels = await page.locator("[data-topic-group] h2").allInnerTexts();
+      expect(groupLabels[0]).toMatch(/^NEEDS REVIEW · \d+$/);
+      expect(groupLabels[groupLabels.length - 1]).toMatch(
+        /^(NOTHING TO REVIEW|NEEDS REVIEW) · \d+$/,
+      );
       const topicRows = page.locator("[data-topic-row]");
       await expect(topicRows).toHaveCount(10);
-      for (const [i, row] of (await topicRows.all()).entries()) {
-        await expect(row).toHaveAttribute("data-topic-row", `S${i + 1}`);
+      for (const row of await topicRows.all()) {
         expect((await box(row)).height).toBe(80);
-        await expect(row.locator("svg.lucide-chevron-right")).toHaveCount(0);
-        const flagged = await row.locator("[data-review-tag]").count();
-        const ok = await row.locator("[data-on-track]").count();
-        expect(flagged + ok).toBeLessThanOrEqual(1);
+        await expect(row.locator("svg")).toHaveCount(0);
+        await expect(row.locator("[data-review-tag], [data-on-track]")).toHaveCount(0);
       }
-      await expect(page.locator("[data-review-tag]").first()).toHaveText("Needs review");
+      await expect(page.locator("[data-review-tag]")).toHaveCount(0);
+      expect(await noSidewaysScroll(page)).toBe(true);
       // EXAMS
       await expect(page.locator("main")).toContainText("2 total");
       const exams = page.locator("[data-exam-row]");
@@ -452,7 +476,8 @@ for (const width of [360, 430]) {
       expect(await bg(send)).toBe(OLIVE_TINT);
       await expect(send.locator("svg.lucide-bell")).toHaveCount(1);
       // one percentage on the whole screen
-      expect(((await page.locator("main").innerText()).match(/%/g) ?? []).length).toBe(1);
+      // the headline figure and, in its pill, the comparison value ("Up from 45% last week")
+      expect(((await page.locator("main").innerText()).match(/%/g) ?? []).length).toBe(2);
       await expect(page.locator("[data-demo-note]:visible")).toHaveText(
         "Demo group. Student data on this screen is simulated.",
       );
@@ -553,8 +578,8 @@ for (const width of [360, 430]) {
       await expect(page.locator("[data-practice]")).toHaveText("Practised once this week");
       await expect(page.locator("[data-delta]")).toHaveCount(0);
       await expect(page.locator('[data-topic-row="S1"]')).toContainText("8 of 12 correct");
-      await expect(page.locator('[data-topic-row="S1"] [data-review-tag]')).toHaveText(
-        "Needs review",
+      await expect(page.locator('[data-topic-group="review"] [data-topic-row="S1"]')).toHaveCount(
+        1,
       );
       // the Passed exam with a certificate: a certificate badge, a chevron, and it opens the certificate
       const passed = page.locator('[data-exam-row="seed-active"]');

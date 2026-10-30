@@ -1,6 +1,7 @@
 "use client";
 
 import { Funnel, UserPlus, UserRoundSearch } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { FilterChips } from "@/components/FilterChips/FilterChips";
@@ -47,29 +48,69 @@ export function FilterLine({ text, onClear }: { text: string; onClear: () => voi
   );
 }
 
-/** A white card with an icon, a title, a muted line and a Secondary action (the empty states). */
+export const NO_RESULTS_IMAGE = "/images/instructor/students-no-results.webp";
+
+/** The icon tile of an empty state (also the stand-in when the picture is missing). */
+function EmptyTile() {
+  return (
+    <span
+      aria-hidden="true"
+      data-empty-tile
+      className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-neutral-tile-bg text-neutral-tile-ink"
+    >
+      <UserRoundSearch size={28} strokeWidth={1.75} />
+    </span>
+  );
+}
+
+/** The "no students found" picture (about 120px, decorative); the icon tile when it is missing. */
+function NoResultsArt() {
+  const [failed, setFailed] = useState(false);
+  const image = useRef<HTMLImageElement>(null);
+  // an error that happened before hydration is not reported by onError
+  useEffect(() => {
+    const el = image.current;
+    if (el && el.complete && el.naturalWidth === 0) setFailed(true);
+  }, []);
+  if (failed) return <EmptyTile />;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      ref={image}
+      data-no-results-art
+      src={NO_RESULTS_IMAGE}
+      alt=""
+      width={120}
+      height={120}
+      className="h-[120px] w-[120px] object-contain"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
+/**
+ * A white card with a picture or an icon, a title, a muted line and a Secondary action (the empty
+ * states). `art` shows the "no students found" picture (DESIGN.md: Students polish) instead of the tile.
+ */
 export function EmptyCard({
   title,
   text,
   action,
   dataEmpty,
+  art = false,
 }: {
   title: string;
   text: string;
   action: ReactNode;
   dataEmpty: string;
+  art?: boolean;
 }) {
   return (
     <div
       data-empty={dataEmpty}
       className="flex flex-col items-center gap-3 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)] text-center shadow-(--card-shadow)"
     >
-      <span
-        aria-hidden="true"
-        className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-neutral-tile-bg text-neutral-tile-ink"
-      >
-        <UserRoundSearch size={28} strokeWidth={1.75} />
-      </span>
+      {art ? <NoResultsArt /> : <EmptyTile />}
       <h2 className="type-item-title">{title}</h2>
       <p className="type-body text-text-secondary">{text}</p>
       <div className="w-full">{action}</div>
@@ -140,6 +181,7 @@ export function StudentsListView({
         query.trim() !== "" ? (
           <EmptyCard
             dataEmpty="search"
+            art
             title={NO_SEARCH_MATCH}
             text="Try another name or clear the filters."
             action={
@@ -151,6 +193,7 @@ export function StudentsListView({
         ) : (
           <EmptyCard
             dataEmpty="filter"
+            art
             title={NO_FILTER_MATCH}
             text="Try another filter."
             action={

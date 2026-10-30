@@ -1636,7 +1636,6 @@ export function InstructorStudentsSample({
         title={titleOf("S3")}
         standing={standing}
         rows={sortProfiles(belowPassMark(all, "S3"))}
-        onClear={noop}
       />
     );
   }
