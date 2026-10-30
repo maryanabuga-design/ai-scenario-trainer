@@ -28,6 +28,21 @@ for (const width of [360, 430]) {
       await expect(email(page)).toBeVisible();
     });
 
+    test("the real route shows the current design: subtitle, no separate copy buttons, the copy icon inside the group code field", async ({
+      page,
+    }) => {
+      await expect(page).toHaveURL(/\/instructor\/students\/invite$/);
+      await expect(page.getByRole("heading", { level: 1, name: "Invite students" })).toBeVisible();
+      await expect(
+        page.getByText("Share the group code or link, or invite students by email."),
+      ).toBeVisible();
+      await expect(page.getByRole("button", { name: "Copy code" })).toHaveCount(0);
+      await expect(page.getByRole("button", { name: "Copy link" })).toHaveCount(0);
+      await expect(page.locator("textarea")).toHaveCount(0);
+      const field = page.locator("[data-group-code]").locator("xpath=..");
+      await expect(field.getByRole("button", { name: "Copy group code" })).toBeVisible();
+    });
+
     test("the subtitle, the white group card and ONE field look for the three fields", async ({
       page,
     }) => {
