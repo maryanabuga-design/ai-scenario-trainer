@@ -1566,6 +1566,9 @@ export function InstructorStudentsSample({
     | "reminder"
     | "invite"
     | "invite-filled"
+    | "invite-dropdown"
+    | "invite-tags"
+    | "invite-error"
     | "join"
     | "join-invalid";
   scope?: string;
@@ -1578,14 +1581,14 @@ export function InstructorStudentsSample({
   const people = inScope(everyone, scope);
   const all = profiles(people, { "maryana@example.com": null }, now);
   const noop = () => undefined;
-  if (state === "invite" || state === "invite-filled") {
+  if (state.startsWith("invite")) {
     const day = new Date(2026, 9, 21).getTime();
     return (
       <InviteView
         scope={scope}
         counts={{ "rescue-team": 15, "military-training": 12 }}
         invitations={
-          state === "invite"
+          state === "invite" || state === "invite-dropdown" || state === "invite-tags"
             ? []
             : [
                 { email: "j.lindqvist@example.com", invitedAt: day, groupId: "rescue-team" },
@@ -1593,7 +1596,23 @@ export function InstructorStudentsSample({
               ]
         }
         origin="https://scenario-trainer.example"
-        initialText={state === "invite-filled" ? "new.person@example.com, not-an-address" : ""}
+        initialRecipients={
+          state === "invite-tags" || state === "invite-error"
+            ? [
+                { email: "alina.kovalenko@example.com", name: "Alina Kovalenko" },
+                { email: "daria.melnyk@example.com", name: "Daria Melnyk" },
+                { email: "new.person@example.com" },
+                { email: "maksym.lysenko@example.com", name: "Maksym Lysenko" },
+                { email: "olena.savchuk@example.com", name: "Olena Savchuk" },
+              ]
+            : state === "invite-filled"
+              ? [{ email: "new.person@example.com" }]
+              : []
+        }
+        initialText={
+          state === "invite-dropdown" ? "Al" : state === "invite-error" ? "not-an-address" : ""
+        }
+        initialError={state === "invite-error" ? "Check this email address." : ""}
         onSend={noop}
         onCancel={noop}
       />

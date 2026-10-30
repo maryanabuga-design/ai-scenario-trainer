@@ -5,6 +5,7 @@ import { useState } from "react";
 import { InviteView } from "@/components/InstructorStudents/InviteView";
 import { useAuth } from "@/lib/auth";
 import { participants } from "@/lib/cohort";
+import { setFlash } from "@/lib/flash";
 import { groups } from "@/lib/groups";
 import type { Scope } from "@/lib/groups";
 import {
@@ -39,11 +40,20 @@ function Loaded({
         counts={counts}
         invitations={invitations}
         origin={window.location.origin}
-        onSend={(emails, groupId) =>
-          setSaveFailed(
-            !saveInvitations(withInvitations(readInvitations(), emails, Date.now(), groupId)),
-          )
-        }
+        onSend={(emails, groupId) => {
+          const saved = saveInvitations(
+            withInvitations(readInvitations(), emails, Date.now(), groupId),
+          );
+          setSaveFailed(!saved);
+          if (!saved) return;
+          setFlash(
+            emails.length === 1
+              ? "Invitation sent to 1 person"
+              : `Invitations sent to ${emails.length} people`,
+            "/instructor/students",
+          );
+          router.push("/instructor/students");
+        }}
         onCancel={() => router.push("/instructor/students")}
       />
     </>

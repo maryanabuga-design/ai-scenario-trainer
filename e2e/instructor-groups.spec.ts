@@ -291,13 +291,13 @@ for (const width of [360, 430]) {
       page,
     }) => {
       await page.goto("/instructor/students/invite");
-      await expect(page.locator("[data-group-code]")).toHaveText("QT-A7K2");
+      await expect(page.locator("[data-group-code]")).toHaveValue("QT-A7K2");
       await choose(page, "All groups");
       await page.goto("/instructor/students/invite");
       await expect(page.locator("[data-choose-group]")).toBeVisible();
       await expect(page.locator("[data-group-code]")).toHaveCount(0);
       await page.getByRole("radio", { name: "Military training" }).check({ force: true });
-      await expect(page.locator("[data-group-code]")).toHaveText("QT-M4R9");
+      await expect(page.locator("[data-group-code]")).toHaveValue("QT-M4R9");
       await expect(page.locator('input[name="invite-link"]')).toHaveValue(/QT-M4R9$/);
       expect(await noSidewaysScroll(page)).toBe(true);
     });

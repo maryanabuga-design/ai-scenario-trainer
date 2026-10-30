@@ -163,3 +163,4 @@ One commit per screen group, in this order. Steps 1 to 82 are built (step 81, th
 161. Result card, one single-choice pattern, floating confirmation, no preview banner (3 Nov 2026). Screenshots: `docs/screens/172-*`.
 162. Students screen light redesign, home-only group switch, quieter chips (4 Nov 2026). Screenshots: `docs/screens/173-*`.
 163. Students polish (5 Nov 2026). Screenshots: `docs/screens/174-*`.
+164. No-results spacing and Invite students redesign (6 Nov 2026). Screenshots: `docs/screens/175-*`.

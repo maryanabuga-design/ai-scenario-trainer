@@ -1,0 +1,15 @@
+{
+  "note": "SIMULATED: invented people and example addresses for the prototype's invitation suggestions. No real people, no network.",
+  "people": [
+    { "name": "Alina Kovalenko", "email": "alina.kovalenko@example.com" },
+    { "name": "Alex Moroz", "email": "alex.moroz@example.com" },
+    { "name": "Anna Petrenko", "email": "anna.petrenko@example.com" },
+    { "name": "Bohdan Shevchuk", "email": "bohdan.shevchuk@example.com" },
+    { "name": "Daria Melnyk", "email": "daria.melnyk@example.com" },
+    { "name": "Ihor Tkachenko", "email": "ihor.tkachenko@example.com" },
+    { "name": "Kateryna Bondar", "email": "kateryna.bondar@example.com" },
+    { "name": "Maksym Lysenko", "email": "maksym.lysenko@example.com" },
+    { "name": "Olena Savchuk", "email": "olena.savchuk@example.com" },
+    { "name": "Taras Hrytsenko", "email": "taras.hrytsenko@example.com" }
+  ]
+}

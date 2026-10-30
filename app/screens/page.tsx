@@ -995,6 +995,21 @@ export default function Screens() {
               <InstructorStudentsSample state="invite-filled" />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Instructor: Invite students, suggestions open">
+            <Screen>
+              <InstructorStudentsSample state="invite-dropdown" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Invite students, several recipients">
+            <Screen>
+              <InstructorStudentsSample state="invite-tags" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Invite students, address error">
+            <Screen>
+              <InstructorStudentsSample state="invite-error" />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Join link: invited to Rescue team">
             <Screen>
               <InstructorStudentsSample state="join" />

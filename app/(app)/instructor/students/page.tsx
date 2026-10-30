@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
+import { FlashNotice } from "@/components/FlashNotice/FlashNotice";
 import { StudentsHeader, viewFrom } from "@/components/InstructorStudents/StudentsHeader";
 import type { StudentsView } from "@/components/InstructorStudents/StudentsHeader";
 import { EmptyCard, StudentsListView } from "@/components/InstructorStudents/StudentsListView";
@@ -69,6 +70,7 @@ function Loaded({ accounts, scope }: { accounts: Account[]; scope: Scope }) {
 
   return (
     <div className="flex flex-col gap-4 pb-4">
+      <FlashNotice />
       <StudentsHeader
         view={view}
         back={back}

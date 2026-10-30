@@ -274,6 +274,13 @@ for (const width of [360, 430]) {
       expect(Math.abs(a.x + a.width / 2 - (e.x + e.width / 2))).toBeLessThanOrEqual(1);
       expect(a.y).toBeLessThan((await box(empty.getByRole("heading")))!.y);
       await expect(empty.locator("[data-empty-tile]")).toHaveCount(0);
+      // the spacing: picture to title 16px, title to line 6px, line to the button 24px
+      const title = (await box(empty.locator("[data-empty-title]")))!;
+      const line = (await box(empty.locator("[data-empty-text]")))!;
+      const action = (await box(empty.locator("[data-empty-action]")))!;
+      expect(Math.round(title.y - (a.y + a.height))).toBe(16);
+      expect(Math.round(line.y - (title.y + title.height))).toBe(6);
+      expect(Math.round(action.y - (line.y + line.height))).toBe(24);
       expect(await art.evaluate((el: HTMLImageElement) => el.naturalWidth > 0)).toBe(true);
       expect(await noSidewaysScroll(page)).toBe(true);
       const clear = empty.getByRole("button", { name: "Clear search" });
@@ -695,8 +702,11 @@ for (const width of [360, 430]) {
       await expect(page).toHaveURL(/\/instructor$/);
       await chooseGroup(page, "Military training");
       await page.goto("/instructor/students/invite");
-      await page.getByRole("textbox", { name: "INVITE BY EMAIL" }).fill("nina@example.com");
+      await page.getByRole("combobox", { name: "INVITE BY EMAIL" }).fill("nina@example.com");
+      await page.getByRole("combobox", { name: "INVITE BY EMAIL" }).press("Enter");
       await page.getByRole("button", { name: "Send invitations" }).click();
+      await expect(page).toHaveURL(/\/instructor\/students$/);
+      await page.goto("/instructor/students/invite");
       await expect(page.locator('[data-pending="nina@example.com"]')).toBeVisible();
       await expect(page.locator("main")).toContainText("PENDING INVITATIONS (1)");
       // 2. sign out, open the join link of that group and create the Student account

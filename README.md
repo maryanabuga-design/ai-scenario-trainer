@@ -79,7 +79,7 @@ Build order and decisions: `docs/build-plan.md`.
 
 - Exams (Instructor and Student) are simulated in this browser: attempts, results and notifications are kept on this device only. Draft and scheduled exams, exam templates and result export are not in the prototype.
 
-- Invitations are simulated: no email is sent; the join link only works in this browser. Moving or removing students and messaging are not in the prototype.
+- Invitations are simulated: no email is sent, and the people suggested while typing an invitation come from a simulated list of invented people (`content/invite-suggestions.json`); the join link only works in this browser. Moving or removing students and messaging are not in the prototype.
 
 - Content package import is a demonstration: it reads one Excel workbook (`.xlsx`, sheets Topic, Guide, Steps, Scenario, Questions) plus optional images, on this device. Document analysis is simulated in the prototype. A real product would also read Word and PDF documents, use stable ids to update existing content, and offer AI-assisted conversion of a raw document into the template, with every item shown next to its source passage and always reviewed by a person before publishing. Demo topics are isolated from the rest of the app: they are not part of readiness, Progress, exams or Ask AI. The template is `public/templates/guide-template.xlsx` and the sample is `public/templates/sample-document.xlsx`.
 

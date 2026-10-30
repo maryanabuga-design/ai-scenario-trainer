@@ -108,12 +108,20 @@ export function EmptyCard({
   return (
     <div
       data-empty={dataEmpty}
-      className="flex flex-col items-center gap-3 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)] text-center shadow-(--card-shadow)"
+      className="flex flex-col items-center rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)] text-center shadow-(--card-shadow)"
     >
       {art ? <NoResultsArt /> : <EmptyTile />}
-      <h2 className="type-item-title">{title}</h2>
-      <p className="type-body text-text-secondary">{text}</p>
-      <div className="w-full">{action}</div>
+      <h2 data-empty-title className="type-item-title mt-4">
+        {title}
+      </h2>
+      <p data-empty-text className="type-body mt-1.5 text-text-secondary">
+        {text}
+      </p>
+      {action && (
+        <div data-empty-action className="mt-6 w-full">
+          {action}
+        </div>
+      )}
     </div>
   );
 }

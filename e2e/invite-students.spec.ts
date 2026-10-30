@@ -1,0 +1,239 @@
+import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { authValue } from "./auth-seed";
+
+const instructor = {
+  cookies: [],
+  origins: [
+    {
+      origin: "http://localhost:3100",
+      localStorage: [{ name: "ast.auth.v1", value: authValue("instructor") }],
+    },
+  ],
+};
+const WHITE = "rgb(255, 255, 255)";
+const BORDER = "rgb(228, 223, 213)";
+const SAND = "rgb(240, 236, 230)";
+
+const noSidewaysScroll = (page: Page) =>
+  page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
+const email = (page: Page) => page.getByRole("combobox", { name: "INVITE BY EMAIL" });
+const tags = (page: Page) => page.locator("[data-tag]");
+
+for (const width of [360, 430]) {
+  test.describe(`Invite students fields at ${width}px`, () => {
+    test.use({ viewport: { width, height: 800 }, storageState: instructor });
+    test.beforeEach(async ({ page }) => {
+      await page.goto("/instructor/students/invite");
+      await expect(email(page)).toBeVisible();
+    });
+
+    test("the subtitle, the white group card and ONE field look for the three fields", async ({
+      page,
+    }) => {
+      await expect(page.locator("[data-helper]")).toHaveText(
+        "Share the group code or link, or invite students by email.",
+      );
+      const card = page.locator("[data-invite-group]");
+      expect(await card.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(WHITE);
+      const fields = [
+        page.locator("[data-group-code]").locator("xpath=.."),
+        page.locator("[data-invite-link]").locator("xpath=.."),
+        page.locator("[data-recipient-field]"),
+      ];
+      for (const field of fields) {
+        const style = await field.evaluate((el) => {
+          const s = getComputedStyle(el);
+          return [s.backgroundColor, s.borderTopColor, s.borderRadius, s.fontSize];
+        });
+        expect(style).toEqual([WHITE, BORDER, "14px", "16px"]);
+        expect((await field.boundingBox())!.height).toBe(52);
+      }
+      expect(await noSidewaysScroll(page)).toBe(true);
+    });
+
+    test("the copy icon sits inside each read-only field, is the same icon, shows the notice and a check for 1.5 seconds", async ({
+      page,
+    }) => {
+      await page
+        .context()
+        .grantPermissions(["clipboard-read", "clipboard-write"])
+        .catch(() => undefined);
+      const code = page.getByRole("button", { name: "Copy group code" });
+      const link = page.getByRole("button", { name: "Copy invite link" });
+      for (const button of [code, link]) {
+        await expect(button.locator("svg.lucide-copy")).toHaveCount(1);
+        const b = (await button.boundingBox())!;
+        expect([b.width, b.height]).toEqual([44, 44]);
+        const tile = (await button.locator("span").boundingBox())!;
+        expect([tile.width, tile.height]).toEqual([32, 32]);
+        expect(
+          await button.locator("span").evaluate((el) => getComputedStyle(el).backgroundColor),
+        ).toBe(SAND);
+        const field = (await button.locator("xpath=..").boundingBox())!;
+        expect(b.x).toBeGreaterThanOrEqual(field.x);
+        expect(b.x + b.width).toBeLessThanOrEqual(field.x + field.width);
+      }
+      await expect(page.getByRole("textbox", { name: "GROUP CODE" })).toHaveAttribute(
+        "readonly",
+        "",
+      );
+      await code.click();
+      await expect(page.locator("[data-flash]:visible")).toContainText(/Code copied/);
+      await expect(code.locator("svg.lucide-check")).toHaveCount(1);
+      await expect(code.locator("svg.lucide-check")).toHaveCount(0, { timeout: 3000 });
+      await expect(code.locator("svg.lucide-copy")).toHaveCount(1);
+      await link.click();
+      await expect(page.locator("[data-flash]:visible")).toContainText(/Link copied/);
+      await expect(link.locator("svg.lucide-check")).toHaveCount(1);
+    });
+
+    test("a long link is cut with an ellipsis, never wraps and never covers the icon button", async ({
+      page,
+    }) => {
+      const input = page.locator("[data-invite-link]");
+      const style = await input.evaluate((el) => {
+        const s = getComputedStyle(el);
+        return [s.textOverflow, s.whiteSpace];
+      });
+      expect(style).toEqual(["ellipsis", "nowrap"]);
+      const i = (await input.boundingBox())!;
+      const b = (await page.getByRole("button", { name: "Copy invite link" }).boundingBox())!;
+      expect(i.x + i.width).toBeLessThanOrEqual(b.x + 0.5);
+    });
+
+    test("typing 'Al' lists up to 5 simulated people; arrows and Enter choose; a tag appears and can be removed", async ({
+      page,
+    }) => {
+      const input = email(page);
+      await expect(input).toHaveAttribute("aria-expanded", "false");
+      await input.pressSequentially("Al");
+      await expect(input).toHaveAttribute("aria-expanded", "true");
+      const options = page.getByRole("option");
+      expect(await options.count()).toBeGreaterThanOrEqual(2);
+      expect(await options.count()).toBeLessThanOrEqual(5);
+      await expect(options.first()).toContainText("Alina Kovalenko");
+      await expect(options.first()).toContainText("alina.kovalenko@example.com");
+      await expect(page.getByRole("dialog")).toHaveCount(0);
+      await input.press("ArrowDown");
+      const active = await input.getAttribute("aria-activedescendant");
+      expect(active).toBeTruthy();
+      await expect(page.locator(`[id="${active}"]`)).toHaveAttribute("aria-selected", "true");
+      await input.press("Enter");
+      await expect(tags(page)).toHaveCount(1);
+      await expect(tags(page).first()).toContainText("Alina Kovalenko");
+      await expect(page.locator("[data-recipient-help]")).toHaveText(
+        "1 person will get an invitation.",
+      );
+      await expect(page.getByRole("button", { name: "Send invitations" })).toBeEnabled();
+      // Escape closes the list
+      await input.pressSequentially("Al");
+      await expect(input).toHaveAttribute("aria-expanded", "true");
+      await input.press("Escape");
+      await expect(input).toHaveAttribute("aria-expanded", "false");
+      // a tap on an option adds it too; the x (44px tap area) removes a tag
+      await input.fill("");
+      await input.pressSequentially("Dar");
+      await page.getByRole("option").first().click();
+      await expect(tags(page)).toHaveCount(2);
+      await expect(page.locator("[data-recipient-help]")).toHaveText(
+        "2 people will get an invitation.",
+      );
+      const x = page.getByRole("button", { name: "Remove Alina Kovalenko" });
+      expect((await x.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+      await x.click();
+      await expect(tags(page)).toHaveCount(1);
+      await expect(page.locator("[data-recipient-help]")).toHaveText(
+        "1 person will get an invitation.",
+      );
+      await page.getByRole("button", { name: "Remove Daria Melnyk" }).click();
+      await expect(tags(page)).toHaveCount(0);
+      await expect(page.locator("[data-recipient-help]")).toHaveText(
+        "Type a name or email. You can add several people.",
+      );
+      await expect(page.getByRole("button", { name: "Send invitations" })).toBeDisabled();
+      expect(await noSidewaysScroll(page)).toBe(true);
+    });
+
+    test("a typed address becomes a tag on Enter, comma, space and blur", async ({ page }) => {
+      const input = email(page);
+      await input.pressSequentially("a1@example.com");
+      await input.press("Enter");
+      await input.pressSequentially("a2@example.com,");
+      await input.pressSequentially("a3@example.com ");
+      await input.pressSequentially("a4@example.com");
+      await page.getByRole("heading", { level: 1 }).click();
+      await expect(tags(page)).toHaveCount(4);
+      await expect(input).toHaveValue("");
+    });
+
+    test("pasting several addresses makes several tags; an invalid one shows the error and is not added; duplicates are ignored", async ({
+      page,
+    }) => {
+      const input = email(page);
+      await input.focus();
+      await page.evaluate(() => {
+        const field = document.querySelector('input[role="combobox"]') as HTMLInputElement;
+        const data = new DataTransfer();
+        data.setData("text", "p1@example.com, p2@example.com\np3@example.com nope P1@example.com");
+        field.dispatchEvent(
+          new ClipboardEvent("paste", { clipboardData: data, bubbles: true, cancelable: true }),
+        );
+      });
+      await expect(tags(page)).toHaveCount(3);
+      await expect(page.locator("[data-amber]:visible")).toHaveText("Check this email address.");
+      await expect(input).toHaveAttribute("aria-invalid", "true");
+      await expect(input).toHaveValue("nope");
+      await input.fill("p2@example.com");
+      await input.press("Enter");
+      await expect(tags(page)).toHaveCount(3);
+      await expect(page.locator("[data-amber]")).toHaveCount(0);
+      await expect(page.locator("[data-recipient-live]")).toHaveAttribute("aria-live", "polite");
+    });
+
+    test("the field grows with its tags without sideways scrolling, and the open list is not hidden by the pinned buttons", async ({
+      page,
+    }) => {
+      const input = email(page);
+      const field = page.locator("[data-recipient-field]");
+      const before = (await field.boundingBox())!.height;
+      for (const name of ["Alina", "Daria", "Maksym", "Olena"]) {
+        await input.pressSequentially(name);
+        await input.press("ArrowDown");
+        await input.press("Enter");
+      }
+      await input.pressSequentially("new.person.with.a.long.address@example.com,");
+      expect((await field.boundingBox())!.height).toBeGreaterThan(before);
+      expect(await noSidewaysScroll(page)).toBe(true);
+      await input.pressSequentially("a");
+      await page.getByRole("listbox").scrollIntoViewIfNeeded();
+      const list = (await page.getByRole("listbox").boundingBox())!;
+      const bar = (await page.getByRole("button", { name: "Cancel" }).boundingBox())!;
+      expect(list.x).toBeGreaterThanOrEqual(0);
+      expect(list.x + list.width).toBeLessThanOrEqual(width);
+      // the list may reach the pinned area, but its first option can be reached and is visible
+      const first = (await page.getByRole("option").first().boundingBox())!;
+      expect(first.y + first.height).toBeLessThanOrEqual(bar.y + 0.5);
+    });
+
+    test("keyboard only: Tab reaches the field, the arrows and Enter choose, Tab reaches the pinned buttons", async ({
+      page,
+    }) => {
+      const input = email(page);
+      await input.focus();
+      await input.pressSequentially("ma");
+      await input.press("ArrowDown");
+      await input.press("ArrowUp");
+      await input.press("ArrowDown");
+      await input.press("Enter");
+      await expect(tags(page).first()).toContainText("Maksym Lysenko");
+      await expect(input).toBeFocused();
+      await page.getByRole("button", { name: "Send invitations" }).focus();
+      await page.keyboard.press("Enter");
+      await expect(page).toHaveURL(/\/instructor\/students$/);
+      await expect(page.locator("[data-flash]:visible")).toContainText(
+        "Invitation sent to 1 person",
+      );
+    });
+  });
+}

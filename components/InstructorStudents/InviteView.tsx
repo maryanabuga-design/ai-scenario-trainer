@@ -1,10 +1,14 @@
 "use client";
 
-import { Clock, Copy, Link2, Send, UsersRound } from "lucide-react";
+import { Clock, Send, UsersRound } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button } from "@/components/Button/Button";
-import { Amber } from "@/components/InstructorContent/Amber";
+import { FlashNotice } from "@/components/FlashNotice/FlashNotice";
+import { CopyField } from "@/components/InstructorStudents/CopyField";
+import { RecipientField } from "@/components/InstructorStudents/RecipientField";
+import type { Recipient } from "@/components/InstructorStudents/RecipientField";
 import { InitialsAvatar } from "@/components/InstructorStudents/StudentRow";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { SelectableRow } from "@/components/SelectableRow/SelectableRow";
@@ -13,26 +17,17 @@ import { DEMO_NOTE } from "@/lib/cohort";
 import { copyText } from "@/lib/clipboard";
 import { ALL_GROUPS, groupById, groups } from "@/lib/groups";
 import type { Scope } from "@/lib/groups";
-import {
-  PROTOTYPE_LINE,
-  invalidLine,
-  inviteLink,
-  invitedLine,
-  parseEmails,
-  pendingOf,
-  splitNew,
-} from "@/lib/invitations";
+import { setFlash } from "@/lib/flash";
+import { PROTOTYPE_LINE, inviteLink, invitedLine, pendingOf } from "@/lib/invitations";
 import type { Invitation } from "@/lib/invitations";
 import { studentsCount } from "@/lib/overview";
 
-const card =
-  "flex flex-col gap-3 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)]";
-
 /**
- * Invite students (DESIGN.md: Instructor, Students rebuilt): the group of the invitation in a small
- * sand card (asked first in All groups), GROUP CODE, INVITE LINK, INVITE BY EMAIL and PENDING
- * INVITATIONS (n). Pinned: Primary "Send invitations" (disabled until a valid new address) above
- * Secondary "Cancel". Nothing is sent: this is a simulation.
+ * Invite students (DESIGN.md: Instructor, Invite students redesign): the group of the invitation in
+ * a white card (asked first in All groups), GROUP CODE and INVITE LINK (read-only fields with a copy
+ * icon inside), INVITE BY EMAIL (a combobox with recipient tags) and PENDING INVITATIONS (n).
+ * Pinned: Primary "Send invitations" (disabled until there is a recipient) above Secondary
+ * "Cancel". Nothing is sent: this is a simulation.
  */
 export function InviteView({
   scope,
@@ -41,7 +36,9 @@ export function InviteView({
   origin,
   onSend,
   onCancel,
+  initialRecipients = [],
   initialText = "",
+  initialError = "",
 }: {
   /** "all" asks which group first; otherwise the group is the selected one. */
   scope: Scope;
@@ -54,30 +51,38 @@ export function InviteView({
   /** The new addresses (valid, not invited yet) and the group they are invited to. */
   onSend: (emails: string[], groupId: string) => void;
   onCancel: () => void;
-  /** Only for the screen review page. */
+  /** Only for the screen review page: people already added as tags. */
+  initialRecipients?: Recipient[];
   initialText?: string;
+  initialError?: string;
 }) {
   const [chosen, setChosen] = useState<string | null>(scope === ALL_GROUPS ? null : scope);
   const group = chosen ? groupById(chosen) : undefined;
-  const [text, setText] = useState(initialText);
+  const [recipients, setRecipients] = useState<Recipient[]>(initialRecipients);
   const [message, setMessage] = useState("");
-  const { valid, invalid } = parseEmails(text);
+  const pathname = usePathname();
   const pending = group ? pendingOf(invitations, group.id) : [];
-  const { fresh, duplicates } = splitNew(
-    valid,
-    invitations.filter((entry) => entry.groupId === group?.id),
-  );
+  const invitedEmails = invitations
+    .filter((entry) => entry.groupId === group?.id)
+    .map((entry) => entry.email);
   const link = group ? inviteLink(group.code, origin) : "";
 
+  /** Copies and confirms with the floating notice; false (and a plain line) when copying fails. */
   async function copy(value: string, done: string) {
     const ok = await copyText(value);
-    setMessage(ok ? done : "Copying is not available here. Select the text and copy it.");
+    if (ok) {
+      setMessage("");
+      setFlash(done, pathname);
+    } else setMessage("Copying is not available here. Select the text and copy it.");
+    return ok;
   }
 
   return (
     <div className="flex flex-col gap-4 pb-4">
+      <FlashNotice />
       <PageHeaderBand
         title="Invite students"
+        helper="Share the group code or link, or invite students by email."
         back={{ label: "Back to Students", href: "/instructor/students" }}
       />
       <p role="status" data-message className="type-body text-center not-empty:py-1">
@@ -123,7 +128,7 @@ export function InviteView({
           {scope !== ALL_GROUPS && (
             <div
               data-invite-group
-              className="flex items-center gap-3 rounded-card border border-selectable-stroke bg-secondary-sand p-[var(--gutter,1rem)]"
+              className="flex items-center gap-3 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)]"
             >
               <LucideTile icon={UsersRound} size="tile" />
               <p className="type-body-strong min-w-0 truncate">
@@ -132,70 +137,31 @@ export function InviteView({
             </div>
           )}
 
-          <section aria-labelledby="code-label" className="flex flex-col gap-3">
-            <h2 id="code-label" className="type-label text-text-secondary">
-              GROUP CODE
-            </h2>
-            <div className={card}>
-              <p data-group-code className="type-code tabular-nums">
-                {group.code}
-              </p>
-            </div>
-            <Button
-              variant="secondary"
-              icon={Copy}
-              onClick={() => void copy(group.code, "Code copied")}
-            >
-              Copy code
-            </Button>
-          </section>
+          <CopyField
+            label="GROUP CODE"
+            name="group-code"
+            value={group.code}
+            valueAttr="data-group-code"
+            copyLabel="Copy group code"
+            onCopy={() => copy(group.code, "Code copied")}
+          />
 
-          <section aria-labelledby="link-label" className="flex flex-col gap-3">
-            <h2 id="link-label" className="type-label text-text-secondary">
-              INVITE LINK
-            </h2>
-            <input
-              aria-labelledby="link-label"
-              name="invite-link"
-              readOnly
-              value={link}
-              className="type-small h-[52px] w-full truncate rounded-[14px] border border-secondary-sand-pressed bg-secondary-sand px-[var(--gutter,1rem)] text-text-secondary"
-            />
-            <Button variant="secondary" icon={Link2} onClick={() => void copy(link, "Link copied")}>
-              Copy link
-            </Button>
-          </section>
+          <CopyField
+            label="INVITE LINK"
+            name="invite-link"
+            value={link}
+            valueAttr="data-invite-link"
+            copyLabel="Copy invite link"
+            onCopy={() => copy(link, "Link copied")}
+          />
 
-          <section aria-labelledby="email-label" className="flex flex-col gap-3">
-            <h2 id="email-label" className="type-label text-text-secondary">
-              INVITE BY EMAIL
-            </h2>
-            <div className={card}>
-              <textarea
-                aria-labelledby="email-label"
-                name="emails"
-                rows={3}
-                value={text}
-                onChange={(event) => {
-                  setText(event.target.value);
-                  setMessage("");
-                }}
-                placeholder="name@example.com, name2@example.com"
-                className="type-body min-h-24 w-full rounded-[14px] border border-selectable-stroke bg-bg px-[var(--gutter,1rem)] py-3 text-text placeholder:text-text-secondary focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primary"
-              />
-              <p className="type-small text-text-secondary">
-                Separate addresses with commas or new lines.
-              </p>
-              {invalid.length > 0 && <Amber>{invalidLine(invalid)}</Amber>}
-              {duplicates.length > 0 && (
-                <p data-duplicates className="type-small text-text-secondary">
-                  {duplicates.length === 1
-                    ? "1 address is already invited and will be ignored."
-                    : `${duplicates.length} addresses are already invited and will be ignored.`}
-                </p>
-              )}
-            </div>
-          </section>
+          <RecipientField
+            recipients={recipients}
+            invited={invitedEmails}
+            onChange={setRecipients}
+            initialText={initialText}
+            initialError={initialError}
+          />
 
           {pending.length > 0 && (
             <section aria-labelledby="pending-label" className="flex flex-col gap-3">
@@ -241,13 +207,13 @@ export function InviteView({
       <ActionBar>
         <Button
           icon={Send}
-          disabled={!group || fresh.length === 0}
+          disabled={!group || recipients.length === 0}
           onClick={() => {
-            onSend(fresh, group!.id);
-            setText("");
-            setMessage(
-              fresh.length === 1 ? "1 invitation added" : `${fresh.length} invitations added`,
+            onSend(
+              recipients.map((entry) => entry.email),
+              group!.id,
             );
+            setRecipients([]);
           }}
         >
           Send invitations

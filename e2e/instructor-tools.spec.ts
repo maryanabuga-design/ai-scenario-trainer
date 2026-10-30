@@ -141,47 +141,39 @@ for (const width of [360, 430]) {
       await invite.click();
       await expect(page).toHaveURL(/\/instructor\/students\/invite$/);
       await expect(page.getByRole("navigation", { name: "Main" })).toHaveCount(0);
-      await expect(page.locator("[data-group-code]")).toHaveText("QT-A7K2");
-      const card = page.locator("[data-group-code]").locator("xpath=..");
+      await expect(page.locator("[data-group-code]")).toHaveValue("QT-A7K2");
+      const card = page.locator("[data-invite-group]");
       expect(await bg(card)).toBe(CARD);
-      for (const name of ["Copy code", "Copy link"]) {
-        const button = page.getByRole("button", { name });
-        expect(await bg(button)).toBe(OLIVE_TINT);
-        expect((await button.boundingBox())!.height).toBe(52);
-      }
-      await page
-        .context()
-        .grantPermissions(["clipboard-read", "clipboard-write"])
-        .catch(() => undefined);
-      await page.getByRole("button", { name: "Copy code" }).click();
-      await expect(page.locator("[data-message]")).toHaveText(
-        /Code copied|Copying is not available here/,
-      );
-      await page.getByRole("button", { name: "Copy link" }).click();
-      await expect(page.locator("[data-message]")).toHaveText(
-        /Link copied|Copying is not available here/,
-      );
+      await expect(page.getByRole("button", { name: "Copy code" })).toHaveCount(0);
+      await expect(page.getByRole("button", { name: "Copy link" })).toHaveCount(0);
       const link = page.getByRole("textbox", { name: "INVITE LINK" });
       await expect(link).toHaveAttribute("readonly", "");
       await expect(link).toHaveValue(/QT-A7K2$/);
-      // the pinned buttons: one Primary, disabled until a new valid address
+      // the pinned buttons: one Primary, disabled until there is a recipient
       const send = page.getByRole("button", { name: "Send invitations" });
       await expect(send).toBeDisabled();
-      const emails = page.getByRole("textbox", { name: "INVITE BY EMAIL" });
+      expect(await primaries(page)).toBe(0);
+      const emails = page.getByRole("combobox", { name: "INVITE BY EMAIL" });
       await emails.fill("nobody");
-      await expect(page.locator("[data-amber]:visible")).toContainText(
-        "Not a valid address: nobody",
-      );
+      await emails.press("Enter");
+      await expect(page.locator("[data-amber]:visible")).toContainText("Check this email address.");
       expect(
         await page.locator("[data-amber]:visible").evaluate((el) => getComputedStyle(el).color),
       ).toBe(ATTENTION_INK);
       await expect(send).toBeDisabled();
-      await emails.fill("Ana@example.com, ben@example.com\nnope  ana@example.com");
-      await expect(page.locator("[data-amber]:visible")).toContainText("nope");
+      await emails.fill("");
+      await emails.pressSequentially("Ana@example.com, ben@example.com,");
+      await expect(page.locator("[data-tag]")).toHaveCount(2);
       await expect(send).toBeEnabled();
       expect(await primaries(page)).toBe(1);
+      expect(await noSidewaysScroll(page)).toBe(true);
       await send.click();
-      await expect(page.locator("[data-message]")).toHaveText("2 invitations added");
+      // back on Students with the floating confirmation
+      await expect(page).toHaveURL(/\/instructor\/students$/);
+      await expect(page.locator("[data-flash]:visible")).toContainText(
+        "Invitations sent to 2 people",
+      );
+      await page.goto("/instructor/students/invite");
       const pending = page.locator("[data-pending]");
       await expect(pending).toHaveCount(2);
       for (const row of await pending.all()) {
@@ -191,8 +183,10 @@ for (const width of [360, 430]) {
         await expect(row.locator("[data-pending-pill]")).toHaveText("Pending");
         await expect(row.locator("svg.lucide-chevron-right")).toHaveCount(0);
       }
-      // duplicates are ignored with a message, and nothing new can be sent
+      // an address that is already invited is left out, and nothing new can be sent
       await emails.fill("ana@example.com");
+      await emails.press("Enter");
+      await expect(page.locator("[data-tag]")).toHaveCount(0);
       await expect(page.locator("[data-duplicates]")).toContainText("already invited");
       await expect(send).toBeDisabled();
       await expect(page.locator("[data-prototype-line]")).toHaveText(

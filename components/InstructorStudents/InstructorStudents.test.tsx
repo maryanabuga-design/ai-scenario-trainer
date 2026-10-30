@@ -297,6 +297,11 @@ describe("the Students list", () => {
     expect(card).not.toContain("data-empty-tile");
     expect(card.indexOf("data-no-results-art")).toBeLessThan(card.indexOf("No students match"));
     expect(card).toContain("items-center");
+    // the spacing: picture 16px to the title, 6px to the line, 24px to the Secondary button
+    expect(card).toMatch(/data-empty-title[^>]*class="[^"]*\bmt-4\b/);
+    expect(card).toMatch(/data-empty-text[^>]*class="[^"]*\bmt-1\.5\b/);
+    expect(card).toMatch(/data-empty-action[^>]*class="[^"]*\bmt-6\b/);
+    expect(card).not.toMatch(/data-empty="search"[^>]*\bgap-/);
     const filter = list("needs", { shown: [] });
     expect(filter).toContain("students-no-results.webp");
     expect(filter).toContain("No students match this filter.");
@@ -597,24 +602,84 @@ describe("Invite students", () => {
       ),
     );
 
-  it("has Back and no avatar, the group card, GROUP CODE, INVITE LINK and INVITE BY EMAIL, in order", () => {
+  it("has Back, the muted subtitle, a white group card, GROUP CODE, INVITE LINK and INVITE BY EMAIL, in order", () => {
     const html = render();
     expect(html).toContain('aria-label="Back to Students"');
     expect(html).not.toContain('data-avatar="true"');
-    expect(html).toMatch(/data-invite-group[\s\S]*Rescue team · 15 students/);
+    expect(html).toContain("Share the group code or link, or invite students by email.");
+    expect(html).toMatch(/data-invite-group[^>]*bg-card[\s\S]*Rescue team · 15 students/);
     const order = ["data-invite-group", ">GROUP CODE<", ">INVITE LINK<", ">INVITE BY EMAIL<"].map(
       (t) => html.indexOf(t),
     );
     expect([...order].sort((a, b) => a - b)).toEqual(order);
-    expect(html).toMatch(/data-group-code[^>]*>QT-A7K2</);
+    expect(html).toMatch(/value="QT-A7K2"/);
     expect(html).toContain('value="https://example.test/join/QT-A7K2"');
-    expect(html).toMatch(/readOnly|readonly/);
-    expect(html).toMatch(/lucide-copy[\s\S]*Copy code/);
-    expect(html).toMatch(/lucide-link-2[\s\S]*Copy link/);
-    expect(html).toContain('placeholder="name@example.com, name2@example.com"');
-    expect(html).toContain("Separate addresses with commas or new lines.");
+    expect(html.match(/readOnly=""|readonly=""/g)).toHaveLength(2);
     expect(html).toContain("Prototype: no emails are sent.");
     expect(html).not.toContain("Recipients will receive");
+  });
+
+  it("uses ONE field look for the three fields, and no separate copy buttons", () => {
+    const html = render();
+    const boxes = html.match(/class="type-body min-h-\[52px\][^"]*"/g) ?? [];
+    expect(boxes).toHaveLength(3);
+    for (const box of boxes) {
+      expect(box).toContain("min-h-[52px]");
+      expect(box).toContain("rounded-[14px]");
+      expect(box).toContain("border-selectable-stroke");
+      expect(box).toContain("bg-card");
+    }
+    expect(html).not.toContain(">Copy code<");
+    expect(html).not.toContain(">Copy link<");
+    expect(html.match(/data-copy-button/g)).toHaveLength(2);
+    expect(html).toContain('aria-label="Copy group code"');
+    expect(html).toContain('aria-label="Copy invite link"');
+    expect(html.match(/lucide-copy/g)).toHaveLength(2);
+    // 44px tap area around a 32px sand tile
+    expect(html).toMatch(/data-copy-button[^>]*class="[^"]*h-11 w-11/);
+    expect(html).toMatch(/h-8 w-8[^"]*bg-secondary-sand/);
+    // the value is cut with an ellipsis and never wraps
+    expect(html).toMatch(/data-invite-link=""[^>]*class="[^"]*truncate[^"]*whitespace-nowrap/);
+  });
+
+  it("makes INVITE BY EMAIL a combobox with the helper text, the helper texts and the tags", () => {
+    const html = render();
+    expect(html).toMatch(/role="combobox"[^>]*aria-expanded="false"/);
+    expect(html).toContain("Type a name or email. You can add several people.");
+    expect(html).toMatch(/aria-live="polite"/);
+    const withTags = clean(
+      renderToStaticMarkup(
+        <ActionBarProvider>
+          <InviteView
+            scope="rescue-team"
+            counts={{ "rescue-team": 15 }}
+            invitations={[]}
+            origin="https://example.test"
+            onSend={() => undefined}
+            onCancel={() => undefined}
+            initialRecipients={[
+              { email: "alina.kovalenko@example.com", name: "Alina Kovalenko" },
+              { email: "new.person@example.com" },
+            ]}
+            initialText="Al"
+            initialError="Check this email address."
+          />
+        </ActionBarProvider>,
+      ),
+    );
+    expect(withTags).toContain("2 people will get an invitation.");
+    expect(withTags).not.toContain("You can add several people.");
+    expect(withTags).toContain('data-tag="alina.kovalenko@example.com"');
+    expect(withTags).toContain(">Alina Kovalenko<");
+    expect(withTags).toContain(">new.person@example.com<");
+    expect(withTags).toContain('aria-label="Remove Alina Kovalenko"');
+    expect(withTags).toContain("Check this email address.");
+    expect(withTags).toMatch(/h-11 w-9/);
+    // "Al" lists people not already added, never an already added one
+    expect(withTags).toContain('role="listbox"');
+    expect(withTags).toContain('data-suggestion="alex.moroz@example.com"');
+    expect(withTags).not.toContain('data-suggestion="alina.kovalenko@example.com"');
+    expect(withTags).toMatch(/role="combobox"[^>]*aria-expanded="true"/);
   });
 
   it("lists PENDING INVITATIONS (n) as 72px rows with an avatar, 'Invited 21 Oct' and a Pending pill; joined ones are not listed", () => {
