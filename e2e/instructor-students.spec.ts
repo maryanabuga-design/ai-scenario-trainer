@@ -40,10 +40,15 @@ const filterButton = (page: Page) => page.locator("[data-filter-button]:visible"
 const sheet = (page: Page) => page.locator("[data-filter-sheet]");
 const option = (page: Page, value: string) =>
   page.locator(`[data-filter-sheet] label:has(input[value="${value}"])`);
-/** Chooses a status in the filter sheet. */
+const showButton = (page: Page) =>
+  sheet(page).getByRole("button", { name: /^Show \d+ students?$/ });
+const resetButton = (page: Page) => sheet(page).getByRole("button", { name: "Reset" });
+const students = (n: number) => `Show ${n} ${n === 1 ? "student" : "students"}`;
+/** Chooses a status in the filter sheet and applies it with the Primary button. */
 const pick = async (page: Page, value: string) => {
   await filterButton(page).click();
   await option(page, value).click();
+  await showButton(page).click();
 };
 /** Waits for the slide-up of the sheet to finish: its bottom edge rests on the bottom of the screen. */
 const settled = (page: Page) =>
@@ -388,12 +393,34 @@ for (const width of [360, 430]) {
         await option(page, "needs").evaluate((el) => getComputedStyle(el).borderTopColor),
       ).toBe("rgb(228, 223, 213)");
       expect(await noSidewaysScroll(page)).toBe(true);
-      // each option filters by exactly its status; the sheet closes at once; focus returns to the button
+      // choosing only marks: the list stays, the sheet stays open; the Primary shows the count and applies
+      await expect(showButton(page)).toHaveText(students(15));
+      await option(page, "needs").click();
+      await expect(sheet(page)).toBeVisible();
+      await expect(showButton(page)).toHaveText(students(counts[1]));
+      await expect(option(page, "needs").locator("input")).toBeChecked();
+      expect(
+        await option(page, "needs").evaluate((el) => getComputedStyle(el).borderTopColor),
+      ).toBe(PRIMARY);
+      await expect(rows(page)).toHaveCount(15);
+      await expect(filterLine(page)).toHaveCount(0);
+      expect(await bg(button)).toBe(OLIVE_TINT);
+      // Reset sets the draft to All, keeps the sheet open and applies nothing
+      await resetButton(page).click();
+      await expect(sheet(page)).toBeVisible();
+      await expect(showButton(page)).toHaveText(students(15));
+      await expect(option(page, "all").locator("input")).toBeChecked();
+      await expect(rows(page)).toHaveCount(15);
+      await page.keyboard.press("Escape");
+      await expect(sheet(page)).toHaveCount(0);
+      // each option filters by exactly its status once applied; the sheet closes; focus returns to the button
       const keys = ["needs", "almost", "ready", "not-started"];
       const words = ["Needs attention", "Almost ready", "Ready", "Not started"];
       for (let i = 0; i < keys.length; i++) {
-        if (i > 0) await button.click();
+        await button.click();
         await option(page, keys[i]).click();
+        await expect(showButton(page)).toHaveText(students(counts[i + 1]));
+        await showButton(page).click();
         await expect(sheet(page)).toHaveCount(0);
         await expect(button).toBeFocused();
         await expect(button).toHaveAttribute("aria-expanded", "false");
@@ -414,10 +441,11 @@ for (const width of [360, 430]) {
         expect(clearBox.x + clearBox.width).toBeGreaterThan(lb.x + lb.width - 24);
         expect(await noSidewaysScroll(page)).toBe(true);
       }
-      // tapping the chosen option closes too; Clear resets to All and hides the line
+      // reopening starts from the applied status; Clear resets to All and hides the line
       await button.click();
-      await option(page, "not-started").click();
-      await expect(sheet(page)).toHaveCount(0);
+      await expect(option(page, "not-started").locator("input")).toBeChecked();
+      await expect(showButton(page)).toHaveText(students(counts[4]));
+      await page.keyboard.press("Escape");
       await filterLine(page).getByRole("button", { name: "Clear" }).click();
       await expect(filterLine(page)).toHaveCount(0);
       await expect(rows(page)).toHaveCount(15);
@@ -430,6 +458,87 @@ for (const width of [360, 430]) {
       await expect(page.locator('[data-empty="search"]')).toContainText(
         "No students match this search.",
       );
+    });
+
+    test("closing the sheet by the x, the scrim, Escape or a swipe throws the draft away: nothing is applied and the next opening starts from the applied status", async ({
+      page,
+    }) => {
+      await page.goto("/instructor/students");
+      const button = filterButton(page);
+      const closers: Record<string, () => Promise<void>> = {
+        x: () => sheet(page).getByRole("button", { name: "Close" }).click(),
+        scrim: () => page.mouse.click(width / 2, 40),
+        escape: () => page.keyboard.press("Escape"),
+        swipe: async () => {
+          const handle = await box(page.locator("[data-sheet-handle]"));
+          const x = handle.x + handle.width / 2;
+          const y = handle.y + handle.height / 2;
+          await page.mouse.move(x, y);
+          await page.mouse.down();
+          await page.mouse.move(x, y + 30);
+          await page.mouse.move(x, y + 90);
+          await page.mouse.up();
+        },
+      };
+      for (const close of Object.values(closers)) {
+        await button.click();
+        await settled(page);
+        await option(page, "needs").click();
+        await expect(option(page, "needs").locator("input")).toBeChecked();
+        await close();
+        await expect(sheet(page)).toHaveCount(0);
+        await expect(button).toBeFocused();
+        await expect(rows(page)).toHaveCount(15);
+        await expect(filterLine(page)).toHaveCount(0);
+        expect(await bg(button)).toBe(OLIVE_TINT);
+      }
+      // reopened: the draft starts from the applied status (All)
+      await button.click();
+      await expect(option(page, "all").locator("input")).toBeChecked();
+      await expect(showButton(page)).toHaveText(students(15));
+      await page.keyboard.press("Escape");
+      // an applied status is the start of the next draft, and Escape afterwards keeps it
+      await pick(page, "ready");
+      await button.click();
+      await expect(option(page, "ready").locator("input")).toBeChecked();
+      await option(page, "all").click();
+      await page.keyboard.press("Escape");
+      await expect(filterLine(page)).toContainText("Showing: Ready");
+      await button.click();
+      await expect(option(page, "ready").locator("input")).toBeChecked();
+    });
+
+    test("on a 640px high phone the five options and both buttons fit without scrolling; the buttons stay pinned if the screen is lower", async ({
+      browser,
+    }) => {
+      const context = await browser.newContext({
+        viewport: { width, height: 640 },
+        storageState: instructor,
+      });
+      const page = await context.newPage();
+      await page.goto("/instructor/students");
+      await filterButton(page).click();
+      await settled(page);
+      const options = page.locator("[data-sheet-options]");
+      expect(await options.evaluate((el) => el.scrollHeight <= el.clientHeight + 1)).toBe(true);
+      for (const card of await sheet(page).locator("label").all()) {
+        expect((await box(card)).height).toBe(56);
+      }
+      const primary = await box(showButton(page));
+      const reset = await box(resetButton(page));
+      expect(primary.height).toBe(52);
+      expect(primary.y + primary.height).toBeLessThanOrEqual(reset.y);
+      expect(Math.round(reset.y - (primary.y + primary.height))).toBe(8);
+      expect(reset.y + reset.height).toBeLessThanOrEqual(640);
+      expect(await bg(showButton(page))).toBe(PRIMARY);
+      expect(await bg(resetButton(page))).toBe(OLIVE_TINT);
+      expect(await noSidewaysScroll(page)).toBe(true);
+      // a lower screen: the options scroll, the buttons stay visible
+      await page.setViewportSize({ width, height: 460 });
+      await expect.poll(async () => (await box(resetButton(page))).y + 52).toBeLessThanOrEqual(460);
+      expect(await options.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
+      expect((await box(showButton(page))).y).toBeGreaterThan(0);
+      await context.close();
     });
 
     test("the filter sheet closes on the scrim, the x, Escape and a swipe down on the handle; focus stays inside and returns; the page does not scroll behind", async ({

@@ -13,6 +13,8 @@ type Props = {
   tall?: boolean;
   /** Exactly 64px high (the topic rows of Assign exam). */
   compact?: boolean;
+  /** Exactly 56px high (the option cards of the filter sheet). */
+  short?: boolean;
   /** A check box drawn as a circle (the Instructor's multi-select rows): the same choice, a round indicator. */
   round?: boolean;
   /** A 1.5px olive border on the selected row (the pickers of the Instructor's edit screens). */
@@ -41,6 +43,7 @@ export function SelectableRow({
   type = "radio",
   tall = false,
   compact = false,
+  short = false,
   round = false,
   letter,
   emphasis = false,
@@ -58,7 +61,7 @@ export function SelectableRow({
       {...Object.fromEntries(
         Object.entries(data ?? {}).map(([key, value]) => [`data-${key}`, value]),
       )}
-      className={`flex ${tall ? "h-[72px] px-[var(--gutter,1rem)]" : compact ? "h-16 px-[var(--gutter,1rem)]" : "min-h-11 p-[var(--gutter,1rem)]"} items-center gap-3 rounded-card has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${state}`}
+      className={`flex ${tall ? "h-[72px] px-[var(--gutter,1rem)]" : short ? "h-14 px-[var(--gutter,1rem)]" : compact ? "h-16 px-[var(--gutter,1rem)]" : "min-h-11 p-[var(--gutter,1rem)]"} items-center gap-3 rounded-card has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent ${state}`}
     >
       <input
         type={type}

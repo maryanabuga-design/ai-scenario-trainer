@@ -144,6 +144,7 @@ export function StudentsListView({
   onClearFilter,
   counted = shown,
   statusOpen = false,
+  initialDraft,
 }: {
   /** The rows to show: already searched, filtered and sorted. */
   shown: StudentProfile[];
@@ -162,10 +163,23 @@ export function StudentsListView({
   counted?: StudentProfile[];
   /** For the review page: draw the filter sheet open. */
   statusOpen?: boolean;
+  /** For the review page: the option marked in the open sheet (default: the applied status). */
+  initialDraft?: StudentsFilter;
 }) {
   const [sheetOpen, setSheetOpen] = useState(statusOpen);
   const filterButton = useRef<HTMLButtonElement>(null);
+  // choosing in the sheet only marks a draft; the Primary button applies it
+  const [draft, setDraft] = useState<StudentsFilter>(initialDraft ?? filter);
   const options = statusOptions(counted);
+  const draftCount = options.find((option) => option.value === draft)?.count ?? 0;
+  const openSheet = () => {
+    setDraft(filter);
+    setSheetOpen(true);
+  };
+  const apply = () => {
+    onFilter(draft);
+    setSheetOpen(false);
+  };
   return (
     <>
       {/* 24px under the switch (16px gap + 8px), then 24px under the button, grouping by spacing */}
@@ -190,7 +204,7 @@ export function StudentsListView({
             aria-label="Filter by status"
             aria-haspopup="dialog"
             aria-expanded={sheetOpen}
-            onClick={() => setSheetOpen(true)}
+            onClick={openSheet}
             className={`flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center rounded-[14px] text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
               filter === "all" ? "bg-olive-tint" : "bg-filter-active"
             }`}
@@ -215,21 +229,29 @@ export function StudentsListView({
         onClose={() => setSheetOpen(false)}
         inline={statusOpen}
         returnFocus={filterButton}
+        footer={
+          <>
+            {/* the changing count is announced */}
+            <div aria-live="polite" aria-atomic="true">
+              <Button onClick={apply}>
+                Show {draftCount} {draftCount === 1 ? "student" : "students"}
+              </Button>
+            </div>
+            <Button variant="secondary" onClick={() => setDraft("all")}>
+              Reset
+            </Button>
+          </>
+        }
       >
         {options.map((option) => (
-          // a tap on the chosen card does not change the radio, so the card itself chooses
-          <div
-            key={option.value}
-            onClick={() => {
-              onFilter(option.value);
-              setSheetOpen(false);
-            }}
-          >
+          // a tap on the chosen card does not change the radio, so the card itself marks the draft
+          <div key={option.value} onClick={() => setDraft(option.value)}>
             <SelectableRow
               emphasis
+              short
               name="students-status"
               value={option.value}
-              checked={option.value === filter}
+              checked={option.value === draft}
               onChange={() => undefined}
             >
               <span className="type-body min-w-0">

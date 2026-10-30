@@ -1557,6 +1557,7 @@ export function InstructorStudentsSample({
     | "almost"
     | "not-started"
     | "status-open"
+    | "status-draft"
     | "status-empty"
     | "search-empty"
     | "filter-line"
@@ -1695,7 +1696,8 @@ export function InstructorStudentsSample({
         <StudentsListView
           shown={state === "group-empty" ? [] : visibleStudents(all, filter, query, null)}
           counted={all}
-          statusOpen={state === "status-open"}
+          statusOpen={state === "status-open" || state === "status-draft"}
+          initialDraft={state === "status-draft" ? "not-started" : undefined}
           total={state === "group-empty" ? 0 : all.length}
           filter={filter}
           query={query}

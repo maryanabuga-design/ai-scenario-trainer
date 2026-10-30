@@ -246,8 +246,53 @@ describe("the Students list", () => {
     expect(sheet).toContain("rounded-t-[20px]");
     expect(sheet).toContain("data-sheet-handle");
     expect(sheet).toContain("filter-sheet");
-    // no Apply button
+    // 56px cards, and no immediate apply: the Primary "Show N students" and the Secondary Reset are pinned
+    expect(sheet.match(/h-14 px-/g)).toHaveLength(5);
     expect(sheet).not.toMatch(/>Apply</);
+    const from = sheet.indexOf("data-sheet-footer");
+    const footer = sheet.slice(from, sheet.indexOf(">Reset<", from) + 7);
+    const almost = all.filter((p) => profileStatus(p) === "almost").length;
+    expect(footer).toMatch(/aria-live="polite"[^>]*>[^]*bg-primary[^>]*>Show (<!-- -->)?\d+/);
+    expect(visible(footer)).toContain(`Show ${almost} ${almost === 1 ? "student" : "students"}`);
+    expect(footer.indexOf("bg-primary")).toBeLessThan(footer.indexOf(">Reset<"));
+    expect(footer).toMatch(/bg-olive-tint[^>]*>Reset</);
+    expect(footer.match(/(?<![:-])bg-primary(?![-\w])/g)).toHaveLength(1);
+    // the options scroll, the footer does not
+    expect(sheet.indexOf("data-sheet-options")).toBeLessThan(sheet.indexOf("data-sheet-footer"));
+    expect(sheet).toMatch(/data-sheet-options[^>]*overflow-y-auto/);
+    expect(sheet).toMatch(/data-sheet-footer[^>]*shrink-0/);
+  });
+
+  it("starts the draft from the applied status, and labels the Primary for All, a status, one student and none", () => {
+    const open = (filter: StudentsFilter, counted = all, draft?: StudentsFilter) =>
+      visible(
+        clean(
+          renderToStaticMarkup(
+            <StudentsListView
+              shown={all}
+              total={all.length}
+              filter={filter}
+              query=""
+              onFilter={() => undefined}
+              onQuery={() => undefined}
+              onClearFilter={() => undefined}
+              counted={counted}
+              statusOpen
+              initialDraft={draft}
+            />,
+          ),
+        ),
+      );
+    expect(open("all")).toContain(`Show ${all.length} students`);
+    const needs = all.filter((p) => profileStatus(p) === "needs").length;
+    // marked but not applied: the draft drives the label, the applied filter drives the page
+    const marked = open("all", all, "needs");
+    expect(marked).toContain(`Show ${needs} ${needs === 1 ? "student" : "students"}`);
+    expect(marked).not.toContain("Showing:");
+    const one = all.slice(0, 1);
+    expect(open("all", one)).toContain("Show 1 student");
+    expect(open("all", one)).not.toContain("Show 1 students");
+    expect(open("needs", [])).toContain("Show 0 students");
   });
 
   it("has ONE white card of 72px rows with hairlines; the whole row is the link, with only a chevron at its right", () => {

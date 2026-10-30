@@ -926,9 +926,14 @@ export default function Screens() {
               <InstructorStudentsSample />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor: Students, Filter by status sheet open">
+          <PhoneFrame label="Instructor: Students, Filter by status sheet open on All">
             <Screen nav="/instructor/students" role="instructor">
               <InstructorStudentsSample state="status-open" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Students, Filter by status sheet with Not started marked (not applied yet)">
+            <Screen nav="/instructor/students" role="instructor">
+              <InstructorStudentsSample state="status-draft" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Instructor: Students, no result (Not started and a search)">

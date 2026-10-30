@@ -15,16 +15,18 @@ const FOCUSABLE =
  * the ONE bottom sheet of the app, for a single-choice filter opened by an icon button. It is a
  * fixed layer exactly as wide as the phone column (so a wide screen is not dimmed outside it) with a
  * scrim (the text colour at about 40%) and a panel at the bottom: 20px top corners, the page
- * background, a drag handle, the title with a close x, then the children. It slides up in about
+ * background, a drag handle, the title with a close x, the children (they scroll when the screen is low) and a pinned footer. It slides up in about
  * 200ms (none with prefers-reduced-motion). Escape, the scrim, the x and a swipe down on the handle
  * close it. It is a modal dialog: focus moves in, Tab stays inside, focus returns to the element
- * that opened it, and the page behind does not scroll.
+ * that opened it, and the page behind does not scroll. It never applies anything itself: closing
+ * only closes; the caller decides what a button inside it does.
  */
 export function FilterSheet({
   open,
   title,
   onClose,
   children,
+  footer,
   returnFocus,
   inline = false,
 }: {
@@ -32,6 +34,8 @@ export function FilterSheet({
   title: string;
   onClose: () => void;
   children: ReactNode;
+  /** Pinned under the options (they scroll, this stays): the Primary and Secondary buttons. */
+  footer?: ReactNode;
   /** The button that opened the sheet: it gets the focus back (Safari does not focus a tapped button). */
   returnFocus?: RefObject<HTMLElement | null>;
   /** Only for the screen review page: draw the sheet over its nearest positioned frame instead of the page. */
@@ -108,7 +112,7 @@ export function FilterSheet({
         aria-labelledby={titleId}
         tabIndex={-1}
         data-filter-sheet
-        className="filter-sheet absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col overflow-y-auto rounded-t-[20px] bg-bg px-[var(--gutter,1rem)] pb-[max(16px,env(safe-area-inset-bottom))] shadow-(--card-shadow) outline-none"
+        className="filter-sheet absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col overflow-hidden rounded-t-[20px] bg-bg px-[var(--gutter,1rem)] shadow-(--card-shadow) outline-none"
       >
         <div
           data-sheet-handle
@@ -139,7 +143,18 @@ export function FilterSheet({
             </span>
           </button>
         </div>
-        <div className="mt-3 flex flex-col gap-2">{children}</div>
+        <div
+          data-sheet-options
+          className="mt-2 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain py-1"
+        >
+          {children}
+        </div>
+        <div
+          data-sheet-footer
+          className="flex shrink-0 flex-col gap-2 pt-3 pb-[max(16px,env(safe-area-inset-bottom))]"
+        >
+          {footer}
+        </div>
       </div>
     </div>
   );
