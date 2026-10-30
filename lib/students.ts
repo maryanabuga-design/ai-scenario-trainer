@@ -212,13 +212,15 @@ export const matchesQuery = (name: string, query: string) =>
 
 export type StudentsFilter = "all" | "needs" | "ready" | "almost" | "not-started";
 
-/** The three filter chips; Almost ready and Not started only come from another screen (the filter line). */
+/** The five filter chips, in order: All and the four statuses. */
 export const filters: { value: StudentsFilter; label: string }[] = [
   { value: "all", label: "All" },
   { value: "needs", label: "Needs attention" },
+  { value: "almost", label: "Almost ready" },
   { value: "ready", label: "Ready" },
+  { value: "not-started", label: "Not started" },
 ];
-const allFilters: StudentsFilter[] = ["all", "needs", "ready", "almost", "not-started"];
+const allFilters = filters.map((f) => f.value);
 
 /** A filter from the address, "all" when it is missing or unknown. */
 export const filterFrom = (value: string | null): StudentsFilter =>

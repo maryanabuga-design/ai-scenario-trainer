@@ -116,7 +116,7 @@ for (const width of [360, 430]) {
       await expect(page.locator("svg.lucide-search")).toBeVisible();
       await expect(page.getByRole("button", { name: "Clear search" })).toHaveCount(0);
       const chips = page.locator("[data-filter-chip]");
-      await expect(chips).toHaveCount(3);
+      await expect(chips).toHaveCount(5);
       for (const chip of await chips.all()) {
         expect((await box(chip)).height).toBeGreaterThanOrEqual(44);
         expect((await box(chip.locator("span"))).height).toBe(40);
@@ -296,33 +296,107 @@ for (const width of [360, 430]) {
       expect(((await page.locator("main").innerText()).match(/COHORT/gi) ?? []).length).toBe(0);
     });
 
-    test("a status that is not a chip comes with the filter line and Clear filter; Back returns to where the list came from", async ({
+    test("a status from another screen presses its chip, with no filter line; a topic filter has the filter line and Clear filter; Back returns to where the list came from", async ({
       page,
     }) => {
       await page.goto("/instructor/students?filter=not-started&from=overview");
-      const line = page.locator("[data-filter-line]:visible");
-      await expect(line).toBeVisible();
-      await expect(line.locator("svg.lucide-funnel")).toHaveCount(1);
-      await expect(page.locator("[data-showing]:visible")).toHaveText("Showing: Not started");
-      expect((await box(line)).height).toBeGreaterThanOrEqual(44);
+      await expect(page.locator("[data-filter-line]:visible")).toHaveCount(0);
+      await expect(page.locator('[data-filter-chip="not-started"]')).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
       expect(new Set(await chipKinds(page))).toEqual(new Set(["not-started"]));
-      await expect(page.locator("[data-filter-chip] input:checked")).toHaveCount(0);
+      await page.getByRole("link", { name: "Back to Overview" }).click();
+      await expect(page).toHaveURL(/\/instructor$/);
+      // a topic filter from another screen
+      await page.goto("/instructor/students?topic=S3&from=topics");
+      const line = page.locator("[data-filter-line]:visible");
+      await expect(line.locator("svg.lucide-funnel")).toHaveCount(1);
+      await expect(page.locator("[data-showing]:visible")).toContainText(
+        "Below pass mark in S3 · ",
+      );
+      expect((await box(line)).height).toBeGreaterThanOrEqual(44);
       const clear = line.getByRole("button", { name: "Clear filter" });
       expect(await bg(clear)).toBe("rgba(0, 0, 0, 0)");
       expect(
         await clear.locator("span").evaluate((el) => getComputedStyle(el).textDecorationLine),
       ).toBe("underline");
-      await page.getByRole("link", { name: "Back to Overview" }).click();
-      await expect(page).toHaveURL(/\/instructor$/);
-      await page.goto("/instructor/students?filter=not-started&from=overview");
-      await line.getByRole("button", { name: "Clear filter" }).click();
+      await clear.click();
       await expect(page).toHaveURL(/\/instructor\/students$/);
       await expect(rows(page)).toHaveCount(15);
-      // a topic filter from another screen
-      await page.goto("/instructor/students?topic=S3&from=topics");
-      await expect(page.locator("[data-showing]:visible")).toContainText(
-        "Below pass mark in S3 · ",
+    });
+
+    test("five status chips in order, one pressed at a time; each filters by exactly its status; the search works with them; they wrap without overflow", async ({
+      page,
+    }) => {
+      await page.goto("/instructor/students");
+      const chips = page.locator("[data-filter-chip]");
+      const names = ["All", "Needs attention", "Almost ready", "Ready", "Not started"];
+      await expect(chips).toHaveText(names);
+      for (const chip of await chips.all())
+        await expect(chip).toHaveAttribute("aria-pressed", /true|false/);
+      const kind = {
+        needs: "needs",
+        almost: "almost",
+        ready: "ready",
+        "not-started": "not-started",
+      };
+      let total = 0;
+      for (const [chip, status] of Object.entries(kind)) {
+        await page.locator(`[data-filter-chip="${chip}"]`).click();
+        await expect(page.locator('[data-filter-chip][aria-pressed="true"]')).toHaveCount(1);
+        await expect(page.locator(`[data-filter-chip="${chip}"]`)).toHaveAttribute(
+          "aria-pressed",
+          "true",
+        );
+        const n = await rows(page).count();
+        total += n;
+        expect(n).toBeGreaterThan(0);
+        expect(new Set(await chipKinds(page))).toEqual(new Set([status]));
+      }
+      expect(total).toBe(15);
+      await page.locator('[data-filter-chip="all"]').click();
+      await expect(rows(page)).toHaveCount(15);
+      // a status together with a search
+      await page.locator('[data-filter-chip="not-started"]').click();
+      await page.getByPlaceholder("Search students").fill("Maryana");
+      await expect(rows(page)).toHaveCount(1);
+      await page.getByPlaceholder("Search students").fill("Mira");
+      await expect(page.locator('[data-empty="search"]')).toContainText(
+        "No students match this search.",
       );
+      await page.getByRole("button", { name: "Clear search" }).last().click();
+      await expect(page.locator('[data-filter-chip="not-started"]')).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+      // wrapping: nothing sideways, every pill 40px in a 44px area, 8px between pills in both directions
+      expect(await noSidewaysScroll(page)).toBe(true);
+      const spans = await chips.locator("span").evaluateAll((els) =>
+        els.map((el) => {
+          const r = el.getBoundingClientRect();
+          return { x: r.x, y: r.y, right: r.right, bottom: r.bottom, height: r.height };
+        }),
+      );
+      for (const r of spans) {
+        expect(r.height).toBe(40);
+        expect(r.right).toBeLessThanOrEqual(width);
+      }
+      const lines = [...new Set(spans.map((r) => Math.round(r.y)))];
+      expect(lines.length).toBeGreaterThanOrEqual(2);
+      for (let i = 1; i < spans.length; i++) {
+        if (Math.round(spans[i].y) === Math.round(spans[i - 1].y))
+          expect(Math.round(spans[i].x - spans[i - 1].right)).toBe(8);
+      }
+      const firstLineBottom = Math.max(
+        ...spans.filter((r) => Math.round(r.y) === lines[0]).map((r) => r.bottom),
+      );
+      expect(
+        Math.round(
+          Math.min(...spans.filter((r) => Math.round(r.y) === lines[1]).map((r) => r.y)) -
+            firstLineBottom,
+        ),
+      ).toBe(8);
     });
 
     test("the Students | Topics switch: Topics shows the ten topics, weakest first, and Students returns", async ({

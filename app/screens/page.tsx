@@ -936,12 +936,22 @@ export default function Screens() {
               <InstructorStudentsSample state="ready" />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Instructor: Students, Almost ready chip">
+            <Screen nav="/instructor/students" role="instructor">
+              <InstructorStudentsSample state="almost" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Instructor: Students, Not started chip">
+            <Screen nav="/instructor/students" role="instructor">
+              <InstructorStudentsSample state="not-started" />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Instructor: Students, search with no result">
             <Screen nav="/instructor/students" role="instructor">
               <InstructorStudentsSample state="search-empty" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Instructor: Students, filter line from the Overview (Not started)">
+          <PhoneFrame label="Instructor: Students, opened from the Overview (Not started chip, with Back)">
             <Screen nav="/instructor/students" role="instructor">
               <InstructorStudentsSample state="filter-line" />
             </Screen>

@@ -1554,6 +1554,8 @@ export function InstructorStudentsSample({
     | "list"
     | "needs"
     | "ready"
+    | "almost"
+    | "not-started"
     | "search-empty"
     | "filter-line"
     | "group-empty"
@@ -1663,9 +1665,11 @@ export function InstructorStudentsSample({
       ? "needs"
       : state === "ready"
         ? "ready"
-        : state === "filter-line"
-          ? "not-started"
-          : "all";
+        : state === "almost"
+          ? "almost"
+          : state === "not-started" || state === "filter-line"
+            ? "not-started"
+            : "all";
   const query = state === "search-empty" ? "Zimmerman" : "";
   return (
     <div className="flex flex-col gap-4 pb-4">

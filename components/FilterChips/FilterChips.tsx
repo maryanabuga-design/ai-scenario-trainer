@@ -2,7 +2,7 @@
 
 /**
  * The single-choice filter chips (DESIGN.md: Students screen redesigned): a row of toggle buttons
- * with `aria-pressed` in one labelled group, each pill 40px high inside a 44px tap area. Active: the
+ * with `aria-pressed` in one labelled group, each pill 40px high inside a 44px tap area. The chips wrap onto more lines (8px between pills both ways). Active: the
  * Secondary tint fill, a 1.5px olive border and semi-bold text, no check icon. Inactive: white, a 1px
  * light border and regular text.
  */
@@ -26,7 +26,7 @@ export function FilterChips<T extends string>({
       role="group"
       aria-label={legend}
       data-filter-chips={name}
-      className="flex flex-wrap gap-x-2"
+      className="flex flex-wrap gap-x-2 gap-y-1"
     >
       {options.map((option) => {
         const pressed = option.value === value;

@@ -139,10 +139,12 @@ describe("the words of a row", () => {
     ]);
   });
 
-  it("words the filter line for a status that is not a chip and for a topic", () => {
-    expect(showingLine("not-started", null)).toBe("Showing: Not started");
-    expect(showingLine("almost", null)).toBe("Showing: Almost ready");
-    expect(showingLine("needs", null)).toBeNull();
+  it("words the filter line for a topic only: every status is a chip", () => {
+    for (const status of ["not-started", "almost", "needs", "ready", "all"] as const)
+      expect(showingLine(status, null)).toBeNull();
+    expect(showingLine("not-started", { id: "S3", title: "Moving through smoke" })).toBe(
+      "Below pass mark in S3 · Moving through smoke · Not started",
+    );
     expect(showingLine("all", { id: "S3", title: "Moving through smoke" })).toBe(
       "Below pass mark in S3 · Moving through smoke",
     );

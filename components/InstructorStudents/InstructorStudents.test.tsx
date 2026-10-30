@@ -172,14 +172,18 @@ describe("the Students list", () => {
     expect(html.indexOf(">Invite students<")).toBeLessThan(html.indexOf("data-search-group"));
   });
 
-  it("has three filter chips as toggle buttons with aria-pressed: active tint + 1px light green border + semi-bold, inactive white + 1px border + regular, no check icon", () => {
-    expect(html.match(/data-filter-chip=/g)).toHaveLength(3);
-    for (const label of ["All", "Needs attention", "Ready"])
-      expect(html).toContain(`${label}</span>`);
-    expect(html.match(/min-h-11/g)!.length).toBeGreaterThanOrEqual(3);
-    expect(html.match(/h-10 items-center/g)).toHaveLength(3);
+  it("has five filter chips, in order, as toggle buttons with aria-pressed: active tint + 1px light green border + semi-bold, inactive white + 1px border + regular, no check icon", () => {
+    expect(html.match(/data-filter-chip=/g)).toHaveLength(5);
+    const labels = ["All", "Needs attention", "Almost ready", "Ready", "Not started"];
+    for (const label of labels) expect(html).toContain(`${label}</span>`);
+    const at = labels.map((label) => html.indexOf(`${label}</span>`));
+    expect(at).toEqual([...at].sort((a, b) => a - b));
+    expect(html.match(/min-h-11/g)!.length).toBeGreaterThanOrEqual(5);
+    expect(html.match(/h-10 items-center/g)).toHaveLength(5);
     expect(html.match(/aria-pressed="true"/g)).toHaveLength(1);
-    expect(html.match(/aria-pressed="false"/g)).toHaveLength(2);
+    expect(html.match(/aria-pressed="false"/g)).toHaveLength(4);
+    // wraps onto more lines: 8px along, 4px between the 44px tap areas (8px between the pills)
+    expect(html).toContain("flex-wrap gap-x-2 gap-y-1");
     const chip = (id: string) =>
       html.slice(
         html.indexOf(`data-filter-chip="${id}"`),
@@ -196,8 +200,16 @@ describe("the Students list", () => {
       html.indexOf("data-student-rows"),
     );
     expect(chipRow).not.toContain("lucide-check");
-    // a status that is not a chip leaves none pressed
-    expect(list("not-started")).not.toContain('aria-pressed="true"');
+    // every status is a chip: Not started and Almost ready press their own chip
+    for (const id of ["almost", "not-started"]) {
+      const html = list(id as "almost");
+      expect(html.match(/aria-pressed="true"/g)).toHaveLength(1);
+      expect(html).toMatch(
+        new RegExp(
+          `data-filter-chip="${id}"[^>]*aria-pressed="true"|aria-pressed="true"[^>]*data-filter-chip="${id}"`,
+        ),
+      );
+    }
   });
 
   it("has ONE white card of 72px rows with hairlines; the whole row is the link, with only a chevron at its right", () => {
@@ -270,11 +282,14 @@ describe("the Students list", () => {
     expect(kinds).toEqual([...kinds].sort((a, b) => a - b));
   });
 
-  it("shows the filter line (funnel, words, an underlined Clear filter) only for a status that is not a chip, or a topic", () => {
+  it("shows the filter line (funnel, words, an underlined Clear filter) only for a topic, never for a status", () => {
     expect(html).not.toContain("data-filter-line");
-    const line = list("not-started");
+    expect(showingLine("not-started", null)).toBeNull();
+    expect(showingLine("almost", null)).toBeNull();
+    const line = list("all", {
+      showing: showingLine("all", { id: "S3", title: "Moving through smoke" }),
+    });
     expect(line).toContain("data-filter-line");
-    expect(line).toContain("Showing: Not started");
     expect(line).toContain("lucide-funnel");
     expect(line).toContain("min-h-11");
     expect(line).toMatch(/underline[^>]*>Clear filter</);
