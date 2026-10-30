@@ -1,20 +1,19 @@
-import { ListChecks } from "lucide-react";
+import { ClipboardList } from "lucide-react";
 import Link from "next/link";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { Chip } from "@/components/Chip/Chip";
-import { IconTile } from "@/components/IconTile/IconTile";
 import { Media3D } from "@/components/Media3D/Media3D";
-import { closedLine, duePill, resultsLine } from "@/lib/exam-detail";
+import { closedLine, duePillText, resultsLine } from "@/lib/exam-detail";
 import { dueLine } from "@/lib/group-exams";
 import type { GroupExam } from "@/lib/group-exams";
 import { cardPictureFiles } from "@/lib/media-frames";
 
 /**
- * The exam card (DESIGN.md: Exams list and exam detail simplified). ACTIVE, 88px: the exam picture in
- * its 56 by 56 slot, a one-line title, the soft due pill ("Due 4 Nov", amber within 3 days) and ONE
- * result line "Passed 4 of 15". CLOSED: the neutral checklist tile instead of the picture, "Closed
- * 12 Oct" and "Passed 12 of 14". The whole card opens the detail. `bare` is the row inside the
- * Overview's EXAMS card: no card chrome, a plain due line and "· n not started" after the result.
+ * The exam card (DESIGN.md: Date pills are neutral and exam cards use an icon tile). 88px: a 48px
+ * icon tile (the Exams navigation icon, no 3D picture), a one-line title, ONE neutral date pill
+ * ("Due 4 Nov" or "Closed 12 Oct", always neutral) and ONE result line "Passed 4 of 15", then the
+ * chevron. The whole card opens the detail. `bare` is the row inside the Overview's EXAMS card: no
+ * card chrome, the exam picture, a plain due line and "· n not started" after the result.
  */
 export function ExamCard({
   exam,
@@ -24,7 +23,6 @@ export function ExamCard({
   from,
   bare = false,
   tag,
-  now,
   closed = false,
 }: {
   exam: GroupExam;
@@ -38,11 +36,8 @@ export function ExamCard({
   bare?: boolean;
   /** The group name of the exam (All groups on the Overview), a small tag before the due line. */
   tag?: string;
-  /** The moment the due pill is worked out at (the list). */
-  now?: number;
   closed?: boolean;
 }) {
-  const pill = !bare && !closed && now !== undefined ? duePill(exam, now) : null;
   const counts = { passed, total, notStarted: notStarted ?? 0 };
   return (
     <Link
@@ -50,25 +45,25 @@ export function ExamCard({
       data-exam-card={exam.id}
       className={`flex h-[88px] items-center gap-3 px-3 has-focus-visible:outline-2 ${bare ? "" : "rounded-card border border-selectable-stroke bg-card shadow-(--card-shadow)"}`}
     >
-      {closed ? (
-        <IconTile className="h-14 w-14 rounded-[16px]">
-          <ListChecks size={24} strokeWidth={2} />
-        </IconTile>
-      ) : (
+      {bare ? (
         <Media3D variant="card" src={cardPictureFiles.examCard} />
+      ) : (
+        <span
+          aria-hidden="true"
+          data-exam-tile
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] bg-chip-neutral-bg text-primary"
+        >
+          <ClipboardList size={24} strokeWidth={2} />
+        </span>
       )}
       <span className="flex min-w-0 flex-1 flex-col items-start gap-0.5">
         <span className="type-body-strong w-full truncate">{exam.title}</span>
-        {pill ? (
+        {!bare ? (
           <span
-            data-due-pill={pill.tone}
-            className={`type-caption max-w-full truncate rounded-full px-2.5 py-0.5 ${
-              pill.tone === "amber"
-                ? "bg-status-attention-bg text-status-attention-ink"
-                : "bg-secondary-sand text-text-secondary"
-            }`}
+            data-date-pill
+            className="type-caption max-w-full truncate rounded-full bg-chip-neutral-bg px-2.5 py-0.5 text-chip-neutral-ink"
           >
-            {pill.text}
+            {closed ? closedLine(exam) : duePillText(exam)}
           </span>
         ) : (
           <span className="type-small flex w-full items-center gap-1.5 truncate text-text-secondary">

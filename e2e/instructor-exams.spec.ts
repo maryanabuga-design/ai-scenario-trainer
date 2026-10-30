@@ -31,7 +31,8 @@ const PRIMARY = "rgb(63, 70, 56)";
 const OLIVE_TINT = "rgb(224, 230, 214)";
 const SUCCESS_BG = "rgb(225, 234, 218)";
 const ATTENTION_BG = "rgb(241, 228, 200)";
-const SAND = "rgb(240, 236, 230)";
+const NEUTRAL_PILL = "rgb(239, 236, 230)";
+const NEUTRAL_INK = "rgb(100, 106, 90)";
 const noSidewaysScroll = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
 const primaries = (page: Page) =>
@@ -163,15 +164,27 @@ for (const width of [360, 430]) {
         const b = (await card.boundingBox())!;
         expect([b.height, b.x, b.width]).toEqual([88, 16, width - 32]);
         await expect(card.locator("[data-group-name]")).toHaveCount(0);
-        await expect(card.locator("img")).toHaveAttribute("src", "/heroes/exam-card.webp");
-        expect((await card.locator("img").boundingBox())!.width).toBe(56);
+        // the icon tile instead of the 3D picture: 48x48, radius 12, #EFECE6, the Exams icon in olive
+        await expect(card.locator("img")).toHaveCount(0);
+        const tile = card.locator("[data-exam-tile]");
+        const tb = (await tile.boundingBox())!;
+        expect([tb.width, tb.height]).toEqual([48, 48]);
+        expect(await bg(tile)).toBe(NEUTRAL_PILL);
+        expect(await tile.evaluate((el) => getComputedStyle(el).borderTopLeftRadius)).toBe("12px");
+        await expect(tile).toHaveAttribute("aria-hidden", "true");
+        const icon = tile.locator("svg.lucide-clipboard-list");
+        expect((await icon.boundingBox())!.width).toBe(24);
+        expect(await icon.evaluate((el) => getComputedStyle(el).color)).toBe("rgb(63, 70, 56)");
         expect(await bg(card)).toBe("rgb(255, 255, 255)");
         await expect(card).toContainText(/Passed \d+ of \d+$/);
         expect(await card.innerText()).not.toMatch(/not started|topics?\b/i);
-        await expect(card.locator("[data-due-pill]")).toHaveText(/^Due \d+ \w{3}$/);
+        await expect(card.locator("[data-date-pill]")).toHaveText(/^Due \d+ \w{3}$/);
         await expect(card.locator("svg.lucide-chevron-right")).toHaveCount(1);
       }
-      expect(await bg(page.locator("[data-due-pill]").first())).toBe(SAND);
+      for (const pill of await page.locator("[data-date-pill]").all()) {
+        expect(await bg(pill)).toBe(NEUTRAL_PILL);
+        expect(await pill.evaluate((el) => getComputedStyle(el).color)).toBe(NEUTRAL_INK);
+      }
       // the toggle is a full-width Secondary under the active cards, closed cards are inert until opened
       const toggle = page.getByRole("button", { name: "Show closed exams (1)" });
       expect(await bg(toggle)).toBe(OLIVE_TINT);
@@ -184,7 +197,13 @@ for (const width of [360, 430]) {
       await expect(closed).toContainText(/Closed \d+ \w{3}/);
       await expect(closed).toContainText(/Passed \d+ of \d+$/);
       await expect(closed.locator("img")).toHaveCount(0);
-      await expect(closed.locator("[data-icon-tile]")).toBeVisible();
+      await expect(closed.locator("[data-exam-tile]")).toBeVisible();
+      // the closed date pill is the very same neutral pill
+      const closedPill = closed.locator("[data-date-pill]");
+      await expect(closedPill).toHaveText(/^Closed \d+ \w{3}$/);
+      expect(await bg(closedPill)).toBe(NEUTRAL_PILL);
+      expect(await closedPill.evaluate((el) => getComputedStyle(el).color)).toBe(NEUTRAL_INK);
+      expect((await closed.boundingBox())!.height).toBe(88);
       await expect(page.getByRole("button", { name: "Hide closed exams" })).toBeVisible();
       await noPercent(page);
       expect(await noSidewaysScroll(page)).toBe(true);
@@ -193,12 +212,28 @@ for (const width of [360, 430]) {
       await expect(page.getByText("Archive", { exact: true })).toHaveCount(0);
     });
 
-    test("a due pill is amber within 3 days and says the date: 'Due 27 Oct'", async ({ page }) => {
-      const id = await assign(page, "Exam: Soon", { deadline: "In 3 days" });
+    test("a due pill is the same neutral pill even when the exam is due in 3 days, and a very long title is cut with an ellipsis on one line", async ({
+      page,
+    }) => {
+      const long = "Exam: a very long title that has to be cut off with an ellipsis on one line";
+      const id = await assign(page, long, { deadline: "In 3 days" });
       await page.goto("/instructor/exams");
-      const pill = page.locator(`[data-exam-card="${id}"] [data-due-pill]`);
+      const card = page.locator(`[data-exam-card="${id}"]`);
+      const pill = card.locator("[data-date-pill]");
       await expect(pill).toHaveText(/^Due \d+ \w{3}$/);
-      expect(await bg(pill)).toBe(ATTENTION_BG);
+      expect(await bg(pill)).toBe(NEUTRAL_PILL);
+      expect(await pill.evaluate((el) => getComputedStyle(el).color)).toBe(NEUTRAL_INK);
+      expect(await bg(pill)).not.toBe(ATTENTION_BG);
+      // the same size as the other pills
+      const other = page.locator("[data-exam-card]:visible [data-date-pill]").last();
+      expect((await pill.boundingBox())!.height).toBe((await other.boundingBox())!.height);
+      const title = card.locator(".type-body-strong").first();
+      expect(await title.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
+      expect(await title.evaluate((el) => getComputedStyle(el).textOverflow)).toBe("ellipsis");
+      expect((await title.boundingBox())!.height).toBeLessThan(26);
+      expect((await card.boundingBox())!.height).toBe(88);
+      expect(await card.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+      expect(await noSidewaysScroll(page)).toBe(true);
     });
 
     test("the empty Exams list (the screen review frame): the picture, 'No exams yet', one Primary inside the card, the note", async ({

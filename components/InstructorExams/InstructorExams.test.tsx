@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
@@ -25,67 +26,94 @@ const everyone = participants([{ name: "Ana Test", email: "ana@example.com" }]);
 const titleOf = (id: string) => `Topic ${id}`;
 const visible = (html: string) => html.replace(/<[^>]+>/g, " ");
 
+const css = readFileSync("app/globals.css", "utf8");
 const wrap = (node: React.ReactNode) =>
   renderToStaticMarkup(<ActionBarProvider>{node}</ActionBarProvider>).replace(/<!-- -->/g, "");
 
 describe("the exam card", () => {
   const exam = exams[0];
-  const active = renderToStaticMarkup(
-    <ExamCard exam={exam} passed={1} total={14} notStarted={11} now={now} />,
-  ).replace(/<!-- -->/g, "");
+  const card = (props: Partial<React.ComponentProps<typeof ExamCard>> = {}) =>
+    renderToStaticMarkup(
+      <ExamCard exam={exam} passed={1} total={14} notStarted={11} {...props} />,
+    ).replace(/<!-- -->/g, "");
+  const active = card();
 
-  it("is 88px: the 56 by 56 picture, a one-line title, the soft due pill, the results line, a chevron", () => {
+  it("is 88px: the 48px icon tile, a one-line title, the neutral date pill, the results line, a chevron", () => {
     expect(active).toContain("h-[88px]");
-    expect(active).toContain("/heroes/exam-card.webp");
-    expect(active).toContain('width="56"');
     expect(active).toContain(">Due 30 Oct<");
-    expect(active).toContain('data-due-pill="neutral"');
+    expect(active).toContain("data-date-pill");
     expect(active).toContain("Passed 1 of 14");
-    // only the title, the due pill and ONE result line: no topics count, no not-started count, no group
+    // only the title, the date pill and ONE result line: no topics count, no not-started count, no group
     expect(active).not.toMatch(/topics?<|not started|data-group-name/);
     expect(active).toContain("lucide-chevron-right");
     expect(active).toContain(`href="/instructor/exams/${exam.id}"`);
     expect(active).not.toContain("%");
   });
 
-  it("makes the pill amber within 3 days and still says the date: 'Due 26 Oct'", () => {
-    const soon = renderToStaticMarkup(
-      <ExamCard
-        exam={{ ...exam, deadline: "2026-10-26", topicIds: ["S1"] }}
-        passed={1}
-        total={14}
-        notStarted={11}
-        now={now}
-      />,
-    ).replace(/<!-- -->/g, "");
-    expect(soon).toContain(">Due 26 Oct<");
-    expect(soon).toContain('data-due-pill="amber"');
-    expect(soon).toContain("bg-status-attention-bg");
+  it("shows the icon tile and no picture: 48x48, radius 12, #EFECE6, the Exams navigation icon at 24px in olive, aria-hidden", () => {
+    const tile = active.slice(active.indexOf("data-exam-tile") - 40);
+    expect(tile).toContain('aria-hidden="true"');
+    expect(tile).toContain("h-12 w-12");
+    expect(tile).toContain("rounded-[12px]");
+    expect(tile).toContain("bg-chip-neutral-bg text-primary");
+    expect(tile).toMatch(/lucide-clipboard-list[^>]*/);
+    expect(tile.slice(0, tile.indexOf("</span>"))).toContain('width="24"');
+    expect(active).not.toContain("<img");
+    expect(active).not.toContain("/heroes/exam-card.webp");
+    // the same icon as the Exams item of the bottom navigation
+    expect(readFileSync("components/BottomNav/BottomNav.tsx", "utf8")).toContain(
+      'label: "Exams", Icon: ClipboardList',
+    );
   });
 
-  it("shows the bare row of the Overview with the not-started count after the result", () => {
-    const bare = renderToStaticMarkup(
-      <ExamCard exam={exam} passed={1} total={14} notStarted={11} bare />,
-    ).replace(/<!-- -->/g, "");
+  it("gives every date pill ONE neutral style, with no amber 'due soon' variant at any distance", () => {
+    expect(css).toMatch(/--chip-neutral-bg:\s*#efece6;/i);
+    const styles = new Set<string>();
+    for (const deadline of ["2026-10-24", "2026-10-26", "2026-10-28", "2027-02-01"]) {
+      const html = card({ exam: { ...exam, deadline } });
+      const pill = html.slice(html.indexOf("data-date-pill"));
+      const cls = /class="([^"]*)"/.exec(pill)![1];
+      styles.add(cls);
+      expect(pill.slice(0, pill.indexOf("</span>"))).toMatch(/>Due \d{1,2} \w{3}$/);
+      expect(html).not.toMatch(/amber|data-due-pill|bg-status-attention/);
+    }
+    expect(styles.size).toBe(1);
+    const closed = card({ closed: true, exam: { ...exam, deadline: "2026-10-12" } });
+    const closedClass = /data-date-pill[^>]*class="([^"]*)"/.exec(closed)![1];
+    expect([closedClass]).toEqual([...styles]);
+    expect(closedClass).toContain("bg-chip-neutral-bg");
+    expect(closedClass).toContain("text-chip-neutral-ink");
+    expect(closedClass).toContain("type-caption");
+    expect(closedClass).toContain("px-2.5");
+  });
+
+  it("keeps the amber rule out of the code", () => {
+    const sources = ["components/InstructorExams/ExamCard.tsx", "lib/exam-detail.ts"];
+    for (const file of sources)
+      expect(readFileSync(file, "utf8"), file).not.toMatch(/DUE_SOON|amber|duePill\(/);
+  });
+
+  it("shows the bare row of the Overview with the picture and the not-started count after the result", () => {
+    const bare = card({ bare: true });
     expect(bare).toContain("Passed 1 of 14 · 11 not started");
+    expect(bare).toContain("/heroes/exam-card.webp");
+    expect(bare).not.toContain("data-exam-tile");
   });
 
-  it("shows the neutral checklist tile, 'Closed 12 Oct' and 'Passed 12 of 14' when closed", () => {
-    const closed = renderToStaticMarkup(
-      <ExamCard
-        exam={{ ...exam, deadline: "2026-10-12" }}
-        passed={12}
-        total={14}
-        now={now}
-        closed
-      />,
-    ).replace(/<!-- -->/g, "");
-    expect(closed).toContain("Closed 12 Oct");
+  it("shows the same icon tile, 'Closed 12 Oct' and 'Passed 12 of 14' when closed", () => {
+    const closed = card({
+      closed: true,
+      passed: 12,
+      notStarted: undefined,
+      exam: { ...exam, deadline: "2026-10-12" },
+    });
+    expect(closed).toContain(">Closed 12 Oct<");
     expect(closed).toContain("Passed 12 of 14");
     expect(closed).not.toContain("not started");
     expect(closed).not.toContain("/heroes/exam-card.webp");
-    expect(closed).toContain("lucide-list-checks");
-    expect(closed).toContain("bg-neutral-tile-bg");
+    expect(closed).toContain("data-exam-tile");
+    expect(closed).toContain("lucide-clipboard-list");
+    expect(closed).not.toContain("lucide-list-checks");
   });
 });
 

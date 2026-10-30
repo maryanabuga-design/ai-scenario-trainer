@@ -1,4 +1,3 @@
-import { daysUntil, DUE_SOON_DAYS } from "@/lib/actions";
 import { bestAttempt, finishedOf, triedCount } from "@/lib/cohort";
 import type { Attempt, ExamStatus, GroupCounts, Participant } from "@/lib/cohort";
 import { attemptsOf } from "@/lib/cohort";
@@ -15,17 +14,8 @@ import { findItem } from "@/lib/items";
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
-/** The soft pill of an active card: "Due 4 Nov", amber within 3 days, otherwise neutral. */
-export function duePill(
-  exam: Pick<GroupExam, "deadline">,
-  now: number,
-): { text: string; tone: "amber" | "neutral" } {
-  const days = daysUntil(exam.deadline, now);
-  return {
-    text: `Due ${shortDate(exam.deadline)}`,
-    tone: days !== null && days <= DUE_SOON_DAYS ? "amber" : "neutral",
-  };
-}
+/** The words of the date pill of an active card: "Due 4 Nov" (every date pill is neutral). */
+export const duePillText = (exam: Pick<GroupExam, "deadline">) => `Due ${shortDate(exam.deadline)}`;
 
 /** The day an exam closed: when it was closed by hand, else its deadline. */
 export const closedDay = (exam: Pick<GroupExam, "deadline" | "closedAt">): string =>

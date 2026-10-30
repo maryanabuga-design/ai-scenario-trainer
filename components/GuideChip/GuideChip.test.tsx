@@ -52,8 +52,9 @@ describe("Guide chips", () => {
     const own = files.filter((file) => {
       const code = readFileSync(file, "utf8");
       return (
+        // (the neutral chip tokens of the status chip and the date pills are not a Guide chip)
         /Guide[ ·]+\$?\{/.test(code.replace(/Guide · \{section\.id\}/, "")) ||
-        /rounded-full[^"`]*bg-chip|bg-chip[^"`]*rounded-full/.test(code) ||
+        /rounded-full[^"`]*bg-chip(?!-neutral)|bg-chip(?!-neutral)[^"`]*rounded-full/.test(code) ||
         code.includes("SourceChip")
       );
     });

@@ -6,7 +6,7 @@ import {
   attemptsAllowedLine,
   attemptsLeftLine,
   closedLine,
-  duePill,
+  duePillText,
   extendedDeadline,
   hardestQuestions,
   resultsLine,
@@ -36,14 +36,12 @@ const finished = (examId: string, correct: number, at = 1): Attempt => ({
 });
 
 describe("the words of the Exams screens (counts only)", () => {
-  it("words the due pill as the date and makes it amber within 3 days, neutral later", () => {
-    expect(duePill({ deadline: "2026-10-26" }, now)).toEqual({ text: "Due 26 Oct", tone: "amber" });
-    expect(duePill({ deadline: "2026-10-24" }, now).text).toBe("Due 24 Oct");
-    expect(duePill({ deadline: "2026-10-27" }, now).tone).toBe("amber");
-    expect(duePill({ deadline: "2026-10-28" }, now)).toEqual({
-      text: "Due 28 Oct",
-      tone: "neutral",
-    });
+  it("words the date pill as the date only, whatever the time left (no amber 'due soon')", () => {
+    for (const deadline of ["2026-10-24", "2026-10-26", "2026-10-28", "2027-01-05"]) {
+      expect(duePillText({ deadline })).toMatch(/^Due \d{1,2} \w{3}$/);
+    }
+    expect(duePillText({ deadline: "2026-10-26" })).toBe("Due 26 Oct");
+    expect(duePillText({ deadline: "2026-10-28" })).toBe("Due 28 Oct");
   });
 
   it("says Closed with the day the exam was closed", () => {
