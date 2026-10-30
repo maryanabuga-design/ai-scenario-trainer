@@ -45,11 +45,7 @@ export function getStarted(counts: {
   publishedSets: number;
 }): StartStep[] | null {
   if (counts.students > 0 || counts.exams > 0) return null;
-  const done = [
-    counts.students > 0,
-    counts.publishedSets > 0,
-    counts.exams > 0,
-  ];
+  const done = [counts.students > 0, counts.publishedSets > 0, counts.exams > 0];
   if (done.every(Boolean)) return null;
   const nextIndex = done.findIndex((flag) => !flag);
   return steps.map((step, index) => ({

@@ -9,20 +9,23 @@ import { clearFlash, useFlash } from "@/lib/flash";
 export const SHOW_MS = 4000;
 const FADE_MS = 250;
 
-/** The top of the notice: just under the visible header band of the screen, or 16px from the top. */
+/**
+ * The top of the notice: 8px under the visible back button, otherwise 12px from the top of the screen
+ * (also when the back button has scrolled out of view).
+ */
 function topOfNotice(): number {
-  const band = Array.from(document.querySelectorAll("[data-page-header-band]")).find(
+  const back = Array.from(document.querySelectorAll("[data-back-button]")).find(
     (el) => el.getClientRects().length > 0,
   );
-  const bottom = band ? band.getBoundingClientRect().bottom : 0;
-  return Math.max(16, Math.round(bottom + 8));
+  const bottom = back ? back.getBoundingClientRect().bottom : 0;
+  return Math.max(12, Math.round(bottom + 8));
 }
 
 /**
  * The light confirmation after an action (DESIGN.md: Result card, one single-choice pattern, a
  * floating confirmation): a 56px card with a check tile and ONE line of text, no close button. It
- * floats just under the header band of the screen the person lands on, above the content (fixed in the
- * phone column with 16px side margins), so showing and hiding it moves nothing. It fades in, stays
+ * floats at the very top of the phone screen, over the header and never in the flow (fixed in the
+ * phone column with 16px side margins; 8px under the back button, or 12px from the top), so showing and hiding it moves nothing. It fades in, stays
  * about 4 seconds and fades out by itself; with prefers-reduced-motion there is no fade and it still
  * goes after about 4 seconds. A polite live region; a new message replaces the old one.
  */
@@ -70,7 +73,7 @@ export function FlashNotice() {
         <div
           data-flash
           data-flash-state={shown && shown.id === flash.id && shown.on ? "on" : "off"}
-          style={{ top: shown && shown.id === flash.id ? shown.top : 16 }}
+          style={{ top: shown && shown.id === flash.id ? shown.top : 12 }}
           className={`pointer-events-none fixed left-1/2 z-50 w-[min(calc(100vw-32px),398px)] -translate-x-1/2 transition-opacity duration-200 motion-reduce:transition-none ${
             shown && shown.id === flash.id && shown.on ? "opacity-100" : "opacity-0"
           }`}

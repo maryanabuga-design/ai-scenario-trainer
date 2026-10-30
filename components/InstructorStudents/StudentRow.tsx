@@ -31,20 +31,9 @@ export function StudentStatusChip({ status }: { status: StudentStatus }) {
   );
 }
 
-/** The 48px initials avatar of a row (no status dot: the chip under the name carries the status). */
-export function InitialsAvatar({ initials, size = 48 }: { initials: string; size?: 48 | 64 }) {
-  return (
-    <span
-      aria-hidden="true"
-      data-initials-avatar
-      className={`type-body-strong flex shrink-0 items-center justify-center rounded-full bg-olive-tint text-primary ${
-        size === 48 ? "h-12 w-12" : "h-16 w-16 text-[length:var(--text-xl)]"
-      }`}
-    >
-      {initials}
-    </span>
-  );
-}
+import { InitialsAvatar } from "@/components/InitialsAvatar/InitialsAvatar";
+
+export { InitialsAvatar };
 
 /** The one white card of student rows, separated by hairlines. */
 export function StudentRowsCard({ children }: { children: ReactNode }) {

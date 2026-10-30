@@ -79,11 +79,21 @@ for (const width of [360, 430]) {
       for (const button of [code, link]) {
         await expect(button.locator("svg.lucide-copy")).toHaveCount(1);
         const b = (await button.boundingBox())!;
-        expect([b.width, b.height]).toEqual([44, 44]);
-        const tile = (await button.locator("span").boundingBox())!;
-        expect([tile.width, tile.height]).toEqual([32, 32]);
+        expect(b.height).toBe(44);
+        const tile = (await button.locator("span").first().boundingBox())!;
+        expect(tile.height).toBe(32);
+        await expect(button.locator("[data-copy-label]")).toHaveText("Copy");
         expect(
-          await button.locator("span").evaluate((el) => getComputedStyle(el).backgroundColor),
+          await button.locator("[data-copy-label]").evaluate((el) => {
+            const s = getComputedStyle(el);
+            return [s.fontSize, s.fontWeight];
+          }),
+        ).toEqual(["14px", "500"]);
+        expect(
+          await button
+            .locator("span")
+            .first()
+            .evaluate((el) => getComputedStyle(el).backgroundColor),
         ).toBe(SAND);
         const field = (await button.locator("xpath=..").boundingBox())!;
         expect(b.x).toBeGreaterThanOrEqual(field.x);
@@ -96,11 +106,63 @@ for (const width of [360, 430]) {
       await code.click();
       await expect(page.locator("[data-flash]:visible")).toContainText(/Code copied/);
       await expect(code.locator("svg.lucide-check")).toHaveCount(1);
+      await expect(code.locator("[data-copy-label]")).toHaveText("Copied");
       await expect(code.locator("svg.lucide-check")).toHaveCount(0, { timeout: 3000 });
+      await expect(code.locator("[data-copy-label]")).toHaveText("Copy");
       await expect(code.locator("svg.lucide-copy")).toHaveCount(1);
       await link.click();
       await expect(page.locator("[data-flash]:visible")).toContainText(/Link copied/);
       await expect(link.locator("svg.lucide-check")).toHaveCount(1);
+    });
+
+    test("the Prototype and Demo group lines are gone from Invite students", async ({ page }) => {
+      await expect(page.getByText("Prototype: no emails are sent.")).toHaveCount(0);
+      await expect(page.getByText("Demo group.")).toHaveCount(0);
+      await page.goto("/instructor/students");
+      await expect(page.locator("[data-demo-note]:visible")).toHaveText(
+        "Demo group. Student data on this screen is simulated.",
+      );
+    });
+
+    test("the success notice floats over the header under the back arrow, moves nothing and goes by itself", async ({
+      page,
+    }) => {
+      await page
+        .context()
+        .grantPermissions(["clipboard-read", "clipboard-write"])
+        .catch(() => undefined);
+      const title = page.getByRole("heading", { level: 1, name: "Invite students" });
+      const before = (await title.boundingBox())!;
+      const back = (await page.locator("[data-back-button]:visible").boundingBox())!;
+      await page.getByRole("button", { name: "Copy invite link" }).click();
+      const notice = page.locator("[data-flash]:visible");
+      await expect(notice).toContainText("Link copied");
+      await expect(notice).toHaveAttribute("data-flash-state", "on");
+      const n = (await notice.boundingBox())!;
+      expect(Math.abs(n.y - (back.y + back.height + 8))).toBeLessThanOrEqual(1);
+      expect(n.x).toBeGreaterThanOrEqual(16 - 0.5);
+      expect(n.x + n.width).toBeLessThanOrEqual(width - 16 + 0.5);
+      // it covers the title area and nothing moves
+      expect(n.y + n.height).toBeGreaterThan(before.y);
+      const during = (await title.boundingBox())!;
+      expect([during.x, during.y]).toEqual([before.x, before.y]);
+      await expect(page.locator("[data-flash]:visible")).toHaveCount(0, { timeout: 7000 });
+      const after = (await title.boundingBox())!;
+      expect([after.x, after.y]).toEqual([before.x, before.y]);
+    });
+
+    test("a screen without a back arrow (Students) shows the notice 12px from the top", async ({
+      page,
+    }) => {
+      await email(page).fill("someone@example.com");
+      await email(page).press("Enter");
+      await page.getByRole("button", { name: "Send invitations" }).click();
+      await expect(page).toHaveURL(/\/instructor\/students$/);
+      await expect(page.locator("[data-back-button]:visible")).toHaveCount(0);
+      const notice = page.locator("[data-flash]:visible");
+      await expect(notice).toContainText("Invitation sent to 1 person");
+      await expect(notice).toHaveAttribute("data-flash-state", "on");
+      expect(Math.round((await notice.boundingBox())!.y)).toBe(12);
     });
 
     test("a long link is cut with an ellipsis, never wraps and never covers the icon button", async ({
@@ -129,6 +191,10 @@ for (const width of [360, 430]) {
       expect(await options.count()).toBeLessThanOrEqual(5);
       await expect(options.first()).toContainText("Alina Kovalenko");
       await expect(options.first()).toContainText("alina.kovalenko@example.com");
+      const avatar = options.first().locator("[data-initials-avatar]");
+      await expect(avatar).toHaveText("AK");
+      const av = (await avatar.boundingBox())!;
+      expect([av.width, av.height]).toEqual([32, 32]);
       await expect(page.getByRole("dialog")).toHaveCount(0);
       await input.press("ArrowDown");
       const active = await input.getAttribute("aria-activedescendant");
@@ -137,6 +203,7 @@ for (const width of [360, 430]) {
       await input.press("Enter");
       await expect(tags(page)).toHaveCount(1);
       await expect(tags(page).first()).toContainText("Alina Kovalenko");
+      await expect(tags(page).first().locator("[data-initials-avatar]")).toHaveCount(0);
       await expect(page.locator("[data-recipient-help]")).toHaveText(
         "1 person will get an invitation.",
       );
@@ -252,3 +319,14 @@ for (const width of [360, 430]) {
     });
   });
 }
+
+test("the initials avatar falls back to the initials when its image fails to load", async ({
+  page,
+}) => {
+  await page.goto("/screens");
+  const sample = page.locator("[data-avatar-sample]");
+  await expect(sample.locator("[data-initials-avatar]")).toHaveCount(2);
+  await expect(sample.locator("[data-initials-avatar]").first()).toHaveText("AK");
+  await expect(sample.locator("[data-initials-avatar]").nth(1)).toHaveText("DM");
+  await expect(sample.locator("[data-avatar-image]")).toHaveCount(0);
+});

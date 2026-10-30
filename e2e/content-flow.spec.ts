@@ -210,7 +210,7 @@ for (const width of [360, 430]) {
       await expect(page.locator("[data-preview-label]")).toHaveCount(0);
     });
 
-    test("the confirmation: a light 56px card with a check and one line, no close button, floating under the header without moving the content, gone by itself after about 4 seconds, a new one replaces the old", async ({
+    test("the confirmation: a light 56px card with a check and one line, no close button, floating over the header without moving the content, gone by itself after about 4 seconds, a new one replaces the old", async ({
       page,
     }) => {
       const id = await exampleTopic(page);
@@ -238,13 +238,15 @@ for (const width of [360, 430]) {
       expect(Math.abs(tile.y + tile.height / 2 - (text.y + text.height / 2))).toBeLessThanOrEqual(
         1,
       );
-      // it floats: fixed, 16px side margins inside the phone column, under the header band
+      // it floats: fixed, 16px side margins inside the phone column, over the header
       const box = (await flash.boundingBox())!;
       expect(await flash.evaluate((el) => getComputedStyle(el).position)).toBe("fixed");
       expect(box.x).toBeGreaterThanOrEqual(16 - 1);
       expect(box.x + box.width).toBeLessThanOrEqual(width - 16 + 1);
-      const band = (await page.locator("[data-page-header-band]:visible").boundingBox())!;
-      expect(box.y).toBeGreaterThanOrEqual(band.y + band.height);
+      // 8px under the back button when the screen has one, otherwise 12px from the top
+      const back = page.locator("[data-back-button]:visible");
+      const backBox = (await back.count()) > 0 ? await back.first().boundingBox() : null;
+      expect(Math.round(box.y)).toBe(backBox ? Math.round(backBox.y + backBox.height + 8) : 12);
       // it is a polite live region and never in the address
       await expect(page.locator("[data-flash-region]").first()).toHaveAttribute("role", "status");
       await expect(page.locator("[data-flash-region]").first()).toHaveAttribute(

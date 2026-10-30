@@ -13,12 +13,11 @@ import { InitialsAvatar } from "@/components/InstructorStudents/StudentRow";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { SelectableRow } from "@/components/SelectableRow/SelectableRow";
 import { LucideTile } from "@/components/TopicTile/TopicTile";
-import { DEMO_NOTE } from "@/lib/cohort";
 import { copyText } from "@/lib/clipboard";
 import { ALL_GROUPS, groupById, groups } from "@/lib/groups";
 import type { Scope } from "@/lib/groups";
 import { setFlash } from "@/lib/flash";
-import { PROTOTYPE_LINE, inviteLink, invitedLine, pendingOf } from "@/lib/invitations";
+import { inviteLink, invitedLine, pendingOf } from "@/lib/invitations";
 import type { Invitation } from "@/lib/invitations";
 import { studentsCount } from "@/lib/overview";
 
@@ -196,13 +195,6 @@ export function InviteView({
           )}
         </>
       )}
-
-      <p data-prototype-line className="type-small text-center text-text-secondary">
-        {PROTOTYPE_LINE}
-      </p>
-      <p data-demo-note className="type-small text-center text-text-secondary">
-        {DEMO_NOTE}
-      </p>
 
       <ActionBar>
         <Button

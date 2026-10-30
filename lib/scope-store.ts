@@ -21,11 +21,9 @@ export const readScope = (): Scope => {
 export function useScope(): Scope | "loading" {
   const raw = store.useValue();
   return useMemo(
-    () =>
-      raw === "loading" ? "loading" : isScope(raw) ? raw : DEFAULT_GROUP_ID,
+    () => (raw === "loading" ? "loading" : isScope(raw) ? raw : DEFAULT_GROUP_ID),
     [raw],
   );
 }
 
-export const saveScope = (scope: Scope): boolean =>
-  store.write(isScope(scope) ? scope : null);
+export const saveScope = (scope: Scope): boolean => store.write(isScope(scope) ? scope : null);

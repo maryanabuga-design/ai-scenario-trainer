@@ -181,7 +181,9 @@ describe("the file checks", () => {
       expect(checkFile({ name, size: 10 }), name).toBeNull();
     }
     for (const name of ["q.xls", "q.txt", "q", "q.csv.exe", "q.png"]) {
-      expect(checkFile({ name, size: 10 }), name).toBe("Choose a CSV file. Word, Excel and PDF files are not read in this prototype.");
+      expect(checkFile({ name, size: 10 }), name).toBe(
+        "Choose a CSV file. Word, Excel and PDF files are not read in this prototype.",
+      );
     }
   });
   it("refuses an empty file; a CSV may be 1 MB, the other types 5 MB", () => {

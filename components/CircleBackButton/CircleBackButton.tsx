@@ -22,13 +22,25 @@ export function CircleBackButton(
   const icon = <ArrowLeft size={20} strokeWidth={2} aria-hidden="true" />;
   if ("href" in props) {
     return (
-      <Link href={props.href} aria-label={props.label} onClick={props.onClick} className={look}>
+      <Link
+        href={props.href}
+        data-back-button
+        aria-label={props.label}
+        onClick={props.onClick}
+        className={look}
+      >
         {icon}
       </Link>
     );
   }
   return (
-    <button type="button" aria-label={props.label} onClick={props.onClick} className={look}>
+    <button
+      type="button"
+      data-back-button
+      aria-label={props.label}
+      onClick={props.onClick}
+      className={look}
+    >
       {icon}
     </button>
   );

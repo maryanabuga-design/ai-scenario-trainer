@@ -4,12 +4,22 @@ import { X } from "lucide-react";
 import { useId, useRef, useState } from "react";
 import type { ClipboardEvent, KeyboardEvent } from "react";
 import { Amber } from "@/components/InstructorContent/Amber";
+import { InitialsAvatar } from "@/components/InitialsAvatar/InitialsAvatar";
 import { fieldBox } from "@/components/InstructorStudents/CopyField";
 import { isEmailFormat, normaliseEmail } from "@/lib/auth-validation";
 import { suggest } from "@/lib/invite-suggestions";
 
 /** A person who will get an invitation: the address, and the name when it came from a suggestion. */
 export type Recipient = { email: string; name?: string };
+
+/** "Alina Kovalenko" gives "AK". */
+const initialsOf = (name: string) =>
+  name
+    .split(/\s+/)
+    .map((word) => word[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
 export const EMAIL_ERROR = "Check this email address.";
 export const EMAILS_ERROR = "Check these email addresses.";
@@ -230,12 +240,15 @@ export function RecipientField({
               data-suggestion={person.email}
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => choose(index)}
-              className={`flex min-h-14 cursor-pointer flex-col justify-center px-4 py-2 ${
+              className={`flex min-h-14 cursor-pointer items-center gap-3 px-4 py-2 ${
                 index === active ? "bg-secondary-sand" : ""
               }`}
             >
-              <span className="type-body-strong truncate">{person.name}</span>
-              <span className="type-small truncate text-text-secondary">{person.email}</span>
+              <InitialsAvatar initials={initialsOf(person.name)} size={32} image={person.image} />
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="type-body-strong truncate">{person.name}</span>
+                <span className="type-small truncate text-text-secondary">{person.email}</span>
+              </span>
             </li>
           ))}
         </ul>

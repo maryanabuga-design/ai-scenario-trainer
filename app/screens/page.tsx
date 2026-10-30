@@ -9,6 +9,7 @@ import type { Role } from "@/lib/role";
 import { Button } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
 import { ReadingView } from "@/components/ReadingView/ReadingView";
+import { InitialsAvatar } from "@/components/InitialsAvatar/InitialsAvatar";
 import { PhoneFrame } from "@/components/PhoneFrame/PhoneFrame";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { Tag } from "@/components/Tag/Tag";
@@ -1008,6 +1009,14 @@ export default function Screens() {
           <PhoneFrame label="Instructor: Invite students, address error">
             <Screen>
               <InstructorStudentsSample state="invite-error" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Avatar: initials, and a picture that fails to load">
+            <Screen>
+              <div data-avatar-sample className="flex items-center gap-3">
+                <InitialsAvatar initials="AK" size={32} />
+                <InitialsAvatar initials="DM" size={32} image="/images/not-there.png" />
+              </div>
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Join link: invited to Rescue team">

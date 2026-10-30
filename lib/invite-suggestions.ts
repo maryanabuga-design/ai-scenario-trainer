@@ -1,7 +1,7 @@
 import data from "@/content/invite-suggestions.json";
 
 /** A person the Invite screen can suggest while typing. SIMULATED (see the data file). */
-export type Suggestion = { name: string; email: string };
+export type Suggestion = { name: string; email: string; image?: string };
 
 export const SUGGESTIONS: Suggestion[] = data.people;
 export const MAX_SUGGESTIONS = 5;

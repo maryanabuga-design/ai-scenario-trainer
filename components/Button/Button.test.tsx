@@ -128,8 +128,11 @@ describe("every button goes through the Button component", () => {
     // Highlights in the reading screen); they use the small action text style.
     // The inline action with an icon ("Ask AI about this question", DESIGN.md: Tertiary inline action with an icon)
     // draws the same underline; it is allowed in scrolling content only (the next test).
+    // The small "Copy" button inside the Invite students fields (DESIGN.md: Invite students polish) is
+    // a field control, not a page button; it uses the same small action text style.
     expect(own).toEqual([
       "components/AskAiRow/AskAiRow.tsx",
+      "components/InstructorStudents/CopyField.tsx",
       "components/SelectionToolbar/SelectionToolbar.tsx",
     ]);
   });
@@ -201,7 +204,7 @@ describe("a secondary always comes with a primary above it", () => {
       // Overview: the nearest exam has a Secondary Assign exam under its card (the Primary is for "No active exam").
       "components/InstructorOverview/OverviewBlocks.tsx",
       // Instructor Students: Show all (empty filter) and Back to students (unknown id).
-      // Invite students: Copy code, Copy link and Cancel under the Primary Send invitations.
+      // Invite students: Cancel under the Primary Send invitations.
       "components/InstructorStudents/InviteView.tsx",
       "components/InstructorStudents/StudentDetailView.tsx",
       "components/InstructorStudents/StudentsListView.tsx",

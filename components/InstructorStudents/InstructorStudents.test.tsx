@@ -7,6 +7,7 @@ import {
   StudentDetailView,
   StudentNotFound,
 } from "@/components/InstructorStudents/StudentDetailView";
+import { InitialsAvatar } from "@/components/InitialsAvatar/InitialsAvatar";
 import { InviteView } from "@/components/InstructorStudents/InviteView";
 import { STUDENTS_SUBTITLE, StudentsHeader } from "@/components/InstructorStudents/StudentsHeader";
 import { EmptyCard, StudentsListView } from "@/components/InstructorStudents/StudentsListView";
@@ -615,7 +616,8 @@ describe("Invite students", () => {
     expect(html).toMatch(/value="QT-A7K2"/);
     expect(html).toContain('value="https://example.test/join/QT-A7K2"');
     expect(html.match(/readOnly=""|readonly=""/g)).toHaveLength(2);
-    expect(html).toContain("Prototype: no emails are sent.");
+    expect(html).not.toContain("Prototype: no emails are sent.");
+    expect(html).not.toContain("Demo group.");
     expect(html).not.toContain("Recipients will receive");
   });
 
@@ -635,9 +637,10 @@ describe("Invite students", () => {
     expect(html).toContain('aria-label="Copy group code"');
     expect(html).toContain('aria-label="Copy invite link"');
     expect(html.match(/lucide-copy/g)).toHaveLength(2);
+    expect(html.match(/data-copy-label="true">Copy</g)).toHaveLength(2);
     // 44px tap area around a 32px sand tile
-    expect(html).toMatch(/data-copy-button[^>]*class="[^"]*h-11 w-11/);
-    expect(html).toMatch(/h-8 w-8[^"]*bg-secondary-sand/);
+    expect(html).toMatch(/data-copy-button[^>]*class="[^"]*h-11/);
+    expect(html).toMatch(/type-action[^"]*h-8[^"]*bg-secondary-sand/);
     // the value is cut with an ellipsis and never wraps
     expect(html).toMatch(/data-invite-link=""[^>]*class="[^"]*truncate[^"]*whitespace-nowrap/);
   });
@@ -680,6 +683,16 @@ describe("Invite students", () => {
     expect(withTags).toContain('data-suggestion="alex.moroz@example.com"');
     expect(withTags).not.toContain('data-suggestion="alina.kovalenko@example.com"');
     expect(withTags).toMatch(/role="combobox"[^>]*aria-expanded="true"/);
+    // each suggestion has the 32px initials avatar; the tags have none
+    const list = withTags.slice(withTags.indexOf('role="listbox"'));
+    expect(list).toMatch(
+      /data-suggestion="alex.moroz@example.com"[\s\S]*?data-initials-avatar[^>]*h-8 w-8[^>]*>AM</,
+    );
+    const tagArea = withTags.slice(
+      withTags.indexOf("data-recipient-field"),
+      withTags.indexOf('role="listbox"'),
+    );
+    expect(tagArea).not.toContain("data-initials-avatar");
   });
 
   it("lists PENDING INVITATIONS (n) as 72px rows with an avatar, 'Invited 21 Oct' and a Pending pill; joined ones are not listed", () => {
@@ -772,5 +785,18 @@ describe("FilterChips", () => {
       .flatMap((dir) => walk(dir))
       .filter((file) => /<FilterChips\b/.test(readFileSync(file, "utf8")));
     expect(users).toEqual(["components/InstructorStudents/StudentsListView.tsx"]);
+  });
+});
+
+describe("the initials avatar", () => {
+  it("shows the initials, and a picture when one is given (the failed-picture fallback is checked on the screen review page)", () => {
+    const plain = renderToStaticMarkup(<InitialsAvatar initials="AK" size={32} />);
+    expect(plain).toContain(">AK<");
+    expect(plain).toContain("h-8 w-8");
+    expect(plain).not.toContain("<img");
+    const photo = renderToStaticMarkup(<InitialsAvatar initials="AK" image="/a.png" />);
+    expect(photo).toContain('src="/a.png"');
+    expect(photo).not.toContain(">AK<");
+    expect(renderToStaticMarkup(<InitialsAvatar initials="AK" image="" />)).toContain(">AK<");
   });
 });

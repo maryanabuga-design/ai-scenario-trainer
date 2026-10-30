@@ -11,7 +11,6 @@ import { createStore } from "@/lib/store";
 export const inviteLink = (code: string, origin = "https://scenario-trainer.example") =>
   `${origin}/join/${code}`;
 export const MAX_INVITATIONS = 100;
-export const PROTOTYPE_LINE = "Prototype: no emails are sent.";
 
 export type Invitation = {
   email: string;

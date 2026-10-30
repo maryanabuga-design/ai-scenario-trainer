@@ -189,9 +189,7 @@ for (const width of [360, 430]) {
       await expect(page.locator("[data-tag]")).toHaveCount(0);
       await expect(page.locator("[data-duplicates]")).toContainText("already invited");
       await expect(send).toBeDisabled();
-      await expect(page.locator("[data-prototype-line]")).toHaveText(
-        "Prototype: no emails are sent.",
-      );
+      await expect(page.getByText("Prototype: no emails are sent.")).toHaveCount(0);
       expect(await noSidewaysScroll(page)).toBe(true);
       // it is kept after a reload
       await page.reload();
