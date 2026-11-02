@@ -1,4 +1,3 @@
-import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 import { emptyBrowser } from "./auth-seed";
@@ -9,17 +8,6 @@ const noSidewaysScroll = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
 const box = async (loc: ReturnType<Page["locator"]>) => (await loc.first().boundingBox())!;
 const centreX = (b: { x: number; width: number }) => b.x + b.width / 2;
-
-/**
- * `entry-group.webp` is added to the repository by the designer; until it is there the tests stand
- * in the profile picture for it, so the layout is checked either way.
- */
-const standIn = readFileSync("public/images/entry/entry-profile.webp");
-async function withGroupPicture(page: Page) {
-  await page.route("**/images/entry/entry-group.webp", (route) =>
-    route.fulfill({ contentType: "image/webp", body: standIn }),
-  );
-}
 
 /** An invited student up to the Profile step. */
 async function toProfile(page: Page) {
@@ -89,7 +77,6 @@ for (const width of [360, 430]) {
       test(`${screen.name}: the picture is centred and 160px, the title and subtitle are centred, the form follows 24px lower with left-aligned labels`, async ({
         page,
       }) => {
-        await withGroupPicture(page);
         await screen.open(page);
         const img = page.locator("[data-entry-picture]");
         await expect(img).toHaveAttribute("src", screen.picture);
@@ -178,7 +165,6 @@ for (const width of [360, 430]) {
         test(`${screen.name}: the picture shrinks to ${height === 640 ? 120 : 96}px and the Primary stays in view`, async ({
           page,
         }) => {
-          await withGroupPicture(page);
           await screen.open(page);
           const img = page.locator("[data-entry-picture]");
           await expect
