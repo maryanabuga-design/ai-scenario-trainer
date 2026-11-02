@@ -60,5 +60,10 @@ export async function seedNewAccount(
   });
   await page.goto("/welcome");
   await page.evaluate((v) => localStorage.setItem("ast.auth.v1", v), value);
-  await page.goto("/");
+  // the app moves on to the introduction by itself; WebKit reports that redirect as an interrupted
+  // load, which is expected here, so only that message is ignored and the address must still settle
+  await page.goto("/").catch((error: Error) => {
+    if (!/interrupted by another navigation/.test(error.message)) throw error;
+  });
+  await page.waitForURL((url) => url.pathname !== "/welcome" && url.pathname !== "/");
 }

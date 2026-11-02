@@ -103,8 +103,10 @@ for (const width of [360, 430]) {
     }) => {
       await open(page, "/materials");
       const group = page.getByRole("radiogroup");
-      await expect(page.getByRole("radio", { name: /^Topics \(17\)$/ })).toBeChecked();
-      await expect(page.getByRole("radio", { name: /^Step guides \(3\)$/ })).toHaveCount(1);
+      await expect(page.getByRole("radio", { name: "Topics", exact: true })).toBeChecked();
+      await expect(page.getByRole("radio", { name: "Step guides", exact: true })).toHaveCount(1);
+      // no numbers in the labels
+      expect(((await group.innerText()).match(/\d/g) ?? []).length).toBe(0);
       expect((await group.boundingBox())!.height).toBeLessThan(60);
       await expect(page.locator("a[href^='/materials/read/']:visible").first()).toBeVisible();
       await page.getByRole("radio", { name: /Step guides/ }).click({ force: true });

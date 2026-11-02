@@ -43,7 +43,7 @@ Scope comes from `docs/mvp-matrix-and-ia.md`; see `CLAUDE.md` for the full list.
 All four sections and the whole learning cycle can be clicked through:
 
 - There is no public sign-up: a student account is created from an invitation link or a group code (`/join/QT-A7K2`; simulated: no email is sent, the demo code is shown on the screen), then Profile. Welcome has Sign in and "Have a group code?". The role comes from the account; Profile, Demo mode is a demo shortcut. Student data in this prototype is simulated. "How the app works" in the Profile screen shows it again. To see it as a new user, create a new account.
-- Sign in (simulated: no email is sent, the demo code is `482913`). Demo accounts:
+- Sign in (simulated: no email is sent, the demo code is `482913`). Demo accounts (all of them, and the code, are demo shortcuts: nothing is sent and nothing is stored on a server):
 
   | Email | What you see |
   | --- | --- |
@@ -51,6 +51,7 @@ All four sections and the whole learning cycle can be clicked through:
   | `kofi@example.org` | An active student with no group (removed by the instructor): the code opens the empty home "You are not in a group yet". |
   | `pavel@example.org` | A deactivated account: no code is sent, "This account is not active. Contact your administrator." |
   | any other email | "We could not find an account for this email. Ask your instructor for an invitation link." |
+  | Instructor view | Sign in as any demo student, then Profile, Demo mode, Instructor (a demo shortcut, not a real role check). |
 
   After 5 wrong codes the code boxes are locked for 60 seconds. In the product the email list, the one-time code (10 minutes, limited attempts) and deactivation are on the server; in this prototype the accounts are simulated and kept in local storage.
 - Home (student view): a greeting "Hi, Maryana" (one demo user, also on Profile) with one sentence about where you are, the profile button, the hero card ("Training materials", the subtitle, the 3D slot and one Primary button "Choose a topic" that opens the Training screen), a 2 by 2 grid of tiles (Exam, Mini-quiz, Weak topics, Saved questions; Materials is only in the bottom navigation). Resuming an unfinished session is done on the Training screen. The replay of the onboarding is the "How the app works" row in Profile. Pictures for the hero tile and the Mini-quiz row are optional (`docs/scenario-image-prompts.md`); placeholders show until they exist.
