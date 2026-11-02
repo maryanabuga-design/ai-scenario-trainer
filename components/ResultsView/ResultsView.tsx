@@ -1,5 +1,6 @@
 "use client";
 
+import { ListChecks } from "lucide-react";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { useEffect } from "react";
@@ -9,9 +10,10 @@ import { Button, ButtonLink } from "@/components/Button/Button";
 import { Chip } from "@/components/Chip/Chip";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { Media3D } from "@/components/Media3D/Media3D";
+import { useTopicName } from "@/components/TopicName/useTopicName";
 import { cardPictureFiles } from "@/lib/media-frames";
 import { PASS_MARK } from "@/lib/config";
-import { conclusion, isPassed, passCount, resultPercent } from "@/lib/results";
+import { conclusion, displayPercent, isPassed } from "@/lib/results";
 import { correctCount } from "@/lib/scoring";
 import type { ScoredItem } from "@/lib/scoring";
 import { sessionLabel } from "@/lib/session";
@@ -56,23 +58,31 @@ function useRestoredScroll() {
 }
 
 /**
- * The result on a bar with a marker at the pass mark. A practice session shows a count ("7 of 10
- * correct") and the pass mark as a count; an exam shows its count too (no percentage).
+ * The result in percent (DESIGN.md: Results in percent): the large percentage, the exact count
+ * under it, and a bar filled to the same percentage with a marker at the pass mark. The pass or
+ * fail decision is never made from the rounded percentage.
  */
 function ResultBar({ items }: { items: ScoredItem[] }) {
   const total = items.length;
   const correct = correctCount(items);
-  const percent = resultPercent(items);
-  const needed = passCount(total);
+  const percent = displayPercent(items);
   return (
     <div className="flex flex-col gap-2">
-      <p className="type-numeral text-center tabular-nums">{`${correct} of ${total} correct`}</p>
+      <div className="flex flex-col items-center">
+        <p aria-hidden="true" className="type-score text-center">
+          {percent}%
+        </p>
+        <p className="type-small text-center text-text-secondary tabular-nums">
+          {`${correct} of ${total} correct`}
+        </p>
+      </div>
       <div
-        role="meter"
+        role="progressbar"
         aria-valuemin={0}
-        aria-valuemax={total}
-        aria-valuenow={correct}
-        aria-label={`${correct} of ${total} correct, pass mark ${needed} of ${total}`}
+        aria-valuemax={100}
+        aria-valuenow={percent}
+        aria-valuetext={`${percent} percent, pass mark ${PASS_MARK} percent`}
+        aria-label="Result"
         className="relative h-3 rounded-full bg-secondary-sand-pressed"
       >
         <div className="h-full rounded-full bg-primary" style={{ width: `${percent}%` }} />
@@ -87,10 +97,21 @@ function ResultBar({ items }: { items: ScoredItem[] }) {
           className="absolute -translate-x-1/2 whitespace-nowrap"
           style={{ left: `${PASS_MARK}%` }}
         >
-          PASS MARK: {needed} of {total}
+          Pass mark: {PASS_MARK}%
         </span>
       </p>
     </div>
+  );
+}
+
+/** One weak topic as a neutral chip: "S1 · Responding to an alarm", cut with an ellipsis on one line. */
+function TopicChip({ sectionId }: { sectionId: string }) {
+  const name = useTopicName(sectionId);
+  const label = name === sectionId ? sectionId : `${sectionId} · ${name}`;
+  return (
+    <Chip tone="sand" size="caption" className="max-w-full">
+      <span className="truncate">{label}</span>
+    </Chip>
   );
 }
 
@@ -100,19 +121,26 @@ function WeakTopicsCard({ topics }: { topics: WeakTopic[] }) {
     <Link
       href={weakTopicsPath}
       onClick={rememberScroll}
-      className="relative flex flex-col gap-3 rounded-card bg-card p-5 shadow-(--card-shadow) has-focus-visible:outline-2"
+      className="relative flex gap-4 rounded-card bg-card p-5 shadow-(--card-shadow) has-focus-visible:outline-2"
     >
       <ArrowCircle />
-      <span className={`flex flex-col gap-1 ${ARROW_CLEARANCE.md}`}>
-        <span className="type-card-title">Weak topics</span>
-        <span className="type-small text-text-secondary">{topicsToRepeat(topics.length)}</span>
+      <span
+        data-weak-icon
+        aria-hidden="true"
+        className="flex h-12 w-12 shrink-0 items-center justify-center self-start rounded-full bg-chip-neutral-bg text-text"
+      >
+        <ListChecks size={24} strokeWidth={2} />
       </span>
-      <span className="flex flex-wrap gap-2">
-        {topics.map((topic) => (
-          <Chip key={topic.sectionId} tone="sand" size="caption">
-            {topic.sectionId}
-          </Chip>
-        ))}
+      <span className={`flex min-w-0 flex-1 flex-col gap-3 ${ARROW_CLEARANCE.md}`}>
+        <span className="flex flex-col gap-1">
+          <span className="type-card-title">Weak topics</span>
+          <span className="type-small text-text-secondary">{topicsToRepeat(topics.length)}</span>
+        </span>
+        <span className="flex flex-wrap gap-2">
+          {topics.map((topic) => (
+            <TopicChip key={topic.sectionId} sectionId={topic.sectionId} />
+          ))}
+        </span>
       </span>
     </Link>
   );
@@ -208,7 +236,7 @@ export function ResultsButtons({
 
 /**
  * Results: hero, Passed or Not passed yet, the result against the pass mark, one conclusion and the
- * weak topics. A practice session shows counts; an exam shows its Score (the one percentage).
+ * weak topics. The result is a percentage with the exact count under it, for a practice session and for the exam.
  */
 export function ResultsView({
   kind,

@@ -634,7 +634,7 @@ for (const width of [360, 430]) {
       await expect(page.getByRole("heading", { name: "Passed" })).toBeVisible();
       await expect(page.locator("main")).toContainText("20 of 20 correct");
       await expect(page.locator("[data-attempts-line]")).toHaveCount(0);
-      expect(((await page.locator("main").innerText()).match(/%/g) ?? []).length).toBe(0);
+      expect(await page.locator("main").innerText()).not.toMatch(/Readiness|→/);
       await page.goto("/notifications");
       await expect(page.locator(`[data-assigned-exam="${id}"]`)).toHaveCount(0);
       await switchRole(page, "Instructor");

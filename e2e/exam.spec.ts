@@ -131,9 +131,9 @@ test.describe("Exam readiness", () => {
     await expect(page).toHaveURL(/\/session\/results$/);
     const after = Math.floor((10 / scope.length) * 100);
     await expect(page.getByText("10 of 10 correct")).toBeVisible();
-    // no readiness line and no percentage at all on this Results screen
+    // no readiness line on this Results screen (the result itself is a percentage now)
     await expect(page.getByText(/Readiness/)).toHaveCount(0);
-    expect(((await page.locator("main").innerText()).match(/%/g) ?? []).length).toBe(0);
+    expect(await page.locator("main").innerText()).not.toMatch(/Readiness|→/);
     await page.getByRole("link", { name: "Done", exact: true }).click();
     await expect(page).toHaveURL(/\/exam\?id=demo-evacuation-basics$/);
     await expect(
@@ -181,9 +181,9 @@ test.describe("Exam readiness", () => {
     await expect(page).toHaveURL(/\/exam\/results$/);
     const main = page.locator("main");
     await expect(main.getByText(/^\d+ of 20 correct$/)).toBeVisible();
-    // the exam results show counts only, no percentage
-    expect(((await main.innerText()).match(/%/g) ?? []).length).toBe(0);
-    await expect(main).toContainText("PASS MARK: 16 of 20");
+    // percent first, the exact count under it, and the pass mark in percent
+    await expect(main.getByRole("progressbar", { name: "Result" })).toBeVisible();
+    await expect(main).toContainText("Pass mark: 80%");
     await expect(page.getByRole("heading", { name: /Passed|Not passed yet/ })).toBeVisible();
     if (await page.getByRole("heading", { name: "Not passed yet" }).isVisible()) {
       await expect(

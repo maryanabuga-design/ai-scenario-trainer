@@ -81,21 +81,21 @@ for (const width of [360, 430]) {
       expect(d.width).toBe(width - 32);
       expect(Math.abs(r.y - (d.y + d.height) - 12)).toBeLessThanOrEqual(0.5);
       expect(await review.evaluate((el) => getComputedStyle(el).textDecorationLine)).toBe("none");
-      // no readiness line and no percentage at all
+      // no readiness line (the result is a percentage)
       const text = await page.locator("main").innerText();
-      expect(text).not.toMatch(/Readiness|Exam readiness|→|%/);
+      expect(text).not.toMatch(/Readiness|Exam readiness|→/);
       await expect(page.getByText("8 of 10 correct")).toBeVisible();
       expect(await noSidewaysScroll(page)).toBe(true);
     });
 
-    test("Results (practice, no exam): Review answers is Secondary, no readiness line, no percentage", async ({
+    test("Results (practice, no exam): Review answers is Secondary, no readiness line", async ({
       page,
     }) => {
       await seed(page, finished("quiz", ten, mixed));
       await page.goto("/session/results");
       await expect(page.getByRole("heading", { name: "Not passed yet" })).toBeVisible();
       expect(await bg(page.getByRole("link", { name: "Review answers" }))).toBe(OLIVE_TINT);
-      expect(await page.locator("main").innerText()).not.toMatch(/Readiness|%/);
+      expect(await page.locator("main").innerText()).not.toMatch(/Readiness/);
     });
 
     test("pager: a mixed list colours the chips, with a 1px border and no icons", async ({
