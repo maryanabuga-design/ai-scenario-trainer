@@ -135,7 +135,7 @@ for (const width of [360, 430]) {
       // an invalid address is refused
       await page.getByLabel("Your email").fill("nope");
       await page.getByRole("button", { name: "Continue" }).click();
-      await expect(page.getByText("Enter a valid email, like name@company.com.")).toBeVisible();
+      await expect(page.getByText("Check this email address.")).toBeVisible();
       await page.getByLabel("Your email").fill("ana@example.com");
       await page.getByRole("button", { name: "Continue" }).click();
       await expect(page).toHaveURL(/\/verify$/);
@@ -197,9 +197,7 @@ for (const width of [360, 430]) {
       await page.goto("/join/QT-A7K2");
       await page.getByLabel("Your email").fill("ANA@example.com");
       await page.getByRole("button", { name: "Continue" }).click();
-      await expect(
-        page.getByText("An account with this email already exists on this device."),
-      ).toBeVisible();
+      await expect(page.getByText("An account with this email already exists.")).toBeVisible();
       await page.getByRole("link", { name: "Sign in instead." }).click();
       await expect(page).toHaveURL(/\/sign-in$/);
     });

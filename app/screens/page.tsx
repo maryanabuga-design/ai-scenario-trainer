@@ -57,6 +57,7 @@ import {
   AboutSample,
   WelcomeSample,
   EntrySample,
+  DemoAccountsSample,
   SignInSample,
   VerifySample,
   EditProfileSample,
@@ -816,7 +817,17 @@ export default function Screens() {
           </PhoneFrame>
           <PhoneFrame label="Sign in: unknown email">
             <Screen>
-              <SignInSample unknown />
+              <SignInSample problem="unknown" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Sign in: deactivated account (no code is sent)">
+            <Screen>
+              <SignInSample problem="inactive" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Sign in: invalid address">
+            <Screen>
+              <SignInSample problem="invalid" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Verify: the demo code is always shown">
@@ -832,6 +843,16 @@ export default function Screens() {
           <PhoneFrame label="Verify: wrong code">
             <Screen>
               <VerifySample wrong />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Verify: locked after 5 wrong codes">
+            <Screen>
+              <VerifySample locked />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Demo sign-in accounts (simulated; not shown on the sign-in screen)">
+            <Screen>
+              <DemoAccountsSample />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Edit profile">

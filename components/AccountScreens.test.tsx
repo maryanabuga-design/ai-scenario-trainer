@@ -148,7 +148,7 @@ describe("Invitation", () => {
 
   it("shows the email error with the live wiring", () => {
     const out = html(<InvitationView state="new" {...base} initialEmail="ana@" initialTouched />);
-    expect(out).toContain("Enter a valid email, like name@company.com.");
+    expect(out).toContain("Check this email address.");
     expect(out).toContain('aria-invalid="true"');
   });
 });
@@ -338,5 +338,70 @@ describe("Edit profile", () => {
   it("announces Saved when it was saved", () => {
     const saved = html(<EditProfileView account={account} onSave={() => undefined} saved />);
     expect(saved).toContain(">Saved</p>");
+  });
+});
+
+describe("Sign in: the rules and the messages", () => {
+  const problem = (state: "unknown" | "inactive") =>
+    html(<SignInView onSubmit={() => "ok"} initialEmail="x@example.org" initialProblem={state} />);
+
+  it("has 'Have a group code?' ONCE, under the Continue button, and no create or demo hint", () => {
+    const out = html(<SignInView onSubmit={() => "ok"} />);
+    expect(out.match(/Have a group code\?/g)).toHaveLength(1);
+    expect(out.indexOf(">Continue<")).toBeLessThan(out.indexOf("Have a group code?"));
+    expect(out).not.toMatch(/example\.org|lena|kofi|pavel|482913/i);
+    // an unknown email adds no second link
+    expect(problem("unknown").match(/Have a group code\?/g)).toHaveLength(1);
+  });
+
+  it("shows the unknown, deactivated and invalid messages in the field's live message", () => {
+    expect(problem("unknown")).toContain(
+      "We could not find an account for this email. Ask your instructor for an invitation link.",
+    );
+    expect(problem("inactive")).toContain(
+      "This account is not active. Contact your administrator.",
+    );
+    const invalid = html(<SignInView onSubmit={() => "ok"} initialEmail="ana@" initialTouched />);
+    expect(invalid).toContain("Check this email address.");
+    for (const out of [problem("unknown"), problem("inactive"), invalid]) {
+      expect(out).toContain('aria-invalid="true"');
+      expect(out).toContain('aria-live="polite"');
+      expect(out).toContain("lucide-circle-alert");
+    }
+  });
+});
+
+describe("the code screen", () => {
+  const verify = (extra: { initialLockRemaining?: number | null } = {}) =>
+    html(
+      <VerifyView
+        email="ana@example.org"
+        now={() => 0}
+        onVerify={() => false}
+        onChangeEmail={() => undefined}
+        {...extra}
+      />,
+    );
+
+  it("has the muted line 'The code proves this email is yours.' under the boxes, and keeps the demo code and the resend words", () => {
+    const out = verify();
+    expect(out).toContain("The code proves this email is yours.");
+    expect(out.indexOf("Digit 6 of 6")).toBeLessThan(out.indexOf("The code proves this email"));
+    expect(out).toMatch(/data-code-proof[^>]*text-text-secondary/);
+    expect(out).toContain("482 913");
+    expect(out).toContain("Resend code (0:30)");
+    expect(out).not.toContain('disabled="" aria-label="Digit');
+  });
+
+  it("locks: the boxes are disabled, the message, a visible countdown and a polite line for screen readers", () => {
+    const out = verify({ initialLockRemaining: 45 });
+    expect(out.match(/<input[^>]*disabled=""/g)).toHaveLength(6);
+    expect(out).toContain("Too many attempts. Try again in a minute.");
+    expect(out).toMatch(/data-lock-countdown="true" aria-hidden="true"[^>]*>0:45</);
+    expect(out).toMatch(
+      /data-lock-live="true" aria-live="polite" class="sr-only">Try again in 50 seconds</,
+    );
+    expect(out).toMatch(/<button[^>]*disabled=""[^>]*>(?:<span[^>]*>)?Verify/);
+    expect(verify()).not.toContain("data-lock-countdown");
   });
 });

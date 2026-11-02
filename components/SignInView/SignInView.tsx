@@ -5,32 +5,37 @@ import type { FormEvent } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { FormHeader } from "@/components/FormHeader/FormHeader";
 import { TextField } from "@/components/TextField/TextField";
-import { UNKNOWN_LINK, UNKNOWN_MESSAGE, validateEmail } from "@/lib/auth-validation";
+import { INACTIVE_MESSAGE, UNKNOWN_MESSAGE, validateEmail } from "@/lib/auth-validation";
 
 /**
- * Sign in: the work email and a Primary "Continue" pinned to the bottom. An email with no account
- * on this device says so, with a link to "Have a group code?" (there is no public sign-up).
+ * Sign in (DESIGN.md: Sign-in rules, wording and demo accounts): the work email and a Primary
+ * "Continue" pinned to the bottom, with "Have a group code?" once under it. An email with no account
+ * or with a deactivated account says so in the field's message (no code is sent).
  */
 export function SignInView({
   initialEmail = "",
   onSubmit,
-  initialUnknown = false,
+  initialProblem = null,
+  initialTouched = false,
 }: {
   initialEmail?: string;
-  /** Only for the screen review page: start with the unknown-email message showing. */
-  initialUnknown?: boolean;
-  onSubmit: (email: string) => "ok" | "unknown";
+  /** Only for the screen review page: start with the unknown or deactivated message showing. */
+  initialProblem?: "unknown" | "inactive" | null;
+  /** Only for the screen review page: start with the address check showing. */
+  initialTouched?: boolean;
+  onSubmit: (email: string) => "ok" | "unknown" | "inactive";
 }) {
   const [email, setEmail] = useState(initialEmail);
-  const [touched, setTouched] = useState(false);
-  const [unknown, setUnknown] = useState(initialUnknown);
+  const [touched, setTouched] = useState(initialTouched);
+  const [problem, setProblem] = useState<"unknown" | "inactive" | null>(initialProblem);
   const formatError = touched ? validateEmail(email) : null;
 
   function submit(event: FormEvent) {
     event.preventDefault();
     setTouched(true);
     if (validateEmail(email)) return;
-    setUnknown(onSubmit(email) === "unknown");
+    const result = onSubmit(email);
+    setProblem(result === "ok" ? null : result);
   }
 
   return (
@@ -53,17 +58,17 @@ export function SignInView({
         inputMode="email"
         value={email}
         onChange={(next) => {
-          setUnknown(false);
+          setProblem(null);
           setEmail(next);
         }}
         onBlur={() => setTouched(true)}
-        error={formatError ?? (unknown ? UNKNOWN_MESSAGE : null)}
-        action={
-          unknown && !formatError ? (
-            <ButtonLink variant="tertiary" href="/join">
-              {UNKNOWN_LINK}
-            </ButtonLink>
-          ) : undefined
+        error={
+          formatError ??
+          (problem === "unknown"
+            ? UNKNOWN_MESSAGE
+            : problem === "inactive"
+              ? INACTIVE_MESSAGE
+              : null)
         }
         autoComplete="email"
       />

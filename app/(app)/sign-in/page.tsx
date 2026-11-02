@@ -15,7 +15,7 @@ export default function SignInPage() {
       onSubmit={(email) => {
         const result = startSignIn(email);
         if (result === "ok") router.push("/verify");
-        return result === "unknown" ? "unknown" : "ok";
+        return result === "unknown" || result === "inactive" ? result : "ok";
       }}
     />
   );

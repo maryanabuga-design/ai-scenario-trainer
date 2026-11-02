@@ -216,7 +216,7 @@ for (const width of [360, 430]) {
       await page.getByLabel("Work email").fill("nobody@example.com");
       await page.getByRole("button", { name: "Continue" }).click();
       await expect(
-        page.getByText("No account found on this device.", { exact: false }),
+        page.getByText("We could not find an account for this email.", { exact: false }),
       ).toBeVisible();
       await expect(page).toHaveURL(/\/sign-in$/);
       const link = page.getByRole("link", { name: "Have a group code?" }).first();
@@ -236,9 +236,7 @@ for (const width of [360, 430]) {
       await page.goto("/join/QT-A7K2");
       await page.getByLabel("Your email").fill(" ANA@example.com ");
       await page.getByRole("button", { name: "Continue" }).click();
-      await expect(
-        page.getByText("An account with this email already exists on this device."),
-      ).toBeVisible();
+      await expect(page.getByText("An account with this email already exists.")).toBeVisible();
       await expect(page).toHaveURL(/\/join\/QT-A7K2$/);
       const link = page.getByRole("link", { name: "Sign in instead." });
       await expect(link).toBeVisible();
@@ -270,7 +268,7 @@ for (const width of [360, 430]) {
       await page.getByLabel("Work email").fill("ana@example.com");
       await page.getByRole("button", { name: "Continue" }).click();
       await expect(
-        page.getByText("No account found on this device.", { exact: false }),
+        page.getByText("We could not find an account for this email.", { exact: false }),
       ).toBeVisible();
     });
 
@@ -384,12 +382,12 @@ for (const width of [360, 430]) {
       // blur: a wrong email
       await email.fill("nope");
       await email.blur();
-      await expect(page.getByText("Enter a valid email, like name@company.com.")).toBeVisible();
+      await expect(page.getByText("Check this email address.")).toBeVisible();
       await expect(email).toHaveAttribute("aria-invalid", "true");
       const describedBy = await email.getAttribute("aria-describedby");
       expect(describedBy).toBeTruthy();
       // the message has an icon (not colour alone) and a visible, non-black, non-transparent colour
-      const message = page.locator("p[aria-live=polite]", { hasText: "valid email" });
+      const message = page.locator("p[aria-live=polite]", { hasText: "Check this email address" });
       await expect(message.locator("svg")).toBeVisible();
       const colour = await message.evaluate((el) => getComputedStyle(el).color);
       expect(rgb(colour).a).toBeGreaterThan(0);
@@ -416,7 +414,7 @@ for (const width of [360, 430]) {
       const email = page.getByLabel("Work email");
       await email.fill("bad");
       await email.press("Enter");
-      await expect(page.getByText("Enter a valid email, like name@company.com.")).toBeVisible();
+      await expect(page.getByText("Check this email address.")).toBeVisible();
       await expect(page).toHaveURL(/\/sign-in$/);
     });
 
@@ -600,7 +598,7 @@ for (const width of [360, 430]) {
           .evaluate((el) => getComputedStyle(el).textDecorationLine),
       ).toBe("underline");
       const note = (await page
-        .getByText("For educational use. Demo data stays on this device.")
+        .getByText("For educational use. This is a demo with sample data.")
         .boundingBox())!;
       expect(note.y).toBeGreaterThan(g.y + g.height - 1);
       expect(800 - (note.y + note.height)).toBeLessThanOrEqual(24 + 4);

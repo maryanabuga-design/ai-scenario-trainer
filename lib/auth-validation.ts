@@ -20,12 +20,14 @@ export function validateName(name: string): string | null {
 /** The message under the email field, or null when the email is fine. */
 export function validateEmail(email: string): string | null {
   if (email.trim() === "") return "Enter your work email.";
-  if (!isEmailFormat(email)) return "Enter a valid email, like name@company.com.";
+  if (!isEmailFormat(email)) return "Check this email address.";
   return null;
 }
 
-export const EXISTS_MESSAGE = "An account with this email already exists on this device.";
+export const EXISTS_MESSAGE = "An account with this email already exists.";
 export const EXISTS_LINK = "Sign in instead.";
-export const UNKNOWN_MESSAGE = "No account found on this device. Accounts come from an invitation.";
-export const UNKNOWN_LINK = "Have a group code?";
+export const UNKNOWN_MESSAGE =
+  "We could not find an account for this email. Ask your instructor for an invitation link.";
+export const INACTIVE_MESSAGE = "This account is not active. Contact your administrator.";
+export const TOO_MANY_MESSAGE = "Too many attempts. Try again in a minute.";
 export const WRONG_CODE_MESSAGE = "That code is not correct. Check the code shown below.";

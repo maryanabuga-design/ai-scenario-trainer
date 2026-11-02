@@ -35,7 +35,7 @@ describe("the email", () => {
 
   it("gives one message for empty and one for a wrong format", () => {
     expect(validateEmail("  ")).toBe("Enter your work email.");
-    expect(validateEmail("nope")).toBe("Enter a valid email, like name@company.com.");
+    expect(validateEmail("nope")).toBe("Check this email address.");
   });
 
   it("is normalised: trimmed and lower case", () => {

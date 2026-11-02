@@ -1,0 +1,22 @@
+{
+  "simulated": "SIMULATED: the demo sign-in cases of the prototype. In the product the allowed emails live on the server and a code is sent only to an account that exists and is active.",
+  "accounts": [
+    {
+      "email": "lena@example.org",
+      "name": "Lena",
+      "status": "active",
+      "groupId": "rescue-team"
+    },
+    {
+      "email": "kofi@example.org",
+      "name": "Kofi",
+      "status": "active",
+      "groupId": null
+    },
+    {
+      "email": "pavel@example.org",
+      "name": "Pavel",
+      "status": "inactive"
+    }
+  ]
+}

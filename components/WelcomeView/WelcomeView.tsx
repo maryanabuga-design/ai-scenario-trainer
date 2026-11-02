@@ -6,7 +6,7 @@ export const APP_NAME = "AI Scenario Trainer";
 export const WELCOME_TITLE = "Train for real situations";
 export const WELCOME_SUBTITLE = "Sign in to continue your training.";
 export const WELCOME_NO_ACCOUNT = "No account yet? Ask your instructor for an invitation link.";
-export const WELCOME_NOTE = "For educational use. Demo data stays on this device.";
+export const WELCOME_NOTE = "For educational use. This is a demo with sample data.";
 
 /**
  * Welcome (DESIGN.md: Invitation-only entry): on the plain page, the 3D picture and the centred text

@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { isCorrectCode } from "@/lib/auth-code";
 import { MIGRATED_EMAIL, MIGRATED_NAME } from "@/lib/demo-account";
+import { lookupDemoAccount } from "@/lib/demo-accounts";
 import { cleanField } from "@/lib/field-of-work";
 import { DEFAULT_GROUP_ID, cleanAccountGroup } from "@/lib/groups";
 import { readInvitations, markJoined, saveInvitations } from "@/lib/invitations";
@@ -190,7 +191,7 @@ export const namespaceFor = (account: Account | null): string =>
 
 // ---- the steps, as pure functions of the state ----
 
-export type StartResult = "ok" | "exists" | "unknown";
+export type StartResult = "ok" | "exists" | "unknown" | "inactive";
 
 /** Sign up: an email that already has an account is refused (no duplicate). */
 export function beginSignUp(
@@ -203,12 +204,31 @@ export function beginSignUp(
   return { state: { ...state, pending }, result: "ok" };
 }
 
-/** Sign in: an unknown email is refused. */
+/**
+ * Sign in (DESIGN.md: Sign-in rules, wording and demo accounts): a deactivated demo account gets no
+ * code ("inactive"), an active demo account is made on its first sign-in (a student with or without
+ * a group), any other email without an account is unknown.
+ */
 export function beginSignIn(
   state: AuthState,
   emailInput: string,
 ): { state: AuthState; result: StartResult } {
-  const account = accountFor(state, emailInput);
+  const directory = lookupDemoAccount(emailInput);
+  if (directory?.status === "inactive") return { state, result: "inactive" };
+  let account = accountFor(state, emailInput);
+  if (!account && directory?.status === "active") {
+    account = {
+      name: directory.name,
+      email: normaliseEmail(directory.email),
+      role: "student",
+      createdAt: 0,
+      onboardingDone: true,
+      field: null,
+      fieldStepDone: true,
+      ...(directory.groupId ? { groupId: directory.groupId } : { noGroup: true as const }),
+    };
+    state = { ...state, accounts: [...state.accounts, account] };
+  }
   if (!account) return { state, result: "unknown" };
   const pending: Pending = {
     mode: "sign-in",

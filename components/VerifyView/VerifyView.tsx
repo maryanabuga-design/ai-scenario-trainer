@@ -9,12 +9,16 @@ import { Media3D } from "@/components/Media3D/Media3D";
 import {
   CODE_LENGTH,
   DEMO_CODE,
+  LOCK_SECONDS,
+  MAX_WRONG_CODES,
+  announcedSeconds,
   digitsFrom,
   formatCode,
   formatCountdown,
+  lockRemaining,
   resendRemaining,
 } from "@/lib/auth-code";
-import { WRONG_CODE_MESSAGE } from "@/lib/auth-validation";
+import { TOO_MANY_MESSAGE, WRONG_CODE_MESSAGE } from "@/lib/auth-validation";
 import { heroSlotFiles } from "@/lib/media-frames";
 
 const empty = () => Array.from({ length: CODE_LENGTH }, () => "");
@@ -32,6 +36,7 @@ export function VerifyView({
   now,
   initialWrong = false,
   initialDigits = "",
+  initialLockRemaining = null,
 }: {
   email: string;
   /** Checks the code; true when it was correct (the caller then leaves the screen). */
@@ -42,6 +47,8 @@ export function VerifyView({
   initialWrong?: boolean;
   /** Only for the screen review page: start with these digits in the boxes. */
   initialDigits?: string;
+  /** Only for the screen review page: start locked with this many seconds left. */
+  initialLockRemaining?: number | null;
 }) {
   const [values, setValues] = useState(() => {
     const start = empty();
@@ -51,6 +58,12 @@ export function VerifyView({
     return start;
   });
   const [wrong, setWrong] = useState(initialWrong);
+  // five wrong codes lock the boxes for a minute (DESIGN.md: Sign-in rules)
+  const [guard, setGuard] = useState<{ wrongCount: number; lockedAt: number | null }>(() => ({
+    wrongCount: initialLockRemaining === null ? 0 : MAX_WRONG_CODES,
+    lockedAt:
+      initialLockRemaining === null ? null : now() - (LOCK_SECONDS - initialLockRemaining) * 1000,
+  }));
   const [sentAt, setSentAt] = useState(() => now());
   const [tick, setTick] = useState(() => now());
   const [resent, setResent] = useState(false);
@@ -62,15 +75,44 @@ export function VerifyView({
   }, []);
 
   useEffect(() => {
-    const timer = setInterval(() => setTick(now()), 1000);
+    const timer = setInterval(() => {
+      const at = now();
+      setTick(at);
+      // the minute is over: the boxes work again with a fresh count
+      setGuard((was) =>
+        was.lockedAt !== null && lockRemaining(was.lockedAt, at) === 0
+          ? { wrongCount: 0, lockedAt: null }
+          : was,
+      );
+    }, 1000);
     return () => clearInterval(timer);
   }, [now]);
 
   const remaining = resendRemaining(sentAt, tick);
   const complete = values.every((digit) => digit !== "");
+  const locked = guard.lockedAt !== null;
+  const lockLeft = lockRemaining(guard.lockedAt, tick);
+
+  // when the lock ends the first box has the focus again
+  const wasLocked = useRef(false);
+  useEffect(() => {
+    if (wasLocked.current && !locked) boxes.current[0]?.focus();
+    wasLocked.current = locked;
+  }, [locked]);
 
   function submit(code: string) {
+    if (locked) return;
     if (onVerify(code)) return;
+    const wrongCount = guard.wrongCount + 1;
+    if (wrongCount >= MAX_WRONG_CODES) {
+      const at = now();
+      setGuard({ wrongCount, lockedAt: at });
+      setTick(at);
+      setWrong(false);
+      setValues(empty());
+      return;
+    }
+    setGuard({ wrongCount, lockedAt: null });
     setWrong(true);
     // the boxes keep their digits, selected, ready to be typed over
     boxes.current[0]?.focus();
@@ -107,6 +149,19 @@ export function VerifyView({
   }
 
   function onKeyDown(index: number, event: KeyboardEvent<HTMLInputElement>) {
+    // the same digit typed over a selected one changes nothing in the box, so no change event comes:
+    // handle it here, or a code that starts with the digit of the last wrong code loses it
+    const box = event.currentTarget;
+    if (
+      event.key === values[index] &&
+      /^\d$/.test(event.key) &&
+      box.selectionStart === 0 &&
+      box.selectionEnd === box.value.length
+    ) {
+      event.preventDefault();
+      onChange(index, event.key);
+      return;
+    }
     if (event.key === "Backspace" && values[index] === "" && index > 0) {
       event.preventDefault();
       const next = [...values];
@@ -160,6 +215,7 @@ export function VerifyView({
                 boxes.current[index] = node;
               }}
               type="text"
+              disabled={locked}
               inputMode="numeric"
               autoComplete="one-time-code"
               pattern="[0-9]*"
@@ -173,7 +229,7 @@ export function VerifyView({
               onFocus={(event) => event.target.select()}
               className={`type-card-title h-14 min-w-0 flex-1 basis-0 rounded-[12px] border bg-card text-center text-text focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primary ${
                 wrong ? "border-wrong" : digit ? "border-primary" : "border-selectable-stroke"
-              }`}
+              } disabled:cursor-not-allowed disabled:bg-secondary-sand disabled:text-text-secondary`}
             />
           ))}
         </div>
@@ -182,7 +238,7 @@ export function VerifyView({
           role="alert"
           className="type-small flex items-start justify-center gap-1.5 text-center text-wrong"
         >
-          {wrong && (
+          {(wrong || locked) && (
             <>
               <CircleAlert
                 size={16}
@@ -190,9 +246,27 @@ export function VerifyView({
                 aria-hidden="true"
                 className="mt-0.5 shrink-0"
               />
-              <span>{WRONG_CODE_MESSAGE}</span>
+              <span>{locked ? TOO_MANY_MESSAGE : WRONG_CODE_MESSAGE}</span>
             </>
           )}
+        </p>
+        {locked && (
+          <>
+            {/* the countdown is seen every second; a screen reader hears it at most every 10 seconds */}
+            <p
+              data-lock-countdown
+              aria-hidden="true"
+              className="type-small text-center text-text-secondary tabular-nums"
+            >
+              {formatCountdown(lockLeft)}
+            </p>
+            <p data-lock-live aria-live="polite" className="sr-only">
+              Try again in {announcedSeconds(lockLeft)} seconds
+            </p>
+          </>
+        )}
+        <p data-code-proof className="type-small text-center text-text-secondary">
+          The code proves this email is yours.
         </p>
       </div>
 
@@ -211,6 +285,7 @@ export function VerifyView({
           wide={false}
           snug
           compact
+          disabled={locked}
           onClick={() => commit(DEMO_CODE.split(""))}
         >
           Fill in code
@@ -230,7 +305,7 @@ export function VerifyView({
       </div>
 
       <div className="mt-auto pt-2">
-        <Button disabled={!complete} onClick={() => submit(values.join(""))}>
+        <Button disabled={!complete || locked} onClick={() => submit(values.join(""))}>
           Verify
         </Button>
       </div>

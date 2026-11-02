@@ -132,6 +132,8 @@ import { NotificationsView } from "@/components/NotificationsView/NotificationsV
 import { InstructorOverviewView } from "@/components/InstructorOverview/InstructorOverviewView";
 import { AboutView } from "@/components/AboutView/AboutView";
 import { EditProfileView } from "@/components/EditProfileView/EditProfileView";
+import { DEMO_CODE } from "@/lib/auth-code";
+import { demoAccounts } from "@/lib/demo-accounts";
 import { SignInView } from "@/components/SignInView/SignInView";
 import { VerifyView } from "@/components/VerifyView/VerifyView";
 import { WelcomeView } from "@/components/WelcomeView/WelcomeView";
@@ -1939,12 +1941,19 @@ export function EntrySample({ state }: { state: EntryState }) {
   }
 }
 
-export function SignInSample({ unknown = false }: { unknown?: boolean }) {
+export function SignInSample({ problem }: { problem?: "unknown" | "inactive" | "invalid" }) {
+  const emails = {
+    unknown: "nobody@example.com",
+    inactive: "pavel@example.org",
+    invalid: "ana@",
+    none: "",
+  };
   return (
     <SignInView
       onSubmit={() => "unknown"}
-      initialEmail={unknown ? "nobody@example.com" : ""}
-      initialUnknown={unknown}
+      initialEmail={emails[problem ?? "none"]}
+      initialProblem={problem === "unknown" || problem === "inactive" ? problem : null}
+      initialTouched={problem === "invalid"}
     />
   );
 }
@@ -1952,9 +1961,11 @@ export function SignInSample({ unknown = false }: { unknown?: boolean }) {
 export function VerifySample({
   wrong = false,
   filled = false,
+  locked = false,
 }: {
   wrong?: boolean;
   filled?: boolean;
+  locked?: boolean;
 }) {
   return (
     <VerifyView
@@ -1964,6 +1975,7 @@ export function VerifySample({
       onChangeEmail={() => undefined}
       initialWrong={wrong}
       initialDigits={wrong ? "000000" : filled ? "482913" : ""}
+      initialLockRemaining={locked ? 45 : null}
     />
   );
 }
@@ -2266,5 +2278,34 @@ export function BuiltInTopicSample({
       guide={guide}
       tab={tab}
     />
+  );
+}
+
+/** The demo sign-in emails for the screen review page (the sign-in screen itself never lists them). */
+export function DemoAccountsSample() {
+  const result: Record<string, string> = {
+    "lena@example.org": "Active student in Rescue team: the code opens the student home.",
+    "kofi@example.org": "Active student with no group: the code opens the empty home.",
+    "pavel@example.org": "Deactivated: no code is sent.",
+  };
+  return (
+    <div className="flex flex-col gap-4">
+      <h1 className="type-page-title">Demo accounts</h1>
+      <p className="type-body text-text-secondary">
+        Simulated. The demo code is {DEMO_CODE}. Any other email is unknown.
+      </p>
+      <ul className="flex flex-col gap-3">
+        {demoAccounts.map((account) => (
+          <li
+            key={account.email}
+            data-demo-account={account.email}
+            className="rounded-card border border-selectable-stroke bg-card p-4"
+          >
+            <p className="type-body-strong break-all">{account.email}</p>
+            <p className="type-small text-text-secondary">{result[account.email]}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

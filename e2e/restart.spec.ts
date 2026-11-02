@@ -111,7 +111,7 @@ for (const width of [360, 430]) {
       await page.getByLabel("Work email").fill("ana@example.com");
       await page.getByRole("button", { name: "Continue" }).click();
       await expect(
-        page.getByText("No account found on this device.", { exact: false }),
+        page.getByText("We could not find an account for this email.", { exact: false }),
       ).toBeVisible();
       // a new account with that email starts at the Profile step of the invitation, with no old progress
       await signUp(page, "Ana Again", "ana@example.com");
@@ -156,7 +156,7 @@ for (const width of [360, 430]) {
       await page.getByLabel("Work email").fill("ana@example.com");
       await page.getByRole("button", { name: "Continue" }).click();
       await expect(
-        page.getByText("No account found on this device.", { exact: false }),
+        page.getByText("We could not find an account for this email.", { exact: false }),
       ).toBeVisible();
       // once: with the query gone, going to Welcome again clears nothing
       await signUp(page, "Bob Test", "bob@example.com");

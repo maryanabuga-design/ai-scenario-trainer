@@ -9,6 +9,22 @@ export const RESEND_SECONDS = 30;
 
 export const CODE_LENGTH = 6;
 
+/** Wrong codes allowed before the boxes lock, and the length of the lock in seconds. */
+export const MAX_WRONG_CODES = 5;
+export const LOCK_SECONDS = 60;
+/** The screen-reader line about the lock changes at most this often (seconds). */
+export const LIVE_SECONDS = 10;
+
+/** Whole seconds left of a lock that started at `lockedAt`; 0 once it is over or when there is none. */
+export function lockRemaining(lockedAt: number | null, now: number): number {
+  if (lockedAt === null) return 0;
+  return Math.max(0, Math.ceil(LOCK_SECONDS - (now - lockedAt) / 1000 - 1e-9));
+}
+
+/** The seconds a screen reader hears: the time left rounded up to the next 10, so it changes rarely. */
+export const announcedSeconds = (remaining: number): number =>
+  Math.ceil(remaining / LIVE_SECONDS) * LIVE_SECONDS;
+
 export const isCorrectCode = (code: string): boolean => code === DEMO_CODE;
 
 /** "482 913": the code as it is shown, in two groups of three. */
