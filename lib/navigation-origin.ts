@@ -36,6 +36,9 @@ export const readingOrigin = () => origin;
 /** Back from a reading screen: true when the browser history leads to the Materials list. */
 export const canGoBackToList = () => origin === "/materials";
 
+/** Back from a reading screen: true when the reader came from the question screen (the Guide chip of a quiz sheet). */
+export const canGoBackToQuestion = () => origin === "/session";
+
 const RESTORE_KEY = "ast.materials-scroll.v1";
 
 function write(value: { y: number; restore: boolean } | null) {

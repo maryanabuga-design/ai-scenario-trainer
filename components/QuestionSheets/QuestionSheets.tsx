@@ -20,8 +20,11 @@ export function FeedbackSheet({
   note,
   onHeight,
   inline,
+  onGuide,
   onNext,
 }: {
+  /** Opens the Guide at a section as a full screen (a sheet never opens another sheet). */
+  onGuide: (sectionId: string) => void;
   /** Only for the screen review page. */
   inline?: boolean;
   item: Item;
@@ -47,7 +50,7 @@ export function FeedbackSheet({
       announcement={checkAnnouncement(item, choice)}
       onHeight={onHeight}
       subtitle={!correct ? <p className="type-body-strong">Correct answer: {right}</p> : undefined}
-      guide={section ? <GuideChip sectionId={section} /> : undefined}
+      guide={section ? <GuideChip sectionId={section} onOpen={onGuide} /> : undefined}
       actions={
         <>
           {note && <p className="type-small text-center text-text-secondary">{note}</p>}
@@ -68,7 +71,10 @@ export function HintSheet({
   onClose,
   returnFocus,
   inline,
+  onGuide,
 }: {
+  /** Opens the Guide at a section as a full screen (a sheet never opens another sheet). */
+  onGuide: (sectionId: string) => void;
   /** Only for the screen review page. */
   inline?: boolean;
   hint: Hint;
@@ -82,7 +88,7 @@ export function HintSheet({
       title="Hint"
       onClose={onClose}
       returnFocus={returnFocus}
-      guide={hint.section ? <GuideChip sectionId={hint.section} /> : undefined}
+      guide={hint.section ? <GuideChip sectionId={hint.section} onOpen={onGuide} /> : undefined}
       actions={<Button onClick={onClose}>Got it</Button>}
     >
       <p>{hint.text}</p>

@@ -11,9 +11,12 @@ import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 export function GuideChip({
   sectionId,
   showTitle = false,
+  onOpen,
 }: {
   sectionId: string;
   showTitle?: boolean;
+  /** Where the chip goes instead of the source panel (the quiz sheets open the Guide full screen). */
+  onOpen?: (sectionId: string) => void;
 }) {
   const { sections, open } = useSourceSheet();
   const title = sections.find((section) => section.id === sectionId)?.title;
@@ -23,7 +26,7 @@ export function GuideChip({
       as="button"
       tone="sand"
       size="small"
-      onClick={() => open(sectionId)}
+      onClick={() => (onOpen ?? open)(sectionId)}
       className="relative min-h-9 text-left before:absolute before:-inset-y-1 before:inset-x-0 before:content-['']"
     >
       <FileText

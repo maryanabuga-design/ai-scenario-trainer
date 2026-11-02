@@ -26,6 +26,7 @@ function render(exam: boolean) {
           onChange={() => undefined}
           onFinish={() => undefined}
           onLeave={() => undefined}
+          onGuide={() => undefined}
         />
       </ActionBarProvider>
     </SourceSheetProvider>,

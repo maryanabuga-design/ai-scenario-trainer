@@ -63,6 +63,7 @@ function Runner({ exam }: { exam: ExamSession }) {
       leave={{ title: "Leave the exam?", description: "Your progress will be lost." }}
       onChange={saveExam}
       onFinish={finish}
+      onGuide={() => undefined} // the exam has no hint and no Guide chip
       onLeave={() => {
         leaveExam();
         router.replace("/exam");

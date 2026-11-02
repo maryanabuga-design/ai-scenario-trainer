@@ -272,6 +272,7 @@ export function PackagePlayer({
           choice={choice}
           last={last}
           onHeight={setSheetHeight}
+          onGuide={() => undefined}
           onNext={() => (last ? setFinished(true) : jump(index + 1))}
         />
       )}

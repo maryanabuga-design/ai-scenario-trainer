@@ -331,11 +331,18 @@ export function SessionSample({
         onNext={() => setDone(true)}
       />
       {open && hint && !done && (
-        <HintSheet inline hint={hint} onClose={() => setOpen(false)} returnFocus={bulb} />
+        <HintSheet
+          inline
+          onGuide={() => undefined}
+          hint={hint}
+          onClose={() => setOpen(false)}
+          returnFocus={bulb}
+        />
       )}
       {done && !exam && picked && (
         <FeedbackSheet
           inline
+          onGuide={() => undefined}
           item={item}
           choice={picked}
           last={index === total - 1}

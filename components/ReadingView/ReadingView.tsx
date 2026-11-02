@@ -8,7 +8,7 @@ import { HighlightableText } from "@/components/HighlightableText/HighlightableT
 import { QuickActionsBar } from "@/components/QuickActionsBar/QuickActionsBar";
 import { ReadingHeader } from "@/components/ReadingHeader/ReadingHeader";
 import { dismissTip, useTipSeen } from "@/lib/highlight-store";
-import { canGoBackToList, requestListRestore } from "@/lib/navigation-origin";
+import { canGoBackToList, canGoBackToQuestion, requestListRestore } from "@/lib/navigation-origin";
 import { initialQuickBar, nextQuickBar } from "@/lib/quick-bar";
 import type { QuickBarState } from "@/lib/quick-bar";
 import { readingLabel, readingPath } from "@/lib/reading";
@@ -135,7 +135,8 @@ export function ReadingView({ topic }: { topic: ReadingTopic }) {
           }
           // always the Materials list: the history when it leads there (the list keeps its scroll),
           // otherwise a new navigation to the list, which scrolls back to where it was
-          if (canGoBackToList()) router.back();
+          // the Guide chip of a quiz sheet opened this screen: back to the same question
+          if (canGoBackToQuestion() || canGoBackToList()) router.back();
           else {
             requestListRestore();
             router.push("/materials");

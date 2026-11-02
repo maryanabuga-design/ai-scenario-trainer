@@ -21,7 +21,9 @@ const render = (node: React.ReactNode) =>
 
 describe("the feedback sheet", () => {
   it("correct: the title Correct in dark green, the explanation, the Guide chip, only a Primary Next", () => {
-    const html = render(<FeedbackSheet item={item} choice={right.id} last={false} onNext={noop} />);
+    const html = render(
+      <FeedbackSheet item={item} choice={right.id} last={false} onGuide={noop} onNext={noop} />,
+    );
     expect(html).toContain('data-bottom-sheet="feedback"');
     expect(html).toMatch(/text-status-success-ink[^>]*>Correct</);
     expect(html).toContain(item.why);
@@ -39,7 +41,9 @@ describe("the feedback sheet", () => {
   });
 
   it("not right: Not quite, the correct answer in semi-bold, the explanation, the Guide chip, then Next", () => {
-    const html = render(<FeedbackSheet item={item} choice={wrong.id} last={false} onNext={noop} />);
+    const html = render(
+      <FeedbackSheet item={item} choice={wrong.id} last={false} onGuide={noop} onNext={noop} />,
+    );
     expect(html).toMatch(/text-wrong-text[^>]*>Not quite</);
     expect(html).toMatch(new RegExp(`type-body-strong[^>]*>Correct answer: ${right.text}`));
     expect(html.indexOf("Correct answer:")).toBeLessThan(html.indexOf(item.why));
@@ -54,6 +58,7 @@ describe("the feedback sheet", () => {
         item={{ ...item, guideRef: [] }}
         choice={wrong.id}
         last={false}
+        onGuide={noop}
         onNext={noop}
       />,
     );
@@ -69,6 +74,7 @@ describe("the feedback sheet", () => {
         last
         disabled
         note="Answer question 2 to finish."
+        onGuide={noop}
         onNext={noop}
       />,
     );
@@ -79,7 +85,9 @@ describe("the feedback sheet", () => {
 
   it("has one white surface for every state, 20px top corners, a 1px top border and a soft shadow upward", () => {
     for (const choice of [right.id, wrong.id]) {
-      const html = render(<FeedbackSheet item={item} choice={choice} last={false} onNext={noop} />);
+      const html = render(
+        <FeedbackSheet item={item} choice={choice} last={false} onGuide={noop} onNext={noop} />,
+      );
       expect(html).toContain("rounded-t-[20px] border-t border-selectable-stroke bg-card");
       expect(html).not.toMatch(/feedback-(correct|wrong)-bg|bg-correct-bg|bg-wrong-bg|bg-sheet-bg/);
       expect(html).toContain("shadow-[0_-4px_16px_color-mix(in_srgb,var(--text)_6%,transparent)]");
@@ -92,7 +100,9 @@ describe("the feedback sheet", () => {
   });
 
   it("always reserves the 72px picture slot: a plain tile without icon or text until the file loads", () => {
-    const html = render(<FeedbackSheet item={item} choice={wrong.id} last={false} onNext={noop} />);
+    const html = render(
+      <FeedbackSheet item={item} choice={wrong.id} last={false} onGuide={noop} onNext={noop} />,
+    );
     expect(html).toContain('data-sheet-slot="placeholder"');
     expect(html).toContain("h-[72px] w-[72px] shrink-0");
     expect(html).toContain("rounded-2xl");
@@ -118,8 +128,11 @@ describe("the four rows", () => {
   });
 
   it("correct: the title is centred against the slot; header, full-width body, chip, Primary in order", () => {
-    const html = render(<FeedbackSheet item={item} choice={right.id} last={false} onNext={noop} />);
-    expect(html).toMatch(/data-sheet-header[^>]*items-center/);
+    const html = render(
+      <FeedbackSheet item={item} choice={right.id} last={false} onGuide={noop} onNext={noop} />,
+    );
+    expect(html).toContain("data-sheet-text");
+    expect(html).toContain("self-center");
     const r = rows(html);
     expect(r.header).toBeLessThan(r.body);
     expect(r.body).toBeLessThan(r.chip);
@@ -130,8 +143,11 @@ describe("the four rows", () => {
   });
 
   it("wrong: the slot stays top aligned and Correct answer sits under the title in the header row", () => {
-    const html = render(<FeedbackSheet item={item} choice={wrong.id} last={false} onNext={noop} />);
-    expect(html).toMatch(/data-sheet-header[^>]*items-start/);
+    const html = render(
+      <FeedbackSheet item={item} choice={wrong.id} last={false} onGuide={noop} onNext={noop} />,
+    );
+    expect(html).toContain("self-start");
+    expect(html).toContain("self-center");
     const r = rows(html);
     expect(html.indexOf("Correct answer:")).toBeGreaterThan(r.header);
     expect(html.indexOf("Correct answer:")).toBeLessThan(r.body);
@@ -143,10 +159,12 @@ describe("the four rows", () => {
       <HintSheet
         hint={{ text: "Think about it.", section: "S3" }}
         onClose={noop}
+        onGuide={noop}
         returnFocus={null}
       />,
     );
-    expect(html).toMatch(/data-sheet-header[^>]*items-center/);
+    expect(html).toContain("data-sheet-text");
+    expect(html).toContain("self-center");
     expect(html.indexOf("Think about it.")).toBeGreaterThan(html.indexOf("data-sheet-body"));
   });
 });
@@ -157,6 +175,7 @@ describe("the hint sheet", () => {
       <HintSheet
         hint={{ text: "Think about what moving through smoke asks of you.", section: "S3" }}
         onClose={noop}
+        onGuide={noop}
         returnFocus={null}
       />,
     );
@@ -179,6 +198,7 @@ describe("the hint sheet", () => {
       <HintSheet
         hint={{ text: "Think about it", section: null }}
         onClose={noop}
+        onGuide={noop}
         returnFocus={null}
       />,
     );

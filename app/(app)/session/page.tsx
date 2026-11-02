@@ -5,6 +5,7 @@ import { ButtonLink } from "@/components/Button/Button";
 import { SessionRunner } from "@/components/SessionRunner/SessionRunner";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { getPart } from "@/lib/parts";
+import { readingPath } from "@/lib/reading";
 import type { Session } from "@/lib/session";
 import { finishSession, isValidSession, leaveHref, saveSession, useSession } from "@/lib/session";
 
@@ -34,6 +35,7 @@ function Runner({ session }: { session: Session }) {
         router.push("/session/results");
       }}
       onLeave={() => router.push(leaveHref(session))}
+      onGuide={(sectionId) => router.push(readingPath(sectionId))}
     />
   );
 }

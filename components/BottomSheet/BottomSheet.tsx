@@ -98,12 +98,9 @@ function SheetContent({
   return (
     <>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-        <div
-          data-sheet-header
-          className={`flex gap-4 ${subtitle ? "items-start" : "items-center"}`}
-        >
+        <div data-sheet-header className="flex gap-4">
           {picture}
-          <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <div data-sheet-text className="flex min-w-0 flex-1 flex-col gap-1 self-center">
             <h2 id={titleId} className={`type-card-title ${titleClass}`}>
               {title}
             </h2>

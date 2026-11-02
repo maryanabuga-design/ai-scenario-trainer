@@ -136,9 +136,9 @@ for (const width of [360, 430]) {
       // the Primary is the lowest button and stays in view
       expect(nextBox.y + nextBox.height).toBeLessThanOrEqual(800);
       await review.click();
-      await expect(page.locator("dialog[open]")).toContainText("Guide · S1");
-      await page.keyboard.press("Escape");
-      await expect(page.locator("dialog[open]")).toHaveCount(0);
+      // the Guide is a full screen, not a sheet over the sheet
+      await expect(page).toHaveURL(/\/materials\/read\/S1$/);
+      await expect(page.locator("dialog[open], [role=dialog]")).toHaveCount(0);
     });
 
     test("Next opens the next question and moves the focus to its heading", async ({ page }) => {
@@ -421,7 +421,7 @@ for (const width of [360, 430]) {
       await expect(lightbulb).toBeFocused();
     });
 
-    test("the hint sheet keeps the focus inside while open, and the guide opens from it", async ({
+    test("the hint sheet keeps the focus inside while open, and the Guide opens as a full screen from it", async ({
       page,
     }) => {
       await start(page, scenario);
@@ -435,7 +435,8 @@ for (const width of [360, 430]) {
         );
       }
       await sheet.getByRole("button", { name: /^Guide · S1/ }).click();
-      await expect(page.locator("dialog[open]")).toContainText("Guide · S1");
+      await expect(page).toHaveURL(/\/materials\/read\/S1$/);
+      await expect(page.locator("dialog[open], [role=dialog]")).toHaveCount(0);
     });
 
     test("one white surface for all three sheet states; the meaning is in the title colour only", async ({
@@ -488,6 +489,176 @@ for (const width of [360, 430]) {
     });
   });
 }
+
+for (const width of [360, 430]) {
+  test.describe(`Title alignment and the Guide as a full screen at ${width}px`, () => {
+    test.use({ viewport: { width, height: 800 } });
+
+    const centre = async (loc: ReturnType<Page["locator"]>) => {
+      const box = (await loc.boundingBox())!;
+      return box.y + box.height / 2;
+    };
+
+    test("the title block is centred against the 72px picture, within 2px, in all three states", async ({
+      page,
+    }) => {
+      await start(page, scenario);
+      await page.getByRole("button", { name: "Hint", exact: true }).click();
+      await settled(page);
+      const hint = hintSheet(page);
+      const hintSlot = await centre(hint.locator("[data-sheet-slot]"));
+      expect(
+        Math.abs((await centre(hint.getByRole("heading", { name: "Hint" }))) - hintSlot),
+      ).toBeLessThanOrEqual(2);
+      await page.getByRole("button", { name: "Got it" }).click();
+      // correct
+      await option(page, S1_RIGHT).click();
+      await check(page).click();
+      await settled(page);
+      const right = feedback(page);
+      const rightSlot = await centre(right.locator("[data-sheet-slot]"));
+      expect(
+        Math.abs((await centre(right.getByRole("heading", { name: "Correct" }))) - rightSlot),
+      ).toBeLessThanOrEqual(2);
+    });
+
+    test("wrong with a short answer: title plus Correct answer are centred against the slot; a long one starts at the top", async ({
+      page,
+    }) => {
+      // a short correct answer (one line) fits in 72px
+      await start(page, {
+        kind: "quiz",
+        itemIds: ["q-s2-1", "q-s2-2"],
+        answers: [],
+        index: 0,
+        finished: false,
+      });
+      await option(page, "Your palm").click();
+      await check(page).click();
+      await settled(page);
+      const sheet = feedback(page);
+      const slot = (await sheet.locator("[data-sheet-slot]").boundingBox())!;
+      const text = (await sheet.locator("[data-sheet-text]").boundingBox())!;
+      if (text.height <= 72) {
+        expect(Math.abs(text.y + text.height / 2 - (slot.y + slot.height / 2))).toBeLessThanOrEqual(
+          2,
+        );
+      } else {
+        expect(Math.abs(text.y - slot.y)).toBeLessThanOrEqual(2);
+      }
+    });
+
+    test("a long correct answer starts at the top of the slot", async ({ page }) => {
+      await start(page, {
+        kind: "quiz",
+        itemIds: ["q-quiz-s01-003", "q-quiz-s01-001"],
+        answers: [],
+        index: 0,
+        finished: false,
+      });
+      await page.locator("fieldset label").first().click();
+      await check(page).click();
+      await settled(page);
+      const sheet = feedback(page);
+      const slot = (await sheet.locator("[data-sheet-slot]").boundingBox())!;
+      const text = (await sheet.locator("[data-sheet-text]").boundingBox())!;
+      expect(text.height).toBeGreaterThan(72);
+      expect(Math.abs(text.y - slot.y)).toBeLessThanOrEqual(2);
+    });
+
+    test("Guide from the hint: the hint closes, the Guide is a full screen, Back returns to the same question without the hint", async ({
+      page,
+    }) => {
+      await start(page, scenario);
+      await option(page, S1_WRONG).click();
+      await page.getByRole("button", { name: "Hint", exact: true }).click();
+      await hintSheet(page)
+        .getByRole("button", { name: /^Guide · S1/ })
+        .click();
+      await expect(page).toHaveURL(/\/materials\/read\/S1$/);
+      await expect(page.locator("dialog[open], [role=dialog]")).toHaveCount(0);
+      expect(await noSidewaysScroll(page)).toBe(true);
+      await page.getByRole("button", { name: "Back", exact: true }).click();
+      await expect(page).toHaveURL(/\/session$/);
+      await expect(page.getByText("Step 1 of 3")).toBeVisible();
+      await expect(page.getByLabel(S1_WRONG)).toBeChecked();
+      await expect(hintSheet(page)).toHaveCount(0);
+      await expect(page.getByRole("button", { name: "Hint", exact: true })).toBeFocused();
+      // nothing reset, nothing counted twice
+      const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.session.v1")!));
+      expect(saved.value.answers).toEqual([
+        { itemId: "q-scn-s01-001", optionId: "a", hintUsed: true },
+      ]);
+      expect(saved.value.index).toBe(0);
+      // the hint opens again
+      await page.getByRole("button", { name: "Hint", exact: true }).click();
+      await expect(hintSheet(page)).toBeVisible();
+    });
+
+    test("Guide from the feedback sheet: Back returns to the same question, locked, with the feedback sheet again; nothing counted twice", async ({
+      page,
+    }) => {
+      await start(page, scenario);
+      await option(page, S1_WRONG).click();
+      await check(page).click();
+      await feedback(page)
+        .getByRole("button", { name: /^Guide · S1/ })
+        .click();
+      await expect(page).toHaveURL(/\/materials\/read\/S1$/);
+      await expect(page.locator("dialog[open], [role=dialog]")).toHaveCount(0);
+      await page.getByRole("button", { name: "Back", exact: true }).click();
+      await expect(page).toHaveURL(/\/session$/);
+      await expect(page.getByText("Step 1 of 3")).toBeVisible();
+      await expect(page.getByLabel(S1_WRONG)).toBeChecked();
+      await expect(page.getByLabel(S1_WRONG)).toBeDisabled();
+      await expect(feedback(page)).toBeVisible();
+      await expect(feedback(page).getByRole("heading", { name: "Not quite" })).toBeVisible();
+      await settled(page);
+      await expect(feedback(page).getByRole("button", { name: "Next" })).toBeFocused();
+      const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("ast.session.v1")!));
+      expect(saved.value.answers).toEqual([
+        { itemId: "q-scn-s01-001", optionId: "a", checked: true },
+      ]);
+      // continuing works: Next opens question 2
+      await next(page).click();
+      await expect(page.getByText("Step 2 of 3")).toBeVisible();
+    });
+
+    test("the browser Back button does the same", async ({ page }) => {
+      await start(page, scenario);
+      await option(page, S1_WRONG).click();
+      await check(page).click();
+      await feedback(page)
+        .getByRole("button", { name: /^Guide · S1/ })
+        .click();
+      await expect(page).toHaveURL(/\/materials\/read\/S1$/);
+      await page.goBack();
+      await expect(page).toHaveURL(/\/session$/);
+      await expect(feedback(page)).toBeVisible();
+      await expect(page.getByLabel(S1_WRONG)).toBeDisabled();
+    });
+  });
+}
+
+test.describe("the scroll position of the question is kept", () => {
+  test("coming back from the Guide, the page is scrolled as it was", async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 560 });
+    await start(page, scenario);
+    await option(page, S1_WRONG).click();
+    await page.evaluate(() => window.scrollTo(0, 150));
+    const before = await page.evaluate(() => window.scrollY);
+    expect(before).toBeGreaterThan(50);
+    await page.getByRole("button", { name: "Hint", exact: true }).click();
+    await hintSheet(page)
+      .getByRole("button", { name: /^Guide · S1/ })
+      .click();
+    await expect(page).toHaveURL(/\/materials\/read\/S1$/);
+    await page.getByRole("button", { name: "Back", exact: true }).click();
+    await expect(page.getByText("Step 1 of 3")).toBeVisible();
+    await page.waitForTimeout(500);
+    expect(Math.abs((await page.evaluate(() => window.scrollY)) - before)).toBeLessThanOrEqual(2);
+  });
+});
 
 test.describe("Practice sheets on small and reduced-motion screens", () => {
   test("the Primary of the wrong-answer sheet is in view at 360 x 640", async ({ page }) => {

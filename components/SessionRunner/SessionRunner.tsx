@@ -9,6 +9,8 @@ import { SessionTopBar } from "@/components/SessionTopBar/SessionTopBar";
 import type { Unit } from "@/components/SessionTopBar/SessionTopBar";
 import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
 import { stripStates } from "@/components/StepStrip/StepStrip";
+import { noteGuideReturn, takeGuideReturn } from "@/lib/guide-return";
+import type { GuideReturn } from "@/lib/guide-return";
 import { getItem, hintFor } from "@/lib/items";
 import { isSaved, toggleSaved, useSaved } from "@/lib/saved";
 import type { Session } from "@/lib/session";
@@ -36,6 +38,7 @@ export function SessionRunner<T extends RunnerSession>({
   onChange,
   onFinish,
   onLeave,
+  onGuide,
 }: {
   session: T;
   unit: Unit;
@@ -49,6 +52,8 @@ export function SessionRunner<T extends RunnerSession>({
   onChange: (session: T) => void;
   onFinish: () => void;
   onLeave: () => void;
+  /** Opens the Guide at a section as a full screen (the Guide chip of the quiz sheets). */
+  onGuide: (sectionId: string) => void;
 }) {
   const { sections } = useSourceSheet();
   const saved = useSaved();
@@ -71,6 +76,17 @@ export function SessionRunner<T extends RunnerSession>({
   function openHint() {
     setHintFor(item.id);
     onChange(withHintUsed(session, item.id));
+  }
+
+  /** The Guide opens as a full screen: the sheet closes, the question waits in the saved session. */
+  function openGuide(sectionId: string) {
+    setHintFor(null);
+    noteGuideReturn({
+      itemId: item.id,
+      y: window.scrollY,
+      from: hintOpen ? "hint" : "feedback",
+    });
+    onGuide(sectionId);
   }
 
   function jump(position: number) {
@@ -99,6 +115,23 @@ export function SessionRunner<T extends RunnerSession>({
     shownItem.current = item.id;
     document.getElementById(`question-${item.id}`)?.focus({ preventScroll: true });
   }, [item.id]);
+  // Back from the Guide: the same scroll position, and the focus on the lightbulb when the hint was
+  // open (the feedback sheet moves the focus to its own Primary by itself).
+  const comingBack = useRef<GuideReturn | null>(null);
+  useEffect(() => {
+    const note = takeGuideReturn(item.id);
+    if (!note) return;
+    comingBack.current = note;
+    window.scrollTo(0, note.y);
+    const again = setTimeout(() => window.scrollTo(0, note.y), 250);
+    return () => clearTimeout(again);
+  }, [item.id]);
+  useEffect(() => {
+    if (comingBack.current?.from === "hint" && lightbulb) {
+      lightbulb.focus({ preventScroll: true });
+      comingBack.current = null;
+    }
+  }, [lightbulb]);
   // The feedback sheet is drawn over the page: room under the last option so it can be scrolled up.
   const [sheetHeight, setSheetHeight] = useState(0);
 
@@ -148,7 +181,12 @@ export function SessionRunner<T extends RunnerSession>({
         onNext={feedback && !checked ? check : next}
       />
       {hintOpen && hint && (
-        <HintSheet hint={hint} onClose={() => setHintFor(null)} returnFocus={lightbulb} />
+        <HintSheet
+          hint={hint}
+          onGuide={openGuide}
+          onClose={() => setHintFor(null)}
+          returnFocus={lightbulb}
+        />
       )}
       {checked && choice && (
         <FeedbackSheet
@@ -159,6 +197,7 @@ export function SessionRunner<T extends RunnerSession>({
           disabled={last && unanswered !== -1}
           note={note}
           onHeight={setSheetHeight}
+          onGuide={openGuide}
           onNext={next}
         />
       )}

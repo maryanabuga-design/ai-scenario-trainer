@@ -13,7 +13,7 @@ describe("the reading screen", () => {
     expect(source).toContain("<ReadingHeader");
     expect(source).toContain("`${topic.id} · ${topic.position} of ${topic.total}`");
     // Back always goes to the Materials list
-    expect(source).toContain("if (canGoBackToList()) router.back();");
+    expect(source).toContain("if (canGoBackToQuestion() || canGoBackToList()) router.back();");
     expect(source).toContain('router.push("/materials")');
     expect(source).toContain("${topic.guideTitle} · ${topic.id} · ${readingLabel(topic.minutes)}");
     expect(source).toContain('<h1 className="type-page-title">{topic.title}</h1>');

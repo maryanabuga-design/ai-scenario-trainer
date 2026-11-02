@@ -22,7 +22,7 @@ export function SheetPicture({ kind }: { kind: SheetPictureKind }) {
     <span
       data-sheet-slot={loaded ? "image" : "placeholder"}
       aria-hidden="true"
-      className={`relative block h-[72px] w-[72px] shrink-0 overflow-hidden rounded-2xl ${
+      className={`relative block h-[72px] w-[72px] shrink-0 self-start overflow-hidden rounded-2xl ${
         loaded ? "" : "bg-chip-neutral-bg"
       }`}
     >
