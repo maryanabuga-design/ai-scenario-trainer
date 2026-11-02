@@ -482,7 +482,7 @@
       ],
       "correctOptionId": "c",
       "why": "Stopping what you are doing includes calls. The conversation can continue once everyone is out.",
-      "hint": "What does the call add to the exit, and what does it take away?",
+      "hint": "Think about what the call adds to the exit, and what it takes away.",
       "guideRef": [
         "S1"
       ],
@@ -664,7 +664,7 @@
       ],
       "correctOptionId": "b",
       "why": "The height of the building does not change the risk: a lift can still stop or open onto the danger, so everyone uses the stairs.",
-      "hint": "Does the height of a building change how a lift can fail?",
+      "hint": "Think about whether the height of a building changes how a lift can fail.",
       "guideRef": [
         "S1"
       ],
@@ -846,7 +846,7 @@
       ],
       "correctOptionId": "a",
       "why": "An alarm is real until it is officially confirmed otherwise. A deadline or a guess is not a reason to stay.",
-      "hint": "Who has decided that this alarm is not real?",
+      "hint": "Think about who has actually decided that this alarm is not real.",
       "guideRef": [
         "S1"
       ],
@@ -937,7 +937,7 @@
       ],
       "correctOptionId": "b",
       "why": "Help only if it is safe; otherwise report the person's location to responders. An untrained carry can injure both of you and block the stairs.",
-      "hint": "What can responders do if they know exactly where the person is?",
+      "hint": "Think about what responders can do if they know exactly where the person is.",
       "guideRef": [
         "S1"
       ],
@@ -1028,7 +1028,7 @@
       ],
       "correctOptionId": "c",
       "why": "Do not re-enter the building. Report the missing person's name and last known location so responders can search.",
-      "hint": "Who is equipped to look for her, and what do they need from you?",
+      "hint": "Think about who is equipped to look for her and what they need from you.",
       "guideRef": [
         "S1"
       ],
@@ -1119,7 +1119,7 @@
       ],
       "correctOptionId": "a",
       "why": "Moving steadily without pushing keeps the stairs flowing and prevents falls, which would block everyone behind.",
-      "hint": "What happens to everyone behind you if one person falls?",
+      "hint": "Think about what happens to everyone behind you if one person falls.",
       "guideRef": [
         "S1"
       ],
@@ -1210,7 +1210,7 @@
       ],
       "correctOptionId": "b",
       "why": "A silent alarm is not an official confirmation. Stay out until building management, a warden or the emergency services say it is safe.",
-      "hint": "Is silence the same as an all-clear?",
+      "hint": "Think about whether silence is the same as an all-clear.",
       "guideRef": [
         "S1"
       ],
@@ -1301,7 +1301,7 @@
       ],
       "correctOptionId": "c",
       "why": "Only an official confirmation counts. A second-hand message, even from a colleague, is not one.",
-      "hint": "Where does the information in the message actually come from?",
+      "hint": "Think about where the information in the message actually comes from.",
       "guideRef": [
         "S1"
       ],
@@ -1392,7 +1392,7 @@
       ],
       "correctOptionId": "a",
       "why": "Stop non-essential tasks and leave. The alarm is real until officially confirmed otherwise, whether or not anyone is watching.",
-      "hint": "Does being alone change how you should treat an alarm?",
+      "hint": "Think about whether being alone changes how you should treat an alarm.",
       "guideRef": [
         "S1"
       ],
@@ -1483,7 +1483,7 @@
       ],
       "correctOptionId": "b",
       "why": "A call is a non-essential task. End it at once and leave; the client can be called back from outside.",
-      "hint": "Which matters more right now: the call or the exit?",
+      "hint": "Think about which matters more right now: the call or the exit.",
       "guideRef": [
         "S1"
       ],
@@ -1574,7 +1574,7 @@
       ],
       "correctOptionId": "c",
       "why": "Only building management, a warden or the emergency services can officially confirm that an alarm is not real.",
-      "hint": "Who is allowed to say that it is only a test?",
+      "hint": "Think about who is allowed to say that it is only a test.",
       "guideRef": [
         "S1"
       ],
@@ -1665,7 +1665,7 @@
       ],
       "correctOptionId": "a",
       "why": "Take only what you can carry in a few seconds. Laptops and boxes slow you down and can be replaced.",
-      "hint": "What can be replaced later, and what cannot?",
+      "hint": "Think about what can be replaced later and what cannot.",
       "guideRef": [
         "S1"
       ],
@@ -1756,7 +1756,7 @@
       ],
       "correctOptionId": "b",
       "why": "Alerting others is safe, quick help. Do not delay your own exit or go into the danger area.",
-      "hint": "What is the quickest safe way to make sure someone knows?",
+      "hint": "Think about the quickest safe way to make sure someone knows.",
       "guideRef": [
         "S1"
       ],
@@ -1847,7 +1847,7 @@
       ],
       "correctOptionId": "c",
       "why": "A hot door means you should not open it. Another route keeps the group away from the fire.",
-      "hint": "A closed door can hide a fire on the other side. Think about what you learn before you open anything.",
+      "hint": "Think about what you can learn about a closed door before you open anything.",
       "guideRef": [
         "S2"
       ],
@@ -1992,7 +1992,7 @@
       ],
       "correctOptionId": "a",
       "why": "Staying low keeps you in cleaner air, the wall keeps your direction and closed doors slow the spread of smoke.",
-      "hint": "Smoke and hot gases rise. Think about where the cleaner air is and how to keep your direction.",
+      "hint": "Think about where the cleaner air is and how to keep your direction in smoke.",
       "guideRef": [
         "S2",
         "S3"
@@ -2135,7 +2135,7 @@
       ],
       "correctOptionId": "d",
       "why": "Firm direct pressure is the first step to control severe bleeding.",
-      "hint": "Think about which injury threatens life first, and what stops the loss of blood.",
+      "hint": "Think about which injury threatens life first and what stops the loss of blood.",
       "guideRef": [
         "S6",
         "S7"
@@ -2283,7 +2283,7 @@
       ],
       "correctOptionId": "b",
       "why": "A named person with clear details and a report-back makes sure the call happens.",
-      "hint": "A call for help aimed at everyone often goes unanswered. Think about who is responsible, and what responders need to hear.",
+      "hint": "Think about who is responsible for calling and what the responders need to hear.",
       "guideRef": [
         "S5"
       ],
@@ -2429,7 +2429,7 @@
       ],
       "correctOptionId": "c",
       "why": "Clear information to responders is the fastest way to help the missing person and the casualty.",
-      "hint": "Responders need specific facts about anyone missing. Think about what to pass on, and to whom.",
+      "hint": "Think about what facts responders need about anyone missing, and who should hear them.",
       "guideRef": [
         "S4",
         "S10"
@@ -2715,7 +2715,7 @@
       ],
       "correctOptionId": "b",
       "why": "Staying on the line lets the call taker get the details they need and give instructions until they say the call can end.",
-      "hint": "Think about what the call taker still needs from you, and who decides when the call ends.",
+      "hint": "Think about what the call taker still needs from you and who decides when the call ends.",
       "guideRef": [
         "S5"
       ],

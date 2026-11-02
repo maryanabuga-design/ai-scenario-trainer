@@ -42,8 +42,12 @@ export function BottomSheet(
         announcement: string;
         /** Reports the height of the sheet (px) whenever it changes. */
         onHeight?: (height: number) => void;
-        /** The text under the title: the answer and the explanation. */
+        /** Wrong answers only: "Correct answer: <text>", next to the picture under the title. */
+        subtitle?: ReactNode;
+        /** The explanation, full width under the header row. */
         children: ReactNode;
+        /** The Guide chip, on the left edge under the text. */
+        guide?: ReactNode;
         /** The buttons, the Primary last. */
         actions: ReactNode;
       }
@@ -54,8 +58,10 @@ export function BottomSheet(
         onClose: () => void;
         /** The lightbulb button: it gets the focus back (Safari does not focus a tapped button). */
         returnFocus?: HTMLElement | null;
-        /** The hint text. */
+        /** The hint text, full width under the header row. */
         children: ReactNode;
+        /** The Guide chip, on the left edge under the text. */
+        guide?: ReactNode;
         /** The buttons, the Primary last. */
         actions: ReactNode;
       },
@@ -64,37 +70,50 @@ export function BottomSheet(
 }
 
 /**
- * The picture slot and the text in two columns (the text wraps inside its own column), then the
- * buttons pinned under them: when the text is long it scrolls inside the sheet and the Primary
- * stays in view.
+ * Four rows (DESIGN.md: Quiz feedback and hint sheets: a header row, a full-width body and clearer
+ * hints): the header row (the picture slot and the short title, with "Correct answer" under it for
+ * a wrong answer), the full-width body, the Guide chip on the left edge, and the pinned buttons.
+ * When the content is long, the first three rows scroll inside the sheet and the Primary stays in
+ * view.
  */
 function SheetContent({
   picture,
   titleId,
   title,
   titleClass,
+  subtitle,
   children,
+  guide,
   actions,
 }: {
   picture: ReactNode;
   titleId?: string;
   title: string;
   titleClass: string;
+  subtitle?: ReactNode;
   children: ReactNode;
+  guide?: ReactNode;
   actions: ReactNode;
 }) {
   return (
     <>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-        <div className="flex items-start gap-4">
+        <div
+          data-sheet-header
+          className={`flex gap-4 ${subtitle ? "items-start" : "items-center"}`}
+        >
           {picture}
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <h2 id={titleId} className={`type-card-title ${titleClass}`}>
               {title}
             </h2>
-            {children}
+            {subtitle}
           </div>
         </div>
+        <div data-sheet-body className="mt-3">
+          {children}
+        </div>
+        {guide && <div className="mt-3 flex">{guide}</div>}
       </div>
       <div className="mt-4 flex shrink-0 flex-col gap-3">{actions}</div>
     </>
@@ -107,7 +126,9 @@ function FeedbackSheet({
   title,
   announcement,
   onHeight,
+  subtitle,
   children,
+  guide,
   actions,
 }: {
   inline?: boolean;
@@ -115,7 +136,9 @@ function FeedbackSheet({
   title: string;
   announcement: string;
   onHeight?: (height: number) => void;
+  subtitle?: ReactNode;
   children: ReactNode;
+  guide?: ReactNode;
   actions: ReactNode;
 }) {
   const panel = useRef<HTMLDivElement>(null);
@@ -149,6 +172,8 @@ function FeedbackSheet({
           picture={<SheetPicture kind={tone} />}
           title={title}
           titleClass={tone === "correct" ? "text-status-success-ink" : "text-wrong-text"}
+          subtitle={subtitle}
+          guide={guide}
           actions={actions}
         >
           {children}
@@ -164,6 +189,7 @@ function HintSheet({
   onClose,
   returnFocus,
   children,
+  guide,
   actions,
 }: {
   inline?: boolean;
@@ -171,6 +197,7 @@ function HintSheet({
   onClose: () => void;
   returnFocus?: HTMLElement | null;
   children: ReactNode;
+  guide?: ReactNode;
   actions: ReactNode;
 }) {
   const titleId = useId();
@@ -254,6 +281,7 @@ function HintSheet({
           titleId={titleId}
           title={title}
           titleClass="text-text"
+          guide={guide}
           actions={actions}
         >
           {children}

@@ -80,6 +80,25 @@ describe("hints never reveal the answer", () => {
   });
 });
 
+describe("the wording of the seed hints", () => {
+  it("is one short sentence: at most 110 characters, a full stop, never starting with Review:", () => {
+    [...steps, ...questions].forEach((item) => {
+      if (!item.hint) return;
+      expect(item.hint.length, item.id).toBeLessThanOrEqual(110);
+      expect(item.hint, item.id).not.toMatch(/^Review/i);
+      expect(item.hint, item.id).toMatch(/^[A-Z].*[.]$/);
+      // one sentence: no full stop before the last character
+      expect(item.hint.slice(0, -1), item.id).not.toMatch(/[.?!]\s/);
+    });
+  });
+
+  it("never uses the fallback wording by hand", () => {
+    [...steps, ...questions].forEach((item) =>
+      expect(item.hint ?? "", item.id).not.toMatch(/Look at the guide section/),
+    );
+  });
+});
+
 describe("the hint of a question", () => {
   const base: Item = {
     id: "x",
@@ -103,12 +122,13 @@ describe("the hint of a question", () => {
     });
   });
 
-  it("falls back to Review: and the section title when there is no hint", () => {
+  it("falls back to a sentence that names the guide section when there is no hint", () => {
     const hint = hintFor(base, titleOf);
-    expect(hint?.text).toBe(`Review: ${titleOf("S2")}`);
-    expect(hint?.text).toMatch(/^Review: .+/);
+    expect(hint?.text).toBe(`Look at the guide section “${titleOf("S2")}” before you answer.`);
     expect(hint?.section).toBe("S2");
-    expect(hintFor({ ...base, guideRef: ["Z9"] }, titleOf)?.text).toBe("Review: Z9");
+    expect(hintFor({ ...base, guideRef: ["Z9"] }, titleOf)?.text).toBe(
+      "Look at the guide section “Z9” before you answer.",
+    );
   });
 
   it("is absent when there is neither a hint nor a guide section", () => {

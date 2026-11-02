@@ -313,13 +313,15 @@ test.describe("the question screen: hint and bookmark", () => {
     await expect(check(page)).toBeDisabled();
   });
 
-  test("shows a hint (the fallback) on a quiz question too, as Review: the section", async ({
+  test("shows a hint (the fallback) on a quiz question too, with the fallback sentence", async ({
     page,
   }) => {
-    // q-s2-1 has no hint of its own, so the fallback "Review: <section>" is shown.
+    // q-s2-1 has no hint of its own, so the fallback sentence is shown.
     await start(page, { ...quizSession, itemIds: ["q-s2-1"] });
     await page.getByRole("button", { name: "Hint", exact: true }).click();
-    await expect(page.getByRole("dialog", { name: "Hint" })).toContainText("Review:");
+    await expect(page.getByRole("dialog", { name: "Hint" })).toContainText(
+      "Look at the guide section",
+    );
   });
 
   test("renders a True/False question with 2 options, and a scenario question with 3", async ({

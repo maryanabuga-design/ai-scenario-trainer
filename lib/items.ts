@@ -88,7 +88,7 @@ export function inGuideOrder(sections: string[]): string[] {
 export type Hint = { text: string; section: string | null };
 
 /**
- * The hint of a question: its own `hint`, or "Review: <section title>" built from `guideRef`, or
+ * The hint of a question: its own `hint`, or a sentence that points to the guide section built from `guideRef`, or
  * nothing. `titleOf` finds a section's title.
  */
 export function hintFor(
@@ -98,5 +98,8 @@ export function hintFor(
   const section = item.guideRef[0] ?? null;
   if (item.hint) return { text: item.hint, section };
   if (!section) return null;
-  return { text: `Review: ${titleOf(section) ?? section}`, section };
+  return {
+    text: `Look at the guide section “${titleOf(section) ?? section}” before you answer.`,
+    section,
+  };
 }

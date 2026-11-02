@@ -100,9 +100,8 @@ describe("the feedback sheet", () => {
     expect(html).toContain('aria-hidden="true"');
     expect(html).toContain('src="/images/student/feedback-wrong.webp"');
     expect(html).toContain('alt=""');
-    // the text column is next to the slot and cannot run under it
-    expect(html).toContain("flex items-start gap-4");
-    expect(html).toContain("flex min-w-0 flex-1 flex-col");
+    // the picture and the short parts share the header row
+    expect(html).toContain("data-sheet-header");
     const slot = html.slice(html.indexOf("data-sheet-slot"), html.indexOf("</span>"));
     expect(slot).not.toMatch(/<svg|lucide|[A-Za-z]{3,}<\/(span|p)>/);
     const picture = readFileSync("components/BottomSheet/SheetPicture.tsx", "utf8");
@@ -110,11 +109,53 @@ describe("the feedback sheet", () => {
   });
 });
 
+describe("the four rows", () => {
+  const rows = (html: string) => ({
+    header: html.indexOf("data-sheet-header"),
+    body: html.indexOf("data-sheet-body"),
+    chip: html.indexOf("Guide · "),
+    primary: html.lastIndexOf("<button"),
+  });
+
+  it("correct: the title is centred against the slot; header, full-width body, chip, Primary in order", () => {
+    const html = render(<FeedbackSheet item={item} choice={right.id} last={false} onNext={noop} />);
+    expect(html).toMatch(/data-sheet-header[^>]*items-center/);
+    const r = rows(html);
+    expect(r.header).toBeLessThan(r.body);
+    expect(r.body).toBeLessThan(r.chip);
+    expect(r.chip).toBeLessThan(r.primary);
+    // the explanation is in the body row, not in the header row
+    expect(html.indexOf(item.why)).toBeGreaterThan(r.body);
+    expect(html).not.toContain("Correct answer:");
+  });
+
+  it("wrong: the slot stays top aligned and Correct answer sits under the title in the header row", () => {
+    const html = render(<FeedbackSheet item={item} choice={wrong.id} last={false} onNext={noop} />);
+    expect(html).toMatch(/data-sheet-header[^>]*items-start/);
+    const r = rows(html);
+    expect(html.indexOf("Correct answer:")).toBeGreaterThan(r.header);
+    expect(html.indexOf("Correct answer:")).toBeLessThan(r.body);
+    expect(html.indexOf(item.why)).toBeGreaterThan(r.body);
+  });
+
+  it("hint: the title is centred against the slot and the hint text is in the body row", () => {
+    const html = render(
+      <HintSheet
+        hint={{ text: "Think about it.", section: "S3" }}
+        onClose={noop}
+        returnFocus={null}
+      />,
+    );
+    expect(html).toMatch(/data-sheet-header[^>]*items-center/);
+    expect(html.indexOf("Think about it.")).toBeGreaterThan(html.indexOf("data-sheet-body"));
+  });
+});
+
 describe("the hint sheet", () => {
   it("is a modal dialog with a scrim and a handle: the title, the text, the Guide chip, one Primary Got it", () => {
     const html = render(
       <HintSheet
-        hint={{ text: "Review: Moving through smoke", section: "S3" }}
+        hint={{ text: "Think about what moving through smoke asks of you.", section: "S3" }}
         onClose={noop}
         returnFocus={null}
       />,
@@ -127,7 +168,9 @@ describe("the hint sheet", () => {
     expect(html).toContain('src="/images/student/hint.webp"');
     expect(html).not.toContain("Open guide");
     expect(html.match(/<button/g)).toHaveLength(2);
-    expect(html.indexOf("Review: Moving through smoke")).toBeLessThan(html.indexOf("Guide · S3"));
+    expect(html.indexOf("Think about what moving through smoke asks of you.")).toBeLessThan(
+      html.indexOf("Guide · S3"),
+    );
     expect(html.indexOf("Guide · S3")).toBeLessThan(html.indexOf(">Got it<"));
   });
 

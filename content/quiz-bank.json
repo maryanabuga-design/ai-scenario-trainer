@@ -46,7 +46,7 @@
       ],
       "correctOptionId": "b",
       "why": "Tests, faults and real fires can sound identical, so the sound is not evidence.",
-      "hint": "Consider how a test is designed to sound.",
+      "hint": "Think about how a test is designed to sound compared with a real alarm.",
       "guideRef": [
         "S1"
       ]
@@ -75,7 +75,7 @@
       ],
       "correctOptionId": "c",
       "why": "Only people responsible for the building or the response can officially confirm it. Messages, silence and the behaviour of others are not confirmation.",
-      "hint": "Who is responsible for the building and the response?",
+      "hint": "Think about who is responsible for the building and the response.",
       "guideRef": [
         "S1"
       ]
@@ -97,7 +97,7 @@
       ],
       "correctOptionId": "a",
       "why": "People repeat the habits they practise, so drills should be taken as seriously as a real alarm.",
-      "hint": "What do people fall back on under stress?",
+      "hint": "Think about what people fall back on when they are under stress.",
       "guideRef": [
         "S1"
       ]
@@ -126,7 +126,7 @@
       ],
       "correctOptionId": "b",
       "why": "The first seconds matter. Stopping what you are doing and starting to leave saves time for the exit.",
-      "hint": "What takes up the first seconds if you do not stop?",
+      "hint": "Think about what uses up the first seconds if you do not stop what you are doing.",
       "guideRef": [
         "S1"
       ]
@@ -155,7 +155,7 @@
       ],
       "correctOptionId": "d",
       "why": "The guide allows only what can be carried in a few seconds, such as a phone already in hand.",
-      "hint": "The limit is about time, not about a list of items.",
+      "hint": "Think about whether the limit is about time or about a list of items.",
       "guideRef": [
         "S1"
       ]
@@ -177,7 +177,7 @@
       ],
       "correctOptionId": "b",
       "why": "The guide says never to delay your exit to collect belongings, even when they are close.",
-      "hint": "Does the distance to the item change the rule?",
+      "hint": "Think about whether the distance to an item changes the rule.",
       "guideRef": [
         "S1"
       ]
@@ -235,7 +235,7 @@
       ],
       "correctOptionId": "c",
       "why": "Bulky or heavy items slow you down, while small items already in your hand cost no time.",
-      "hint": "Which items take time to pick up or slow you down?",
+      "hint": "Think about which items take time to pick up or slow you down.",
       "guideRef": [
         "S1"
       ]
@@ -286,7 +286,7 @@
       ],
       "correctOptionId": "a",
       "why": "The guide says not to use elevators during a fire and to use the stairs.",
-      "hint": "What does the guide say about stairs and elevators?",
+      "hint": "Think about what the guide says about stairs and elevators.",
       "guideRef": [
         "S1"
       ]
@@ -315,7 +315,7 @@
       ],
       "correctOptionId": "d",
       "why": "Some buildings have designated evacuation lifts, but they are used only under the control of trained staff or the emergency services.",
-      "hint": "Who operates a lift that is designated for evacuation?",
+      "hint": "Think about who operates a lift that is designated for evacuation.",
       "guideRef": [
         "S1"
       ]
@@ -344,7 +344,7 @@
       ],
       "correctOptionId": "a",
       "why": "A steady pace and a hand on the rail prevent falls, which would block everyone behind you.",
-      "hint": "What would a fall do to the people behind you?",
+      "hint": "Think about what a fall would do to the people behind you.",
       "guideRef": [
         "S1"
       ]
@@ -402,7 +402,7 @@
       ],
       "correctOptionId": "b",
       "why": "Untrained carrying can injure both people and block the route. Reporting the exact location lets responders reach them.",
-      "hint": "What action helps trained responders most?",
+      "hint": "Think about which action helps trained responders the most.",
       "guideRef": [
         "S1"
       ]
@@ -431,7 +431,7 @@
       ],
       "correctOptionId": "d",
       "why": "A precise location and the number of people let responders go to the right place with the right help.",
-      "hint": "How would you describe where someone is to a stranger?",
+      "hint": "Think about how you would describe where someone is to a stranger.",
       "guideRef": [
         "S1"
       ]
@@ -453,7 +453,7 @@
       ],
       "correctOptionId": "b",
       "why": "Do not re-enter. Report the missing person's name and last known location to responders.",
-      "hint": "Who is equipped to search a building during an alarm?",
+      "hint": "Think about who is equipped to search a building during an alarm.",
       "guideRef": [
         "S1"
       ]
@@ -482,7 +482,7 @@
       ],
       "correctOptionId": "a",
       "why": "Groups often wait for someone else to act. Starting to move and calling it out breaks the pause.",
-      "hint": "What happens when everyone waits for someone else?",
+      "hint": "Think about what happens when everyone waits for someone else to act.",
       "guideRef": [
         "S1"
       ]
@@ -511,7 +511,7 @@
       ],
       "correctOptionId": "c",
       "why": "Frequent tests and faults teach people to expect a false alarm, and they watch others instead of acting.",
-      "hint": "What have repeated false alarms taught them?",
+      "hint": "Think about what repeated false alarms have taught people.",
       "guideRef": [
         "S1"
       ]
@@ -540,7 +540,7 @@
       ],
       "correctOptionId": "b",
       "why": "Silence is not confirmation. Stay out until building management, a warden or the emergency services say it is safe.",
-      "hint": "Does the end of the sound mean the end of the danger?",
+      "hint": "Think about whether the end of the sound means the end of the danger.",
       "guideRef": [
         "S1"
       ]
@@ -726,6 +726,7 @@
       "id": "q-s4-1",
       "section": "S4",
       "question": "Where should the assembly point be?",
+      "hint": "Think about what the person counting everyone needs in order to find the missing person.",
       "options": [
         {
           "id": "a",

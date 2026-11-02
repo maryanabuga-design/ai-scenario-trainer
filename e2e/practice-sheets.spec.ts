@@ -180,7 +180,7 @@ for (const width of [360, 430]) {
       await expect(sheet.getByRole("button", { name: "Next" })).toBeVisible();
     });
 
-    test("the picture slot is always there with the same size and place, with or without the file; the text starts after it", async ({
+    test("the picture slot is always there with the same size and place, with or without the file; only the title parts sit beside it", async ({
       page,
     }) => {
       const slotBox = async (sheet: ReturnType<typeof feedback>) => {
@@ -208,11 +208,6 @@ for (const width of [360, 430]) {
       expect([without[2], without[3]]).toEqual([72, 72]);
       const title = (await sheet.getByRole("heading", { name: "Not quite" }).boundingBox())!;
       expect(title.x).toBeGreaterThanOrEqual(without[0] + 72 + 16 - 1);
-      // text never goes under the slot: every text line starts to the right of it
-      const left = await sheet
-        .locator("p:not(.sr-only)")
-        .evaluateAll((els) => els.map((el) => el.getBoundingClientRect().left));
-      for (const x of left) expect(x).toBeGreaterThanOrEqual(without[0] + 72 + 16 - 1);
       // with the file: the same size and the same place
       const picture = readFileSync("public/images/entry/entry-profile.webp");
       await page.route("**/images/student/*.webp", (route) =>
@@ -226,6 +221,104 @@ for (const width of [360, 430]) {
       await expect(withFile).toHaveAttribute("data-sheet-slot", "image");
       await expect(withFile.locator("img")).toHaveAttribute("alt", "");
       expect(await slotBox(feedback(page))).toEqual(without);
+    });
+
+    for (const [name, choose] of [
+      ["correct", S1_RIGHT],
+      ["wrong", S1_WRONG],
+    ] as const) {
+      test(`${name}: the body, the Guide chip and the Primary share the left edge of the picture; the body is full width`, async ({
+        page,
+      }) => {
+        await start(page, scenario);
+        await option(page, choose).click();
+        await check(page).click();
+        await settled(page);
+        const sheet = feedback(page);
+        const slot = (await sheet.locator("[data-sheet-slot]").boundingBox())!;
+        const body = (await sheet.locator("[data-sheet-body]").boundingBox())!;
+        const chip = (await sheet.getByRole("button", { name: /^Guide · S1/ }).boundingBox())!;
+        const primary = (await sheet.getByRole("button", { name: "Next" }).boundingBox())!;
+        const sheetBox = (await sheet.boundingBox())!;
+        expect(Math.abs(body.x - slot.x)).toBeLessThanOrEqual(1);
+        expect(Math.abs(chip.x - slot.x)).toBeLessThanOrEqual(1);
+        expect(Math.abs(primary.x - slot.x)).toBeLessThanOrEqual(1);
+        // the body spans the full width inside the 16px padding
+        expect(Math.abs(body.width - (sheetBox.width - 32))).toBeLessThanOrEqual(1);
+        expect(Math.abs(primary.width - body.width)).toBeLessThanOrEqual(1);
+        // the body starts 12px under the header row, and the chip is at least 44px to tap
+        const header = (await sheet.locator("[data-sheet-header]").boundingBox())!;
+        expect(Math.round(body.y - (header.y + header.height))).toBe(12);
+        const hit = await sheet.getByRole("button", { name: /^Guide · S1/ }).evaluate((el) => {
+          const after = getComputedStyle(el, "::before");
+          return parseFloat(after.height) || el.getBoundingClientRect().height;
+        });
+        expect(hit + 8).toBeGreaterThanOrEqual(44);
+        expect(await noSidewaysScroll(page)).toBe(true);
+      });
+    }
+
+    test("a long Correct answer and a long explanation neither overlap nor overflow, and the Primary stays in view", async ({
+      page,
+    }) => {
+      await start(page, {
+        kind: "quiz",
+        itemIds: ["q-quiz-s01-003", "q-quiz-s01-001"],
+        answers: [],
+        index: 0,
+        finished: false,
+      });
+      await page.locator("fieldset label").first().click();
+      await check(page).click();
+      await settled(page);
+      const sheet = feedback(page);
+      const header = (await sheet.locator("[data-sheet-header]").boundingBox())!;
+      const body = (await sheet.locator("[data-sheet-body]").boundingBox())!;
+      expect(body.y).toBeGreaterThanOrEqual(header.y + header.height);
+      const answer = (await sheet.getByText(/^Correct answer:/).boundingBox())!;
+      expect(answer.x + answer.width).toBeLessThanOrEqual(header.x + header.width + 1);
+      const primary = (await sheet.getByRole("button", { name: "Next" }).boundingBox())!;
+      expect(primary.y + primary.height).toBeLessThanOrEqual(800);
+      expect(await noSidewaysScroll(page)).toBe(true);
+    });
+
+    test("a one-line explanation still looks right: the chip and the Primary follow it closely", async ({
+      page,
+    }) => {
+      await start(page, {
+        kind: "quiz",
+        itemIds: ["q-s2-1", "q-s2-2"],
+        answers: [],
+        index: 0,
+        finished: false,
+      });
+      await page.locator("fieldset label").first().click();
+      await check(page).click();
+      await settled(page);
+      const sheet = feedback(page);
+      const body = (await sheet.locator("[data-sheet-body]").boundingBox())!;
+      const chip = (await sheet.getByRole("button", { name: /^Guide · S2/ }).boundingBox())!;
+      expect(chip.y).toBeGreaterThanOrEqual(body.y + body.height);
+      expect(chip.y - (body.y + body.height)).toBeLessThanOrEqual(20);
+      expect(await noSidewaysScroll(page)).toBe(true);
+    });
+
+    test("a question without a hint of its own gets the fallback sentence and the chip", async ({
+      page,
+    }) => {
+      await start(page, {
+        kind: "quiz",
+        itemIds: ["q-s2-1", "q-s2-2"],
+        answers: [],
+        index: 0,
+        finished: false,
+      });
+      await page.getByRole("button", { name: "Hint", exact: true }).click();
+      const sheet = hintSheet(page);
+      await expect(sheet).toContainText("Look at the guide section “");
+      await expect(sheet).toContainText("” before you answer.");
+      await expect(sheet.getByRole("button", { name: /^Guide · S2/ })).toBeVisible();
+      await expect(sheet).not.toContainText("Review:");
     });
 
     test("the hint sheet: a modal dialog with the text, the guide button and Got it; nothing moves; it closes four ways", async ({

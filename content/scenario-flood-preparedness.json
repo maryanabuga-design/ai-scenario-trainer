@@ -27,7 +27,7 @@
       ],
       "correctOptionId": "c",
       "why": "Acting on the warning, helping those who need support and moving before the water arrives keeps the group safe.",
-      "hint": "A warning means flooding is expected. Think about the people who need help to move, and the time you have.",
+      "hint": "Think about the people who need help to move and how much time you have.",
       "guideRef": [
         "F1",
         "F3"
@@ -55,7 +55,7 @@
       ],
       "correctOptionId": "d",
       "why": "A longer route that stays dry is safer than a shorter one through floodwater.",
-      "hint": "Floodwater hides its depth and its force. Think about which route stays dry, even if it is longer.",
+      "hint": "Think about which route stays dry, even if it is longer, because floodwater hides its depth.",
       "guideRef": [
         "F4",
         "F5"
@@ -83,7 +83,7 @@
       ],
       "correctOptionId": "a",
       "why": "Entering before the area is declared safe, or touching wet electrics, is dangerous. The electrics must be checked first.",
-      "hint": "Think about what may still be unsafe inside after a flood, and who decides when it is safe.",
+      "hint": "Think about what may still be unsafe inside after a flood and who decides when it is safe.",
       "guideRef": [
         "F5",
         "F7"

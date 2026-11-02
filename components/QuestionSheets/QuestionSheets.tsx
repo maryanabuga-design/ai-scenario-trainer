@@ -46,6 +46,8 @@ export function FeedbackSheet({
       title={correct ? "Correct" : "Not quite"}
       announcement={checkAnnouncement(item, choice)}
       onHeight={onHeight}
+      subtitle={!correct ? <p className="type-body-strong">Correct answer: {right}</p> : undefined}
+      guide={section ? <GuideChip sectionId={section} /> : undefined}
       actions={
         <>
           {note && <p className="type-small text-center text-text-secondary">{note}</p>}
@@ -55,9 +57,7 @@ export function FeedbackSheet({
         </>
       }
     >
-      {!correct && <p className="type-body-strong">Correct answer: {right}</p>}
       <p>{item.why}</p>
-      {section && <GuideLink sectionId={section} />}
     </BottomSheet>
   );
 }
@@ -82,19 +82,10 @@ export function HintSheet({
       title="Hint"
       onClose={onClose}
       returnFocus={returnFocus}
+      guide={hint.section ? <GuideChip sectionId={hint.section} /> : undefined}
       actions={<Button onClick={onClose}>Got it</Button>}
     >
       <p>{hint.text}</p>
-      {hint.section && <GuideLink sectionId={hint.section} />}
     </BottomSheet>
-  );
-}
-
-/** The Guide chip under the text of a sheet, left aligned; it opens the linked guide section. */
-function GuideLink({ sectionId }: { sectionId: string }) {
-  return (
-    <div className="mt-2 flex">
-      <GuideChip sectionId={sectionId} />
-    </div>
   );
 }
