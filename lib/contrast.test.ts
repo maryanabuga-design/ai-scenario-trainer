@@ -25,6 +25,17 @@ const pairs: Pair[] = [
       min: TEXT_CONTRAST,
     },
   ]),
+  // the titles of the quiz feedback and hint sheets on their one sand background
+  ...[
+    ["Correct title", token("status-success-ink")],
+    ["Not quite title", token("wrong-text")],
+    ["Hint title and text", token("text")],
+  ].map(([what, front]) => ({
+    what: `${what} on the sheet`,
+    front,
+    back: token("sheet-bg"),
+    min: TEXT_CONTRAST,
+  })),
   // the labels on the answer fills
   {
     what: "Correct label on the correct fill",

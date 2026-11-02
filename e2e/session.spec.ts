@@ -268,7 +268,7 @@ test.describe("the question screen: hint and bookmark", () => {
     await expect(sheet).toContainText(
       "Think about what the sound of an alarm can and cannot tell you.",
     );
-    await expect(sheet.getByRole("button", { name: "Open guide · S1" })).toBeVisible();
+    await expect(sheet.getByRole("button", { name: /Guide · S1/ })).toBeVisible();
     await sheet.getByRole("button", { name: "Got it" }).click();
     await expect(sheet).toBeHidden();
     await expect(lightbulb).toBeFocused();

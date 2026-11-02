@@ -225,7 +225,6 @@ describe("a secondary always comes with a primary above it", () => {
       // Profile: Leave group (demo) in the Demo mode section.
       "components/ProfileView/ProfileView.tsx",
       "components/ProgressView/ProgressView.tsx",
-      "components/QuestionSheets/QuestionSheets.tsx",
       // The reading screen's quick-actions bar: Steps next to the primary Practise this topic.
       "components/QuickActionsBar/QuickActionsBar.tsx",
       // The reading screen: Steps for this topic, below the primary Practise this topic.

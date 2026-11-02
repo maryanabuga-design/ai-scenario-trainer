@@ -486,7 +486,7 @@ export default function Screens() {
               <SessionSample itemId="s2" index={1} answered={[0]} choice="c" checked />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Checked, wrong: the feedback sheet (Not quite, the correct answer, Why, Review the guide, Next)">
+          <PhoneFrame label="Checked, wrong: the feedback sheet (Not quite, the correct answer, Why, the Guide chip, Next)">
             <Screen>
               <SessionSample itemId="s2" index={1} answered={[0]} choice="a" checked />
             </Screen>

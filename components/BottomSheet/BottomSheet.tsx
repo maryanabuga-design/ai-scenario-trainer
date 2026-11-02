@@ -11,7 +11,7 @@ const FOCUSABLE =
   'button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])';
 
 const SHEET_LOOK =
-  "bottom-sheet absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col overflow-y-auto rounded-t-[20px] border-t border-border px-[var(--gutter,1rem)] pt-4 pb-[max(16px,env(safe-area-inset-bottom))] shadow-(--card-shadow) outline-none";
+  "bottom-sheet absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col overflow-y-auto rounded-t-[20px] border-t border-sheet-stroke bg-sheet-bg px-[var(--gutter,1rem)] pt-4 pb-[max(16px,env(safe-area-inset-bottom))] shadow-(--card-shadow) outline-none";
 
 /**
  * The layer is as wide as the phone column, so a wide screen is not covered outside it. `inline` is
@@ -134,9 +134,7 @@ function FeedbackSheet({
         ref={panel}
         data-bottom-sheet="feedback"
         data-tone={tone}
-        className={`${SHEET_LOOK} pointer-events-auto ${
-          tone === "correct" ? "bg-feedback-correct-bg" : "bg-feedback-wrong-bg"
-        }`}
+        className={`${SHEET_LOOK} pointer-events-auto`}
       >
         <p role="status" aria-live="polite" className="sr-only">
           {announcement}
@@ -230,7 +228,7 @@ function HintSheet({
         aria-labelledby={titleId}
         tabIndex={-1}
         data-bottom-sheet="hint"
-        className={`${SHEET_LOOK} bg-bg`}
+        className={SHEET_LOOK}
       >
         <div
           data-sheet-handle
@@ -249,7 +247,7 @@ function HintSheet({
           picture={<SheetPicture kind="hint" />}
           titleId={titleId}
           title={title}
-          titleClass=""
+          titleClass="text-text"
           actions={actions}
         >
           {children}

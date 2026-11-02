@@ -2,15 +2,15 @@
 
 import { BottomSheet } from "@/components/BottomSheet/BottomSheet";
 import { Button } from "@/components/Button/Button";
-import { useSourceSheet } from "@/components/SourceSheet/SourceSheet";
+import { GuideChip } from "@/components/GuideChip/GuideChip";
 import type { Hint, Item } from "@/lib/items";
 import { checkAnnouncement } from "@/lib/option-state";
 
 /**
  * The feedback of a checked answer in practice (DESIGN.md: Practice: answer feedback and hint as
  * bottom sheets): Correct with the explanation, or Not quite with the correct answer, the
- * explanation and a Secondary "Review the guide" above the Primary Next ("See results" on the last
- * question). It replaces the pinned bar; nothing on the page moves.
+ * explanation and the Guide chip, then the one Primary Next ("See results" on the last question).
+ * It replaces the pinned bar; nothing on the page moves.
  */
 export function FeedbackSheet({
   item,
@@ -35,7 +35,6 @@ export function FeedbackSheet({
   onHeight?: (height: number) => void;
   onNext: () => void;
 }) {
-  const { open } = useSourceSheet();
   const correct = choice === item.correctOptionId;
   const right = item.options.find((option) => option.id === item.correctOptionId)?.text ?? "";
   const section = item.guideRef[0];
@@ -50,11 +49,6 @@ export function FeedbackSheet({
       actions={
         <>
           {note && <p className="type-small text-center text-text-secondary">{note}</p>}
-          {!correct && section && (
-            <Button variant="secondary" onClick={() => open(section)}>
-              Review the guide
-            </Button>
-          )}
           <Button disabled={disabled} onClick={onNext}>
             {last ? "See results" : "Next"}
           </Button>
@@ -63,6 +57,7 @@ export function FeedbackSheet({
     >
       {!correct && <p className="type-body-strong">Correct answer: {right}</p>}
       <p>{item.why}</p>
+      {section && <GuideLink sectionId={section} />}
     </BottomSheet>
   );
 }
@@ -80,7 +75,6 @@ export function HintSheet({
   onClose: () => void;
   returnFocus: HTMLElement | null;
 }) {
-  const { open } = useSourceSheet();
   return (
     <BottomSheet
       variant="hint"
@@ -88,18 +82,19 @@ export function HintSheet({
       title="Hint"
       onClose={onClose}
       returnFocus={returnFocus}
-      actions={
-        <>
-          {hint.section && (
-            <Button variant="secondary" onClick={() => open(hint.section!)}>
-              Open guide · {hint.section}
-            </Button>
-          )}
-          <Button onClick={onClose}>Got it</Button>
-        </>
-      }
+      actions={<Button onClick={onClose}>Got it</Button>}
     >
       <p>{hint.text}</p>
+      {hint.section && <GuideLink sectionId={hint.section} />}
     </BottomSheet>
+  );
+}
+
+/** The Guide chip under the text of a sheet, left aligned; it opens the linked guide section. */
+function GuideLink({ sectionId }: { sectionId: string }) {
+  return (
+    <div className="mt-2 flex">
+      <GuideChip sectionId={sectionId} />
+    </div>
   );
 }
