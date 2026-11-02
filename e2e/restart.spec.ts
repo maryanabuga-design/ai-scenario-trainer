@@ -4,11 +4,13 @@ import { authValue, emptyBrowser } from "./auth-seed";
 
 const CODE = "482913";
 
+let profileName = "Ana Test";
+
+/** A new student through the invitation, up to the Profile step. */
 async function signUp(page: Page, name: string, email: string) {
-  await page.goto("/welcome");
-  await page.getByRole("link", { name: "Create account" }).click();
-  await page.getByLabel("Full name").fill(name);
-  await page.getByLabel("Work email").fill(email);
+  profileName = name;
+  await page.goto("/join/QT-A7K2");
+  await page.getByLabel("Your email").fill(email);
   await page.getByRole("button", { name: "Continue" }).click();
   await expect(page).toHaveURL(/\/verify$/);
   await page.getByLabel("Digit 1 of 6").focus();
@@ -16,11 +18,10 @@ async function signUp(page: Page, name: string, email: string) {
 }
 
 async function finishOnboarding(page: Page) {
-  // a new student first sees the Field of work step
-  await expect(page).toHaveURL(/\/field-of-work$/);
-  await page.getByRole("button", { name: "Skip", exact: true }).click();
-  await expect(page).toHaveURL(/\/onboarding$/);
-  await page.getByRole("button", { name: "Skip" }).click();
+  // an invited student gives a name and is in (no Field of work step, no introduction)
+  await expect(page).toHaveURL(/\/set-up-profile$/);
+  await page.getByLabel("Your name").fill(profileName);
+  await page.getByRole("button", { name: "Continue" }).click();
   await expect(page).toHaveURL(/\/$/);
 }
 
@@ -106,16 +107,15 @@ for (const width of [360, 430]) {
       );
       expect(auth?.value?.accounts ?? []).toEqual([]);
       // the same email now says there is no account
-      await page.getByRole("link", { name: "I already have an account" }).click();
+      await page.getByRole("link", { name: "Sign in", exact: true }).click();
       await page.getByLabel("Work email").fill("ana@example.com");
       await page.getByRole("button", { name: "Continue" }).click();
       await expect(
         page.getByText("No account found on this device.", { exact: false }),
       ).toBeVisible();
-      // a new account with that email starts at the onboarding, with no old progress
+      // a new account with that email starts at the Profile step of the invitation, with no old progress
       await signUp(page, "Ana Again", "ana@example.com");
-      // (a new student first sees the Field of work step)
-      await expect(page).toHaveURL(/\/field-of-work$/);
+      await expect(page).toHaveURL(/\/set-up-profile$/);
       await finishOnboarding(page);
       await expect(page.getByRole("heading", { name: "Hi, Ana Again" })).toBeVisible();
       await page.goto("/training");
@@ -172,7 +172,7 @@ for (const width of [360, 430]) {
       await finishOnboarding(page);
       await page.goto("/welcome?restart=1");
       await expect(page).toHaveURL(/\/welcome$/);
-      await expect(page.getByRole("link", { name: "Create account" })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Sign in", exact: true })).toBeVisible();
     });
   });
 

@@ -83,19 +83,28 @@ const initialsOf = (name: string) =>
 
 /** The group: the local student accounts first (real data), then the seeded students. */
 export function participants(
-  local: { name: string; email: string; field?: Field | null; groupId?: string }[],
+  local: {
+    name: string;
+    email: string;
+    field?: Field | null;
+    groupId?: string;
+    noGroup?: boolean;
+  }[],
 ): Participant[] {
   return [
-    ...local.map((account) => ({
-      id: account.email,
-      name: account.name,
-      initials: initialsOf(account.name),
-      local: true,
-      // a Student who joined through a link or an invitation is in that group
-      groupId: account.groupId ?? DEFAULT_GROUP_ID,
-      // the field of work the person chose (shown on the Instructor's Student detail)
-      field: account.field ?? null,
-    })),
+    // a student who left the group is in no roster
+    ...local
+      .filter((account) => !account.noGroup)
+      .map((account) => ({
+        id: account.email,
+        name: account.name,
+        initials: initialsOf(account.name),
+        local: true,
+        // a Student who joined through a link or an invitation is in that group
+        groupId: account.groupId ?? DEFAULT_GROUP_ID,
+        // the field of work the person chose (shown on the Instructor's Student detail)
+        field: account.field ?? null,
+      })),
     ...seededStudents.map((student) => ({
       id: student.id,
       name: student.name,

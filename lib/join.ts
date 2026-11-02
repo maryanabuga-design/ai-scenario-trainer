@@ -1,3 +1,4 @@
+import joinCodes from "@/content/join-codes.json";
 import { groups } from "@/lib/groups";
 import type { Group } from "@/lib/groups";
 import { normaliseEmail } from "@/lib/auth-validation";
@@ -15,6 +16,20 @@ export const JOIN_PREFIX = "/join/";
 /** The group a code belongs to (compared in upper case), or undefined for an unknown code. */
 export const groupByCode = (code: string): Group | undefined =>
   groups.find((group) => group.code === code.trim().toUpperCase());
+
+/** A code as typed: spaces removed, upper case. */
+export const normaliseCode = (text: string): string => text.replace(/\s+/g, "").toUpperCase();
+
+/** What a code or link leads to: a group, an expired code (the demo `OLD-0000`) or nothing known. */
+export type CodeLookup =
+  { kind: "valid"; group: Group; invitedBy: string } | { kind: "expired" } | { kind: "unknown" };
+
+export function lookupCode(text: string): CodeLookup {
+  const code = normaliseCode(text);
+  if ((joinCodes.expired as string[]).includes(code)) return { kind: "expired" };
+  const group = groupByCode(code);
+  return group ? { kind: "valid", group, invitedBy: joinCodes.instructor } : { kind: "unknown" };
+}
 
 /** The saved code of an opened join link, kept for the sign-up (versioned, tolerant, shared on the device). */
 const store = createStore<string>("ast.auth.join.v1", {

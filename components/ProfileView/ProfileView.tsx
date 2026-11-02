@@ -57,6 +57,7 @@ export function ProfileView({
   dialogInline = false,
   backHref,
   certificates = 0,
+  onLeaveGroup,
 }: {
   account: {
     name: string;
@@ -81,6 +82,8 @@ export function ProfileView({
   backHref?: string;
   /** The number of certificates (a Student's row "Certificates"). */
   certificates?: number;
+  /** Demo: a Student in a group can leave it, to see the empty home (DESIGN.md: Invitation-only entry). */
+  onLeaveGroup?: () => void;
 }) {
   const { role } = account;
   const student = role === "student";
@@ -132,6 +135,11 @@ export function ProfileView({
             onChange={onRoleChange}
           />
           <p className="type-small text-text-secondary">{DEMO_HELPER}</p>
+          {student && onLeaveGroup && (
+            <Button variant="secondary" onClick={onLeaveGroup}>
+              Leave group (demo)
+            </Button>
+          )}
         </section>
 
         {student && (

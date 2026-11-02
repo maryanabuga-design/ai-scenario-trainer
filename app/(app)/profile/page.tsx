@@ -4,7 +4,14 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ProfileView } from "@/components/ProfileView/ProfileView";
 import { useCertificates } from "@/lib/certificates-store";
-import { deleteAccount, setRole, signOut, useCurrentAccount } from "@/lib/auth";
+import {
+  deleteAccount,
+  groupOf,
+  leaveGroup,
+  setRole,
+  signOut,
+  useCurrentAccount,
+} from "@/lib/auth";
 import { defaultDirection } from "@/lib/directions";
 import { roleHome } from "@/lib/role";
 import { resetProgress, saveProfile, useProfile } from "@/lib/session";
@@ -52,6 +59,14 @@ export default function Profile() {
       }}
       resetDone={resetDone}
       certificates={certificates.length}
+      onLeaveGroup={
+        groupOf(account) !== null
+          ? () => {
+              leaveGroup();
+              router.push("/");
+            }
+          : undefined
+      }
       backHref={roleHome(account.role)}
     />
   );

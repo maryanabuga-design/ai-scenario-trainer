@@ -28,7 +28,10 @@ import { CertificatesList } from "@/components/CertificatesList/CertificatesList
 import { StudentDetailView } from "@/components/InstructorStudents/StudentDetailView";
 import { StudentsHeader } from "@/components/InstructorStudents/StudentsHeader";
 import { EmptyCard, StudentsListView } from "@/components/InstructorStudents/StudentsListView";
-import { JoinView } from "@/components/JoinView/JoinView";
+import { GroupCodeView } from "@/components/GroupCodeView/GroupCodeView";
+import { InvitationView } from "@/components/InvitationView/InvitationView";
+import { NoGroupView } from "@/components/NoGroupView/NoGroupView";
+import { ProfileSetupView } from "@/components/ProfileSetupView/ProfileSetupView";
 import { TopicStudentsView } from "@/components/InstructorTopics/TopicStudentsView";
 import {
   belowPassMark,
@@ -130,7 +133,6 @@ import { InstructorOverviewView } from "@/components/InstructorOverview/Instruct
 import { AboutView } from "@/components/AboutView/AboutView";
 import { EditProfileView } from "@/components/EditProfileView/EditProfileView";
 import { SignInView } from "@/components/SignInView/SignInView";
-import { SignUpView } from "@/components/SignUpView/SignUpView";
 import { VerifyView } from "@/components/VerifyView/VerifyView";
 import { WelcomeView } from "@/components/WelcomeView/WelcomeView";
 import type { Role } from "@/lib/role";
@@ -1660,7 +1662,11 @@ export function InstructorStudentsSample({
     );
   }
   if (state === "join" || state === "join-invalid") {
-    return <JoinView code={state === "join" ? "QT-A7K2" : "QT-0000"} />;
+    return state === "join" ? (
+      <InvitationView state="new" groupName="Rescue team" invitedBy="Maryana" startHref="#" />
+    ) : (
+      <InvitationView state="invalid" startHref="#" />
+    );
   }
   if (state.startsWith("detail") || state === "reminder") {
     const wanted =
@@ -1873,24 +1879,64 @@ export function WelcomeSample() {
   return <WelcomeView />;
 }
 
-export function SignUpSample({
-  errors = false,
-  instructor = false,
-}: {
-  errors?: boolean;
-  instructor?: boolean;
-}) {
-  return (
-    <SignUpView
-      onSubmit={() => "ok"}
-      initialTouched={errors}
-      initial={{
-        name: "",
-        email: "",
-        role: instructor ? "instructor" : "student",
-      }}
-    />
-  );
+export type EntryState =
+  | "group-code"
+  | "group-code-error"
+  | "invitation-new"
+  | "invitation-new-error"
+  | "invitation-join"
+  | "invitation-member"
+  | "invitation-invalid"
+  | "profile"
+  | "profile-error"
+  | "no-group"
+  | "no-group-error";
+
+/** The invitation-only entry screens (DESIGN.md: Invitation-only entry), in each of their states. */
+export function EntrySample({ state }: { state: EntryState }) {
+  const base = { groupName: "Rescue team", invitedBy: "Maryana", startHref: "#" };
+  switch (state) {
+    case "group-code":
+    case "group-code-error":
+      return (
+        <GroupCodeView
+          onContinue={() => "unknown"}
+          backHref="#"
+          initialCode={state === "group-code-error" ? "QT-0000" : ""}
+          initialError={state === "group-code-error"}
+        />
+      );
+    case "invitation-new":
+    case "invitation-new-error":
+      return (
+        <InvitationView
+          state="new"
+          {...base}
+          onEmail={() => "ok"}
+          initialEmail={state === "invitation-new-error" ? "ana@" : ""}
+          initialTouched={state === "invitation-new-error"}
+        />
+      );
+    case "invitation-join":
+      return <InvitationView state="can-join" {...base} onJoin={() => undefined} />;
+    case "invitation-member":
+      return <InvitationView state="member" {...base} />;
+    case "invitation-invalid":
+      return <InvitationView state="invalid" startHref="#" />;
+    case "profile":
+    case "profile-error":
+      return (
+        <ProfileSetupView onSubmit={() => undefined} initialTouched={state === "profile-error"} />
+      );
+    default:
+      return (
+        <NoGroupView
+          name="Maryana"
+          onJoin={() => "unknown"}
+          initialError={state === "no-group-error"}
+        />
+      );
+  }
 }
 
 export function SignInSample({ unknown = false }: { unknown?: boolean }) {

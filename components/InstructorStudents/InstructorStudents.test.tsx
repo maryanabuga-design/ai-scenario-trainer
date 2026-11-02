@@ -13,12 +13,9 @@ import { STUDENTS_SUBTITLE, StudentsHeader } from "@/components/InstructorStuden
 import { EmptyCard, StudentsListView } from "@/components/InstructorStudents/StudentsListView";
 import { TopicStudentsView } from "@/components/InstructorTopics/TopicStudentsView";
 import { TopicsView } from "@/components/InstructorTopics/TopicsView";
-import { JoinView } from "@/components/JoinView/JoinView";
 import { SearchField } from "@/components/SearchField/SearchField";
-import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { participants } from "@/lib/cohort";
 import { seedGroupExams } from "@/lib/group-exams";
-import { loadAllSections } from "@/lib/guide";
 import { inScope } from "@/lib/groups";
 import { topicStandings } from "@/lib/overview";
 import {
@@ -826,32 +823,6 @@ describe("Invite students", () => {
     expect(html).toContain(">GROUP<");
     expect(html).toContain("data-choose-group");
     expect(html).not.toContain("data-group-code");
-  });
-});
-
-describe("the join screen", () => {
-  const view = (code: string) =>
-    clean(
-      renderToStaticMarkup(
-        <SourceSheetProvider sections={loadAllSections()}>
-          <JoinView code={code} />
-        </SourceSheetProvider>,
-      ),
-    );
-
-  it("says 'You are invited to Rescue team' with a Primary Create account and a Secondary Sign in", () => {
-    const html = view("QT-A7K2");
-    expect(html).toContain("You are invited to Rescue team");
-    expect(html).toMatch(/bg-primary[^>]*>Create account</);
-    expect(html).toMatch(/bg-olive-tint[^>]*>Sign in</);
-    expect(view("qt-m4r9")).toContain("You are invited to Military training");
-  });
-
-  it("says the link is not valid for an unknown code, with a Secondary Back to welcome", () => {
-    const html = view("QT-0000");
-    expect(html).toContain("This invitation link is not valid.");
-    expect(html).not.toContain("Create account");
-    expect(html).toMatch(/href="\/welcome"[^>]*>[\s\S]*Back to welcome/);
   });
 });
 

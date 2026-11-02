@@ -81,7 +81,7 @@ for (const viewport of viewports) {
       await checkFrame(page, height);
       // the text block (eyebrow, title, subtitle) is one block under the picture
       await checkCentred(page, width, "[data-eyebrow] >> xpath=..");
-      const create = await box(page, "a:has-text('Create account')");
+      const create = await box(page, "a:has-text('Sign in')");
       const bottom = await box(page, "[data-bottom]");
       expect(create.y).toBeGreaterThanOrEqual(bottom.y - 0.5);
       // the top row is an empty spacer, 44px high

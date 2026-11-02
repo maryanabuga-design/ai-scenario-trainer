@@ -2,10 +2,18 @@ import { roleHome, roleRedirect } from "@/lib/role";
 import type { Role } from "@/lib/role";
 
 /** The screens a signed-out visitor may open. */
-export const AUTH_ROUTES = ["/welcome", "/sign-up", "/sign-in", "/verify"];
+export const AUTH_ROUTES = ["/welcome", "/sign-in", "/verify", "/join"];
 
 /** The signed-in person as the guard sees them. */
-export type Visitor = { role: Role; onboardingDone: boolean; fieldStepDone?: boolean };
+export type Visitor = {
+  role: Role;
+  onboardingDone: boolean;
+  fieldStepDone?: boolean;
+  /** false: an invited student who has not finished the Profile step. */
+  profileDone?: boolean;
+};
+
+export const PROFILE_SETUP_ROUTE = "/set-up-profile";
 
 export const ONBOARDING_ROUTE = "/onboarding";
 export const FIELD_ROUTE = "/field-of-work";
@@ -17,9 +25,18 @@ export const FIELD_ROUTE = "/field-of-work";
  * role, and the role guard of before still applies. Pure.
  */
 export function guardRedirect(visitor: Visitor | null, pathname: string): string | null {
-  // a join link (`/join/<code>`) is open to a signed-out visitor; a signed-in person goes Home
+  // the group code screen and a join link (`/join/<code>`) are open to a signed-out visitor and to a
+  // signed-in student (who confirms joining); an instructor goes Home
   const isJoin = pathname.startsWith("/join/");
   if (visitor === null) return AUTH_ROUTES.includes(pathname) || isJoin ? null : "/welcome";
+  // an invited student finishes the Profile step first
+  if (visitor.profileDone === false) {
+    return pathname === PROFILE_SETUP_ROUTE ? null : PROFILE_SETUP_ROUTE;
+  }
+  if (pathname === PROFILE_SETUP_ROUTE) return roleHome(visitor.role);
+  if (visitor.role === "student" && visitor.onboardingDone && (pathname === "/join" || isJoin)) {
+    return null;
+  }
   if (!visitor.onboardingDone) {
     // a student who has not been through the Field of work step goes there first, once; then the introduction
     const owesStep = visitor.role === "student" && visitor.fieldStepDone === false;

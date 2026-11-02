@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 import { authValue, emptyBrowser, signedInStudent } from "./auth-seed";
+import { demoRole, joinAsStudent } from "./join-flow";
 
 const instructor = {
   cookies: [],
@@ -1009,52 +1010,36 @@ for (const width of [360, 430]) {
   test.describe(`Join link and invitations at ${width}px`, () => {
     test.use({ viewport: { width, height: 800 }, storageState: emptyBrowser });
 
-    test("the join screen: 'You are invited to Rescue team' with Create account and Sign in; an unknown code says so", async ({
+    test("the invitation screen: the card for each group, an unknown code and the expired demo code say the link is no longer valid", async ({
       page,
     }) => {
       await page.goto("/join/QT-A7K2");
-      await expect(page.locator("[data-join-title]")).toHaveText("You are invited to Rescue team");
-      const create = page.getByRole("link", { name: "Create account" });
-      expect(await bg(create)).toBe(PRIMARY);
-      expect(await bg(page.getByRole("link", { name: "Sign in" }))).toBe(OLIVE_TINT);
+      await expect(page.locator("[data-invitation-title]")).toHaveText("Rescue team");
+      await expect(page.getByRole("button", { name: "Continue" })).toBeVisible();
+      expect(await bg(page.getByRole("button", { name: "Continue" }))).toBe(PRIMARY);
       expect(await noSidewaysScroll(page)).toBe(true);
       await page.goto("/join/QT-M4R9");
-      await expect(page.locator("[data-join-title]")).toHaveText(
-        "You are invited to Military training",
-      );
-      await page.goto("/join/QT-0000");
-      await expect(page.locator("[data-join-title]")).toHaveText(
-        "This invitation link is not valid.",
-      );
-      await expect(page.getByRole("link", { name: "Create account" })).toHaveCount(0);
-      const back = page.getByRole("link", { name: "Back to welcome" });
+      await expect(page.locator("[data-invitation-title]")).toHaveText("Military training");
+      for (const code of ["QT-0000", "OLD-0000"]) {
+        await page.goto(`/join/${code}`);
+        await expect(
+          page.getByRole("heading", { name: "This link is no longer valid" }),
+        ).toBeVisible();
+        await expect(page.getByText("Ask your instructor for a new one.")).toBeVisible();
+        await expect(page.getByLabel("Your email")).toHaveCount(0);
+      }
+      const back = page.getByRole("link", { name: "Back to start" });
       expect(await bg(back)).toBe(OLIVE_TINT);
       await back.click();
       await expect(page).toHaveURL(/\/welcome$/);
     });
 
-    test("Create account tells a student that the instructor can see their progress", async ({
+    test("a Student who joins through the link is in that group; the invitation of the same address becomes Joined", async ({
       page,
     }) => {
-      await page.goto("/sign-up");
-      await expect(page.locator("[data-instructor-sees]")).toHaveText(
-        "Your instructor can see your progress and exam results.",
-      );
-    });
-
-    test("a Student who creates an account through the link joins that group; the invitation of the same address becomes Joined", async ({
-      page,
-    }) => {
-      // 1. an instructor account invites an address to Military training
-      await page.goto("/sign-up");
-      await page.getByLabel("Full name").fill("Ira Instructor");
-      await page.getByLabel("Work email").fill("ira@example.com");
-      await page.getByText("Instructor", { exact: true }).click();
-      await page.getByRole("button", { name: "Continue" }).click();
-      await verifyAs(page);
-      await expect(page).toHaveURL(/\/onboarding$/);
-      await page.getByRole("button", { name: "Skip" }).click();
-      await expect(page).toHaveURL(/\/instructor$/);
+      // 1. an instructor account invites an address to Military training (a student switched to Instructor with the demo shortcut)
+      await joinAsStudent(page, "Ira Instructor", "ira@example.com");
+      await demoRole(page, "Instructor");
       await chooseGroup(page, "Military training");
       await page.goto("/instructor/students/invite");
       await page.getByRole("combobox", { name: "INVITE BY EMAIL" }).fill("nina@example.com");
@@ -1064,33 +1049,24 @@ for (const width of [360, 430]) {
       await page.goto("/instructor/students/invite");
       await expect(page.locator('[data-pending="nina@example.com"]')).toBeVisible();
       await expect(page.locator("main")).toContainText("PENDING INVITATIONS (1)");
-      // 2. sign out, open the join link of that group and create the Student account
+      // 2. sign out, open the join link of that group and join as the invited Student
       await page.goto("/profile");
       await page.getByRole("button", { name: "Sign out" }).click();
       await expect(page).toHaveURL(/\/welcome$/);
-      await page.goto("/join/QT-M4R9");
-      await expect(page.locator("[data-join-title]")).toHaveText(
-        "You are invited to Military training",
+      await joinAsStudent(page, "Nina Student", "nina@example.com", "/join/QT-M4R9");
+      await expect(page.locator("[data-flash]:visible")).toContainText(
+        "You joined Military training",
       );
-      await page.getByRole("link", { name: "Create account" }).click();
-      await expect(page).toHaveURL(/\/sign-up$/);
-      await page.getByLabel("Full name").fill("Nina Student");
-      await page.getByLabel("Work email").fill("nina@example.com");
-      await page.getByText("Student", { exact: true }).click();
-      await page.getByRole("button", { name: "Continue" }).click();
-      await verifyAs(page);
-      await expect(page).toHaveURL(/\/field-of-work$/);
-      await page.getByRole("button", { name: "Skip" }).click();
-      await page.getByRole("button", { name: "Skip" }).click();
-      await expect(page).toHaveURL(/\/$/);
       // the student's Profile tells them that the instructor can see their progress
       await page.goto("/profile");
       await expect(page.locator("[data-instructor-sees]")).toHaveText(
         "Your instructor can see your progress and exam results.",
       );
-      // a signed-in person who opens a join link goes Home
+      // a signed-in student who opens the link of another group is asked, never joined silently
       await page.goto("/join/QT-A7K2");
-      await expect(page).toHaveURL(/\/$/);
+      await expect(page.getByRole("button", { name: "Join group" })).toBeVisible();
+      await page.goto("/join/QT-M4R9");
+      await expect(page.getByText("You are already in Military training")).toBeVisible();
       // 3. back to the instructor: the invitation is Joined, and Nina is in the Military training list
       await page.goto("/profile");
       await page.getByRole("button", { name: "Sign out" }).click();
@@ -1127,11 +1103,13 @@ test.describe("Student and the Students routes", () => {
       "/instructor/students/stu-01",
       "/instructor/students/invite",
       "/instructor/topics",
-      "/join/QT-A7K2",
     ]) {
       await page.goto(path);
       await expect(page).toHaveURL(/^http:\/\/localhost:3100\/$/);
     }
+    // a signed-in student may open a join link (and confirm joining): it is no Students route
+    await page.goto("/join/QT-A7K2");
+    await expect(page).toHaveURL(/\/join\/QT-A7K2$/);
     await page.goto("/profile");
     await expect(page.locator("[data-instructor-sees]")).toBeVisible();
   });

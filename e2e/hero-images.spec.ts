@@ -181,9 +181,8 @@ for (const viewport of viewports) {
     });
 
     async function openVerify(page: Page) {
-      await page.goto("/sign-up");
-      await page.getByLabel("Full name").fill("Ana Test");
-      await page.getByLabel("Work email").fill("ana@example.com");
+      await page.goto("/join/QT-A7K2");
+      await page.getByLabel("Your email").fill("ana@example.com");
       await page.getByRole("button", { name: "Continue" }).click();
       await expect(page).toHaveURL(/\/verify$/);
     }
@@ -266,35 +265,13 @@ for (const viewport of viewports) {
       await expect(page.getByLabel("Digit 2 of 6")).toHaveValue("8");
       await expect(page.getByLabel("Digit 3 of 6")).toBeFocused();
       await page.getByRole("button", { name: "Fill in code" }).click();
-      await expect(page).toHaveURL(/\/field-of-work$/);
-    });
-
-    test("Create account: both role helpers are one line and both cards are 72px high", async ({
-      page,
-    }) => {
-      await page.goto("/sign-up");
-      for (const text of ["Practise and take exams", "Create and assign exams"]) {
-        const info = await page.getByText(text, { exact: true }).evaluate((el) => ({
-          cut: el.scrollWidth > el.clientWidth,
-          height: el.getBoundingClientRect().height,
-          line: parseFloat(getComputedStyle(el).lineHeight),
-          overflow: getComputedStyle(el).textOverflow,
-          nowrap: getComputedStyle(el).whiteSpace,
-        }));
-        expect(info.cut, text).toBe(false);
-        expect(info.height, text).toBeCloseTo(info.line, 0);
-        expect(info.overflow).toBe("ellipsis");
-        expect(info.nowrap).toBe("nowrap");
-        const card = (await page.locator("label", { hasText: text }).boundingBox())!;
-        expect(card.height, text).toBe(72);
-      }
-      expect(await noSidewaysScroll(page)).toBe(true);
+      await expect(page).toHaveURL(/\/set-up-profile$/);
     });
 
     test("the autofill tint is switched off: the rule exists and the inputs are white with dark text", async ({
       page,
     }) => {
-      await page.goto("/sign-up");
+      await page.goto("/sign-in");
       const rule = await page.evaluate(() => {
         const found: string[] = [];
         for (const sheet of document.styleSheets) {
@@ -314,7 +291,7 @@ for (const viewport of viewports) {
       expect(rule).toContain("autofill");
       expect(rule).toMatch(/inset/);
       expect(rule).toMatch(/-webkit-text-fill-color/);
-      for (const label of ["Full name", "Work email"]) {
+      for (const label of ["Work email"]) {
         const look = await page.getByLabel(label).evaluate((el) => {
           const css = getComputedStyle(el);
           return [css.backgroundColor, css.color];

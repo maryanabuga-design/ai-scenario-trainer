@@ -4,13 +4,14 @@ import { heroSlotFiles } from "@/lib/media-frames";
 
 export const APP_NAME = "AI Scenario Trainer";
 export const WELCOME_TITLE = "Train for real situations";
-export const WELCOME_SUBTITLE =
-  "Short scenarios, quizzes and exams for building evacuation and first aid.";
+export const WELCOME_SUBTITLE = "Sign in to continue your training.";
+export const WELCOME_NO_ACCOUNT = "No account yet? Ask your instructor for an invitation link.";
 export const WELCOME_NOTE = "For educational use. Demo data stays on this device.";
 
 /**
- * Welcome (DESIGN.md: Accounts): on the plain page, the 3D picture and the centred text (eyebrow,
- * title, subtitle) centred in the free space, and the pinned buttons. No header and no navigation.
+ * Welcome (DESIGN.md: Invitation-only entry): on the plain page, the 3D picture and the centred text
+ * (eyebrow, title, subtitle) centred in the free space, and the pinned Sign in, the muted line about
+ * invitations and the tertiary "Have a group code?". No sign-up. No header and no navigation.
  */
 export function WelcomeView() {
   return (
@@ -19,9 +20,12 @@ export function WelcomeView() {
       priority
       bottom={
         <>
-          <ButtonLink href="/sign-up">Create account</ButtonLink>
-          <ButtonLink variant="secondary" href="/sign-in">
-            I already have an account
+          <ButtonLink href="/sign-in">Sign in</ButtonLink>
+          <p data-no-account className="type-small text-center text-text-secondary">
+            {WELCOME_NO_ACCOUNT}
+          </p>
+          <ButtonLink variant="tertiary" href="/join">
+            Have a group code?
           </ButtonLink>
           <p className="type-caption text-center text-text-secondary">{WELCOME_NOTE}</p>
         </>

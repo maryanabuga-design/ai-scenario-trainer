@@ -26,6 +26,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
                 role: account.role,
                 onboardingDone: account.onboardingDone,
                 fieldStepDone: account.fieldStepDone,
+                profileDone: account.profileDone !== false,
               }
             : null,
           pathname,

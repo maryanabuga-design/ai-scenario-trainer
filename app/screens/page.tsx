@@ -56,7 +56,7 @@ import {
   PackageSample,
   AboutSample,
   WelcomeSample,
-  SignUpSample,
+  EntrySample,
   SignInSample,
   VerifySample,
   EditProfileSample,
@@ -754,19 +754,59 @@ export default function Screens() {
               <WelcomeSample />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Create account: empty">
+          <PhoneFrame label="Group code">
             <Screen>
-              <SignUpSample />
+              <EntrySample state="group-code" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Create account: Instructor selected">
+          <PhoneFrame label="Group code: code not found">
             <Screen>
-              <SignUpSample instructor />
+              <EntrySample state="group-code-error" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Create account: errors">
+          <PhoneFrame label="Invitation (a): not signed in, new student">
             <Screen>
-              <SignUpSample errors />
+              <EntrySample state="invitation-new" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Invitation (a): email error">
+            <Screen>
+              <EntrySample state="invitation-new-error" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Invitation (b): signed-in student, not in the group">
+            <Screen>
+              <EntrySample state="invitation-join" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Invitation (c): already in the group">
+            <Screen>
+              <EntrySample state="invitation-member" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Invitation (d): link no longer valid">
+            <Screen>
+              <EntrySample state="invitation-invalid" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Profile of a new student">
+            <Screen>
+              <EntrySample state="profile" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Profile: name error">
+            <Screen>
+              <EntrySample state="profile-error" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Student home: no group yet">
+            <Screen>
+              <EntrySample state="no-group" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Student home: no group, code not found">
+            <Screen>
+              <EntrySample state="no-group-error" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Sign in">

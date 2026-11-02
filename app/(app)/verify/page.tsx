@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { VerifyView } from "@/components/VerifyView/VerifyView";
 import { useAuth, verifyCode } from "@/lib/auth";
+import { readJoin } from "@/lib/join";
 
 export default function VerifyPage() {
   const router = useRouter();
@@ -21,7 +22,12 @@ export default function VerifyPage() {
     <VerifyView
       email={pending.email}
       now={Date.now}
-      onChangeEmail={() => router.push(pending.mode === "sign-up" ? "/sign-up" : "/sign-in")}
+      onChangeEmail={() => {
+        const code = readJoin();
+        router.push(
+          pending.mode === "sign-up" ? (code ? `/join/${code}` : "/welcome") : "/sign-in",
+        );
+      }}
       onVerify={(code) => {
         const result = verifyCode(code);
         if (result.ok) router.push(result.destination);

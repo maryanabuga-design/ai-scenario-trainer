@@ -2,7 +2,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { EditProfileView } from "@/components/EditProfileView/EditProfileView";
 import { SignInView } from "@/components/SignInView/SignInView";
-import { SignUpView } from "@/components/SignUpView/SignUpView";
+import { GroupCodeView } from "@/components/GroupCodeView/GroupCodeView";
+import { InvitationView } from "@/components/InvitationView/InvitationView";
+import { NoGroupView } from "@/components/NoGroupView/NoGroupView";
+import { ProfileSetupView } from "@/components/ProfileSetupView/ProfileSetupView";
 import { VerifyView } from "@/components/VerifyView/VerifyView";
 import {
   APP_NAME,
@@ -47,9 +50,7 @@ describe("Welcome", () => {
   it("has the eyebrow, the title and the subtitle, centred", () => {
     expect(APP_NAME).toBe("AI Scenario Trainer");
     expect(WELCOME_TITLE).toBe("Train for real situations");
-    expect(WELCOME_SUBTITLE).toBe(
-      "Short scenarios, quizzes and exams for building evacuation and first aid.",
-    );
+    expect(WELCOME_SUBTITLE).toBe("Sign in to continue your training.");
     expect(out).toMatch(/data-eyebrow[^>]*>AI Scenario Trainer</);
     expect(out).toContain(">Train for real situations</h1>");
     expect(out).toContain(WELCOME_SUBTITLE);
@@ -61,84 +62,125 @@ describe("Welcome", () => {
     expect(out).not.toContain("justify-center gap-2 px-2 py-4");
   });
 
-  it("has the pinned buttons: Primary, the olive-tint Secondary 12px below, and the note", () => {
+  it("has Sign in, the muted invitation line and the tertiary group code link; no sign-up", () => {
     expect(out).toContain("pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]");
-    expect(out).toContain('href="/sign-up"');
-    expect(out).toContain(">Create account<");
     expect(out).toContain('href="/sign-in"');
-    expect(out).toContain(">I already have an account<");
-    expect(out).toContain("bg-olive-tint");
-    expect(out).toContain("gap-3");
+    expect(out).toMatch(/bg-primary[^>]*>Sign in</);
+    expect(out).toContain(WELCOME_SUBTITLE);
+    expect(WELCOME_SUBTITLE).toBe("Sign in to continue your training.");
+    expect(out).toContain("No account yet? Ask your instructor for an invitation link.");
+    // the line is plain text, not a button or a link
+    expect(out).toMatch(/<p[^>]*data-no-account[^>]*>No account yet\?/);
+    expect(out).toContain('href="/join"');
+    expect(out).toMatch(/underline[^>]*>Have a group code\?</);
+    expect(out).not.toMatch(/Create account|Sign up|sign-up|I already have an account/);
     expect(out).toContain(WELCOME_NOTE);
-    expect(out.indexOf("Create account")).toBeLessThan(out.indexOf("I already have an account"));
-    expect(out.indexOf("I already have an account")).toBeLessThan(out.indexOf(WELCOME_NOTE));
+    expect(out.indexOf(">Sign in<")).toBeLessThan(out.indexOf("No account yet?"));
+    expect(out.indexOf("No account yet?")).toBeLessThan(out.indexOf("Have a group code?"));
   });
 });
 
-describe("Create account", () => {
-  const out = html(<SignUpView onSubmit={() => "ok"} />);
+describe("Group code", () => {
+  const out = html(<GroupCodeView onContinue={() => "unknown"} backHref="/welcome" />);
 
-  it("has Back, the title, visible labels above the fields and the right input hints", () => {
-    expect(out).toContain('aria-label="Back to Welcome"');
-    expect(out).toContain(">Step 1 of 2<");
-    expect(out).toContain(">Create your account</h1>");
-    expect(out).toContain("It takes less than a minute.");
-    expect(out).not.toContain("data-hero-panel");
-    expect(out).toMatch(/<label[^>]*>Full name<\/label>/);
-    expect(out).toMatch(/<label[^>]*>Work email<\/label>/);
-    expect(out).toContain('autoComplete="name"');
-    expect(out).toContain('autoComplete="email"');
-    expect(out).toContain('inputMode="email"');
-    expect(out).toContain('type="email"');
-    expect(out).toContain("h-[52px]");
-    expect(out).toMatch(/<label[^>]*type-small-strong[^>]*>Full name/);
-    expect(out).not.toContain("autofocus");
-    expect(out).not.toContain("autoFocus");
-  });
-
-  it("has the two role cards with their helpers, Student preselected", () => {
-    expect(out).toContain(">I am a</legend>");
-    expect(out).toContain(">Practise and take exams<");
-    expect(out).toContain(">Create and assign exams<");
-    expect(out).not.toContain("assigned to you");
-    // each helper is one line, cut with an ellipsis as a safety net; the cards are exactly 72px high
-    expect(out.match(/type-small truncate text-text-secondary/g)).toHaveLength(2);
-    const checked = [...out.matchAll(/<input[^>]*checked=""[^>]*>/g)].map((m) => m[0]);
-    expect(checked).toHaveLength(1);
-    expect(checked[0]).toContain('value="student"');
-    // 72px cards, each with a 40px neutral icon tile
-    expect(out.match(/h-\[72px\]/g)).toHaveLength(2);
-    expect(out.match(/h-10 w-10 rounded-full/g)).toHaveLength(2);
-    expect(out.match(/bg-neutral-tile-bg text-neutral-tile-ink/g)).toHaveLength(2);
-  });
-
-  it("has the demo note and a pinned Continue that submits the form", () => {
-    expect(out).toContain(
-      "Demo: data stays on this device. Please do not enter real personal data.",
-    );
-    expect(out).toContain('<form noValidate=""');
+  it("has the title, the subtitle, one labelled field, the Primary Continue and the Secondary Back", () => {
+    expect(out).toContain(">Join a group</h1>");
+    expect(out).toContain("Enter the code your instructor gave you.");
+    expect(out).toMatch(/<label[^>]*>Group code<\/label>/);
+    expect(out.match(/<input/g)).toHaveLength(1);
     expect(out).toMatch(/type="submit"[^>]*>(?:<span[^>]*>)?Continue/);
-    expect(out).toContain("mt-auto");
-    expect(out.indexOf("data stays on this device")).toBeLessThan(out.indexOf(">Continue<"));
-    expect(out).toContain('href="/sign-in"');
-    expect(out).toContain(">Already have an account? Sign in<");
-    expect(out.indexOf(">Continue<")).toBeLessThan(out.indexOf("Already have an account?"));
-  });
-
-  it("shows no error until a field was left or the form was sent", () => {
+    expect(out).toMatch(/bg-olive-tint[^>]*href="\/welcome"|href="\/welcome"[^>]*bg-olive-tint/);
+    expect(out).toContain(">Back<");
+    expect(out.indexOf(">Continue<")).toBeLessThan(out.indexOf(">Back<"));
     expect(out).not.toContain("aria-invalid");
-    expect(out).not.toContain("Enter your full name");
   });
 
-  it("shows the errors with an icon and aria wiring when they are showing", () => {
-    const withErrors = html(<SignUpView onSubmit={() => "ok"} initialTouched />);
-    expect(withErrors).toContain("Enter your full name.");
-    expect(withErrors).toContain("Enter your work email.");
-    expect(withErrors.match(/aria-invalid="true"/g)).toHaveLength(2);
-    expect(withErrors.match(/aria-describedby="/g)?.length).toBeGreaterThanOrEqual(2);
-    expect(withErrors).toContain("lucide-circle-alert");
-    // the message areas are live regions even when empty
-    expect(out.match(/aria-live="polite"/g)).toHaveLength(2);
+  it("shows the message for an unknown code in a live region with the error wiring", () => {
+    const bad = html(<GroupCodeView onContinue={() => "unknown"} backHref="/" initialError />);
+    expect(bad).toContain("We could not find this code. Check it or ask your instructor.");
+    expect(bad).toContain('aria-invalid="true"');
+    expect(out.match(/aria-live="polite"/g)).toHaveLength(1);
+  });
+});
+
+describe("Invitation", () => {
+  const base = { groupName: "Rescue team", invitedBy: "Maryana", startHref: "/welcome" };
+  const view = (state: "new" | "can-join" | "member" | "invalid") =>
+    html(<InvitationView state={state} {...base} onEmail={() => "ok"} onJoin={() => undefined} />);
+
+  it("(a) a new student: the card, the field 'Your email', the note and the Primary Continue", () => {
+    const out = view("new");
+    expect(out).toContain("data-invitation-card");
+    expect(out).toContain("You are invited to");
+    expect(out).toContain(">Rescue team</h1>");
+    expect(out).toContain("Role: Student");
+    expect(out).toContain("Invited by Maryana");
+    expect(out).toContain("h-14 w-14 rounded-full");
+    expect(out).toMatch(/<label[^>]*>Your email<\/label>/);
+    expect(out).toContain("We will send you a code to confirm it.");
+    expect(out).toMatch(/type="submit"[^>]*>(?:<span[^>]*>)?Continue/);
+    expect(out).not.toMatch(/Join group|Not now|Open group/);
+  });
+
+  it("(b) a signed-in student who is not in the group: Primary Join group, Secondary Not now", () => {
+    const out = view("can-join");
+    expect(out).toMatch(/bg-primary[^>]*>(?:<span[^>]*>)?Join group/);
+    expect(out).toMatch(/bg-olive-tint[^>]*>(?:<span[^>]*>)?Not now/);
+    expect(out.indexOf("Join group")).toBeLessThan(out.indexOf("Not now"));
+    expect(out).not.toContain("Your email");
+  });
+
+  it("(c) already in the group: 'You are already in Rescue team' and the Primary Open group", () => {
+    const out = view("member");
+    expect(out).toContain("You are already in Rescue team");
+    expect(out).toMatch(/bg-primary[^>]*>(?:<span[^>]*>)?Open group/);
+    expect(out).not.toMatch(/Join group|Not now/);
+  });
+
+  it("(d) a link that is not valid: the title, the subtitle and the Secondary Back to start", () => {
+    const out = view("invalid");
+    expect(out).toContain(">This link is no longer valid</h1>");
+    expect(out).toContain("Ask your instructor for a new one.");
+    expect(out).toMatch(/bg-olive-tint[^>]*>(?:<span[^>]*>)?Back to start/);
+    expect(out).not.toContain("data-invitation-card");
+    expect(out).not.toMatch(/bg-primary/);
+  });
+
+  it("shows the email error with the live wiring", () => {
+    const out = html(<InvitationView state="new" {...base} initialEmail="ana@" initialTouched />);
+    expect(out).toContain("Enter a valid email, like name@company.com.");
+    expect(out).toContain('aria-invalid="true"');
+  });
+});
+
+describe("Profile of a new student", () => {
+  const out = html(<ProfileSetupView onSubmit={() => undefined} />);
+
+  it("has the title, the subtitle, the name field, two language cards and a Primary Continue", () => {
+    expect(out).toContain(">Your profile</h1>");
+    expect(out).toContain("Two things and you are in.");
+    expect(out).toMatch(/<label[^>]*>Your name<\/label>/);
+    expect(out).toContain(">Language</legend>");
+    expect(out).toContain(">Ukrainian<");
+    expect(out).toContain(">English<");
+    expect(out.match(/type="radio"/g)).toHaveLength(2);
+    expect(out.match(/checked=""/g)).toHaveLength(1);
+    expect(out).toMatch(/type="submit"[^>]*>(?:<span[^>]*>)?Continue/);
+  });
+});
+
+describe("Student with no group", () => {
+  const out = html(<NoGroupView name="Maryana" onJoin={() => "unknown"} />);
+
+  it("shows the empty state: icon tile, the words, the code field and the Primary Join group; nothing else", () => {
+    expect(out).toContain("data-no-group");
+    expect(out).toContain("h-14 w-14 rounded-full");
+    expect(out).toContain("You are not in a group yet");
+    expect(out).toContain("Ask your instructor for a group link or code.");
+    expect(out).toMatch(/<label[^>]*>Group code<\/label>/);
+    expect(out).toMatch(/type="submit"[^>]*>(?:<span[^>]*>)?Join group/);
+    expect(out).toContain("Hi, Maryana");
+    expect(out).not.toMatch(/Training|Exam|Mini-quiz/);
   });
 });
 
@@ -149,8 +191,9 @@ describe("Sign in", () => {
     expect(out).toContain(">Welcome back</h1>");
     expect(out).toContain(">Step 1 of 2<");
     expect(out).toContain("Enter your work email. We will send you a code.");
-    expect(out).toContain('href="/sign-up"');
-    expect(out).toContain(">New here? Create an account<");
+    expect(out).not.toContain("sign-up");
+    expect(out).toContain('href="/join"');
+    expect(out).toContain(">Have a group code?<");
     expect(out).toMatch(/<label[^>]*>Work email<\/label>/);
     expect(out).toContain('autoComplete="email"');
     expect(out).toContain("mt-auto");

@@ -26,6 +26,6 @@ export function validateEmail(email: string): string | null {
 
 export const EXISTS_MESSAGE = "An account with this email already exists on this device.";
 export const EXISTS_LINK = "Sign in instead.";
-export const UNKNOWN_MESSAGE = "No account found on this device.";
-export const UNKNOWN_LINK = "Create one.";
+export const UNKNOWN_MESSAGE = "No account found on this device. Accounts come from an invitation.";
+export const UNKNOWN_LINK = "Have a group code?";
 export const WRONG_CODE_MESSAGE = "That code is not correct. Check the code shown below.";

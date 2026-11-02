@@ -6,13 +6,15 @@ const CODE = "482913";
 
 type Role = "Student" | "Instructor";
 
-/** Creates an account through the screens and stops on Verify. */
-async function startSignUp(page: Page, name: string, email: string, role: Role = "Student") {
-  await page.goto("/welcome");
-  await page.getByRole("link", { name: "Create account" }).click();
-  await page.getByLabel("Full name").fill(name);
-  await page.getByLabel("Work email").fill(email);
-  if (role === "Instructor") await page.getByText("Instructor", { exact: true }).click();
+/** The name given at the Profile step of the invitation (set by startSignUp). */
+let profileName = "Ana Test";
+
+/** Opens the invitation link, gives the email and stops on Verify (the name is kept for the Profile step). */
+async function startSignUp(page: Page, name: string, email: string, _role: Role = "Student") {
+  void _role;
+  profileName = name;
+  await page.goto("/join/QT-A7K2");
+  await page.getByLabel("Your email").fill(email);
   await page.getByRole("button", { name: "Continue" }).click();
   await expect(page).toHaveURL(/\/verify$/);
 }
@@ -30,7 +32,7 @@ async function signUp(page: Page, name: string, email: string, role: Role = "Stu
 
 async function signIn(page: Page, email: string) {
   await page.goto("/welcome");
-  await page.getByRole("link", { name: "I already have an account" }).click();
+  await page.getByRole("link", { name: "Sign in", exact: true }).click();
   await page.getByLabel("Work email").fill(email);
   await page.getByRole("button", { name: "Continue" }).click();
   await expect(page).toHaveURL(/\/verify$/);
@@ -52,15 +54,20 @@ const rgb = (value: string) => {
 
 const nav = (page: Page) => page.getByRole("navigation", { name: "Main" });
 
+/** The Profile step of the invitation, then the student home; an instructor is a demo switch away. */
 async function finishOnboarding(page: Page, role: Role = "Student") {
-  if (role === "Student") {
-    // a new student sees the Field of work step between Verify and the introduction
-    await expect(page).toHaveURL(/\/field-of-work$/);
-    await page.getByRole("button", { name: "Skip", exact: true }).click();
+  await expect(page).toHaveURL(/\/set-up-profile$/);
+  await page.getByLabel("Your name").fill(profileName);
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page).toHaveURL(/\/$/);
+  if (role === "Instructor") {
+    await page.goto("/profile");
+    await page
+      .getByRole("radiogroup", { name: "Switch role (demo)" })
+      .locator("label", { hasText: "Instructor" })
+      .click();
+    await expect(page).toHaveURL(/\/instructor$/);
   }
-  await expect(page).toHaveURL(/\/onboarding$/);
-  await page.getByRole("button", { name: "Skip" }).click();
-  await expect(page).toHaveURL(role === "Student" ? /\/$/ : /\/instructor$/);
 }
 
 test.use({ storageState: emptyBrowser });
@@ -87,16 +94,19 @@ for (const width of [360, 430]) {
           level: 1,
         }),
       ).toBeVisible();
+      await expect(page.getByText("Sign in to continue your training.")).toBeVisible();
+      await expect(page.getByRole("link", { name: "Sign in", exact: true })).toBeVisible();
       await expect(
-        page.getByText("Short scenarios, quizzes and exams for building evacuation and first aid."),
+        page.getByText("No account yet? Ask your instructor for an invitation link."),
       ).toBeVisible();
-      await expect(page.getByRole("link", { name: "Create account" })).toBeVisible();
-      await expect(page.getByRole("link", { name: "I already have an account" })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Have a group code?" })).toBeVisible();
+      // no sign-up anywhere
+      await expect(page.getByText(/Create account|Sign up/i)).toHaveCount(0);
       await expect(nav(page)).toHaveCount(0);
       expect(await noSidewaysScroll(page)).toBe(true);
     });
 
-    test("signing up as a student: a wrong code, then the right code, the introduction and Home", async ({
+    test("joining as a student: a wrong code, then the right code, the Profile step and Home with the notice", async ({
       page,
     }) => {
       await startSignUp(page, "Ana Test", "Ana@Example.com");
@@ -115,10 +125,13 @@ for (const width of [360, 430]) {
       await typeCode(page, CODE);
       await finishOnboarding(page);
       await expect(page.getByRole("heading", { name: "Hi, Ana Test" })).toBeVisible();
+      await expect(page.locator("[data-flash]:visible")).toContainText("You joined Rescue team");
       await expect(nav(page).getByRole("link")).toHaveCount(4);
     });
 
-    test("signing up as an instructor reaches Instructor Home", async ({ page }) => {
+    test("the demo role switch reaches Instructor Home (the role is never chosen on a screen)", async ({
+      page,
+    }) => {
       await signUp(page, "Ines Instructor", "ines@example.com", "Instructor");
       await finishOnboarding(page, "Instructor");
       await expect(page.locator("[data-group-readiness]")).toBeVisible();
@@ -194,11 +207,11 @@ for (const width of [360, 430]) {
       await page.locator("[data-sign-out]").click();
       await expect(page).toHaveURL(/\/welcome$/);
       await signUp(page, "Bob Test", "bob@example.com");
-      // Bob has not seen the introduction: a student's first step is Field of work
-      await expect(page).toHaveURL(/\/field-of-work$/);
+      // Bob has not given his name yet: his first step is the Profile step
+      await expect(page).toHaveURL(/\/set-up-profile$/);
     });
 
-    test("an unknown email says so, with a link to Create account", async ({ page }) => {
+    test("an unknown email says so, with a link to the group code screen", async ({ page }) => {
       await page.goto("/sign-in");
       await page.getByLabel("Work email").fill("nobody@example.com");
       await page.getByRole("button", { name: "Continue" }).click();
@@ -206,13 +219,13 @@ for (const width of [360, 430]) {
         page.getByText("No account found on this device.", { exact: false }),
       ).toBeVisible();
       await expect(page).toHaveURL(/\/sign-in$/);
-      const link = page.getByRole("link", { name: "Create one." });
+      const link = page.getByRole("link", { name: "Have a group code?" }).first();
       await expect(link).toBeVisible();
       await link.click();
-      await expect(page).toHaveURL(/\/sign-up$/);
+      await expect(page).toHaveURL(/\/join$/);
     });
 
-    test("signing up with an email that already has an account makes no duplicate", async ({
+    test("joining with an email that already has an account makes no duplicate", async ({
       page,
     }) => {
       await signUp(page, "Ana Test", "ana@example.com");
@@ -220,14 +233,13 @@ for (const width of [360, 430]) {
       await page.goto("/profile");
       await page.locator("[data-sign-out]").click();
       await expect(page).toHaveURL(/\/welcome$/);
-      await page.goto("/sign-up");
-      await page.getByLabel("Full name").fill("Another Ana");
-      await page.getByLabel("Work email").fill(" ANA@example.com ");
+      await page.goto("/join/QT-A7K2");
+      await page.getByLabel("Your email").fill(" ANA@example.com ");
       await page.getByRole("button", { name: "Continue" }).click();
       await expect(
         page.getByText("An account with this email already exists on this device."),
       ).toBeVisible();
-      await expect(page).toHaveURL(/\/sign-up$/);
+      await expect(page).toHaveURL(/\/join\/QT-A7K2$/);
       const link = page.getByRole("link", { name: "Sign in instead." });
       await expect(link).toBeVisible();
       await link.click();
@@ -286,7 +298,7 @@ for (const width of [360, 430]) {
     }) => {
       await signUp(page, "Ana Test", "ana@example.com");
       await finishOnboarding(page);
-      for (const path of ["/welcome", "/sign-up", "/sign-in", "/verify"]) {
+      for (const path of ["/welcome", "/sign-in", "/verify"]) {
         await page.goto(path);
         await expect(page, path).toHaveURL(/\/$/);
       }
@@ -309,7 +321,7 @@ for (const width of [360, 430]) {
           }),
         );
       }, CODE);
-      await expect(page).toHaveURL(/\/field-of-work$/);
+      await expect(page).toHaveURL(/\/set-up-profile$/);
     });
 
     test("verify: Backspace goes back and clears the previous box", async ({ page }) => {
@@ -348,12 +360,11 @@ for (const width of [360, 430]) {
     });
 
     test("verify: Change email goes back with the typed values", async ({ page }) => {
-      await startSignUp(page, "Ana Test", "ana@example.com", "Instructor");
+      await startSignUp(page, "Ana Test", "ana@example.com");
       await page.getByRole("button", { name: "Change email" }).click();
-      await expect(page).toHaveURL(/\/sign-up$/);
-      await expect(page.getByLabel("Full name")).toHaveValue("Ana Test");
-      await expect(page.getByLabel("Work email")).toHaveValue("ana@example.com");
-      await expect(page.getByRole("radio", { name: /Instructor/ })).toBeChecked();
+      // back on the invitation of the same group, ready for another email
+      await expect(page).toHaveURL(/\/join\/QT-A7K2$/);
+      await expect(page.getByLabel("Your email")).toBeVisible();
     });
 
     test("verify without a pending verification goes to Welcome", async ({ page }) => {
@@ -361,49 +372,43 @@ for (const width of [360, 430]) {
       await expect(page).toHaveURL(/\/welcome$/);
     });
 
-    test("forms: Enter submits, errors show on blur and on submit with aria wiring", async ({
+    test("the invitation form: Enter submits, errors show on blur and on submit with aria wiring", async ({
       page,
     }) => {
-      await page.goto("/sign-up");
-      const name = page.getByLabel("Full name");
-      const email = page.getByLabel("Work email");
-      // blur: a name of one character
-      await name.fill("A");
-      await email.focus();
-      await expect(page.getByText("Your name needs at least 2 characters.")).toBeVisible();
-      await expect(name).toHaveAttribute("aria-invalid", "true");
-      const describedBy = await name.getAttribute("aria-describedby");
-      expect(describedBy).toBeTruthy();
-      await expect(page.locator(`[id="${describedBy!.split(" ")[0]}"]`)).toContainText(
-        "at least 2 characters",
-      );
+      await page.goto("/join/QT-A7K2");
+      const email = page.getByLabel("Your email");
+      // an empty email sent with the button shows the error and keeps the screen
+      await page.getByRole("button", { name: "Continue" }).click();
+      await expect(page.getByText("Enter your work email.")).toBeVisible();
+      await expect(page).toHaveURL(/\/join\/QT-A7K2$/);
       // blur: a wrong email
       await email.fill("nope");
-      await name.focus();
+      await email.blur();
       await expect(page.getByText("Enter a valid email, like name@company.com.")).toBeVisible();
       await expect(email).toHaveAttribute("aria-invalid", "true");
+      const describedBy = await email.getAttribute("aria-describedby");
+      expect(describedBy).toBeTruthy();
       // the message has an icon (not colour alone) and a visible, non-black, non-transparent colour
-      const message = page.locator("p[aria-live=polite]", {
-        hasText: "valid email",
-      });
+      const message = page.locator("p[aria-live=polite]", { hasText: "valid email" });
       await expect(message.locator("svg")).toBeVisible();
       const colour = await message.evaluate((el) => getComputedStyle(el).color);
       expect(rgb(colour).a).toBeGreaterThan(0);
       expect(colour).not.toBe("rgb(0, 0, 0)");
-      // Enter in a field submits: the invalid form focuses the first invalid field
-      await name.fill("Ana Test");
+      // Enter in the field submits
       await email.fill("ana@example.com");
       await email.press("Enter");
       await expect(page).toHaveURL(/\/verify$/);
     });
 
-    test("submitting an empty form shows both errors and focuses the name", async ({ page }) => {
-      await page.goto("/sign-up");
+    test("the Profile step: an empty or one-letter name shows the error and keeps the screen", async ({
+      page,
+    }) => {
+      await signUp(page, "Ana Test", "ana@example.com");
+      await expect(page).toHaveURL(/\/set-up-profile$/);
       await page.getByRole("button", { name: "Continue" }).click();
       await expect(page.getByText("Enter your full name.")).toBeVisible();
-      await expect(page.getByText("Enter your work email.")).toBeVisible();
-      await expect(page.getByLabel("Full name")).toBeFocused();
-      await expect(page).toHaveURL(/\/sign-up$/);
+      await expect(page.getByLabel("Your name")).toBeFocused();
+      await expect(page).toHaveURL(/\/set-up-profile$/);
     });
 
     test("sign in: Enter submits and an invalid email is not accepted", async ({ page }) => {
@@ -464,7 +469,8 @@ for (const width of [360, 430]) {
       };
       // (Welcome ends with the 12px note under the buttons)
       await check("/welcome", null, 64);
-      await check("/sign-up", "Continue");
+      await check("/join", "Continue");
+      await check("/join/QT-A7K2", "Continue");
       await check("/sign-in", "Continue");
       await startSignUp(page, "Ana Test", "ana@example.com");
       expect(await noSidewaysScroll(page)).toBe(true);
@@ -519,7 +525,7 @@ for (const width of [360, 430]) {
     }) => {
       await page.goto("/welcome");
       const fill = await page
-        .getByRole("link", { name: "Create account" })
+        .getByRole("link", { name: "Sign in", exact: true })
         .evaluate((el) => getComputedStyle(el).backgroundColor);
       expect(fill).toBe("rgb(63, 70, 56)");
       await startSignUp(page, "Ana Test", "ana@example.com");
@@ -565,90 +571,52 @@ for (const width of [360, 430]) {
       for (const el of [eyebrow, title]) {
         expect(Math.abs(el.x + el.width / 2 - width / 2)).toBeLessThanOrEqual(1);
       }
-      const subtitle = page.getByText("Short scenarios, quizzes and exams");
+      const subtitle = page.getByText("Sign in to continue your training.");
       const sub = (await subtitle.boundingBox())!;
       expect(sub.width).toBeLessThanOrEqual(320);
       expect(Math.abs(sub.x + sub.width / 2 - width / 2)).toBeLessThanOrEqual(1);
       await expect(page.getByRole("banner")).toHaveCount(0);
       await expect(nav(page)).toHaveCount(0);
-      // both buttons are 52px high and pinned, 12px apart
-      const create = (await page.getByRole("link", { name: "Create account" }).boundingBox())!;
-      const have = (await page
-        .getByRole("link", { name: "I already have an account" })
-        .boundingBox())!;
-      expect([create.height, have.height]).toEqual([52, 52]);
-      expect(Math.abs(have.y - (create.y + create.height) - 12)).toBeLessThanOrEqual(0.5);
+      // Sign in is the 52px Primary, then the muted line, then the tertiary link, then the note
+      const signInLink = page.getByRole("link", { name: "Sign in", exact: true });
+      const create = (await signInLink.boundingBox())!;
+      expect(create.height).toBe(52);
       expect(Math.abs(create.x - 16)).toBeLessThanOrEqual(0.5);
+      expect(await signInLink.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
+        "rgb(63, 70, 56)",
+      );
+      const line = page.getByText("No account yet? Ask your instructor for an invitation link.");
+      const lineBox = (await line.boundingBox())!;
+      expect(lineBox.y).toBeGreaterThan(create.y + create.height);
+      expect(await line.evaluate((el) => el.tagName)).toBe("P");
+      const group = page.getByRole("link", { name: "Have a group code?" });
+      const g = (await group.boundingBox())!;
+      expect(g.y).toBeGreaterThan(lineBox.y + lineBox.height - 1);
+      expect(g.height).toBeGreaterThanOrEqual(44);
+      expect(
+        await group
+          .locator("span")
+          .first()
+          .evaluate((el) => getComputedStyle(el).textDecorationLine),
+      ).toBe("underline");
       const note = (await page
         .getByText("For educational use. Demo data stays on this device.")
         .boundingBox())!;
-      expect(note.y).toBeGreaterThan(have.y + have.height);
+      expect(note.y).toBeGreaterThan(g.y + g.height - 1);
       expect(800 - (note.y + note.height)).toBeLessThanOrEqual(24 + 4);
       expect(await noSidewaysScroll(page)).toBe(true);
-      // the secondary is the olive tint, the primary the deep olive
-      expect(
-        await page
-          .getByRole("link", { name: "I already have an account" })
-          .evaluate((el) => getComputedStyle(el).backgroundColor),
-      ).toBe("rgb(224, 230, 214)");
-      expect(
-        await page
-          .getByRole("link", { name: "Create account" })
-          .evaluate((el) => getComputedStyle(el).backgroundColor),
-      ).toBe("rgb(63, 70, 56)");
     });
 
-    test("Create account: no autofocus, the header, the Student card preselected, keyboard selectable", async ({
-      page,
-    }) => {
-      await page.goto("/sign-up");
-      await expect(
-        page.getByRole("heading", { name: "Create your account", level: 1 }),
-      ).toBeVisible();
-      await expect(page.getByText("It takes less than a minute.")).toBeVisible();
-      await expect(page.locator("[data-form-step]:visible")).toHaveText("Step 1 of 2");
-      expect(await page.evaluate(() => document.activeElement?.tagName)).toBe("BODY");
-      const back = (await page.getByRole("link", { name: "Back to Welcome" }).boundingBox())!;
-      expect([back.width, back.height]).toEqual([40, 40]);
-      // the role cards: 72px high, Student preselected, Arrow keys move the choice
-      const student = page.getByRole("radio", { name: /Student/ });
-      const instructor = page.getByRole("radio", { name: /Instructor/ });
-      await expect(student).toBeChecked();
-      for (const [card, helper] of [
-        ["Practise and take exams", "Student"],
-        ["Create and assign exams", "Instructor"],
-      ] as const) {
-        const label = page.locator("label", { hasText: card });
-        expect((await label.boundingBox())!.height, helper).toBe(72);
-        // the helper is one line: not cut, and as high as one line
-        const info = await page.getByText(card, { exact: true }).evaluate((el) => ({
-          cut: el.scrollWidth > el.clientWidth,
-          height: el.getBoundingClientRect().height,
-          line: parseFloat(getComputedStyle(el).lineHeight),
-        }));
-        expect(info.cut, helper).toBe(false);
-        expect(info.height, helper).toBeCloseTo(info.line, 0);
-      }
-      await student.focus();
-      await page.keyboard.press("ArrowDown");
-      await expect(instructor).toBeChecked();
-      await page.keyboard.press("ArrowUp");
-      await expect(student).toBeChecked();
-      // the link under the button
-      await expect(
-        page.getByRole("link", { name: "Already have an account? Sign in" }),
-      ).toBeVisible();
-    });
-
-    test("Sign in: the header, the title, the subtitle and the link to Create account", async ({
+    test("Sign in: the header, the title, the subtitle and the group code link (no create-account link)", async ({
       page,
     }) => {
       await page.goto("/sign-in");
       await expect(page.getByRole("heading", { name: "Welcome back", level: 1 })).toBeVisible();
       await expect(page.getByText("Enter your work email. We will send you a code.")).toBeVisible();
       await expect(page.locator("[data-form-step]:visible")).toHaveText("Step 1 of 2");
-      await page.getByRole("link", { name: "New here? Create an account" }).click();
-      await expect(page).toHaveURL(/\/sign-up$/);
+      await expect(page.getByText(/Create an account|Create account/)).toHaveCount(0);
+      await page.getByRole("link", { name: "Have a group code?" }).click();
+      await expect(page).toHaveURL(/\/join$/);
     });
 
     test("Verify: the first box has the focus, Fill in code fills and signs in, Verify needs six digits", async ({
@@ -671,7 +639,7 @@ for (const width of [360, 430]) {
       const fillButton = page.getByRole("button", { name: "Fill in code" });
       expect((await fillButton.boundingBox())!.height).toBe(44);
       await fillButton.click();
-      await expect(page).toHaveURL(/\/field-of-work$/);
+      await expect(page).toHaveURL(/\/set-up-profile$/);
     });
 
     test("Verify: the Verify button submits the typed digits", async ({ page }) => {

@@ -26,18 +26,39 @@ describe("the route guard: signed out", () => {
     }
   });
 
-  it("lets a signed-out visitor open Welcome, Create account, Sign in and Verify", () => {
-    expect(AUTH_ROUTES).toEqual(["/welcome", "/sign-up", "/sign-in", "/verify"]);
+  it("lets a signed-out visitor open Welcome, Sign in, Verify and the group code screen (no sign-up)", () => {
+    expect(AUTH_ROUTES).toEqual(["/welcome", "/sign-in", "/verify", "/join"]);
+    expect(guardRedirect(null, "/sign-up")).toBe("/welcome");
     for (const path of AUTH_ROUTES) expect(guardRedirect(null, path), path).toBeNull();
   });
 });
 
 describe("the route guard: signed in", () => {
   it("sends a person who finished the onboarding from the auth routes to the Home of their role", () => {
-    for (const path of AUTH_ROUTES) {
+    for (const path of AUTH_ROUTES.filter((route) => route !== "/join")) {
       expect(guardRedirect(student, path), path).toBe("/");
       expect(guardRedirect(instructor, path), path).toBe("/instructor");
     }
+  });
+
+  it("lets a signed-in student open the group code screen and a join link (they confirm joining); an instructor goes Home", () => {
+    for (const path of ["/join", "/join/QT-A7K2", "/join/OLD-0000"]) {
+      expect(guardRedirect(student, path), path).toBeNull();
+      expect(guardRedirect(instructor, path), path).toBe("/instructor");
+    }
+    // a student who has not seen the onboarding still goes there first
+    expect(guardRedirect(newStudent, "/join/QT-A7K2")).toBe("/onboarding");
+  });
+
+  it("keeps an invited student on the Profile step until it is done, then keeps the step closed", () => {
+    const invited = { role: "student" as const, onboardingDone: true, profileDone: false };
+    for (const path of ["/", "/training", "/join/QT-A7K2", "/welcome"]) {
+      expect(guardRedirect(invited, path), path).toBe("/set-up-profile");
+    }
+    expect(guardRedirect(invited, "/set-up-profile")).toBeNull();
+    expect(guardRedirect(student, "/set-up-profile")).toBe("/");
+    expect(guardRedirect(instructor, "/set-up-profile")).toBe("/instructor");
+    expect(guardRedirect(null, "/set-up-profile")).toBe("/welcome");
   });
 
   it("sends a person who has not seen the onboarding to it, from every route but it", () => {

@@ -1,13 +1,16 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { HomeView } from "@/components/HomeView/HomeView";
+import { NoGroupView } from "@/components/NoGroupView/NoGroupView";
+import { lookupCode } from "@/lib/join";
 import { assignedLine, examsToTake } from "@/lib/exams-to-take";
 import { useAttempts, useGroupExams } from "@/lib/group-store";
 import { homeCounts, homeSummary } from "@/lib/home";
 import { useSaved } from "@/lib/saved";
 import { useHistory, useProfile, useSession } from "@/lib/session";
-import { useCurrentAccount } from "@/lib/auth";
+import { groupOf, useCurrentAccount } from "@/lib/auth";
 import type { Account } from "@/lib/auth";
 import type { Attempt } from "@/lib/cohort";
 import type { GroupExam } from "@/lib/group-exams";
@@ -44,6 +47,7 @@ function Loaded({
 }
 
 export default function Home() {
+  const router = useRouter();
   const profile = useProfile();
   const session = useSession();
   const history = useHistory();
@@ -63,6 +67,20 @@ export default function Home() {
     attempts === "loading"
   ) {
     return null;
+  }
+
+  // a student with no group has no topics and no exams: the home asks for a group code
+  if (account.role === "student" && groupOf(account) === null) {
+    return (
+      <NoGroupView
+        name={account.name}
+        onJoin={(code) => {
+          if (lookupCode(code).kind === "unknown") return "unknown";
+          router.push(`/join/${encodeURIComponent(code)}`);
+          return "ok";
+        }}
+      />
+    );
   }
 
   return (

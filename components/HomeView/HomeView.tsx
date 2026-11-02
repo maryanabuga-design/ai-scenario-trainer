@@ -4,6 +4,7 @@ import { Bookmark, ClipboardCheck, ListChecks, Timer } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { buttonClasses } from "@/components/Button/Button";
+import { FlashNotice } from "@/components/FlashNotice/FlashNotice";
 import { Media3D } from "@/components/Media3D/Media3D";
 import { NotificationBell } from "@/components/NotificationBell/NotificationBell";
 import { Tile } from "@/components/Tile/Tile";
@@ -42,6 +43,7 @@ export function HomeView({
 
   return (
     <div className="flex flex-col gap-4 pb-4">
+      <FlashNotice />
       <header className="flex flex-col gap-1 pt-1">
         <div className="flex items-center gap-3">
           <Link

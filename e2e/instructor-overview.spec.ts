@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 import { authValue, emptyBrowser } from "./auth-seed";
+import { demoRole, joinAsStudent } from "./join-flow";
 import { seedSet } from "./seed-set";
 
 const quizBank: { id: string; correctOptionId: string }[] = JSON.parse(
@@ -12,7 +13,6 @@ const stepBank: { id: string; correctOptionId: string }[] = JSON.parse(
 ).steps;
 const correctOf = new Map([...quizBank, ...stepBank].map((q) => [q.id, q.correctOptionId]));
 
-const CODE = "482913";
 const PRIMARY = "rgb(63, 70, 56)";
 const OLIVE_TINT = "rgb(224, 230, 214)";
 const SAND_200 = "rgb(228, 214, 188)";
@@ -42,18 +42,9 @@ async function switchRole(page: Page, role: "Student" | "Instructor") {
 }
 
 async function signUpInstructor(page: Page) {
-  await page.goto("/welcome");
-  await page.getByRole("link", { name: "Create account" }).click();
-  await page.getByLabel("Full name").fill("Ira Instructor");
-  await page.getByLabel("Work email").fill("ira@example.com");
-  await page.getByText("Instructor", { exact: true }).click();
-  await page.getByRole("button", { name: "Continue" }).click();
-  await expect(page).toHaveURL(/\/verify$/);
-  await page.getByLabel("Digit 1 of 6").focus();
-  await page.keyboard.type(CODE);
-  await expect(page).toHaveURL(/\/onboarding$/);
-  await page.getByRole("button", { name: "Skip" }).click();
-  await expect(page).toHaveURL(/\/instructor$/);
+  // there is no public sign-up: an invited student, switched to Instructor with the demo shortcut
+  await joinAsStudent(page, "Ira Instructor", "ira@example.com");
+  await demoRole(page, "Instructor");
 }
 
 const passedOf = async (page: Page, examId: string) => {

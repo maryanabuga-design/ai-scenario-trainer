@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react";
 import { isCorrectCode } from "@/lib/auth-code";
 import { MIGRATED_EMAIL, MIGRATED_NAME } from "@/lib/demo-account";
 import { cleanField } from "@/lib/field-of-work";
-import { cleanAccountGroup } from "@/lib/groups";
+import { DEFAULT_GROUP_ID, cleanAccountGroup } from "@/lib/groups";
 import { readInvitations, markJoined, saveInvitations } from "@/lib/invitations";
 import { clearJoin, groupToJoin, readJoin } from "@/lib/join";
 import type { FieldOfWork } from "@/lib/field-of-work";
@@ -29,9 +29,22 @@ export type Account = {
   fieldStepDone: boolean;
   /** The demo group of a Student who joined through a link or an invitation (Rescue team when missing). */
   groupId?: string;
+  /** A Student who left the group (demo): no group, so no topics and no exams. */
+  noGroup?: true;
+  /** The language chosen in the invitation Profile step (the text of the app stays English). */
+  language?: Language;
+  /** false: an account made from an invitation that has not finished the Profile step. */
+  profileDone?: false;
   /** The account made from data the app already had: it keeps the old device keys (no suffix). */
   legacy?: boolean;
 };
+
+export type Language = "uk" | "en";
+export const languages: { value: Language; label: string }[] = [
+  { value: "uk", label: "Ukrainian" },
+  { value: "en", label: "English" },
+];
+const isLanguage = (value: unknown): value is Language => value === "uk" || value === "en";
 
 export type Pending = {
   mode: "sign-up" | "sign-in";
@@ -58,8 +71,20 @@ const isRole = (value: unknown): value is Role =>
 
 function cleanAccount(value: unknown): Account | null {
   if (!isObject(value)) return null;
-  const { name, email, role, createdAt, legacy, onboardingDone, field, fieldStepDone, groupId } =
-    value;
+  const {
+    name,
+    email,
+    role,
+    createdAt,
+    legacy,
+    onboardingDone,
+    field,
+    fieldStepDone,
+    groupId,
+    noGroup,
+    language,
+    profileDone,
+  } = value;
   if (typeof name !== "string" || name.trim() === "") return null;
   if (typeof email !== "string" || !isEmailFormat(email)) return null;
   if (!isRole(role)) return null;
@@ -75,6 +100,9 @@ function cleanAccount(value: unknown): Account | null {
     fieldStepDone: fieldStepDone !== false,
     ...(legacy === true && { legacy: true }),
     ...(cleanAccountGroup(groupId) && { groupId: cleanAccountGroup(groupId) }),
+    ...(noGroup === true && !cleanAccountGroup(groupId) && { noGroup: true as const }),
+    ...(isLanguage(language) && { language }),
+    ...(profileDone === false && { profileDone: false as const }),
   };
 }
 
@@ -209,15 +237,18 @@ export function completeVerification(
   let accounts = state.accounts;
   let account = accountFor(state, pending.email);
   if (pending.mode === "sign-up" && !account) {
+    // a student who comes in through an invitation still owes the Profile step, and skips the Field
+    // of work step and the introduction (both stay in Profile)
+    const invited = Boolean(groupId) && pending.role === "student";
     account = {
-      name: pending.name,
+      name: pending.name.trim() || pending.email.split("@")[0],
       email: pending.email,
       role: pending.role,
       createdAt: now,
-      onboardingDone: false,
+      onboardingDone: invited,
       field: null,
-      fieldStepDone: pending.role !== "student",
-      ...(groupId && pending.role === "student" && { groupId }),
+      fieldStepDone: invited || pending.role !== "student",
+      ...(invited && { groupId: groupId as string, profileDone: false as const }),
     };
     accounts = [...accounts, account];
   }
@@ -279,13 +310,67 @@ export function deleteCurrentState(state: AuthState): AuthState {
   };
 }
 
-/** Where a person goes after a correct code: the onboarding until it was done, then the Home of the role. */
+/** The group a student belongs to: the saved one, Rescue team when none was saved, null after leaving. */
+export const groupOf = (account: Account): string | null =>
+  account.role !== "student" || account.noGroup ? null : (account.groupId ?? DEFAULT_GROUP_ID);
+
+/** The signed-in Student joins a group (the person confirmed): it replaces any earlier group. */
+export const joinGroupState = (state: AuthState, groupId: string): AuthState => {
+  const current = currentAccount(state);
+  if (!current || current.role !== "student") return state;
+  return {
+    ...state,
+    accounts: state.accounts.map((account) => {
+      if (account.email !== current.email) return account;
+      const { noGroup, ...rest } = account;
+      void noGroup;
+      return { ...rest, groupId };
+    }),
+  };
+};
+
+/** Demo: the signed-in Student leaves the group (the student home then asks for a code). */
+export const leaveGroupState = (state: AuthState): AuthState => {
+  const current = currentAccount(state);
+  if (!current) return state;
+  return {
+    ...state,
+    accounts: state.accounts.map((account) => {
+      if (account.email !== current.email) return account;
+      const { groupId, ...rest } = account;
+      void groupId;
+      return { ...rest, noGroup: true as const };
+    }),
+  };
+};
+
+/** The Profile step of an invitation: the name and the language; the account is then complete. */
+export function completeProfileState(
+  state: AuthState,
+  input: { name: string; language: Language },
+): AuthState {
+  const current = currentAccount(state);
+  if (!current || input.name.trim().length < 2) return state;
+  return {
+    ...state,
+    accounts: state.accounts.map((account) => {
+      if (account.email !== current.email) return account;
+      const { profileDone, ...rest } = account;
+      void profileDone;
+      return { ...rest, name: input.name.trim(), language: input.language };
+    }),
+  };
+}
+
+/** Where a person goes after a correct code: the Profile step of an invitation, the onboarding until it was done, then the Home of the role. */
 export const homeAfterVerification = (account: Account): string =>
-  account.onboardingDone
-    ? roleHome(account.role)
-    : account.role === "student" && !account.fieldStepDone
-      ? "/field-of-work"
-      : "/onboarding";
+  account.profileDone === false
+    ? "/set-up-profile"
+    : account.onboardingDone
+      ? roleHome(account.role)
+      : account.role === "student" && !account.fieldStepDone
+        ? "/field-of-work"
+        : "/onboarding";
 
 // ---- the saved state ----
 
@@ -421,6 +506,21 @@ export function setField(field: FieldOfWork | null) {
 /** The registration step is done: Continue stores the field, Skip stores null. */
 export function finishFieldStep(field: FieldOfWork | null) {
   save(finishFieldStepState(readAuth(), field));
+}
+
+/** The signed-in Student joins a group after confirming (the invitation screen). */
+export function joinGroup(groupId: string) {
+  save(joinGroupState(readAuth(), groupId));
+}
+
+/** Demo: the signed-in Student leaves the group. */
+export function leaveGroup() {
+  save(leaveGroupState(readAuth()));
+}
+
+/** The Profile step of an invitation is finished (Continue). */
+export function completeProfile(input: { name: string; language: Language }) {
+  save(completeProfileState(readAuth(), input));
 }
 
 /** Deletes the signed-in account and the data stored for it on this device. */

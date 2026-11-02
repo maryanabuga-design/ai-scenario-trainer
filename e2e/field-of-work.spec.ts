@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test";
 import type { Browser, Page } from "@playwright/test";
 import { emptyBrowser, signedInStudent } from "./auth-seed";
+import { seedNewAccount } from "./join-flow";
 
-const CODE = "482913";
 const PRIMARY = "rgb(63, 70, 56)";
 const OLIVE_TINT = "rgb(224, 230, 214)";
 const CARD = "rgb(255, 255, 255)";
@@ -21,16 +21,9 @@ const account = (page: Page, email: string) =>
     return state?.accounts?.find((a: { email: string }) => a.email === e) ?? null;
   }, email);
 
+/** A new account that still owes the Field of work step (an invited student skips it, see the DESIGN.md entry section). */
 async function signUp(page: Page, name: string, email: string, instructor = false) {
-  await page.goto("/welcome");
-  await page.getByRole("link", { name: "Create account" }).click();
-  await page.getByLabel("Full name").fill(name);
-  await page.getByLabel("Work email").fill(email);
-  if (instructor) await page.getByText("Instructor", { exact: true }).click();
-  await page.getByRole("button", { name: "Continue" }).click();
-  await expect(page).toHaveURL(/\/verify$/);
-  await page.getByLabel("Digit 1 of 6").focus();
-  await page.keyboard.type(CODE);
+  await seedNewAccount(page, { name, email, role: instructor ? "instructor" : "student" });
 }
 
 /** A new student at the Field of work step. */

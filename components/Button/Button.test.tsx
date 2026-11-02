@@ -190,6 +190,8 @@ describe("a secondary always comes with a primary above it", () => {
       // (Delete question, Add image, Remove image), each under at most one Primary.
       // Field of work: the picker (Clear selection). The step has only the corner Skip (tertiary) and Continue.
       "components/FieldOfWork/FieldPickerView.tsx",
+      // Group code: Back under the Primary Continue.
+      "components/GroupCodeView/GroupCodeView.tsx",
       "components/InstructorContent/DocumentAnalysingView.tsx",
       "components/InstructorContent/EditQuestionView.tsx",
       // Content package import: Cancel under Import and review, Replace files / Preview as student
@@ -215,13 +217,15 @@ describe("a secondary always comes with a primary above it", () => {
       // Topics view: Assign exam on weakest topic; topic students: Assign exam on this topic.
       "components/InstructorTopics/TopicStudentsView.tsx",
       "components/InstructorTopics/TopicsView.tsx",
-      // The join screen: Sign in under the Primary Create account (or Back to welcome alone).
-      "components/JoinView/JoinView.tsx",
+      // The invitation: Not now under Join group, Back to start alone for a link that is not valid.
+      "components/InvitationView/InvitationView.tsx",
       // Material page: Create again and Read the sample guide, below the primary action.
       "components/MaterialView/MaterialView.tsx",
       // Progress: the Exam readiness card's Repeat weak topics, its one action (documented exception).
       // Demo topic: Try again under the result's Primary Done; the slim preview bar's Exit preview.
       "components/PackageContent/PackageStudentScreen.tsx",
+      // Profile: Leave group (demo) in the Demo mode section.
+      "components/ProfileView/ProfileView.tsx",
       "components/ProgressView/ProgressView.tsx",
       // The reading screen's quick-actions bar: Steps next to the primary Practise this topic.
       "components/QuickActionsBar/QuickActionsBar.tsx",
@@ -235,8 +239,6 @@ describe("a secondary always comes with a primary above it", () => {
       "components/UploadSheet/UploadSheet.tsx",
       // Verify: "Fill in code" in the demo card, next to the pinned primary "Verify".
       "components/VerifyView/VerifyView.tsx",
-      // Welcome: the secondary "I already have an account" under the primary "Create account".
-      "components/WelcomeView/WelcomeView.tsx",
     ]);
   });
 

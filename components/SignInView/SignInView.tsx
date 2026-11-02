@@ -9,7 +9,7 @@ import { UNKNOWN_LINK, UNKNOWN_MESSAGE, validateEmail } from "@/lib/auth-validat
 
 /**
  * Sign in: the work email and a Primary "Continue" pinned to the bottom. An email with no account
- * on this device says so, with a link to Create account.
+ * on this device says so, with a link to "Have a group code?" (there is no public sign-up).
  */
 export function SignInView({
   initialEmail = "",
@@ -60,7 +60,7 @@ export function SignInView({
         error={formatError ?? (unknown ? UNKNOWN_MESSAGE : null)}
         action={
           unknown && !formatError ? (
-            <ButtonLink variant="tertiary" href="/sign-up">
+            <ButtonLink variant="tertiary" href="/join">
               {UNKNOWN_LINK}
             </ButtonLink>
           ) : undefined
@@ -69,8 +69,8 @@ export function SignInView({
       />
       <div className="mt-auto flex flex-col items-center gap-1 pt-2">
         <Button type="submit">Continue</Button>
-        <ButtonLink variant="tertiary" href="/sign-up">
-          New here? Create an account
+        <ButtonLink variant="tertiary" href="/join">
+          Have a group code?
         </ButtonLink>
       </div>
     </form>

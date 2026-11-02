@@ -321,10 +321,10 @@ describe("the join link", () => {
     expect(cleanAccountGroup("all")).toBeUndefined();
   });
 
-  it("is open to a signed-out visitor, and a signed-in person is sent Home", () => {
+  it("is open to a signed-out visitor and to a signed-in student (who confirms), and an instructor is sent Home", () => {
     expect(guardRedirect(null, "/join/QT-A7K2")).toBeNull();
     expect(guardRedirect(null, "/instructor/students")).toBe("/welcome");
-    expect(guardRedirect({ role: "student", onboardingDone: true }, "/join/QT-A7K2")).toBe("/");
+    expect(guardRedirect({ role: "student", onboardingDone: true }, "/join/QT-A7K2")).toBeNull();
     expect(guardRedirect({ role: "instructor", onboardingDone: true }, "/join/QT-A7K2")).toBe(
       "/instructor",
     );
