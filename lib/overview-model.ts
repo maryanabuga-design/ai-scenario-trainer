@@ -6,7 +6,7 @@ import { getStarted } from "@/lib/get-started";
 import type { StartStep } from "@/lib/get-started";
 import { splitExams } from "@/lib/group-exams";
 import type { GroupExam } from "@/lib/group-exams";
-import { ALL_GROUPS, examPeople, examsInScope, groupNames, groups } from "@/lib/groups";
+import { ALL_GROUPS, examPeople, examsInScope, groups } from "@/lib/groups";
 import type { Group, Scope } from "@/lib/groups";
 import {
   groupReadiness,
@@ -29,11 +29,10 @@ export const groupRows = (list: StudentProfile[]): GroupRow[] =>
     return { group, students: own.length, needs: needsAttention(own).length };
   });
 
-/** An exam of the EXAMS card with the counts of its audience and, in All groups, its group tag. */
+/** An exam of the EXAMS card with the counts of its audience. */
 export type ExamRow = {
   exam: GroupExam;
   counts: GroupCounts;
-  tag: string | null;
 };
 
 export type OverviewInput = {
@@ -119,7 +118,6 @@ export function overviewModel(input: OverviewInput): OverviewModel {
     examRows: unique.map((exam) => ({
       exam,
       counts: counts(exam),
-      tag: all ? groupNames(exam.groupIds) : null,
     })),
     activeCount: active.length,
     weakest: all ? null : weakestTopic(list),

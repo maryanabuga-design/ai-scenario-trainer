@@ -720,7 +720,7 @@ for (const width of [360, 430]) {
         .trim();
       const assign = page.getByRole("link", { name: "Assign exam on weakest topic" });
       expect(await bg(assign)).toBe(OLIVE_TINT);
-      await expect(assign.locator("svg.lucide-file-plus")).toHaveCount(1);
+      await expect(assign.locator("svg.lucide-circle-plus")).toHaveCount(1);
       await assign.click();
       await expect(page).toHaveURL(
         new RegExp(`/instructor/exams/new\\?topic=${id}&from=students$`),

@@ -182,3 +182,78 @@ for (const width of [360, 430]) {
     });
   });
 }
+
+for (const width of [360, 430]) {
+  test.describe(`One assign icon at ${width}px`, () => {
+    test.use({ viewport: { width, height: 800 }, storageState: instructor });
+
+    test("every assign-exam button has the same circled plus at the same size", async ({
+      page,
+    }) => {
+      const places: [string, string][] = [
+        ["/instructor/exams", "Assign exam"],
+        ["/instructor", "Assign exam"],
+        ["/instructor", "Assign exam on this topic"],
+        ["/instructor/students?view=topics", "Assign exam on weakest topic"],
+        ["/instructor/students/topic/S3", "Assign exam on this topic"],
+        ["/instructor/exams/new", "Assign exam"],
+      ];
+      for (const [path, name] of places) {
+        await page.goto(path);
+        const control = page
+          .locator("a:visible, button:visible")
+          .filter({ hasText: new RegExp(`^${name}$`) });
+        await expect(control, `${path} ${name}`).toHaveCount(1);
+        const icon = control.locator("svg").first();
+        await expect(icon, `${path} ${name}`).toHaveClass(/lucide-circle-plus/);
+        const b = (await icon.boundingBox())!;
+        expect([b.width, b.height], `${path} ${name}`).toEqual([18, 18]);
+        // the same gap between the icon and the label on every button
+        const gap = await control.evaluate((el) => {
+          const svg = el.querySelector("svg")!.getBoundingClientRect();
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          const text = Array.from(el.childNodes).find(
+            (n) =>
+              n.nodeType === 3 ||
+              (n instanceof HTMLElement && !n.querySelector("svg") && n.tagName !== "svg"),
+          );
+          const target = text ? document.createRange() : range;
+          if (text) target.selectNodeContents(text);
+          return Math.round(target.getBoundingClientRect().left - svg.right);
+        });
+        expect(gap, `${path} ${name}`).toBe(8);
+        expect(await noSidewaysScroll(page), path).toBe(true);
+      }
+    });
+
+    test("the Overview exam row is the Exams list card: icon tile, neutral Due pill, one result line", async ({
+      page,
+    }) => {
+      await page.goto("/instructor");
+      const row = page.locator("[data-exams-card] [data-exam-card]").first();
+      await expect(row.locator("img")).toHaveCount(0);
+      const tile = row.locator("[data-exam-tile]");
+      const t = (await tile.boundingBox())!;
+      expect([t.width, t.height]).toEqual([48, 48]);
+      expect(await bg(tile)).toBe("rgb(239, 236, 230)");
+      const pill = row.locator("[data-date-pill]");
+      await expect(pill).toHaveText(/^Due \d+ \w{3}$/);
+      expect(await bg(pill)).toBe("rgb(239, 236, 230)");
+      await expect(row).toContainText(/Passed \d+ of \d+$/);
+      expect(await row.innerText()).not.toMatch(/not started|topics?\b/i);
+      expect((await box(row)).height).toBe(88);
+      // the same card as on the Exams screen
+      const overview = await row.evaluate((el) =>
+        el.className.replace(/rounded-card.*shadow-\(--card-shadow\)/, "").trim(),
+      );
+      await page.goto("/instructor/exams");
+      const listCard = page.locator("[data-exam-card]:visible").first();
+      const own = await listCard.evaluate((el) =>
+        el.className.replace(/rounded-card.*shadow-\(--card-shadow\)/, "").trim(),
+      );
+      expect(own.replace(/\s+/g, " ")).toBe(overview.replace(/\s+/g, " "));
+      expect(await noSidewaysScroll(page)).toBe(true);
+    });
+  });
+}

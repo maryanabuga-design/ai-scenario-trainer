@@ -272,7 +272,7 @@ for (const width of [360, 430]) {
       const c = (await cancel.boundingBox())!;
       expect(a.y + a.height).toBeLessThanOrEqual(c.y);
       expect([a.height, c.height]).toEqual([52, 52]);
-      await expect(assignButton.locator("svg.lucide-file-check")).toHaveCount(1);
+      await expect(assignButton.locator("svg.lucide-circle-plus")).toHaveCount(1);
       // audience: Rescue team is the group in context; at least one is needed
       await expect(page.locator("input[name=audience]:checked")).toHaveCount(1);
       await page.getByText("Responding to an alarm").first().click();

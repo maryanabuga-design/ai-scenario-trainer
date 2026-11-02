@@ -81,7 +81,8 @@ describe("the Overview header", () => {
     expect(pill).toContain("min-h-11");
     expect(pill).toContain("h-10");
     expect(pill).toContain("rounded-full");
-    expect(pill).toContain("bg-neutral-tile-bg");
+    expect(pill).toContain("bg-chip-neutral-bg");
+    expect(pill).toMatch(/data-group-icon[^>]*h-8 w-8[^>]*rounded-full/);
     expect(pill).toContain("lucide-users-round");
     expect(pill).not.toContain("bg-primary");
     expect(pill).toContain("Rescue team");
@@ -237,7 +238,8 @@ describe("EXAMS", () => {
     expect(section.match(/data-exams-card/g)).toHaveLength(1);
     expect(section).toContain("data-exam-card=");
     expect(section).toContain("h-[88px]");
-    expect(visible(section)).toMatch(/Passed \d+ of 15 · \d+ not started/);
+    expect(visible(section)).toMatch(/Passed \d+ of 15/);
+    expect(visible(section)).not.toMatch(/not started|topic/);
     expect(section).toMatch(/bg-olive-tint[^>]*>[\s\S]*lucide-circle-plus[\s\S]*Assign exam</);
     expect(section).not.toContain("bg-primary");
     // the exam row sits inside the card, with no card of its own
@@ -269,7 +271,7 @@ describe("WEAKEST TOPIC", () => {
   const html = render();
   const section = html.slice(html.indexOf("WEAKEST TOPIC"));
 
-  it("has the S badge and name on one row, the muted count, a Secondary with a checklist icon and the centred link", () => {
+  it("has the S badge and name on one row, the muted count, a Secondary with the circled plus and the centred link", () => {
     const weak = weakestTopic(rescue)!;
     expect(section).toContain(`data-weakest-topic="${weak.sectionId}"`);
     expect(section).toContain(`>${weak.sectionId}<`);
@@ -280,7 +282,7 @@ describe("WEAKEST TOPIC", () => {
       `href="/instructor/exams/new?topic=${weak.sectionId}&amp;from=overview"`,
     );
     expect(section).toMatch(
-      /bg-olive-tint[^>]*>[\s\S]*lucide-clipboard-check[\s\S]*Assign exam on this topic</,
+      /bg-olive-tint[^>]*>[\s\S]*lucide-circle-plus[\s\S]*Assign exam on this topic</,
     );
     // the link is in the header row with the label, right-aligned, and no longer under the card
     const header = html.slice(
@@ -318,13 +320,14 @@ describe("All groups", () => {
     );
   });
 
-  it("puts the group name first in the action rows and lists the nearest exam of each group with a tag", () => {
+  it("puts the group name first in the action rows and lists the nearest exam of each group as the same card as on Exams", () => {
     const actions = html.slice(html.indexOf("NEEDS YOUR ACTION"), html.indexOf(">EXAMS<"));
     expect(actions).toMatch(/Rescue team · \d+ students? needs? attention/);
     const section = html.slice(html.indexOf(">EXAMS<"));
     expect(section.match(/data-exam-card=/g)).toHaveLength(2);
-    expect(section).toContain("Rescue team");
-    expect(section).toContain("Military training");
+    expect(section.match(/data-exam-tile/g)).toHaveLength(2);
+    expect(section.match(/data-date-pill/g)).toHaveLength(2);
+    expect(section).not.toMatch(/<img|exam-card\.webp|not started|topics?<|data-group-name/);
     expect(section).toMatch(/data-block-note[^>]*>2 Active</);
   });
 });

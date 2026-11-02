@@ -1,4 +1,4 @@
-import { FilePlus } from "lucide-react";
+import { AssignIcon } from "@/components/AssignIcon/AssignIcon";
 import Link from "next/link";
 import { ButtonLink } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
@@ -95,7 +95,7 @@ export function TopicsView({
         })}
       </ul>
       {weakest && weakest.total > 0 && (
-        <ButtonLink href={assignOnTopic(weakest.sectionId)} variant="secondary" icon={FilePlus}>
+        <ButtonLink href={assignOnTopic(weakest.sectionId)} variant="secondary" icon={AssignIcon}>
           Assign exam on weakest topic
         </ButtonLink>
       )}

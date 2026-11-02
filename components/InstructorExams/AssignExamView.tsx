@@ -1,9 +1,10 @@
 "use client";
 
-import { Calendar, ClipboardCheck, FileCheck, Shield, UsersRound } from "lucide-react";
+import { Calendar, ClipboardCheck, Shield, UsersRound } from "lucide-react";
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
+import { AssignIcon } from "@/components/AssignIcon/AssignIcon";
 import { Button } from "@/components/Button/Button";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
@@ -314,7 +315,7 @@ export function AssignExamView({
 
       <ActionBar>
         <Button
-          icon={FileCheck}
+          icon={AssignIcon}
           disabled={problems.length > 0}
           onClick={() =>
             onAssign({

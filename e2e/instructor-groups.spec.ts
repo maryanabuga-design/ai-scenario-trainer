@@ -58,7 +58,7 @@ for (const width of [360, 430]) {
       const pill = page.locator("[data-group-pill]");
       expect((await box(pill)).height).toBeGreaterThanOrEqual(44);
       expect((await box(pill.locator("span").first())).height).toBe(40);
-      expect(await bg(pill.locator("span").first())).toBe(SAND);
+      expect(await bg(pill.locator("span").first())).toBe("rgb(255, 255, 255)");
       await expect(pill).toContainText("Rescue team");
       expect((await box(pill)).y).toBeGreaterThan((await box(page.locator("[data-subtitle]"))).y);
       // readiness card: white, the figure, the plain trend line, the ring, the strip
@@ -167,7 +167,7 @@ for (const width of [360, 430]) {
       await expect(page.locator("[data-student]:visible")).toHaveCount(15);
     });
 
-    test("All groups: a GROUPS card instead of one average, group prefixes, a tag on each exam, no Weakest topic, no percent", async ({
+    test("All groups: a GROUPS card instead of one average, group prefixes, the same exam card as on Exams, no Weakest topic, no percent", async ({
       page,
     }) => {
       await choose(page, "All groups");
@@ -190,8 +190,11 @@ for (const width of [360, 430]) {
       }
       const cards = page.locator("[data-exam-card]");
       await expect(cards).toHaveCount(2);
-      await expect(cards.nth(0)).toContainText("Rescue team");
-      await expect(cards.nth(1)).toContainText("Military training");
+      // the same card as on Exams: tile, title, date pill, one result line; no group name on it
+      for (const card of await cards.all()) {
+        await expect(card.locator("[data-exam-tile]")).toHaveCount(1);
+        await expect(card).toContainText(/Passed \d+ of \d+$/);
+      }
       await expect(page.locator("[data-block-note]")).toHaveText("2 Active");
       expect(await noSidewaysScroll(page)).toBe(true);
     });

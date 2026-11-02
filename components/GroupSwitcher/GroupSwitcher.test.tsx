@@ -13,12 +13,18 @@ const render = (props: Partial<Parameters<typeof GroupSwitcher>[0]> = {}) =>
   ).replace(/<!-- -->/g, "");
 
 describe("the group switcher", () => {
-  it("is a button pill with the neutral icon tile, the name and a chevron, closed by default", () => {
+  it("is a full pill with the group icon on a 32px circle in the sand tile colour, the name and a chevron, closed by default", () => {
     const html = render();
     expect(html).toContain('aria-haspopup="listbox"');
     expect(html).toContain('aria-expanded="false"');
     expect(html).not.toContain("aria-controls");
-    expect(html).toContain("bg-neutral-tile-bg");
+    expect(html).toContain("rounded-full border border-selectable-stroke bg-card");
+    const circle = html.slice(html.indexOf("data-group-icon"));
+    const tag = circle.slice(0, circle.indexOf(">"));
+    expect(tag).toContain("h-8 w-8");
+    expect(tag).toContain("rounded-full");
+    expect(tag).toContain("bg-chip-neutral-bg");
+    expect(tag).not.toMatch(/rounded-\[/);
     expect(html).toContain("lucide-users-round");
     expect(html).not.toMatch(/h-2 w-2[^"]*rounded-full bg-primary/);
     expect(html).toContain(">Rescue team<");

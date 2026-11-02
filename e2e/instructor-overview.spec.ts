@@ -275,10 +275,10 @@ for (const width of [360, 430]) {
       // the condition is resolved: the row is gone, the others stay
       await expect(page.locator('[data-action="exam-not-started"]')).toHaveCount(0);
       await expect(page.locator('[data-action="needs-attention"]')).toBeVisible();
-      // the exam is the nearest one in EXAMS, with its not started count
-      await expect(page.locator(`[data-exam-card="${id}"]`)).toContainText(
-        /Passed \d+ of 15 · \d+ not started/,
-      );
+      // the exam is the nearest one in EXAMS, the same card as on Exams: one result line only
+      const examCard = page.locator(`[data-exam-card="${id}"]`);
+      await expect(examCard).toContainText(/Passed \d+ of 15$/);
+      expect(await examCard.innerText()).not.toMatch(/not started|topic/i);
     });
 
     test("a draft set is a row that opens its Review; publishing it removes the row", async ({

@@ -466,7 +466,7 @@ describe("the Topics view", () => {
       `href="/instructor/exams/new?topic=${weak.sectionId}&amp;from=students"`,
     );
     expect(html).toMatch(
-      /bg-olive-tint[^>]*>[\s\S]*lucide-file-plus[\s\S]*Assign exam on weakest topic</,
+      /bg-olive-tint[^>]*>[\s\S]*lucide-circle-plus[\s\S]*Assign exam on weakest topic</,
     );
     expect(html).not.toMatch(/data-demo-note|Demo group/);
   });

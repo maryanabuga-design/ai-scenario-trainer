@@ -116,7 +116,6 @@ describe("scope-aware figures", () => {
     expect(model.steps).toBeNull();
     // one nearest active exam per group, each once
     expect(model.examRows.map((r) => r.exam.id)).toEqual(["seed-active", "seed-military-active"]);
-    expect(model.examRows.map((r) => r.tag)).toEqual(["Rescue team", "Military training"]);
     expect(model.activeCount).toBe(2);
   });
 

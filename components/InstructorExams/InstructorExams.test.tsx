@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
@@ -33,9 +33,10 @@ const wrap = (node: React.ReactNode) =>
 describe("the exam card", () => {
   const exam = exams[0];
   const card = (props: Partial<React.ComponentProps<typeof ExamCard>> = {}) =>
-    renderToStaticMarkup(
-      <ExamCard exam={exam} passed={1} total={14} notStarted={11} {...props} />,
-    ).replace(/<!-- -->/g, "");
+    renderToStaticMarkup(<ExamCard exam={exam} passed={1} total={14} {...props} />).replace(
+      /<!-- -->/g,
+      "",
+    );
   const active = card();
 
   it("is 88px: the 48px icon tile, a one-line title, the neutral date pill, the results line, a chevron", () => {
@@ -93,18 +94,28 @@ describe("the exam card", () => {
       expect(readFileSync(file, "utf8"), file).not.toMatch(/DUE_SOON|amber|duePill\(/);
   });
 
-  it("shows the bare row of the Overview with the picture and the not-started count after the result", () => {
-    const bare = card({ bare: true });
-    expect(bare).toContain("Passed 1 of 14 · 11 not started");
-    expect(bare).toContain("/heroes/exam-card.webp");
-    expect(bare).not.toContain("data-exam-tile");
+  it("is the very same card inside the Overview's EXAMS card: no chrome, but the icon tile, the neutral date pill and one result line", () => {
+    const bare = card({ bare: true, from: "overview" });
+    expect(bare).toContain("data-exam-tile");
+    expect(bare).toContain("data-date-pill");
+    expect(bare).toContain("Passed 1 of 14");
+    expect(bare).not.toMatch(/not started|topics?<|<img|exam-card\.webp/);
+    expect(bare).not.toContain("shadow-(--card-shadow)");
+    expect(bare).toContain(`href="/instructor/exams/${exam.id}?from=overview"`);
+    // the same markup as the list card, apart from the card chrome
+    const strip = (html: string) =>
+      html.replace(
+        / rounded-card border border-selectable-stroke bg-card shadow-\(--card-shadow\)/,
+        "",
+      );
+    const same = (html: string) => html.replace(/href="[^"]*"/, "").replace(/\s+"/g, '"');
+    expect(same(strip(card()))).toBe(same(bare));
   });
 
   it("shows the same icon tile, 'Closed 12 Oct' and 'Passed 12 of 14' when closed", () => {
     const closed = card({
       closed: true,
       passed: 12,
-      notStarted: undefined,
       exam: { ...exam, deadline: "2026-10-12" },
     });
     expect(closed).toContain(">Closed 12 Oct<");
@@ -555,5 +566,35 @@ describe("the Assigned exam card on Student Home", () => {
     expect(html).toContain("20 questions · 20 minutes");
     expect(html).toContain("lucide-chevron-right");
     expect(html).not.toContain("Start exam");
+  });
+});
+
+describe("the one assign icon", () => {
+  const files = (dir: string): string[] =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const path = `${dir}/${entry.name}`;
+      if (entry.isDirectory()) return files(path);
+      return path.endsWith(".tsx") && !path.includes(".test.") ? [path] : [];
+    });
+
+  it("is the circled plus on every button that assigns an exam, and no other icon is used for it", () => {
+    const sources = [...files("components"), ...files("app")].filter(
+      (file) => !file.startsWith("app/screens/"),
+    );
+    const found: string[] = [];
+    for (const file of sources) {
+      const code = readFileSync(file, "utf8");
+      for (const m of code.matchAll(/icon=\{(\w+)\}[^>]*>\s*(Assign exam[^<{]*)</g)) {
+        found.push(`${file}: ${m[2].trim()}`);
+        expect(m[1], `${file}: ${m[2]}`).toBe("AssignIcon");
+      }
+    }
+    // Exams (two), Overview EXAMS (two), the weakest topic, Topics and topic students
+    expect(found.length).toBeGreaterThanOrEqual(7);
+    // the submit button of the Assign exam screen (its props span several lines)
+    expect(readFileSync("components/InstructorExams/AssignExamView.tsx", "utf8")).toMatch(
+      /<Button\s+icon=\{AssignIcon\}/,
+    );
+    expect(readFileSync("components/AssignIcon/AssignIcon.tsx", "utf8")).toContain("CirclePlus");
   });
 });

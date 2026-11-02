@@ -3,7 +3,6 @@
 import { Check, ChevronDown, UsersRound } from "lucide-react";
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
-import { IconTile } from "@/components/IconTile/IconTile";
 import { scopeName } from "@/lib/groups";
 import type { Scope } from "@/lib/groups";
 import type { SwitcherRow } from "@/lib/overview";
@@ -125,10 +124,15 @@ export function GroupSwitcher({
         }}
         className="flex min-h-11 max-w-full min-w-0 items-center has-focus-visible:outline-2"
       >
-        <span className="type-small-strong flex h-10 min-w-0 items-center gap-2 rounded-full bg-secondary-sand pr-4 pl-2 text-text">
-          <IconTile className="h-6 w-6 rounded-[8px]">
-            <UsersRound size={14} strokeWidth={2} />
-          </IconTile>
+        <span className="type-small-strong flex h-10 min-w-0 items-center gap-2 rounded-full border border-selectable-stroke bg-card pr-4 pl-1 text-text">
+          {/* the group icon on a 32px circle in the sand tile colour */}
+          <span
+            aria-hidden="true"
+            data-group-icon
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-chip-neutral-bg text-primary"
+          >
+            <UsersRound size={16} strokeWidth={2} />
+          </span>
           <span className="truncate">{scopeName(scope)}</span>
           <ChevronDown
             size={16}

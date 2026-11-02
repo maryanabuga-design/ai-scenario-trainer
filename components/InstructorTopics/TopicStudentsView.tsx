@@ -1,4 +1,4 @@
-import { FilePlus } from "lucide-react";
+import { AssignIcon } from "@/components/AssignIcon/AssignIcon";
 import { ButtonLink } from "@/components/Button/Button";
 import {
   InitialsAvatar,
@@ -68,7 +68,7 @@ export function TopicStudentsView({
           />
         ))}
       </StudentRowsCard>
-      <ButtonLink href={assignOnTopic(id)} variant="secondary" icon={FilePlus}>
+      <ButtonLink href={assignOnTopic(id)} variant="secondary" icon={AssignIcon}>
         Assign exam on this topic
       </ButtonLink>
     </div>

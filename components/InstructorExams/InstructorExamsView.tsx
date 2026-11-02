@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronDown, CirclePlus } from "lucide-react";
+import { ChevronDown } from "lucide-react";
+import { AssignIcon } from "@/components/AssignIcon/AssignIcon";
 import { useRef, useState } from "react";
 import type { MouseEvent } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
@@ -81,7 +82,7 @@ export function InstructorExamsView({
             <h2 className="type-card-title">{EXAMS_EMPTY_TITLE}</h2>
             <p className="text-text-secondary">{EXAMS_EMPTY}</p>
           </div>
-          <ButtonLink href="/instructor/exams/new" icon={CirclePlus}>
+          <ButtonLink href="/instructor/exams/new" icon={AssignIcon}>
             Assign exam
           </ButtonLink>
           <p className="type-small w-full rounded-[14px] bg-secondary-sand p-3 text-text-secondary">
@@ -90,7 +91,7 @@ export function InstructorExamsView({
         </div>
       ) : (
         <>
-          <ButtonLink href="/instructor/exams/new" icon={CirclePlus}>
+          <ButtonLink href="/instructor/exams/new" icon={AssignIcon}>
             Assign exam
           </ButtonLink>
           {active.length > 0 && (

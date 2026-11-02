@@ -6,8 +6,6 @@ import {
   ArrowUp,
   Award,
   Check,
-  CirclePlus,
-  ClipboardCheck,
   ClipboardList,
   Clock,
   FileText,
@@ -20,6 +18,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { ButtonLink } from "@/components/Button/Button";
+import { AssignIcon } from "@/components/AssignIcon/AssignIcon";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { Chip } from "@/components/Chip/Chip";
 import { IconTile } from "@/components/IconTile/IconTile";
@@ -291,16 +290,14 @@ export function ExamsCard({ rows, activeCount }: { rows: ExamRow[]; activeCount:
         {rows.length > 0 ? (
           <>
             <ul className={divided}>
-              {rows.map(({ exam, counts, tag }) => (
+              {rows.map(({ exam, counts }) => (
                 <li key={exam.id}>
                   <ExamCard
                     bare
                     exam={exam}
                     passed={counts.passed}
                     total={counts.total}
-                    notStarted={counts.notStarted}
                     from="overview"
-                    tag={tag ?? undefined}
                   />
                 </li>
               ))}
@@ -309,7 +306,7 @@ export function ExamsCard({ rows, activeCount }: { rows: ExamRow[]; activeCount:
               <ButtonLink
                 href="/instructor/exams/new?from=overview"
                 variant="secondary"
-                icon={CirclePlus}
+                icon={AssignIcon}
               >
                 Assign exam
               </ButtonLink>
@@ -321,7 +318,7 @@ export function ExamsCard({ rows, activeCount }: { rows: ExamRow[]; activeCount:
             className="flex flex-col gap-4 px-[var(--gutter,1rem)] pt-[var(--gutter,1rem)]"
           >
             <p className="type-body-strong">{NO_ACTIVE_EXAM}</p>
-            <ButtonLink href="/instructor/exams/new?from=overview" icon={CirclePlus}>
+            <ButtonLink href="/instructor/exams/new?from=overview" icon={AssignIcon}>
               Assign exam
             </ButtonLink>
           </div>
@@ -377,7 +374,7 @@ export function WeakestCard({
         <p data-weakest-count className="type-small text-text-secondary tabular-nums">
           {weakestLine(weakest, students)}
         </p>
-        <ButtonLink href={href} variant="secondary" icon={ClipboardCheck}>
+        <ButtonLink href={href} variant="secondary" icon={AssignIcon}>
           Assign exam on this topic
         </ButtonLink>
       </div>

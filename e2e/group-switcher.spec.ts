@@ -12,7 +12,6 @@ const instructor = {
   ],
 };
 const CARD = "rgb(255, 255, 255)";
-const NEUTRAL_TILE = "rgb(226, 222, 214)";
 
 const noSidewaysScroll = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
@@ -32,11 +31,29 @@ for (const width of [360, 430]) {
       await expect(button).toHaveAttribute("aria-haspopup", "listbox");
       await expect(button).toHaveAttribute("aria-expanded", "false");
       await expect(button.locator("svg.lucide-users-round")).toHaveCount(1);
+      // a full pill; the icon sits on a 32px circle in the sand tile colour
+      const pb = (await button.locator("span").first().boundingBox())!;
+      // fully round: a radius far beyond half the height
       expect(
         await button
-          .locator("[data-icon-tile]")
-          .evaluate((el) => getComputedStyle(el).backgroundColor),
-      ).toBe(NEUTRAL_TILE);
+          .locator("span")
+          .first()
+          .evaluate((el) => parseFloat(getComputedStyle(el).borderTopLeftRadius)),
+      ).toBeGreaterThanOrEqual(20);
+      expect(pb.height).toBe(40);
+      const circle = button.locator("[data-group-icon]");
+      const cb = (await circle.boundingBox())!;
+      expect([cb.width, cb.height]).toEqual([32, 32]);
+      expect(
+        await circle.evaluate((el) => parseFloat(getComputedStyle(el).borderTopLeftRadius)),
+      ).toBeGreaterThanOrEqual(16);
+      expect(await circle.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
+        "rgb(239, 236, 230)",
+      );
+      // the icon is centred on the circle
+      const ib = (await circle.locator("svg").boundingBox())!;
+      expect(Math.abs(ib.x + ib.width / 2 - (cb.x + cb.width / 2))).toBeLessThanOrEqual(0.5);
+      expect(Math.abs(ib.y + ib.height / 2 - (cb.y + cb.height / 2))).toBeLessThanOrEqual(0.5);
       await expect(list(page)).toHaveCount(0);
 
       await button.click();
