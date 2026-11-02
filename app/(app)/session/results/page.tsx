@@ -6,7 +6,7 @@ import { ResultsView } from "@/components/ResultsView/ResultsView";
 import { byDeadline, useExams } from "@/lib/assigned-exams";
 import { scoreSession, weakItemsFromHistory } from "@/lib/progress";
 import { startRepeat } from "@/lib/repeat";
-import { isValidSession, useHistory, useSession } from "@/lib/session";
+import { isValidSession, resultsReturnHref, useHistory, useSession } from "@/lib/session";
 import { weakTopics } from "@/lib/weak-topics";
 
 export default function ResultsPage() {
@@ -30,7 +30,7 @@ export default function ResultsPage() {
       kind={session.kind}
       items={scoreSession(session)}
       topics={topics}
-      backHref={session.returnTo ?? "/"}
+      backHref={resultsReturnHref(session)}
       backLabel={exam ? "Back to Exam" : undefined}
       examRepeat={examRepeat}
       doneHref={examRepeat ? session.returnTo : undefined}

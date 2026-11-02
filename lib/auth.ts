@@ -3,7 +3,7 @@ import { isCorrectCode } from "@/lib/auth-code";
 import { MIGRATED_EMAIL, MIGRATED_NAME } from "@/lib/demo-account";
 import { lookupDemoAccount } from "@/lib/demo-accounts";
 import { cleanField } from "@/lib/field-of-work";
-import { DEFAULT_GROUP_ID, cleanAccountGroup } from "@/lib/groups";
+import { DEFAULT_GROUP_ID, cleanAccountGroup, groupField } from "@/lib/groups";
 import { readInvitations, markJoined, saveInvitations } from "@/lib/invitations";
 import { clearJoin, groupToJoin, readJoin } from "@/lib/join";
 import type { FieldOfWork } from "@/lib/field-of-work";
@@ -474,7 +474,9 @@ export function useCurrentAccount(): Account | null | "loading" {
 /** The field of work of the signed-in account ("loading" until read; null when not set). */
 export function useField(): FieldOfWork | null | "loading" {
   const account = useCurrentAccount();
-  return account === "loading" ? "loading" : (account?.field ?? null);
+  if (account === "loading") return "loading";
+  // the field the student saved, otherwise the field of the group (Ask AI examples follow it silently)
+  return account?.field ?? (account ? groupField(groupOf(account)) : null);
 }
 
 /** The role of the signed-in account ("loading" until read; a student when signed out). */

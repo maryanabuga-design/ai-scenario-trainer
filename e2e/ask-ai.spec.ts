@@ -117,7 +117,7 @@ for (const width of [360, 430]) {
       page,
     }) => {
       await open(page, "/ask-ai");
-      await page.locator("[data-suggested]").nth(1).click();
+      await page.locator("[data-suggested]").first().click();
       await expect(page).toHaveURL(/\/ask-ai\/t-/);
       // the typing indicator, then the answer
       await expect(page.locator("[data-typing]")).toBeVisible();
@@ -127,7 +127,8 @@ for (const width of [360, 430]) {
       await expect(aiCards(page)).toHaveCount(1);
       await page.getByRole("link", { name: "Back to Ask AI" }).click();
       const row = page.locator("[data-thread]").first();
-      await expect(row).toContainText("How do I move through smoke?");
+      // the demo student's group is Rescue team, so the suggested questions are the rescue ones
+      await expect(row).toContainText("How do I lead others out of a smoky corridor?");
       await expect(row).toContainText("S3 · Moving through smoke");
       await expect(row).toContainText("Just now");
       expect((await row.boundingBox())!.height).toBe(72);
@@ -173,7 +174,7 @@ for (const width of [360, 430]) {
       }
       await page.getByRole("button", { name: "Give an example" }).click();
       await expect(aiCards(page)).toHaveCount(2);
-      await expect(aiCards(page).nth(1)).toContainText("Example:");
+      await expect(aiCards(page).nth(1)).toContainText(/^Example/);
       await page.getByRole("button", { name: "Explain simply" }).click();
       await expect(aiCards(page)).toHaveCount(3);
       await expect(aiCards(page).nth(2)).toContainText("In short:");
@@ -197,7 +198,7 @@ for (const width of [360, 430]) {
       expect(await card.evaluate((el) => getComputedStyle(el).borderTopWidth)).toBe("1px");
       // a source pill navigates to the guide section
       await page.locator("[data-source-pill]").first().click();
-      await expect(page).toHaveURL(/\/materials\/read\/S1$/);
+      await expect(page).toHaveURL(/\/materials\/read\/S3$/);
     });
 
     test("the history keeps 30 conversations, newest first, dropping the oldest", async ({

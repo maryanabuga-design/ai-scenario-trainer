@@ -164,8 +164,9 @@ test.describe("a running session", () => {
     await expect(bar).toHaveAttribute("aria-valuenow", "33");
     await expect(bar).toHaveAttribute("aria-valuetext", "33 percent, pass mark 80 percent");
     await expect(page.getByText("Your answers")).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "Back to Home", exact: true })).toHaveCount(1);
-    await expect(page.getByRole("button", { name: "Back to Home" })).toHaveCount(0);
+    // no known origin here, so Back goes to Materials (never Home)
+    await expect(page.getByRole("link", { name: "Back to Materials", exact: true })).toHaveCount(1);
+    await expect(page.getByRole("button", { name: "Back to Materials" })).toHaveCount(0);
     await expect(page.getByText(/Error types|Outcome/)).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Repeat weak topics" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Review answers" })).toBeVisible();

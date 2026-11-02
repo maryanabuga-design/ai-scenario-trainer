@@ -293,7 +293,7 @@ for (const width of [360, 430]) {
       expect(await account(page, "bob@example.com")).toBeNull();
     });
 
-    test("Ask AI: the tuned row, suggested questions and example lines follow the field; old threads keep their text", async ({
+    test("Ask AI: no sector row; suggested questions and example lines follow the field (the group's by default); old threads keep their text", async ({
       page,
     }) => {
       const requests: string[] = [];
@@ -304,33 +304,25 @@ for (const width of [360, 430]) {
       await atStep(page);
       await page.getByRole("button", { name: "Skip", exact: true }).click();
       await finish(page);
-      // no field: the invitation, the general suggested questions
+      // no saved field: no sector row at all; the field of the group (Rescue team) tunes the answers silently
       await page.goto("/ask-ai");
-      const tuned = page.locator("[data-tuned-row]");
-      await expect(tuned).toContainText("Set your field to tune answers");
-      const t = (await tuned.boundingBox())!;
-      expect([t.height, t.x, t.width]).toEqual([44, 16, width - 32]);
-      expect(await bg(tuned)).toBe(CARD);
+      await expect(page.locator("[data-tuned-row]")).toHaveCount(0);
+      await expect(page.getByText(/Answers tuned for|Set your field/)).toHaveCount(0);
       await expect(page.locator("[data-suggested]").first()).toContainText(
-        "Why is every alarm treated as real?",
+        "How do I lead others out of a smoky corridor?",
       );
+      // no gap where the row was: the first section starts right under the header band
+      const band = (await page.locator("h1", { hasText: "Ask AI" }).boundingBox())!;
+      const first = (await page.locator("#suggested-title").boundingBox())!;
+      expect(first.y - (band.y + band.height)).toBeLessThan(120);
       expect(await noSidewaysScroll(page)).toBe(true);
-      // the row opens the picker and Back returns to Ask AI
-      await tuned.click();
-      await expect(page).toHaveURL(/\/profile\/field\?from=ask-ai$/);
-      await page.getByRole("link", { name: "Back to Ask AI" }).click();
-      await expect(page).toHaveURL(/\/ask-ai$/);
       // an old thread, made without a field
       await page.locator("[data-suggested]").first().click();
       await expect(aiCards(page)).toHaveCount(1);
       const oldText = await aiCards(page).first().innerText();
-      expect(oldText).not.toContain("Example for");
       // rescue services
       await setField(page, "Rescue and emergency services");
       await page.goto("/ask-ai");
-      await expect(page.locator("[data-tuned-row]")).toContainText(
-        "Answers tuned for: Rescue services",
-      );
       await expect(page.locator("[data-suggested]")).toHaveCount(4);
       await expect(page.locator("[data-suggested]").first()).toContainText(
         "How do I lead others out of a smoky corridor?",
@@ -345,9 +337,6 @@ for (const width of [360, 430]) {
       // civil protection gives another sentence for the same topic
       await setField(page, "Civil protection or volunteer");
       await page.goto("/ask-ai");
-      await expect(page.locator("[data-tuned-row]")).toContainText(
-        "Answers tuned for: Civil protection",
-      );
       await page.locator("[data-suggested]").first().click();
       await expect(aiCards(page)).toHaveCount(1);
       await page.getByRole("button", { name: "Give an example" }).click();

@@ -1,3 +1,4 @@
+import { groupField } from "@/lib/groups";
 import { describe, expect, it } from "vitest";
 import {
   FORBIDDEN_WORDS,
@@ -6,7 +7,6 @@ import {
   fullLabels,
   shortLabel,
   shortLabels,
-  tunedLine,
 } from "@/lib/field-of-work";
 import {
   answerTo,
@@ -53,9 +53,11 @@ describe("the field of work", () => {
     expect(cleanField("military")).toBe("military");
   });
 
-  it("words the Ask AI row", () => {
-    expect(tunedLine("paramedic")).toBe("Answers tuned for: Paramedic");
-    expect(tunedLine(null)).toBe("Set your field to tune answers");
+  it("takes the field of the group when none is saved", () => {
+    expect(groupField("rescue-team")).toBe("rescue");
+    expect(groupField("military-training")).toBe("military");
+    expect(groupField("nope")).toBeNull();
+    expect(groupField(null)).toBeNull();
   });
 });
 

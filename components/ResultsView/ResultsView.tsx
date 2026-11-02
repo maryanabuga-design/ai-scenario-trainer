@@ -3,7 +3,7 @@
 import { ListChecks } from "lucide-react";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { ARROW_CLEARANCE, ArrowCircle } from "@/components/ArrowCircle/ArrowCircle";
 import { Button, ButtonLink } from "@/components/Button/Button";
@@ -20,6 +20,16 @@ import { sessionLabel } from "@/lib/session";
 import type { SessionKind } from "@/lib/session";
 import type { WeakTopic } from "@/lib/weak-topics";
 import { topicsToRepeat } from "@/lib/weak-topics";
+
+/** The name of the place Back goes to, from its address. */
+export function backLabelFor(href: string): string {
+  if (href === "/") return "Back to Home";
+  if (href.startsWith("/materials/read/")) return "Back to topic";
+  if (href.startsWith("/materials")) return "Back to Materials";
+  if (href.startsWith("/progress")) return "Back to Progress";
+  if (href.startsWith("/exam")) return "Back to Exam";
+  return "Back to Training";
+}
 
 export const reviewPath = (position: number) => `/session/results/review/${position}`;
 export const weakTopicsPath = "/weak-topics?from=results";
@@ -157,9 +167,12 @@ export function ResultsActions({
   onRepeat,
   onReview,
   reviewHref = reviewPath(1),
+  doneHref,
 }: {
   canRepeat: boolean;
   onRepeat: () => void;
+  /** A passed result: the Primary is "Done", to where the practice was opened from. */
+  doneHref?: string;
   onReview?: () => void;
   reviewHref?: string;
 }) {
@@ -168,14 +181,20 @@ export function ResultsActions({
       Review answers
     </ButtonLink>
   );
-  if (!canRepeat) return review;
+  if (!canRepeat && !doneHref) return review;
   return (
     <div className="flex flex-wrap-reverse gap-3 [&>div]:flex-[1_1_11.5rem] [&>div]:whitespace-nowrap">
       <div>{review}</div>
       <div>
-        <Button snug onClick={onRepeat}>
-          Repeat weak topics
-        </Button>
+        {doneHref ? (
+          <ButtonLink href={doneHref} snug>
+            Done
+          </ButtonLink>
+        ) : (
+          <Button snug onClick={onRepeat}>
+            Repeat weak topics
+          </Button>
+        )}
       </div>
     </div>
   );
@@ -208,7 +227,8 @@ export function ResultsButtons({
   if (!exam && !examRepeat) {
     return (
       <ResultsActions
-        canRepeat={canRepeat}
+        canRepeat={canRepeat && !passed}
+        doneHref={passed ? doneHref : undefined}
         onRepeat={onRepeat}
         onReview={rememberScroll}
         reviewHref={reviewHref}
@@ -275,15 +295,17 @@ export function ResultsView({
   actions?: ReactNode;
 }) {
   useRestoredScroll();
+  // when Results opens the focus goes to its title
+  const title = useRef<HTMLHeadingElement>(null);
+  useEffect(() => title.current?.focus({ preventScroll: true }), []);
   const passed = isPassed(items);
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-[44px_1fr_44px] items-center">
-        <CircleBackButton
-          href={backHref}
-          label={backLabel ?? (backHref === "/" ? "Back to Home" : "Back to Training")}
-        />
-        <h1 className="type-item-title text-center">Results</h1>
+        <CircleBackButton href={backHref} label={backLabel ?? backLabelFor(backHref)} />
+        <h1 ref={title} tabIndex={-1} className="type-item-title text-center">
+          Results
+        </h1>
       </div>
 
       <section aria-labelledby="result-title" className="flex flex-col items-center gap-3">

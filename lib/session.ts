@@ -1,5 +1,7 @@
 import "@/lib/content-sets"; // registers where the questions of a published instructor set are found
 import { findItem, sectionOrder } from "@/lib/items";
+import { getPart } from "@/lib/parts";
+import { readingPath } from "@/lib/reading";
 import { clearPartRecords, recordPartResult } from "@/lib/part-progress";
 import { nearestExam, readExams } from "@/lib/assigned-exams";
 import { clearExam } from "@/lib/exam-store";
@@ -109,6 +111,16 @@ export function leaveHref(session: Pick<Session, "returnTo">): string {
     back === "/progress"
     ? back
     : "/";
+}
+
+/**
+ * Where Results goes back to, and where "Done" goes: where the practice was opened from; when that
+ * is unknown the reading screen of the topic it practised, otherwise Materials (never Home).
+ */
+export function resultsReturnHref(session: Pick<Session, "returnTo" | "partId">): string {
+  if (session.returnTo) return session.returnTo;
+  const part = session.partId ? getPart(session.partId) : undefined;
+  return part ? readingPath(part.sectionId) : "/materials";
 }
 
 export function saveSession(session: Session) {

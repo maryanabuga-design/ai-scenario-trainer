@@ -14,7 +14,7 @@ export const fullLabels: Record<FieldOfWork, string> = {
   other: "Other",
 };
 
-/** The short labels (the Profile row, "Answers tuned for", the example line). */
+/** The short labels (the Profile row, the example line). */
 export const shortLabels: Record<FieldOfWork, string> = {
   rescue: "Rescue services",
   paramedic: "Paramedic",
@@ -33,10 +33,6 @@ export const fullLabel = (field: FieldOfWork) => fullLabels[field];
 
 /** "Rescue services", or "Not set". */
 export const shortLabel = (field: FieldOfWork | null) => (field ? shortLabels[field] : "Not set");
-
-/** "Answers tuned for: Paramedic", or the invitation while the field is not set. */
-export const tunedLine = (field: FieldOfWork | null) =>
-  field ? `Answers tuned for: ${shortLabels[field]}` : "Set your field to tune answers";
 
 /** Words that must never appear in the prepared examples (educational, non-combat content only). */
 export const FORBIDDEN_WORDS = [

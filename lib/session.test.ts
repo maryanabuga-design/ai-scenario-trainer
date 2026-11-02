@@ -3,6 +3,7 @@ import { contentFingerprint } from "@/lib/content-version";
 import { scoreSession } from "@/lib/progress";
 import {
   leaveHref,
+  resultsReturnHref,
   answerFor,
   finishSession,
   firstUnanswered,
@@ -292,5 +293,21 @@ describe("where Leave goes", () => {
     expect(leaveHref({ returnTo: "/materials/read/S1" })).toBe("/materials/read/S1");
     expect(leaveHref({ returnTo: "/training?mode=scenario" })).toBe("/");
     expect(leaveHref({})).toBe("/");
+  });
+});
+
+describe("where Results and Done go", () => {
+  it("goes to where the practice was opened from", () => {
+    expect(resultsReturnHref({ returnTo: "/materials/read/S3", partId: "quiz:S3:1" })).toBe(
+      "/materials/read/S3",
+    );
+    expect(resultsReturnHref({ returnTo: "/training?mode=quiz" })).toBe("/training?mode=quiz");
+    expect(resultsReturnHref({ returnTo: "/" })).toBe("/");
+  });
+
+  it("falls back to the reading screen of the topic, then to Materials, never Home", () => {
+    expect(resultsReturnHref({ partId: "quiz:S3:1" })).toBe("/materials/read/S3");
+    expect(resultsReturnHref({})).toBe("/materials");
+    expect(resultsReturnHref({ partId: "nope" })).toBe("/materials");
   });
 });

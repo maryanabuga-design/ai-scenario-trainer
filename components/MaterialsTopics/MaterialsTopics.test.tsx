@@ -123,10 +123,12 @@ describe("the selector and the step guides view", () => {
     return markup;
   })();
 
-  it("has the segmented selector 'Topics (17) | Step guides (3)' under the band, Topics chosen by default, on one line", () => {
+  it("has the segmented selector 'Topics | Step guides' (no numbers) under the band, Topics chosen by default, on one line", () => {
     expect(html.indexOf("data-page-header-band")).toBeLessThan(html.indexOf('role="radiogroup"'));
-    expect(html).toContain("Topics (17)");
-    expect(html).toContain("Step guides (3)");
+    const labels = html.slice(html.indexOf('role="radiogroup"'), html.indexOf("</fieldset>"));
+    expect(labels.replace(/<[^>]+>/g, "|")).toMatch(/\|Topics\|/);
+    expect(labels.replace(/<[^>]+>/g, "|")).toMatch(/\|Step guides\|/);
+    expect(labels).not.toMatch(/\(\d+\)/);
     expect(html).toMatch(/checked=""[^>]*value="topics"/);
     const group = html.slice(html.indexOf('role="radiogroup"'), html.indexOf("</fieldset>"));
     expect(group.match(/whitespace-nowrap/g)).toHaveLength(2);

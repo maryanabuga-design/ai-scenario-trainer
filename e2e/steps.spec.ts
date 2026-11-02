@@ -28,7 +28,7 @@ test.describe("Steps", () => {
     page,
   }) => {
     await open(page, "/materials?view=steps");
-    await expect(page.getByRole("radio", { name: /Step guides \(3\)/ })).toBeChecked();
+    await expect(page.getByRole("radio", { name: "Step guides", exact: true })).toBeChecked();
     const rows = page.locator("[data-step-guide]:visible");
     await expect(rows).toHaveCount(3);
     const icons: string[] = [];

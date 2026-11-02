@@ -195,19 +195,13 @@ describe("the Ask AI row", () => {
       />,
     );
 
-  it("shows the label, or the invitation, in a 44px row that opens the picker", () => {
-    const html = ask("military");
-    expect(html).toMatch(/data-tuned-text[^>]*>Answers tuned for: Military</);
-    expect(ask(null)).toMatch(/data-tuned-text[^>]*>Set your field to tune answers</);
-    const row = html.slice(
-      html.indexOf("data-tuned-row") - 200,
-      html.indexOf("data-tuned-row") + 900,
-    );
-    expect(row).toContain('href="/profile/field?from=ask-ai"');
-    expect(row).toContain("h-11");
-    expect(row).toContain("truncate");
-    expect(row).toContain("lucide-chevron-right");
-    expect(html.indexOf("data-tuned-row")).toBeLessThan(html.indexOf("Suggested questions"));
+  it("has no sector row: no label, no invitation, no picker link, and the suggested questions come first", () => {
+    for (const field of ["military", null] as const) {
+      const html = ask(field);
+      expect(html).not.toMatch(/data-tuned|Answers tuned for|Set your field/);
+      expect(html).not.toContain("/profile/field");
+    }
+    expect(ask("military")).toContain("Suggested questions");
   });
 
   it("lists the suggested questions of the field, in the same 56px rows", () => {

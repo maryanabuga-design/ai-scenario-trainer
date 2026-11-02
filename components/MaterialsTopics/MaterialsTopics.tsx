@@ -10,7 +10,6 @@ import { ListScroll } from "@/components/MaterialsTopics/ListScroll";
 import { ProfileAvatar } from "@/components/ProfileAvatar/ProfileAvatar";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { TopicTile } from "@/components/TopicTile/TopicTile";
-import { checklists } from "@/lib/checklists";
 import { allTopics } from "@/lib/materials-topics";
 import type { Topic } from "@/lib/materials-topics";
 import { MATERIALS_SUBTITLE, MATERIALS_TITLE, readingLabel, readingPath } from "@/lib/reading";
@@ -62,8 +61,6 @@ export function MaterialsTopics({
       />
       <Suspense fallback={null}>
         <MaterialsViews
-          topicsCount={topics.length}
-          stepGuidesCount={checklists.length}
           view={view}
           topics={
             <div className="flex flex-col gap-8">

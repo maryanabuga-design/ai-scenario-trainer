@@ -10,19 +10,15 @@ export const viewOf = (value: string | null): MaterialsView =>
   value === "steps" ? "steps" : "topics";
 
 /**
- * The selector of Materials, "Topics (17) | Step guides (3)", and the chosen view (DESIGN.md: Steps in
+ * The selector of Materials, "Topics | Step guides", and the chosen view (DESIGN.md: Steps in
  * Materials). The view lives in the URL (`?view=steps`), so a deep link and Back work; Topics is the
  * default and has no query. The two views are passed in already drawn.
  */
 export function MaterialsViews({
-  topicsCount,
-  stepGuidesCount,
   topics,
   steps,
   view: fixed,
 }: {
-  topicsCount: number;
-  stepGuidesCount: number;
   topics: ReactNode;
   steps: ReactNode;
   /** For tests and the review page: the view without reading the URL. */
@@ -39,8 +35,8 @@ export function MaterialsViews({
         hideLegend
         dense
         options={[
-          { value: "topics", label: `Topics (${topicsCount})` },
-          { value: "steps", label: `Step guides (${stepGuidesCount})` },
+          { value: "topics", label: "Topics" },
+          { value: "steps", label: "Step guides" },
         ]}
         value={view}
         onChange={(next: MaterialsView) =>

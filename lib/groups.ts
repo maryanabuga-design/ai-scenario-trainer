@@ -1,4 +1,6 @@
 import cohort from "@/content/demo-cohort.json";
+import { cleanField } from "@/lib/field-of-work";
+import type { FieldOfWork } from "@/lib/field-of-work";
 
 /**
  * The demo groups of the Instructor side (DESIGN.md: Instructor, Overview rebuilt and two demo
@@ -10,11 +12,17 @@ export type Group = {
   id: string;
   name: string;
   code: string;
+  /** The field of work of the group's students: it tunes the simulated Ask AI examples. */
+  field?: string;
   /** The readiness of the group a week ago, a whole percent (demo data; the Overview trend line compares with it). */
   lastWeekReadiness?: number;
 };
 
 export const groups: Group[] = cohort.groups;
+
+/** The field of work a group's students get Ask AI examples for (null when the group has none). */
+export const groupField = (id: string | null): FieldOfWork | null =>
+  id ? cleanField(groupById(id)?.field) : null;
 
 /** The group every local student account belongs to. */
 export const DEFAULT_GROUP_ID = groups[0].id;

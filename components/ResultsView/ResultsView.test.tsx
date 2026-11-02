@@ -2,7 +2,12 @@ import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
-import { ResultsActions, ResultsButtons, ResultsView } from "@/components/ResultsView/ResultsView";
+import {
+  ResultsActions,
+  ResultsButtons,
+  ResultsView,
+  backLabelFor,
+} from "@/components/ResultsView/ResultsView";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { PASS_MARK } from "@/lib/config";
 import { loadAllSections } from "@/lib/guide";
@@ -414,5 +419,107 @@ describe("the Weak topics chips", () => {
     const unknown = [scoreItem({ ...getItem("s2"), guideRef: ["Z9"], section: "Z9" }, "a")];
     const html = render(unknown);
     expect(html).toContain('<span class="truncate">Z9</span>');
+  });
+});
+
+describe("a passed practice result has one Primary: Done", () => {
+  const passedHtml = (extra?: { backHref?: string; doneHref?: string }) =>
+    renderToStaticMarkup(
+      <SourceSheetProvider sections={loadAllSections()}>
+        <ActionBarProvider>
+          <ResultsView
+            kind="quiz"
+            items={result(9, 10)}
+            topics={weakTopics(result(9, 10))}
+            onRepeat={() => undefined}
+            {...extra}
+          />
+        </ActionBarProvider>
+      </SourceSheetProvider>,
+    );
+  const buttons = (passed: boolean, canRepeat = true) =>
+    renderToStaticMarkup(
+      <ResultsButtons
+        kind="quiz"
+        passed={passed}
+        canRepeat={canRepeat}
+        examRepeat={false}
+        onRepeat={() => undefined}
+        doneHref="/materials/read/S2"
+      />,
+    );
+
+  it("shows Done (Primary, to where the practice was opened from) and Review answers (Secondary), no Repeat", () => {
+    const html = buttons(true);
+    expect(html).toContain(">Done<");
+    expect(html).toContain(">Review answers<");
+    expect(html).not.toContain("Repeat weak topics");
+    const done = html.slice(
+      html.lastIndexOf("<a ", html.indexOf(">Done<")),
+      html.indexOf(">Done<"),
+    );
+    expect(done).toContain('href="/materials/read/S2"');
+    expect(done).toContain("bg-primary");
+    const review = html.slice(
+      html.lastIndexOf("<a ", html.indexOf(">Review answers<")),
+      html.indexOf(">Review answers<"),
+    );
+    expect(review).toContain("bg-olive-tint");
+    // the same row as before: Review on the left, the Primary on the right and last
+    expect(html).toContain("flex-wrap-reverse");
+    expect(html.indexOf(">Review answers<")).toBeLessThan(html.indexOf(">Done<"));
+    expect((html.match(/(?<![-\w:])bg-primary(?![-\w])/g) ?? []).length).toBe(1);
+  });
+
+  it("is unchanged when not passed: Primary Repeat weak topics, Secondary Review answers, no Done", () => {
+    const html = buttons(false);
+    expect(html).toContain(">Repeat weak topics<");
+    expect(html).toContain(">Review answers<");
+    expect(html).not.toContain(">Done<");
+    expect(html.indexOf(">Review answers<")).toBeLessThan(html.indexOf(">Repeat weak topics<"));
+  });
+
+  it("without anything to repeat a result that is not passed still shows only Review answers", () => {
+    const html = buttons(false, false);
+    expect(html).toContain(">Review answers<");
+    expect(html).not.toContain(">Done<");
+  });
+
+  it("Done and the Back arrow lead to the same place", () => {
+    const html = passedHtml({ backHref: "/materials/read/S2" });
+    expect(html).toContain('aria-label="Back to topic"');
+    expect(html).toContain('href="/materials/read/S2"');
+    // the buttons are drawn through the action bar portal: Done takes the same address as Back
+    const source = readFileSync("components/ResultsView/ResultsView.tsx", "utf8");
+    expect(source).toContain("doneHref={doneHref ?? backHref}");
+    expect(passedHtml()).toContain('href="/"');
+  });
+
+  it("names the place Back goes to", () => {
+    expect(backLabelFor("/")).toBe("Back to Home");
+    expect(backLabelFor("/training?mode=quiz")).toBe("Back to Training");
+    expect(backLabelFor("/materials/read/S1")).toBe("Back to topic");
+    expect(backLabelFor("/materials")).toBe("Back to Materials");
+    expect(backLabelFor("/progress")).toBe("Back to Progress");
+    expect(backLabelFor("/exam?id=e")).toBe("Back to Exam");
+  });
+
+  it("puts the focus on the title when Results opens", () => {
+    expect(passedHtml()).toMatch(/<h1 tabindex="-1"[^>]*>Results<\/h1>/);
+  });
+
+  it("the exam result already has Done as its only Primary", () => {
+    const html = renderToStaticMarkup(
+      <ResultsButtons
+        kind="exam"
+        passed
+        canRepeat
+        examRepeat={false}
+        onRepeat={() => undefined}
+        doneHref="/exam?id=e"
+      />,
+    );
+    expect(html).toContain(">Done<");
+    expect((html.match(/(?<![-\w:])bg-primary(?![-\w])/g) ?? []).length).toBe(1);
   });
 });
