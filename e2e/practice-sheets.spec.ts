@@ -180,38 +180,52 @@ for (const width of [360, 430]) {
       await expect(sheet.getByRole("button", { name: "Next" })).toBeVisible();
     });
 
-    test("without a picture file nothing is drawn: no placeholder, no gap, the text uses the full width", async ({
+    test("the picture slot is always there with the same size and place, with or without the file; the text starts after it", async ({
       page,
     }) => {
+      const slotBox = async (sheet: ReturnType<typeof feedback>) => {
+        const box = (await sheet.locator("[data-sheet-slot]").boundingBox())!;
+        return [box.x, box.y - (await sheet.boundingBox())!.y, box.width, box.height].map(
+          Math.round,
+        );
+      };
+      // without the file: a plain tile, no icon, no text
       await start(page, scenario);
       await option(page, S1_WRONG).click();
       await check(page).click();
       await settled(page);
       const sheet = feedback(page);
-      await expect(sheet.locator("[data-sheet-picture]")).toBeHidden();
-      await expect(sheet.locator("[data-sheet-picture=placeholder], svg.lucide-x")).toHaveCount(0);
-      // the title starts at the gutter, the same place as the buttons: nothing sits to its left
+      const slot = sheet.locator("[data-sheet-slot]");
+      await expect(slot).toHaveAttribute("data-sheet-slot", "placeholder");
+      await expect(slot).toHaveAttribute("aria-hidden", "true");
+      await expect(slot.locator("svg")).toHaveCount(0);
+      expect(((await slot.textContent()) ?? "").trim()).toBe("");
+      expect(await slot.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
+        "rgb(239, 236, 230)",
+      );
+      expect(await slot.evaluate((el) => getComputedStyle(el).borderTopLeftRadius)).toBe("16px");
+      const without = await slotBox(sheet);
+      expect([without[2], without[3]]).toEqual([72, 72]);
       const title = (await sheet.getByRole("heading", { name: "Not quite" }).boundingBox())!;
-      const primary = (await sheet.getByRole("button", { name: "Next" }).boundingBox())!;
-      expect(Math.abs(title.x - primary.x)).toBeLessThanOrEqual(1);
-    });
-
-    test("with a picture file the slot shows it with an empty alt text", async ({ page }) => {
+      expect(title.x).toBeGreaterThanOrEqual(without[0] + 72 + 16 - 1);
+      // text never goes under the slot: every text line starts to the right of it
+      const left = await sheet
+        .locator("p:not(.sr-only)")
+        .evaluateAll((els) => els.map((el) => el.getBoundingClientRect().left));
+      for (const x of left) expect(x).toBeGreaterThanOrEqual(without[0] + 72 + 16 - 1);
+      // with the file: the same size and the same place
       const picture = readFileSync("public/images/entry/entry-profile.webp");
       await page.route("**/images/student/*.webp", (route) =>
         route.fulfill({ contentType: "image/webp", body: picture }),
       );
-      await start(page, scenario);
-      await option(page, S1_RIGHT).click();
+      await next(page).click();
+      await option(page, /./).first().click();
       await check(page).click();
-      const slot = feedback(page).locator("[data-sheet-picture]");
-      await expect(slot).toBeVisible();
-      await expect(slot).toHaveAttribute("alt", "");
-      const box = (await slot.boundingBox())!;
-      expect([Math.round(box.width), Math.round(box.height)]).toEqual([72, 72]);
-      // the text sits to the right of it
-      const title = (await feedback(page).getByRole("heading").boundingBox())!;
-      expect(title.x).toBeGreaterThan(box.x + box.width);
+      await settled(page);
+      const withFile = feedback(page).locator("[data-sheet-slot]");
+      await expect(withFile).toHaveAttribute("data-sheet-slot", "image");
+      await expect(withFile.locator("img")).toHaveAttribute("alt", "");
+      expect(await slotBox(feedback(page))).toEqual(without);
     });
 
     test("the hint sheet: a modal dialog with the text, the guide button and Got it; nothing moves; it closes four ways", async ({
@@ -228,7 +242,7 @@ for (const width of [360, 430]) {
       await expect(sheet).toContainText("Think about what the sound of an alarm");
       await expect(sheet.getByRole("button", { name: /^Guide · S1/ })).toBeVisible();
       await expect(sheet.getByRole("button")).toHaveCount(2); // the Guide chip and Got it, nothing else
-      await expect(sheet.locator("[data-sheet-picture]")).toBeHidden();
+      await expect(sheet.locator("[data-sheet-slot=placeholder]")).toHaveCount(1);
       await expect(sheet.locator("[data-sheet-handle]")).toBeVisible();
       await expect(page.locator("[data-sheet-scrim]")).toBeVisible();
       await expect(page.getByRole("heading", { name: "Hint" })).toBeVisible();
@@ -284,11 +298,11 @@ for (const width of [360, 430]) {
       await expect(page.locator("dialog[open]")).toContainText("Guide · S1");
     });
 
-    test("one sand background for all three sheet states; the meaning is in the title colour only", async ({
+    test("one white surface for all three sheet states; the meaning is in the title colour only", async ({
       page,
     }) => {
-      const SAND = "rgb(234, 229, 218)";
-      const STROKE = "rgb(221, 214, 200)";
+      const WHITE = "rgb(255, 255, 255)";
+      const STROKE = "rgb(228, 223, 213)";
       const look = (sheet: ReturnType<Page["locator"]>) =>
         sheet.evaluate((el) => {
           const style = getComputedStyle(el);
@@ -302,7 +316,7 @@ for (const width of [360, 430]) {
       await page.getByRole("button", { name: "Hint", exact: true }).click();
       await settled(page);
       expect(await look(hintSheet(page))).toEqual({
-        background: SAND,
+        background: WHITE,
         border: STROKE,
         title: "rgb(26, 26, 26)",
       });
@@ -310,7 +324,7 @@ for (const width of [360, 430]) {
       await option(page, S1_RIGHT).click();
       await check(page).click();
       expect(await look(feedback(page))).toEqual({
-        background: SAND,
+        background: WHITE,
         border: STROKE,
         title: "rgb(68, 104, 58)",
       });
@@ -320,7 +334,7 @@ for (const width of [360, 430]) {
         .click();
       await check(page).click();
       expect(await look(feedback(page))).toEqual({
-        background: SAND,
+        background: WHITE,
         border: STROKE,
         title: "rgb(155, 44, 31)",
       });
@@ -345,6 +359,28 @@ test.describe("Practice sheets on small and reduced-motion screens", () => {
     const nextBox = (await feedback(page).getByRole("button", { name: "Next" }).boundingBox())!;
     expect(nextBox.y).toBeGreaterThanOrEqual(0);
     expect(nextBox.y + nextBox.height).toBeLessThanOrEqual(640);
+    expect(await noSidewaysScroll(page)).toBe(true);
+  });
+
+  test("with the long wrong-answer text the Primary is still in view at 360 x 640 and the text area scrolls inside", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 360, height: 560 });
+    await start(page, {
+      kind: "quiz",
+      itemIds: ["q-quiz-s01-003", "q-quiz-s01-001"],
+      answers: [],
+      index: 0,
+      finished: false,
+    });
+    await page.locator("fieldset label").first().click();
+    await check(page).click();
+    await settled(page);
+    const sheet = feedback(page);
+    const nextBox = (await sheet.getByRole("button", { name: "Next" }).boundingBox())!;
+    expect(nextBox.y + nextBox.height).toBeLessThanOrEqual(560);
+    expect(Math.round(nextBox.height)).toBe(52);
+    expect((await sheet.boundingBox())!.height).toBeLessThanOrEqual(560 * 0.85 + 1);
     expect(await noSidewaysScroll(page)).toBe(true);
   });
 

@@ -11,7 +11,7 @@ const FOCUSABLE =
   'button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])';
 
 const SHEET_LOOK =
-  "bottom-sheet absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col overflow-y-auto rounded-t-[20px] border-t border-sheet-stroke bg-sheet-bg px-[var(--gutter,1rem)] pt-4 pb-[max(16px,env(safe-area-inset-bottom))] shadow-(--card-shadow) outline-none";
+  "bottom-sheet absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col rounded-t-[20px] border-t border-selectable-stroke bg-card px-[var(--gutter,1rem)] pt-4 pb-[max(16px,env(safe-area-inset-bottom))] shadow-[0_-4px_16px_color-mix(in_srgb,var(--text)_6%,transparent)] outline-none";
 
 /**
  * The layer is as wide as the phone column, so a wide screen is not covered outside it. `inline` is
@@ -63,7 +63,11 @@ export function BottomSheet(
   return props.variant === "feedback" ? <FeedbackSheet {...props} /> : <HintSheet {...props} />;
 }
 
-/** The picture slot, the title and the text side by side, then the buttons under them. */
+/**
+ * The picture slot and the text in two columns (the text wraps inside its own column), then the
+ * buttons pinned under them: when the text is long it scrolls inside the sheet and the Primary
+ * stays in view.
+ */
 function SheetContent({
   picture,
   titleId,
@@ -81,16 +85,18 @@ function SheetContent({
 }) {
   return (
     <>
-      <div className="flex items-start gap-4">
-        {picture}
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <h2 id={titleId} className={`type-card-title ${titleClass}`}>
-            {title}
-          </h2>
-          {children}
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <div className="flex items-start gap-4">
+          {picture}
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <h2 id={titleId} className={`type-card-title ${titleClass}`}>
+              {title}
+            </h2>
+            {children}
+          </div>
         </div>
       </div>
-      <div className="mt-4 flex flex-col gap-3">{actions}</div>
+      <div className="mt-4 flex shrink-0 flex-col gap-3">{actions}</div>
     </>
   );
 }

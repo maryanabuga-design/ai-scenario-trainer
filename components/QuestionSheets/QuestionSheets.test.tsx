@@ -77,29 +77,36 @@ describe("the feedback sheet", () => {
     expect(html).toMatch(/<button[^>]*disabled/);
   });
 
-  it("has one sand background for every state, 20px top corners, a 1px sand top border", () => {
+  it("has one white surface for every state, 20px top corners, a 1px top border and a soft shadow upward", () => {
     for (const choice of [right.id, wrong.id]) {
       const html = render(<FeedbackSheet item={item} choice={choice} last={false} onNext={noop} />);
-      expect(html).toContain("rounded-t-[20px] border-t border-sheet-stroke bg-sheet-bg");
-      expect(html).not.toMatch(/feedback-(correct|wrong)-bg|bg-correct-bg|bg-wrong-bg/);
+      expect(html).toContain("rounded-t-[20px] border-t border-selectable-stroke bg-card");
+      expect(html).not.toMatch(/feedback-(correct|wrong)-bg|bg-correct-bg|bg-wrong-bg|bg-sheet-bg/);
+      expect(html).toContain("shadow-[0_-4px_16px_color-mix(in_srgb,var(--text)_6%,transparent)]");
       expect(html).toContain("pb-[max(16px,env(safe-area-inset-bottom))]");
     }
     const css = readFileSync("app/globals.css", "utf8");
-    expect(css).toContain("--sheet-bg: #eae5da;");
-    expect(css).toContain("--sheet-stroke: #ddd6c8;");
+    expect(css).not.toMatch(/--sheet-bg|--sheet-stroke/);
     expect(css).toMatch(/\.bottom-sheet \{\s*animation: sheet-in 200ms ease-out;/);
     expect(css).toContain("prefers-reduced-motion: reduce");
   });
 
-  it("has an optional 72px picture with an empty alt text and no placeholder code", () => {
+  it("always reserves the 72px picture slot: a plain tile without icon or text until the file loads", () => {
     const html = render(<FeedbackSheet item={item} choice={wrong.id} last={false} onNext={noop} />);
-    // nothing is drawn until the file has loaded
+    expect(html).toContain('data-sheet-slot="placeholder"');
+    expect(html).toContain("h-[72px] w-[72px] shrink-0");
+    expect(html).toContain("rounded-2xl");
+    expect(html).toContain("bg-chip-neutral-bg");
+    expect(html).toContain('aria-hidden="true"');
     expect(html).toContain('src="/images/student/feedback-wrong.webp"');
     expect(html).toContain('alt=""');
-    expect(html).toContain('class="hidden"');
+    // the text column is next to the slot and cannot run under it
+    expect(html).toContain("flex items-start gap-4");
+    expect(html).toContain("flex min-w-0 flex-1 flex-col");
+    const slot = html.slice(html.indexOf("data-sheet-slot"), html.indexOf("</span>"));
+    expect(slot).not.toMatch(/<svg|lucide|[A-Za-z]{3,}<\/(span|p)>/);
     const picture = readFileSync("components/BottomSheet/SheetPicture.tsx", "utf8");
-    expect(picture).toContain("h-[72px] w-[72px]");
-    expect(picture).not.toMatch(/placeholder|lucide|rounded-full/);
+    expect(picture).not.toMatch(/lucide|Check|Lightbulb/);
   });
 });
 
