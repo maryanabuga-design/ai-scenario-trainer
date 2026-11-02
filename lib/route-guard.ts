@@ -28,7 +28,13 @@ export function guardRedirect(visitor: Visitor | null, pathname: string): string
   // the group code screen and a join link (`/join/<code>`) are open to a signed-out visitor and to a
   // signed-in student (who confirms joining); an instructor goes Home
   const isJoin = pathname.startsWith("/join/");
-  if (visitor === null) return AUTH_ROUTES.includes(pathname) || isJoin ? null : "/welcome";
+  // (the Profile step is open for a moment to a signed-out visitor: going back from it to the code
+  // step signs the half-made account out, and the page then moves on to Verify itself)
+  if (visitor === null) {
+    return AUTH_ROUTES.includes(pathname) || isJoin || pathname === PROFILE_SETUP_ROUTE
+      ? null
+      : "/welcome";
+  }
   // an invited student finishes the Profile step first
   if (visitor.profileDone === false) {
     return pathname === PROFILE_SETUP_ROUTE ? null : PROFILE_SETUP_ROUTE;

@@ -7,6 +7,7 @@ export const ENTRY_PICTURES = {
   profile: "/images/entry/entry-profile.webp",
   signIn: "/images/entry/entry-signin.webp",
   group: "/images/entry/entry-group.webp",
+  invite: "/images/entry/entry-invite.webp",
 } as const;
 
 /**

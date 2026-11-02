@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  backToCodeStepState,
   beginSignUp,
   cleanAuth,
   completeProfileState,
@@ -117,5 +118,32 @@ describe("joining and leaving a group", () => {
     expect(messy?.accounts[0].language).toBeUndefined();
     expect(messy?.accounts[0].profileDone).toBeUndefined();
     expect(messy?.accounts[0].noGroup).toBeUndefined();
+  });
+});
+
+describe("back from the Profile step", () => {
+  it("takes the half-made account back and makes the code step pending again for the same email", () => {
+    const back = backToCodeStepState(invited());
+    expect(back.state.accounts).toEqual([]);
+    expect(back.state.session).toBeNull();
+    expect(back.state.pending).toEqual({
+      mode: "sign-up",
+      email: "ana@example.com",
+      name: "",
+      role: "student",
+    });
+    expect(back.groupId).toBe("rescue-team");
+    // the code step then makes the account again, with the same group
+    const again = completeVerification(back.state, CODE, 2, back.groupId);
+    if (again.result !== "ok") throw new Error("not verified");
+    expect(again.account.groupId).toBe("rescue-team");
+    expect(again.account.profileDone).toBe(false);
+  });
+
+  it("changes nothing for an account whose profile is finished", () => {
+    const done = completeProfileState(invited(), { name: "Ana Test" });
+    const back = backToCodeStepState(done);
+    expect(back.state).toBe(done);
+    expect(back.groupId).toBeNull();
   });
 });

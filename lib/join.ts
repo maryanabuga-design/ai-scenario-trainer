@@ -60,3 +60,13 @@ export function groupToJoin(
   if (linked) return linked.id;
   return invitationFor(invitations, normaliseEmail(email))?.groupId ?? null;
 }
+
+/**
+ * The code typed on Join a group, kept while the app is open so that Back from the Invitation finds
+ * it again (in memory only; nothing is saved).
+ */
+let typedCode = "";
+export const rememberTypedCode = (code: string) => {
+  typedCode = code;
+};
+export const typedGroupCode = () => typedCode;

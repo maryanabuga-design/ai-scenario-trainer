@@ -54,3 +54,19 @@ describe("the Materials list scroll", () => {
     vi.unstubAllGlobals();
   });
 });
+
+describe("whether there is a screen to go back to", () => {
+  it("is false for a link opened directly and true once the app moved to another screen", async () => {
+    const nav = await fresh();
+    expect(nav.hasPreviousScreen()).toBe(false);
+    nav.noteNavigation("/join/QT-A7K2");
+    expect(nav.hasPreviousScreen()).toBe(false);
+    nav.noteNavigation("/verify");
+    expect(nav.hasPreviousScreen()).toBe(true);
+    // the same path again is not a new screen
+    const again = await fresh();
+    again.noteNavigation("/join");
+    again.noteNavigation("/join");
+    expect(again.hasPreviousScreen()).toBe(false);
+  });
+});

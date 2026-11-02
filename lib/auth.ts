@@ -377,6 +377,28 @@ export function completeProfileState(state: AuthState, input: { name: string }):
   };
 }
 
+/**
+ * Back from the Profile step to the code step (DESIGN.md: Invitation picture and a way back): the
+ * account made at the verification only exists for the Profile step, so it is taken back and the
+ * verification is pending again for the same email. Returns the state and the group code of the
+ * invitation the person came from (so the link can be opened again).
+ */
+export function backToCodeStepState(state: AuthState): {
+  state: AuthState;
+  groupId: string | null;
+} {
+  const current = currentAccount(state);
+  if (!current || current.profileDone !== false) return { state, groupId: null };
+  return {
+    state: {
+      accounts: state.accounts.filter((account) => account.email !== current.email),
+      session: null,
+      pending: { mode: "sign-up", email: current.email, name: "", role: "student" },
+    },
+    groupId: current.groupId ?? null,
+  };
+}
+
 /** Where a person goes after a correct code: the Profile step of an invitation, the onboarding until it was done, then the Home of the role. */
 export const homeAfterVerification = (account: Account): string =>
   account.profileDone === false
@@ -531,6 +553,13 @@ export function joinGroup(groupId: string) {
 /** Demo: the signed-in Student leaves the group. */
 export function leaveGroup() {
   save(leaveGroupState(readAuth()));
+}
+
+/** Back from the Profile step: the verification is pending again; returns the invitation's group id. */
+export function backToCodeStep(): string | null {
+  const { state, groupId } = backToCodeStepState(readAuth());
+  save(state);
+  return groupId;
 }
 
 /** The Profile step of an invitation is finished (Continue). */

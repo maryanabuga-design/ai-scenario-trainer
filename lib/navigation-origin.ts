@@ -9,18 +9,26 @@ const isReading = (path: string | null) => !!path?.startsWith(READING);
 
 let current: string | null = null;
 let origin: string | null = null;
+let previous: string | null = null;
 
 /** Called with every new pathname. Moving between topics keeps the origin of the first one. */
 export function noteNavigation(path: string) {
   if (path === current) return;
-  const previous = current;
+  const before = current;
+  previous = before;
   current = path;
   if (isReading(path)) {
-    if (!isReading(previous)) origin = previous;
+    if (!isReading(before)) origin = before;
   } else {
     origin = null;
   }
 }
+
+/**
+ * Whether the app showed another screen before this one since the page was loaded: false after a
+ * reload or a link opened directly, so a back arrow can go to a safe screen instead of leaving the app.
+ */
+export const hasPreviousScreen = () => previous !== null;
 
 /** The pathname the current reading session started from; null after a reload or a direct visit. */
 export const readingOrigin = () => origin;

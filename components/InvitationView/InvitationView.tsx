@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
+import { EntryBackRow } from "@/components/EntryBackRow/EntryBackRow";
 import { ENTRY_PICTURES, EntryPicture } from "@/components/EntryPicture/EntryPicture";
 import { TextField } from "@/components/TextField/TextField";
 import { EXISTS_LINK, EXISTS_MESSAGE, validateEmail } from "@/lib/auth-validation";
@@ -27,6 +28,7 @@ export function InvitationView({
   invitedBy = "",
   onEmail,
   onJoin,
+  onBack,
   notNowHref,
   openHref,
   startHref,
@@ -39,6 +41,8 @@ export function InvitationView({
   /** A new student: sends the email on to the code check; "exists" shows the message. */
   onEmail?: (email: string) => "ok" | "exists";
   onJoin?: () => void;
+  /** The back arrow: the previous screen in the app, or Welcome when the link was opened directly. */
+  onBack: () => void;
   notNowHref?: string;
   openHref?: string;
   /** Where "Back to start" goes (Welcome, or Home when signed in). */
@@ -59,14 +63,15 @@ export function InvitationView({
     setExists(onEmail?.(email) === "exists");
   }
 
+  const shell =
+    "flex flex-1 flex-col gap-6 pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))] [@media(max-height:599px)]:gap-3";
+
   if (state === "invalid") {
     return (
-      <div
-        data-invitation="invalid"
-        className="flex flex-1 flex-col gap-6 pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]"
-      >
-        <div className="flex flex-col gap-2 pt-2 text-center">
-          <EntryPicture src={ENTRY_PICTURES.group} />
+      <div data-invitation="invalid" className={shell}>
+        <EntryBackRow onBack={onBack} />
+        <div className="flex flex-col gap-2 text-center">
+          <EntryPicture src={ENTRY_PICTURES.invite} />
           <h1 className="type-page-title">{INVALID_TITLE}</h1>
           <p className="type-body text-text-secondary">{INVALID_SUBTITLE}</p>
         </div>
@@ -80,11 +85,11 @@ export function InvitationView({
   }
 
   const card = (
-    <div className="flex flex-col gap-2 pt-2">
-      <EntryPicture src={ENTRY_PICTURES.group} />
+    <div className="flex flex-col gap-2">
+      <EntryPicture src={ENTRY_PICTURES.invite} />
       <div
         data-invitation-card
-        className="flex flex-col items-center gap-3 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)] text-center shadow-(--card-shadow)"
+        className="flex flex-col items-center gap-3 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)] text-center shadow-(--card-shadow) [@media(max-height:599px)]:gap-1 [@media(max-height:599px)]:p-3"
       >
         {state === "member" ? (
           <h1 data-invitation-title className="type-page-title">
@@ -106,12 +111,10 @@ export function InvitationView({
     </div>
   );
 
-  const shell =
-    "flex flex-1 flex-col gap-6 pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]";
-
   if (state === "new") {
     return (
       <form data-invitation="new" noValidate onSubmit={submit} className={shell}>
+        <EntryBackRow onBack={onBack} />
         {card}
         <TextField
           label="Your email"
@@ -144,6 +147,7 @@ export function InvitationView({
 
   return (
     <div data-invitation={state} className={shell}>
+      <EntryBackRow onBack={onBack} />
       {card}
       <div className="mt-auto flex flex-col gap-3 pt-2">
         {state === "can-join" ? (

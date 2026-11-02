@@ -83,15 +83,20 @@ describe("Welcome", () => {
 describe("Group code", () => {
   const out = html(<GroupCodeView onContinue={() => "unknown"} backHref="/welcome" />);
 
-  it("has the title, the subtitle, one labelled field, the Primary Continue and the Secondary Back", () => {
+  it("has the title, the subtitle, one labelled field, the back arrow and only the Primary Continue (no bottom Back button)", () => {
     expect(out).toContain(">Join a group</h1>");
     expect(out).toContain("Enter the code your instructor gave you.");
     expect(out).toMatch(/<label[^>]*>Group code<\/label>/);
     expect(out.match(/<input/g)).toHaveLength(1);
     expect(out).toMatch(/type="submit"[^>]*>(?:<span[^>]*>)?Continue/);
-    expect(out).toMatch(/bg-olive-tint[^>]*href="\/welcome"|href="\/welcome"[^>]*bg-olive-tint/);
-    expect(out).toContain(">Back<");
-    expect(out.indexOf(">Continue<")).toBeLessThan(out.indexOf(">Back<"));
+    // the arrow at the top, named Back, going to Welcome
+    expect(out).toMatch(/data-entry-back[^>]*>[\s\S]*<a [^>]*aria-label="Back"/);
+    expect(out).toContain('href="/welcome"');
+    expect(out.indexOf("data-entry-back")).toBeLessThan(out.indexOf("<img"));
+    // the pinned Secondary "Back" is gone: one button on the screen
+    expect(out).not.toContain(">Back<");
+    expect(out).not.toContain("bg-olive-tint");
+    expect(out.match(/<button/g)).toHaveLength(1);
     expect(out).not.toContain("aria-invalid");
   });
 
@@ -104,7 +109,12 @@ describe("Group code", () => {
 });
 
 describe("Invitation", () => {
-  const base = { groupName: "Rescue team", invitedBy: "Maryana", startHref: "/welcome" };
+  const base = {
+    groupName: "Rescue team",
+    invitedBy: "Maryana",
+    startHref: "/welcome",
+    onBack: () => undefined,
+  };
   const view = (state: "new" | "can-join" | "member" | "invalid") =>
     html(<InvitationView state={state} {...base} onEmail={() => "ok"} onJoin={() => undefined} />);
 
@@ -115,7 +125,7 @@ describe("Invitation", () => {
     expect(out).toContain(">Rescue team</h1>");
     expect(out).toContain("Role: Student");
     expect(out).toContain("Invited by Maryana");
-    expect(out).toContain("/images/entry/entry-group.webp");
+    expect(out).toContain("/images/entry/entry-invite.webp");
     expect(out).toMatch(/<label[^>]*>Your email<\/label>/);
     expect(out).toContain("We will send you a code to confirm it.");
     expect(out).toMatch(/type="submit"[^>]*>(?:<span[^>]*>)?Continue/);
@@ -154,7 +164,7 @@ describe("Invitation", () => {
 });
 
 describe("Profile of a new student", () => {
-  const out = html(<ProfileSetupView onSubmit={() => undefined} />);
+  const out = html(<ProfileSetupView onSubmit={() => undefined} onBack={() => undefined} />);
 
   it("has the title, the new subtitle, ONE field 'Your name' and the Primary Continue; no language choice", () => {
     expect(out).toContain(">Your profile</h1>");
@@ -448,22 +458,33 @@ describe("the onboarding layout of the entry screens", () => {
     const screens: [string, string][] = [
       ["sign-in", html(<SignInView onSubmit={() => "ok"} />)],
       ["group code", html(<GroupCodeView onContinue={() => "ok"} backHref="/" />)],
-      ["profile", html(<ProfileSetupView onSubmit={() => undefined} />)],
-      ["invalid invitation", html(<InvitationView state="invalid" startHref="/welcome" />)],
+      ["profile", html(<ProfileSetupView onSubmit={() => undefined} onBack={() => undefined} />)],
+      [
+        "invalid invitation",
+        html(<InvitationView state="invalid" startHref="/welcome" onBack={() => undefined} />),
+      ],
     ];
     for (const [name, out] of screens) expect(centred(out), name).toContain("text-center");
   });
 
-  it("uses the group picture on Join a group and on every state of the Invitation, the sign-in picture on Welcome back", () => {
-    const base = { groupName: "Rescue team", invitedBy: "Maryana", startHref: "/welcome" };
+  it("uses the group picture on Join a group, the open door on every state of the Invitation, the sign-in picture on Welcome back", () => {
+    const base = {
+      groupName: "Rescue team",
+      invitedBy: "Maryana",
+      startHref: "/welcome",
+      onBack: () => undefined,
+    };
     expect(html(<GroupCodeView onContinue={() => "ok"} backHref="/" />)).toContain(
       'src="/images/entry/entry-group.webp"',
     );
     for (const state of ["new", "can-join", "member", "invalid"] as const) {
       const out = html(<InvitationView state={state} {...base} />);
       expect(out.match(/<img/g), state).toHaveLength(1);
-      expect(out, state).toContain('src="/images/entry/entry-group.webp"');
+      expect(out, state).toContain('src="/images/entry/entry-invite.webp"');
       expect(out, state).toContain('alt=""');
+      // the back arrow comes first, then the picture
+      expect(out, state).toMatch(/aria-label="Back"/);
+      expect(out.indexOf("data-entry-back"), state).toBeLessThan(out.indexOf("<img"));
     }
     expect(html(<SignInView onSubmit={() => "ok"} />)).toContain("entry-signin.webp");
   });
@@ -473,5 +494,43 @@ describe("the onboarding layout of the entry screens", () => {
     expect(out).toMatch(/<label[^>]*type-small-strong[^>]*>Work email/);
     expect(out.slice(out.indexOf("<label"), out.indexOf("</label>"))).not.toContain("text-center");
     expect(out).toContain("Step 1 of 2");
+  });
+});
+
+describe("a way back on every entry screen", () => {
+  it("gives the Profile step a back arrow named Back, before its picture", () => {
+    const out = html(<ProfileSetupView onSubmit={() => undefined} onBack={() => undefined} />);
+    expect(out).toMatch(/data-entry-back[^>]*>[\s\S]*<button[^>]*aria-label="Back"/);
+    expect(out.indexOf("data-entry-back")).toBeLessThan(out.indexOf("<img"));
+    expect(out).toContain("h-10 w-10");
+  });
+
+  it("keeps the arrows of Welcome back and the code screen, and none on Welcome", () => {
+    const signIn = html(<SignInView onSubmit={() => "ok"} />);
+    expect(signIn).toContain('aria-label="Back to Welcome"');
+    const verify = html(
+      <VerifyView
+        email="ana@example.org"
+        now={() => 0}
+        onVerify={() => false}
+        onChangeEmail={() => undefined}
+      />,
+    );
+    expect(verify).toContain('aria-label="Back"');
+    expect(html(<WelcomeView />)).not.toMatch(/data-back-button|aria-label="Back/);
+  });
+
+  it("keeps the Secondary 'Not now' on the Invitation state b", () => {
+    const out = html(
+      <InvitationView
+        state="can-join"
+        groupName="Rescue team"
+        invitedBy="Maryana"
+        startHref="/"
+        onBack={() => undefined}
+        onJoin={() => undefined}
+      />,
+    );
+    expect(out).toMatch(/bg-olive-tint[^>]*>(?:<span[^>]*>)?Not now/);
   });
 });

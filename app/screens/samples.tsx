@@ -1665,9 +1665,15 @@ export function InstructorStudentsSample({
   }
   if (state === "join" || state === "join-invalid") {
     return state === "join" ? (
-      <InvitationView state="new" groupName="Rescue team" invitedBy="Maryana" startHref="#" />
+      <InvitationView
+        state="new"
+        groupName="Rescue team"
+        invitedBy="Maryana"
+        startHref="#"
+        onBack={() => undefined}
+      />
     ) : (
-      <InvitationView state="invalid" startHref="#" />
+      <InvitationView state="invalid" startHref="#" onBack={() => undefined} />
     );
   }
   if (state.startsWith("detail") || state === "reminder") {
@@ -1896,7 +1902,12 @@ export type EntryState =
 
 /** The invitation-only entry screens (DESIGN.md: Invitation-only entry), in each of their states. */
 export function EntrySample({ state }: { state: EntryState }) {
-  const base = { groupName: "Rescue team", invitedBy: "Maryana", startHref: "#" };
+  const base = {
+    groupName: "Rescue team",
+    invitedBy: "Maryana",
+    startHref: "#",
+    onBack: () => undefined,
+  };
   switch (state) {
     case "group-code":
     case "group-code-error":
@@ -1924,11 +1935,15 @@ export function EntrySample({ state }: { state: EntryState }) {
     case "invitation-member":
       return <InvitationView state="member" {...base} />;
     case "invitation-invalid":
-      return <InvitationView state="invalid" startHref="#" />;
+      return <InvitationView state="invalid" startHref="#" onBack={() => undefined} />;
     case "profile":
     case "profile-error":
       return (
-        <ProfileSetupView onSubmit={() => undefined} initialTouched={state === "profile-error"} />
+        <ProfileSetupView
+          onSubmit={() => undefined}
+          onBack={() => undefined}
+          initialTouched={state === "profile-error"}
+        />
       );
     default:
       return (

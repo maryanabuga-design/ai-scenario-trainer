@@ -106,10 +106,10 @@ for (const width of [360, 430]) {
       await expect(
         page.getByRole("heading", { name: "This link is no longer valid" }),
       ).toBeVisible();
-      // Back goes to Welcome
+      // the back arrow goes to Welcome (it is the round white arrow, not a Secondary button)
       await page.goto("/join");
       const back = page.getByRole("link", { name: "Back" });
-      expect(await bg(back)).toBe(OLIVE_TINT);
+      expect(await bg(back)).toBe("rgb(255, 255, 255)");
       await back.click();
       await expect(page).toHaveURL(/\/welcome$/);
       // Continue is the Primary, 52px, pinned

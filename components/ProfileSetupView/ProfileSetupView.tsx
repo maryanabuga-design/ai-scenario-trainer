@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Button } from "@/components/Button/Button";
+import { EntryBackRow } from "@/components/EntryBackRow/EntryBackRow";
 import { ENTRY_PICTURES, EntryPicture } from "@/components/EntryPicture/EntryPicture";
 import { TextField } from "@/components/TextField/TextField";
 import { validateName } from "@/lib/auth-validation";
@@ -16,10 +17,13 @@ import { validateName } from "@/lib/auth-validation";
 export function ProfileSetupView({
   initialName = "",
   onSubmit,
+  onBack,
   initialTouched = false,
 }: {
   initialName?: string;
   onSubmit: (input: { name: string }) => void;
+  /** Back to the code screen. */
+  onBack: () => void;
   /** Only for the screen review page: start with the error showing. */
   initialTouched?: boolean;
 }) {
@@ -45,7 +49,8 @@ export function ProfileSetupView({
       onSubmit={submit}
       className="flex flex-1 flex-col gap-6 pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]"
     >
-      <div className="flex flex-col gap-2 pt-2 text-center">
+      <EntryBackRow onBack={onBack} />
+      <div className="flex flex-col gap-2 text-center">
         <EntryPicture src={ENTRY_PICTURES.profile} />
         <h1 className="type-page-title">Your profile</h1>
         <p className="type-body text-text-secondary">

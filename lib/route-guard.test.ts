@@ -58,7 +58,8 @@ describe("the route guard: signed in", () => {
     expect(guardRedirect(invited, "/set-up-profile")).toBeNull();
     expect(guardRedirect(student, "/set-up-profile")).toBe("/");
     expect(guardRedirect(instructor, "/set-up-profile")).toBe("/instructor");
-    expect(guardRedirect(null, "/set-up-profile")).toBe("/welcome");
+    // open for a signed-out visitor only so that Back from it can move on to the code step
+    expect(guardRedirect(null, "/set-up-profile")).toBeNull();
   });
 
   it("sends a person who has not seen the onboarding to it, from every route but it", () => {

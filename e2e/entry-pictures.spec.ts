@@ -74,7 +74,7 @@ const screens: Screen[] = [
   {
     name: "Invitation",
     open: (page) => page.goto("/join/QT-A7K2").then(() => undefined),
-    picture: "/images/entry/entry-group.webp",
+    picture: "/images/entry/entry-invite.webp",
     title: "Rescue team",
     next: (page) => page.locator("[data-invitation-card]"),
     primary: "Continue",
@@ -160,13 +160,13 @@ for (const width of [360, 430]) {
       expect(Math.round(title.y - (back.y + back.height))).toBe(24);
       await page.goto("/join");
       await expect(page.locator("[data-entry-picture]")).toHaveCount(0);
-      expect((await box(page.getByRole("heading", { name: "Join a group" }))).y).toBeLessThan(80);
+      expect((await box(page.getByRole("heading", { name: "Join a group" }))).y).toBeLessThan(140);
       await page.goto("/join/QT-A7K2");
       await expect(page.locator("[data-entry-picture]")).toHaveCount(0);
-      expect((await box(page.locator("[data-invitation-card]"))).y).toBeLessThan(60);
+      expect((await box(page.locator("[data-invitation-card]"))).y).toBeLessThan(140);
       await toProfile(page);
       await expect(page.locator("[data-entry-picture]")).toHaveCount(0);
-      expect((await box(page.getByRole("heading", { name: "Your profile" }))).y).toBeLessThan(80);
+      expect((await box(page.getByRole("heading", { name: "Your profile" }))).y).toBeLessThan(140);
     });
   });
 
