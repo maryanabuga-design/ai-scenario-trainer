@@ -115,7 +115,7 @@ describe("Invitation", () => {
     expect(out).toContain(">Rescue team</h1>");
     expect(out).toContain("Role: Student");
     expect(out).toContain("Invited by Maryana");
-    expect(out).toContain("h-14 w-14 rounded-full");
+    expect(out).toContain("/images/entry/entry-group.webp");
     expect(out).toMatch(/<label[^>]*>Your email<\/label>/);
     expect(out).toContain("We will send you a code to confirm it.");
     expect(out).toMatch(/type="submit"[^>]*>(?:<span[^>]*>)?Continue/);
@@ -166,13 +166,14 @@ describe("Profile of a new student", () => {
     expect(out).toMatch(/type="submit"[^>]*>(?:<span[^>]*>)?Continue/);
   });
 
-  it("shows its picture above the title: decorative (empty alt), 112px, 88px on short screens, 16px below", () => {
+  it("shows its picture above the title: decorative (empty alt), 160px, 120px and 96px on short screens, centred, 16px below", () => {
     const img = out.slice(out.indexOf("<img"), out.indexOf(">", out.indexOf("<img")));
     expect(img).toContain('src="/images/entry/entry-profile.webp"');
     expect(img).toContain('alt=""');
-    expect(img).toContain("h-[112px] w-[112px]");
-    expect(img).toContain("[@media(max-height:699px)]:h-[88px]");
-    expect(img).toContain("mb-2");
+    expect(img).toContain("h-[160px] w-[160px]");
+    expect(img).toContain("[@media(min-height:600px)_and_(max-height:699px)]:h-[120px]");
+    expect(img).toContain("[@media(max-height:599px)]:h-[96px]");
+    expect(img).toContain("mx-auto mb-2");
     expect(out.indexOf("<img")).toBeLessThan(out.indexOf("<h1"));
   });
 });
@@ -420,7 +421,7 @@ describe("the entry pictures", () => {
     const img = out.slice(out.indexOf("<img"), out.indexOf(">", out.indexOf("<img")));
     expect(img).toContain('src="/images/entry/entry-signin.webp"');
     expect(img).toContain('alt=""');
-    expect(img).toContain("h-[112px] w-[112px]");
+    expect(img).toContain("h-[160px] w-[160px]");
     expect(out.indexOf("data-form-step")).toBeLessThan(out.indexOf("<img"));
     expect(out.indexOf("<img")).toBeLessThan(out.indexOf(">Welcome back</h1>"));
   });
@@ -433,5 +434,44 @@ describe("the entry pictures", () => {
       expect(meta.width, file).toBe(meta.height);
       expect(meta.hasAlpha, file).toBe(true);
     }
+  });
+});
+
+describe("the onboarding layout of the entry screens", () => {
+  const centred = (out: string) => {
+    // the title block (picture, title, subtitle) is centred; the labels are not
+    const start = out.lastIndexOf("<div", out.indexOf("<img"));
+    return out.slice(start, out.indexOf(">", start));
+  };
+
+  it("centres the title block of Welcome back, Join a group, Your profile and the Invitation", () => {
+    const screens: [string, string][] = [
+      ["sign-in", html(<SignInView onSubmit={() => "ok"} />)],
+      ["group code", html(<GroupCodeView onContinue={() => "ok"} backHref="/" />)],
+      ["profile", html(<ProfileSetupView onSubmit={() => undefined} />)],
+      ["invalid invitation", html(<InvitationView state="invalid" startHref="/welcome" />)],
+    ];
+    for (const [name, out] of screens) expect(centred(out), name).toContain("text-center");
+  });
+
+  it("uses the group picture on Join a group and on every state of the Invitation, the sign-in picture on Welcome back", () => {
+    const base = { groupName: "Rescue team", invitedBy: "Maryana", startHref: "/welcome" };
+    expect(html(<GroupCodeView onContinue={() => "ok"} backHref="/" />)).toContain(
+      'src="/images/entry/entry-group.webp"',
+    );
+    for (const state of ["new", "can-join", "member", "invalid"] as const) {
+      const out = html(<InvitationView state={state} {...base} />);
+      expect(out.match(/<img/g), state).toHaveLength(1);
+      expect(out, state).toContain('src="/images/entry/entry-group.webp"');
+      expect(out, state).toContain('alt=""');
+    }
+    expect(html(<SignInView onSubmit={() => "ok"} />)).toContain("entry-signin.webp");
+  });
+
+  it("keeps the labels left-aligned and the buttons full width", () => {
+    const out = html(<SignInView onSubmit={() => "ok"} />);
+    expect(out).toMatch(/<label[^>]*type-small-strong[^>]*>Work email/);
+    expect(out.slice(out.indexOf("<label"), out.indexOf("</label>"))).not.toContain("text-center");
+    expect(out).toContain("Step 1 of 2");
   });
 });

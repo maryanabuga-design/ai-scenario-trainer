@@ -165,7 +165,13 @@ for (const width of [360, 430]) {
         seen.push(await countdown.innerText());
         heard.push(await live.innerText());
       }
-      expect(new Set(seen).size).toBeGreaterThanOrEqual(54);
+      // the visible countdown goes down by about a second at a time (a tick may land between two reads)
+      expect(new Set(seen).size).toBeGreaterThanOrEqual(50);
+      const secondsOf = (text: string) =>
+        Number(text.split(":")[0]) * 60 + Number(text.split(":")[1]);
+      for (let i = 1; i < seen.length; i++) {
+        expect(secondsOf(seen[i])).toBeLessThanOrEqual(secondsOf(seen[i - 1]));
+      }
       expect(seen[0]).toMatch(/^(1:00|0:5\d)$/);
       expect(new Set(heard).size).toBeLessThanOrEqual(7);
       const changes = heard.filter((text, i) => i > 0 && text !== heard[i - 1]).length;

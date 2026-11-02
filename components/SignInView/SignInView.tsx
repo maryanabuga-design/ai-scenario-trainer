@@ -46,7 +46,7 @@ export function SignInView({
       className="flex flex-1 flex-col gap-6 pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]"
     >
       <FormHeader step={1} />
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 text-center">
         <EntryPicture src={ENTRY_PICTURES.signIn} />
         <h1 className="type-page-title">Welcome back</h1>
         <p className="type-body text-text-secondary">

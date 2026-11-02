@@ -45,7 +45,7 @@ export function ProfileSetupView({
       onSubmit={submit}
       className="flex flex-1 flex-col gap-6 pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]"
     >
-      <div className="flex flex-col gap-2 pt-2">
+      <div className="flex flex-col gap-2 pt-2 text-center">
         <EntryPicture src={ENTRY_PICTURES.profile} />
         <h1 className="type-page-title">Your profile</h1>
         <p className="type-body text-text-secondary">

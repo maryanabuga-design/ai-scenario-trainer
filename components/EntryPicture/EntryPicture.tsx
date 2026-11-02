@@ -6,19 +6,20 @@ import { useState } from "react";
 export const ENTRY_PICTURES = {
   profile: "/images/entry/entry-profile.webp",
   signIn: "/images/entry/entry-signin.webp",
+  group: "/images/entry/entry-group.webp",
 } as const;
 
 /**
- * A decorative picture above the title of an entry screen: about 112px (88px on screens lower than
- * 700px, so the Primary stays in view), left-aligned, empty alt text, with 8px below it (the title
- * block adds another 8px, 16px in all). If the file is missing or fails to load nothing is drawn, so
- * no empty space is left.
+ * The large decorative picture of an entry screen (DESIGN.md: Onboarding-style entry screens):
+ * centred, 160px square (120px on screens lower than 700px, 96px lower than 600px, so the Primary
+ * stays in view), empty alt text, 8px below it (the title block adds another 8px: 16px in all). If
+ * the file is missing or fails to load nothing is drawn, so no empty space is left.
  */
 export function EntryPicture({ src }: { src: string }) {
   const [failed, setFailed] = useState(false);
   if (failed) return null;
   return (
-    // eslint-disable-next-line @next/next/no-img-element -- a small decorative picture, no optimiser needed
+    // eslint-disable-next-line @next/next/no-img-element -- a decorative picture, no optimiser needed
     <img
       ref={(el) => {
         // an error that happened before hydration is not reported by onError
@@ -27,10 +28,10 @@ export function EntryPicture({ src }: { src: string }) {
       data-entry-picture
       src={src}
       alt=""
-      width={112}
-      height={112}
+      width={160}
+      height={160}
       onError={() => setFailed(true)}
-      className="mb-2 h-[112px] w-[112px] object-contain [@media(max-height:699px)]:h-[88px] [@media(max-height:699px)]:w-[88px]"
+      className="mx-auto mb-2 h-[160px] w-[160px] object-contain [@media(max-height:599px)]:h-[96px] [@media(max-height:599px)]:w-[96px] [@media(min-height:600px)_and_(max-height:699px)]:h-[120px] [@media(min-height:600px)_and_(max-height:699px)]:w-[120px]"
     />
   );
 }

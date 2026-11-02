@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
+import { ENTRY_PICTURES, EntryPicture } from "@/components/EntryPicture/EntryPicture";
 import { TextField } from "@/components/TextField/TextField";
 import { normaliseCode } from "@/lib/join";
 
@@ -47,7 +48,8 @@ export function GroupCodeView({
       onSubmit={submit}
       className="flex flex-1 flex-col gap-6 pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]"
     >
-      <div className="flex flex-col gap-2 pt-2">
+      <div className="flex flex-col gap-2 pt-2 text-center">
+        <EntryPicture src={ENTRY_PICTURES.group} />
         <h1 className="type-page-title">Join a group</h1>
         <p className="type-body text-text-secondary">Enter the code your instructor gave you.</p>
       </div>

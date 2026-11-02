@@ -1,10 +1,9 @@
 "use client";
 
-import { UsersRound } from "lucide-react";
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
-import { IconTile } from "@/components/IconTile/IconTile";
+import { ENTRY_PICTURES, EntryPicture } from "@/components/EntryPicture/EntryPicture";
 import { TextField } from "@/components/TextField/TextField";
 import { EXISTS_LINK, EXISTS_MESSAGE, validateEmail } from "@/lib/auth-validation";
 
@@ -17,7 +16,7 @@ export const EMAIL_NOTE = "We will send you a code to confirm it.";
 
 /**
  * The invitation (DESIGN.md: Invitation-only entry), opened by `/join/<code>` or from the group code
- * screen. A white card: a round icon, "You are invited to", the group name and two muted lines. Then:
+ * screen. The group picture, then a white card: "You are invited to", the group name and two muted lines. Then:
  * a new student gives an email (Continue); a signed-in student who is not in the group confirms with
  * "Join group" or leaves with "Not now"; a member sees "You are already in ..." and "Open group"; a
  * link that is not valid says so, with "Back to start". Nothing is sent and joining always asks.
@@ -66,7 +65,8 @@ export function InvitationView({
         data-invitation="invalid"
         className="flex flex-1 flex-col gap-6 pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]"
       >
-        <div className="flex flex-col gap-2 pt-2">
+        <div className="flex flex-col gap-2 pt-2 text-center">
+          <EntryPicture src={ENTRY_PICTURES.group} />
           <h1 className="type-page-title">{INVALID_TITLE}</h1>
           <p className="type-body text-text-secondary">{INVALID_SUBTITLE}</p>
         </div>
@@ -80,28 +80,28 @@ export function InvitationView({
   }
 
   const card = (
-    <div
-      data-invitation-card
-      className="flex flex-col items-center gap-3 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)] text-center shadow-(--card-shadow)"
-    >
-      <IconTile className="h-14 w-14 rounded-full">
-        <UsersRound size={28} strokeWidth={1.75} />
-      </IconTile>
-      {state === "member" ? (
-        <h1 data-invitation-title className="type-page-title">
-          You are already in {groupName}
-        </h1>
-      ) : (
-        <div className="flex flex-col gap-1">
-          <p className="type-small text-text-secondary">You are invited to</p>
+    <div className="flex flex-col gap-2 pt-2">
+      <EntryPicture src={ENTRY_PICTURES.group} />
+      <div
+        data-invitation-card
+        className="flex flex-col items-center gap-3 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)] text-center shadow-(--card-shadow)"
+      >
+        {state === "member" ? (
           <h1 data-invitation-title className="type-page-title">
-            {groupName}
+            You are already in {groupName}
           </h1>
+        ) : (
+          <div className="flex flex-col gap-1">
+            <p className="type-small text-text-secondary">You are invited to</p>
+            <h1 data-invitation-title className="type-page-title">
+              {groupName}
+            </h1>
+          </div>
+        )}
+        <div className="flex flex-col gap-0.5">
+          <p className="type-body text-text-secondary">Role: Student</p>
+          <p className="type-body text-text-secondary">Invited by {invitedBy}</p>
         </div>
-      )}
-      <div className="flex flex-col gap-0.5">
-        <p className="type-body text-text-secondary">Role: Student</p>
-        <p className="type-body text-text-secondary">Invited by {invitedBy}</p>
       </div>
     </div>
   );
