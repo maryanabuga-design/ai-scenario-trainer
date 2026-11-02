@@ -1,4 +1,3 @@
-import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
@@ -180,6 +179,55 @@ for (const width of [360, 430]) {
       await expect(sheet.getByRole("button", { name: "Next" })).toBeVisible();
     });
 
+    test("each sheet shows its own picture, loaded, at 72 x 72 CSS px with an empty alt text", async ({
+      page,
+    }) => {
+      await start(page, scenario);
+      const lightbulb = page.getByRole("button", { name: "Hint", exact: true });
+      const picture = async (sheet: ReturnType<typeof feedback>, file: string) => {
+        const slot = sheet.locator("[data-sheet-slot]");
+        await expect(slot).toHaveAttribute("data-sheet-slot", "image");
+        const img = slot.locator("img");
+        await expect(img).toHaveAttribute("src", `/images/student/${file}`);
+        await expect(img).toHaveAttribute("alt", "");
+        expect(await img.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0);
+        const box = (await img.boundingBox())!;
+        expect([Math.round(box.width), Math.round(box.height)]).toEqual([72, 72]);
+        expect(await img.evaluate((el) => getComputedStyle(el).objectFit)).toBe("contain");
+      };
+      await lightbulb.click();
+      await settled(page);
+      await picture(hintSheet(page), "hint.webp");
+      await page.getByRole("button", { name: "Got it" }).click();
+      await option(page, S1_RIGHT).click();
+      await check(page).click();
+      await settled(page);
+      await picture(feedback(page), "feedback-correct.webp");
+      await next(page).click();
+      await option(page, /./).first().click();
+      await check(page).click();
+      await settled(page);
+      // wrong or right, it is one of the two feedback pictures
+      const src = await feedback(page).locator("[data-sheet-slot] img").getAttribute("src");
+      expect(src).toMatch(/feedback-(correct|wrong)\.webp$/);
+      expect(await noSidewaysScroll(page)).toBe(true);
+    });
+
+    test("the wrong-answer sheet shows the wrong picture", async ({ page }) => {
+      await start(page, scenario);
+      await option(page, S1_WRONG).click();
+      await check(page).click();
+      await settled(page);
+      await expect(feedback(page).locator("[data-sheet-slot] img")).toHaveAttribute(
+        "src",
+        "/images/student/feedback-wrong.webp",
+      );
+      await expect(feedback(page).locator("[data-sheet-slot]")).toHaveAttribute(
+        "data-sheet-slot",
+        "image",
+      );
+    });
+
     test("the picture slot is always there with the same size and place, with or without the file; only the title parts sit beside it", async ({
       page,
     }) => {
@@ -189,7 +237,9 @@ for (const width of [360, 430]) {
           Math.round,
         );
       };
-      // without the file: a plain tile, no icon, no text
+      // without the file (the request fails): a plain tile, no icon, no text
+      const pictures = "**/images/student/*.webp";
+      await page.route(pictures, (route) => route.abort());
       await start(page, scenario);
       await option(page, S1_WRONG).click();
       await check(page).click();
@@ -208,11 +258,8 @@ for (const width of [360, 430]) {
       expect([without[2], without[3]]).toEqual([72, 72]);
       const title = (await sheet.getByRole("heading", { name: "Not quite" }).boundingBox())!;
       expect(title.x).toBeGreaterThanOrEqual(without[0] + 72 + 16 - 1);
-      // with the file: the same size and the same place
-      const picture = readFileSync("public/images/entry/entry-profile.webp");
-      await page.route("**/images/student/*.webp", (route) =>
-        route.fulfill({ contentType: "image/webp", body: picture }),
-      );
+      // with the real file: the same size and the same place
+      await page.unroute(pictures);
       await next(page).click();
       await option(page, /./).first().click();
       await check(page).click();
