@@ -77,7 +77,7 @@ async function passExam(page: Page, id: string) {
     localStorage.setItem(key, JSON.stringify(stored));
   }, correctOf);
   await page.reload();
-  await page.getByRole("button", { name: "Finish", exact: true }).click();
+  await page.getByRole("button", { name: /^(Finish|See results)$/ }).click();
   await expect(page.getByRole("heading", { name: "Passed" })).toBeVisible();
 }
 

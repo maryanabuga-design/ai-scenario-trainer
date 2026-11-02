@@ -482,7 +482,9 @@ for (const width of [360, 430]) {
         await page.locator("fieldset[aria-labelledby^=question-] label:visible").first().click();
         await page.getByRole("button", { name: "Check", exact: true }).click();
         const last = n === 4;
-        await page.getByRole("button", { name: last ? "Finish" : "Next", exact: true }).click();
+        await page
+          .getByRole("button", { name: last ? "See results" : "Next", exact: true })
+          .click();
       }
       await expect(page).toHaveURL(/\/session\/results$/);
       // the answers are in the history, but the Training figures are unchanged

@@ -186,7 +186,10 @@ export function SquareButton({
   expanded,
   disabled,
   onClick,
+  onElement,
 }: {
+  /** Receives the button element (the hint sheet gives the focus back to it). */
+  onElement?: (element: HTMLButtonElement | null) => void;
   icon: LucideIcon;
   /** The accessible name: the button has no visible text. */
   label: string;
@@ -197,6 +200,7 @@ export function SquareButton({
 }) {
   return (
     <button
+      ref={onElement}
       type="button"
       aria-label={label}
       aria-expanded={expanded}

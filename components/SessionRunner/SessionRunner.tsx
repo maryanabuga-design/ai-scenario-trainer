@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { QuestionScreen } from "@/components/QuestionScreen/QuestionScreen";
+import { FeedbackSheet, HintSheet } from "@/components/QuestionSheets/QuestionSheets";
 import { SessionBar } from "@/components/SessionBar/SessionBar";
 import { SessionTopBar } from "@/components/SessionTopBar/SessionTopBar";
 import type { Unit } from "@/components/SessionTopBar/SessionTopBar";
@@ -20,8 +21,8 @@ export type RunnerSession = Pick<Session, "itemIds" | "answers" | "index" | "hin
  * A running session, one question at a time, for the normal sessions and the exam. The choice is
  * saved as soon as it is made (`onChange`), Back and the step strip show it again, and nothing
  * says whether it is right until Finish. In a training mode the primary button first reads
- * "Check": it locks the answer and shows the feedback and Why, then it reads "Next" ("Finish" on
- * the last question). The exam passes `mode="exam"` (no Check, no feedback), `hints={false}`, a
+ * "Check": it locks the answer and opens the feedback sheet (which replaces the bar: Next, or "See
+ * results" on the last question); the lightbulb opens the hint sheet. The exam passes `mode="exam"` (no Check, no feedback), `hints={false}`, a
  * timer and its own leave texts.
  */
 export function SessionRunner<T extends RunnerSession>({
@@ -53,6 +54,7 @@ export function SessionRunner<T extends RunnerSession>({
   const saved = useSaved();
   /** The question whose hint is open: it closes by itself when the person moves to another. */
   const [hintOpenFor, setHintFor] = useState<string | null>(null);
+  const [lightbulb, setLightbulb] = useState<HTMLButtonElement | null>(null);
   const total = session.itemIds.length;
   const index = Math.min(session.index, total - 1);
   const item = getItem(session.itemIds[index]);
@@ -66,11 +68,7 @@ export function SessionRunner<T extends RunnerSession>({
   // A checked question has its answer: the hint is closed and cannot be opened.
   const hintOpen = hint !== null && hintOpenFor === item.id && !checked;
 
-  function toggleHint() {
-    if (hintOpen) {
-      setHintFor(null);
-      return;
-    }
+  function openHint() {
     setHintFor(item.id);
     onChange(withHintUsed(session, item.id));
   }
@@ -93,6 +91,16 @@ export function SessionRunner<T extends RunnerSession>({
     }
     jump(index + 1);
   }
+
+  // After Next (or any move to another question) the focus goes to the heading of the new question.
+  const shownItem = useRef(item.id);
+  useEffect(() => {
+    if (shownItem.current === item.id) return;
+    shownItem.current = item.id;
+    document.getElementById(`question-${item.id}`)?.focus({ preventScroll: true });
+  }, [item.id]);
+  // The feedback sheet is drawn over the page: room under the last option so it can be scrolled up.
+  const [sheetHeight, setSheetHeight] = useState(0);
 
   const answered = session.itemIds.map((id) => isDone(answerFor(session, id), mode));
   const unanswered = answered.indexOf(false);
@@ -121,20 +129,39 @@ export function SessionRunner<T extends RunnerSession>({
         item={item}
         choice={choice}
         onChoose={(optionId) => onChange(withAnswer(session, item.id, optionId))}
-        mode={mode}
-        checked={checked}
+        locked={checked}
         saved={isSaved(saved, item.id)}
         onToggleSaved={() => toggleSaved(item.id)}
-        hint={hintOpen ? hint : null}
       />
+      {checked && <div aria-hidden="true" style={{ height: sheetHeight }} />}
       <SessionBar
         label={feedback && !checked ? "Check" : last ? "Finish" : "Next"}
         last={last}
         disabled={choice === null || (feedback && !checked ? false : last && unanswered !== -1)}
         note={note}
-        hint={hint ? { open: hintOpen, onToggle: toggleHint, disabled: checked } : undefined}
+        covered={checked}
+        hint={
+          hint
+            ? { open: hintOpen, onToggle: openHint, disabled: checked, onElement: setLightbulb }
+            : undefined
+        }
         onNext={feedback && !checked ? check : next}
       />
+      {hintOpen && hint && (
+        <HintSheet hint={hint} onClose={() => setHintFor(null)} returnFocus={lightbulb} />
+      )}
+      {checked && choice && (
+        <FeedbackSheet
+          key={`feedback-${item.id}`}
+          item={item}
+          choice={choice}
+          last={last}
+          disabled={last && unanswered !== -1}
+          note={note}
+          onHeight={setSheetHeight}
+          onNext={next}
+        />
+      )}
     </div>
   );
 }

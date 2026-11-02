@@ -21,6 +21,8 @@
   --wrong-text: #9b2c1f;
   --correct-bg: #e3f2e8;
   --wrong-bg: #fbe4e1;
+  --feedback-correct-bg: color-mix(in srgb, var(--status-success-bg) 60%, white);
+  --feedback-wrong-bg: color-mix(in srgb, var(--wrong-bg) 70%, white);
   --neutral-tile-bg: #e2ded6;
   --neutral-tile-ink: #5c5a56;
   --status-attention-bg: #f1e4c8;
@@ -106,6 +108,8 @@
   --color-chip-neutral-bg: var(--chip-neutral-bg);
   --color-chip-neutral-ink: var(--chip-neutral-ink);
   --color-wrong-bg: var(--wrong-bg);
+  --color-feedback-correct-bg: var(--feedback-correct-bg);
+  --color-feedback-wrong-bg: var(--feedback-wrong-bg);
   --color-wrong: var(--wrong);
   --color-caution: var(--caution);
   --color-soft-card: var(--soft-card);
@@ -254,7 +258,8 @@ dialog[data-sheet] {
   box-shadow: 0 -4px 16px color-mix(in srgb, var(--text) 8%, transparent);
 }
 
-.filter-sheet {
+.filter-sheet,
+.bottom-sheet {
   animation: sheet-in 200ms ease-out;
 }
 

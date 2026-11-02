@@ -1,21 +1,19 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { BookmarkButton } from "@/components/BookmarkButton/BookmarkButton";
-import { HintCard } from "@/components/HintCard/HintCard";
 import { Media3D } from "@/components/Media3D/Media3D";
 import { SituationCard } from "@/components/SituationCard/SituationCard";
 import { OptionCard } from "@/components/OptionCard/OptionCard";
-import type { Hint, Item } from "@/lib/items";
-import { checkAnnouncement, optionState } from "@/lib/option-state";
-import type { QuestionMode } from "@/lib/option-state";
+import type { Item } from "@/lib/items";
 
 /**
  * The one question screen for a scenario step and a quiz question. A scenario: the step picture
  * (a placeholder without one), the situation card, the question. A quiz: the picture only when the
  * question has one. The question has a bookmark on its right, then the options (radio on the
- * left, no letters), then the hint card when it is open. In a training mode, once the answer is
- * checked, the options show the result and a "Why" card appears; in the exam nothing is revealed.
+ * left, no letters). The options are never recoloured: once the answer is checked (`locked`) they
+ * cannot be changed and the selected one keeps its olive border; the result and the hint are
+ * bottom sheets drawn by the caller (DESIGN.md: Practice: answer feedback and hint as bottom
+ * sheets), so nothing is inserted into the page.
  */
 export function QuestionScreen({
   item,
@@ -23,9 +21,7 @@ export function QuestionScreen({
   onChoose,
   saved,
   onToggleSaved,
-  hint,
-  mode = "training",
-  checked = false,
+  locked = false,
   bookmark = true,
 }: {
   item: Item;
@@ -33,35 +29,11 @@ export function QuestionScreen({
   onChoose: (optionId: string) => void;
   saved: boolean;
   onToggleSaved: () => void;
-  /** The hint to show under the options; null while it is closed. */
-  hint: Hint | null;
-  mode?: QuestionMode;
-  /** The answer was checked (training modes only): it is locked and its feedback shows. */
-  checked?: boolean;
+  /** The answer was checked (practice only): the options cannot be changed any more. */
+  locked?: boolean;
   /** False where nothing can be saved (the practice of a demo topic): no bookmark is drawn. */
   bookmark?: boolean;
 }) {
-  // Feedback exists in the training modes only, and only after Check.
-  const shown = mode === "training" && checked;
-  const whyRef = useRef<HTMLElement>(null);
-  const wasShown = useRef(shown);
-  useEffect(() => {
-    // After Check the Why card scrolls into view; a restored, already checked question does not.
-    if (shown && !wasShown.current) {
-      const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      whyRef.current?.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "nearest" });
-    }
-    wasShown.current = shown;
-  }, [shown]);
-  // The hint opens under the options, often below the fold on a phone: it scrolls into view (above
-  // the bottom bar), otherwise a tap on the lightbulb seems to do nothing.
-  const hintRef = useRef<HTMLDivElement>(null);
-  const hintOpen = hint !== null;
-  useEffect(() => {
-    if (!hintOpen) return;
-    const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    hintRef.current?.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "nearest" });
-  }, [hintOpen]);
   const scenario = item.kind === "step";
   const image = item.image ?? (scenario ? { src: "", alt: "" } : undefined);
   return (
@@ -69,7 +41,7 @@ export function QuestionScreen({
       {image && <Media3D variant="step" src={image.src || undefined} alt={image.alt} />}
       {item.situation && <SituationCard text={item.situation} />}
       <div className="flex items-start justify-between gap-3">
-        <h1 id={`question-${item.id}`} className="type-item-title pt-1.5">
+        <h1 id={`question-${item.id}`} tabIndex={-1} className="type-item-title pt-1.5">
           {item.question}
         </h1>
         {bookmark && <BookmarkButton saved={saved} onToggle={onToggleSaved} />}
@@ -86,40 +58,14 @@ export function QuestionScreen({
             key={option.id}
             name={`option-${item.id}`}
             value={option.id}
-            state={optionState({
-              mode,
-              optionId: option.id,
-              choice,
-              checked: shown,
-              correctOptionId: item.correctOptionId,
-            })}
-            locked={shown}
+            state={choice === option.id ? "selected" : "idle"}
+            locked={locked}
             onChange={onChoose}
           >
             {option.text}
           </OptionCard>
         ))}
       </fieldset>
-      {shown && choice && (
-        <>
-          <p role="status" aria-live="polite" className="sr-only">
-            {checkAnnouncement(item, choice)}
-          </p>
-          <section
-            ref={whyRef}
-            aria-label="Why"
-            className="flex scroll-mb-40 flex-col gap-2 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)]"
-          >
-            <h2 className="type-label text-text-secondary">Why</h2>
-            <p>{item.why}</p>
-          </section>
-        </>
-      )}
-      {hint && (
-        <div ref={hintRef} className="scroll-mb-40">
-          <HintCard hint={hint} />
-        </div>
-      )}
     </div>
   );
 }

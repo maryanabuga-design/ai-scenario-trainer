@@ -23,23 +23,17 @@ async function open(page: Page, kind: "scenario" | "quiz", ids: string[]) {
   await page.goto("/session");
 }
 
-/** The hint card is on screen, above the pinned bottom bar, and stays put. */
+/** The hint sheet is open (a modal dialog) and stays put. */
 async function expectHintShown(page: Page, text: string) {
-  const card = page.locator('section[aria-label="Hint"]');
-  await expect(card).toBeVisible();
-  await expect(card).toContainText(text);
-  const view = page.viewportSize()!;
-  await page.waitForTimeout(500);
-  const box = (await card.boundingBox())!;
-  const bar = (await page.locator("[data-full-bleed].border-t").last().boundingBox())!;
-  expect(box.y).toBeGreaterThanOrEqual(0);
-  expect(box.y + box.height).toBeLessThanOrEqual(bar.y + 1);
-  expect(box.y + box.height).toBeLessThanOrEqual(view.height);
-  // stable: still the same place and still open later
-  await page.waitForTimeout(500);
-  const again = (await card.boundingBox())!;
+  const sheet = page.getByRole("dialog", { name: "Hint" });
+  await expect(sheet).toBeVisible();
+  await expect(sheet).toContainText(text);
+  await page.waitForTimeout(400);
+  const box = (await sheet.boundingBox())!;
+  expect(box.y + box.height).toBeLessThanOrEqual(page.viewportSize()!.height + 1);
+  await page.waitForTimeout(300);
+  const again = (await sheet.boundingBox())!;
   expect(Math.abs(again.y - box.y)).toBeLessThanOrEqual(1);
-  await expect(card).toBeVisible();
 }
 
 test.describe("Hint with a finger (tap, not click)", () => {
@@ -62,11 +56,10 @@ test.describe("Hint with a finger (tap, not click)", () => {
     );
     expect(covered).toBe("Hint");
     await hint.tap();
-    await expect(hint).toHaveAttribute("aria-expanded", "true");
     await expectHintShown(page, step.hint!.slice(0, 20));
     // a second tap closes it (the existing toggle)
-    await hint.tap();
-    await expect(page.locator('section[aria-label="Hint"]')).toHaveCount(0);
+    await page.getByRole("button", { name: "Got it" }).tap();
+    await expect(page.getByRole("dialog", { name: "Hint" })).toHaveCount(0);
   });
 
   test("a tap on the lightbulb shows the hint on a quiz question", async ({ page }, info) => {

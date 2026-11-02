@@ -463,7 +463,7 @@ for (const width of [360, 430]) {
         localStorage.setItem(key, JSON.stringify(stored));
       }, Object.fromEntries(correctOf));
       await page.reload();
-      await page.getByRole("button", { name: "Finish", exact: true }).click();
+      await page.getByRole("button", { name: /^(Finish|See results)$/ }).click();
       await expect(page).toHaveURL(/\/exam\/results$/);
       await expect(page.getByRole("heading", { name: "Passed" })).toBeVisible();
 

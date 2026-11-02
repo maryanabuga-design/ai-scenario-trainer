@@ -55,8 +55,8 @@ export function Indicator({ state }: { state: OptionState }) {
 /**
  * One answer option (DESIGN.md: Option card): a white card with a 2px border, the radio on the
  * left and the text. The whole card is the label of a native radio, so a tap anywhere chooses it
- * and the arrow keys move the choice. After Check the radio is locked and the card shows the
- * result with an icon and a label.
+ * and the arrow keys move the choice. After Check the radio is locked (`aria-disabled`) and the
+ * card keeps its look: the result is shown by the feedback sheet, never on the card.
  */
 export function OptionCard({
   name,
@@ -68,15 +68,12 @@ export function OptionCard({
 }: {
   name: string;
   value: string;
-  state: OptionState;
-  /** After Check in a training mode: the answer cannot change any more. */
+  state: "idle" | "selected";
+  /** After Check in practice: the answer cannot change any more. */
   locked: boolean;
   onChange: (value: string) => void;
   children: ReactNode;
 }) {
-  const chosen = state === "selected" || state === "correct" || state === "wrong";
-  const label = resultLabels[state];
-  const labelTone = state === "wrong" ? "text-wrong-text" : "text-correct-text";
   return (
     <label
       data-state={state}
@@ -88,16 +85,14 @@ export function OptionCard({
         type="radio"
         name={name}
         value={value}
-        checked={chosen}
+        checked={state === "selected"}
         disabled={locked}
+        aria-disabled={locked || undefined}
         onChange={() => onChange(value)}
         className="sr-only"
       />
       <Indicator state={state} />
-      <span className="flex min-w-0 flex-1 flex-col gap-1">
-        <span>{children}</span>
-        {label && <span className={`type-caption font-semibold ${labelTone}`}>{label}</span>}
-      </span>
+      <span className="min-w-0 flex-1">{children}</span>
     </label>
   );
 }

@@ -17,6 +17,7 @@ import { Chip } from "@/components/Chip/Chip";
 import { FileText, History, ListChecks, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { QuestionScreen } from "@/components/QuestionScreen/QuestionScreen";
+import { FeedbackSheet, HintSheet } from "@/components/QuestionSheets/QuestionSheets";
 import { Media3D } from "@/components/Media3D/Media3D";
 import { Toggle } from "@/components/Toggle/Toggle";
 import { AskAiThread } from "@/components/AskAiThread/AskAiThread";
@@ -266,12 +267,12 @@ export function SessionSample({
   answered?: number[];
   choice?: string | null;
   kind?: "scenario" | "quiz";
-  /** Start with the hint card open. */
+  /** Start with the hint sheet open. */
   hintOpen?: boolean;
   startSaved?: boolean;
   /** The exam: seconds left on the timer; no hint button. */
   examSeconds?: number;
-  /** A training question that was checked: its feedback and Why show. */
+  /** A training question that was checked: its feedback sheet shows. */
   checked?: boolean;
 }) {
   const { sections } = useSourceSheet();
@@ -281,6 +282,7 @@ export function SessionSample({
       ? hintFor(item, (id) => sections.find((section) => section.id === id)?.title)
       : null;
   const [open, setOpen] = useState(hintOpen);
+  const [bulb, setBulb] = useState<HTMLButtonElement | null>(null);
   const [saved, setSaved] = useState(startSaved);
   const [picked, setPicked] = useState<string | null>(choice);
   const [done, setDone] = useState(checked);
@@ -304,29 +306,42 @@ export function SessionSample({
           item={item}
           choice={picked}
           onChoose={setPicked}
-          mode={exam ? "exam" : "training"}
-          checked={done}
+          locked={done && !exam}
           saved={saved}
           onToggleSaved={() => setSaved(!saved)}
-          hint={open ? hint : null}
         />
       </div>
       <div ref={endRef} />
+      {done && !exam && <div aria-hidden="true" className="h-64" />}
       <SessionBar
-        label={exam || done ? (index === total - 1 ? "Finish" : "Next") : "Check"}
+        label={exam ? (index === total - 1 ? "Finish" : "Next") : "Check"}
         last={index === total - 1}
         disabled={picked === null}
+        covered={done && !exam}
         hint={
           hint
             ? {
                 open: open && !done,
-                onToggle: () => setOpen(!open),
+                onToggle: () => setOpen(true),
                 disabled: done,
+                onElement: setBulb,
               }
             : undefined
         }
         onNext={() => setDone(true)}
       />
+      {open && hint && !done && (
+        <HintSheet inline hint={hint} onClose={() => setOpen(false)} returnFocus={bulb} />
+      )}
+      {done && !exam && picked && (
+        <FeedbackSheet
+          inline
+          item={item}
+          choice={picked}
+          last={index === total - 1}
+          onNext={() => undefined}
+        />
+      )}
     </>
   );
 }

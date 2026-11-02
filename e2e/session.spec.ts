@@ -42,7 +42,7 @@ async function start(page: Page, session: object | null, path = "/session") {
 }
 
 const next = (page: Page) => page.getByRole("button", { name: "Next", exact: true });
-const finish = (page: Page) => page.getByRole("button", { name: "Finish", exact: true });
+const finish = (page: Page) => page.getByRole("button", { name: /^(Finish|See results)$/ });
 const check = (page: Page) => page.getByRole("button", { name: "Check", exact: true });
 const option = (page: Page, text: string | RegExp) => page.locator("label", { hasText: text });
 
@@ -112,11 +112,11 @@ test.describe("a running session", () => {
     await next(page).click();
     await page.getByRole("button", { name: "Previous step" }).click();
     await expect(page.getByText("Step 1 of 3")).toBeVisible();
-    // back on the locked question: the choice, its result and Why are shown, and nothing can change
+    // back on the locked question: the choice stays (olive, not red), the feedback sheet shows, nothing can change
     await expect(page.getByLabel(S1_WRONG)).toBeChecked();
     await expect(page.getByLabel(S1_WRONG)).toBeDisabled();
-    await expect(page.locator("label[data-state=wrong]")).toContainText("Not quite");
-    await expect(page.getByRole("region", { name: "Why" })).toBeVisible();
+    await expect(page.locator("label[data-state=selected]")).toHaveCount(1);
+    await expect(page.locator("[data-bottom-sheet=feedback]")).toContainText("Not quite");
   });
 
   test("asks before leaving, from Exit and from Back on the first step, and keeps the answers", async ({
@@ -256,44 +256,36 @@ test.describe("the question screen: hint and bookmark", () => {
     finished: false,
   };
 
-  test("opens the hint card under the options, closes it, and closes it on the next question", async ({
+  test("opens the hint sheet, closes it, and keeps nothing open on the next question", async ({
     page,
   }) => {
     await start(page, scenario);
-    await expect(page.getByRole("region", { name: "Hint" })).toHaveCount(0);
+    await expect(page.getByRole("dialog", { name: "Hint" })).toHaveCount(0);
     const lightbulb = page.getByRole("button", { name: "Hint", exact: true });
-    await expect(lightbulb).toHaveAttribute("aria-expanded", "false");
     await lightbulb.click();
-    const card = page.getByRole("region", { name: "Hint" });
-    await expect(card).toBeVisible();
-    await expect(card).toContainText(
+    const sheet = page.getByRole("dialog", { name: "Hint" });
+    await expect(sheet).toBeVisible();
+    await expect(sheet).toContainText(
       "Think about what the sound of an alarm can and cannot tell you.",
     );
-    await expect(card.getByRole("button", { name: /Guide · S1/ })).toBeVisible();
-    // under the options, in the page, not a sheet (the page scrolls the card into view first)
-    await page.waitForTimeout(700);
-    const optionBox = await page.locator("fieldset label").last().boundingBox();
-    const cardBox = await card.boundingBox();
-    expect(cardBox!.y).toBeGreaterThan(optionBox!.y + optionBox!.height - 1);
-    await expect(page.locator("dialog[open]")).toHaveCount(0);
-    await lightbulb.click();
-    await expect(card).toBeHidden();
-    await lightbulb.click();
-    await expect(card).toBeVisible();
+    await expect(sheet.getByRole("button", { name: "Open guide · S1" })).toBeVisible();
+    await sheet.getByRole("button", { name: "Got it" }).click();
+    await expect(sheet).toBeHidden();
+    await expect(lightbulb).toBeFocused();
     await option(page, S1_RIGHT).click();
-    // Check disables the hint button and closes an open hint card
+    // Check disables the hint button
     await check(page).click();
-    await expect(lightbulb).toBeDisabled();
-    await expect(card).toBeHidden();
+    await expect(page.locator("[data-bottom-sheet=feedback]")).toBeVisible();
     await next(page).click();
     await expect(page.getByText("Step 2 of 3")).toBeVisible();
-    await expect(page.getByRole("region", { name: "Hint" })).toHaveCount(0);
+    await expect(page.getByRole("dialog", { name: "Hint" })).toHaveCount(0);
     await expect(lightbulb).toBeEnabled();
   });
 
   test("records that a hint was used on the answer", async ({ page }) => {
     await start(page, scenario);
     await page.getByRole("button", { name: "Hint", exact: true }).click();
+    await page.getByRole("button", { name: "Got it" }).click();
     await option(page, S1_RIGHT).click();
     await check(page).click();
     await next(page).click();
@@ -327,7 +319,7 @@ test.describe("the question screen: hint and bookmark", () => {
     // q-s2-1 has no hint of its own, so the fallback "Review: <section>" is shown.
     await start(page, { ...quizSession, itemIds: ["q-s2-1"] });
     await page.getByRole("button", { name: "Hint", exact: true }).click();
-    await expect(page.getByRole("region", { name: "Hint" })).toContainText("Review:");
+    await expect(page.getByRole("dialog", { name: "Hint" })).toContainText("Review:");
   });
 
   test("renders a True/False question with 2 options, and a scenario question with 3", async ({
@@ -342,10 +334,10 @@ test.describe("the question screen: hint and bookmark", () => {
     await expect(check(page)).toBeEnabled();
     await check(page).click();
     await next(page).click();
-    // the last question: Check first, no Next or Finish yet
+    // the last question: Check first, no Next or See results yet
     await expect(check(page)).toBeDisabled();
     await expect(next(page)).toHaveCount(0);
-    await expect(finish(page)).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "See results" })).toHaveCount(0);
   });
 
   test("true or false: a wrong answer shows Not quite and reveals the right option", async ({
@@ -354,12 +346,11 @@ test.describe("the question screen: hint and bookmark", () => {
     await start(page, quizSession);
     await page.getByText("True", { exact: true }).click();
     await check(page).click();
-    await expect(page.locator("label[data-state=wrong]")).toContainText("Not quite");
-    await expect(page.locator("label[data-state=revealed-correct]")).toContainText("False");
-    await expect(page.locator("label[data-state=revealed-correct]")).toContainText(
-      "Correct answer",
-    );
-    await expect(page.getByRole("region", { name: "Why" })).toBeVisible();
+    const sheet = page.locator("[data-bottom-sheet=feedback]");
+    await expect(sheet).toContainText("Not quite");
+    await expect(sheet).toContainText("Correct answer: False");
+    // the cards are not recoloured
+    await expect(page.locator("label[data-state=wrong], label[data-state=correct]")).toHaveCount(0);
   });
 
   test("renders a scenario question with 3 options", async ({ page }) => {
@@ -1398,22 +1389,24 @@ test.describe("answer options and instant feedback", () => {
     await expect(cards(page).nth(1)).toHaveAttribute("data-state", "selected");
   });
 
-  test("a right answer: green card, check icon, Correct, Why, and Next", async ({ page }) => {
+  test("a right answer: the card keeps its olive border, the sheet says Correct with Why, and Next", async ({
+    page,
+  }) => {
     await open(page, scenario);
     await option(page, S1_RIGHT).click();
     await check(page).click();
-    const right = page.locator("label[data-state=correct]");
-    await expect(right).toHaveCount(1);
-    await expect(right).toContainText("Correct");
-    await expect(right.locator("svg.lucide-check")).toBeVisible();
-    expect(await border(right)).toMatchObject({ color: GREEN, background: "rgb(227, 242, 232)" });
-    await expect(page.locator("label[data-state=wrong]")).toHaveCount(0);
-    const why = page.getByRole("region", { name: "Why" });
-    await expect(why).toBeVisible();
-    await expect(why).toContainText("treat every alarm as real");
+    const sheet = page.locator("[data-bottom-sheet=feedback]");
+    await expect(sheet).toBeVisible();
+    await expect(sheet.getByRole("heading", { name: "Correct" })).toBeVisible();
+    await expect(sheet).toContainText("treat every alarm as real");
     await expect(page.getByRole("status")).toContainText("Correct");
     await expect(check(page)).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Hint", exact: true })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Hint", exact: true })).toHaveCount(0);
+    // not recoloured: the chosen card stays selected (olive), the others stay white
+    await expect(page.locator("label[data-state=correct], label[data-state=wrong]")).toHaveCount(0);
+    expect(await border(page.locator("label[data-state=selected]"))).not.toMatchObject({
+      color: GREEN,
+    });
     // locked: the radios cannot change
     await expect(cards(page).nth(0).locator("input")).toBeDisabled();
     await next(page).click();
@@ -1421,31 +1414,30 @@ test.describe("answer options and instant feedback", () => {
     await expect(check(page)).toBeVisible();
   });
 
-  test("a wrong answer: red card, cross, Not quite, the right one revealed, and Why", async ({
+  test("a wrong answer: the sheet says Not quite with the correct answer and Why; the cards are not recoloured", async ({
     page,
   }) => {
     await open(page, scenario);
     await option(page, S1_WRONG).click();
     await check(page).click();
-    const wrong = page.locator("label[data-state=wrong]");
-    await expect(wrong).toHaveCount(1);
-    await expect(wrong).toContainText("Not quite");
-    await expect(wrong.locator("svg.lucide-x")).toBeVisible();
-    expect(await border(wrong)).toMatchObject({ color: RED, background: "rgb(251, 228, 225)" });
-    const revealed = page.locator("label[data-state=revealed-correct]");
-    await expect(revealed).toContainText("Stop the session");
-    await expect(revealed).toContainText("Correct answer");
-    expect(await border(revealed)).toMatchObject({ color: GREEN });
-    await expect(page.locator("label[data-state=idle]")).toHaveCount(1);
-    await expect(page.getByRole("region", { name: "Why" })).toBeVisible();
+    const sheet = page.locator("[data-bottom-sheet=feedback]");
+    await expect(sheet.getByRole("heading", { name: "Not quite" })).toBeVisible();
+    await expect(sheet).toContainText("Correct answer: Stop the session");
     await expect(page.getByRole("status")).toContainText(
       "Not quite. The correct answer is: Stop the session",
     );
-    // an idle option stays white with its empty radio
-    expect(await border(page.locator("label[data-state=idle]"))).toMatchObject({ color: IDLE });
+    await expect(
+      page.locator("label[data-state=wrong], label[data-state=revealed-correct]"),
+    ).toHaveCount(0);
+    expect(await border(page.locator("label[data-state=selected]"))).not.toMatchObject({
+      color: RED,
+    });
+    expect(await border(page.locator("label[data-state=idle]").first())).toMatchObject({
+      color: IDLE,
+    });
   });
 
-  test("the last question says Finish only after Check, and the page keeps its gutter", async ({
+  test("the last question says See results only after Check, and the page keeps its gutter", async ({
     page,
   }) => {
     await open(page, { ...scenario, itemIds: ["q-scn-s01-001"] });
@@ -1471,10 +1463,10 @@ test.describe("answer options and instant feedback", () => {
     await expect(check(page)).toBeEnabled();
     await check(page).click();
     await page.reload();
-    await expect(page.locator("label[data-state=correct]")).toHaveCount(1);
-    await expect(page.getByRole("region", { name: "Why" })).toBeVisible();
+    await expect(page.locator("label[data-state=selected]")).toHaveCount(1);
+    await expect(page.locator("[data-bottom-sheet=feedback]")).toContainText("Correct");
     await expect(next(page)).toBeVisible();
-    await expect(page.getByRole("button", { name: "Hint", exact: true })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Hint", exact: true })).toHaveCount(0);
   });
 
   test("Answer review shows the same colours, icons and labels, without a Check button", async ({

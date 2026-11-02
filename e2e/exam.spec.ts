@@ -123,9 +123,9 @@ test.describe("Exam readiness", () => {
       )!;
       await page.locator("fieldset label").filter({ hasText: correct.text }).first().click();
       await page.getByRole("button", { name: "Check", exact: true }).click();
-      await expect(page.getByRole("region", { name: "Why" })).toBeVisible();
+      await expect(page.locator("[data-bottom-sheet=feedback]")).toBeVisible();
       await page
-        .getByRole("button", { name: n < session.length - 1 ? "Next" : "Finish", exact: true })
+        .getByRole("button", { name: n < session.length - 1 ? "Next" : "See results", exact: true })
         .click();
     }
     await expect(page).toHaveURL(/\/session\/results$/);

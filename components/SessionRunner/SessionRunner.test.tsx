@@ -48,9 +48,7 @@ describe("the exam question screen", () => {
     // The action bar is drawn through a portal, so this checks how the runner builds it.
     const source = readFileSync("components/SessionRunner/SessionRunner.tsx", "utf8");
     expect(source).toMatch(/const hint = hints\s*\?\s*hintFor/);
-    expect(source).toContain(
-      "hint={hint ? { open: hintOpen, onToggle: toggleHint, disabled: checked } : undefined}",
-    );
+    expect(source).toMatch(/hint\s*\?\s*\{ open: hintOpen, onToggle: openHint, disabled: checked/);
     expect(readFileSync("app/(app)/exam/session/page.tsx", "utf8")).toContain("hints={false}");
     expect(readFileSync("app/(app)/exam/session/page.tsx", "utf8")).toContain('mode="exam"');
     expect(readFileSync("app/(app)/session/page.tsx", "utf8")).not.toContain("hints={false}");

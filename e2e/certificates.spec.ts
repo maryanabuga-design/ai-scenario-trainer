@@ -87,7 +87,7 @@ const noSidewaysScroll = (page: Page) =>
 /** Finishes the seeded exam and lands on Results. */
 async function finishExam(page: Page, right: number) {
   await open(page, "/exam/session", runningExam(right));
-  await page.getByRole("button", { name: "Finish", exact: true }).click();
+  await page.getByRole("button", { name: /^(Finish|See results)$/ }).click();
   await expect(page).toHaveURL(/\/exam\/results$/);
 }
 
@@ -286,7 +286,7 @@ for (const width of [360, 430]) {
         ] as const,
       );
       await page.goto("/exam/session");
-      await page.getByRole("button", { name: "Finish", exact: true }).click();
+      await page.getByRole("button", { name: /^(Finish|See results)$/ }).click();
       await expect(page).toHaveURL(/\/exam\/results$/);
       expect(await stored(page, "ast.certificates.v1" + suffix)).toHaveLength(1);
       await page.goto("/profile");

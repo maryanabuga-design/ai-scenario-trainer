@@ -15,6 +15,7 @@ export function SessionBar({
   disabled,
   note,
   hint,
+  covered = false,
   onNext,
 }: {
   /** The primary button: Check, Next or Finish (the caller decides; `last` is the fallback). */
@@ -24,15 +25,24 @@ export function SessionBar({
   /** A line above the buttons, for example which question still needs an answer. */
   note?: string | null;
   /** The hint button: absent when the question has no hint. */
-  hint?: { open: boolean; onToggle: () => void; disabled?: boolean };
+  hint?: {
+    open: boolean;
+    onToggle: () => void;
+    disabled?: boolean;
+    /** The lightbulb button: the hint sheet gives the focus back to it. */
+    onElement?: (element: HTMLButtonElement | null) => void;
+  };
+  /** A feedback sheet is drawn over the bar (the bar keeps its size, so nothing moves). */
+  covered?: boolean;
   onNext: () => void;
 }) {
   return (
-    <ActionBar>
+    <ActionBar covered={covered}>
       {note && <p className="type-small text-center text-text-secondary">{note}</p>}
       <div className="flex items-center gap-3">
         {hint && (
           <SquareButton
+            onElement={hint.onElement}
             icon={Lightbulb}
             label="Hint"
             expanded={hint.open}

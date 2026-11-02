@@ -1,11 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ButtonLink, Button } from "@/components/Button/Button";
 import { PreviewProvider } from "@/components/PreviewLabel/PreviewLabel";
 import { PackageImage, GuidePill } from "@/components/PackageContent/PackageParts";
 import { QuestionScreen } from "@/components/QuestionScreen/QuestionScreen";
+import { FeedbackSheet } from "@/components/QuestionSheets/QuestionSheets";
 import { ReadingView } from "@/components/ReadingView/ReadingView";
 import { ResultsView } from "@/components/ResultsView/ResultsView";
 import { SessionBar } from "@/components/SessionBar/SessionBar";
@@ -177,6 +178,14 @@ export function PackagePlayer({
   const [index, setIndex] = useState(0);
   const [choices, setChoices] = useState<Record<number, { id: string; checked: boolean }>>({});
   const [finished, setFinished] = useState(false);
+  const [sheetHeight, setSheetHeight] = useState(0);
+  // After Next the focus goes to the heading of the next question.
+  const shownIndex = useRef(index);
+  useEffect(() => {
+    if (shownIndex.current === index) return;
+    shownIndex.current = index;
+    document.querySelector<HTMLElement>("h1[id^='question-']")?.focus({ preventScroll: true });
+  }, [index]);
 
   if (items.length === 0) return null;
   // the preview goes back to the topic screen on the same tab, the student to the reading screen
@@ -241,26 +250,31 @@ export function PackagePlayer({
         onChoose={(optionId) =>
           setChoices((current) => ({ ...current, [index]: { id: optionId, checked: false } }))
         }
-        mode="training"
-        checked={checked}
+        locked={checked}
         saved={false}
         onToggleSaved={() => undefined}
         bookmark={false}
-        hint={null}
       />
+      {checked && <div aria-hidden="true" style={{ height: sheetHeight }} />}
       <SessionBar
-        label={checked ? (last ? "Finish" : "Next") : "Check"}
+        label="Check"
         last={last}
         disabled={choice === null}
-        onNext={() => {
-          if (!checked) {
-            setChoices((current) => ({ ...current, [index]: { id: choice ?? "", checked: true } }));
-            return;
-          }
-          if (last) setFinished(true);
-          else jump(index + 1);
-        }}
+        covered={checked}
+        onNext={() =>
+          setChoices((current) => ({ ...current, [index]: { id: choice ?? "", checked: true } }))
+        }
       />
+      {checked && choice && (
+        <FeedbackSheet
+          key={`feedback-${item.id}`}
+          item={item}
+          choice={choice}
+          last={last}
+          onHeight={setSheetHeight}
+          onNext={() => (last ? setFinished(true) : jump(index + 1))}
+        />
+      )}
     </div>
   );
 }

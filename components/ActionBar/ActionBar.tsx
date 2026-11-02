@@ -27,13 +27,24 @@ export function ActionBarSlot() {
   return <div ref={setSlot} />;
 }
 
-export function ActionBar({ children }: { children: ReactNode }) {
+/**
+ * `covered`: a sheet is drawn over the bar (the answer feedback). The bar keeps its place and size
+ * so the page does not change height, but it is invisible and cannot be reached.
+ */
+export function ActionBar({
+  children,
+  covered = false,
+}: {
+  children: ReactNode;
+  covered?: boolean;
+}) {
   const { slot } = useActionBarContext();
   if (!slot) return null;
   return createPortal(
     <div
       data-full-bleed
-      className="flex flex-col gap-3 border-t border-border bg-bg p-[var(--gutter,1rem)]"
+      inert={covered}
+      className={`flex flex-col gap-3 border-t border-border bg-bg p-[var(--gutter,1rem)] ${covered ? "invisible" : ""}`}
     >
       {children}
     </div>,

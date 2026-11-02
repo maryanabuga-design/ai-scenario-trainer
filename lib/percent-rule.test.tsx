@@ -106,8 +106,7 @@ describe("the percentage rule", () => {
               onChoose={noop}
               saved={false}
               onToggleSaved={noop}
-              hint={null}
-              checked={checked}
+              locked={checked}
             />
           </ActionBarProvider>
         </SourceSheetProvider>,

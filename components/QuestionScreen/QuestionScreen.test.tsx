@@ -12,7 +12,7 @@ import { scenarios } from "@/lib/scenario";
 const noop = () => undefined;
 
 /** The extra props the screen needs: saved state and an optional open hint. */
-const extras = { saved: false, onToggleSaved: noop, hint: null };
+const extras = { saved: false, onToggleSaved: noop };
 const items = [...scenarios.flatMap((def) => def.steps), ...questions];
 
 function withSources(node: React.ReactNode) {
@@ -182,66 +182,40 @@ describe("options", () => {
     expect(html).not.toMatch(/correct-bg|wrong-bg|Correct|Not quite|>Why</);
   });
 
-  it("checked and right: the green card with a check, Correct and the Why card", () => {
-    const step = scenarios[0].steps[0];
-    const html = withSources(
-      <QuestionScreen
-        item={step}
-        choice={step.correctOptionId}
-        checked
-        onChoose={noop}
-        {...extras}
-      />,
-    );
-    expect(html.match(/data-state="correct"/g)).toHaveLength(1);
-    expect(html).toContain("border-correct bg-correct-bg");
-    expect(html).toContain(">Correct<");
-    expect(html).toContain("lucide-check");
-    expect(html).not.toMatch(/lucide-x|Not quite|wrong-bg/);
-    expect(html).toContain(">Why<");
-    expect(html).toContain(step.why);
-    expect(html).toContain('role="status"');
-    expect(html).toContain(">Correct</p>");
-    // locked: the radios are disabled
-    expect(html.match(/disabled=""/g)).toHaveLength(3);
-  });
-
-  it("checked and wrong: the red card with a cross and Not quite, the right one revealed, and Why", () => {
+  it("locked after Check: the radios are disabled and aria-disabled, the chosen card keeps its olive border, nothing is recoloured or inserted", () => {
     const step = scenarios[0].steps[0];
     const wrong = step.options.find((option) => option.id !== step.correctOptionId)!;
-    const right = step.options.find((option) => option.id === step.correctOptionId)!;
-    const html = withSources(
-      <QuestionScreen item={step} choice={wrong.id} checked onChoose={noop} {...extras} />,
-    );
-    expect(html.match(/data-state="wrong"/g)).toHaveLength(1);
-    expect(html.match(/data-state="revealed-correct"/g)).toHaveLength(1);
-    expect(html.match(/data-state="idle"/g)).toHaveLength(1);
-    expect(html).toContain("border-wrong bg-wrong-bg");
-    expect(html).toContain(">Not quite<");
-    expect(html).toContain(">Correct answer<");
-    expect(html).toContain("lucide-x");
-    expect(html).toContain(step.why);
-    expect(html).toContain(`Not quite. The correct answer is: ${right.text}`);
+    for (const choice of [step.correctOptionId, wrong.id]) {
+      const html = withSources(
+        <QuestionScreen item={step} choice={choice} locked onChoose={noop} {...extras} />,
+      );
+      expect(html.match(/disabled=""/g)).toHaveLength(3);
+      expect(html.match(/aria-disabled="true"/g)).toHaveLength(3);
+      expect(html.match(/data-state="selected"/g)).toHaveLength(1);
+      expect(html.match(/data-state="idle"/g)).toHaveLength(2);
+      expect(html).toContain("border-primary bg-card");
+      expect(html).not.toMatch(
+        /correct-bg|wrong-bg|border-correct|border-wrong|Correct|Not quite|>Why<|lucide-x|lucide-check|role="status"/,
+      );
+    }
   });
 
-  it("in the exam: only the selected style, never colours, labels or Why, checked or not", () => {
+  it("is the same markup before and after Check apart from the disabled radios (nothing moves)", () => {
     const step = scenarios[0].steps[0];
-    for (const checked of [false, true]) {
-      const html = withSources(
+    const markup = (locked: boolean) =>
+      withSources(
         <QuestionScreen
           item={step}
           choice={step.options[0].id}
-          checked={checked}
-          mode="exam"
+          locked={locked}
           onChoose={noop}
           {...extras}
         />,
-      );
-      expect(html.match(/data-state="selected"/g)).toHaveLength(1);
-      expect(html).not.toMatch(
-        /correct-bg|wrong-bg|border-correct|border-wrong|Correct|Not quite|>Why<|lucide-x|disabled=""/,
-      );
-    }
+      )
+        .replace(/ disabled=""/g, "")
+        .replace(/ aria-disabled="true"/g, "")
+        .replace(/cursor-default|cursor-pointer active:bg-secondary-sand/g, "");
+    expect(markup(true)).toBe(markup(false));
   });
 
   it("shows no red or green and no verdict while nothing is checked", () => {
@@ -249,6 +223,15 @@ describe("options", () => {
       <QuestionScreen item={items[0]} choice="a" onChoose={noop} {...extras} />,
     );
     expect(html).not.toMatch(/correct-bg|wrong-bg|text-correct|text-wrong|Correct answer/);
+  });
+
+  it("has no inline hint card any more: the hint is a sheet", () => {
+    const step = scenarios[0].steps[0];
+    const html = withSources(
+      <QuestionScreen item={step} choice={null} onChoose={noop} {...extras} />,
+    );
+    expect(html).not.toContain('aria-label="Hint"');
+    expect(html).toContain('tabindex="-1"');
   });
 });
 
@@ -276,35 +259,6 @@ describe("the bookmark", () => {
     expect(saved).toContain('aria-label="Remove from saved"');
     expect(saved).toContain('aria-pressed="true"');
     expect(saved).toContain('fill="currentColor"');
-  });
-});
-
-describe("the hint card", () => {
-  const step = scenarios[0].steps[0];
-  const hint = { text: step.hint!, section: "S1" };
-
-  it("is absent while closed", () => {
-    const html = withSources(
-      <QuestionScreen item={step} choice={null} onChoose={noop} {...extras} />,
-    );
-    expect(html).not.toContain(step.hint);
-    expect(html).not.toContain('aria-label="Hint"');
-  });
-
-  it("opens inside the page under the options, with the label, the text and a Guide chip", () => {
-    const html = withSources(
-      <QuestionScreen item={step} choice={null} onChoose={noop} {...extras} hint={hint} />,
-    );
-    const lastOption = html.lastIndexOf(step.options[2].text);
-    const card = html.slice(html.indexOf('aria-label="Hint"') - 40);
-    expect(html.indexOf('aria-label="Hint"')).toBeGreaterThan(lastOption);
-    expect(card).toContain("lucide-lightbulb");
-    expect(card).toContain(">Hint<");
-    expect(card).toContain(step.hint);
-    expect(card).toContain("Guide · S1");
-    expect(
-      card.slice(0, card.indexOf("<dialog") === -1 ? undefined : card.indexOf("<dialog")),
-    ).not.toMatch(/aria-modal|role="dialog"/);
   });
 });
 

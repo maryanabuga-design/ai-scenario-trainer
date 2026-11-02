@@ -638,8 +638,8 @@ for (const width of [360, 430]) {
         await expect(page.getByText("Choose one answer").locator("visible=true")).toBeVisible();
         await page.locator("fieldset[role=radiogroup]:visible label").first().click();
         await page.getByRole("button", { name: "Check" }).click();
-        await expect(page.getByRole("region", { name: "Why" })).toBeVisible();
-        const finish = page.getByRole("button", { name: "Finish" });
+        await expect(page.locator("[data-bottom-sheet=feedback]")).toBeVisible();
+        const finish = page.getByRole("button", { name: /^(Finish|See results)$/ });
         if (await finish.count()) {
           await finish.click();
           break;

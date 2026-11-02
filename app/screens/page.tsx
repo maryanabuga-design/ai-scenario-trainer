@@ -461,7 +461,7 @@ export default function Screens() {
               <SessionSample itemId="s3" index={2} answered={[0, 1]} choice="a" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Question 3: the hint card open under the options">
+          <PhoneFrame label="Question 3: the hint sheet (modal, with a scrim)">
             <Screen>
               <SessionSample itemId="s3" index={2} answered={[0, 1]} choice="a" hintOpen />
             </Screen>
@@ -481,17 +481,40 @@ export default function Screens() {
               <SessionSample itemId="s2" index={1} answered={[0, 1, 2]} choice="c" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Checked, correct: green option, check, Correct and Why">
+          <PhoneFrame label="Checked, correct: the feedback sheet (Correct, Why, Next); the options are not recoloured">
             <Screen>
               <SessionSample itemId="s2" index={1} answered={[0]} choice="c" checked />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Checked, wrong: red option, cross, Not quite, the right one revealed and Why">
+          <PhoneFrame label="Checked, wrong: the feedback sheet (Not quite, the correct answer, Why, Review the guide, Next)">
             <Screen>
               <SessionSample itemId="s2" index={1} answered={[0]} choice="a" checked />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Exam question: selected option only, no Check, no colours, no Why">
+          <PhoneFrame label="Last question, checked wrong: See results">
+            <Screen>
+              <SessionSample
+                itemId="s6"
+                index={9}
+                answered={[0, 1, 2, 3, 4, 5, 6, 7, 8]}
+                choice="a"
+                checked
+              />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="True or false, checked wrong">
+            <Screen>
+              <SessionSample
+                itemId="flood-q5"
+                kind="quiz"
+                index={4}
+                answered={[0, 1, 2, 3]}
+                choice="a"
+                checked
+              />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Exam question: selected option only, no Check, no feedback, no hint">
             <Screen>
               <SessionSample itemId="s2" index={1} answered={[0]} choice="a" examSeconds={842} />
             </Screen>

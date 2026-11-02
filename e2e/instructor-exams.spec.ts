@@ -104,7 +104,7 @@ async function playExam(page: Page, examId: string, right: number) {
     [answers] as const,
   );
   await page.reload();
-  await page.getByRole("button", { name: "Finish", exact: true }).click();
+  await page.getByRole("button", { name: /^(Finish|See results)$/ }).click();
   await expect(page).toHaveURL(/\/exam\/results$/);
 }
 
