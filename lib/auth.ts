@@ -32,7 +32,7 @@ export type Account = {
   groupId?: string;
   /** A Student who left the group (demo): no group, so no topics and no exams. */
   noGroup?: true;
-  /** The language chosen in the invitation Profile step (the text of the app stays English). */
+  /** The language of the account: English for now (the choice returns with the translations). */
   language?: Language;
   /** false: an account made from an invitation that has not finished the Profile step. */
   profileDone?: false;
@@ -41,10 +41,8 @@ export type Account = {
 };
 
 export type Language = "uk" | "en";
-export const languages: { value: Language; label: string }[] = [
-  { value: "uk", label: "Ukrainian" },
-  { value: "en", label: "English" },
-];
+/** The language of an account: English until the app is translated (no choice is shown). */
+export const DEFAULT_LANGUAGE: Language = "en";
 const isLanguage = (value: unknown): value is Language => value === "uk" || value === "en";
 
 export type Pending = {
@@ -364,11 +362,8 @@ export const leaveGroupState = (state: AuthState): AuthState => {
   };
 };
 
-/** The Profile step of an invitation: the name and the language; the account is then complete. */
-export function completeProfileState(
-  state: AuthState,
-  input: { name: string; language: Language },
-): AuthState {
+/** The Profile step of an invitation: the name (the language stays English); the account is then complete. */
+export function completeProfileState(state: AuthState, input: { name: string }): AuthState {
   const current = currentAccount(state);
   if (!current || input.name.trim().length < 2) return state;
   return {
@@ -377,7 +372,7 @@ export function completeProfileState(
       if (account.email !== current.email) return account;
       const { profileDone, ...rest } = account;
       void profileDone;
-      return { ...rest, name: input.name.trim(), language: input.language };
+      return { ...rest, name: input.name.trim(), language: DEFAULT_LANGUAGE };
     }),
   };
 }
@@ -539,7 +534,7 @@ export function leaveGroup() {
 }
 
 /** The Profile step of an invitation is finished (Continue). */
-export function completeProfile(input: { name: string; language: Language }) {
+export function completeProfile(input: { name: string }) {
   save(completeProfileState(readAuth(), input));
 }
 

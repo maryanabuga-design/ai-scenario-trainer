@@ -156,16 +156,24 @@ describe("Invitation", () => {
 describe("Profile of a new student", () => {
   const out = html(<ProfileSetupView onSubmit={() => undefined} />);
 
-  it("has the title, the subtitle, the name field, two language cards and a Primary Continue", () => {
+  it("has the title, the new subtitle, ONE field 'Your name' and the Primary Continue; no language choice", () => {
     expect(out).toContain(">Your profile</h1>");
-    expect(out).toContain("Two things and you are in.");
+    expect(out).toContain("Add your name so your instructor can recognise you.");
+    expect(out).not.toContain("Two things and you are in.");
     expect(out).toMatch(/<label[^>]*>Your name<\/label>/);
-    expect(out).toContain(">Language</legend>");
-    expect(out).toContain(">Ukrainian<");
-    expect(out).toContain(">English<");
-    expect(out.match(/type="radio"/g)).toHaveLength(2);
-    expect(out.match(/checked=""/g)).toHaveLength(1);
+    expect(out.match(/<input/g)).toHaveLength(1);
+    expect(out).not.toMatch(/Language|Ukrainian|English|type="radio"|<fieldset/);
     expect(out).toMatch(/type="submit"[^>]*>(?:<span[^>]*>)?Continue/);
+  });
+
+  it("shows its picture above the title: decorative (empty alt), 112px, 88px on short screens, 16px below", () => {
+    const img = out.slice(out.indexOf("<img"), out.indexOf(">", out.indexOf("<img")));
+    expect(img).toContain('src="/images/entry/entry-profile.webp"');
+    expect(img).toContain('alt=""');
+    expect(img).toContain("h-[112px] w-[112px]");
+    expect(img).toContain("[@media(max-height:699px)]:h-[88px]");
+    expect(img).toContain("mb-2");
+    expect(out.indexOf("<img")).toBeLessThan(out.indexOf("<h1"));
   });
 });
 
@@ -403,5 +411,27 @@ describe("the code screen", () => {
     );
     expect(out).toMatch(/<button[^>]*disabled=""[^>]*>(?:<span[^>]*>)?Verify/);
     expect(verify()).not.toContain("data-lock-countdown");
+  });
+});
+
+describe("the entry pictures", () => {
+  it("shows the envelope picture on Welcome back, under the back row and above the title, decorative", () => {
+    const out = html(<SignInView onSubmit={() => "ok"} />);
+    const img = out.slice(out.indexOf("<img"), out.indexOf(">", out.indexOf("<img")));
+    expect(img).toContain('src="/images/entry/entry-signin.webp"');
+    expect(img).toContain('alt=""');
+    expect(img).toContain("h-[112px] w-[112px]");
+    expect(out.indexOf("data-form-step")).toBeLessThan(out.indexOf("<img"));
+    expect(out.indexOf("<img")).toBeLessThan(out.indexOf(">Welcome back</h1>"));
+  });
+
+  it("has both files: square, transparent webp pictures", async () => {
+    const { default: sharp } = await import("sharp");
+    for (const file of ["entry-profile", "entry-signin"]) {
+      const meta = await sharp(`public/images/entry/${file}.webp`).metadata();
+      expect(meta.format, file).toBe("webp");
+      expect(meta.width, file).toBe(meta.height);
+      expect(meta.hasAlpha, file).toBe(true);
+    }
   });
 });

@@ -148,14 +148,15 @@ for (const width of [360, 430]) {
       // Profile
       await expect(page).toHaveURL(/\/set-up-profile$/);
       await expect(page.getByRole("heading", { name: "Your profile", level: 1 })).toBeVisible();
-      await expect(page.getByText("Two things and you are in.")).toBeVisible();
+      await expect(
+        page.getByText("Add your name so your instructor can recognise you."),
+      ).toBeVisible();
+      await expect(page.getByText(/Language|Ukrainian/)).toHaveCount(0);
       await expect(nav(page)).toHaveCount(0);
-      await expect(page.getByRole("radio", { name: "English" })).toBeChecked();
       expect(await noSidewaysScroll(page)).toBe(true);
       // the student cannot skip the step
       await page.goto("/training");
       await expect(page).toHaveURL(/\/set-up-profile$/);
-      await page.getByRole("radio", { name: "Ukrainian" }).check({ force: true });
       await page.getByRole("button", { name: "Continue" }).click();
       await expect(page.getByText("Enter your full name.")).toBeVisible();
       await page.getByLabel("Your name").fill("Ana Test");
@@ -163,7 +164,7 @@ for (const width of [360, 430]) {
       await expect(page).toHaveURL(/\/$/);
       await expect(page.getByRole("heading", { name: "Hi, Ana Test" })).toBeVisible();
       await expect(page.locator("[data-flash]:visible")).toContainText("You joined Rescue team");
-      // the account is a student of Rescue team, with the chosen language saved
+      // the account is a student of Rescue team, with English as the language
       const saved = await page.evaluate(() => {
         const raw = localStorage.getItem("ast.auth.v1");
         return raw ? JSON.parse(raw).value.accounts[0] : null;
@@ -173,7 +174,7 @@ for (const width of [360, 430]) {
         email: "ana@example.com",
         role: "student",
         groupId: "rescue-team",
-        language: "uk",
+        language: "en",
       });
       expect(saved.profileDone).toBeUndefined();
       // and is one of the group on the instructor side

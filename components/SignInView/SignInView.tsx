@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { Button, ButtonLink } from "@/components/Button/Button";
+import { ENTRY_PICTURES, EntryPicture } from "@/components/EntryPicture/EntryPicture";
 import { FormHeader } from "@/components/FormHeader/FormHeader";
 import { TextField } from "@/components/TextField/TextField";
 import { INACTIVE_MESSAGE, UNKNOWN_MESSAGE, validateEmail } from "@/lib/auth-validation";
@@ -46,6 +47,7 @@ export function SignInView({
     >
       <FormHeader step={1} />
       <div className="flex flex-col gap-2">
+        <EntryPicture src={ENTRY_PICTURES.signIn} />
         <h1 className="type-page-title">Welcome back</h1>
         <p className="type-body text-text-secondary">
           Enter your work email. We will send you a code.

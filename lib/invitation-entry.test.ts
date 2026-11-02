@@ -55,18 +55,16 @@ describe("a student who comes in through an invitation", () => {
     expect(homeAfterVerification(account)).toBe("/set-up-profile");
   });
 
-  it("is finished by the Profile step: the name, the language, no more owed step", () => {
-    const done = completeProfileState(invited(), { name: " Ana Test ", language: "uk" });
+  it("is finished by the Profile step: the name, English as the language, no more owed step", () => {
+    const done = completeProfileState(invited(), { name: " Ana Test " });
     const account = current(done);
     expect(account.name).toBe("Ana Test");
-    expect(account.language).toBe("uk");
+    expect(account.language).toBe("en");
     expect(account.profileDone).toBeUndefined();
     expect(account.groupId).toBe("rescue-team");
     expect(homeAfterVerification(account)).toBe("/");
     // a name that is too short changes nothing
-    expect(
-      current(completeProfileState(invited(), { name: "A", language: "en" })).profileDone,
-    ).toBe(false);
+    expect(current(completeProfileState(invited(), { name: "A" })).profileDone).toBe(false);
   });
 
   it("without a group the old sign-up behaviour is unchanged (the onboarding is still owed)", () => {
@@ -83,7 +81,7 @@ describe("a student who comes in through an invitation", () => {
 });
 
 describe("joining and leaving a group", () => {
-  const joined = completeProfileState(invited(), { name: "Ana Test", language: "en" });
+  const joined = completeProfileState(invited(), { name: "Ana Test" });
 
   it("reads the group of a student: the saved one, Rescue team when none was saved, none after leaving", () => {
     expect(groupOf(current(joined))).toBe("rescue-team");
