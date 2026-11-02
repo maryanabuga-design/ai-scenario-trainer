@@ -7,7 +7,7 @@ import { Chevron } from "@/components/Chevron/Chevron";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { ProfileAvatar } from "@/components/ProfileAvatar/ProfileAvatar";
-import { EMPTY_TEXT, suggestedFor, timeLabel } from "@/lib/ask-ai";
+import { suggestedFor, timeLabel } from "@/lib/ask-ai";
 import type { FieldOfWork } from "@/lib/field-of-work";
 import type { Thread } from "@/lib/ask-ai";
 
@@ -51,7 +51,6 @@ export function AskAiView({
 
       <div className="flex flex-col gap-6">
         <section aria-labelledby="suggested-title" className="flex flex-col gap-3">
-          {threads.length === 0 && <p className="text-text-secondary">{EMPTY_TEXT}</p>}
           <h2 id="suggested-title" className="type-label text-text-secondary">
             Suggested questions
           </h2>

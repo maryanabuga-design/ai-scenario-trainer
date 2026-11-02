@@ -97,11 +97,12 @@ for (const width of [360, 430]) {
       }
     });
 
-    test("an empty history shows the text and four suggested questions; no sideways scroll", async ({
+    test("an empty history shows four suggested questions and no extra line; no sideways scroll", async ({
       page,
     }) => {
       await open(page, "/ask-ai");
-      await expect(page.getByText("Ask about any topic in the guides")).toBeVisible();
+      await expect(page.getByText("Ask about any topic in the guides")).toHaveCount(0);
+      await expect(page.getByText("Suggested questions")).toBeVisible();
       const rows = page.locator("[data-suggested]");
       await expect(rows).toHaveCount(4);
       for (const row of await rows.all()) {
@@ -235,7 +236,8 @@ for (const width of [360, 430]) {
       await clear.click();
       await dialog.getByRole("button", { name: "Clear", exact: true }).click();
       await expect(page.locator("[data-thread]")).toHaveCount(0);
-      await expect(page.getByText("Ask about any topic in the guides")).toBeVisible();
+      await expect(page.getByText("Ask about any topic in the guides")).toHaveCount(0);
+      await expect(page.getByText("Suggested questions")).toBeVisible();
       await page.reload();
       await expect(page.locator("[data-thread]")).toHaveCount(0);
     });
@@ -249,7 +251,8 @@ for (const width of [360, 430]) {
         );
       });
       await page.goto("/ask-ai");
-      await expect(page.getByText("Ask about any topic in the guides")).toBeVisible();
+      await expect(page.getByText("Ask about any topic in the guides")).toHaveCount(0);
+      await expect(page.getByText("Suggested questions")).toBeVisible();
       await page.evaluate(() =>
         localStorage.setItem(
           "ast.ask-ai.v1",
@@ -257,7 +260,8 @@ for (const width of [360, 430]) {
         ),
       );
       await page.reload();
-      await expect(page.getByText("Ask about any topic in the guides")).toBeVisible();
+      await expect(page.getByText("Ask about any topic in the guides")).toHaveCount(0);
+      await expect(page.getByText("Suggested questions")).toBeVisible();
     });
 
     test("the Answer review has the row; one thread per question, composed from its data, never duplicated", async ({

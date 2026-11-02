@@ -49,7 +49,7 @@ describe("the Ask AI tab", () => {
     expect(html).toContain("data-page-header-band");
     expect(html).toContain(">Ask AI</h1>");
     expect(html).toContain("data-avatar");
-    expect(html).toContain("Ask about any topic in the guides");
+    expect(html).not.toContain("Ask about any topic in the guides");
     expect(html.match(/data-suggested=/g)).toHaveLength(4);
     expect(html.match(/h-14 w-full/g)).toHaveLength(4);
     expect(html).not.toContain("Clear history");

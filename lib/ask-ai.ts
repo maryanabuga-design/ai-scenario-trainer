@@ -13,7 +13,6 @@ export const MAX_THREADS = 30;
 export const DISCLAIMER =
   "Prototype answer: a prepared example, not a live AI. It may be inaccurate.";
 export const FALLBACK_TEXT = "I do not have a prepared answer for this. Try one of these:";
-export const EMPTY_TEXT = "Ask about any topic in the guides";
 /** The wait before an answer, in ms (0 with reduced motion). */
 export const TYPING_MS = 600;
 
