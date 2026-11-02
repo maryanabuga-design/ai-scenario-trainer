@@ -426,14 +426,17 @@ export function ResultsSample({
   scrolled = false,
   passed = false,
   examRepeat = false,
+  score,
 }: {
   scrolled?: boolean;
   passed?: boolean;
+  /** A fixed edge case: nothing right (0%), 3 of 5 (60%) or everything right (100%). */
+  score?: "zero" | "sixty" | "full";
   /** A repeat session for an assigned exam: Done over Review answers. */
   examRepeat?: boolean;
 }) {
   const endRef = useScrollFrameToEnd(scrolled);
-  const items = passed ? passedAnswers : sampleAnswers;
+  const items = score ? edgeAnswers[score] : passed ? passedAnswers : sampleAnswers;
   return (
     <>
       <ResultsView
@@ -448,6 +451,18 @@ export function ResultsSample({
     </>
   );
 }
+
+const edgeAnswers = {
+  zero: [pick("q-scn-s01-001", "a")],
+  sixty: [
+    pick("q-scn-s01-001", "b"),
+    pick("s2", "c"),
+    pick("s3", "a"),
+    pick("s4", "a"),
+    pick("s5", "b"),
+  ],
+  full: [pick("q-scn-s01-001", "b"), pick("s2", "c"), pick("s3", "a")],
+};
 
 const passedAnswers = [
   pick("q-scn-s01-001", "b"),

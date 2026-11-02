@@ -115,7 +115,7 @@ describe("the percentage rule", () => {
     }
   });
 
-  it("a practice session's results are counts only", () => {
+  it("a practice session's results show the percentage with the count under it", () => {
     const items = [
       scoreItem(getItem("q-quiz-s01-001"), getItem("q-quiz-s01-001").correctOptionId),
       scoreItem(getItem("q-quiz-s01-002"), "zzz"),
@@ -128,8 +128,8 @@ describe("the percentage rule", () => {
           </ActionBarProvider>
         </SourceSheetProvider>,
       );
-      expect(text(html), kind).not.toContain("%");
-      expect(html, kind).not.toMatch(/aria-label="[^"]*%/);
+      expect(text(html), kind).toContain("50%");
+      expect(text(html), kind).toContain("1 of 2 correct");
     }
   });
 });

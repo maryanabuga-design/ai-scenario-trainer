@@ -329,6 +329,12 @@ dialog[data-sheet]::backdrop,
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+@utility type-score {
+  font-size: 48px;
+  line-height: 52px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
 @utility type-numeral {
   font-size: 28px;
   line-height: 1.33;

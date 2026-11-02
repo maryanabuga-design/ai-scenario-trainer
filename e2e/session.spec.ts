@@ -156,10 +156,13 @@ test.describe("a running session", () => {
 
     await expect(page).toHaveURL(/\/session\/results$/);
     await expect(page.getByRole("heading", { name: "Not passed yet" })).toBeVisible();
-    await expect(page.getByText("PASS MARK: 3 of 3")).toBeVisible();
+    await expect(page.getByText("Pass mark: 80%")).toBeVisible();
     await expect(page.getByText("1 of 3 correct")).toBeVisible();
-    // counts only: no percentage character on a practice session's results
-    expect(await page.locator("main").innerText()).not.toContain("%");
+    // percent first: 33% large, the count under it, the bar filled to the same percentage
+    await expect(page.getByText("33%", { exact: true })).toBeVisible();
+    const bar = page.getByRole("progressbar", { name: "Result" });
+    await expect(bar).toHaveAttribute("aria-valuenow", "33");
+    await expect(bar).toHaveAttribute("aria-valuetext", "33 percent, pass mark 80 percent");
     await expect(page.getByText("Your answers")).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Back to Home", exact: true })).toHaveCount(1);
     await expect(page.getByRole("button", { name: "Back to Home" })).toHaveCount(0);
@@ -1513,7 +1516,8 @@ test.describe("answer options and instant feedback", () => {
     await expect(cards(page).nth(1)).toHaveAttribute("data-state", "selected");
     await expect(cards(page).nth(0)).toHaveAttribute("data-state", "idle");
     expect(await border(cards(page).nth(1))).toMatchObject({ color: OLIVE });
-    await expect(page.locator("main")).not.toContainText(/Correct|Not quite|Why/);
+    await expect(page.locator("main")).not.toContainText(/Correct|Not quite/);
+    await expect(page.getByRole("region", { name: "Why" })).toHaveCount(0);
     await expect(next(page)).toBeEnabled();
     await next(page).click();
     // going back: still selected and still changeable, nothing revealed

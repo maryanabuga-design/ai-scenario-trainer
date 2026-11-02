@@ -589,6 +589,21 @@ export default function Screens() {
               <ResultsSample passed />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Results: not passed, 0% (one topic chip)">
+            <Screen>
+              <ResultsSample score="zero" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Results: not passed, 60% (two topic chips)">
+            <Screen>
+              <ResultsSample score="sixty" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Results: passed, 100% (no Weak topics card)">
+            <Screen>
+              <ResultsSample score="full" />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Results: end of the page">
             <Screen>
               <ResultsSample scrolled />

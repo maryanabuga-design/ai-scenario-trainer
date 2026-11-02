@@ -7,7 +7,7 @@ import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
 import { PASS_MARK } from "@/lib/config";
 import { loadAllSections } from "@/lib/guide";
 import { getItem } from "@/lib/items";
-import { isPassed, passCount, resultPercent } from "@/lib/results";
+import { displayPercent, isPassed, passCount, resultPercent } from "@/lib/results";
 import { scoreItem } from "@/lib/scoring";
 import type { ScoredItem } from "@/lib/scoring";
 import { weakTopics } from "@/lib/weak-topics";
@@ -54,41 +54,62 @@ describe("Results", () => {
     expect(html).not.toContain("Time lost");
   });
 
-  it("starts with Back and the title Results, then the hero, headline, the count and the pass mark as a count", () => {
+  it("starts with Back and the title Results, then the hero, headline, the percentage, the count and the bar with the pass mark in percent", () => {
     const order = [
       'aria-label="Back to Home"',
       ">Results<",
       "data-picture-frame",
       "Not passed yet",
+      "33%",
       "1 of 3 correct",
-      'role="meter"',
-      "PASS MARK: 3 of 3",
+      'role="progressbar"',
+      "Pass mark: 80%",
     ].map((text) => html.indexOf(text));
     expect(order.every((position) => position >= 0)).toBe(true);
     expect([...order].sort((a, b) => a - b)).toEqual(order);
   });
 
-  it("shows no percentage character in the text of a practice session's results", () => {
-    expect(html.replace(/<[^>]+>/g, " ")).not.toContain("%");
-    expect(html).not.toMatch(/aria-label="[^"]*%/);
+  it("shows the percentage large and centred, once for assistive technology, with the exact count under it", () => {
+    expect(html).toMatch(/aria-hidden="true" class="type-score text-center">33%</);
+    expect(html).toContain('aria-valuenow="33"');
+    expect(html).toContain('aria-valuemin="0"');
+    expect(html).toContain('aria-valuemax="100"');
+    expect(html).toContain('aria-valuetext="33 percent, pass mark 80 percent"');
+    expect(html).toContain("width:33%");
+    expect(html).toContain('style="left:80%"');
+    expect(html.indexOf("type-score")).toBeLessThan(html.indexOf("1 of 3 correct"));
+    expect(html).not.toContain("PASS MARK");
+    expect(html).not.toMatch(/Pass mark: \d+ of \d+/);
   });
 
   it("follows with one conclusion and the Weak topics card, and has no Your answers list", () => {
     expect(html).toContain("2 answers need another look in the guide.");
-    expect(html.indexOf("Weak topics")).toBeGreaterThan(html.indexOf("PASS MARK"));
+    expect(html.indexOf("Weak topics")).toBeGreaterThan(html.indexOf("Pass mark"));
     expect(html).not.toContain("Your answers");
     expect(html).not.toContain("/session/results/review/");
     expect(html).not.toMatch(/aria-label="(Not right|Right)"/);
   });
 
-  it("makes the Weak topics card a link with an ArrowCircle and the section tags", () => {
+  it("makes the Weak topics card a link: icon tile, the text with name chips, and the ArrowCircle", () => {
     const start = html.lastIndexOf("<a ", html.indexOf("Weak topics"));
     const card = html.slice(start, html.indexOf("</a>", start));
     expect(card).toContain('href="/weak-topics?from=results"');
     expect(card).toContain("2 topics to repeat");
-    expect(card).toContain(">S1<");
-    expect(card).toContain(">S2<");
+    expect(card).toContain("S1 · Responding to an alarm");
+    expect(card).toContain("S2 · Checking the route");
     expect(card).toContain("border-arrow-stroke");
+    // the 48px round tile with the 24px icon comes first, aligned with the title row, hidden from assistive technology
+    expect(card).toMatch(
+      /data-weak-icon="true" aria-hidden="true"[^>]*h-12 w-12 shrink-0[^>]*self-start rounded-full bg-chip-neutral-bg text-text/,
+    );
+    expect(card).toContain("lucide-list-checks");
+    expect(card).toContain('width="24"');
+    expect(card.indexOf("data-weak-icon")).toBeLessThan(card.indexOf("Weak topics"));
+    // the chips are the shared sand chips, one line, cut with an ellipsis, no icons
+    expect(card).toContain("bg-pastel-sand");
+    expect(card).toContain('class="truncate"');
+    expect(card).toContain("max-w-full");
+    expect((card.match(/<svg/g) ?? []).length).toBe(2); // the tile icon and the arrow
   });
 
   it("has the Back arrow to Home as the only way out: no Back to Home button", () => {
@@ -119,7 +140,7 @@ describe("the pass mark", () => {
     expect(below).toContain("Not passed yet");
     expect(below).toContain('aria-valuenow="79"');
     expect(below).toContain("79 of 100 correct");
-    expect(below).toContain("PASS MARK: 80 of 100");
+    expect(below).toContain("Pass mark: 80%");
     const at = render(result(80, 100));
     expect(isPassed(result(80, 100))).toBe(true);
     expect(at).toContain(">Passed<");
@@ -227,12 +248,12 @@ describe("exam results and the repeat-session summary", () => {
     );
   const text = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
 
-  it("an exam shows '17 of 20 correct' with no percentage, and the pass mark as a count", () => {
+  it("an exam shows 85% with '17 of 20 correct' under it and the pass mark in percent", () => {
     const html = view("exam", draw(17, 20));
+    expect(text(html)).toContain("85%");
     expect(text(html)).toContain("17 of 20 correct");
-    expect(text(html)).not.toContain("%");
-    expect(html).toContain("PASS MARK: 16 of 20");
-    expect(html).not.toMatch(/aria-label="[^"]*%[^"]*%/);
+    expect(html).toContain("Pass mark: 80%");
+    expect(html).toContain('aria-valuetext="85 percent, pass mark 80 percent"');
   });
 
   const buttons = (
@@ -287,11 +308,12 @@ describe("exam results and the repeat-session summary", () => {
     expect(html).not.toContain(">Done<");
   });
 
-  it("a repeat session for an exam shows the count and no readiness line or percentage", () => {
+  it("a repeat session for an exam shows the percentage and the count, and no readiness line", () => {
     const html = view("repeat", draw(7, 10), { examRepeat: true });
+    expect(text(html)).toContain("70%");
     expect(text(html)).toContain("7 of 10 correct");
-    expect(text(html)).not.toMatch(/Readiness|%|→/);
-    expect(html).toContain("PASS MARK: 8 of 10");
+    expect(text(html)).not.toMatch(/Readiness|→/);
+    expect(html).toContain("Pass mark: 80%");
   });
 
   it("Review answers is a Secondary button next to Done, never a text link", () => {
@@ -308,7 +330,89 @@ describe("exam results and the repeat-session summary", () => {
     }
   });
 
-  it("a plain repeat round has no percentage at all", () => {
-    expect(text(view("repeat", draw(7, 10)))).not.toContain("%");
+  it("a plain repeat round shows its percentage like any result", () => {
+    expect(text(view("repeat", draw(7, 10)))).toContain("70%");
+  });
+});
+
+describe("the percentage on Results", () => {
+  const text = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+  const shown = (right: number, total: number) => displayPercent(result(right, total));
+
+  it("is a whole percent rounded half up", () => {
+    expect(shown(1, 3)).toBe(33);
+    expect(shown(2, 3)).toBe(67);
+    expect(shown(3, 4)).toBe(75);
+    expect(shown(1, 8)).toBe(13); // 12.5 rounds up
+    expect(shown(159, 200)).toBe(80); // 79.5 rounds up
+  });
+
+  it("shows 0% only when nothing was right and 100% only when everything was", () => {
+    expect(shown(0, 4)).toBe(0);
+    expect(shown(4, 4)).toBe(100);
+    expect(shown(0, 1)).toBe(0);
+    expect(shown(1, 1)).toBe(100);
+    expect(shown(1, 300)).toBe(1); // 0.33% would round to 0
+    expect(shown(299, 300)).toBe(99); // 99.67% would round to 100
+    expect(shown(0, 0)).toBe(0);
+  });
+
+  it("never decides the pass: 159 of 200 shows 80% and is still not passed", () => {
+    const list = result(159, 200);
+    expect(displayPercent(list)).toBe(80);
+    expect(isPassed(list)).toBe(false);
+    const html = render(list);
+    expect(html).toContain("Not passed yet");
+    expect(html).toContain('aria-valuenow="80"');
+    expect(html).toContain("159 of 200 correct");
+    // exactly at the pass mark and just below
+    expect(isPassed(result(160, 200))).toBe(true);
+    expect(isPassed(result(4, 5))).toBe(true);
+    expect(isPassed(result(3, 4))).toBe(false);
+    expect(isPassed(result(0, 0))).toBe(false);
+  });
+
+  it("fills the bar to the shown percentage and puts the marker at the pass mark", () => {
+    for (const [right, total, width] of [
+      [3, 4, 75],
+      [1, 1, 100],
+      [0, 1, 0],
+      [9, 10, 90],
+    ]) {
+      const html = render(result(right, total));
+      expect(html).toContain(`width:${width}%`);
+      expect(html).toContain('style="left:80%"');
+      expect(html).toContain(`aria-valuenow="${width}"`);
+    }
+  });
+
+  it("handles one question (0% or 100%) and no answers", () => {
+    expect(text(render(result(0, 1)))).toContain("0 of 1 correct");
+    expect(text(render(result(1, 1)))).toContain("1 of 1 correct");
+    expect(text(render(result(0, 0)))).toContain("0 of 0 correct");
+    expect(render(result(1, 1))).toContain(">Passed<");
+  });
+
+  it("uses a fixed large style that fits 360px: the biggest value is 100%", () => {
+    const css = readFileSync("app/globals.css", "utf8");
+    expect(css).toMatch(
+      /@utility type-score \{\s*font-size: 48px;\s*line-height: 52px;\s*font-weight: 600;/,
+    );
+    expect(render(result(1, 1))).toContain(">100%<");
+  });
+});
+
+describe("the Weak topics chips", () => {
+  it("cut a long topic name with an ellipsis on one line and keep one chip per topic", () => {
+    const html = render(items);
+    const chips = html.match(/<span class="truncate">[^<]+<\/span>/g) ?? [];
+    expect(chips).toHaveLength(weakTopics(items).length);
+    expect(html).toContain("whitespace-nowrap"); // the chip itself never wraps its text
+  });
+
+  it("show only the code when the topic name is unknown", () => {
+    const unknown = [scoreItem({ ...getItem("s2"), guideRef: ["Z9"], section: "Z9" }, "a")];
+    const html = render(unknown);
+    expect(html).toContain('<span class="truncate">Z9</span>');
   });
 });
