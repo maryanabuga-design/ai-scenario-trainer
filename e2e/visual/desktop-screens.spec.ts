@@ -28,6 +28,8 @@ const shown = [
   "instructor-exam-assign",
   "instructor-exam-extend",
   "instructor-topic-students",
+  "instructor-students-invite",
+  "instructor-profile",
 ];
 
 for (const width of [1024, 1280, 1440, 1920]) {
@@ -211,6 +213,62 @@ for (const width of [1024, 1280, 1440, 1920]) {
       .catch(() => undefined);
     await page.waitForTimeout(700);
     await page.screenshot({ path: out("instructor-topic-preview", width), animations: "disabled" });
+    await page.close();
+  });
+}
+
+for (const width of [1024, 1280, 1440, 1920]) {
+  test(`forms, review and preview, ${width}px`, async ({ browser }) => {
+    const page = await browser.newPage({
+      viewport: { width, height: 900 },
+      reducedMotion: "reduce",
+    });
+    await prepare(page, "instructor");
+    await page.goto("/instructor/exams/new");
+    await page.getByLabel("Exam title").fill("Evacuation basics");
+    await page.getByText("S1 Responding to an alarm", { exact: true }).click();
+    await page.getByText("S2 Checking the route", { exact: true }).click();
+    await page.getByText("In 1 week", { exact: true }).click();
+    await page.waitForTimeout(300);
+    await page.screenshot({ path: out("instructor-assign-filled", width), animations: "disabled" });
+    await page.locator("[data-card-footer]").getByRole("button", { name: "Cancel" }).click();
+    await page.waitForTimeout(300);
+    await page.screenshot({
+      path: out("instructor-assign-discard", width),
+      animations: "disabled",
+    });
+    await page.goto("/profile/edit");
+    await page.getByLabel("Full name").waitFor();
+    await page.waitForTimeout(300);
+    await page.screenshot({ path: out("instructor-profile-edit", width), animations: "disabled" });
+    await page.goto("/instructor/content/import");
+    await page.locator("[data-file-input]").setInputFiles("e2e/fixtures/problems.xlsx");
+    await page.getByRole("button", { name: "Import and review" }).click();
+    const ready = page.getByRole("heading", { name: "Draft is ready" });
+    const partial = page.getByRole("button", { name: "Continue" });
+    await ready.or(partial).waitFor({ timeout: 15000 });
+    if (await partial.isVisible()) await partial.click();
+    await ready.waitFor();
+    await page.getByRole("button", { name: "Open draft" }).click();
+    await page.locator("[data-tab-bar]").waitFor();
+    const topicUrl = page.url().replace(/\?.*$/, "");
+    await page
+      .locator("[data-header-slot]")
+      .getByRole("button", { name: /^Review \d+ items?/ })
+      .click();
+    await page.locator("[data-review-progress]").waitFor();
+    await page.waitForTimeout(400);
+    await page.screenshot({
+      path: out("instructor-review-walkthrough", width),
+      animations: "disabled",
+    });
+    await page.goto(`${topicUrl}/preview/quiz`);
+    await page.locator("[data-phone-frame]").waitFor();
+    await page.waitForTimeout(700);
+    await page.screenshot({
+      path: out("instructor-preview-framed", width),
+      animations: "disabled",
+    });
     await page.close();
   });
 }

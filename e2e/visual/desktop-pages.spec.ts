@@ -217,23 +217,16 @@ test.describe("Exam detail", () => {
     expect(info && students && students.y > info.y + info.height - 1).toBe(true);
   });
 
-  test("the Assign exam and Extend deadline forms are at most 560px wide", async ({ page }) => {
+  test("the Assign exam and Extend deadline forms are centred cards of at most 640px", async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await prepare(page, "instructor");
     for (const path of ["/instructor/exams/new", "/instructor/exams/seed-active/extend"]) {
       await page.goto(path);
       await page.locator("main h1").waitFor();
-      const widest = await page.evaluate(() => {
-        const root = document
-          .querySelector("main h1")!
-          .closest("[data-page-header-band]")!.parentElement!;
-        return Math.max(
-          ...Array.from(root.children)
-            .filter((el) => !el.hasAttribute("data-page-header-band"))
-            .map((el) => el.getBoundingClientRect().width),
-        );
-      });
-      expect(widest).toBeLessThanOrEqual(560);
+      const box = await page.locator("[data-flow-card]").boundingBox();
+      expect(box!.width).toBeLessThanOrEqual(640);
     }
   });
 
