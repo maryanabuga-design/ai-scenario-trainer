@@ -9,7 +9,9 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:visual": "playwright test --project=visual e2e/visual/baseline.spec.ts",
+    "test:responsive": "playwright test --project=visual e2e/visual/overflow.spec.ts"
   },
   "dependencies": {
     "fflate": "^0.8.3",

@@ -23,11 +23,15 @@ export default defineConfig({
     reuseExistingServer: true,
     timeout: 240_000,
   },
+  // the baseline pictures of the phone layout live in their own folder, not in docs/screens
+  snapshotPathTemplate: "tests/visual-baseline/{arg}{ext}",
   projects: [
-    { name: "iPhone 13 (WebKit)", use: { ...devices["iPhone 13"] } },
-    { name: "iPhone SE (WebKit)", use: { ...devices["iPhone SE"] } },
-    { name: "Pixel 7 (Chromium)", use: { ...devices["Pixel 7"] } },
-    { name: "Small 390x640 (WebKit)", use: small(390, 640) },
-    { name: "Small 375x560 (WebKit)", use: small(375, 560) },
+    { name: "iPhone 13 (WebKit)", testIgnore: /visual\//, use: { ...devices["iPhone 13"] } },
+    { name: "iPhone SE (WebKit)", testIgnore: /visual\//, use: { ...devices["iPhone SE"] } },
+    { name: "Pixel 7 (Chromium)", testIgnore: /visual\//, use: { ...devices["Pixel 7"] } },
+    { name: "Small 390x640 (WebKit)", testIgnore: /visual\//, use: small(390, 640) },
+    { name: "Small 375x560 (WebKit)", testIgnore: /visual\//, use: small(375, 560) },
+    // plain desktop Chromium: the width is set by each test, so one engine checks every width
+    { name: "visual", testMatch: /visual\/.*\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
   ],
 });
