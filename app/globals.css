@@ -3,10 +3,10 @@
 /* The one desktop variant (DESIGN.md: Responsive instructor): true at 1024px and wider. Used only by the instructor shell and instructor components. */
 @custom-variant desk (@media (min-width: 1024px));
 
-/* The instructor's desktop: 1024px and wider AND inside the instructor shell (the side navigation is drawn). Never true for the student. */
+/* The instructor's desktop: 1024px and wider AND inside the instructor shell (the side navigation is drawn). Never true for the student, and never inside a [data-phone-frame] (the preview as student), where the phone layout is kept. */
 @custom-variant idesk {
   @media (min-width: 1024px) {
-    &:where([data-shell-frame]:has([data-shell="instructor"]) *) {
+    &:where([data-shell-frame]:has([data-shell="instructor"]) *):not(:where([data-phone-frame] *)) {
       @slot;
     }
   }

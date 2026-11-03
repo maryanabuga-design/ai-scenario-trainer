@@ -3,7 +3,7 @@
 import { ImportSummaryCard } from "@/components/InstructorContent/ImportSummaryCard";
 import { Check, FileText, LoaderCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { ActionBar } from "@/components/ActionBar/ActionBar";
+import { ActionBar, CardFooter } from "@/components/ActionBar/ActionBar";
 import { Button } from "@/components/Button/Button";
 import { FlashNotice } from "@/components/FlashNotice/FlashNotice";
 import { Notice } from "@/components/Notice/Notice";
@@ -151,7 +151,10 @@ export function DocumentAnalysingView({
       ? "Draft is ready"
       : "Your document";
   return (
-    <div data-analysing className="flex flex-col items-center gap-4 pt-6 pb-4 text-center">
+    <div
+      data-analysing
+      className="flex flex-col items-center gap-4 pt-6 pb-4 text-center idesk:mx-auto idesk:mt-4 idesk:w-full idesk:max-w-[640px] idesk:gap-5 idesk:rounded-card idesk:border idesk:border-selectable-stroke idesk:bg-card idesk:p-8 idesk:shadow-(--card-shadow)"
+    >
       <FlashNotice />
       <Art src={running ? ANALYSING_IMAGE : phase === "finished" ? SUCCESS_IMAGE : null} />
       <h1 className="type-page-title">{title}</h1>
@@ -220,7 +223,7 @@ export function DocumentAnalysingView({
         </div>
       )}
 
-      <ActionBar>
+      <ActionBar hideOnDesk>
         {running && (
           <Button variant="secondary" onClick={onCancel}>
             Cancel
@@ -251,6 +254,37 @@ export function DocumentAnalysingView({
           </>
         )}
       </ActionBar>
+      <CardFooter>
+        {running && (
+          <Button variant="secondary" onClick={onCancel}>
+            Cancel
+          </Button>
+        )}
+        {phase === "finished" && (
+          <>
+            <Button variant="secondary" onClick={onBackToContent}>
+              Back to Content
+            </Button>
+            <Button onClick={onOpenDraft}>Open draft</Button>
+          </>
+        )}
+        {phase === "partial" && (
+          <>
+            <Button variant="secondary" onClick={onChooseAnother}>
+              Choose another file
+            </Button>
+            <Button onClick={onContinue}>Continue</Button>
+          </>
+        )}
+        {phase === "error" && (
+          <>
+            <Button variant="secondary" onClick={onCancel}>
+              Cancel
+            </Button>
+            <Button onClick={onChooseAnother}>Choose another file</Button>
+          </>
+        )}
+      </CardFooter>
     </div>
   );
 }

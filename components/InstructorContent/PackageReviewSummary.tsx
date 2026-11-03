@@ -43,7 +43,7 @@ export function PackageReviewSummary({
   const flagged = flaggedItems(issues);
   const base = `/instructor/content/package/${topic.id}`;
   return (
-    <div className="flex flex-col gap-4 pb-4">
+    <div className="flex flex-col gap-4 pb-4 idesk:[&>*:not([data-page-header-band])]:max-w-[880px]">
       <PageHeaderBand
         title="Review summary"
         subtitle={topic.title}
@@ -84,7 +84,7 @@ export function PackageReviewSummary({
           </ul>
         </>
       )}
-      <ActionBar>
+      <ActionBar inHeader>
         {flagged.length === 0 ? (
           <>
             <Button onClick={onPublishAsk}>Publish</Button>

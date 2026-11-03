@@ -105,6 +105,7 @@ export function DataTable<T extends TableRow>({
   return (
     <div
       {...{ [dataAttribute]: "" }}
+      data-desk-only
       className="@container hidden overflow-clip rounded-[16px] border border-selectable-stroke bg-card idesk:block"
     >
       <table className="w-full table-fixed border-collapse text-left">

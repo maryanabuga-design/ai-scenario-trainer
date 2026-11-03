@@ -12,13 +12,13 @@ export type CourseTopic = { id: string; title: string; count: number };
  */
 export function CourseTopicsView({ topics }: { topics: CourseTopic[] }) {
   return (
-    <div className="flex flex-col gap-4 pb-4">
+    <div className="@container flex flex-col gap-4 pb-4">
       <PageHeaderBand
         title="Course topics"
         subtitle="Provided with the product · read-only"
         back={{ label: "Back to Content", href: "/instructor/content" }}
       />
-      <ul className="flex flex-col gap-2">
+      <ul className="flex flex-col gap-2 idesk:grid idesk:grid-cols-2 idesk:gap-6 idesk:@[1100px]:grid-cols-3">
         {topics.map((topic) => (
           <li key={topic.id}>
             <Link

@@ -141,6 +141,7 @@ describe("every button goes through the Button component", () => {
     expect(own).toEqual([
       "components/AskAiRow/AskAiRow.tsx",
       "components/DataTable/DataTable.tsx",
+      "components/DataTable/TabBar.tsx",
       "components/DropdownMenu/DropdownMenu.tsx",
       "components/GroupSwitcher/GroupSwitcher.tsx",
       "components/InstructorExams/ExamCard.tsx",
@@ -235,6 +236,7 @@ describe("a secondary always comes with a primary above it", () => {
       "components/MaterialView/MaterialView.tsx",
       // Progress: the Exam readiness card's Repeat weak topics, its one action (documented exception).
       // Demo topic: Try again under the result's Primary Done; the slim preview bar's Exit preview.
+      "components/PackageContent/PackageStudentRoute.tsx",
       "components/PackageContent/PackageStudentScreen.tsx",
       // Profile: Leave group (demo) in the Demo mode section.
       "components/ProfileView/ProfileView.tsx",

@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/components/ActionBar/ActionBar", () => ({
   HeaderActionsSlot: () => null,
+  CardFooter: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   ActionBar: ({ children }: { children: React.ReactNode }) => <div data-bar>{children}</div>,
 }));
 import { PackageItemEdit, PackagePartStep } from "@/components/InstructorContent/PackageItemEdit";

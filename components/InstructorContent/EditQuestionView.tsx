@@ -92,7 +92,7 @@ export function EditQuestionView({
     problems.find((p) => needles.some((n) => p.includes(n)));
 
   return (
-    <div className="flex flex-col gap-6 pb-4">
+    <div className="flex flex-col gap-6 pb-4 idesk:[&>*:not([data-page-header-band])]:max-w-[720px]">
       <PageHeaderBand
         title={`Question ${index + 1}`}
         subtitle={`${set.title} · ${set.topic} ${topicTitle}`}
@@ -239,7 +239,7 @@ export function EditQuestionView({
         )}
       </section>
 
-      <ActionBar>
+      <ActionBar inHeader>
         <Button
           onClick={() => {
             if (draft.image && !imageFits(draft.image.data)) return setImageProblem(IMAGE_PROBLEM);

@@ -86,7 +86,12 @@ export function StatusMenu({
   };
 
   return (
-    <div ref={root} data-status-menu className="relative hidden shrink-0 idesk:block">
+    <div
+      ref={root}
+      data-status-menu
+      data-desk-only
+      className="relative hidden shrink-0 idesk:block"
+    >
       <button
         ref={button}
         type="button"

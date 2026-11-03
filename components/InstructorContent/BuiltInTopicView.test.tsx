@@ -1,18 +1,21 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { BuiltInTopicView } from "@/components/InstructorContent/BuiltInTopicView";
+import { phoneMarkup } from "@/lib/test-support/phone-markup";
 import { stepsFor } from "@/lib/materials-topics";
 
 const render = (id: string, tab?: "overview" | "steps") =>
-  renderToStaticMarkup(
-    <BuiltInTopicView
-      id={id}
-      title="Topic title"
-      questions={12}
-      minutes={4}
-      guide={stepsFor(id)}
-      tab={tab}
-    />,
+  phoneMarkup(
+    renderToStaticMarkup(
+      <BuiltInTopicView
+        id={id}
+        title="Topic title"
+        questions={12}
+        minutes={4}
+        guide={stepsFor(id)}
+        tab={tab}
+      />,
+    ),
   ).replace(/<!-- -->/g, "");
 
 describe("the built-in topic for the Instructor", () => {

@@ -319,7 +319,7 @@ export function PackageItemEdit({
   const needs = needsSentence(problems);
 
   return (
-    <div className="flex flex-col gap-6 pb-4">
+    <div className="flex flex-col gap-6 pb-4 idesk:[&>*:not([data-page-header-band])]:max-w-[720px]">
       <PageHeaderBand
         title={name}
         subtitle={review ? `Item ${review.position} of ${review.total}` : undefined}
@@ -448,7 +448,10 @@ export function PackageItemEdit({
         </>
       )}
 
-      <ActionBar>
+      {review && needs && (
+        <p className="type-small hidden text-text-secondary idesk:block">{needs}</p>
+      )}
+      <ActionBar inHeader>
         {review ? (
           <>
             {needs && (
@@ -509,7 +512,7 @@ export function PackagePartStep({
   onLeave: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-6 pb-4">
+    <div className="flex flex-col gap-6 pb-4 idesk:[&>*:not([data-page-header-band])]:max-w-[720px]">
       <PageHeaderBand
         title={title}
         subtitle={review ? `Item ${review.position} of ${review.total}` : undefined}
@@ -522,7 +525,7 @@ export function PackagePartStep({
           ))}
         </ul>
       </Notice>
-      <ActionBar>
+      <ActionBar inHeader>
         <ButtonLink href={replaceHref}>Replace document</ButtonLink>
         <Button variant="secondary" onClick={onSkip}>
           Skip

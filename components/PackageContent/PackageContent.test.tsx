@@ -5,6 +5,12 @@ import { describe, expect, it, vi } from "vitest";
 // the pinned bar normally renders through a portal; here it renders in place
 vi.mock("@/components/ActionBar/ActionBar", () => ({
   HeaderActionsSlot: () => null,
+  PageAction: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  CardFooter: ({ children }: { children: React.ReactNode }) => (
+    <div data-card-footer data-desk-only>
+      {children}
+    </div>
+  ),
   ActionBarProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   ActionBar: ({ children }: { children: React.ReactNode }) => <div data-bar>{children}</div>,
 }));
@@ -13,6 +19,7 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
   usePathname: () => "/",
 }));
+import { phoneMarkup } from "@/lib/test-support/phone-markup";
 import { ActionBarProvider } from "@/components/ActionBar/ActionBar";
 import { PackageCard } from "@/components/InstructorContent/PackageCard";
 import {
@@ -72,7 +79,10 @@ const topic = createTopic(
 );
 const bad = createTopic(readPackage(withProblems).data, "Problem topic", "", NOW, []);
 const wrap = (node: React.ReactNode) =>
-  renderToStaticMarkup(<ActionBarProvider>{node}</ActionBarProvider>).replace(/<!-- -->/g, "");
+  phoneMarkup(renderToStaticMarkup(<ActionBarProvider>{node}</ActionBarProvider>)).replace(
+    /<!-- -->/g,
+    "",
+  );
 const noop = () => undefined;
 
 const importView = (extra: Partial<Parameters<typeof PackageImportView>[0]> = {}) =>

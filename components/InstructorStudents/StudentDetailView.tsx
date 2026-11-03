@@ -148,14 +148,14 @@ export function StudentDetailView({
           <h2 id="student-readiness" className="type-label text-text-secondary">
             READINESS
           </h2>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 idesk:gap-x-4">
+            <span className="hidden shrink-0 idesk:block">
+              <ReadinessRing percent={readiness} size={72} />
+            </span>
             <p data-readiness-number className="type-display tabular-nums">
               {readiness}%
             </p>
             {change !== null && <DeltaPill current={readiness} delta={change} />}
-            <span className="hidden idesk:absolute idesk:top-4 idesk:right-4 idesk:block">
-              <ReadinessRing percent={readiness} />
-            </span>
           </div>
           <div className="grid grid-cols-2 gap-2 rounded-[14px] bg-secondary-sand p-3 idesk:grid-cols-1">
             <p data-pass-mark className="type-small flex items-center gap-2">

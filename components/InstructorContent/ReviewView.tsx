@@ -3,6 +3,8 @@
 import { CircleAlert, CircleCheck } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { DataTable } from "@/components/DataTable/DataTable";
+import { StatusChip } from "@/components/StatusChip/StatusChip";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button } from "@/components/Button/Button";
 import { Card } from "@/components/Card/Card";
@@ -105,7 +107,7 @@ export function ReviewView({
   const hint = publishHint(counts);
 
   return (
-    <div className="flex flex-col gap-4 pb-4">
+    <div className="flex flex-col gap-4 pb-4 idesk:[&>*:not([data-page-header-band])]:max-w-[880px]">
       <PageHeaderBand
         title={set.title}
         subtitle={`${set.topic} ${topicTitle}`}
@@ -127,6 +129,9 @@ export function ReviewView({
         </p>
       )}
 
+      {hint && !published && (
+        <p className="type-small hidden text-text-secondary idesk:block">{hint}</p>
+      )}
       <Card>
         <div className="grid grid-cols-2 gap-2">
           <CountTile kind="ready" count={counts.ready} label="ready" />
@@ -134,14 +139,16 @@ export function ReviewView({
         </div>
       </Card>
 
-      <SegmentedControl
-        name="review-filter"
-        legend="Show"
-        hideLegend
-        options={filterOptions}
-        value={filter}
-        onChange={setFilter}
-      />
+      <div className="contents idesk:block idesk:w-[320px]">
+        <SegmentedControl
+          name="review-filter"
+          legend="Show"
+          hideLegend
+          options={filterOptions}
+          value={filter}
+          onChange={setFilter}
+        />
+      </div>
 
       {rows.length === 0 ? (
         <p data-empty className="text-text-secondary">
@@ -150,47 +157,97 @@ export function ReviewView({
             : "No question needs attention."}
         </p>
       ) : (
-        <ul className="flex flex-col gap-2">
-          {rows.map(({ question, index, problems }) => {
-            const body = (
-              <>
+        <>
+          <DataTable
+            label="Questions"
+            dataAttribute="data-review-table"
+            firstHeader="Question"
+            columns={[
+              {
+                id: "status",
+                header: "Status",
+                width: "170px",
+                sortValue: (row) => (row.problems.length > 0 ? 0 : 1),
+                cell: (row) =>
+                  row.problems.length > 0 ? (
+                    <StatusChip tone="attention" value="attention">
+                      Needs attention
+                    </StatusChip>
+                  ) : (
+                    <StatusChip tone="positive" value="ready">
+                      Ready
+                    </StatusChip>
+                  ),
+              },
+              {
+                id: "why",
+                header: "To fix",
+                width: "260px",
+                cell: (row) =>
+                  row.problems.length > 0 ? (
+                    <span className="line-clamp-1">{row.problems[0]}</span>
+                  ) : (
+                    <span className="text-text-secondary">—</span>
+                  ),
+              },
+            ]}
+            rows={rows.map(({ question, index, problems }) => ({
+              id: question.id,
+              name: question.text || "(no question text)",
+              leading: (
                 <span
                   aria-hidden="true"
                   className="type-caption flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-olive-tint text-text"
                 >
                   {index + 1}
                 </span>
-                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <span className="type-body-strong truncate">
-                    <span className="sr-only">Question {index + 1}: </span>
-                    {question.text || "(no question text)"}
-                  </span>
-                  <QuestionStatusLine problems={problems} />
-                </span>
-                {!published && <Chevron />}
-              </>
-            );
-            const classes =
-              "flex h-[72px] items-center gap-3 rounded-card bg-card px-4 shadow-(--card-shadow)";
-            return (
-              <li key={question.id} data-question-row={index + 1}>
-                {published ? (
-                  <div className={classes}>{body}</div>
-                ) : (
-                  <Link
-                    href={`/instructor/content/${set.id}/${index + 1}`}
-                    className={`${classes} has-focus-visible:outline-2`}
+              ),
+              href: published ? undefined : `/instructor/content/${set.id}/${index + 1}`,
+              problems,
+            }))}
+          />
+          <ul className="flex flex-col gap-2 idesk:hidden">
+            {rows.map(({ question, index, problems }) => {
+              const body = (
+                <>
+                  <span
+                    aria-hidden="true"
+                    className="type-caption flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-olive-tint text-text"
                   >
-                    {body}
-                  </Link>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+                    {index + 1}
+                  </span>
+                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <span className="type-body-strong truncate">
+                      <span className="sr-only">Question {index + 1}: </span>
+                      {question.text || "(no question text)"}
+                    </span>
+                    <QuestionStatusLine problems={problems} />
+                  </span>
+                  {!published && <Chevron />}
+                </>
+              );
+              const classes =
+                "flex h-[72px] items-center gap-3 rounded-card bg-card px-4 shadow-(--card-shadow)";
+              return (
+                <li key={question.id} data-question-row={index + 1}>
+                  {published ? (
+                    <div className={classes}>{body}</div>
+                  ) : (
+                    <Link
+                      href={`/instructor/content/${set.id}/${index + 1}`}
+                      className={`${classes} has-focus-visible:outline-2`}
+                    >
+                      {body}
+                    </Link>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </>
       )}
 
-      <ActionBar>
+      <ActionBar inHeader>
         {published ? (
           <Button variant="secondary" onClick={onUnpublish}>
             Unpublish

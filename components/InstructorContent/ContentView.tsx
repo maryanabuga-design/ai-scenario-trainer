@@ -2,6 +2,7 @@
 
 import { FilePlus, Library } from "lucide-react";
 import Link from "next/link";
+import { PageAction } from "@/components/ActionBar/ActionBar";
 import { ButtonLink } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { FlashNotice } from "@/components/FlashNotice/FlashNotice";
@@ -39,16 +40,18 @@ export function ContentView({
   topicTitle: (id: string) => string;
 }) {
   return (
-    <div className="flex flex-col gap-4 pb-4">
+    <div className="@container flex flex-col gap-4 pb-4">
       <PageHeaderBand
         title="Content"
         subtitle={<span className="text-text-secondary">Materials for your students</span>}
         action={<ProfileAvatar />}
       />
       <FlashNotice />
-      <ButtonLink href="/instructor/content/import" icon={FilePlus}>
-        Import content
-      </ButtonLink>
+      <PageAction>
+        <ButtonLink href="/instructor/content/import" icon={FilePlus}>
+          Import content
+        </ButtonLink>
+      </PageAction>
 
       <section aria-labelledby="sets-title" data-your-topics className="flex flex-col gap-3">
         <h2 id="sets-title" className="type-label text-text-secondary">
@@ -57,7 +60,7 @@ export function ContentView({
         {sets.length === 0 && packages.length === 0 ? (
           <ContentEmpty />
         ) : (
-          <ul className="flex flex-col gap-3">
+          <ul className="flex flex-col gap-3 idesk:grid idesk:grid-cols-2 idesk:gap-6 idesk:@[1100px]:grid-cols-3">
             {packages.map((topic) => (
               <li key={topic.id}>
                 <PackageCard topic={topic} />
@@ -87,7 +90,9 @@ export function ContentView({
         <Chevron />
       </Link>
 
-      <TipNote noteId="content-note">{CONTENT_NOTE}</TipNote>
+      <div className="contents idesk:block idesk:max-w-[640px]">
+        <TipNote noteId="content-note">{CONTENT_NOTE}</TipNote>
+      </div>
     </div>
   );
 }

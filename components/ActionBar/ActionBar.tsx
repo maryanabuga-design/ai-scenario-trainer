@@ -44,7 +44,8 @@ export function HeaderActionsSlot() {
     <div
       ref={context?.setHeaderSlot}
       data-header-slot
-      className="hidden idesk:flex idesk:flex-row-reverse idesk:items-center idesk:gap-3 idesk:[&>*]:h-11! idesk:[&>*]:w-auto! idesk:[&>*]:px-5!"
+      data-desk-only
+      className="hidden idesk:flex idesk:flex-row-reverse idesk:items-center idesk:gap-3 idesk:[&>*]:h-11! idesk:[&>*]:w-auto! idesk:[&>*]:px-5! idesk:[&>p]:hidden"
     />
   );
 }
@@ -65,6 +66,24 @@ export function PageAction({ children }: { children: ReactNode }) {
 }
 
 /**
+ * The footer of a one-card flow (DESIGN.md: Responsive instructor, step 5): hidden on the phone;
+ * from 1024px in the instructor shell it closes the card, after a 1px divider, with the screen's
+ * actions (Secondary on the left, Primary on the right, 44px, auto width). The same buttons are in
+ * the pinned bar below 1024px (`ActionBar` with `hideOnDesk`).
+ */
+export function CardFooter({ children }: { children: ReactNode }) {
+  return (
+    <div
+      data-card-footer
+      data-desk-only
+      className="hidden w-full idesk:flex idesk:justify-end idesk:gap-3 idesk:border-t idesk:border-selectable-stroke idesk:pt-6 idesk:[&>*]:h-11! idesk:[&>*]:w-auto! idesk:[&>*]:px-5!"
+    >
+      {children}
+    </div>
+  );
+}
+
+/**
  * `covered`: a sheet is drawn over the bar (the answer feedback). The bar keeps its place and size
  * so the page does not change height, but it is invisible and cannot be reached.
  */
@@ -72,11 +91,14 @@ export function ActionBar({
   children,
   covered = false,
   inHeader = false,
+  hideOnDesk = false,
 }: {
   children: ReactNode;
   covered?: boolean;
   /** From 1024px in the instructor shell the buttons are shown in the page header instead of this bar. */
   inHeader?: boolean;
+  /** From 1024px in the instructor shell the bar is not drawn: the screen has a `CardFooter` instead. */
+  hideOnDesk?: boolean;
 }) {
   const { slot, headerSlot } = useActionBarContext();
   if (!slot) return null;
@@ -86,7 +108,7 @@ export function ActionBar({
         <div
           data-full-bleed
           inert={covered}
-          className={`flex flex-col gap-3 border-t border-border bg-bg p-[var(--gutter,1rem)] ${covered ? "invisible" : ""}${inHeader ? " idesk:hidden" : ""}`}
+          className={`flex flex-col gap-3 border-t border-border bg-bg p-[var(--gutter,1rem)] ${covered ? "invisible" : ""}${inHeader || hideOnDesk ? " idesk:hidden" : ""}`}
         >
           {children}
         </div>,

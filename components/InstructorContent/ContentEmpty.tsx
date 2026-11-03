@@ -39,7 +39,10 @@ export function ContentEmpty() {
     if (el && el.complete && el.naturalWidth === 0) setFailed(true);
   }, []);
   return (
-    <div data-content-empty className="flex flex-col items-center px-4 pt-1 pb-2 text-center">
+    <div
+      data-content-empty
+      className="flex flex-col items-center px-4 pt-1 pb-2 text-center idesk:mx-auto idesk:w-full idesk:max-w-[640px]"
+    >
       {failed ? (
         <div className="relative" data-empty-fallback-art>
           <Dashes side="left" />

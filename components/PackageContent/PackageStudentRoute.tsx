@@ -1,10 +1,12 @@
 "use client";
 
+import { ButtonLink } from "@/components/Button/Button";
 import { ExamNotFound } from "@/components/InstructorExams/ExamDetailView";
 import {
   PackageGone,
   PackageStudentScreen,
   fromTab,
+  packagePaths,
   isStudentPart,
 } from "@/components/PackageContent/PackageStudentScreen";
 import type { StudentPart } from "@/components/PackageContent/PackageStudentScreen";
@@ -39,7 +41,7 @@ export function PackageStudentRoute({
   const part: StudentPart | null =
     asked === undefined ? "guide" : isStudentPart(asked) ? asked : null;
   if (!topic || part === null) return preview ? <ExamNotFound /> : <PackageGone />;
-  return (
+  const screen = (
     <PackageStudentScreen
       id={topic.id}
       title={topic.title}
@@ -48,5 +50,27 @@ export function PackageStudentRoute({
       preview={preview}
       from={fromTab(from)}
     />
+  );
+  if (!preview) return screen;
+  // from 1024px the preview is the phone screen in a framed 430px column, with Exit preview above it
+  return (
+    <div className="contents idesk:block">
+      <div className="hidden idesk:mx-auto idesk:mb-4 idesk:flex idesk:w-full idesk:max-w-[430px] idesk:justify-end">
+        <ButtonLink
+          href={packagePaths(topic.id, true, fromTab(from)).leave}
+          variant="secondary"
+          wide={false}
+          compact
+        >
+          Exit preview
+        </ButtonLink>
+      </div>
+      <div
+        data-phone-frame
+        className="contents idesk:mx-auto idesk:block idesk:w-full idesk:max-w-[430px] idesk:overflow-clip idesk:rounded-[24px] idesk:border idesk:border-selectable-stroke idesk:bg-bg idesk:px-4 idesk:pt-6 idesk:pb-4 idesk:shadow-(--card-shadow) idesk:[--gutter:1rem]"
+      >
+        {screen}
+      </div>
+    </div>
   );
 }
