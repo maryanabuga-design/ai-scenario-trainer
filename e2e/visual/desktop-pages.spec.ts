@@ -253,7 +253,7 @@ test.describe("Exam detail", () => {
             .filter(
               (el) =>
                 el.getClientRects().length > 0 &&
-                getComputedStyle(el).backgroundColor === "rgb(70, 81, 45)",
+                getComputedStyle(el).backgroundColor === "rgb(63, 70, 56)",
             )
             .map((el) => el.textContent?.trim()),
         );

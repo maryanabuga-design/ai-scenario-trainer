@@ -60,6 +60,51 @@ for (const width of [1024, 1280, 1440, 1920]) {
   });
 }
 
+for (const width of [1024, 1280, 1440, 1920]) {
+  test(`students states, ${width}px`, async ({ browser }) => {
+    const page = await browser.newPage({
+      viewport: { width, height: 900 },
+      reducedMotion: "reduce",
+    });
+    await prepare(page, "instructor");
+    await page.goto("/instructor/students");
+    await page.locator("[data-students-table]").waitFor();
+    await page
+      .getByRole("button", { name: "Filter by status" })
+      .and(page.locator("[data-filter-button-desk]"))
+      .click();
+    await page.waitForTimeout(300);
+    await page.screenshot({
+      path: out("instructor-students-filter-open", width),
+      animations: "disabled",
+    });
+    await page.keyboard.press("Escape");
+    await page.goto("/instructor/students?filter=needs");
+    await page.locator("[data-status-filter-chip]").waitFor();
+    await page.waitForTimeout(300);
+    await page.screenshot({
+      path: out("instructor-students-filtered", width),
+      animations: "disabled",
+    });
+    await page.goto("/instructor/students");
+    await page.getByPlaceholder("Search students").fill("Zimmerman");
+    await page.locator("[data-empty=search]").waitFor();
+    await page.waitForTimeout(300);
+    await page.screenshot({
+      path: out("instructor-students-no-results", width),
+      animations: "disabled",
+    });
+    await page.goto("/instructor/students?view=topics");
+    await page.locator("[data-topic-card]").first().waitFor();
+    await page.waitForTimeout(300);
+    await page.screenshot({
+      path: out("instructor-students-topics", width),
+      animations: "disabled",
+    });
+    await page.close();
+  });
+}
+
 test.describe("dialog and notice at 1280px", () => {
   test.use({ viewport: { width: 1280, height: 900 } });
   test("dialog and floating notice", async ({ page }) => {

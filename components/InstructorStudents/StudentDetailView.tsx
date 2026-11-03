@@ -81,7 +81,7 @@ export function StudentDetailView({
   const needsReview = profile.topics.filter(topicNeedsReview);
   const nothingToReview = profile.topics.filter((row) => !topicNeedsReview(row));
   return (
-    <div className="flex flex-col gap-4 pb-4">
+    <div className="flex flex-col gap-4 pb-4 idesk:[&>*:not([data-page-header-band])]:max-w-[720px]">
       <PageHeaderBand
         title="Student detail"
         subtitle={<span className="text-text-secondary">{DETAIL_SUBTITLE}</span>}

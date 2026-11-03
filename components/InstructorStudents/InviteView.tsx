@@ -77,7 +77,7 @@ export function InviteView({
   }
 
   return (
-    <div className="flex flex-col gap-4 pb-4">
+    <div className="flex flex-col gap-4 pb-4 idesk:[&>*:not([data-page-header-band])]:max-w-[560px]">
       <FlashNotice />
       <PageHeaderBand
         title="Invite students"

@@ -134,10 +134,12 @@ export const routes: Route[] = [
   instructor("exam-assign", "/instructor/exams/new"),
   instructor("exam-extend", "/instructor/exams/seed-active/extend"),
   instructor("exam-question", "/instructor/exams/seed-closed/questions/1"),
-  instructor("students", "/instructor/students", { ready: "[data-student]" }),
+  instructor("students", "/instructor/students", {
+    ready: "[data-student]:visible, [data-table-link]:visible",
+  }),
   instructor("students-topics", "/instructor/students?view=topics", { ready: "[data-topic-card]" }),
   instructor("students-no-results", "/instructor/students", {
-    ready: "[data-student]",
+    ready: "[data-student]:visible, [data-table-link]:visible",
     after: async (page) => {
       await page.getByPlaceholder("Search students").fill("Zimmerman");
       await page.locator('[data-empty="search"]').waitFor();
