@@ -10,11 +10,11 @@ import type { SortState } from "@/components/DataTable/sort";
 import { InitialsAvatar } from "@/components/InitialsAvatar/InitialsAvatar";
 
 /** A column that may be hidden when the table is narrow (a container rule, not a window rule). */
-export type HideBelow = 900 | 1100;
+export type HideBelow = 800 | 960;
 
 const hideClass: Record<HideBelow, string> = {
-  900: "hidden @[900px]:table-cell",
-  1100: "hidden @[1100px]:table-cell",
+  800: "hidden @[800px]:table-cell",
+  960: "hidden @[960px]:table-cell",
 };
 
 export type Column<T> = {
@@ -31,9 +31,16 @@ export type Column<T> = {
 
 export type TableRow = {
   id: string;
+  /** The text of the first cell (and the value the Student column sorts by). */
   name: string;
-  initials: string;
-  href: string;
+  /** The initials circle, unless `leading` is given. */
+  initials?: string;
+  /** Something else before the name (the topic code). */
+  leading?: ReactNode;
+  /** After the name, on the same line (the certificate mark). */
+  after?: ReactNode;
+  /** A row without an address is a plain row: no link, no hover and no chevron. */
+  href?: string;
 };
 
 const SortIcon = ({ direction }: { direction: "ascending" | "descending" | null }) =>
@@ -132,17 +139,32 @@ export function DataTable<T extends TableRow>({
             <tr
               key={row.id}
               data-table-row={row.id}
-              className="relative h-16 hover:bg-bg has-[a:focus-visible]:outline-2 has-[a:focus-visible]:-outline-offset-2 has-[a:focus-visible]:outline-primary"
+              className={`relative h-16 ${row.href ? "hover:bg-bg has-[a:focus-visible]:outline-2 has-[a:focus-visible]:-outline-offset-2 has-[a:focus-visible]:outline-primary" : ""}`}
             >
               <th scope="row" className="px-6 py-2 text-left font-normal">
-                <Link
-                  href={row.href}
-                  data-table-link={row.id}
-                  className="flex min-w-0 items-center gap-3 outline-none after:absolute after:inset-0 after:content-['']"
-                >
-                  <InitialsAvatar initials={row.initials} size={48} />
-                  <span className="type-body-strong min-w-0 truncate">{row.name}</span>
-                </Link>
+                {(() => {
+                  const content = (
+                    <>
+                      {row.leading ??
+                        (row.initials !== undefined ? (
+                          <InitialsAvatar initials={row.initials} size={48} />
+                        ) : null)}
+                      <span className="type-body-strong min-w-0 truncate">{row.name}</span>
+                      {row.after}
+                    </>
+                  );
+                  return row.href ? (
+                    <Link
+                      href={row.href}
+                      data-table-link={row.id}
+                      className="flex min-w-0 items-center gap-3 outline-none after:absolute after:inset-0 after:content-['']"
+                    >
+                      {content}
+                    </Link>
+                  ) : (
+                    <div className="flex min-w-0 items-center gap-3">{content}</div>
+                  );
+                })()}
               </th>
               {columns.map((column) => (
                 <td
@@ -152,9 +174,7 @@ export function DataTable<T extends TableRow>({
                   {column.cell(row)}
                 </td>
               ))}
-              <td className="w-14 pr-2">
-                <Chevron />
-              </td>
+              <td className="w-14 pr-2">{row.href && <Chevron />}</td>
             </tr>
           ))}
         </tbody>

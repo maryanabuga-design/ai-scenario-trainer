@@ -1,3 +1,7 @@
+import { PageAction } from "@/components/ActionBar/ActionBar";
+import { DataTable } from "@/components/DataTable/DataTable";
+import type { Column } from "@/components/DataTable/DataTable";
+import { StatusChip, studentTone } from "@/components/StatusChip/StatusChip";
 import { AssignIcon } from "@/components/AssignIcon/AssignIcon";
 import { ButtonLink } from "@/components/Button/Button";
 import {
@@ -9,8 +13,52 @@ import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { assignOnTopic } from "@/components/InstructorTopics/TopicsView";
 import { PASS_MARK } from "@/lib/config";
 import type { TopicStanding } from "@/lib/overview";
-import { profileStatus, topicMuted } from "@/lib/students";
+import { profileStatus, readinessOf, statusLabels, statusRank, topicMuted } from "@/lib/students";
 import type { StudentProfile } from "@/lib/students";
+
+type TopicTableRow = {
+  id: string;
+  name: string;
+  initials: string;
+  href: string;
+  profile: StudentProfile;
+  correct: number;
+  answered: number;
+};
+
+/** The columns of the desktop table: what the topic list shows, plus the student's readiness. */
+const topicColumns: Column<TopicTableRow>[] = [
+  {
+    id: "status",
+    header: "Status",
+    width: "180px",
+    sortValue: ({ profile }) => statusRank[profileStatus(profile)],
+    cell: ({ profile }) => {
+      const status = profileStatus(profile);
+      return (
+        <StatusChip tone={studentTone[status]} value={status}>
+          {statusLabels[status]}
+        </StatusChip>
+      );
+    },
+  },
+  {
+    id: "in-topic",
+    header: "In this topic",
+    width: "170px",
+    sortValue: ({ correct, answered }) => (answered === 0 ? -1 : correct / answered),
+    cell: ({ correct, answered }) => `${correct} of ${answered} correct`,
+  },
+  {
+    id: "readiness",
+    header: "Readiness",
+    width: "120px",
+    align: "right",
+    hideBelow: 800,
+    sortValue: ({ profile }) => readinessOf(profile),
+    cell: ({ profile }) => `${readinessOf(profile)}%`,
+  },
+];
 
 export const TOPIC_SUBTITLE = "Students below the pass mark on this topic.";
 
@@ -41,7 +89,7 @@ export function TopicStudentsView({
       />
       <section
         data-topic-summary
-        className="flex items-center gap-4 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)] shadow-(--card-shadow)"
+        className="flex items-center gap-4 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)] shadow-(--card-shadow) idesk:max-w-[560px]"
       >
         <InitialsAvatar initials={id} size={64} />
         <div className="flex min-w-0 flex-col gap-1">
@@ -54,23 +102,44 @@ export function TopicStudentsView({
       <h2 className="type-label text-text-secondary">
         {rows.length} {rows.length === 1 ? "STUDENT" : "STUDENTS"} BELOW PASS MARK
       </h2>
-      <StudentRowsCard>
-        {rows.map((profile) => (
-          <StudentRow
-            key={profile.participant.id}
-            id={profile.participant.id}
-            href={`/instructor/students/${encodeURIComponent(profile.participant.id)}?from=students&topic=${id}&origin=topics`}
-            name={profile.participant.name}
-            initials={profile.participant.initials}
-            status={profileStatus(profile)}
-            muted={topicMuted(profile, id)}
-            demo={profile.participant.local}
-          />
-        ))}
-      </StudentRowsCard>
-      <ButtonLink href={assignOnTopic(id)} variant="secondary" icon={AssignIcon}>
-        Assign exam on this topic
-      </ButtonLink>
+      <div className="contents idesk:hidden">
+        <StudentRowsCard>
+          {rows.map((profile) => (
+            <StudentRow
+              key={profile.participant.id}
+              id={profile.participant.id}
+              href={`/instructor/students/${encodeURIComponent(profile.participant.id)}?from=students&topic=${id}&origin=topics`}
+              name={profile.participant.name}
+              initials={profile.participant.initials}
+              status={profileStatus(profile)}
+              muted={topicMuted(profile, id)}
+              demo={profile.participant.local}
+            />
+          ))}
+        </StudentRowsCard>
+      </div>
+      <DataTable
+        label={`Students below the pass mark in ${id}`}
+        dataAttribute="data-topic-table"
+        columns={topicColumns}
+        rows={rows.map((profile) => {
+          const topic = profile.topics.find((entry) => entry.sectionId === id);
+          return {
+            id: profile.participant.id,
+            name: profile.participant.name,
+            initials: profile.participant.initials,
+            href: `/instructor/students/${encodeURIComponent(profile.participant.id)}?from=students&topic=${id}&origin=topics`,
+            profile,
+            correct: topic?.correct ?? 0,
+            answered: topic?.answered ?? 0,
+          };
+        })}
+      />
+      <PageAction>
+        <ButtonLink href={assignOnTopic(id)} variant="secondary" icon={AssignIcon}>
+          Assign exam on this topic
+        </ButtonLink>
+      </PageAction>
     </div>
   );
 }

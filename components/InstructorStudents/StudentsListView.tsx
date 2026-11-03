@@ -76,7 +76,7 @@ const studentColumns: Column<StudentTableRow>[] = [
     id: "weak-topic",
     header: "Weak topic",
     width: "130px",
-    hideBelow: 900,
+    hideBelow: 800,
     cell: ({ profile }) => {
       const topic = weakTopicOf(profile);
       return topic ? <TopicCodeBadge id={topic} compact /> : dash;
@@ -86,7 +86,7 @@ const studentColumns: Column<StudentTableRow>[] = [
     id: "last-active",
     header: "Last active",
     width: "130px",
-    hideBelow: 1100,
+    hideBelow: 960,
     cell: ({ profile }) =>
       profile.lastActiveDaysAgo === null ? dash : lastActiveShort(profile.lastActiveDaysAgo),
   },
@@ -196,7 +196,10 @@ export function EmptyCard({
         {text}
       </p>
       {action && (
-        <div data-empty-action className="mt-6 w-full">
+        <div
+          data-empty-action
+          className="mt-6 w-full idesk:flex idesk:justify-center idesk:[&>*]:w-auto!"
+        >
           {action}
         </div>
       )}
@@ -246,6 +249,17 @@ export function StudentsListView({
 }) {
   const [sheetOpen, setSheetOpen] = useState(statusOpen);
   const filterButton = useRef<HTMLButtonElement>(null);
+  // the window grows into the desktop layout while the phone sheet is open: the sheet closes and
+  // applies nothing, so it and the desktop menu are never both there (nothing reopens on the way back)
+  useEffect(() => {
+    if (!sheetOpen) return;
+    const wide = window.matchMedia("(min-width: 1024px)");
+    const close = () => {
+      if (wide.matches && document.querySelector('[data-shell="instructor"]')) setSheetOpen(false);
+    };
+    wide.addEventListener("change", close);
+    return () => wide.removeEventListener("change", close);
+  }, [sheetOpen]);
   // choosing in the sheet only marks a draft; the Primary button applies it
   const [draft, setDraft] = useState<StudentsFilter>(initialDraft ?? filter);
   const options = statusOptions(counted);
