@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 const tones = {
   /** The one neutral icon tile (DESIGN.md: One icon tile): the lighter sand, the icon in the text colour. */
-  neutral: "bg-chip-neutral-bg text-text",
+  neutral: "bg-chip-neutral-bg",
   attention: "bg-status-attention-bg text-status-attention-ink",
   success: "bg-status-success-bg text-status-success-ink",
 } as const;
@@ -11,6 +11,8 @@ const tones = {
 const sizes = {
   default: "h-12 w-12 rounded-[14px] [&_svg]:h-6 [&_svg]:w-6",
   compact: "h-10 w-10 rounded-[14px] [&_svg]:h-6 [&_svg]:w-6",
+  /** The round summary row (DESIGN.md: Import summary card: round tiles and padding): 36px circle, 18px icon, muted ink. */
+  round: "h-9 w-9 rounded-full text-icon-muted [&_svg]:h-[18px] [&_svg]:w-[18px]",
 } as const;
 
 /**
@@ -18,6 +20,7 @@ const sizes = {
  * "compact" 40px) and have one look everywhere: sand background, radius 14, the icon at 24px in the
  * text colour. The "attention" (muted sand-gold) and "success" (muted sage) tones are the status
  * tiles and, like the large material tile, give their own size and shape with `className`.
+ * The "round" size is the circle of the import summary rows and is used nowhere else.
  * Decorative: the name of the thing is next to it.
  */
 export function IconTile({
@@ -39,7 +42,7 @@ export function IconTile({
     <span
       aria-hidden="true"
       data-icon-tile={tileId}
-      className={`flex shrink-0 items-center justify-center ${tones[tone]} ${size ? sizes[size] : ""} ${className}`}
+      className={`flex shrink-0 items-center justify-center ${tones[tone]} ${tone === "neutral" && size !== "round" ? "text-text" : ""} ${size ? sizes[size] : ""} ${className}`}
     >
       {children}
     </span>

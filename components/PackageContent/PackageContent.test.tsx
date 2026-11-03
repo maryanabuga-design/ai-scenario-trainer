@@ -273,7 +273,9 @@ describe("the analysing screen", () => {
     expect(html).not.toContain("data-stage=");
     const card = html.slice(html.indexOf("data-summary"));
     // a full-width white card, 1px border, radius 16, 12px side padding; no 360px maximum
-    expect(card).toContain("w-full rounded-[16px] border border-selectable-stroke bg-card px-3");
+    expect(card).toContain(
+      "w-full rounded-[16px] border border-selectable-stroke bg-card px-4 py-1",
+    );
     expect(card).not.toContain("max-w-[360px]");
     expect(card).not.toMatch(/data-badge|h-14 w-14|bg-status-success-bg/);
     expect(card.indexOf("<dl")).toBeLessThan(card.indexOf("data-links-row"));
@@ -281,7 +283,10 @@ describe("the analysing screen", () => {
     // five rows: the compact tile with its icon (aria-hidden), the label and a plain value
     expect(card.match(/data-icon-tile=/g)).toHaveLength(5);
     expect(card.match(/aria-hidden="true"/g)?.length).toBeGreaterThanOrEqual(5);
-    expect(card.match(/h-10 w-10 rounded-\[14px\]/g)).toHaveLength(5);
+    expect(card.match(/h-9 w-9 rounded-full text-icon-muted/g)).toHaveLength(5);
+    // the icons: 18px, 1.5px stroke (kept at 1.5px by the absolute stroke width), muted ink
+    expect(card.match(/width="18" height="18"/g)).toHaveLength(5);
+    expect(card.match(/stroke-width="2"/g)).toHaveLength(5);
     expect(card.match(/min-h-14/g)).toHaveLength(5);
     for (const [label, value, icon] of [
       ["Guide sections", 4, "lucide-book-open"],
@@ -300,8 +305,8 @@ describe("the analysing screen", () => {
         ),
       );
     }
-    // hairline dividers start after the tile on every row but the first
-    expect(card.match(/before:left-\[52px\]/g)?.length).toBeGreaterThanOrEqual(5);
+    // one hairline between neighbouring rows: it starts at the label (after the tile and the gap)
+    expect(card.match(/before:left-12/g)?.length).toBeGreaterThanOrEqual(5);
     const links = card.slice(card.indexOf("data-links-row"));
     expect(links).toContain("Links to the guide");
     expect(links).toContain("lucide-link");

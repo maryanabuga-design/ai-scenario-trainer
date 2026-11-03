@@ -18,7 +18,7 @@ const rows: { label: string; key: keyof ImportCounts; icon: LucideIcon }[] = [
 ];
 
 const rowClass =
-  "relative flex min-h-14 items-center gap-3 py-2 [&:not(:first-child)]:before:absolute [&:not(:first-child)]:before:top-0 [&:not(:first-child)]:before:right-0 [&:not(:first-child)]:before:left-[52px] [&:not(:first-child)]:before:h-px [&:not(:first-child)]:before:bg-selectable-stroke [&:not(:first-child)]:before:content-['']";
+  "relative flex min-h-14 items-center gap-3 py-2.5 [&:not(:first-child)]:before:absolute [&:not(:first-child)]:before:top-0 [&:not(:first-child)]:before:right-0 [&:not(:first-child)]:before:left-12 [&:not(:first-child)]:before:h-px [&:not(:first-child)]:before:bg-selectable-stroke [&:not(:first-child)]:before:content-['']";
 
 /**
  * The summary of an imported draft (DESIGN.md: Import summary card with icon rows): a full-width
@@ -36,21 +36,21 @@ export function ImportSummaryCard({
   return (
     <div
       data-summary
-      className="mt-1 w-full rounded-[16px] border border-selectable-stroke bg-card px-3 text-left"
+      className="mt-1 w-full rounded-[16px] border border-selectable-stroke bg-card px-4 py-1 text-left"
     >
       <dl data-counts className="flex flex-col">
         {rows.map(({ label, key, icon: Icon }) => (
           <div key={label} className={rowClass}>
-            <IconTile size="compact">
-              <Icon strokeWidth={2} />
+            <IconTile size="round">
+              <Icon size={18} strokeWidth={1.5} absoluteStrokeWidth />
             </IconTile>
             <dt className="type-body min-w-0 flex-1 text-text-secondary">{label}</dt>
             <dd className="type-body-strong shrink-0 text-right tabular-nums">{counts[key]}</dd>
           </div>
         ))}
         <div data-links-row className={rowClass}>
-          <IconTile size="compact">
-            <ChainLink strokeWidth={2} />
+          <IconTile size="round">
+            <ChainLink size={18} strokeWidth={1.5} absoluteStrokeWidth />
           </IconTile>
           <dt className="type-body min-w-0 flex-1 text-text-secondary">Links to the guide</dt>
           <dd

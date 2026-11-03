@@ -350,19 +350,45 @@ for (const width of [360, 430]) {
         "Links to the guide",
       ]);
       await expect(card.locator("dd")).toHaveText(["4", "7", "4", "10", "All linked"]);
-      // every row has the shared 40px tile with its own icon, a divider and a plain value
+      // every row: a round 36px tile with its own 18px icon (1.5px stroke, muted ink), a plain value
       const icons = ["book-open", "layers", "mountain-snow", "message-circle-question", "link"];
       const rows = card.locator("dl > div");
+      const edge = (await card.boundingBox())!;
+      let dividers = 0;
       for (let n = 0; n < 5; n++) {
         const row = rows.nth(n);
         const tile = row.locator("[data-icon-tile]");
         await expect(tile).toHaveAttribute("aria-hidden", "true");
         await expect(tile.locator(`svg.lucide-${icons[n]}`)).toHaveCount(1);
         const t = (await tile.boundingBox())!;
-        expect([Math.round(t.width), Math.round(t.height)]).toEqual([40, 40]);
-        expect(await tile.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
-          "rgb(239, 236, 230)",
-        );
+        expect([Math.round(t.width), Math.round(t.height)]).toEqual([36, 36]);
+        const look = await tile.evaluate((el) => {
+          const css = getComputedStyle(el);
+          const svg = el.querySelector("svg")!;
+          const box = svg.getBoundingClientRect();
+          const widthAttr = Number(svg.getAttribute("stroke-width"));
+          return {
+            background: css.backgroundColor,
+            radius: parseFloat(css.borderTopLeftRadius) >= 18,
+            border: css.borderTopWidth,
+            ink: getComputedStyle(svg).stroke,
+            icon: [Math.round(box.width), Math.round(box.height)],
+            // the stroke as drawn: attribute x rendered size / 24
+            stroke: Math.round(widthAttr * (box.width / 24) * 100) / 100,
+          };
+        });
+        expect(look).toEqual({
+          background: "rgb(239, 236, 230)",
+          radius: true,
+          border: "0px",
+          ink: "rgb(107, 112, 98)",
+          icon: [18, 18],
+          stroke: 1.5,
+        });
+        // 16px from the card edge to the tile, 16px from the value to the right edge
+        expect(Math.abs(t.x - (edge.x + 16) - 1)).toBeLessThanOrEqual(1);
+        const v = (await row.locator("dd").boundingBox())!;
+        expect(Math.abs(edge.x + edge.width - 1 - (v.x + v.width) - 16)).toBeLessThanOrEqual(1);
         expect(Math.round((await row.boundingBox())!.height)).toBeGreaterThanOrEqual(56);
         const value = row.locator("dd");
         expect(
@@ -371,15 +397,33 @@ for (const width of [360, 430]) {
             return [css.backgroundColor, css.borderTopWidth, css.fontWeight];
           }),
         ).toEqual(["rgba(0, 0, 0, 0)", "0px", "600"]);
-        if (n > 0) {
-          // the divider starts after the tile (inset) and is 1px
-          const line = await row.evaluate((el) => {
-            const css = getComputedStyle(el, "::before");
-            return [css.left, css.height, css.backgroundColor];
+        // exactly one divider between neighbours: none above the first, one above each of the others;
+        // it starts at the label (tile + 12px gap) and ends at the right padding edge
+        const line = await row.evaluate((el) => {
+          const css = getComputedStyle(el, "::before");
+          const label = el.querySelector("dt")!.getBoundingClientRect();
+          const rowBox = el.getBoundingClientRect();
+          return {
+            height: css.height,
+            colour: css.backgroundColor,
+            content: css.content,
+            left: Math.round(label.left - rowBox.left),
+            right: css.right,
+          };
+        });
+        if (n === 0) {
+          expect(["none", "normal", '""']).toContain(line.content);
+        } else {
+          dividers += 1;
+          expect(line).toMatchObject({
+            height: "1px",
+            colour: "rgb(228, 223, 213)",
+            right: "0px",
+            left: 48,
           });
-          expect(line).toEqual(["52px", "1px", "rgb(228, 223, 213)"]);
         }
       }
+      expect(dividers).toBe(4);
       // the Links value is plain success text, with no background
       const links = card.locator("[data-links-row] dd");
       expect(await links.evaluate((el) => getComputedStyle(el).color)).toBe("rgb(68, 104, 58)");

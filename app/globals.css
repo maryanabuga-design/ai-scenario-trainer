@@ -28,6 +28,7 @@
   --status-success-bg: #e1eada;
   --status-success-ink: #44683a;
   --chip-neutral-bg: #efece6;
+  --icon-muted: #6b7062;
   --chip-neutral-ink: #646a5a;
   --caution: #8a5a00;
 
@@ -104,6 +105,7 @@
   --color-status-success-bg: var(--status-success-bg);
   --color-status-success-ink: var(--status-success-ink);
   --color-chip-neutral-bg: var(--chip-neutral-bg);
+  --color-icon-muted: var(--icon-muted);
   --color-chip-neutral-ink: var(--chip-neutral-ink);
   --color-wrong-bg: var(--wrong-bg);
   --color-wrong: var(--wrong);
