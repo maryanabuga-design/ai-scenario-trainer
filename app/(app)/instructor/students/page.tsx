@@ -66,7 +66,7 @@ function Loaded({ accounts, scope }: { accounts: Account[]; scope: Scope }) {
         : undefined;
 
   return (
-    <div className="flex flex-col gap-4 pb-4">
+    <div className="@container flex flex-col gap-4 pb-4">
       <FlashNotice />
       <StudentsHeader
         view={view}

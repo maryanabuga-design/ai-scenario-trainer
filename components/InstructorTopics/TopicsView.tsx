@@ -47,7 +47,7 @@ export function TopicsView({
   const weakest = standings.find((topic) => topic.total > 0) ?? standings[0];
   return (
     <>
-      <ul className="flex flex-col gap-3">
+      <ul className="flex flex-col gap-3 idesk:grid idesk:grid-cols-2 idesk:gap-6 idesk:@[1100px]:grid-cols-3">
         {standings.map((topic) => {
           const classes = `${stepsCard} flex h-[var(--list-card-height,80px)] items-center gap-3 px-[var(--gutter,1rem)]`;
           const body = (
@@ -87,9 +87,11 @@ export function TopicsView({
         })}
       </ul>
       {weakest && weakest.total > 0 && (
-        <ButtonLink href={assignOnTopic(weakest.sectionId)} variant="secondary" icon={AssignIcon}>
-          Assign exam on weakest topic
-        </ButtonLink>
+        <div className="contents idesk:flex idesk:[&>a]:w-auto!">
+          <ButtonLink href={assignOnTopic(weakest.sectionId)} variant="secondary" icon={AssignIcon}>
+            Assign exam on weakest topic
+          </ButtonLink>
+        </div>
       )}
     </>
   );

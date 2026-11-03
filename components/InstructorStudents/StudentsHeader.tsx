@@ -39,14 +39,16 @@ export function StudentsHeader({
         back={back}
         action={<ProfileAvatar />}
       />
-      <SegmentedControl
-        name="students-view"
-        legend="View"
-        hideLegend
-        options={views}
-        value={view}
-        onChange={onView}
-      />
+      <div className="contents idesk:block idesk:w-[280px]">
+        <SegmentedControl
+          name="students-view"
+          legend="View"
+          hideLegend
+          options={views}
+          value={view}
+          onChange={onView}
+        />
+      </div>
     </>
   );
 }

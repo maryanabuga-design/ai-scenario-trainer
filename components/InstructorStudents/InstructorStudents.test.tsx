@@ -50,7 +50,8 @@ const list = (
     total = all.length,
   } = {},
 ) =>
-  clean(
+  // the phone list: the desktop table and the desktop-only controls are tested apart
+  withoutDesktop(
     renderToStaticMarkup(
       <StudentsListView
         shown={shown}
@@ -64,6 +65,14 @@ const list = (
         counted={all}
       />,
     ),
+  );
+
+const withoutDesktop = (html: string) =>
+  clean(
+    html
+      .replace(/<div data-students-table[\s\S]*?<\/table><\/div>/, "")
+      .replace(/<div data-status-menu[\s\S]*?<\/button><\/div>/, "")
+      .replace(/<p data-student-count[\s\S]*?<\/p>/, ""),
   );
 
 const walk = (dir: string): string[] =>

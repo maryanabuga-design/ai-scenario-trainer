@@ -142,7 +142,9 @@ for (const width of [360, 430]) {
       await expect(page.locator("svg.lucide-search")).toBeVisible();
       await expect(page.getByRole("button", { name: "Clear search" })).toHaveCount(0);
       await expect(page.locator("[data-filter-chip], [aria-pressed]:visible")).toHaveCount(0);
-      await expect(page.getByText("Status", { exact: true })).toHaveCount(0);
+      await expect(page.getByText("Status", { exact: true }).filter({ visible: true })).toHaveCount(
+        0,
+      );
       const button = filterButton(page);
       await expect(button).toHaveCount(1);
       await expect(button).toHaveAttribute("aria-label", "Filter by status");

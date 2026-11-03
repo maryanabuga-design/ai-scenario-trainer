@@ -1,17 +1,96 @@
 "use client";
 
-import { Funnel, SlidersHorizontal, UserPlus, UserRoundSearch } from "lucide-react";
+import { Funnel, SlidersHorizontal, UserPlus, UserRoundSearch, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import { PageAction } from "@/components/ActionBar/ActionBar";
 import { Button, ButtonLink } from "@/components/Button/Button";
+import { DataTable } from "@/components/DataTable/DataTable";
+import type { Column } from "@/components/DataTable/DataTable";
 import { FilterSheet } from "@/components/FilterSheet/FilterSheet";
 import { GetStartedCard } from "@/components/InstructorOverview/OverviewBlocks";
+import { StatusMenu } from "@/components/InstructorStudents/StatusMenu";
 import { StudentRow, StudentRowsCard } from "@/components/InstructorStudents/StudentRow";
+import { StatusChip, studentTone } from "@/components/StatusChip/StatusChip";
+import { TopicCodeBadge } from "@/components/TopicCodeBadge/TopicCodeBadge";
 import { SearchField } from "@/components/SearchField/SearchField";
 import { SelectableRow } from "@/components/SelectableRow/SelectableRow";
 import { getStarted } from "@/lib/get-started";
-import { profileStatus, rowMuted, statusOptions } from "@/lib/students";
+import { studentsCount } from "@/lib/overview";
+import {
+  isNotStarted,
+  lastActiveShort,
+  profileStatus,
+  readinessOf,
+  rowMuted,
+  statusLabels,
+  statusOptions,
+  statusRank,
+  topicsToReview,
+  weakTopicOf,
+} from "@/lib/students";
 import type { FilterOrigin, StudentProfile, StudentsFilter } from "@/lib/students";
+
+type StudentTableRow = {
+  id: string;
+  name: string;
+  initials: string;
+  href: string;
+  profile: StudentProfile;
+};
+
+const dash = <span className="text-text-secondary">—</span>;
+
+/** The columns of the desktop table; only what the data has (DESIGN.md: Responsive instructor, step 3). */
+const studentColumns: Column<StudentTableRow>[] = [
+  {
+    id: "status",
+    header: "Status",
+    width: "180px",
+    sortValue: ({ profile }) => statusRank[profileStatus(profile)],
+    cell: ({ profile }) => {
+      const status = profileStatus(profile);
+      return (
+        <StatusChip tone={studentTone[status]} value={status}>
+          {statusLabels[status]}
+        </StatusChip>
+      );
+    },
+  },
+  {
+    id: "readiness",
+    header: "Readiness",
+    width: "120px",
+    align: "right",
+    sortValue: ({ profile }) => (isNotStarted(profile) ? -1 : readinessOf(profile)),
+    cell: ({ profile }) => (isNotStarted(profile) ? dash : `${readinessOf(profile)}%`),
+  },
+  {
+    id: "to-review",
+    header: "To review",
+    width: "110px",
+    align: "right",
+    cell: ({ profile }) => (isNotStarted(profile) ? dash : topicsToReview(profile)),
+  },
+  {
+    id: "weak-topic",
+    header: "Weak topic",
+    width: "130px",
+    hideBelow: 900,
+    cell: ({ profile }) => {
+      const topic = weakTopicOf(profile);
+      return topic ? <TopicCodeBadge id={topic} compact /> : dash;
+    },
+  },
+  {
+    id: "last-active",
+    header: "Last active",
+    width: "130px",
+    hideBelow: 1100,
+    cell: ({ profile }) =>
+      profile.lastActiveDaysAgo === null ? dash : lastActiveShort(profile.lastActiveDaysAgo),
+  },
+];
 
 export const NO_SEARCH_MATCH = "No students match this search.";
 
@@ -183,11 +262,13 @@ export function StudentsListView({
     <>
       {/* 24px under the switch (16px gap + 8px), then 24px under the button, grouping by spacing */}
       <div className="mt-2 flex flex-col gap-6">
-        <ButtonLink href="/instructor/students/invite" icon={UserPlus}>
-          Invite students
-        </ButtonLink>
-        <div data-search-group className="flex items-start gap-3">
-          <div className="min-w-0 flex-1">
+        <PageAction>
+          <ButtonLink href="/instructor/students/invite" icon={UserPlus}>
+            Invite students
+          </ButtonLink>
+        </PageAction>
+        <div data-search-group className="flex items-start gap-3 idesk:items-center">
+          <div className="min-w-0 flex-1 idesk:max-w-[420px]">
             <SearchField
               label="Search students"
               placeholder="Search students"
@@ -204,22 +285,50 @@ export function StudentsListView({
             aria-haspopup="dialog"
             aria-expanded={sheetOpen}
             onClick={openSheet}
-            className={`flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center rounded-[14px] text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+            className={`flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center rounded-[14px] text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary idesk:hidden ${
               filter === "all" ? "bg-olive-tint" : "bg-filter-active"
             }`}
           >
             <SlidersHorizontal size={22} strokeWidth={2} aria-hidden="true" />
           </button>
+          <StatusMenu options={options} value={filter} onChange={onFilter} />
+          <p
+            data-student-count
+            className="type-small ml-auto hidden text-text-secondary tabular-nums idesk:block"
+          >
+            {studentsCount(shown.length)}
+          </p>
         </div>
       </div>
       {filter !== "all" && (
-        <div data-status-line className="-mt-2 flex min-h-11 items-center justify-between gap-3">
+        <div
+          data-status-line
+          className="-mt-2 flex min-h-11 items-center justify-between gap-3 idesk:hidden"
+        >
           <p className="type-small min-w-0 truncate text-text-secondary">
             Showing: {options.find((option) => option.value === filter)?.label}
           </p>
           <Button variant="tertiary" onClick={() => onFilter("all")}>
             Clear
           </Button>
+        </div>
+      )}
+      {filter !== "all" && (
+        <div
+          data-status-filter-chip
+          className="-mt-2 hidden flex-wrap items-center gap-2 idesk:flex"
+        >
+          <span className="type-small-strong inline-flex min-h-9 items-center gap-1 rounded-full border border-hover-stroke bg-olive-tint pr-1 pl-3 text-primary">
+            Status: {options.find((option) => option.value === filter)?.label}
+            <button
+              type="button"
+              aria-label={`Remove the status filter: ${options.find((option) => option.value === filter)?.label}`}
+              onClick={() => onFilter("all")}
+              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full hover:bg-olive-tint-pressed focus-visible:outline-2 focus-visible:outline-primary"
+            >
+              <X size={16} strokeWidth={2.25} aria-hidden="true" />
+            </button>
+          </span>
         </div>
       )}
       <FilterSheet
@@ -283,20 +392,36 @@ export function StudentsListView({
           }
         />
       ) : (
-        <StudentRowsCard>
-          {shown.map((profile) => (
-            <StudentRow
-              key={profile.participant.id}
-              id={profile.participant.id}
-              href={studentHref(profile.participant.id, filter, topic, origin)}
-              name={profile.participant.name}
-              initials={profile.participant.initials}
-              status={profileStatus(profile)}
-              muted={rowMuted(profile)}
-              demo={profile.participant.local}
-            />
-          ))}
-        </StudentRowsCard>
+        <>
+          <div className="contents idesk:hidden">
+            <StudentRowsCard>
+              {shown.map((profile) => (
+                <StudentRow
+                  key={profile.participant.id}
+                  id={profile.participant.id}
+                  href={studentHref(profile.participant.id, filter, topic, origin)}
+                  name={profile.participant.name}
+                  initials={profile.participant.initials}
+                  status={profileStatus(profile)}
+                  muted={rowMuted(profile)}
+                  demo={profile.participant.local}
+                />
+              ))}
+            </StudentRowsCard>
+          </div>
+          <DataTable
+            label="Students"
+            dataAttribute="data-students-table"
+            columns={studentColumns}
+            rows={shown.map((profile) => ({
+              id: profile.participant.id,
+              name: profile.participant.name,
+              initials: profile.participant.initials,
+              href: studentHref(profile.participant.id, filter, topic, origin),
+              profile,
+            }))}
+          />
+        </>
       )}
     </>
   );
