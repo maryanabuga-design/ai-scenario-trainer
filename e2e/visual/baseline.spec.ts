@@ -17,6 +17,17 @@ for (const width of [360, 430]) {
         if (route.ready) await page.locator(route.ready).first().waitFor();
         await route.after?.(page);
         await page.evaluate(() => document.fonts.ready);
+        // the invitation link prints the web address: show the same address whatever port runs the test
+        await page.evaluate((fixed) => {
+          const here = location.origin;
+          const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+          for (let node = walker.nextNode(); node; node = walker.nextNode())
+            if (node.nodeValue?.includes(here))
+              node.nodeValue = node.nodeValue.replaceAll(here, fixed);
+          document.querySelectorAll("input").forEach((input) => {
+            if (input.value.includes(here)) input.value = input.value.replaceAll(here, fixed);
+          });
+        }, "http://localhost:3100");
         await page.waitForTimeout(400);
         await expect(page).toHaveScreenshot(`${route.name}-${width}.png`, {
           fullPage: true,
