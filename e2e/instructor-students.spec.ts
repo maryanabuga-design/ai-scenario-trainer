@@ -815,7 +815,9 @@ for (const width of [360, 430]) {
       // two labelled groups with counts, no BY TOPIC row, no per-row badges
       await expect(page.locator("main")).not.toContainText("BY TOPIC");
       await expect(page.locator("main")).not.toContainText("10 topics");
-      const groupLabels = await page.locator("[data-topic-group] h2").allInnerTexts();
+      const groupLabels = await page
+        .locator("[data-topic-group]:not([data-topic-group=all]) h2")
+        .allInnerTexts();
       expect(groupLabels[0]).toMatch(/^NEEDS REVIEW · \d+$/);
       expect(groupLabels[groupLabels.length - 1]).toMatch(
         /^(NOTHING TO REVIEW|NEEDS REVIEW) · \d+$/,

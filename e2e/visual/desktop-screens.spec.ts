@@ -15,6 +15,10 @@ const shown = [
   "instructor-students",
   "instructor-content-empty",
   "instructor-content-with-topic",
+  "instructor-content-course",
+  "instructor-content-built-in",
+  "instructor-content-set-review",
+  "instructor-content-question-edit",
   "instructor-student-detail",
   "instructor-content-import-result",
   "instructor-exam-active",
@@ -128,6 +132,85 @@ for (const width of [1024, 1280, 1440, 1920]) {
       path: out("instructor-student-detail-new", width),
       animations: "disabled",
     });
+    await page.close();
+  });
+}
+
+for (const width of [1024, 1280, 1440, 1920]) {
+  test(`content states, ${width}px`, async ({ browser }) => {
+    const page = await browser.newPage({
+      viewport: { width, height: 900 },
+      reducedMotion: "reduce",
+    });
+    await prepare(page, "instructor");
+    await page.goto("/instructor/content");
+    await page.locator("[data-content-empty]").waitFor();
+    await page.waitForTimeout(400);
+    await page.screenshot({ path: out("instructor-content-empty", width), animations: "disabled" });
+    await page.goto("/instructor/content/import");
+    await page.getByRole("button", { name: "Try an example" }).click();
+    await page.getByText("sample-document.xlsx").first().waitFor();
+    await page.waitForTimeout(300);
+    await page.screenshot({
+      path: out("instructor-content-import-file", width),
+      animations: "disabled",
+    });
+    await page.getByRole("button", { name: /^Import/ }).click();
+    await page.waitForTimeout(700);
+    await page.screenshot({
+      path: out("instructor-content-analysing", width),
+      animations: "disabled",
+    });
+    await page.getByRole("heading", { name: "Draft is ready" }).waitFor({ timeout: 20_000 });
+    await page.waitForTimeout(300);
+    await page.screenshot({
+      path: out("instructor-content-draft-ready", width),
+      animations: "disabled",
+    });
+    await page.getByRole("button", { name: "Open draft" }).click();
+    await page
+      .locator("[data-tab-bar], [data-package-status]")
+      .first()
+      .waitFor({ state: "attached" });
+    await page.waitForTimeout(400);
+    await page.screenshot({ path: out("instructor-topic-guide", width), animations: "disabled" });
+    for (const tab of ["Steps", "Scenario", "Quiz"]) {
+      await page.getByRole("tab", { name: new RegExp(`^${tab}`) }).click();
+      await page.waitForTimeout(300);
+      await page.screenshot({
+        path: out(`instructor-topic-${tab.toLowerCase()}`, width),
+        animations: "disabled",
+      });
+    }
+    await page.getByRole("button", { name: "More actions" }).click();
+    await page.getByRole("menuitem", { name: /Edit title and summary/ }).click();
+    await page.getByLabel("Title").waitFor();
+    await page.waitForTimeout(300);
+    await page.screenshot({
+      path: out("instructor-topic-details-edit", width),
+      animations: "disabled",
+    });
+    await page.goBack();
+    await page
+      .getByRole("tab", { name: /^Quiz/ })
+      .click()
+      .catch(() => undefined);
+    await page.locator("[data-questions-table] [data-table-link]").first().click();
+    await page.waitForTimeout(500);
+    await page.screenshot({
+      path: out("instructor-topic-item-edit", width),
+      animations: "disabled",
+    });
+    await page.goBack();
+    await page
+      .locator("[data-header-slot]")
+      .getByRole("button", { name: /Preview as student/ })
+      .or(page.locator("[data-header-slot]").getByRole("link", { name: /Preview as student/ }))
+      .first()
+      .click()
+      .catch(() => undefined);
+    await page.waitForTimeout(700);
+    await page.screenshot({ path: out("instructor-topic-preview", width), animations: "disabled" });
     await page.close();
   });
 }

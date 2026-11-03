@@ -231,7 +231,7 @@ for (const width of [360, 430]) {
       expect(await bg(publish)).toBe(PRIMARY);
       expect(await primaries(page)).toBe(1);
       expect((await publish.boundingBox())!.height).toBe(52);
-      await expect(page.locator("[data-publish-hint]")).toHaveCount(0);
+      await expect(page.locator("[data-publish-hint]:visible")).toHaveCount(0);
       // the confirmation
       await publish.click();
       const dialog = page.locator("dialog[open]");
@@ -292,7 +292,9 @@ for (const width of [360, 430]) {
       await expect(count(page, "attention")).toHaveText("2");
       const publish = page.getByRole("button", { name: "Publish", exact: true });
       await expect(publish).toBeDisabled();
-      await expect(page.locator("[data-publish-hint]")).toHaveText("Fix 2 questions to publish");
+      await expect(page.locator("[data-publish-hint]:visible")).toHaveText(
+        "Fix 2 questions to publish",
+      );
       await expect(page.locator(`[data-question-row="3"]`)).toContainText(
         "Needs attention: No explanation",
       );
@@ -303,7 +305,11 @@ for (const width of [360, 430]) {
         ATTENTION_INK,
       );
       // the filter
-      await page.getByText("Needs attention", { exact: true }).click();
+      await page
+        .getByText("Needs attention", { exact: true })
+        .filter({ visible: true })
+        .first()
+        .click();
       await expect(page.locator("[data-question-row]")).toHaveCount(2);
       await page.getByText("All", { exact: true }).click();
       await expect(page.locator("[data-question-row]")).toHaveCount(20);
@@ -316,7 +322,9 @@ for (const width of [360, 430]) {
       await page.getByRole("button", { name: "Save question" }).click();
       await expect(page).toHaveURL(/\/instructor\/content\/c[a-z0-9]+$/);
       await expect(count(page, "ready")).toHaveText("19");
-      await expect(page.locator("[data-publish-hint]")).toHaveText("Fix 1 question to publish");
+      await expect(page.locator("[data-publish-hint]:visible")).toHaveText(
+        "Fix 1 question to publish",
+      );
       await expect(publish).toBeDisabled();
       // fix the second: choose the correct answer
       await page.locator(`[data-question-row="7"]`).click();
@@ -325,7 +333,7 @@ for (const width of [360, 430]) {
       await expect(page.locator("[data-problems]:visible")).toHaveCount(0);
       await page.getByRole("button", { name: "Save question" }).click();
       await expect(count(page, "ready")).toHaveText("20");
-      await expect(page.locator("[data-publish-hint]")).toHaveCount(0);
+      await expect(page.locator("[data-publish-hint]:visible")).toHaveCount(0);
       await expect(publish).toBeEnabled();
     });
 

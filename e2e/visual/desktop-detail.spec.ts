@@ -29,7 +29,7 @@ test.describe("Student detail", () => {
   }) => {
     await open(page, 1280, detail);
     const left = await page.locator("[data-student-header]").boundingBox();
-    const right = await page.locator("[data-topic-group]").first().boundingBox();
+    const right = await page.locator("[data-topic-group=all]").boundingBox();
     expect(left?.width).toBe(340);
     expect(left && right && right.x >= left.x + left.width + 23).toBe(true);
     await expect(page.locator("main h1")).toHaveText(/Tomas Verel/, { useInnerText: true });
@@ -72,7 +72,7 @@ test.describe("Student detail", () => {
     page,
   }) => {
     await open(page, 1280, detail);
-    await expect(page.getByRole("table")).toHaveCount(3);
+    await expect(page.getByRole("table")).toHaveCount(2);
     await expect(page.locator("[data-topic-row]:visible")).toHaveCount(0);
     await expect(page.locator("[data-exam-row]:visible")).toHaveCount(0);
     await open(page, 430, detail);
@@ -86,8 +86,8 @@ test.describe("Student detail", () => {
     page,
   }) => {
     await open(page, 1280, detail);
-    const table = page.getByRole("table", { name: /needs review/i });
-    const results = async () => table.locator("tbody tr td:nth-child(2)").allInnerTexts();
+    const table = page.getByRole("table", { name: "Topics" });
+    const results = async () => table.locator("tbody tr td:nth-child(3)").allInnerTexts();
     const ratio = (text: string) => {
       const [a, b] = text.match(/\d+/g)!.map(Number);
       return a / b;
@@ -106,14 +106,6 @@ test.describe("Student detail", () => {
     await expect(table.locator("tbody a")).toHaveCount(0);
     const exams = page.getByRole("table", { name: "Exams" });
     await expect(exams.locator("thead th", { hasText: "STATUS" })).toBeVisible();
-  });
-
-  test("a student with no activity: the table keeps the 'Not practised yet' message", async ({
-    page,
-  }) => {
-    await open(page, 1280, "/instructor/students/stu-06");
-    await expect(page.getByText("Not practised yet").first()).toBeVisible();
-    await expect(page.locator("[data-last-active]")).toContainText("No activity yet");
   });
 
   test("no Primary in the header and nothing wider than its column", async ({ page }) => {

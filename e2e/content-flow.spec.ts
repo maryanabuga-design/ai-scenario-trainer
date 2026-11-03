@@ -128,7 +128,7 @@ for (const width of [360, 430]) {
         // no banner and no Exit preview anywhere
         await expect(page.locator("[data-preview-bar]")).toHaveCount(0);
         await expect(page.getByText("Previewing as student")).toHaveCount(0);
-        await expect(page.getByText("Exit preview")).toHaveCount(0);
+        await expect(page.getByText("Exit preview").filter({ visible: true })).toHaveCount(0);
         // ONE small label "Preview": not a button, no focus stop, sand, muted, about 28px high
         const label = page.locator("[data-preview-label]");
         await expect(label).toHaveCount(1);

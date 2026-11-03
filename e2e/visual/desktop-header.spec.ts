@@ -77,6 +77,7 @@ test("keyboard order: the header actions come before the content", async ({ page
   await page.setViewportSize({ width: 1280, height: 900 });
   await prepare(page, "instructor");
   await page.goto(examPath);
+  await page.locator("[data-tried]").waitFor();
   const order = await page.evaluate(() => {
     const focusable = Array.from(
       document.querySelectorAll<HTMLElement>("main a[href], main button"),
