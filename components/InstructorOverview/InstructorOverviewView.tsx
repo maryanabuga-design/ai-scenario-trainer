@@ -42,21 +42,33 @@ export function InstructorOverviewView({
 }) {
   const { scope, steps, weakest } = model;
   return (
-    <div className="flex flex-col gap-6 pb-4">
-      <header className="flex flex-col gap-1 pt-1">
-        <div className="flex items-center gap-3">
-          <ProfileAvatar />
-          <h1 className="type-page-title min-w-0 flex-1 truncate">Hi, {name}</h1>
+    <div className="@container flex flex-col gap-6 pb-4">
+      <header
+        data-overview-header
+        className="flex flex-col gap-1 pt-1 idesk:grid idesk:grid-cols-[minmax(0,1fr)_auto_auto] idesk:items-center idesk:gap-x-3 idesk:gap-y-1 idesk:border-b idesk:border-selectable-stroke idesk:pt-0 idesk:pb-4"
+      >
+        <div className="flex items-center gap-3 idesk:contents">
+          <div className="idesk:order-last idesk:col-start-3 idesk:row-span-2 idesk:row-start-1">
+            <ProfileAvatar />
+          </div>
+          <h1 className="type-page-title min-w-0 flex-1 truncate idesk:col-start-1 idesk:row-start-1">
+            Hi, {name}
+          </h1>
         </div>
-        <p data-subtitle className="type-body text-text-secondary">
+        <p
+          data-subtitle
+          className="type-body text-text-secondary idesk:col-start-1 idesk:row-start-2"
+        >
           {scopeSubtitle(scope)}
         </p>
-        <GroupSwitcher
-          scope={scope}
-          rows={model.switcher}
-          onSelect={onSelectGroup}
-          initiallyOpen={switcherOpen}
-        />
+        <div className="idesk:col-start-2 idesk:row-span-2 idesk:row-start-1">
+          <GroupSwitcher
+            scope={scope}
+            rows={model.switcher}
+            onSelect={onSelectGroup}
+            initiallyOpen={switcherOpen}
+          />
+        </div>
       </header>
 
       {steps ? (
@@ -74,8 +86,10 @@ export function InstructorOverviewView({
               notStarted={model.notStarted}
             />
           )}
-          <ActionsCard actions={model.actions} onSelect={onSelectGroup} />
-          <ExamsCard rows={model.examRows} activeCount={model.activeCount} />
+          <div className="contents idesk:grid idesk:grid-cols-1 idesk:items-stretch idesk:gap-6 idesk:@[900px]:grid-cols-2">
+            <ActionsCard actions={model.actions} onSelect={onSelectGroup} />
+            <ExamsCard rows={model.examRows} activeCount={model.activeCount} />
+          </div>
           {weakest && (
             <WeakestCard
               weakest={weakest}

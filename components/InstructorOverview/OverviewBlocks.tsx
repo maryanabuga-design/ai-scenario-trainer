@@ -53,7 +53,7 @@ export function BlockLabel({
   note?: string;
 }) {
   return (
-    <div className="flex items-baseline justify-between gap-3">
+    <div className="flex items-baseline justify-between gap-3 idesk:min-h-6 idesk:items-center">
       <h2 id={id} className="type-label text-text-secondary">
         {children}
       </h2>
@@ -151,9 +151,9 @@ export function ReadinessCard({
     <section
       aria-labelledby="group-readiness"
       data-group-readiness
-      className={`${card} flex flex-col`}
+      className={`${card} flex flex-col idesk:flex-row idesk:items-stretch`}
     >
-      <div className="flex items-center justify-between gap-3 px-[var(--gutter,1rem)] pt-[var(--gutter,1rem)] pb-3">
+      <div className="flex items-center justify-between gap-3 px-[var(--gutter,1rem)] pt-[var(--gutter,1rem)] pb-3 idesk:justify-start idesk:gap-8 idesk:py-6">
         <div className="flex min-w-0 flex-col gap-1">
           <h2 id="group-readiness" className="type-label text-text-secondary">
             GROUP READINESS
@@ -176,7 +176,7 @@ export function ReadinessCard({
       <Link
         href="/instructor/students?from=overview"
         data-readiness-strip
-        className="type-small flex min-h-11 items-center justify-between gap-3 bg-secondary-sand px-[var(--gutter,1rem)] py-2 text-text-secondary has-focus-visible:outline-2"
+        className="type-small flex min-h-11 items-center justify-between gap-3 bg-secondary-sand px-[var(--gutter,1rem)] py-2 text-text-secondary has-focus-visible:outline-2 idesk:ml-auto idesk:w-[min(420px,50%)] idesk:px-6 idesk:hover:bg-secondary-sand-pressed"
       >
         <span data-group-line className="min-w-0 truncate">
           {groupLine(scopeName(scope), students, notStarted)}
@@ -205,7 +205,7 @@ export function GroupsCard({
               href="/instructor/students?from=overview"
               data-group-row={group.id}
               onClick={() => onSelect(group.id)}
-              className="flex h-[72px] items-center gap-3 px-[var(--gutter,1rem)] has-focus-visible:outline-2"
+              className="flex h-[72px] items-center gap-3 px-[var(--gutter,1rem)] has-focus-visible:outline-2 idesk:hover:bg-secondary-sand"
             >
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="type-body-strong truncate">{group.name}</span>
@@ -243,7 +243,7 @@ export function ActionsCard({
       {actions.length === 0 ? (
         <div
           data-all-caught-up
-          className={`${card} flex h-[72px] items-center gap-3 px-[var(--gutter,1rem)]`}
+          className={`${card} flex h-[72px] items-center gap-3 px-[var(--gutter,1rem)] idesk:flex-1`}
         >
           <IconTile tone="success" className="h-11 w-11 rounded-[12px]">
             <Award size={22} strokeWidth={2} />
@@ -251,14 +251,14 @@ export function ActionsCard({
           <p className="type-body-strong">{ALL_CAUGHT_UP}</p>
         </div>
       ) : (
-        <ul className={`${card} ${divided}`}>
+        <ul className={`${card} ${divided} idesk:flex-1`}>
           {actions.map((action) => (
             <li key={`${action.kind}-${action.scopeTo ?? ""}`}>
               <Link
                 href={action.href}
                 data-action={action.kind}
                 onClick={() => action.scopeTo && onSelect(action.scopeTo)}
-                className="flex h-[72px] items-center gap-3 px-[var(--gutter,1rem)] has-focus-visible:outline-2"
+                className="flex h-[72px] items-center gap-3 px-[var(--gutter,1rem)] has-focus-visible:outline-2 idesk:hover:bg-secondary-sand"
               >
                 <LucideTile icon={actionIcons[action.kind]} />
                 <span className="flex min-w-0 flex-1 flex-col">
@@ -286,7 +286,10 @@ export function ExamsCard({ rows, activeCount }: { rows: ExamRow[]; activeCount:
       <BlockLabel id="exams-title" note={`${activeCount} Active`}>
         EXAMS
       </BlockLabel>
-      <div data-exams-card className={`${card} flex flex-col gap-3 pb-[var(--gutter,1rem)]`}>
+      <div
+        data-exams-card
+        className={`${card} flex flex-col gap-3 pb-[var(--gutter,1rem)] idesk:flex-1`}
+      >
         {rows.length > 0 ? (
           <>
             <ul className={divided}>
@@ -296,7 +299,7 @@ export function ExamsCard({ rows, activeCount }: { rows: ExamRow[]; activeCount:
                 </li>
               ))}
             </ul>
-            <div className="px-[var(--gutter,1rem)]">
+            <div className="px-[var(--gutter,1rem)] idesk:mt-auto">
               <ButtonLink
                 href="/instructor/exams/new?from=overview"
                 variant="secondary"
@@ -386,7 +389,7 @@ export function GetStartedCard({ steps }: { steps: StartStep[] }) {
               href={step.href}
               data-start-step={step.id}
               data-state={step.state}
-              className="flex h-[72px] items-center gap-3 px-[var(--gutter,1rem)] has-focus-visible:outline-2"
+              className="flex h-[72px] items-center gap-3 px-[var(--gutter,1rem)] has-focus-visible:outline-2 idesk:hover:bg-secondary-sand"
             >
               {step.state === "done" ? (
                 <IconTile tone="success" className="h-11 w-11 rounded-[12px]">
