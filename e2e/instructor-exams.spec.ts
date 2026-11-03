@@ -180,17 +180,17 @@ for (const width of [360, 430]) {
         const b = (await card.boundingBox())!;
         expect([b.height, b.x, b.width]).toEqual([88, 16, width - 32]);
         await expect(card.locator("[data-group-name]")).toHaveCount(0);
-        // the icon tile instead of the 3D picture: 48x48, radius 12, #EFECE6, the Exams icon in olive
+        // the icon tile instead of the 3D picture: 48x48, radius 14, #EFECE6, the Exams icon in the text colour
         await expect(card.locator("img")).toHaveCount(0);
-        const tile = card.locator("[data-exam-tile]");
+        const tile = card.locator("[data-icon-tile=exam]");
         const tb = (await tile.boundingBox())!;
         expect([tb.width, tb.height]).toEqual([48, 48]);
         expect(await bg(tile)).toBe(NEUTRAL_PILL);
-        expect(await tile.evaluate((el) => getComputedStyle(el).borderTopLeftRadius)).toBe("12px");
+        expect(await tile.evaluate((el) => getComputedStyle(el).borderTopLeftRadius)).toBe("14px");
         await expect(tile).toHaveAttribute("aria-hidden", "true");
         const icon = tile.locator("svg.lucide-clipboard-list");
         expect((await icon.boundingBox())!.width).toBe(24);
-        expect(await icon.evaluate((el) => getComputedStyle(el).color)).toBe("rgb(63, 70, 56)");
+        expect(await icon.evaluate((el) => getComputedStyle(el).color)).toBe("rgb(26, 26, 26)");
         expect(await bg(card)).toBe("rgb(255, 255, 255)");
         await expect(card).toContainText(/Passed \d+ of \d+$/);
         expect(await card.innerText()).not.toMatch(/not started|topics?\b/i);
@@ -213,7 +213,7 @@ for (const width of [360, 430]) {
       await expect(closed).toContainText(/Closed \d+ \w{3}/);
       await expect(closed).toContainText(/Passed \d+ of \d+$/);
       await expect(closed.locator("img")).toHaveCount(0);
-      await expect(closed.locator("[data-exam-tile]")).toBeVisible();
+      await expect(closed.locator("[data-icon-tile=exam]")).toBeVisible();
       // the closed date pill is the very same neutral pill
       const closedPill = closed.locator("[data-date-pill]");
       await expect(closedPill).toHaveText(/^Closed \d+ \w{3}$/);

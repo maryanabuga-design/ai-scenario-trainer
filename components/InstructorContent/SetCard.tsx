@@ -21,7 +21,7 @@ export function SetCard({ set, topicTitle }: { set: ContentSet; topicTitle: stri
       data-set-card={set.id}
       className="flex h-[88px] items-center gap-3 rounded-card bg-card px-3 shadow-(--card-shadow) has-focus-visible:outline-2"
     >
-      <LucideTile icon={FileText} size="tile" />
+      <LucideTile icon={FileText} />
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="type-body-strong truncate">{set.title}</span>
         <span className="type-small truncate text-text-secondary">{setLine(set, topicTitle)}</span>

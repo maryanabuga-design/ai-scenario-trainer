@@ -193,7 +193,7 @@ describe("Student with no group", () => {
 
   it("shows the empty state: icon tile, the words, the code field and the Primary Join group; nothing else", () => {
     expect(out).toContain("data-no-group");
-    expect(out).toContain("h-14 w-14 rounded-full");
+    expect(out).toContain("h-12 w-12 rounded-[14px]");
     expect(out).toContain("You are not in a group yet");
     expect(out).toContain("Ask your instructor for a group link or code.");
     expect(out).toMatch(/<label[^>]*>Group code<\/label>/);

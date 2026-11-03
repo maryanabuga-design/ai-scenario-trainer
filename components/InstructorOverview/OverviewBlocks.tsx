@@ -20,7 +20,7 @@ import Link from "next/link";
 import { ButtonLink } from "@/components/Button/Button";
 import { AssignIcon } from "@/components/AssignIcon/AssignIcon";
 import { Chevron } from "@/components/Chevron/Chevron";
-import { Chip } from "@/components/Chip/Chip";
+import { TopicCodeBadge } from "@/components/TopicCodeBadge/TopicCodeBadge";
 import { IconTile } from "@/components/IconTile/IconTile";
 import { ExamCard } from "@/components/InstructorExams/ExamCard";
 import { LucideTile } from "@/components/TopicTile/TopicTile";
@@ -260,7 +260,7 @@ export function ActionsCard({
                 onClick={() => action.scopeTo && onSelect(action.scopeTo)}
                 className="flex h-[72px] items-center gap-3 px-[var(--gutter,1rem)] has-focus-visible:outline-2"
               >
-                <LucideTile icon={actionIcons[action.kind]} size="tile" />
+                <LucideTile icon={actionIcons[action.kind]} />
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="type-body-strong truncate">{action.title}</span>
                   <span className="type-small truncate text-text-secondary">{action.reason}</span>
@@ -360,9 +360,7 @@ export function WeakestCard({
         className={`${card} flex flex-col gap-3 p-[var(--gutter,1rem)]`}
       >
         <div className="flex items-center gap-3">
-          <Chip tone="sand" size="caption">
-            {weakest.sectionId}
-          </Chip>
+          <TopicCodeBadge id={weakest.sectionId} />
           <p className="type-body-strong min-w-0 flex-1 truncate">{title}</p>
         </div>
         <p data-weakest-count className="type-small text-text-secondary tabular-nums">
@@ -405,7 +403,6 @@ export function GetStartedCard({ steps }: { steps: StartStep[] }) {
                           ? FileUp
                           : ClipboardList
                   }
-                  size="tile"
                 />
               )}
               <span className="flex min-w-0 flex-1 flex-col">

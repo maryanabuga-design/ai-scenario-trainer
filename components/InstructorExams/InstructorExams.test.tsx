@@ -60,14 +60,14 @@ describe("the exam card", () => {
     expect(active).not.toContain("%");
   });
 
-  it("shows the icon tile and no picture: 48x48, radius 12, #EFECE6, the Exams navigation icon at 24px in olive, aria-hidden", () => {
-    const tile = active.slice(active.indexOf("data-exam-tile") - 40);
+  it("shows the one icon tile and no picture: 48x48, radius 14, #EFECE6, the Exams navigation icon at 24px, aria-hidden", () => {
+    const tile = active.slice(active.indexOf('data-icon-tile="exam"') - 40);
     expect(tile).toContain('aria-hidden="true"');
     expect(tile).toContain("h-12 w-12");
-    expect(tile).toContain("rounded-[12px]");
-    expect(tile).toContain("bg-chip-neutral-bg text-primary");
+    expect(tile).toContain("rounded-[14px]");
+    expect(tile).toContain("bg-chip-neutral-bg text-text");
     expect(tile).toMatch(/lucide-clipboard-list[^>]*/);
-    expect(tile.slice(0, tile.indexOf("</span>"))).toContain('width="24"');
+    expect(tile).toContain("[&amp;_svg]:h-6 [&amp;_svg]:w-6");
     expect(active).not.toContain("<img");
     expect(active).not.toContain("/heroes/exam-card.webp");
     // the same icon as the Exams item of the bottom navigation
@@ -105,7 +105,7 @@ describe("the exam card", () => {
 
   it("is the very same card inside the Overview's EXAMS card: no chrome, but the icon tile, the neutral date pill and one result line", () => {
     const bare = card({ bare: true, from: "overview" });
-    expect(bare).toContain("data-exam-tile");
+    expect(bare).toContain('data-icon-tile="exam"');
     expect(bare).toContain("data-date-pill");
     expect(bare).toContain("Passed 1 of 14");
     expect(bare).not.toMatch(/not started|topics?<|<img|exam-card\.webp/);
@@ -131,7 +131,7 @@ describe("the exam card", () => {
     expect(closed).toContain("Passed 12 of 14");
     expect(closed).not.toContain("not started");
     expect(closed).not.toContain("/heroes/exam-card.webp");
-    expect(closed).toContain("data-exam-tile");
+    expect(closed).toContain('data-icon-tile="exam"');
     expect(closed).toContain("lucide-clipboard-list");
     expect(closed).not.toContain("lucide-list-checks");
   });

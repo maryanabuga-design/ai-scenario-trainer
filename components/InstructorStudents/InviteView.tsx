@@ -129,7 +129,7 @@ export function InviteView({
               data-invite-group
               className="flex items-center gap-3 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)]"
             >
-              <LucideTile icon={UsersRound} size="tile" />
+              <LucideTile icon={UsersRound} />
               <p className="type-body-strong min-w-0 truncate">
                 {group.name} · {studentsCount(counts[group.id] ?? 0)}
               </p>

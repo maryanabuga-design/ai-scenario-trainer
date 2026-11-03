@@ -1,6 +1,7 @@
 "use client";
 
 import { ListChecks } from "lucide-react";
+import { IconTile } from "@/components/IconTile/IconTile";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
@@ -134,12 +135,10 @@ function WeakTopicsCard({ topics }: { topics: WeakTopic[] }) {
       className="relative flex gap-4 rounded-card bg-card p-5 shadow-(--card-shadow) has-focus-visible:outline-2"
     >
       <ArrowCircle />
-      <span
-        data-weak-icon
-        aria-hidden="true"
-        className="flex h-12 w-12 shrink-0 items-center justify-center self-start rounded-full bg-chip-neutral-bg text-text"
-      >
-        <ListChecks size={24} strokeWidth={2} />
+      <span data-weak-icon className="self-start">
+        <IconTile size="default">
+          <ListChecks strokeWidth={2} />
+        </IconTile>
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-3">
         <span className={`flex flex-col gap-1 ${ARROW_CLEARANCE.md}`}>

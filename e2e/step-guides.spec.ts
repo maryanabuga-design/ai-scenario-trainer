@@ -13,7 +13,7 @@ const instructor = {
     },
   ],
 };
-const NEUTRAL_TILE = "rgb(226, 222, 214)";
+const NEUTRAL_TILE = "rgb(239, 236, 230)";
 
 const noSidewaysScroll = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);

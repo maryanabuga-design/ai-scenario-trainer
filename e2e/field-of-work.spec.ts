@@ -122,10 +122,10 @@ for (const width of [360, 430]) {
       expect(await note.evaluate((el) => getComputedStyle(el).textDecorationLine)).toBe("none");
       // the icons: decorative, on the very tile of the Materials list (size, radius, colours, icon), a 12px gap
       const materials = await materialsTile(browser, width);
-      expect(materials.size).toEqual([44, 44]);
-      expect(materials.radius).toBe("12px");
-      expect(materials.background).toBe("rgb(226, 222, 214)");
-      expect(materials.colour).toBe("rgb(92, 90, 86)");
+      expect(materials.size).toEqual([48, 48]);
+      expect(materials.radius).toBe("14px");
+      expect(materials.background).toBe("rgb(239, 236, 230)");
+      expect(materials.colour).toBe("rgb(26, 26, 26)");
       for (const field of ["rescue", "paramedic", "military", "civil", "other"]) {
         const tile = page.locator(`[data-icon-tile=${field}]`);
         expect(await tileLook(tile)).toEqual(materials);

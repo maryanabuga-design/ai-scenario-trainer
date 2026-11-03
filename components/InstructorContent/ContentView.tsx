@@ -1,6 +1,6 @@
 "use client";
 
-import { FilePlus, Lightbulb } from "lucide-react";
+import { FilePlus } from "lucide-react";
 import Link from "next/link";
 import { ButtonLink } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
@@ -10,6 +10,7 @@ import { PackageCard } from "@/components/InstructorContent/PackageCard";
 import { SetCard } from "@/components/InstructorContent/SetCard";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { ProfileAvatar } from "@/components/ProfileAvatar/ProfileAvatar";
+import { TipNote } from "@/components/TipNote/TipNote";
 import type { ContentSet } from "@/lib/content-sets";
 import type { DemoTopic } from "@/lib/packages";
 
@@ -82,19 +83,7 @@ export function ContentView({
         <Chevron />
       </Link>
 
-      <div
-        data-content-note
-        className="flex items-center gap-3 rounded-[14px] bg-secondary-sand px-4 py-3"
-      >
-        <span
-          aria-hidden="true"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-tile-bg text-neutral-tile-ink"
-        >
-          <Lightbulb size={20} strokeWidth={2} />
-        </span>
-        <span aria-hidden="true" className="h-8 w-px shrink-0 bg-selectable-stroke" />
-        <p className="type-small min-w-0 flex-1 text-text-secondary">{CONTENT_NOTE}</p>
-      </div>
+      <TipNote noteId="content-note">{CONTENT_NOTE}</TipNote>
     </div>
   );
 }

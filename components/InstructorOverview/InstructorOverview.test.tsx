@@ -214,7 +214,8 @@ describe("NEEDS YOUR ACTION", () => {
     expect(section.match(/h-\[72px\]/g)).toHaveLength(rows.length);
     expect(section.match(/lucide-chevron-right/g)).toHaveLength(rows.length);
     expect(section.match(/data-icon-tile=/g)).toHaveLength(rows.length);
-    expect(section).toContain("h-11 w-11 rounded-[12px]");
+    expect(section).toContain("h-12 w-12 rounded-[14px]");
+    expect(section).toContain("bg-chip-neutral-bg text-text");
     expect(section).toContain("students need attention");
     expect(section).toContain("1 imported set is not published");
     expect(visible(section)).not.toContain("%");
@@ -325,7 +326,7 @@ describe("All groups", () => {
     expect(actions).toMatch(/Rescue team · \d+ students? needs? attention/);
     const section = html.slice(html.indexOf(">EXAMS<"));
     expect(section.match(/data-exam-card=/g)).toHaveLength(2);
-    expect(section.match(/data-exam-tile/g)).toHaveLength(2);
+    expect(section.match(/data-icon-tile="exam"/g)).toHaveLength(2);
     expect(section.match(/data-date-pill/g)).toHaveLength(2);
     expect(section).not.toMatch(/<img|exam-card\.webp|not started|topics?<|data-group-name/);
     expect(section).toMatch(/data-block-note[^>]*>2 Active</);

@@ -233,7 +233,7 @@ for (const width of [360, 430]) {
       await page.goto("/instructor");
       const row = page.locator("[data-exams-card] [data-exam-card]").first();
       await expect(row.locator("img")).toHaveCount(0);
-      const tile = row.locator("[data-exam-tile]");
+      const tile = row.locator("[data-icon-tile=exam]");
       const t = (await tile.boundingBox())!;
       expect([t.width, t.height]).toEqual([48, 48]);
       expect(await bg(tile)).toBe("rgb(239, 236, 230)");

@@ -696,7 +696,7 @@ for (const width of [360, 430]) {
         const m = /(\d+) of (\d+) at or above pass mark/.exec(await card.innerText());
         if (m) shares.push(Number(m[1]) / Number(m[2]));
         // the one-line count is never cut
-        const line = card.locator("span.whitespace-nowrap");
+        const line = card.locator("span.whitespace-nowrap.text-text-secondary");
         expect(await line.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
         expect(await card.innerText()).not.toContain("%");
       }

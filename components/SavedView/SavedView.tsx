@@ -1,11 +1,11 @@
 "use client";
 
+import { TopicCodeBadge } from "@/components/TopicCodeBadge/TopicCodeBadge";
 import { Bookmark } from "lucide-react";
 import Link from "next/link";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
-import { Chip } from "@/components/Chip/Chip";
 import { CircleBackButton } from "@/components/CircleBackButton/CircleBackButton";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import type { Item } from "@/lib/items";
@@ -43,9 +43,7 @@ export function SavedView({
                 href={savedPath(item.id)}
                 className="flex min-h-14 items-center gap-3 rounded-card bg-card p-4 shadow-(--card-shadow) has-focus-visible:outline-2"
               >
-                <Chip tone="sand" size="caption">
-                  {item.section}
-                </Chip>
+                <TopicCodeBadge id={item.section} />
                 <span className="type-body line-clamp-2 min-w-0 flex-1">{item.question}</span>
                 <Chevron />
               </Link>

@@ -25,16 +25,29 @@ describe("the icon tile tokens", () => {
 });
 
 describe("the icon tile", () => {
-  it("sets the colours and the centring, and takes its size and shape from the caller", () => {
-    const html = renderToStaticMarkup(
-      <IconTile className="h-9 w-9 rounded-full">
-        <svg />
-      </IconTile>,
+  it("has one neutral look: lighter sand, the icon in the text colour at 24px, radius 14, in two sizes only", () => {
+    const tile = (size: "default" | "compact") =>
+      renderToStaticMarkup(
+        <IconTile size={size}>
+          <svg />
+        </IconTile>,
+      );
+    for (const html of [tile("default"), tile("compact")]) {
+      expect(html).toContain("bg-chip-neutral-bg text-text");
+      expect(html).toContain("rounded-[14px]");
+      expect(html).toContain("[&amp;_svg]:h-6 [&amp;_svg]:w-6");
+      expect(html).toContain("items-center justify-center");
+      expect(html).toContain('aria-hidden="true"');
+    }
+    expect(tile("default")).toContain("h-12 w-12");
+    expect(tile("compact")).toContain("h-10 w-10");
+  });
+
+  it("is the same lighter sand as the exam card tile (#EFECE6) and no longer the darker neutral tile", () => {
+    expect(token("chip-neutral-bg")).toBe("#efece6");
+    expect(readFileSync("components/IconTile/IconTile.tsx", "utf8")).not.toContain(
+      "bg-neutral-tile-bg",
     );
-    expect(html).toContain("bg-neutral-tile-bg text-neutral-tile-ink");
-    expect(html).toContain("h-9 w-9 rounded-full");
-    expect(html).toContain("items-center justify-center");
-    expect(html).toContain('aria-hidden="true"');
   });
 });
 
@@ -102,7 +115,7 @@ describe("the exam status tiles", () => {
           <svg />
         </IconTile>,
       );
-    expect(html("neutral")).toContain("bg-neutral-tile-bg text-neutral-tile-ink");
+    expect(html("neutral")).toContain("bg-chip-neutral-bg text-text");
     expect(html("attention")).toContain("bg-status-attention-bg text-status-attention-ink");
     expect(html("success")).toContain("bg-status-success-bg text-status-success-ink");
     expect(html("success")).not.toContain("correct");
@@ -110,7 +123,7 @@ describe("the exam status tiles", () => {
 });
 
 describe("the neutral warm grey pair", () => {
-  it("is registered once, for every icon tile and the bookmark", () => {
+  it("is registered once, for the bookmark and the note tile (icon tiles use the lighter sand)", () => {
     expect(token("neutral-tile-bg")).toBe("#e2ded6");
     expect(token("neutral-tile-ink")).toBe("#5c5a56");
     expect(css).toContain("--color-neutral-tile-bg: var(--neutral-tile-bg);");
@@ -118,13 +131,9 @@ describe("the neutral warm grey pair", () => {
     expect(readFileSync("components/BookmarkButton/BookmarkButton.tsx", "utf8")).toContain(
       "bg-neutral-tile-bg text-neutral-tile-ink",
     );
-    expect(
-      renderToStaticMarkup(
-        <IconTile tone="neutral" className="h-9 w-9 rounded-full">
-          <svg />
-        </IconTile>,
-      ),
-    ).toContain("bg-neutral-tile-bg text-neutral-tile-ink");
+    expect(readFileSync("components/TipNote/TipNote.tsx", "utf8")).toContain(
+      "bg-neutral-tile-bg text-neutral-tile-ink",
+    );
   });
 
   it("keeps the icon at least 3:1 on the tile, computed from the registered tokens (about 4.9:1)", () => {

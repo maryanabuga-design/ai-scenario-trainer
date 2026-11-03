@@ -166,7 +166,7 @@ export function AssignExamView({
         data-specs-card
         className="flex items-center gap-3 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)]"
       >
-        <LucideTile icon={ClipboardCheck} size="tile" />
+        <LucideTile icon={ClipboardCheck} />
         <div className="flex min-w-0 flex-col">
           <p className="type-label text-text-secondary">EVALUATION SPECS</p>
           <p data-info-rules className="type-body-strong">

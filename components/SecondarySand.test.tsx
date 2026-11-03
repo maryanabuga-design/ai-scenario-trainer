@@ -86,24 +86,25 @@ describe("coloured chips and icon backgrounds stay as they are", () => {
 
   it("draws topic tiles and the material tile in the one neutral tile", () => {
     const tile = renderToStaticMarkup(<TopicTile icon="DoorOpen" />);
-    expect(tile).toContain("bg-neutral-tile-bg text-neutral-tile-ink");
+    expect(tile).toContain("bg-chip-neutral-bg text-text");
     expect(tile).not.toContain("pastel");
-    expect(renderToStaticMarkup(<MaterialTile type="PDF" />)).toContain("bg-neutral-tile-bg");
+    expect(renderToStaticMarkup(<MaterialTile type="PDF" />)).toContain("bg-chip-neutral-bg");
   });
 });
 
 describe("the topic icon tile sizes", () => {
-  it("draws the Home topic tile at the default size: 48px circle, 24px icon", () => {
+  it("draws the topic tile at the default size: 48px, radius 14, 24px icon", () => {
     const html = renderToStaticMarkup(<TopicTile icon="DoorOpen" />);
     expect(html).toContain("h-12 w-12");
+    expect(html).toContain("rounded-[14px]");
     expect(html).toContain('width="24"');
     expect(html).toContain('stroke-width="2"');
   });
 
-  it("has a compact variant: 36px circle, 18px icon, 1.75 stroke", () => {
+  it("has a compact variant: 40px, radius 14, the icon still 24px", () => {
     const html = renderToStaticMarkup(<TopicTile icon="DoorOpen" size="compact" />);
-    expect(html).toContain("h-9 w-9");
-    expect(html).toContain('width="18"');
-    expect(html).toContain('stroke-width="1.75"');
+    expect(html).toContain("h-10 w-10");
+    expect(html).toContain("rounded-[14px]");
+    expect(html).toContain("[&amp;_svg]:h-6 [&amp;_svg]:w-6");
   });
 });

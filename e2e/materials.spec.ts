@@ -105,12 +105,12 @@ test.describe("Materials", () => {
       // 16px above and below, at least 44px high
       expect(row.padding).toEqual(["16px", "16px"]);
       expect(row.height).toBeGreaterThanOrEqual(44);
-      // a 44px rounded square icon tile
-      expect(row.tile).toEqual([44, 44]);
-      expect(row.tileRadius).toBe("12px");
-      expect(row.tileBackground).toBe("rgb(226, 222, 214)");
-      // the icon is drawn in the icon ink
-      expect(row.ink).toEqual(["rgb(92, 90, 86)", "rgb(92, 90, 86)"]);
+      // the one icon tile: 48px, radius 14, lighter sand
+      expect(row.tile).toEqual([48, 48]);
+      expect(row.tileRadius).toBe("14px");
+      expect(row.tileBackground).toBe("rgb(239, 236, 230)");
+      // the icon is drawn in the text colour
+      expect(row.ink).toEqual(["rgb(26, 26, 26)", "rgb(26, 26, 26)"]);
       // the divider runs from the left gutter to the right gutter
       // (the app frame has a 1px side border, so the gutter measures 17px)
       expect(row.left).toBeGreaterThanOrEqual(16);

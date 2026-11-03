@@ -65,7 +65,7 @@ export function BuiltInTopicView({
       {tab === "overview" ? (
         <ul data-built-in-overview className="flex flex-col gap-3">
           <li className="flex min-h-[72px] items-center gap-3 rounded-card bg-card px-4 shadow-(--card-shadow)">
-            <LucideTile icon={BookOpen} size="tile" />
+            <LucideTile icon={BookOpen} />
             <span className="flex min-w-0 flex-1 flex-col">
               <span className="type-body-strong">Guide section {id}</span>
               <span className="type-small text-text-secondary tabular-nums">
@@ -75,7 +75,7 @@ export function BuiltInTopicView({
           </li>
           {guide && (
             <li className="flex min-h-[72px] items-center gap-3 rounded-card bg-card px-4 shadow-(--card-shadow)">
-              <LucideTile icon={ListOrdered} size="tile" />
+              <LucideTile icon={ListOrdered} />
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="type-body-strong">{guide.title}</span>
                 <span className="type-small text-text-secondary tabular-nums">

@@ -48,7 +48,7 @@ export function NoGroupView({
         className="flex flex-col gap-4 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)] shadow-(--card-shadow)"
       >
         <div className="flex flex-col items-center gap-3 text-center">
-          <IconTile className="h-14 w-14 rounded-full">
+          <IconTile size="default">
             <UsersRound size={28} strokeWidth={1.75} />
           </IconTile>
           <h2 className="type-item-title">You are not in a group yet</h2>

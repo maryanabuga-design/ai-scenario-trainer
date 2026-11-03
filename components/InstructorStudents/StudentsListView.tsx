@@ -55,7 +55,7 @@ function EmptyTile() {
     <span
       aria-hidden="true"
       data-empty-tile
-      className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-neutral-tile-bg text-neutral-tile-ink"
+      className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-chip-neutral-bg text-text"
     >
       <UserRoundSearch size={28} strokeWidth={1.75} />
     </span>

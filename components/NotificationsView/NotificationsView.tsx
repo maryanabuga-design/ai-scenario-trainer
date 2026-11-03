@@ -48,7 +48,7 @@ function HistoryRow({
   const opens = notification.target !== null && (exam === null || activeExamIds.has(exam));
   const content = (
     <>
-      <IconTile className="h-9 w-9 rounded-full">
+      <IconTile size="compact">
         <Icon size={18} strokeWidth={1.75} />
       </IconTile>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">

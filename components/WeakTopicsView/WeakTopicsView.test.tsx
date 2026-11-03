@@ -44,8 +44,8 @@ describe("Weak topics page", () => {
     expect(html).toContain("Evacuation guide · S1");
     expect(html).toContain("2 to repeat");
     expect(html).toContain("1 to repeat");
-    expect(html.match(/h-9 w-9/g)).toHaveLength(2);
-    expect(html).toContain('stroke-width="1.75"');
+    expect(html.match(/h-10 w-10 rounded-\[14px\]/g)).toHaveLength(2);
+    expect(html).toContain("[&amp;_svg]:h-6 [&amp;_svg]:w-6");
   });
 
   it("has the back button where the person came from", () => {

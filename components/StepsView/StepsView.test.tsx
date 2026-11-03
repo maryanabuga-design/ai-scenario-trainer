@@ -42,8 +42,8 @@ describe("the Steps list", () => {
     });
     expect(list).not.toMatch(/done/i);
     expect(list.match(/lucide-chevron-right/g)).toHaveLength(checklists.length);
-    expect(list.match(/h-11 w-11 rounded-\[12px\]/g)).toHaveLength(checklists.length);
-    expect(list.match(/bg-neutral-tile-bg text-neutral-tile-ink/g)).toHaveLength(checklists.length);
+    expect(list.match(/h-12 w-12 rounded-\[14px\]/g)).toHaveLength(checklists.length);
+    expect(list.match(/bg-chip-neutral-bg text-text/g)).toHaveLength(checklists.length);
     expect(list).not.toContain("bg-olive-tint");
     expect(list).not.toMatch(/checklist(?!s\/)/i);
   });
@@ -91,12 +91,12 @@ describe("a Steps topic screen", () => {
     expect(card).toContain("p-[var(--gutter,1rem)]");
     expect(card).toContain(">Step-by-step guide<");
     expect(card).toContain(`>${checklist.steps.length} steps<`);
-    // the 48px tile has the 12px radius, not a circle
-    expect(card).toContain("h-12 w-12 rounded-[12px]");
+    // the 48px tile has the 14px radius, not a circle
+    expect(card).toContain("h-12 w-12 rounded-[14px]");
     // the same icon as its list card
     expect(card).toContain("lucide-droplet");
     expect(card).not.toContain("rounded-full");
-    expect(card).toContain("bg-neutral-tile-bg text-neutral-tile-ink");
+    expect(card).toContain("bg-chip-neutral-bg text-text");
     expect(card).not.toContain("bg-olive-tint");
     // informational only: no progress, no done, no arrow circle
     expect(html).not.toMatch(/progressbar|done|checkbox|aria-pressed/i);

@@ -1,6 +1,7 @@
 import { ClipboardList } from "lucide-react";
 import Link from "next/link";
 import { Chevron } from "@/components/Chevron/Chevron";
+import { IconTile } from "@/components/IconTile/IconTile";
 import type { GroupCounts } from "@/lib/cohort";
 import { cardResultLine, closedLine, duePillText } from "@/lib/exam-detail";
 import type { GroupExam } from "@/lib/group-exams";
@@ -34,13 +35,9 @@ export function ExamCard({
       data-exam-card={exam.id}
       className={`flex h-[88px] items-center gap-3 px-3 has-focus-visible:outline-2 ${bare ? "" : "rounded-card border border-selectable-stroke bg-card shadow-(--card-shadow)"}`}
     >
-      <span
-        aria-hidden="true"
-        data-exam-tile
-        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] bg-chip-neutral-bg text-primary"
-      >
-        <ClipboardList size={24} strokeWidth={2} />
-      </span>
+      <IconTile size="default" tileId="exam">
+        <ClipboardList strokeWidth={2} />
+      </IconTile>
       <span className="flex min-w-0 flex-1 flex-col items-start gap-0.5">
         <span className="type-body-strong w-full truncate">{exam.title}</span>
         <span

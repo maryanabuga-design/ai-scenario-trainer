@@ -98,7 +98,7 @@ describe("the Notifications screen", () => {
   });
 
   it("draws the type icon in the one neutral tile", () => {
-    expect(html).toContain("bg-neutral-tile-bg text-neutral-tile-ink");
+    expect(html).toContain("bg-chip-neutral-bg text-text");
     expect(html).toContain("lucide-clock");
     expect(render([make("m", { type: "message" })])).toContain("lucide-message-square");
     expect(render([make("r", { type: "result" })])).toContain("lucide-clipboard-check");

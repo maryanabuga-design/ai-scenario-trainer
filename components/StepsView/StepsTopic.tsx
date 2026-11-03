@@ -40,7 +40,7 @@ export function StepsTopicView({
         aria-label="Summary"
         className="relative z-10 -mt-10 flex items-center gap-3 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)]"
       >
-        <TopicTile icon={checklist.icon} size="square48" />
+        <TopicTile icon={checklist.icon} />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <p className="type-body-strong">Step-by-step guide</p>
           <p className="type-small text-text-secondary tabular-nums">

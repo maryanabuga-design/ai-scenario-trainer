@@ -106,15 +106,15 @@ describe("the Content tab", () => {
     expect(empty).toContain("You have no topics yet.");
     expect(empty).toContain("Import a document to create your first topic.");
     expect(empty).toContain("YOUR TOPICS");
-    // the illustration in a 144px sand circle with three dashes on each side
-    expect(empty).toContain("h-36 w-36");
-    expect(empty).toContain("bg-secondary-sand");
+    // the 3D picture centred at 160px with an empty alt text; no circle, icon or dashes while it loads
     expect(empty).toContain('src="/images/instructor/content-empty.webp"');
-    expect(empty.match(/bg-sage-dash/g)).toHaveLength(6);
+    expect(empty).toMatch(/data-empty-picture[^>]*alt=""[^>]*h-40 w-40 object-contain/);
+    expect(empty).not.toMatch(/data-empty-circle|bg-sage-dash/);
     expect(empty).not.toContain("data-set-card");
     expect(empty).toContain("Your topics stay in this browser (prototype).");
     // the info card: sand, radius 14, a tint tile with the lightbulb, a thin divider
     const note = empty.slice(empty.indexOf("data-content-note"));
+    expect(note).toContain("data-tip-note");
     expect(note).toContain("rounded-[14px] bg-secondary-sand");
     expect(note).toContain("lucide-lightbulb");
     expect(note).toContain("h-8 w-px");

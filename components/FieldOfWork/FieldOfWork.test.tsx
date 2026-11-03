@@ -41,17 +41,17 @@ describe("the Field of work step", () => {
     expect(bar.match(/<Button/g)).toHaveLength(1);
   });
 
-  it("has an icon on the Materials icon tile on every row: the shared IconTile, 44px, 12px radius, 22px icon", () => {
+  it("has an icon on the Materials icon tile on every row: the shared IconTile, 48px, 14px radius, 24px icon", () => {
     expect(html.match(/data-icon-tile=/g)).toHaveLength(5);
     for (const field of ["rescue", "paramedic", "military", "civil", "other"]) {
       expect(html).toContain(`data-icon-tile="${field}"`);
     }
-    // the very classes of the Materials topic rows (TopicTile "tile")
-    const materials = renderToStaticMarkup(<TopicTile icon="BellRing" size="tile" />);
+    // the very classes of the Materials topic rows (TopicTile default)
+    const materials = renderToStaticMarkup(<TopicTile icon="BellRing" />);
     const classOf = (markup: string) => /<span[^>]*class="([^"]*)"/.exec(markup)![1];
     const tileClass = classOf(materials);
-    expect(tileClass).toContain("h-11 w-11 rounded-[12px]");
-    expect(tileClass).toContain("bg-neutral-tile-bg text-neutral-tile-ink");
+    expect(tileClass).toContain("h-12 w-12 rounded-[14px]");
+    expect(tileClass).toContain("bg-chip-neutral-bg text-text");
     expect(html.split(tileClass).length - 1).toBe(5);
     expect(html).not.toMatch(/bg-sand-200|rounded-full bg-sand/);
     expect(html.match(/aria-hidden="true"[^>]*data-icon-tile/g)).toHaveLength(5);

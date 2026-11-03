@@ -24,6 +24,7 @@ import { InitialsAvatar } from "@/components/InitialsAvatar/InitialsAvatar";
 import { StatusChip, examTone } from "@/components/StatusChip/StatusChip";
 import { StatusRow } from "@/components/StatusRow/StatusRow";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
+import { TipNote } from "@/components/TipNote/TipNote";
 import { triedCount } from "@/lib/cohort";
 import type { GroupCounts, StudentRow } from "@/lib/cohort";
 import {
@@ -233,12 +234,7 @@ export function ExamDetailView({
             {detailRulesLine(exam)}
           </p>
           {empty ? (
-            <p
-              data-no-results
-              className="type-small rounded-[14px] bg-secondary-sand p-3 text-text-secondary"
-            >
-              {NO_RESULTS_LINE}
-            </p>
+            <TipNote noteId="no-results">{NO_RESULTS_LINE}</TipNote>
           ) : (
             <>
               <div className="flex flex-col gap-2 rounded-[14px] bg-secondary-sand p-3">

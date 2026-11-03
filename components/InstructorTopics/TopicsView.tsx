@@ -1,3 +1,4 @@
+import { TopicCodeBadge } from "@/components/TopicCodeBadge/TopicCodeBadge";
 import { AssignIcon } from "@/components/AssignIcon/AssignIcon";
 import Link from "next/link";
 import { ButtonLink } from "@/components/Button/Button";
@@ -28,16 +29,7 @@ export function ReviewTag() {
 }
 
 /** The S-code badge of a topic. */
-export function TopicBadge({ id }: { id: string }) {
-  return (
-    <span
-      aria-hidden="true"
-      className="type-caption flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-olive-tint text-text"
-    >
-      {id}
-    </span>
-  );
-}
+export const TopicBadge = ({ id }: { id: string }) => <TopicCodeBadge id={id} />;
 
 /**
  * The Topics view of the Students tab (DESIGN.md: Instructor, Students rebuilt): ten 80px cards

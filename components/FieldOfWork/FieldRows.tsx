@@ -39,7 +39,7 @@ export function FieldRows({
             checked={value === field}
             onChange={() => onChange(field)}
           >
-            <LucideTile icon={Icon} size="tile" tileId={field} />
+            <LucideTile icon={Icon} tileId={field} />
             <span data-field={field} className="type-body-strong min-w-0 flex-1">
               {fullLabels[field]}
             </span>

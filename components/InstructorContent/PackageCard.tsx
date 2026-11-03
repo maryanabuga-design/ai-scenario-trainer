@@ -19,7 +19,7 @@ export function PackageCard({ topic }: { topic: DemoTopic }) {
       data-package-card={topic.id}
       className="flex h-[88px] items-center gap-3 rounded-card border border-selectable-stroke bg-card px-3 shadow-(--card-shadow) has-focus-visible:outline-2"
     >
-      <LucideTile icon={Shapes} size="tile" />
+      <LucideTile icon={Shapes} />
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="type-body-strong truncate">{topic.title}</span>
         <span className="type-small truncate text-text-secondary">{partsLine(topic)}</span>

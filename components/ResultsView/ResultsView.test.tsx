@@ -105,7 +105,7 @@ describe("Results", () => {
     expect(card).toContain("border-arrow-stroke");
     // the 48px round tile with the 24px icon comes first, aligned with the title row, hidden from assistive technology
     expect(card).toMatch(
-      /data-weak-icon="true" aria-hidden="true"[^>]*h-12 w-12 shrink-0[^>]*self-start rounded-full bg-chip-neutral-bg text-text/,
+      /data-weak-icon="true"[^>]*self-start[^>]*><span aria-hidden="true"[^>]*bg-chip-neutral-bg text-text h-12 w-12 rounded-\[14px\]/,
     );
     expect(card).toContain("lucide-list-checks");
     expect(card).toContain('width="24"');

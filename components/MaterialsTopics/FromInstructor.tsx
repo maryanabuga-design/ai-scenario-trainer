@@ -37,7 +37,7 @@ export function FromInstructor() {
               data-package-topic={topic.id}
               className="flex min-h-11 items-center gap-3 py-4 active:bg-secondary-sand has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent"
             >
-              <LucideTile icon={Shapes} size="tile" />
+              <LucideTile icon={Shapes} />
               <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                 <span className="type-body-strong">{topic.title}</span>
                 <span className="type-small text-text-secondary">

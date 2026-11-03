@@ -445,7 +445,7 @@ test.describe("Exam readiness", () => {
     });
   }
 
-  test("the four rules sit in neutral warm grey circles, the same pair as the bookmark circle", async ({
+  test("the four rules sit on the one neutral icon tile (lighter sand, radius 14, 40px)", async ({
     page,
   }) => {
     await open(page, "/exam");
@@ -469,11 +469,11 @@ test.describe("Exam readiness", () => {
       );
     expect(circles).toHaveLength(4);
     for (const [background, ink, stroke, width, height, radius] of circles) {
-      expect(background).toBe("rgb(226, 222, 214)");
-      expect(ink).toBe("rgb(92, 90, 86)");
-      expect(stroke).toBe("rgb(92, 90, 86)");
-      expect([width, height]).toEqual([36, 36]);
-      expect(String(radius)).not.toBe("0px");
+      expect(background).toBe("rgb(239, 236, 230)");
+      expect(ink).toBe("rgb(26, 26, 26)");
+      expect(stroke).toBe("rgb(26, 26, 26)");
+      expect([width, height]).toEqual([40, 40]);
+      expect(radius).toBe("14px");
     }
   });
 
@@ -505,6 +505,6 @@ test.describe("Exam readiness", () => {
         getComputedStyle(el).backgroundColor,
         getComputedStyle(el).color,
       ]),
-    ).toEqual(["rgb(226, 222, 214)", "rgb(92, 90, 86)"]);
+    ).toEqual(["rgb(239, 236, 230)", "rgb(26, 26, 26)"]);
   });
 });

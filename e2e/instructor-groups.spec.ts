@@ -19,7 +19,7 @@ const WHITE = "rgb(255, 255, 255)";
 const SUCCESS_INK = "rgb(68, 104, 58)";
 const MUTED = "rgb(92, 90, 85)";
 const OLIVE_TINT = "rgb(224, 230, 214)";
-const NEUTRAL_TILE = "rgb(226, 222, 214)";
+const NEUTRAL_TILE = "rgb(239, 236, 230)";
 
 const noSidewaysScroll = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
@@ -81,13 +81,13 @@ for (const width of [360, 430]) {
       expect(await bg(strip)).toBe(SAND);
       expect((await box(strip)).height).toBeGreaterThanOrEqual(44);
       await expect(strip).toHaveText("Rescue team · 15 students · 2 not started");
-      // actions: one card, 72px rows, the neutral 44px rounded tile
+      // actions: one card, 72px rows, the one neutral 48px tile
       const rows = page.locator("[data-action]");
       expect(await rows.count()).toBeLessThanOrEqual(3);
       for (const row of await rows.all()) {
         expect((await box(row)).height).toBe(72);
         const tile = row.locator("[data-icon-tile]");
-        expect([(await box(tile)).width, (await box(tile)).height]).toEqual([44, 44]);
+        expect([(await box(tile)).width, (await box(tile)).height]).toEqual([48, 48]);
         expect(await bg(tile)).toBe(NEUTRAL_TILE);
       }
       // exams: ONE card, the exam row, a Secondary Assign exam with an icon
@@ -192,7 +192,7 @@ for (const width of [360, 430]) {
       await expect(cards).toHaveCount(2);
       // the same card as on Exams: tile, title, date pill, one result line; no group name on it
       for (const card of await cards.all()) {
-        await expect(card.locator("[data-exam-tile]")).toHaveCount(1);
+        await expect(card.locator("[data-icon-tile=exam]")).toHaveCount(1);
         await expect(card).toContainText(/Passed \d+ of \d+$/);
       }
       await expect(page.locator("[data-block-note]")).toHaveText("2 Active");

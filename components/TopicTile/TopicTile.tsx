@@ -31,19 +31,12 @@ const icons: Record<TopicIcon, LucideIcon> = {
   FileText,
 };
 
-/** "compact" (36px circle, 18px icon) is for the Weak topics rows only. */
-const sizes = {
-  default: { tile: "h-12 w-12", icon: 24, stroke: 2 },
-  compact: { tile: "h-9 w-9", icon: 18, stroke: 1.75 },
-  /** The 44px rounded square of the Materials rows (12px radius, not a circle). */
-  tile: { tile: "h-11 w-11 rounded-[12px]", icon: 22, stroke: 2 },
-  /** The 48px rounded square of the Steps summary card (12px radius, like the Materials rows). */
-  square48: { tile: "h-12 w-12 rounded-[12px]", icon: 24, stroke: 2 },
-} as const;
+/** The two sizes of the one neutral icon tile: "default" 48px and "compact" 40px. */
+type TileSize = "default" | "compact";
 
 /**
- * Any outline icon on the one neutral icon tile at one of the shared sizes. The Materials rows use
- * the size "tile"; the Field of work rows use the very same one.
+ * Any outline icon on the one neutral icon tile (`IconTile`) at one of its two sizes: 48px by
+ * default (Materials rows, Field of work rows, Overview rows) and 40px compact (Weak topics rows).
  */
 export function LucideTile({
   icon: Icon,
@@ -51,25 +44,17 @@ export function LucideTile({
   tileId,
 }: {
   icon: LucideIcon;
-  size?: keyof typeof sizes;
+  size?: TileSize;
   tileId?: string;
 }) {
-  const look = sizes[size];
-  const shape = `${look.tile} ${size === "tile" || size === "square48" ? "" : "rounded-full"}`;
   return (
-    <IconTile className={shape} tileId={tileId}>
-      <Icon size={look.icon} strokeWidth={look.stroke} />
+    <IconTile size={size} tileId={tileId}>
+      <Icon strokeWidth={2} />
     </IconTile>
   );
 }
 
 /** A topic's icon on the one neutral icon tile (`IconTile`). Decorative: the name sits next to it. */
-export function TopicTile({
-  icon,
-  size = "default",
-}: {
-  icon: TopicIcon;
-  size?: keyof typeof sizes;
-}) {
+export function TopicTile({ icon, size = "default" }: { icon: TopicIcon; size?: TileSize }) {
   return <LucideTile icon={icons[icon]} size={size} />;
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { IconTile } from "@/components/IconTile/IconTile";
 import { FileSpreadsheet, X } from "lucide-react";
 import { useRef } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
@@ -114,9 +115,9 @@ export function PackageImportView({
             data-file-card
             className="flex items-center gap-3 rounded-card border border-selectable-stroke bg-card p-3"
           >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-tile-bg text-neutral-tile-ink">
-              <FileSpreadsheet size={20} strokeWidth={1.75} aria-hidden="true" />
-            </span>
+            <IconTile size="compact">
+              <FileSpreadsheet strokeWidth={2} />
+            </IconTile>
             <span className="flex min-w-0 flex-1 flex-col">
               <span data-file-name className="type-body-strong break-words">
                 {file.name}

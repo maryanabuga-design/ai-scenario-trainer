@@ -46,7 +46,7 @@ function StatTile({
 }) {
   return (
     <div className="flex flex-1 items-center gap-3">
-      <IconTile className="h-9 w-9 rounded-full">
+      <IconTile size="compact">
         <Icon size={18} strokeWidth={1.75} />
       </IconTile>
       <div className="flex min-w-0 flex-col">
@@ -246,7 +246,7 @@ export function TrainingView({
             className="flex flex-col rounded-card bg-card shadow-(--card-shadow)"
           >
             <header className="flex items-center gap-3 p-4">
-              <IconTile className="h-8 w-8 rounded-full">
+              <IconTile size="compact">
                 <FileText size={16} strokeWidth={2} />
               </IconTile>
               <h2 id={`set-${set.id}`} className="type-label min-w-0 flex-1 text-text-secondary">

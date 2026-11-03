@@ -62,20 +62,20 @@ describe("the Materials list", () => {
     expect(html).not.toMatch(/lock|disabled/i);
   });
 
-  it("has a flat row: a 44px rounded-square icon tile, the title, 'S1 · N min read' and a plain chevron", () => {
+  it("has a flat row: a 48px rounded-square icon tile, the title, 'S1 · N min read' and a plain chevron", () => {
     const s1 = card("S1");
     const topic = allTopics()[0];
-    expect(s1).toContain("h-11 w-11");
-    expect(s1).toContain("rounded-[12px]");
+    expect(s1).toContain("h-12 w-12");
+    expect(s1).toContain("rounded-[14px]");
     expect(s1).not.toContain("rounded-full");
-    expect(s1).toContain("bg-neutral-tile-bg text-neutral-tile-ink");
+    expect(s1).toContain("bg-chip-neutral-bg text-text");
     expect(s1).not.toContain("bg-olive-tint");
     expect(s1).toContain(">Responding to an alarm<");
     expect(s1).toContain(`S1 · ${topic.minutes} min read`);
     expect(s1).toContain("lucide-chevron-right");
     expect(s1).not.toMatch(/arrow-shadow|ArrowCircle/);
     // title first, then the muted line; the tile before both; the chevron last
-    expect(s1.indexOf("h-11 w-11")).toBeLessThan(s1.indexOf(">Responding to an alarm<"));
+    expect(s1.indexOf("h-12 w-12")).toBeLessThan(s1.indexOf(">Responding to an alarm<"));
     expect(s1.indexOf(">Responding to an alarm<")).toBeLessThan(s1.indexOf("min read"));
     expect(s1.indexOf("min read")).toBeLessThan(s1.indexOf("lucide-chevron-right"));
   });

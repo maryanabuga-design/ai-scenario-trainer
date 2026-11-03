@@ -5,7 +5,7 @@ export type NoticeVariant = "info" | "to-fix" | "success";
 
 /** The colour of the icon tile carries the variant; the card itself is always white. */
 const tile: Record<NoticeVariant, string> = {
-  info: "bg-neutral-tile-bg text-neutral-tile-ink",
+  info: "bg-chip-neutral-bg text-text",
   "to-fix": "bg-status-attention-bg text-status-attention-ink",
   success: "bg-status-success-bg text-status-success-ink",
 };

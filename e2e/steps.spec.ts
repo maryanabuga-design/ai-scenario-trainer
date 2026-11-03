@@ -57,8 +57,8 @@ test.describe("Steps", () => {
         };
       });
       expect(look.height).toBeGreaterThanOrEqual(44);
-      expect(look.tile).toEqual([44, 44, "12px", "rgb(226, 222, 214)"]);
-      expect(look.ink).toEqual(["rgb(92, 90, 86)", "rgb(92, 90, 86)"]);
+      expect(look.tile).toEqual([48, 48, "14px", "rgb(239, 236, 230)"]);
+      expect(look.ink).toEqual(["rgb(26, 26, 26)", "rgb(26, 26, 26)"]);
       expect(look.gap).toBe(12);
       expect(look.left).toBeGreaterThanOrEqual(16);
       expect(look.chevron).toBe(true);
@@ -159,7 +159,7 @@ test.describe("Steps", () => {
           getComputedStyle(el.querySelector("svg")!).stroke,
         ];
       });
-    expect(tile).toEqual([48, 48, "12px", "rgb(226, 222, 214)", "rgb(92, 90, 86)"]);
+    expect(tile).toEqual([48, 48, "14px", "rgb(239, 236, 230)", "rgb(26, 26, 26)"]);
     // informational only: no progress, no done text, no checkbox, no done-circle
     await expect(page.getByRole("progressbar")).toHaveCount(0);
     await expect(page.locator("main")).not.toContainText(/done/i);

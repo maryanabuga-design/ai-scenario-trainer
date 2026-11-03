@@ -135,12 +135,11 @@ for (const width of [360, 430]) {
       // the illustrated empty state
       await expect(page.getByRole("heading", { name: "You have no topics yet." })).toBeVisible();
       await expect(page.getByText("Import a document to create your first topic.")).toBeVisible();
-      const circle = (await page.locator("[data-empty-circle]").boundingBox())!;
-      expect([circle.width, circle.height]).toEqual([144, 144]);
-      expect(await bg(page.locator("[data-empty-circle]"))).toBe("rgb(240, 236, 230)");
-      expect(Math.round(circle.x + circle.width / 2)).toBe(Math.round(width / 2));
-      await expect(page.locator("[data-dashes=left] span")).toHaveCount(3);
-      await expect(page.locator("[data-dashes=right] span")).toHaveCount(3);
+      // the 3D picture, centred at 160px (no circle, icon or dashes)
+      const picture = (await page.locator("[data-empty-picture]").boundingBox())!;
+      expect([picture.width, picture.height]).toEqual([160, 160]);
+      expect(Math.round(picture.x + picture.width / 2)).toBe(Math.round(width / 2));
+      await expect(page.locator("[data-empty-circle], [data-dashes]")).toHaveCount(0);
       // the info card
       const note = page.locator("[data-content-note]");
       await expect(note).toHaveText("Your topics stay in this browser (prototype).");

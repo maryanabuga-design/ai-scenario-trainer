@@ -278,9 +278,9 @@ describe("the tiles", () => {
     expect(grid.match(/<a /g)).toHaveLength(4);
     // one neutral tile for all four: no pastel, the same pair as the bookmark
     expect(grid).not.toContain("pastel");
-    expect(grid.match(/bg-neutral-tile-bg text-neutral-tile-ink/g)).toHaveLength(4);
-    expect(grid.match(/h-9 w-9/g)).toHaveLength(4);
-    expect(grid.match(/width="18"/g)).toHaveLength(4);
+    expect(grid.match(/bg-chip-neutral-bg text-text/g)).toHaveLength(4);
+    expect(grid.match(/h-10 w-10/g)).toHaveLength(4);
+    expect(grid.match(/rounded-\[14px\]/g)).toHaveLength(4);
     expect(grid.match(/rounded-card bg-card/g)).toHaveLength(4);
   });
 
@@ -328,7 +328,7 @@ describe("the tiles", () => {
       return html.slice(start, html.indexOf("</a>", start));
     };
     expect(tile("Mini-quiz")).toContain("lucide-clipboard-check");
-    expect(tile("Mini-quiz")).toContain("bg-neutral-tile-bg text-neutral-tile-ink");
+    expect(tile("Mini-quiz")).toContain("bg-chip-neutral-bg text-text");
     expect(tile("Exam")).not.toContain("lucide-clipboard-check");
     for (const title of ["Exam", "Mini-quiz", "Weak topics", "Saved questions"]) {
       expect(tile(title), title).toContain("min-h-32");
