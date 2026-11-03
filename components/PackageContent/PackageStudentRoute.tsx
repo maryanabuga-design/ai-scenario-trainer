@@ -1,5 +1,6 @@
 "use client";
 
+import { PreviewFrame } from "@/components/PreviewFrame/PreviewFrame";
 import { ButtonLink } from "@/components/Button/Button";
 import { ExamNotFound } from "@/components/InstructorExams/ExamDetailView";
 import {
@@ -65,12 +66,7 @@ export function PackageStudentRoute({
           Exit preview
         </ButtonLink>
       </div>
-      <div
-        data-phone-frame
-        className="contents idesk:mx-auto idesk:block idesk:w-full idesk:max-w-[430px] idesk:overflow-clip idesk:rounded-[24px] idesk:border idesk:border-selectable-stroke idesk:bg-bg idesk:px-4 idesk:pt-6 idesk:pb-4 idesk:shadow-(--card-shadow) idesk:[--gutter:1rem]"
-      >
-        {screen}
-      </div>
+      <PreviewFrame>{screen}</PreviewFrame>
     </div>
   );
 }

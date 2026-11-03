@@ -14,7 +14,6 @@ type ItemRow = {
   href?: string;
   guide: string;
   key: string;
-  type?: string;
 };
 
 const number = (n: number) => (
@@ -35,18 +34,7 @@ const guideCell = (row: ItemRow) =>
     <span className="text-text-secondary">—</span>
   );
 
-const columns = (issues: Issue[], withType: boolean): Column<ItemRow>[] => [
-  ...(withType
-    ? [
-        {
-          id: "type",
-          header: "Type",
-          width: "140px",
-          sortValue: (row: ItemRow) => row.type ?? "",
-          cell: (row: ItemRow) => row.type,
-        },
-      ]
-    : []),
+const columns = (issues: Issue[]): Column<ItemRow>[] => [
   {
     id: "guide",
     header: "Guide section",
@@ -86,7 +74,7 @@ export function StepsTables({
             label={`Steps: ${list.title}`}
             dataAttribute="data-steps-list"
             firstHeader="Step"
-            columns={columns(issues, false)}
+            columns={columns(issues)}
             rows={list.steps.map((step, si) => {
               const key = `steps:${li}:${si}`;
               return {
@@ -120,7 +108,8 @@ export function QuestionsTable({
         label="Questions"
         dataAttribute="data-questions-table"
         firstHeader="Question"
-        columns={columns(issues, true)}
+        columns={columns(issues)}
+        nameLines={2}
         rows={(data.questions ?? []).map((question, index) => {
           const key = `questions:${index}`;
           return {
@@ -130,7 +119,6 @@ export function QuestionsTable({
             href: editHref?.(key),
             guide: question.guideRef,
             key,
-            type: "Single choice",
           };
         })}
       />

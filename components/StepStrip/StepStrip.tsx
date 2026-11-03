@@ -40,11 +40,19 @@ export function StepStrip({
   const listRef = useRef<HTMLOListElement>(null);
   const current = states.indexOf("current");
 
+  // keep the current square centred; again when the strip's width changes (the framed preview
+  // lays it out after the first paint, so the first measure can be too small)
   useEffect(() => {
     const list = listRef.current;
-    const item = list?.children[current] as HTMLElement | undefined;
-    if (!list || !item) return;
-    list.scrollLeft = item.offsetLeft - (list.clientWidth - item.clientWidth) / 2;
+    if (!list) return;
+    const centre = () => {
+      const item = list.children[current] as HTMLElement | undefined;
+      if (item) list.scrollLeft = item.offsetLeft - (list.clientWidth - item.clientWidth) / 2;
+    };
+    centre();
+    const observer = new ResizeObserver(centre);
+    observer.observe(list);
+    return () => observer.disconnect();
   }, [current]);
 
   return (
@@ -52,7 +60,7 @@ export function StepStrip({
       ref={listRef}
       aria-label={`${unit}s`}
       data-full-bleed
-      className="-mx-[var(--gutter,1rem)] flex overflow-x-auto px-[var(--gutter,1rem)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className="relative -mx-[var(--gutter,1rem)] flex overflow-x-auto px-[var(--gutter,1rem)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {states.map((state, position) => (
         <li key={position} className="shrink-0">

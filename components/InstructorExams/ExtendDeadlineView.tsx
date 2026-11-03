@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { FlowCard } from "@/components/FlowCard/FlowCard";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button } from "@/components/Button/Button";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
@@ -35,50 +36,64 @@ export function ExtendDeadlineView({
   const [date, setDate] = useState("");
   const next = option ? extendedDeadline(exam, option, date) : null;
   return (
-    <div className="flex flex-col gap-4 pb-4 idesk:[&>*:not([data-page-header-band])]:max-w-[560px]">
+    <div className="flex flex-col gap-4 pb-4">
       <PageHeaderBand
         title="Extend deadline"
         subtitle={`${exam.title} · due ${shortDate(exam.deadline)}`}
         back={{ label: "Back to exam", href: `/instructor/exams/${exam.id}` }}
       />
-      <fieldset role="radiogroup" aria-label="New deadline" className="flex flex-col gap-2">
-        {extendOptions.map((entry) => (
-          <SelectableRow
-            key={entry.id}
-            name="extend"
-            value={entry.id}
-            checked={option === entry.id}
-            onChange={() => setOption(entry.id)}
-          >
-            <span className="flex min-w-0 flex-1 flex-col">
-              <span className="type-body-strong">{entry.label}</span>
-              {entry.days !== undefined && (
-                <span className="type-small text-text-secondary">
-                  New deadline{" "}
-                  {extendedDeadline(exam, entry.id, "")
-                    ? shortDate(extendedDeadline(exam, entry.id, "")!)
-                    : ""}
-                </span>
-              )}
-            </span>
-          </SelectableRow>
-        ))}
-      </fieldset>
-      {option === "date" && (
-        <TextField
-          label="New deadline date"
-          name="extend-date"
-          type="date"
-          min={isoDay(new Date(now), 1)}
-          value={date}
-          onChange={setDate}
-          error={date !== "" && !next ? "Choose a date after the current deadline." : null}
-        />
-      )}
-      <p data-extend-note className="type-small text-text-secondary">
-        Students will be notified.
-      </p>
-      <ActionBar>
+      <FlowCard
+        width="narrow"
+        footer={
+          <>
+            <Button variant="secondary" onClick={onCancel}>
+              Cancel
+            </Button>
+            <Button disabled={!next} onClick={() => next && onExtend(next)}>
+              Extend deadline
+            </Button>
+          </>
+        }
+      >
+        <fieldset role="radiogroup" aria-label="New deadline" className="flex flex-col gap-2">
+          {extendOptions.map((entry) => (
+            <SelectableRow
+              key={entry.id}
+              name="extend"
+              value={entry.id}
+              checked={option === entry.id}
+              onChange={() => setOption(entry.id)}
+            >
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="type-body-strong">{entry.label}</span>
+                {entry.days !== undefined && (
+                  <span className="type-small text-text-secondary">
+                    New deadline{" "}
+                    {extendedDeadline(exam, entry.id, "")
+                      ? shortDate(extendedDeadline(exam, entry.id, "")!)
+                      : ""}
+                  </span>
+                )}
+              </span>
+            </SelectableRow>
+          ))}
+        </fieldset>
+        {option === "date" && (
+          <TextField
+            label="New deadline date"
+            name="extend-date"
+            type="date"
+            min={isoDay(new Date(now), 1)}
+            value={date}
+            onChange={setDate}
+            error={date !== "" && !next ? "Choose a date after the current deadline." : null}
+          />
+        )}
+        <p data-extend-note className="type-small text-text-secondary">
+          Students will be notified.
+        </p>
+      </FlowCard>
+      <ActionBar hideOnDesk>
         <Button disabled={!next} onClick={() => next && onExtend(next)}>
           Extend deadline
         </Button>

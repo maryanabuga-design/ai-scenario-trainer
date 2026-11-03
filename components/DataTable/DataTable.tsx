@@ -66,6 +66,7 @@ export function DataTable<T extends TableRow>({
   firstHeader = "Student",
   firstSortable = true,
   dataAttribute = "data-table",
+  nameLines = 1,
 }: {
   /** The accessible name of the table. */
   label: string;
@@ -74,6 +75,8 @@ export function DataTable<T extends TableRow>({
   firstHeader?: string;
   firstSortable?: boolean;
   dataAttribute?: string;
+  /** How many lines the first cell may take before it is cut (a question text: 2). */
+  nameLines?: 1 | 2;
 }) {
   const [sort, setSort] = useState<SortState>(null);
   const ordered = sortRows(rows, sort, (row, id) => {
@@ -150,7 +153,11 @@ export function DataTable<T extends TableRow>({
                         (row.initials !== undefined ? (
                           <InitialsAvatar initials={row.initials} size={48} />
                         ) : null)}
-                      <span className="type-body-strong min-w-0 truncate">{row.name}</span>
+                      <span
+                        className={`type-body-strong min-w-0 ${nameLines === 2 ? "line-clamp-2" : "truncate"}`}
+                      >
+                        {row.name}
+                      </span>
                       {row.after}
                     </>
                   );

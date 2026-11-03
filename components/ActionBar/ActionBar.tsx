@@ -18,6 +18,13 @@ function useActionBarContext() {
   return context;
 }
 
+/**
+ * The bar slot inside the framed phone of the desktop preview (DESIGN.md: Responsive instructor,
+ * step 5): when it is set, the pinned bar of the student screen is also drawn there, and the copy
+ * in the window's bottom area is hidden from 1024px. Null everywhere else.
+ */
+export const FrameBarContext = createContext<HTMLElement | null>(null);
+
 export function ActionBarProvider({ children }: { children: ReactNode }) {
   const [slot, setSlot] = useState<HTMLElement | null>(null);
   const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
@@ -101,19 +108,21 @@ export function ActionBar({
   hideOnDesk?: boolean;
 }) {
   const { slot, headerSlot } = useActionBarContext();
+  const frameSlot = useContext(FrameBarContext);
   if (!slot) return null;
+  const bar = (hidden: boolean) => (
+    <div
+      data-full-bleed
+      inert={covered}
+      className={`flex flex-col gap-3 border-t border-border bg-bg p-[var(--gutter,1rem)] ${covered ? "invisible" : ""}${hidden ? " idesk:hidden" : ""}`}
+    >
+      {children}
+    </div>
+  );
   return (
     <>
-      {createPortal(
-        <div
-          data-full-bleed
-          inert={covered}
-          className={`flex flex-col gap-3 border-t border-border bg-bg p-[var(--gutter,1rem)] ${covered ? "invisible" : ""}${inHeader || hideOnDesk ? " idesk:hidden" : ""}`}
-        >
-          {children}
-        </div>,
-        slot,
-      )}
+      {createPortal(bar(inHeader || hideOnDesk || frameSlot !== null), slot)}
+      {frameSlot && createPortal(bar(false), frameSlot)}
       {inHeader && headerSlot && createPortal(children, headerSlot)}
     </>
   );

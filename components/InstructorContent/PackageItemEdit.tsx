@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useRef, useState } from "react";
 import { AnswerChoice } from "@/components/AnswerChoice/AnswerChoice";
+import { FlowCard } from "@/components/FlowCard/FlowCard";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { FlashNotice } from "@/components/FlashNotice/FlashNotice";
@@ -319,7 +320,9 @@ export function PackageItemEdit({
   const needs = needsSentence(problems);
 
   return (
-    <div className="flex flex-col gap-6 pb-4 idesk:[&>*:not([data-page-header-band])]:max-w-[720px]">
+    <div
+      className={`flex flex-col gap-6 pb-4 ${review ? "" : "idesk:[&>*:not([data-page-header-band])]:max-w-[720px]"}`}
+    >
       <PageHeaderBand
         title={name}
         subtitle={review ? `Item ${review.position} of ${review.total}` : undefined}
@@ -329,129 +332,151 @@ export function PackageItemEdit({
         }}
       />
       <FlashNotice />
-      {problems.length > 0 && (
-        <div data-problems>
-          <Notice variant="to-fix" clamp={false} title={`${problems.length} to fix in this item`}>
-            <ul className="flex flex-col gap-0.5">
-              {problems.map((issue) => (
-                <li key={issue.id}>{issue.reason}</li>
-              ))}
-            </ul>
-          </Notice>
-        </div>
-      )}
+      <FlowCard
+        plain={!review}
+        width="wide"
+        footer={
+          review ? (
+            <>
+              <Button variant="secondary" onClick={onSkip}>
+                Skip
+              </Button>
+              <Button disabled={needs !== ""} onClick={() => onSave(confirmed(draft), images)}>
+                {onlyConfirm ? "Mark as OK" : "Save and next"}
+              </Button>
+            </>
+          ) : undefined
+        }
+      >
+        {review && (
+          <p data-review-progress className="type-small hidden text-text-secondary idesk:block">
+            {review.position} of {review.total}
+          </p>
+        )}
+        {problems.length > 0 && (
+          <div data-problems>
+            <Notice variant="to-fix" clamp={false} title={`${problems.length} to fix in this item`}>
+              <ul className="flex flex-col gap-0.5">
+                {problems.map((issue) => (
+                  <li key={issue.id}>{issue.reason}</li>
+                ))}
+              </ul>
+            </Notice>
+          </div>
+        )}
 
-      {ref.part === "guide" && (
-        <>
-          <TextField
-            label="Title"
-            name="title"
-            value={(draft as GuideSection).title}
-            onChange={(value) => change({ title: value })}
-          />
-          <Area
-            id="pe-text"
-            label="TEXT"
-            rows={6}
-            value={(draft as GuideSection).text}
-            onChange={(value) => change({ text: value })}
-          />
-          {image(draft as GuideSection)}
-        </>
-      )}
+        {ref.part === "guide" && (
+          <>
+            <TextField
+              label="Title"
+              name="title"
+              value={(draft as GuideSection).title}
+              onChange={(value) => change({ title: value })}
+            />
+            <Area
+              id="pe-text"
+              label="TEXT"
+              rows={6}
+              value={(draft as GuideSection).text}
+              onChange={(value) => change({ text: value })}
+            />
+            {image(draft as GuideSection)}
+          </>
+        )}
 
-      {ref.part === "steps" && (
-        <>
-          <TextField
-            label="Action"
-            name="action"
-            value={(draft as StepItem).action}
-            onChange={(value) => change({ action: value })}
-          />
-          <Area
-            id="pe-detail"
-            label="DETAIL"
-            value={(draft as StepItem).detail}
-            onChange={(value) => change({ detail: value })}
-          />
-          <GuideLinkBlock
-            sections={sections}
-            value={(draft as StepItem).guideRef}
-            auto={auto}
-            onChange={(value) => change({ guideRef: value })}
-          />
-          {image(draft as StepItem)}
-        </>
-      )}
+        {ref.part === "steps" && (
+          <>
+            <TextField
+              label="Action"
+              name="action"
+              value={(draft as StepItem).action}
+              onChange={(value) => change({ action: value })}
+            />
+            <Area
+              id="pe-detail"
+              label="DETAIL"
+              value={(draft as StepItem).detail}
+              onChange={(value) => change({ detail: value })}
+            />
+            <GuideLinkBlock
+              sections={sections}
+              value={(draft as StepItem).guideRef}
+              auto={auto}
+              onChange={(value) => change({ guideRef: value })}
+            />
+            {image(draft as StepItem)}
+          </>
+        )}
 
-      {ref.part === "scenario" && (
-        <>
-          <Area
-            id="pe-situation"
-            label="SITUATION"
-            value={(draft as ScenarioStep).situation}
-            onChange={(value) => change({ situation: value })}
-          />
-          <Area
-            id="pe-question"
-            label="QUESTION"
-            value={(draft as ScenarioStep).question}
-            onChange={(value) => change({ question: value })}
-          />
-          <AnswersBlock
-            options={(draft as ScenarioStep).options}
-            correct={(draft as ScenarioStep).correct}
-            onChange={(part) => change(part)}
-          />
-          <Area
-            id="pe-why"
-            label="WHY"
-            value={(draft as ScenarioStep).why}
-            onChange={(value) => change({ why: value })}
-          />
-          <GuideLinkBlock
-            sections={sections}
-            value={(draft as ScenarioStep).guideRef}
-            auto={auto}
-            onChange={(value) => change({ guideRef: value })}
-          />
-          {image(draft as ScenarioStep)}
-        </>
-      )}
+        {ref.part === "scenario" && (
+          <>
+            <Area
+              id="pe-situation"
+              label="SITUATION"
+              value={(draft as ScenarioStep).situation}
+              onChange={(value) => change({ situation: value })}
+            />
+            <Area
+              id="pe-question"
+              label="QUESTION"
+              value={(draft as ScenarioStep).question}
+              onChange={(value) => change({ question: value })}
+            />
+            <AnswersBlock
+              options={(draft as ScenarioStep).options}
+              correct={(draft as ScenarioStep).correct}
+              onChange={(part) => change(part)}
+            />
+            <Area
+              id="pe-why"
+              label="WHY"
+              value={(draft as ScenarioStep).why}
+              onChange={(value) => change({ why: value })}
+            />
+            <GuideLinkBlock
+              sections={sections}
+              value={(draft as ScenarioStep).guideRef}
+              auto={auto}
+              onChange={(value) => change({ guideRef: value })}
+            />
+            {image(draft as ScenarioStep)}
+          </>
+        )}
 
-      {ref.part === "questions" && (
-        <>
-          <Area
-            id="pe-q"
-            label="QUESTION"
-            value={(draft as PackageQuestion).text}
-            onChange={(value) => change({ text: value })}
-          />
-          <AnswersBlock
-            options={(draft as PackageQuestion).options}
-            correct={(draft as PackageQuestion).correct}
-            onChange={(part) => change(part)}
-          />
-          <Area
-            id="pe-e"
-            label="EXPLANATION"
-            value={(draft as PackageQuestion).explanation}
-            onChange={(value) => change({ explanation: value })}
-          />
-          <GuideLinkBlock
-            sections={sections}
-            value={(draft as PackageQuestion).guideRef}
-            auto={auto}
-            onChange={(value) => change({ guideRef: value })}
-          />
-          {image(draft as PackageQuestion)}
-        </>
-      )}
+        {ref.part === "questions" && (
+          <>
+            <Area
+              id="pe-q"
+              label="QUESTION"
+              value={(draft as PackageQuestion).text}
+              onChange={(value) => change({ text: value })}
+            />
+            <AnswersBlock
+              options={(draft as PackageQuestion).options}
+              correct={(draft as PackageQuestion).correct}
+              onChange={(part) => change(part)}
+            />
+            <Area
+              id="pe-e"
+              label="EXPLANATION"
+              value={(draft as PackageQuestion).explanation}
+              onChange={(value) => change({ explanation: value })}
+            />
+            <GuideLinkBlock
+              sections={sections}
+              value={(draft as PackageQuestion).guideRef}
+              auto={auto}
+              onChange={(value) => change({ guideRef: value })}
+            />
+            {image(draft as PackageQuestion)}
+          </>
+        )}
 
-      {review && needs && (
-        <p className="type-small hidden text-text-secondary idesk:block">{needs}</p>
-      )}
-      <ActionBar inHeader>
+        {review && needs && (
+          <p className="type-small hidden text-text-secondary idesk:block">{needs}</p>
+        )}
+      </FlowCard>
+      <ActionBar inHeader={!review} hideOnDesk={review !== null}>
         {review ? (
           <>
             {needs && (

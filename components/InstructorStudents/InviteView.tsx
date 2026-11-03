@@ -3,6 +3,7 @@
 import { Clock, Send, UsersRound } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { FlowCard } from "@/components/FlowCard/FlowCard";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button } from "@/components/Button/Button";
 import { FlashNotice } from "@/components/FlashNotice/FlashNotice";
@@ -77,7 +78,7 @@ export function InviteView({
   }
 
   return (
-    <div className="flex flex-col gap-4 pb-4 idesk:[&>*:not([data-page-header-band])]:max-w-[560px]">
+    <div className="flex flex-col gap-4 pb-4">
       <FlashNotice />
       <PageHeaderBand
         title="Invite students"
@@ -88,115 +89,139 @@ export function InviteView({
         {message}
       </p>
 
-      {scope === ALL_GROUPS && (
-        <section aria-labelledby="group-label" className="flex flex-col gap-3">
-          <h2 id="group-label" className="type-label text-text-secondary">
-            GROUP
-          </h2>
-          <fieldset
-            role="radiogroup"
-            aria-labelledby="group-label"
-            className="flex min-w-0 flex-col gap-2"
-          >
-            {groups.map((entry) => (
-              <SelectableRow
-                key={entry.id}
-                name="invite-group"
-                value={entry.id}
-                compact
-                checked={chosen === entry.id}
-                onChange={() => {
-                  setChosen(entry.id);
-                  setMessage("");
-                }}
-              >
-                <span className="type-body-strong truncate">{entry.name}</span>
-              </SelectableRow>
-            ))}
-          </fieldset>
-          {!group && (
-            <p data-choose-group className="type-small text-text-secondary">
-              Choose a group to see its code and invite link.
-            </p>
-          )}
-        </section>
-      )}
-
-      {group && (
-        <>
-          {scope !== ALL_GROUPS && (
-            <div
-              data-invite-group
-              className="flex items-center gap-3 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)]"
+      <FlowCard
+        width="narrow"
+        footer={
+          <>
+            <Button variant="secondary" onClick={onCancel}>
+              Cancel
+            </Button>
+            <Button
+              icon={Send}
+              disabled={!group || recipients.length === 0}
+              onClick={() => {
+                onSend(
+                  recipients.map((entry) => entry.email),
+                  group!.id,
+                );
+                setRecipients([]);
+              }}
             >
-              <LucideTile icon={UsersRound} />
-              <p className="type-body-strong min-w-0 truncate">
-                {group.name} · {studentsCount(counts[group.id] ?? 0)}
+              Send invitations
+            </Button>
+          </>
+        }
+      >
+        {scope === ALL_GROUPS && (
+          <section aria-labelledby="group-label" className="flex flex-col gap-3">
+            <h2 id="group-label" className="type-label text-text-secondary">
+              GROUP
+            </h2>
+            <fieldset
+              role="radiogroup"
+              aria-labelledby="group-label"
+              className="flex min-w-0 flex-col gap-2"
+            >
+              {groups.map((entry) => (
+                <SelectableRow
+                  key={entry.id}
+                  name="invite-group"
+                  value={entry.id}
+                  compact
+                  checked={chosen === entry.id}
+                  onChange={() => {
+                    setChosen(entry.id);
+                    setMessage("");
+                  }}
+                >
+                  <span className="type-body-strong truncate">{entry.name}</span>
+                </SelectableRow>
+              ))}
+            </fieldset>
+            {!group && (
+              <p data-choose-group className="type-small text-text-secondary">
+                Choose a group to see its code and invite link.
               </p>
-            </div>
-          )}
+            )}
+          </section>
+        )}
 
-          <CopyField
-            label="GROUP CODE"
-            name="group-code"
-            value={group.code}
-            valueAttr="data-group-code"
-            copyLabel="Copy group code"
-            onCopy={() => copy(group.code, "Code copied")}
-          />
+        {group && (
+          <>
+            {scope !== ALL_GROUPS && (
+              <div
+                data-invite-group
+                className="flex items-center gap-3 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)] idesk:border-0 idesk:bg-secondary-sand"
+              >
+                <LucideTile icon={UsersRound} />
+                <p className="type-body-strong min-w-0 truncate">
+                  {group.name} · {studentsCount(counts[group.id] ?? 0)}
+                </p>
+              </div>
+            )}
 
-          <CopyField
-            label="INVITE LINK"
-            name="invite-link"
-            value={link}
-            valueAttr="data-invite-link"
-            copyLabel="Copy invite link"
-            onCopy={() => copy(link, "Link copied")}
-          />
+            <CopyField
+              label="GROUP CODE"
+              name="group-code"
+              value={group.code}
+              valueAttr="data-group-code"
+              copyLabel="Copy group code"
+              onCopy={() => copy(group.code, "Code copied")}
+            />
 
-          <RecipientField
-            recipients={recipients}
-            invited={invitedEmails}
-            onChange={setRecipients}
-            initialText={initialText}
-            initialError={initialError}
-          />
+            <CopyField
+              label="INVITE LINK"
+              name="invite-link"
+              value={link}
+              valueAttr="data-invite-link"
+              copyLabel="Copy invite link"
+              onCopy={() => copy(link, "Link copied")}
+            />
 
-          {pending.length > 0 && (
-            <section aria-labelledby="pending-label" className="flex flex-col gap-3">
-              <h2 id="pending-label" className="type-label text-text-secondary">
-                PENDING INVITATIONS ({pending.length})
-              </h2>
-              <ul className="divide-y divide-soft-divider overflow-hidden rounded-card border border-selectable-stroke bg-card">
-                {pending.map((entry) => (
-                  <li
-                    key={entry.email}
-                    data-pending={entry.email}
-                    className="flex h-[72px] items-center gap-3 px-[var(--gutter,1rem)]"
-                  >
-                    <InitialsAvatar initials={entry.email.slice(0, 2).toUpperCase()} />
-                    <span className="flex min-w-0 flex-1 flex-col">
-                      <span className="type-body-strong truncate">{entry.email}</span>
-                      <span className="type-small truncate text-text-secondary">
-                        {invitedLine(entry.invitedAt)}
-                      </span>
-                    </span>
-                    <span
-                      data-pending-pill
-                      className="type-caption inline-flex shrink-0 items-center gap-1 rounded-full bg-secondary-sand px-2.5 py-0.5 whitespace-nowrap text-text-secondary"
+            <RecipientField
+              recipients={recipients}
+              invited={invitedEmails}
+              onChange={setRecipients}
+              initialText={initialText}
+              initialError={initialError}
+            />
+
+            {pending.length > 0 && (
+              <section aria-labelledby="pending-label" className="flex flex-col gap-3">
+                <h2 id="pending-label" className="type-label text-text-secondary">
+                  PENDING INVITATIONS ({pending.length})
+                </h2>
+                <ul className="divide-y divide-soft-divider overflow-hidden rounded-card border border-selectable-stroke bg-card">
+                  {pending.map((entry) => (
+                    <li
+                      key={entry.email}
+                      data-pending={entry.email}
+                      className="flex h-[72px] items-center gap-3 px-[var(--gutter,1rem)]"
                     >
-                      <Clock size={12} strokeWidth={2.25} aria-hidden="true" />
-                      Pending
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-        </>
-      )}
+                      <InitialsAvatar initials={entry.email.slice(0, 2).toUpperCase()} />
+                      <span className="flex min-w-0 flex-1 flex-col">
+                        <span className="type-body-strong truncate">{entry.email}</span>
+                        <span className="type-small truncate text-text-secondary">
+                          {invitedLine(entry.invitedAt)}
+                        </span>
+                      </span>
+                      <span
+                        data-pending-pill
+                        className="type-caption inline-flex shrink-0 items-center gap-1 rounded-full bg-secondary-sand px-2.5 py-0.5 whitespace-nowrap text-text-secondary"
+                      >
+                        <Clock size={12} strokeWidth={2.25} aria-hidden="true" />
+                        Pending
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+          </>
+        )}
+      </FlowCard>
 
-      <ActionBar>
+      <ActionBar hideOnDesk>
         <Button
           icon={Send}
           disabled={!group || recipients.length === 0}
