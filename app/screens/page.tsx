@@ -121,6 +121,12 @@ const desktopPictures = [
   ["instructor-profile", "Profile"],
   ["instructor-profile-edit", "Edit profile"],
   ["instructor-preview-framed", "Preview as student (bar inside the frame)"],
+  ["instructor-assign-sticky-footer", "Assign exam, sticky footer with summary"],
+  ["instructor-focus-card", "Focus on a card"],
+  ["instructor-focus-row", "Focus on a table row"],
+  ["instructor-focus-sidenav", "Focus in the side navigation"],
+  ["instructor-focus-dialog", "Focus in a dialog"],
+  ["instructor-preview-feedback-sheet", "Preview: feedback sheet docked in the frame"],
   ["instructor-dialog", "A dialog"],
   ["instructor-notice", "The floating notice under the header"],
 ] as const;

@@ -143,7 +143,7 @@ export function DataTable<T extends TableRow>({
             <tr
               key={row.id}
               data-table-row={row.id}
-              className={`relative h-16 ${row.href ? "hover:bg-bg has-[a:focus-visible]:outline-2 has-[a:focus-visible]:-outline-offset-2 has-[a:focus-visible]:outline-primary" : ""}`}
+              className={`relative h-16 ${row.href ? "hover:bg-bg has-[a:focus-visible]:outline-2 has-[a:focus-visible]:-outline-offset-2 has-[a:focus-visible]:outline-(--accent)" : ""}`}
             >
               <th scope="row" className="px-6 py-2 text-left font-normal">
                 {(() => {
@@ -165,7 +165,7 @@ export function DataTable<T extends TableRow>({
                     <Link
                       href={row.href}
                       data-table-link={row.id}
-                      className="flex min-w-0 items-center gap-3 outline-none after:absolute after:inset-0 after:content-['']"
+                      className="flex min-w-0 items-center gap-3 focus-visible:outline-none! after:absolute after:inset-0 after:content-['']"
                     >
                       {content}
                     </Link>

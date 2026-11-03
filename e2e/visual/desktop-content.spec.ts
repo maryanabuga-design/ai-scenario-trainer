@@ -133,6 +133,7 @@ test.describe("One-card flows", () => {
   }) => {
     await start(page, 1280, "/instructor/content/import");
     await page.getByRole("button", { name: "Try an example" }).click();
+    await page.locator("[data-file-card]").waitFor();
     const footer = page.locator("[data-card-footer]").first();
     await expect(footer.getByRole("button", { name: "Import and review" })).toBeVisible();
     const cancel = await footer.getByRole("button", { name: "Cancel" }).boundingBox();

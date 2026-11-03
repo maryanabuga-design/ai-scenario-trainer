@@ -273,6 +273,89 @@ for (const width of [1024, 1280, 1440, 1920]) {
   });
 }
 
+for (const width of [1100, 1600]) {
+  test(`intermediate widths, ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await prepare(page, "instructor");
+    for (const [name, path, ready] of [
+      ["overview", "/instructor", "[data-weakest-topic]"],
+      ["exams", "/instructor/exams", "[data-exam-card]"],
+      ["exam-detail", "/instructor/exams/seed-active", "[data-tried]"],
+      ["students", "/instructor/students", "[data-students-table]"],
+      ["student-detail", "/instructor/students/stu-02", "[data-student-header]"],
+      ["course", "/instructor/content/course", "[data-built-in]"],
+    ] as const) {
+      await page.goto(path);
+      await page.locator(ready).first().waitFor();
+      await page.waitForTimeout(300);
+      await page.screenshot({
+        path: out(`instructor-width-${name}`, width),
+        animations: "disabled",
+      });
+    }
+  });
+}
+
+for (const width of [1280, 1920]) {
+  test(`focus, sticky footer and docked sheet, ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await prepare(page, "instructor");
+    await page.goto("/instructor/exams");
+    await page.locator("[data-exam-card]").first().waitFor();
+    await page.locator("[data-exam-card]").first().focus();
+    await page.keyboard.press("Shift+Tab");
+    await page.keyboard.press("Tab");
+    await page.waitForTimeout(300);
+    await page.screenshot({ path: out("instructor-focus-card", width), animations: "disabled" });
+    await page.goto("/instructor/students");
+    await page.locator("[data-table-link]").first().waitFor();
+    await page.locator("[data-table-link]").nth(1).focus();
+    await page.keyboard.press("Shift+Tab");
+    await page.keyboard.press("Tab");
+    await page.waitForTimeout(300);
+    await page.screenshot({ path: out("instructor-focus-row", width), animations: "disabled" });
+    await page.locator("[data-side-nav] nav a", { hasText: "Exams" }).focus();
+    await page.keyboard.press("Shift+Tab");
+    await page.keyboard.press("Tab");
+    await page.waitForTimeout(300);
+    await page.screenshot({ path: out("instructor-focus-sidenav", width), animations: "disabled" });
+    await page.goto("/instructor/exams/new");
+    await page.getByLabel("Exam title").fill("Evacuation basics");
+    await page.getByText("S1 Responding to an alarm", { exact: true }).click();
+    await page.getByText("S3 Moving through smoke", { exact: true }).click();
+    await page.locator("[data-card-footer]").getByRole("button", { name: "Cancel" }).click();
+    await page.getByRole("dialog").waitFor();
+    await page.keyboard.press("Tab");
+    await page.waitForTimeout(300);
+    await page.screenshot({ path: out("instructor-focus-dialog", width), animations: "disabled" });
+    await page.keyboard.press("Escape");
+    await page.mouse.wheel(0, 300);
+    await page.waitForTimeout(300);
+    await page.screenshot({
+      path: out("instructor-assign-sticky-footer", width),
+      animations: "disabled",
+    });
+    await page.goto("/instructor/content/import");
+    await page.getByRole("button", { name: "Try an example" }).click();
+    await page.getByRole("button", { name: /^Import/ }).click();
+    await page.getByRole("heading", { name: "Draft is ready" }).waitFor({ timeout: 20000 });
+    await page.getByRole("button", { name: "Open draft" }).click();
+    await page.locator("[data-tab-bar]").waitFor();
+    await page.goto(page.url().replace(/\?.*$/, "") + "/preview/quiz");
+    const frame = page.locator("[data-phone-frame]");
+    await frame.waitFor();
+    await page.waitForTimeout(500);
+    await frame.getByText("Find the two nearest exits").click();
+    await frame.getByRole("button", { name: "Check" }).click();
+    await page.locator(".bottom-sheet").first().waitFor();
+    await page.waitForTimeout(500);
+    await page.screenshot({
+      path: out("instructor-preview-feedback-sheet", width),
+      animations: "disabled",
+    });
+  });
+}
+
 test.describe("dialog and notice at 1280px", () => {
   test.use({ viewport: { width: 1280, height: 900 } });
   test("dialog and floating notice", async ({ page }) => {
