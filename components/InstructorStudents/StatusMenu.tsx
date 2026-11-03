@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, SlidersHorizontal } from "lucide-react";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import type { StudentsFilter } from "@/lib/students";
 
@@ -24,10 +24,18 @@ export function StatusMenu({
   onChange: (value: StudentsFilter) => void;
 }) {
   const [open, setOpen] = useState(false);
+  // the menu opens to the right of the button, or flips to the right edge when it would leave the content area
+  const [flip, setFlip] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
   const items = useRef<(HTMLButtonElement | null)[]>([]);
   const menuId = useId();
+
+  useLayoutEffect(() => {
+    if (!open || !button.current) return;
+    const area = button.current.closest("main")?.getBoundingClientRect().right ?? window.innerWidth;
+    setFlip(button.current.getBoundingClientRect().left + 280 > area);
+  }, [open]);
 
   const close = () => {
     setOpen(false);
@@ -101,7 +109,8 @@ export function StatusMenu({
           aria-label="Filter by status"
           onKeyDown={onKeyDown}
           data-status-options
-          className="absolute top-full left-0 z-30 mt-2 w-[280px] overflow-hidden rounded-[14px] border border-selectable-stroke bg-card py-1 shadow-(--card-shadow)"
+          data-flip={flip}
+          className={`absolute top-full z-30 mt-2 w-[280px] overflow-hidden rounded-[14px] border border-selectable-stroke bg-card py-1 shadow-(--card-shadow) ${flip ? "right-0" : "left-0"}`}
         >
           {options.map((option, index) => (
             <button

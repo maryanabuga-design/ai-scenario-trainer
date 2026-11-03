@@ -147,6 +147,9 @@ export const routes: Route[] = [
   }),
   instructor("students-invite", "/instructor/students/invite"),
   instructor("student-detail", "/instructor/students/stu-01"),
+  instructor("student-detail-no-practice", "/instructor/students/stu-06", {
+    ready: "[data-student-header]",
+  }),
   instructor("topic-students", "/instructor/students/topic/S1"),
   instructor("content-empty", "/instructor/content", { ready: "[data-empty-picture]" }),
   instructor("content-with-topic", "/instructor/content", {

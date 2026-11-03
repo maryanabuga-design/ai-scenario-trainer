@@ -6,6 +6,7 @@ import { useState } from "react";
 import { PageAction } from "@/components/ActionBar/ActionBar";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { DataTable } from "@/components/DataTable/DataTable";
+import { EmptyCard } from "@/components/InstructorStudents/StudentsListView";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { statusLabel } from "@/components/InstructorExams/ExamParts";
@@ -84,6 +85,9 @@ export function StudentDetailView({
   // the topics in two groups, in their own order (an unpractised topic has nothing to review)
   const needsReview = profile.topics.filter(topicNeedsReview);
   const nothingToReview = profile.topics.filter((row) => !topicNeedsReview(row));
+  // a student who has answered nothing has one calm card instead of ten identical rows
+  const noPractice = profile.topics.every((row) => row.answered === 0);
+  const topicRows = [...needsReview, ...nothingToReview];
   return (
     <div className="flex flex-col gap-4 pb-4 idesk:grid idesk:grid-cols-[340px_minmax(0,1fr)] idesk:items-start idesk:gap-x-6 idesk:gap-y-0">
       <PageHeaderBand
@@ -139,7 +143,7 @@ export function StudentDetailView({
 
         <section
           aria-labelledby="student-readiness"
-          className={`${card} flex flex-col gap-3 p-[var(--gutter,1rem)] idesk:relative`}
+          className={`${card} flex flex-col gap-3 p-[var(--gutter,1rem)] `}
         >
           <h2 id="student-readiness" className="type-label text-text-secondary">
             READINESS
@@ -177,26 +181,92 @@ export function StudentDetailView({
       </div>
 
       <div className="contents idesk:col-start-2 idesk:mt-4 idesk:flex idesk:min-w-0 idesk:flex-col idesk:gap-6">
-        {[
-          { id: "review", label: "NEEDS REVIEW", rows: needsReview },
-          { id: "clear", label: "NOTHING TO REVIEW", rows: nothingToReview },
-        ]
-          .filter((group) => group.rows.length > 0)
-          .map((group) => (
+        {noPractice ? (
+          <EmptyCard
+            dataEmpty="no-practice"
+            title="No practice yet"
+            text="Practice results will appear here once the student starts."
+            action={null}
+          />
+        ) : (
+          <>
+            <div className="contents idesk:hidden">
+              {[
+                { id: "review", label: "NEEDS REVIEW", rows: needsReview },
+                { id: "clear", label: "NOTHING TO REVIEW", rows: nothingToReview },
+              ]
+                .filter((group) => group.rows.length > 0)
+                .map((group) => (
+                  <section
+                    key={group.id}
+                    aria-labelledby={`student-topics-${group.id}`}
+                    data-topic-group={group.id}
+                    className="flex flex-col gap-3"
+                  >
+                    <h2
+                      id={`student-topics-${group.id}`}
+                      className="type-label text-text-secondary"
+                    >
+                      {group.label} · {group.rows.length}
+                    </h2>
+                    <ul className="flex flex-col gap-3">
+                      {group.rows.map((row) => (
+                        <li
+                          key={row.sectionId}
+                          data-topic-row={row.sectionId}
+                          className={`${card} flex h-[var(--list-card-height,80px)] items-center gap-3 px-[var(--gutter,1rem)]`}
+                        >
+                          <TopicBadge id={row.sectionId} />
+                          <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                            <span data-topic-title className="type-body-strong truncate">
+                              <span className="sr-only">{row.sectionId} </span>
+                              {titleOf(row.sectionId)}
+                            </span>
+                            <span className="type-small text-text-secondary tabular-nums">
+                              {row.answered === 0
+                                ? "Not practised yet"
+                                : `${row.correct} of ${row.answered} correct`}
+                            </span>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                ))}
+            </div>
             <section
-              key={group.id}
-              aria-labelledby={`student-topics-${group.id}`}
-              data-topic-group={group.id}
-              className="flex flex-col gap-3"
+              aria-labelledby="student-topics-all"
+              data-topic-group="all"
+              className="hidden flex-col gap-3 idesk:flex"
             >
-              <h2 id={`student-topics-${group.id}`} className="type-label text-text-secondary">
-                {group.label} · {group.rows.length}
+              <h2 id="student-topics-all" className="type-label text-text-secondary">
+                TOPICS · {topicRows.length}
               </h2>
               <DataTable
-                label={group.label.toLowerCase()}
+                label="Topics"
                 dataAttribute="data-topics-table"
                 firstHeader="Topic"
                 columns={[
+                  {
+                    id: "status",
+                    header: "Status",
+                    width: "170px",
+                    sortValue: (row) => (row.needs ? 0 : row.answered === 0 ? 2 : 1),
+                    cell: (row) =>
+                      row.needs ? (
+                        <StatusChip tone="attention" value="needs">
+                          Needs review
+                        </StatusChip>
+                      ) : row.answered === 0 ? (
+                        <StatusChip tone="neutral" value="not-started">
+                          Not practised
+                        </StatusChip>
+                      ) : (
+                        <StatusChip tone="positive" value="ready">
+                          On track
+                        </StatusChip>
+                      ),
+                  },
                   {
                     id: "result",
                     header: "Result",
@@ -209,38 +279,18 @@ export function StudentDetailView({
                         : `${row.correct} of ${row.answered} correct`,
                   },
                 ]}
-                rows={group.rows.map((row) => ({
+                rows={topicRows.map((row) => ({
                   id: row.sectionId,
                   name: titleOf(row.sectionId),
                   leading: <TopicBadge id={row.sectionId} />,
                   correct: row.correct,
                   answered: row.answered,
+                  needs: topicNeedsReview(row),
                 }))}
               />
-              <ul className="flex flex-col gap-3 idesk:hidden">
-                {group.rows.map((row) => (
-                  <li
-                    key={row.sectionId}
-                    data-topic-row={row.sectionId}
-                    className={`${card} flex h-[var(--list-card-height,80px)] items-center gap-3 px-[var(--gutter,1rem)]`}
-                  >
-                    <TopicBadge id={row.sectionId} />
-                    <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                      <span data-topic-title className="type-body-strong truncate">
-                        <span className="sr-only">{row.sectionId} </span>
-                        {titleOf(row.sectionId)}
-                      </span>
-                      <span className="type-small text-text-secondary tabular-nums">
-                        {row.answered === 0
-                          ? "Not practised yet"
-                          : `${row.correct} of ${row.answered} correct`}
-                      </span>
-                    </span>
-                  </li>
-                ))}
-              </ul>
             </section>
-          ))}
+          </>
+        )}
 
         <section aria-labelledby="student-exams" className="flex flex-col gap-3">
           <div className="flex items-baseline justify-between gap-3">
@@ -266,9 +316,17 @@ export function StudentDetailView({
               },
               {
                 id: "details",
-                header: "Details",
+                header: "Result",
                 width: "260px",
-                cell: (row) => rosterLine(row.status, now),
+                // only what the status does not say: the score, or when the attempt started
+                cell: (row) =>
+                  row.status.kind === "passed" ||
+                  row.status.kind === "not-passed" ||
+                  row.status.kind === "in-progress" ? (
+                    rosterLine(row.status, now)
+                  ) : (
+                    <span className="text-text-secondary">—</span>
+                  ),
               },
             ]}
             rows={rows.map((row) => ({

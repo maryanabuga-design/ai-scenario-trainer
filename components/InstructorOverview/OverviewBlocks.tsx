@@ -67,8 +67,7 @@ export function BlockLabel({
 }
 
 /** The ring graphic of the readiness card: an arc of the same number on a light track, a shield in the middle. Decorative. */
-export function ReadinessRing({ percent }: { percent: number }) {
-  const size = 56;
+export function ReadinessRing({ percent, size = 56 }: { percent: number; size?: number }) {
   const stroke = 5;
   const radius = size / 2 - stroke / 2 - 1;
   const length = 2 * Math.PI * radius;
