@@ -7,6 +7,9 @@ import { createPortal } from "react-dom";
 const ActionBarContext = createContext<{
   slot: HTMLElement | null;
   setSlot: (element: HTMLElement | null) => void;
+  /** The actions area of the page header (shown from 1024px in the instructor shell). */
+  headerSlot: HTMLElement | null;
+  setHeaderSlot: (element: HTMLElement | null) => void;
 } | null>(null);
 
 function useActionBarContext() {
@@ -17,8 +20,11 @@ function useActionBarContext() {
 
 export function ActionBarProvider({ children }: { children: ReactNode }) {
   const [slot, setSlot] = useState<HTMLElement | null>(null);
+  const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
   return (
-    <ActionBarContext.Provider value={{ slot, setSlot }}>{children}</ActionBarContext.Provider>
+    <ActionBarContext.Provider value={{ slot, setSlot, headerSlot, setHeaderSlot }}>
+      {children}
+    </ActionBarContext.Provider>
   );
 }
 
@@ -28,26 +34,65 @@ export function ActionBarSlot() {
 }
 
 /**
+ * The actions area of the page header (DESIGN.md: Responsive instructor, page header): empty and
+ * hidden on the phone; from 1024px in the instructor shell it holds the page's actions, Secondary
+ * first and the Primary rightmost, 44px high, never full width. Drawn by the header itself.
+ */
+export function HeaderActionsSlot() {
+  const context = useContext(ActionBarContext);
+  return (
+    <div
+      ref={context?.setHeaderSlot}
+      data-header-slot
+      className="hidden idesk:flex idesk:flex-row-reverse idesk:items-center idesk:gap-3 idesk:[&>*]:h-11! idesk:[&>*]:w-auto! idesk:[&>*]:px-5!"
+    />
+  );
+}
+
+/**
+ * A page action declared once (DESIGN.md: Responsive instructor, page header): on the phone it stays
+ * where it is drawn (inline, in the content); from 1024px in the instructor shell the same element
+ * is shown in the header's actions area instead and this inline copy is hidden. CSS only.
+ */
+export function PageAction({ children }: { children: ReactNode }) {
+  const context = useContext(ActionBarContext);
+  return (
+    <>
+      <div className="contents idesk:hidden">{children}</div>
+      {context?.headerSlot && createPortal(children, context.headerSlot)}
+    </>
+  );
+}
+
+/**
  * `covered`: a sheet is drawn over the bar (the answer feedback). The bar keeps its place and size
  * so the page does not change height, but it is invisible and cannot be reached.
  */
 export function ActionBar({
   children,
   covered = false,
+  inHeader = false,
 }: {
   children: ReactNode;
   covered?: boolean;
+  /** From 1024px in the instructor shell the buttons are shown in the page header instead of this bar. */
+  inHeader?: boolean;
 }) {
-  const { slot } = useActionBarContext();
+  const { slot, headerSlot } = useActionBarContext();
   if (!slot) return null;
-  return createPortal(
-    <div
-      data-full-bleed
-      inert={covered}
-      className={`flex flex-col gap-3 border-t border-border bg-bg p-[var(--gutter,1rem)] ${covered ? "invisible" : ""}`}
-    >
-      {children}
-    </div>,
-    slot,
+  return (
+    <>
+      {createPortal(
+        <div
+          data-full-bleed
+          inert={covered}
+          className={`flex flex-col gap-3 border-t border-border bg-bg p-[var(--gutter,1rem)] ${covered ? "invisible" : ""}${inHeader ? " idesk:hidden" : ""}`}
+        >
+          {children}
+        </div>,
+        slot,
+      )}
+      {inHeader && headerSlot && createPortal(children, headerSlot)}
+    </>
   );
 }

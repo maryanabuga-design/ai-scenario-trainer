@@ -409,7 +409,7 @@ export function ExamDetailView({
       )}
 
       {active && counts.notStarted > 0 && (
-        <ActionBar>
+        <ActionBar inHeader>
           <Button onClick={onAskRemind}>Send reminder</Button>
         </ActionBar>
       )}

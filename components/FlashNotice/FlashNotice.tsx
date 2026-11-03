@@ -10,10 +10,18 @@ export const SHOW_MS = 4000;
 const FADE_MS = 250;
 
 /**
- * The top of the notice: 8px under the visible back button, otherwise 12px from the top of the screen
+ * The top of the notice: 12px under the desktop header of the instructor, otherwise 8px under the visible back button, otherwise 12px from the top of the screen
  * (also when the back button has scrolled out of view).
  */
 function topOfNotice(): number {
+  // the instructor's desktop header has no band: the notice floats 12px under the header block, never over the title
+  if (
+    window.matchMedia("(min-width: 1024px)").matches &&
+    document.querySelector('[data-shell="instructor"]')
+  ) {
+    const header = document.querySelector("[data-page-header-band]");
+    if (header) return Math.max(12, Math.round(header.getBoundingClientRect().bottom + 12));
+  }
   const back = Array.from(document.querySelectorAll("[data-back-button]")).find(
     (el) => el.getClientRects().length > 0,
   );

@@ -3,6 +3,15 @@
 /* The one desktop variant (DESIGN.md: Responsive instructor): true at 1024px and wider. Used only by the instructor shell and instructor components. */
 @custom-variant desk (@media (min-width: 1024px));
 
+/* The instructor's desktop: 1024px and wider AND inside the instructor shell (the side navigation is drawn). Never true for the student. */
+@custom-variant idesk {
+  @media (min-width: 1024px) {
+    &:where([data-shell-frame]:has([data-shell="instructor"]) *) {
+      @slot;
+    }
+  }
+}
+
 /* Tokens from DESIGN.md. Change DESIGN.md first, then this file. */
 :root {
   --bg: #f6f4f0;
