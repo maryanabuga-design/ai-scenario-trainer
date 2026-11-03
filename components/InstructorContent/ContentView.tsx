@@ -1,10 +1,11 @@
 "use client";
 
-import { FilePlus } from "lucide-react";
+import { FilePlus, Library } from "lucide-react";
 import Link from "next/link";
 import { ButtonLink } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { FlashNotice } from "@/components/FlashNotice/FlashNotice";
+import { IconTile } from "@/components/IconTile/IconTile";
 import { ContentEmpty } from "@/components/InstructorContent/ContentEmpty";
 import { PackageCard } from "@/components/InstructorContent/PackageCard";
 import { SetCard } from "@/components/InstructorContent/SetCard";
@@ -74,11 +75,14 @@ export function ContentView({
       <Link
         href="/instructor/content/course"
         data-course-row
-        className="flex h-[72px] items-center gap-3 rounded-card border border-selectable-stroke bg-card px-4 shadow-(--card-shadow) has-focus-visible:outline-2"
+        className="flex min-h-[72px] items-center gap-3 rounded-card border border-selectable-stroke bg-card px-4 py-3 shadow-(--card-shadow) has-focus-visible:outline-2"
       >
+        <IconTile size="default" tileId="course">
+          <Library strokeWidth={2} />
+        </IconTile>
         <span className="flex min-w-0 flex-1 flex-col">
-          <span className="type-body-strong truncate">Course topics ({builtIn.length})</span>
-          <span className="type-small truncate text-text-secondary">{COURSE_SUBTITLE}</span>
+          <span className="type-body-strong">Course topics ({builtIn.length})</span>
+          <span className="type-small text-text-secondary">{COURSE_SUBTITLE}</span>
         </span>
         <Chevron />
       </Link>

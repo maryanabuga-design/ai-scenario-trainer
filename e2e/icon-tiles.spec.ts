@@ -122,6 +122,36 @@ for (const width of [360, 430]) {
       expect(await noSidewaysScroll(page)).toBe(true);
     });
 
+    test("the Course topics card has the shared tile with the library icon, centred, as one link", async ({
+      page,
+    }) => {
+      await page.goto("/instructor/content");
+      const card = page.locator("[data-course-row]");
+      await expect(card).toHaveAttribute("href", "/instructor/content/course");
+      const tile = card.locator("[data-icon-tile=course]");
+      await expect(tile).toHaveAttribute("aria-hidden", "true");
+      await expect(tile.locator("svg.lucide-library")).toHaveCount(1);
+      const reference = await look(
+        (await page.goto("/instructor"),
+        page.locator("[data-exam-card] [data-icon-tile=exam]").first()),
+      );
+      await page.goto("/instructor/content");
+      expect(await look(tile)).toEqual(reference);
+      const c = (await card.boundingBox())!;
+      const t = (await tile.boundingBox())!;
+      const text = (await card.locator("span.flex-col").boundingBox())!;
+      expect(c.height).toBeGreaterThanOrEqual(72);
+      expect(Math.abs(t.y + t.height / 2 - (text.y + text.height / 2))).toBeLessThanOrEqual(2);
+      expect(Math.round(text.x - (t.x + t.width))).toBe(12);
+      await expect(card).toContainText("Course topics (10)");
+      await expect(card).toContainText("Provided with the product · read-only");
+      // one link: no nested link or button
+      await expect(card.locator("a, button")).toHaveCount(0);
+      expect(await noSidewaysScroll(page)).toBe(true);
+      await card.click();
+      await expect(page).toHaveURL(/\/instructor\/content\/course$/);
+    });
+
     test("the Content note is the same component", async ({ page }) => {
       await page.goto("/instructor/content");
       const note = page.locator("[data-content-note]");

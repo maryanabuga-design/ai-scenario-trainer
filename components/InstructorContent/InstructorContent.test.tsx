@@ -67,6 +67,17 @@ describe("the Content tab", () => {
     expect(withSets).toContain("Provided with the product · read-only");
     expect(withSets).toContain('href="/instructor/content/course"');
     expect(withSets.match(/data-course-row/g)).toHaveLength(1);
+    // the card has the one icon tile with the library icon, on the left, aria-hidden
+    const card = withSets.slice(withSets.indexOf("data-course-row"));
+    const cardHtml = card.slice(0, card.indexOf("</a>"));
+    expect(cardHtml).toContain('data-icon-tile="course"');
+    expect(cardHtml).toContain('aria-hidden="true"');
+    expect(cardHtml).toContain("lucide-library");
+    expect(cardHtml).toContain("bg-chip-neutral-bg text-text");
+    expect(cardHtml).toContain("h-12 w-12 rounded-[14px]");
+    expect(cardHtml.indexOf("data-icon-tile")).toBeLessThan(cardHtml.indexOf("Course topics"));
+    expect(cardHtml).toContain("min-h-[72px]");
+    expect(cardHtml).toContain("lucide-chevron-right");
     expect(withSets).not.toMatch(/Show course topics|Hide course topics|Show built-in/);
     expect(withSets).not.toContain("data-built-in=");
     expect(withSets).not.toContain('inert=""');

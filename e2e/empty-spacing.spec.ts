@@ -83,7 +83,7 @@ for (const width of [360, 430]) {
       await page.goto("/instructor/content");
       const importLink = await box(page.getByRole("link", { name: "Import content" }));
       expect([Math.round(importLink.height), Math.round(importLink.x)]).toEqual([52, 16]);
-      expect(Math.round((await box(page.locator("[data-course-row]"))).height)).toBe(72);
+      expect((await box(page.locator("[data-course-row]"))).height).toBeGreaterThanOrEqual(72);
       await expect(page.locator("[data-content-note]")).toContainText(
         "Your topics stay in this browser (prototype).",
       );
