@@ -325,3 +325,77 @@ test.describe("Question table", () => {
     expect(clamp).toBe("2");
   });
 });
+
+test.describe("Preview frame: every student screen stays inside", () => {
+  const draftId = async (page: Page) => {
+    await start(page, 1280, "/instructor/content/import");
+    await page.getByRole("button", { name: "Try an example" }).click();
+    await page.getByRole("button", { name: /^Import/ }).click();
+    await page.getByRole("heading", { name: "Draft is ready" }).waitFor({ timeout: 20_000 });
+    await page.getByRole("button", { name: "Open draft" }).click();
+    await page.locator("[data-tab-bar]").waitFor();
+    return page.url().replace(/\?.*$/, "");
+  };
+  /** Fixed or absolutely placed things that are visible must lie inside the frame. */
+  const escaped = (page: Page) =>
+    page.evaluate(() => {
+      const frame = document.querySelector("[data-phone-frame]")!.getBoundingClientRect();
+      return Array.from(document.querySelectorAll<HTMLElement>("main *, [data-full-bleed] *"))
+        .filter((el) => el.closest("[data-phone-frame]"))
+        .filter((el) => ["fixed"].includes(getComputedStyle(el).position))
+        .filter(
+          (el) => el.getClientRects().length > 0 && getComputedStyle(el).visibility === "visible",
+        )
+        .filter((el) => {
+          const r = el.getBoundingClientRect();
+          return (
+            r.left < frame.left - 1 || r.right > frame.right + 1 || r.bottom > frame.bottom + 1
+          );
+        })
+        .map((el) => el.className.toString().slice(0, 80));
+    });
+
+  test("the reading, steps, scenario and quiz screens", async ({ page }) => {
+    const base = await draftId(page);
+    for (const part of ["", "/steps", "/scenario", "/quiz"]) {
+      await page.goto(`${base}/preview${part}`);
+      await page.locator("[data-phone-frame]").waitFor();
+      await page.waitForTimeout(500);
+      const frame = (await page.locator("[data-phone-frame]").boundingBox())!;
+      expect(frame.width, part).toBe(430);
+      expect(await escaped(page), `fixed things outside the frame on ${part || "reading"}`).toEqual(
+        [],
+      );
+      const over = await page.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      );
+      expect(over).toBe(false);
+    }
+  });
+
+  test("the feedback sheet and the hint sheet are docked inside the frame", async ({ page }) => {
+    const base = await draftId(page);
+    await page.goto(`${base}/preview/quiz`);
+    const frame = page.locator("[data-phone-frame]");
+    await frame.waitFor();
+    await page.waitForTimeout(500);
+    // answer and check: the feedback sheet
+    await frame
+      .getByRole("radio")
+      .nth(1)
+      .check({ force: true })
+      .catch(async () => {
+        await frame.getByText("Find the two nearest exits").click();
+      });
+    await frame.getByRole("button", { name: "Check" }).click();
+    const sheet = frame.locator(".bottom-sheet").first();
+    await sheet.waitFor();
+    await page.waitForTimeout(400);
+    const f = (await frame.boundingBox())!;
+    const s = (await sheet.boundingBox())!;
+    expect(s.x).toBeGreaterThanOrEqual(f.x - 1);
+    expect(s.x + s.width).toBeLessThanOrEqual(f.x + f.width + 1);
+    expect(s.y + s.height).toBeLessThanOrEqual(f.y + f.height + 1);
+    expect(await escaped(page)).toEqual([]);
+  });
+});

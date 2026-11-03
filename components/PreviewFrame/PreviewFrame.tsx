@@ -17,7 +17,7 @@ export function PreviewFrame({ children }: { children: ReactNode }) {
     <FrameBarContext.Provider value={slot}>
       <div
         data-phone-frame
-        className="contents idesk:mx-auto idesk:block idesk:w-full idesk:max-w-[430px] idesk:overflow-clip idesk:rounded-[24px] idesk:border idesk:border-selectable-stroke idesk:bg-bg idesk:px-4 idesk:pt-6 idesk:shadow-(--card-shadow) idesk:[--gutter:1rem]"
+        className="contents idesk:mx-auto idesk:block idesk:w-full idesk:max-w-[430px] idesk:overflow-clip idesk:rounded-[24px] idesk:border idesk:border-selectable-stroke idesk:bg-bg idesk:px-4 idesk:pt-6 idesk:min-h-[720px] idesk:transform-gpu idesk:shadow-(--card-shadow) idesk:[--gutter:1rem]"
       >
         {children}
         {/* plain `desk:` here: the instructor variant is switched off inside the frame */}
