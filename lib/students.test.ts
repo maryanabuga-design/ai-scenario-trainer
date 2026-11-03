@@ -11,6 +11,7 @@ import {
   examRowsFor,
   fieldLabel,
   filterFrom,
+  weakTopicOf,
   matchesQuery,
   groupLine,
   localProfile,
@@ -266,5 +267,29 @@ describe("the exams of a student match the Exam detail", () => {
     for (const row of examRowsFor(people[1], exams, attempts, now)) {
       expect(row.certificateId).toBeUndefined();
     }
+  });
+});
+
+describe("the weak topic of a student", () => {
+  const topic = (sectionId: string, correct: number, answered: number) => ({
+    sectionId,
+    correct,
+    total: 10,
+    answered,
+  });
+
+  it("is the topic below the pass mark with the lowest share of right answers", () => {
+    expect(weakTopicOf({ topics: [topic("S1", 4, 5), topic("S2", 1, 5), topic("S3", 3, 5)] })).toBe(
+      "S2",
+    );
+  });
+
+  it("takes the earlier topic when two are equal, and ignores topics at or above the pass mark", () => {
+    expect(weakTopicOf({ topics: [topic("S1", 2, 5), topic("S2", 2, 5)] })).toBe("S1");
+    expect(weakTopicOf({ topics: [topic("S1", 5, 5), topic("S2", 4, 5)] })).toBeNull();
+  });
+
+  it("is null without any answer", () => {
+    expect(weakTopicOf({ topics: [topic("S1", 0, 0)] })).toBeNull();
   });
 });
