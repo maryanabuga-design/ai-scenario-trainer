@@ -74,6 +74,26 @@ Sessions, history and the profile are saved in this browser on this device (`loc
 
 Build order and decisions: `docs/build-plan.md`.
 
+## Responsive layout
+- The student keeps the phone column (about 430px wide) at every window width.
+- The instructor has the phone layout below 1024px and a desktop layout from 1024px: a side navigation, a wide content column (at most 1200px), tables, grids and centred form cards. It is the same app, the same routes and the same data.
+- To try it: run the app (see Run it), choose Sign in, use `lena@example.org` and the demo code `482913`, open Profile and set Demo mode to Instructor, then make the browser window wider than 1024px. Making it narrower brings the phone layout back at once.
+- Checks (the app must be built first; each command starts its own production server on port 3100):
+  - `npm run test:visual`: compares 45 screens at 360 and 430px with the stored pictures in `tests/visual-baseline`; zero differing pixels are allowed.
+  - `npm run test:responsive`: no sideways scrolling or cut text at twelve widths from 360 to 1920px.
+  - `npx playwright test --project=visual e2e/visual/a11y.spec.ts`: an automatic accessibility audit (axe) and the page structure; `e2e/visual/keyboard.spec.ts` is the keyboard-only walkthrough.
+  - `npm run screens:desktop`: writes the review pictures to `docs/screens/desktop`; `/screens` shows them.
+
+| Screen group | Desktop treatment (from 1024px) |
+| --- | --- |
+| Overview | wide readiness card, two columns, weakest topic below |
+| Exams and exam detail | card grid; sticky info card with a table of students |
+| Students, topics, student detail | tables with sorting; a status menu; two-column student detail |
+| Content, import, topic screen | card grids, centred import cards, tabs and tables |
+| Assign exam, Extend deadline, Invite students | one centred form card with its actions in a footer |
+| Preview as student | the student screen in a framed phone |
+| Profile | a single column of at most 720px |
+
 ## Known limitations
 
 - Invitations and reminders to the invented students are simulated: no email is sent and nothing leaves the browser (a reminder to a local student account appears in that account's Notifications). Word and PDF files are not parsed.
