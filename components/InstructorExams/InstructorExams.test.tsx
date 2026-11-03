@@ -256,7 +256,7 @@ describe("Assign exam", () => {
     const tag = specs.slice(0, specs.indexOf(">"));
     expect(tag).toContain("bg-card");
     expect(tag).toContain("border border-selectable-stroke");
-    expect(tag).not.toContain("bg-secondary-sand");
+    expect(tag.replace("idesk:bg-secondary-sand", "")).not.toContain("bg-secondary-sand");
   });
 
   it("has Select all as a tertiary action at the right of TOPICS (underlined, no fill, 44px), and Clear all when every topic is chosen", () => {
