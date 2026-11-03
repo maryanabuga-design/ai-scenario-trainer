@@ -13,16 +13,6 @@ const start = async (page: Page, width: number, path: string, ready?: string) =>
     .waitFor();
   await page.waitForTimeout(300);
 };
-const style = (page: Page, selector: string, props: string[]) =>
-  page
-    .locator(selector)
-    .first()
-    .evaluate(
-      (el, names) =>
-        Object.fromEntries(names.map((n) => [n, getComputedStyle(el).getPropertyValue(n)])),
-      props,
-    );
-
 test.describe("hover states", () => {
   test.use({ reducedMotion: "reduce" });
 

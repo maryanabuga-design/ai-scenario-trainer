@@ -31,7 +31,8 @@ describe("the three locked button types", () => {
     expect(secondary).toContain("active:bg-olive-tint-pressed");
     expect(secondary).toContain("h-[52px]");
     expect(secondary).toContain("w-full");
-    expect(secondary).toContain("disabled:bg-secondary-sand disabled:text-text-secondary");
+    expect(secondary).toContain("disabled:bg-secondary-sand");
+    expect(secondary).toContain("disabled:text-text-secondary");
     expect(secondary).not.toMatch(/(^| )(border|outline)/);
   });
 
@@ -88,7 +89,7 @@ describe("the three locked button types", () => {
     expect(html).toMatch(/<svg[^>]*aria-hidden="true"/);
   });
 
-  it("has no hover state, and a link looks like its button", () => {
+  it("has no hover state on the phone (only the instructor's desktop has one), and a link looks like its button", () => {
     for (const variant of ["primary", "secondary", "tertiary"] as const) {
       const button = classes(renderToStaticMarkup(<Button variant={variant}>Go</Button>));
       const link = classes(
@@ -98,8 +99,9 @@ describe("the three locked button types", () => {
           </ButtonLink>,
         ),
       );
-      expect(button).not.toContain("hover:");
-      expect(link).not.toContain("hover:");
+      // the only hover look is the desktop one of the instructor shell (`idesk:`), never the phone's
+      expect(button.replace(/idesk:[a-z:]*hover:[^ ]+/g, "")).not.toContain("hover:");
+      expect(link.replace(/idesk:[a-z:]*hover:[^ ]+/g, "")).not.toContain("hover:");
       expect(link).toContain(variant === "primary" ? "bg-primary" : "text-primary");
     }
   });
