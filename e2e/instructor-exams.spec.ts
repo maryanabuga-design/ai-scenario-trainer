@@ -111,9 +111,25 @@ async function playExam(page: Page, examId: string, right: number) {
 const mineRow = (page: Page) => page.locator('[data-student-row="maryana@example.com"]');
 const count = (page: Page, kind: string) =>
   page.locator(`[data-count=${kind}] .tabular-nums`).innerText().then(Number);
+/** The people the exam is assigned to (the same number on every state of the detail). */
+const assigned = async (page: Page) =>
+  Number((await page.locator("[data-student-count]").innerText()).split(" ")[0]);
+/** A new exam has no results yet: its detail shows no tiles, only who it is assigned to. */
+const expectNoResults = async (page: Page) => {
+  await expect(page.locator("[data-no-results]")).toHaveText(
+    "No results yet. They appear when students start the exam.",
+  );
+  await expect(page.locator("[data-count]")).toHaveCount(0);
+  await expect(page.locator("[data-tried]")).toHaveCount(0);
+  await expect(page.locator("[data-status-chip]")).toHaveCount(0);
+};
 
+/** No percent sign on an Exams screen except the pass mark ("Pass mark 80%"). */
 const noPercent = async (page: Page) =>
-  expect(((await page.locator("main").innerText()).match(/%/g) ?? []).length).toBe(0);
+  expect(
+    ((await page.locator("main").innerText()).replaceAll("Pass mark 80%", "").match(/%/g) ?? [])
+      .length,
+  ).toBe(0);
 
 /** The group is chosen on the Overview (the only place with the group chip); "All groups" lists every exam. */
 async function allGroups(page: Page) {
@@ -333,9 +349,26 @@ for (const width of [360, 430]) {
     }) => {
       const id = await assign(page, "Exam: Alarm and routes");
       await expect(page.locator("[data-flash]:visible")).toContainText(
-        "Exam assigned. Students will see it on Home.",
+        "Exam assigned to Rescue team",
       );
       await expect(page.locator("main h1:visible")).toHaveText("Exam: Alarm and routes");
+      // a brand-new exam has no results: no completion, tiles, scores or hardest questions
+      await expectNoResults(page);
+      await expect(page.locator("main")).toContainText(
+        "Results will appear here once students start.",
+      );
+      await expect(page.locator("main")).toContainText("TOPICS");
+      await expect(page.locator("[data-rules]")).toHaveText(
+        "3 attempts · 20 questions · 20 minutes · Pass mark 80%",
+      );
+      await expect(page.locator("[data-student-row]")).toHaveCount(await assigned(page));
+      await expect(page.locator("[data-student-row] [data-roster-name]")).toHaveCount(
+        await assigned(page),
+      );
+      await expect(page.getByRole("button", { name: "Send reminder" })).toBeVisible();
+      await page.goto("/instructor/exams");
+      await expect(page.locator(`[data-exam-card="${id}"]`)).toContainText("Not started yet");
+      await page.goBack();
       await expect(page.locator("[data-state-pill]")).toContainText(/^Active · Due \d+ \w{3}$/);
       await switchRole(page, "Student");
       await page.goto("/notifications");
@@ -356,17 +389,17 @@ for (const width of [360, 430]) {
       await expect(page.getByText("Military only")).toHaveCount(0);
     });
 
-    test("the Active detail: pill, TOPIC MODULE, a group pill, the rules, 'n of 15 tried' and four count tiles; no avatar, no percent", async ({
+    test("the Active detail: pill, TOPICS, a group pill, the rules, 'n of 15 tried' and four count tiles; no avatar, no percent", async ({
       page,
     }) => {
       await page.goto("/instructor/exams/seed-active");
       await expect(page.getByRole("link", { name: "Back to Exams" })).toBeVisible();
       await expect(page.locator("[data-avatar]")).toHaveCount(0);
       await expect(page.locator("[data-state-pill]")).toContainText("Active · Due");
-      await expect(page.locator("main")).toContainText("TOPIC MODULE");
+      await expect(page.locator("main")).toContainText("TOPICS");
       await expect(page.locator("[data-group-pills]")).toContainText("Rescue team");
       await expect(page.locator("[data-rules]")).toHaveText(
-        "3 attempts allowed · 20 questions · 20 minutes · Pass mark 80",
+        "3 attempts · 20 questions · 20 minutes · Pass mark 80%",
       );
       await expect(page.locator("[data-tried]")).toHaveText(/^\d+ of 15 tried$/);
       await expect(page.locator("[data-count]")).toHaveCount(4);
@@ -510,7 +543,8 @@ for (const width of [360, 430]) {
       page,
     }) => {
       const id = await assign(page, "Exam: Remind me");
-      const notStarted = await count(page, "not-started");
+      // a new exam: everybody assigned has not started
+      const notStarted = await assigned(page);
       await page.getByRole("button", { name: "Send reminder" }).click();
       const dialog = page.locator("dialog[open]");
       await expect(dialog).toContainText(`Remind ${notStarted} students?`);
@@ -619,8 +653,9 @@ for (const width of [360, 430]) {
       page,
     }) => {
       const id = await assign(page, "Exam: Whole flow");
-      const before = await count(page, "passed");
-      const notStartedBefore = await count(page, "not-started");
+      await expectNoResults(page);
+      const before = 0;
+      const notStartedBefore = await assigned(page);
       await switchRole(page, "Student");
       await page.goto("/notifications");
       const card = page.locator(`[data-assigned-exam="${id}"]`);
@@ -648,7 +683,7 @@ for (const width of [360, 430]) {
       // the Exams list shows the same count
       await page.goto("/instructor/exams");
       await expect(page.locator(`[data-exam-card="${id}"]`)).toContainText(
-        `Passed ${before + 1} of 15`,
+        `Passed ${before + 1} of ${notStartedBefore}`,
       );
     });
 
@@ -765,7 +800,13 @@ for (const width of [360, 430]) {
       ]) {
         await page.goto(path);
         await page.waitForLoadState("networkidle");
-        expect(((await page.locator("main").innerText()).match(/%/g) ?? []).length, path).toBe(0);
+        expect(
+          (
+            (await page.locator("main").innerText()).replaceAll("Pass mark 80%", "").match(/%/g) ??
+            []
+          ).length,
+          path,
+        ).toBe(0);
         expect(await noSidewaysScroll(page), path).toBe(true);
         // (the header band's Back circle is the app's existing 40px button)
         // (the guide chip of the question screen is the app's existing small chip)

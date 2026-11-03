@@ -49,7 +49,8 @@ async function signUpInstructor(page: Page) {
 
 const passedOf = async (page: Page, examId: string) => {
   const text = await page.locator(`[data-exam-card="${examId}"]`).innerText();
-  return Number(/Passed (\d+) of (\d+)/.exec(text)![1]);
+  // a new exam has no attempts: its card says "Not started yet" instead of "Passed 0 of n"
+  return Number(/Passed (\d+) of (\d+)/.exec(text)?.[1] ?? 0);
 };
 
 for (const width of [360, 430]) {
@@ -268,8 +269,10 @@ for (const width of [360, 430]) {
       await expect(page.locator('[data-action="needs-attention"]')).toBeVisible();
       // the exam is the nearest one in EXAMS, the same card as on Exams: one result line only
       const examCard = page.locator(`[data-exam-card="${id}"]`);
-      await expect(examCard).toContainText(/Passed \d+ of 15$/);
-      expect(await examCard.innerText()).not.toMatch(/not started|topic/i);
+      // nobody has started it, so there are no results: one line says so
+      await expect(examCard).toContainText(/Not started yet$/);
+      await expect(examCard).not.toContainText(/Passed \d+ of/);
+      expect(await examCard.innerText()).not.toMatch(/topic/i);
     });
 
     test("a draft set is a row that opens its Review; publishing it removes the row", async ({

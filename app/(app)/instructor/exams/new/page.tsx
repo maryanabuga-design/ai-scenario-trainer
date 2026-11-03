@@ -10,7 +10,7 @@ import { setFlash } from "@/lib/flash";
 import { createExam, knownTopicIds, shortDate } from "@/lib/group-exams";
 import type { GroupExam } from "@/lib/group-exams";
 import { addNotice, saveGroupExam, useGroupExams } from "@/lib/group-store";
-import { ALL_GROUPS, groups } from "@/lib/groups";
+import { ALL_GROUPS, groupNames, groups } from "@/lib/groups";
 import type { Scope } from "@/lib/groups";
 import { useScope } from "@/lib/scope-store";
 
@@ -73,7 +73,7 @@ function AssignExam({
           groups: exam.groupIds,
         });
         setFlash(
-          source ? "Exam duplicated" : "Exam assigned. Students will see it on Home.",
+          source ? "Exam duplicated" : `Exam assigned to ${groupNames(exam.groupIds)}`,
           `/instructor/exams/${exam.id}`,
         );
         router.push(

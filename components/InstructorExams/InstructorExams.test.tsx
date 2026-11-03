@@ -14,7 +14,8 @@ import { groupCounts, participants, studentRows } from "@/lib/cohort";
 import type { Attempt } from "@/lib/cohort";
 import { hardestQuestions } from "@/lib/exam-detail";
 import { examQuestionIds } from "@/lib/exam-pool";
-import { seedGroupExams } from "@/lib/group-exams";
+import { createExam, seedGroupExams } from "@/lib/group-exams";
+import { isDemoExam } from "@/lib/cohort";
 import { examPeople, examsInScope } from "@/lib/groups";
 import { loadAllSections } from "@/lib/guide";
 import { findItem } from "@/lib/items";
@@ -32,8 +33,16 @@ const wrap = (node: React.ReactNode) =>
 
 describe("the exam card", () => {
   const exam = exams[0];
+  const counts = (passed: number, total = 14) => ({
+    passed,
+    notPassed: 0,
+    inProgress: 0,
+    notStarted: total - passed,
+    missed: 0,
+    total,
+  });
   const card = (props: Partial<React.ComponentProps<typeof ExamCard>> = {}) =>
-    renderToStaticMarkup(<ExamCard exam={exam} passed={1} total={14} {...props} />).replace(
+    renderToStaticMarkup(<ExamCard exam={exam} counts={counts(1)} {...props} />).replace(
       /<!-- -->/g,
       "",
     );
@@ -115,7 +124,7 @@ describe("the exam card", () => {
   it("shows the same icon tile, 'Closed 12 Oct' and 'Passed 12 of 14' when closed", () => {
     const closed = card({
       closed: true,
-      passed: 12,
+      counts: counts(12),
       exam: { ...exam, deadline: "2026-10-12" },
     });
     expect(closed).toContain(">Closed 12 Oct<");
@@ -353,20 +362,24 @@ describe("the Exam detail", () => {
     );
   };
 
-  it("Active: Back, the title, the pill, TOPIC MODULE, a group pill, the rules line, 'n of 15 tried' and four count tiles", () => {
+  it("Active: Back, the title, the pill, TOPICS, a group pill, the rules line, 'n of 15 tried' and four count tiles", () => {
     const html = render();
     expect(html).toContain('aria-label="Back to Exams"');
     expect(html).toContain(`>${exams[0].title}</h1>`);
     expect(html).toContain("Active · Due 30 Oct");
-    expect(html).toContain("TOPIC MODULE");
+    expect(html).toContain(">TOPICS<");
+    expect(html).not.toContain("TOPIC MODULE");
     expect(html).toMatch(/data-group-pills[\s\S]*Rescue team/);
-    expect(html).toContain("3 attempts allowed · 20 questions · 20 minutes · Pass mark 80");
+    expect(html).toContain("3 attempts · 20 questions · 20 minutes · Pass mark 80%");
     expect(html).toMatch(/data-tried[^>]*>\d+ of 15 tried</);
     expect(html.match(/data-count=/g)).toHaveLength(4);
     for (const label of ["Passed", "Not passed", "In progress", "Not started"])
       expect(html).toContain(`>${label}<`);
     expect(html).not.toContain('data-avatar="true"');
-    expect(visible(html)).not.toContain("%");
+    // the only percent sign is the pass mark
+    expect(visible(html).match(/%/g)).toHaveLength(1);
+    expect(html).not.toContain("data-no-results");
+    expect(html).toContain("Results by student and the hardest questions.");
   });
 
   it("Closed: the pill with 'Final results' and a lock, the group, the large title, the specs box and Passed, Not passed, Missed", () => {
@@ -378,14 +391,14 @@ describe("the Exam detail", () => {
     expect(html).toContain("RESCUE TEAM");
     expect(html).toContain("data-exam-title");
     expect(html).toContain("14 questions · 20 min");
-    expect(html).toContain("Pass mark 80");
-    expect(html).toContain("Max 1 attempts".replace("attempts", "attempts"));
+    expect(html).toContain("Pass mark 80%");
+    expect(html).toContain("Max 1 attempts");
     expect(html).toContain("15 assigned");
     expect(html.match(/data-count=/g)).toHaveLength(3);
     for (const label of ["Passed", "Not passed", "Missed"]) expect(html).toContain(`>${label}<`);
     expect(html).toContain("bg-status-success-bg");
     expect(html).toContain("bg-status-attention-bg");
-    expect(visible(html)).not.toContain("%");
+    expect(visible(html).match(/%/g)).toHaveLength(1);
   });
 
   it("has the STUDENTS roster: one card, hairline rows of at least 72px, a plain initials avatar, the name, the status chip with its description and a chevron; Not passed first, Passed last", () => {
@@ -596,5 +609,126 @@ describe("the one assign icon", () => {
       /<Button\s+icon=\{AssignIcon\}/,
     );
     expect(readFileSync("components/AssignIcon/AssignIcon.tsx", "utf8")).toContain("CirclePlus");
+  });
+});
+
+describe("a new exam has no results", () => {
+  const fresh = createExam(
+    {
+      title: "Exam: Responding to an alarm",
+      topicIds: ["S1", "S2"],
+      deadline: "2026-11-02",
+      groupIds: ["rescue-team"],
+    },
+    now,
+  );
+  const group = examPeople(everyone, fresh);
+  const detail = (attempts: Attempt[] = []) => {
+    const context = { attempts, now };
+    return wrap(
+      <ExamDetailView
+        exam={fresh}
+        active
+        now={now}
+        counts={groupCounts(group, fresh, context)}
+        rows={studentRows(group, fresh, context)}
+        hardest={hardestQuestions(group, fresh, attempts, now)}
+        titleOf={titleOf}
+        dialog={null}
+        onAskRemind={() => undefined}
+        onRemind={() => undefined}
+        onAskClose={() => undefined}
+        onClose={() => undefined}
+        onCancelDialog={() => undefined}
+        onExtend={() => undefined}
+        onDuplicate={() => undefined}
+        dialogInline
+      />,
+    );
+  };
+  const attempt = (studentId: string, correct: number): Attempt => ({
+    examId: fresh.id,
+    studentId,
+    startedAt: now - 3_600_000,
+    finishedAt: now - 3_000_000,
+    correct,
+    total: fresh.questionCount,
+    answers: Object.fromEntries(examQuestionIds(fresh).map((id, index) => [id, index < correct])),
+  });
+
+  it("is not a seeded demo exam, so no student has an invented attempt", () => {
+    expect(isDemoExam(fresh.id)).toBe(false);
+    expect(isDemoExam(allExams[0].id)).toBe(true);
+    const counts = groupCounts(group, fresh, { attempts: [], now });
+    expect(counts).toMatchObject({ passed: 0, notPassed: 0, inProgress: 0, missed: 0 });
+    expect(counts.notStarted).toBe(counts.total);
+    expect(counts.total).toBe(group.length);
+  });
+
+  it("state A: no completion, no tiles, no chips or scores, no hardest questions; the No results line and names only", () => {
+    const html = detail();
+    expect(html).toContain("Results will appear here once students start.");
+    expect(html).toContain(">TOPICS<");
+    expect(html).toContain("3 attempts · 20 questions · 20 minutes · Pass mark 80%");
+    expect(html).toContain("No results yet. They appear when students start the exam.");
+    for (const absent of ["COMPLETION", "data-count=", "data-tried", "HARDEST QUESTIONS"])
+      expect(html).not.toContain(absent);
+    expect(html).not.toMatch(/Not passed|Passed|In progress|of \d+ correct|No attempts yet/);
+    expect(html).not.toContain("data-status-chip");
+    // the roster is the group: the same count, avatar and name only
+    expect(html.match(/data-student-row=/g)).toHaveLength(group.length);
+    expect(html.match(/data-roster-name/g)).toHaveLength(group.length);
+    expect(visible(html)).toContain(`${group.length} students`);
+    expect(html).toContain("Ana Test");
+  });
+
+  it("keeps the pinned Send reminder on a new active exam (nobody has started)", () => {
+    const source = readFileSync("components/InstructorExams/ExamDetailView.tsx", "utf8");
+    expect(source).toContain("{active && counts.notStarted > 0 && (");
+  });
+
+  it("state B after one finished attempt: counts, tiles, the chip and score line, derived from the attempt", () => {
+    const html = detail([attempt("ana@example.com", fresh.questionCount)]);
+    expect(html).toContain("Results by student and the hardest questions.");
+    expect(html).not.toContain("data-no-results");
+    expect(html).toMatch(/data-tried[^>]*>1 of \d+ tried</);
+    expect(html).toMatch(/data-count="passed"[\s\S]*?tabular-nums">1</);
+    expect(html).toContain(`${fresh.questionCount} of ${fresh.questionCount} correct · 1 attempt`);
+    const total = group.length;
+    const counts = groupCounts(group, fresh, { attempts: [attempt("ana@example.com", 3)], now });
+    expect(counts.notPassed).toBe(1);
+    expect(counts.passed + counts.notPassed + counts.inProgress + counts.notStarted).toBe(total);
+  });
+
+  it("an old exam (any id that is not a demo exam) loses invented results", () => {
+    const old = { ...allExams[0], id: "grp-old-1" };
+    expect(groupCounts(examPeople(everyone, old), old, { attempts: [], now }).notStarted).toBe(
+      examPeople(everyone, old).length,
+    );
+  });
+
+  it("the seeded demo exams keep their demo results", () => {
+    const counts = groupCounts(examPeople(everyone, allExams[0]), allExams[0], {
+      attempts: [],
+      now,
+    });
+    expect(counts.passed + counts.notPassed + counts.inProgress).toBeGreaterThan(0);
+  });
+
+  it("the Exams list card says Not started yet for a new exam, and keeps Passed n of m with attempts", () => {
+    const none = groupCounts(group, fresh, { attempts: [], now });
+    const html = renderToStaticMarkup(<ExamCard exam={fresh} counts={none} />);
+    expect(html).toContain("Not started yet");
+    expect(html).not.toContain("Passed 0 of");
+    const some = groupCounts(group, fresh, {
+      attempts: [attempt("ana@example.com", fresh.questionCount)],
+      now,
+    });
+    expect(renderToStaticMarkup(<ExamCard exam={fresh} counts={some} />)).toContain(
+      `Passed 1 of ${group.length}`,
+    );
+    expect(renderToStaticMarkup(<ExamCard exam={fresh} counts={none} closed />)).toContain(
+      "Nobody started it",
+    );
   });
 });

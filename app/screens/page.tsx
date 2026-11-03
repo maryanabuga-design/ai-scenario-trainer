@@ -1373,6 +1373,21 @@ export default function Screens() {
               <InstructorExamsSample state="detail-closed" />
             </Screen>
           </PhoneFrame>
+          <PhoneFrame label="Exam detail: a new exam, no results yet">
+            <Screen>
+              <InstructorExamsSample state="detail-new" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Exam detail: a new exam after one finished attempt">
+            <Screen>
+              <InstructorExamsSample state="detail-new-attempt" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Exams list with a new exam: Not started yet">
+            <Screen>
+              <InstructorExamsSample state="list-new" />
+            </Screen>
+          </PhoneFrame>
           <PhoneFrame label="Instructor: Exam detail, the ... menu open (Close exam now last, red)">
             <Screen nav="/instructor/exams" role="instructor">
               <InstructorExamsSample state="menu" />

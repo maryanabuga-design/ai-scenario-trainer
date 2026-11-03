@@ -1,34 +1,33 @@
 import { ClipboardList } from "lucide-react";
 import Link from "next/link";
 import { Chevron } from "@/components/Chevron/Chevron";
-import { closedLine, duePillText, resultsLine } from "@/lib/exam-detail";
+import type { GroupCounts } from "@/lib/cohort";
+import { cardResultLine, closedLine, duePillText } from "@/lib/exam-detail";
 import type { GroupExam } from "@/lib/group-exams";
 
 /**
  * The exam card (DESIGN.md: One assign icon, a round group chip and the same exam card on the
  * Overview): 88px, a 48px icon tile (the Exams navigation icon, no 3D picture), a one-line title,
  * ONE neutral date pill ("Due 4 Nov" or "Closed 12 Oct", always neutral) and ONE result line
- * "Passed 4 of 15", then the chevron. The whole card opens the detail. `bare` is the same card
+ * "Passed 4 of 15" ("Not started yet" while nobody has started it), then the chevron. The whole card opens the detail. `bare` is the same card
  * inside the Overview's EXAMS card, without a card fill, border or shadow of its own.
  */
 export function ExamCard({
   exam,
-  passed,
-  total,
+  counts,
   from,
   bare = false,
   closed = false,
 }: {
   exam: GroupExam;
-  passed: number;
-  total: number;
+  /** From the real attempts: with none the card says the exam has not been started. */
+  counts: GroupCounts;
   /** Where the card is shown, so the detail's Back returns there (the Overview). */
   from?: "overview";
   /** Inside another card (the Overview's EXAMS card): no card fill, border or shadow of its own. */
   bare?: boolean;
   closed?: boolean;
 }) {
-  const counts = { passed, total, notStarted: 0 };
   return (
     <Link
       href={`/instructor/exams/${exam.id}${from ? `?from=${from}` : ""}`}
@@ -51,7 +50,7 @@ export function ExamCard({
           {closed ? closedLine(exam) : duePillText(exam)}
         </span>
         <span className="type-small w-full truncate text-text">
-          {resultsLine({ ...counts, notPassed: 0, inProgress: 0, missed: 0 }, false)}
+          {cardResultLine(counts, !closed)}
         </span>
       </span>
       <Chevron />

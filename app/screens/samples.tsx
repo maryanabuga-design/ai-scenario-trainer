@@ -70,7 +70,7 @@ import { findItem } from "@/lib/items";
 import { InstructorExamsView } from "@/components/InstructorExams/InstructorExamsView";
 import { groupCounts, participants, studentRows } from "@/lib/cohort";
 import type { Attempt } from "@/lib/cohort";
-import { seedGroupExams } from "@/lib/group-exams";
+import { createExam, seedGroupExams } from "@/lib/group-exams";
 import { AnswerReview } from "@/components/AnswerReview/AnswerReview";
 import { SessionBar } from "@/components/SessionBar/SessionBar";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
@@ -1526,6 +1526,9 @@ export function InstructorExamsSample({
     | "discard"
     | "detail"
     | "detail-closed"
+    | "detail-new"
+    | "detail-new-attempt"
+    | "list-new"
     | "menu"
     | "menu-closed"
     | "remind"
@@ -1538,11 +1541,37 @@ export function InstructorExamsSample({
   const now = new Date(2026, 9, 24, 10, 0).getTime();
   const exams = seedGroupExams(now);
   const everyone = participants([{ name: "Maryana", email: "maryana@example.com" }]);
+  // a brand-new exam: no attempts (it has no demo results), or one finished attempt of the demo account
+  const fresh = createExam(
+    {
+      title: "Exam: Alarm and escape routes",
+      topicIds: ["S1", "S2", "S3"],
+      deadline: "2026-10-31",
+      groupIds: ["rescue-team"],
+    },
+    now,
+  );
+  const freshAttempts: Attempt[] =
+    state === "detail-new-attempt"
+      ? [
+          {
+            examId: fresh.id,
+            studentId: "maryana@example.com",
+            startedAt: now - 3_600_000,
+            finishedAt: now - 2_900_000,
+            correct: 17,
+            total: fresh.questionCount,
+            answers: Object.fromEntries(
+              examQuestionIds(fresh).map((id, index) => [id, index < 17]),
+            ),
+          },
+        ]
+      : [];
   const attempts: Attempt[] = [];
-  if (state === "list" || state === "closed" || state === "empty") {
+  if (state === "list" || state === "closed" || state === "empty" || state === "list-new") {
     return (
       <InstructorExamsView
-        exams={state === "empty" ? [] : exams}
+        exams={state === "empty" ? [] : state === "list-new" ? [fresh, ...exams] : exams}
         people={everyone}
         attempts={attempts}
         now={now}
@@ -1585,9 +1614,10 @@ export function InstructorExamsSample({
     );
   }
   const closed = state === "detail-closed" || state === "menu-closed";
-  const exam = closed ? exams[1] : exams[0];
+  const isFresh = state === "detail-new" || state === "detail-new-attempt";
+  const exam = isFresh ? fresh : closed ? exams[1] : exams[0];
   const people = examPeople(everyone, exam);
-  const context = { attempts, now };
+  const context = { attempts: isFresh ? freshAttempts : attempts, now };
   if (state === "question") {
     const id = examQuestionIds(exam)[3];
     return (
@@ -1606,7 +1636,7 @@ export function InstructorExamsSample({
       now={now}
       counts={groupCounts(people, exam, context)}
       rows={studentRows(people, exam, context)}
-      hardest={hardestQuestions(people, exam, attempts, now)}
+      hardest={hardestQuestions(people, exam, context.attempts, now)}
       titleOf={titleOf}
       menuOpen={state === "menu" || state === "menu-closed"}
       dialog={state === "remind" ? "remind" : state === "close" ? "close" : null}

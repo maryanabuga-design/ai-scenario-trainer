@@ -48,7 +48,7 @@ export function InstructorExamsView({
     const counts = groupCounts(examPeople(people, exam), exam, { attempts, now });
     return (
       <li key={exam.id}>
-        <ExamCard exam={exam} passed={counts.passed} total={counts.total} closed={isClosed} />
+        <ExamCard exam={exam} counts={counts} closed={isClosed} />
       </li>
     );
   };

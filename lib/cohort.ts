@@ -131,8 +131,17 @@ export type ExamKey = Pick<
   "id" | "topicIds" | "deadline" | "questionCount" | "attemptsAllowed" | "createdAt" | "closedAt"
 >;
 
-/** The attempts a seeded student has made at an exam: deterministic from (student, exam, deadline). */
+const demoExamIds = new Set(cohort.exams.map((entry) => entry.id));
+
+/** The two seeded demo exams: the only ones whose seeded students have demo attempts. */
+export const isDemoExam = (examId: string) => demoExamIds.has(examId);
+
+/**
+ * The attempts a seeded student has made at an exam: deterministic from (student, exam, deadline),
+ * for the seeded demo exams only. Any other exam (a new one, a duplicate) has no invented attempts.
+ */
 export function seededAttempts(studentId: string, exam: ExamKey, now: number): Attempt[] {
+  if (!isDemoExam(exam.id)) return [];
   const key = `${studentId}|${exam.id}|${exam.deadline}`;
   const u = unit(key);
   const active = isActive(exam, now);

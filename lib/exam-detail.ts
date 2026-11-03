@@ -34,6 +34,28 @@ export function resultsLine(counts: GroupCounts, active: boolean): string {
 /** "3 of 14 tried". */
 export const triedLine = (counts: GroupCounts) => `${triedCount(counts)} of ${counts.total} tried`;
 
+/** "3 attempts", "1 attempt", "Unlimited attempts" (the first part of the detail's rules line). */
+export const attemptsShort = (exam: Pick<GroupExam, "attemptsAllowed">) =>
+  exam.attemptsAllowed === null
+    ? "Unlimited attempts"
+    : plural(exam.attemptsAllowed, "attempt", "attempts");
+
+/** "3 attempts · 20 questions · 20 minutes · Pass mark 80%" (the rules line of the exam detail). */
+export const detailRulesLine = (
+  exam: Pick<GroupExam, "attemptsAllowed" | "questionCount" | "timeLimit" | "passMark">,
+) =>
+  `${attemptsShort(exam)} · ${exam.questionCount} questions · ${exam.timeLimit} minutes · Pass mark ${exam.passMark}%`;
+
+/** An Active exam nobody has started: the detail shows no results at all. */
+export const hasNoAttempts = (counts: GroupCounts, active: boolean) =>
+  active && triedCount(counts) === 0;
+
+/** The result line of an exam card: "Passed 4 of 15", or that nobody started it. */
+export function cardResultLine(counts: GroupCounts, active: boolean): string {
+  if (triedCount(counts) === 0) return active ? "Not started yet" : "Nobody started it";
+  return resultsLine(counts, false);
+}
+
 /** "3 attempts allowed", "1 attempt allowed", "Unlimited attempts". */
 export const attemptsAllowedLine = (exam: Pick<GroupExam, "attemptsAllowed">) =>
   exam.attemptsAllowed === null

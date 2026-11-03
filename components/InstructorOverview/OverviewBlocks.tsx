@@ -292,13 +292,7 @@ export function ExamsCard({ rows, activeCount }: { rows: ExamRow[]; activeCount:
             <ul className={divided}>
               {rows.map(({ exam, counts }) => (
                 <li key={exam.id}>
-                  <ExamCard
-                    bare
-                    exam={exam}
-                    passed={counts.passed}
-                    total={counts.total}
-                    from="overview"
-                  />
+                  <ExamCard bare exam={exam} counts={counts} from="overview" />
                 </li>
               ))}
             </ul>

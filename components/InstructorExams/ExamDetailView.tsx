@@ -27,19 +27,22 @@ import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { triedCount } from "@/lib/cohort";
 import type { GroupCounts, StudentRow } from "@/lib/cohort";
 import {
-  attemptsAllowedLine,
   closedLine,
+  detailRulesLine,
+  hasNoAttempts,
   rosterLine,
   triedLine,
   wrongLine,
 } from "@/lib/exam-detail";
 import type { HardQuestion } from "@/lib/exam-detail";
-import { rulesLine, shortDate, topicsLine } from "@/lib/group-exams";
+import { shortDate, topicsLine } from "@/lib/group-exams";
 import type { GroupExam } from "@/lib/group-exams";
 import { groupNames, groups } from "@/lib/groups";
 import { studentsCount } from "@/lib/overview";
 
 export const EXAM_DETAIL_SUBTITLE = "Results by student and the hardest questions.";
+export const EXAM_DETAIL_SUBTITLE_EMPTY = "Results will appear here once students start.";
+export const NO_RESULTS_LINE = "No results yet. They appear when students start the exam.";
 
 export type DetailDialog = "remind" | "close" | null;
 
@@ -161,13 +164,19 @@ export function ExamDetailView({
   menuOpen?: boolean;
 }) {
   const tried = triedCount(counts);
+  // an Active exam nobody has started shows no results at all, only who it is assigned to
+  const empty = hasNoAttempts(counts, active);
   const reminderText = `Reminder: ${exam.title} is due ${shortDate(exam.deadline)}. You have not started this exam yet.`;
   const examGroups = exam.groupIds.map((id) => groups.find((g) => g.id === id)?.name ?? id);
   return (
     <div className="flex flex-col gap-4 pb-4">
       <PageHeaderBand
         title={exam.title}
-        subtitle={<span className="text-text-secondary">{EXAM_DETAIL_SUBTITLE}</span>}
+        subtitle={
+          <span className="text-text-secondary">
+            {empty ? EXAM_DETAIL_SUBTITLE_EMPTY : EXAM_DETAIL_SUBTITLE}
+          </span>
+        }
         back={
           fromOverview
             ? { label: "Back to Overview", href: "/instructor" }
@@ -206,7 +215,7 @@ export function ExamDetailView({
         >
           <div className="flex items-start justify-between gap-3">
             <div className="flex min-w-0 flex-col gap-1">
-              <p className="type-label text-text-secondary">TOPIC MODULE</p>
+              <p className="type-label text-text-secondary">TOPICS</p>
               <p data-topics className="type-card-title">
                 {topicsLine(exam.topicIds, titleOf)}
               </p>
@@ -221,31 +230,42 @@ export function ExamDetailView({
             ))}
           </div>
           <p data-rules className="type-small text-text-secondary">
-            {attemptsAllowedLine(exam)} · {rulesLine(exam).replace("pass mark", "Pass mark")}
+            {detailRulesLine(exam)}
           </p>
-          <div className="flex flex-col gap-2 rounded-[14px] bg-secondary-sand p-3">
-            <div className="flex items-baseline justify-between gap-3">
-              <span className="type-label text-text-secondary">COMPLETION</span>
-              <span data-tried className="type-small-strong">
-                {triedLine(counts)}
-              </span>
-            </div>
-            <div
-              aria-hidden="true"
-              className="h-1.5 overflow-hidden rounded-full bg-secondary-sand-pressed"
+          {empty ? (
+            <p
+              data-no-results
+              className="type-small rounded-[14px] bg-secondary-sand p-3 text-text-secondary"
             >
-              <div
-                className="h-full rounded-full bg-primary"
-                style={{ width: `${counts.total === 0 ? 0 : (tried * 100) / counts.total}%` }}
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-4 gap-2">
-            <CountTile kind="passed" label="Passed" count={counts.passed} />
-            <CountTile kind="not-passed" label="Not passed" count={counts.notPassed} />
-            <CountTile kind="in-progress" label="In progress" count={counts.inProgress} />
-            <CountTile kind="not-started" label="Not started" count={counts.notStarted} />
-          </div>
+              {NO_RESULTS_LINE}
+            </p>
+          ) : (
+            <>
+              <div className="flex flex-col gap-2 rounded-[14px] bg-secondary-sand p-3">
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="type-label text-text-secondary">COMPLETION</span>
+                  <span data-tried className="type-small-strong">
+                    {triedLine(counts)}
+                  </span>
+                </div>
+                <div
+                  aria-hidden="true"
+                  className="h-1.5 overflow-hidden rounded-full bg-secondary-sand-pressed"
+                >
+                  <div
+                    className="h-full rounded-full bg-primary"
+                    style={{ width: `${counts.total === 0 ? 0 : (tried * 100) / counts.total}%` }}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-4 gap-2">
+                <CountTile kind="passed" label="Passed" count={counts.passed} />
+                <CountTile kind="not-passed" label="Not passed" count={counts.notPassed} />
+                <CountTile kind="in-progress" label="In progress" count={counts.inProgress} />
+                <CountTile kind="not-started" label="Not started" count={counts.notStarted} />
+              </div>
+            </>
+          )}
         </section>
       ) : (
         <section
@@ -270,7 +290,7 @@ export function ExamDetailView({
               icon={ListChecks}
               text={`${exam.questionCount} questions · ${exam.timeLimit} min`}
             />
-            <Spec icon={Star} text={`Pass mark ${exam.passMark}`} />
+            <Spec icon={Star} text={`Pass mark ${exam.passMark}%`} />
             <Spec
               icon={RotateCw}
               text={
@@ -319,26 +339,32 @@ export function ExamDetailView({
                 className="flex min-h-[72px] items-center gap-3 px-[var(--gutter,1rem)] py-3 has-focus-visible:outline-2"
               >
                 <InitialsAvatar initials={participant.initials} />
-                <StatusRow
-                  name={participant.name}
-                  chip={
-                    <StatusChip tone={examTone[status.kind]} value={status.kind}>
-                      {statusLabel[status.kind]}
-                    </StatusChip>
-                  }
-                  description={`${participant.local ? "Your demo account · " : ""}${rosterLine(status, now)}`}
-                  after={
-                    status.kind === "passed" && status.certificateId ? (
-                      <Award
-                        data-certificate-badge
-                        size={16}
-                        strokeWidth={2}
-                        aria-label="Certificate"
-                        className="shrink-0 text-status-success-ink"
-                      />
-                    ) : null
-                  }
-                />
+                {empty ? (
+                  <span data-roster-name className="type-body-strong min-w-0 flex-1 truncate">
+                    {participant.name}
+                  </span>
+                ) : (
+                  <StatusRow
+                    name={participant.name}
+                    chip={
+                      <StatusChip tone={examTone[status.kind]} value={status.kind}>
+                        {statusLabel[status.kind]}
+                      </StatusChip>
+                    }
+                    description={`${participant.local ? "Your demo account · " : ""}${rosterLine(status, now)}`}
+                    after={
+                      status.kind === "passed" && status.certificateId ? (
+                        <Award
+                          data-certificate-badge
+                          size={16}
+                          strokeWidth={2}
+                          aria-label="Certificate"
+                          className="shrink-0 text-status-success-ink"
+                        />
+                      ) : null
+                    }
+                  />
+                )}
                 <Chevron />
               </Link>
             </li>
@@ -346,7 +372,7 @@ export function ExamDetailView({
         </ul>
       </section>
 
-      {hardest.length > 0 && (
+      {!empty && hardest.length > 0 && (
         <section aria-labelledby="hardest-title" className="flex flex-col gap-3">
           <div className="flex items-baseline justify-between gap-3">
             <h2 id="hardest-title" className="type-label text-text-secondary">
