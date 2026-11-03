@@ -6,7 +6,7 @@ import { prepare, routes } from "./routes";
  * No horizontal scroll and no clipped or overlapping text in the header and the main content, at
  * seven widths (DESIGN.md: Responsive instructor). Simple heuristics, not pixels.
  */
-const widths = [360, 430, 768, 1024, 1280, 1440, 1920];
+const widths = [360, 430, 640, 768, 960, 1024, 1100, 1152, 1280, 1440, 1600, 1920];
 const instructorRoutes = routes.filter((route) => route.role === "instructor");
 
 async function problems(page: Page) {
