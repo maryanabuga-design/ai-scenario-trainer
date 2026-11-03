@@ -1183,9 +1183,14 @@ export default function Screens() {
               <PackageSample files={packageFiles} state="analysing-running" />
             </Screen>
           </PhoneFrame>
-          <PhoneFrame label="Analysing: Draft is ready, Review N items">
+          <PhoneFrame label="Analysing: Draft is ready, icon rows, All linked">
             <Screen>
               <PackageSample files={packageFiles} state="analysing-finished" />
+            </Screen>
+          </PhoneFrame>
+          <PhoneFrame label="Analysing: Draft is ready, 3 need attention">
+            <Screen>
+              <PackageSample files={packageFiles} state="analysing-finished-problems" />
             </Screen>
           </PhoneFrame>
           <PhoneFrame label="Analysing: a part is missing (Continue)">

@@ -2095,6 +2095,7 @@ export function PackageSample({
     | "import-no-guide"
     | "analysing-running"
     | "analysing-finished"
+    | "analysing-finished-problems"
     | "analysing-partial"
     | "analysing-error"
     | "topic-guide"
@@ -2163,7 +2164,11 @@ export function PackageSample({
     />
   );
   const doc = { name: "evacuation-guide.xlsx", size: 34_000 };
-  const analysing = (phase: "running" | "finished" | "partial" | "error", done: number) => (
+  const analysing = (
+    phase: "running" | "finished" | "partial" | "error",
+    done: number,
+    linkProblems = 0,
+  ) => (
     <DocumentAnalysingView
       fileName={doc.name}
       phase={phase}
@@ -2176,7 +2181,7 @@ export function PackageSample({
         "all linked",
       ]}
       counts={{ guide: 4, steps: 7, scenario: 4, questions: 10 }}
-      linkProblems={0}
+      linkProblems={linkProblems}
       partialLine="We could not find questions in this document."
       onCancel={noop}
       onContinue={noop}
@@ -2196,6 +2201,7 @@ export function PackageSample({
   if (state === "import-no-guide") return importView(doc, MESSAGES.noGuide);
   if (state === "analysing-running") return analysing("running", 2);
   if (state === "analysing-finished") return analysing("finished", 5);
+  if (state === "analysing-finished-problems") return analysing("finished", 5, 3);
   if (state === "analysing-partial") return analysing("partial", 5);
   if (state === "analysing-error") return analysing("error", 0);
 

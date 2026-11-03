@@ -1,5 +1,6 @@
 "use client";
 
+import { ImportSummaryCard } from "@/components/InstructorContent/ImportSummaryCard";
 import { Check, FileText, LoaderCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
@@ -203,34 +204,7 @@ export function DocumentAnalysingView({
         </>
       )}
 
-      {phase === "finished" && (
-        <div
-          data-summary
-          className="mt-1 w-full max-w-[360px] rounded-[14px] border border-selectable-stroke bg-card p-4 text-left"
-        >
-          <dl data-counts className="flex flex-col gap-2">
-            {[
-              ["Guide sections", counts.guide],
-              ["Steps", counts.steps],
-              ["Scenario steps", counts.scenario],
-              ["Questions", counts.questions],
-            ].map(([label, value]) => (
-              <div key={label} className="flex items-baseline justify-between gap-3">
-                <dt className="type-body text-text-secondary">{label}</dt>
-                <dd className="type-body-strong">{value}</dd>
-              </div>
-            ))}
-            <div data-links-row className="flex items-center justify-between gap-3">
-              <dt className="type-body text-text-secondary">Links to the guide</dt>
-              <dd
-                className={`type-body-strong ${linkProblems === 0 ? "" : "text-status-attention-ink"}`}
-              >
-                {linkProblems === 0 ? "All linked" : `${linkProblems} need attention`}
-              </dd>
-            </div>
-          </dl>
-        </div>
-      )}
+      {phase === "finished" && <ImportSummaryCard counts={counts} linkProblems={linkProblems} />}
       {phase === "partial" && (
         <div className="w-full max-w-[360px] text-left">
           <Notice variant="info" id="draft-partial" title="Some parts are missing" clamp={false}>

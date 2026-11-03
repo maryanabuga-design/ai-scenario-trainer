@@ -272,35 +272,47 @@ describe("the analysing screen", () => {
     expect(html).not.toContain("data-stages");
     expect(html).not.toContain("data-stage=");
     const card = html.slice(html.indexOf("data-summary"));
-    expect(card).toContain("rounded-[14px] border border-selectable-stroke bg-card");
-    expect(card).toContain("max-w-[360px]");
-    expect(card).toContain("p-4");
-    // no badge at all: the card starts directly with the rows
+    // a full-width white card, 1px border, radius 16, 12px side padding; no 360px maximum
+    expect(card).toContain("w-full rounded-[16px] border border-selectable-stroke bg-card px-3");
+    expect(card).not.toContain("max-w-[360px]");
     expect(card).not.toMatch(/data-badge|h-14 w-14|bg-status-success-bg/);
     expect(card.indexOf("<dl")).toBeLessThan(card.indexOf("data-links-row"));
     expect(card.slice(0, 400)).toContain("data-counts");
-    for (const [label, value] of [
-      ["Guide sections", 4],
-      ["Steps", 7],
-      ["Scenario steps", 4],
-      ["Questions", 10],
-    ]) {
+    // five rows: the compact tile with its icon (aria-hidden), the label and a plain value
+    expect(card.match(/data-icon-tile=/g)).toHaveLength(5);
+    expect(card.match(/aria-hidden="true"/g)?.length).toBeGreaterThanOrEqual(5);
+    expect(card.match(/h-10 w-10 rounded-\[14px\]/g)).toHaveLength(5);
+    expect(card.match(/min-h-14/g)).toHaveLength(5);
+    for (const [label, value, icon] of [
+      ["Guide sections", 4, "lucide-book-open"],
+      ["Steps", 7, "lucide-layers"],
+      ["Scenario steps", 4, "lucide-mountain-snow"],
+      ["Questions", 10, "lucide-message-circle-question"],
+    ] as const) {
+      const row = card.slice(
+        card.indexOf(`>${label}</dt>`) - 700,
+        card.indexOf(`>${label}</dt>`) + 200,
+      );
+      expect(row, label).toContain(icon);
       expect(card).toMatch(
-        new RegExp(`text-text-secondary">${label}</dt><dd class="type-body-strong">${value}</dd>`),
+        new RegExp(
+          `text-text-secondary">${label}</dt><dd class="type-body-strong shrink-0 text-right tabular-nums">${value}</dd>`,
+        ),
       );
     }
+    // hairline dividers start after the tile on every row but the first
+    expect(card.match(/before:left-\[52px\]/g)?.length).toBeGreaterThanOrEqual(5);
     const links = card.slice(card.indexOf("data-links-row"));
     expect(links).toContain("Links to the guide");
-    expect(links).toContain(">All linked<");
-    // no icon on the row; plain bold text
-    expect(
-      links.slice(0, links.indexOf("</dl>") > 0 ? links.indexOf("</dl>") : undefined),
-    ).not.toContain("<svg");
+    expect(links).toContain("lucide-link");
+    expect(links).toMatch(/text-status-success-ink">All linked</);
+    // the values are plain text: no pill, background or border on a value
+    expect(card).not.toMatch(/<dd[^>]*(bg-|border|rounded)/);
     const problems = view({ phase: "finished", done: 5, linkProblems: 3 });
-    expect(problems).toMatch(/type-body-strong text-status-attention-ink">3 need attention</);
-    expect(
-      problems.slice(problems.indexOf("data-links-row"), problems.indexOf("</dl>")),
-    ).not.toContain("<svg");
+    expect(problems).toMatch(
+      /type-body-strong shrink-0 text-right text-status-attention-ink">3 need attention</,
+    );
+    expect(problems).not.toMatch(/<dd[^>]*(bg-|border|rounded)/);
     // Primary Open draft over Secondary Back to Content; no Review or Preview here
     expect(html).toMatch(/h-\[52px\] bg-primary[^>]*>Open draft</);
     expect(html).toMatch(/bg-olive-tint[^>]*>Back to Content</);

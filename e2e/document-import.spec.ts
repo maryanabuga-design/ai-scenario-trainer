@@ -326,14 +326,18 @@ for (const width of [360, 430]) {
       );
       const card = page.locator("[data-summary]");
       const c = (await card.boundingBox())!;
-      expect(c.width).toBeLessThanOrEqual(360);
-      expect(Math.abs(c.x + c.width / 2 - width / 2)).toBeLessThanOrEqual(1);
+      // as wide as the content and the pinned buttons
+      const open = (await page
+        .getByRole("button", { name: "Open draft", exact: true })
+        .boundingBox())!;
+      expect(Math.abs(c.x - open.x)).toBeLessThanOrEqual(1);
+      expect(Math.abs(c.x + c.width - (open.x + open.width))).toBeLessThanOrEqual(1);
       expect(
         await card.evaluate((el) => {
           const css = getComputedStyle(el);
           return [css.backgroundColor, css.borderTopWidth, css.borderTopColor, css.borderRadius];
         }),
-      ).toEqual(["rgb(255, 255, 255)", "1px", "rgb(228, 223, 213)", "14px"]);
+      ).toEqual(["rgb(255, 255, 255)", "1px", "rgb(228, 223, 213)", "16px"]);
       // no badge: the card starts directly with the rows
       await expect(page.locator("[data-badge]")).toHaveCount(0);
       const first = (await card.locator("dl > div").first().boundingBox())!;
@@ -346,14 +350,40 @@ for (const width of [360, 430]) {
         "Links to the guide",
       ]);
       await expect(card.locator("dd")).toHaveText(["4", "7", "4", "10", "All linked"]);
-      // the Links row has no icon: plain bold text
-      await expect(card.locator("[data-links-row] svg")).toHaveCount(0);
-      const weight = (selector: string) =>
-        card
-          .locator(selector)
-          .first()
-          .evaluate((el) => getComputedStyle(el).fontWeight);
-      expect(await weight("[data-links-row] dd")).toBe(await weight("dl > div dd"));
+      // every row has the shared 40px tile with its own icon, a divider and a plain value
+      const icons = ["book-open", "layers", "mountain-snow", "message-circle-question", "link"];
+      const rows = card.locator("dl > div");
+      for (let n = 0; n < 5; n++) {
+        const row = rows.nth(n);
+        const tile = row.locator("[data-icon-tile]");
+        await expect(tile).toHaveAttribute("aria-hidden", "true");
+        await expect(tile.locator(`svg.lucide-${icons[n]}`)).toHaveCount(1);
+        const t = (await tile.boundingBox())!;
+        expect([Math.round(t.width), Math.round(t.height)]).toEqual([40, 40]);
+        expect(await tile.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
+          "rgb(239, 236, 230)",
+        );
+        expect(Math.round((await row.boundingBox())!.height)).toBeGreaterThanOrEqual(56);
+        const value = row.locator("dd");
+        expect(
+          await value.evaluate((el) => {
+            const css = getComputedStyle(el);
+            return [css.backgroundColor, css.borderTopWidth, css.fontWeight];
+          }),
+        ).toEqual(["rgba(0, 0, 0, 0)", "0px", "600"]);
+        if (n > 0) {
+          // the divider starts after the tile (inset) and is 1px
+          const line = await row.evaluate((el) => {
+            const css = getComputedStyle(el, "::before");
+            return [css.left, css.height, css.backgroundColor];
+          });
+          expect(line).toEqual(["52px", "1px", "rgb(228, 223, 213)"]);
+        }
+      }
+      // the Links value is plain success text, with no background
+      const links = card.locator("[data-links-row] dd");
+      expect(await links.evaluate((el) => getComputedStyle(el).color)).toBe("rgb(68, 104, 58)");
+      expect(await noSidewaysScroll(page)).toBe(true);
       // the draft is saved; the result screen offers Open draft
       expect(await storedTopics(page)).toContain("Evacuating a crowded hall");
       await expect(page.getByRole("button", { name: "Open draft", exact: true })).toBeVisible();
