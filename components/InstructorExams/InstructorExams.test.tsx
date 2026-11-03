@@ -28,8 +28,11 @@ const titleOf = (id: string) => `Topic ${id}`;
 const visible = (html: string) => html.replace(/<[^>]+>/g, " ");
 
 const css = readFileSync("app/globals.css", "utf8");
+// the phone markup: the desktop table of the exam's students is tested in the desktop specs
 const wrap = (node: React.ReactNode) =>
-  renderToStaticMarkup(<ActionBarProvider>{node}</ActionBarProvider>).replace(/<!-- -->/g, "");
+  renderToStaticMarkup(<ActionBarProvider>{node}</ActionBarProvider>)
+    .replace(/<!-- -->/g, "")
+    .replace(/<div data-exam-table[\s\S]*?<\/table><\/div>/, "");
 
 describe("the exam card", () => {
   const exam = exams[0];

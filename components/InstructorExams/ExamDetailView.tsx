@@ -16,6 +16,8 @@ import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { Chip } from "@/components/Chip/Chip";
+import { DataTable } from "@/components/DataTable/DataTable";
+import type { Column } from "@/components/DataTable/DataTable";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { DropdownMenu } from "@/components/DropdownMenu/DropdownMenu";
 import { FlashNotice } from "@/components/FlashNotice/FlashNotice";
@@ -26,7 +28,7 @@ import { StatusRow } from "@/components/StatusRow/StatusRow";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { TipNote } from "@/components/TipNote/TipNote";
 import { triedCount } from "@/lib/cohort";
-import type { GroupCounts, StudentRow } from "@/lib/cohort";
+import type { ExamStatus, GroupCounts, StudentRow } from "@/lib/cohort";
 import {
   closedLine,
   detailRulesLine,
@@ -49,6 +51,83 @@ export type DetailDialog = "remind" | "close" | null;
 
 /** From 1024px the info card is the left column, 380px wide, sticky at the top beside the students. */
 const infoColumn = "idesk:sticky idesk:top-6 idesk:col-start-1 idesk:row-span-2 idesk:row-start-2";
+
+type ExamTableRow = {
+  id: string;
+  name: string;
+  initials: string;
+  href: string;
+  status: ExamStatus;
+};
+
+/** The order of the Status column: the ones that need a look first, Passed last. */
+const statusOrder: Record<ExamStatus["kind"], number> = {
+  "not-passed": 0,
+  "in-progress": 1,
+  "not-started": 2,
+  missed: 3,
+  passed: 4,
+};
+
+const percentOf = (status: ExamStatus) =>
+  status.kind === "passed" || status.kind === "not-passed"
+    ? Math.round((status.correct * 100) / status.total)
+    : null;
+
+const dash = <span className="text-text-secondary">—</span>;
+
+/** The columns of the desktop table of the exam's students (only what the status has). */
+const examColumns: Column<ExamTableRow>[] = [
+  {
+    id: "status",
+    header: "Status",
+    width: "180px",
+    sortValue: ({ status }) => statusOrder[status.kind],
+    cell: ({ status }) => (
+      <StatusChip tone={examTone[status.kind]} value={status.kind}>
+        {statusLabel[status.kind]}
+      </StatusChip>
+    ),
+  },
+  {
+    id: "result",
+    header: "Result",
+    width: "140px",
+    align: "right",
+    sortValue: ({ status }) => percentOf(status) ?? -1,
+    cell: ({ status }) => {
+      const percent = percentOf(status);
+      if (percent === null || (status.kind !== "passed" && status.kind !== "not-passed"))
+        return dash;
+      return (
+        <span className="flex flex-col items-end">
+          <span className="type-body-strong">{percent}%</span>
+          <span className="text-text-secondary">
+            {status.correct} of {status.total}
+          </span>
+        </span>
+      );
+    },
+  },
+  {
+    id: "attempts",
+    header: "Attempts",
+    width: "110px",
+    align: "right",
+    sortValue: ({ status }) =>
+      status.kind === "passed" || status.kind === "not-passed"
+        ? status.attempts
+        : status.kind === "in-progress"
+          ? status.attempt
+          : 0,
+    cell: ({ status }) =>
+      status.kind === "passed" || status.kind === "not-passed"
+        ? status.attempts
+        : status.kind === "in-progress"
+          ? status.attempt
+          : dash,
+  },
+];
 
 const card = "rounded-card border border-selectable-stroke bg-card shadow-(--card-shadow)";
 
@@ -342,7 +421,19 @@ export function ExamDetailView({
             {studentsCount(rows.length)}
           </span>
         </div>
-        <ul className={`${card} divide-y divide-soft-divider`}>
+        <DataTable
+          label="Students"
+          dataAttribute="data-exam-table"
+          columns={empty ? [] : examColumns}
+          rows={rows.map(({ participant, status }) => ({
+            id: participant.id,
+            name: participant.name,
+            initials: participant.initials,
+            href: `/instructor/students/${encodeURIComponent(participant.id)}?from=exam&exam=${exam.id}`,
+            status,
+          }))}
+        />
+        <ul className={`${card} divide-y divide-soft-divider idesk:hidden`}>
           {rows.map(({ participant, status }) => (
             <li key={participant.id} data-student-row={participant.id} data-status={status.kind}>
               <Link
