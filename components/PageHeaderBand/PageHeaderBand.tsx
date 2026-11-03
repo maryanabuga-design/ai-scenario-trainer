@@ -26,7 +26,7 @@ export function PageHeaderBand({
   meta,
   overlap = false,
 }: {
-  title: string;
+  title: ReactNode;
   subtitle?: ReactNode;
   /** A muted line under the title, 8px below it, at most two lines (the Import helper). */
   helper?: ReactNode;
