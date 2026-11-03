@@ -17,6 +17,12 @@ const shown = [
   "instructor-content-with-topic",
   "instructor-student-detail",
   "instructor-content-import-result",
+  "instructor-exam-active",
+  "instructor-exam-closed",
+  "instructor-exam-new-no-results",
+  "instructor-exams-list-new",
+  "instructor-exam-assign",
+  "instructor-exam-extend",
 ];
 
 for (const width of [1024, 1280, 1440, 1920]) {
@@ -33,6 +39,24 @@ for (const width of [1024, 1280, 1440, 1920]) {
         await page.screenshot({ path: out(route.name, width), animations: "disabled" });
       });
     }
+  });
+}
+
+for (const width of [1024, 1280, 1440, 1920]) {
+  test(`exams: closed exams open, ${width}px`, async ({ browser }) => {
+    const page = await browser.newPage({
+      viewport: { width, height: 900 },
+      reducedMotion: "reduce",
+    });
+    await prepare(page, "instructor");
+    await page.goto("/instructor/exams");
+    await page.getByRole("button", { name: /Show closed exams/ }).click();
+    await page.waitForTimeout(500);
+    await page.screenshot({
+      path: out("instructor-exams-closed-open", width),
+      animations: "disabled",
+    });
+    await page.close();
   });
 }
 

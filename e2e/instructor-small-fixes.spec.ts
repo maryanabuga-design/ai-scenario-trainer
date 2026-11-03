@@ -244,13 +244,17 @@ for (const width of [360, 430]) {
       expect(await row.innerText()).not.toMatch(/not started|topics?\b/i);
       expect((await box(row)).height).toBe(88);
       // the same card as on the Exams screen
-      const overview = await row.evaluate((el) =>
-        el.className.replace(/rounded-card.*shadow-\(--card-shadow\)/, "").trim(),
-      );
+      const overview = await row.evaluate((el) => el.className.trim());
       await page.goto("/instructor/exams");
       const listCard = page.locator("[data-exam-card]:visible").first();
+      // the list card has the card chrome and its own hover look; the Overview row has the row hover
       const own = await listCard.evaluate((el) =>
-        el.className.replace(/rounded-card.*shadow-\(--card-shadow\)/, "").trim(),
+        el.className
+          .replace(
+            /rounded-card.*idesk:hover:shadow-\(--hover-shadow\)/,
+            "idesk:hover:bg-secondary-sand",
+          )
+          .trim(),
       );
       expect(own.replace(/\s+/g, " ")).toBe(overview.replace(/\s+/g, " "));
       expect(await noSidewaysScroll(page)).toBe(true);

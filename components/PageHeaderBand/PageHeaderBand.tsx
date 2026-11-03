@@ -23,6 +23,7 @@ export function PageHeaderBand({
   back,
   action,
   titleAccessory,
+  meta,
   overlap = false,
 }: {
   title: string;
@@ -34,13 +35,15 @@ export function PageHeaderBand({
   action?: ReactNode;
   /** A small control on the title's row (the Students band's group pill). */
   titleAccessory?: ReactNode;
+  /** A status under the subtitle that only the desktop header shows (the exam detail's state pill). */
+  meta?: ReactNode;
   overlap?: boolean;
 }) {
   return (
     <div
       data-page-header-band
       data-full-bleed
-      className={`-mx-[var(--gutter,1rem)] -mt-[calc(1.5rem+env(safe-area-inset-top))] flex flex-col gap-4 border-b border-selectable-stroke bg-secondary-sand px-[var(--gutter,1rem)] pt-[calc(1.5rem+env(safe-area-inset-top))] ${overlap ? "pb-14" : "pb-[var(--gutter,1rem)]"} idesk:mx-0 idesk:mt-0 idesk:mb-2 idesk:grid idesk:grid-cols-[minmax(0,1fr)_auto] idesk:items-center idesk:gap-x-4 idesk:gap-y-3 idesk:bg-transparent idesk:px-0 idesk:pt-0 idesk:pb-4`}
+      className={`-mx-[var(--gutter,1rem)] -mt-[calc(1.5rem+env(safe-area-inset-top))] flex flex-col gap-4 border-b border-selectable-stroke bg-secondary-sand px-[var(--gutter,1rem)] pt-[calc(1.5rem+env(safe-area-inset-top))] ${overlap ? "pb-14" : "pb-[var(--gutter,1rem)]"} idesk:col-span-full idesk:mx-0 idesk:mt-0 idesk:mb-2 idesk:grid idesk:grid-cols-[minmax(0,1fr)_auto] idesk:items-center idesk:gap-x-4 idesk:gap-y-3 idesk:bg-transparent idesk:px-0 idesk:pt-0 idesk:pb-4`}
     >
       {back && (
         <div className="flex items-center justify-between gap-3 idesk:contents">
@@ -64,6 +67,11 @@ export function PageHeaderBand({
             <h1 className="type-page-title text-text line-clamp-2">{title}</h1>
           )}
           {subtitle && <p className="type-body text-text">{subtitle}</p>}
+          {meta && (
+            <div className="hidden idesk:mt-1 idesk:flex idesk:items-center idesk:gap-3">
+              {meta}
+            </div>
+          )}
           {helper && (
             <p data-helper className="type-body mt-1 line-clamp-2 text-text-secondary">
               {helper}

@@ -19,7 +19,7 @@ function topOfNotice(): number {
     window.matchMedia("(min-width: 1024px)").matches &&
     document.querySelector('[data-shell="instructor"]')
   ) {
-    const header = document.querySelector("[data-page-header-band]");
+    const header = document.querySelector("[data-page-header-band], [data-overview-header]");
     if (header) return Math.max(12, Math.round(header.getBoundingClientRect().bottom + 12));
   }
   const back = Array.from(document.querySelectorAll("[data-back-button]")).find(

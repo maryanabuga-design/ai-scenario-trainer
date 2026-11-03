@@ -19,7 +19,7 @@ export function ShellChrome() {
     <>
       <a
         href="#main-content"
-        className="type-button sr-only rounded-full bg-primary px-4 py-3 text-primary-text focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50"
+        className="type-button sr-only rounded-full px-4 py-3 focus:bg-primary focus:text-primary-text focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50"
       >
         Skip to main content
       </a>

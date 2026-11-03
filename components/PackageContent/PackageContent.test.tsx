@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 
 // the pinned bar normally renders through a portal; here it renders in place
 vi.mock("@/components/ActionBar/ActionBar", () => ({
+  HeaderActionsSlot: () => null,
   ActionBarProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   ActionBar: ({ children }: { children: React.ReactNode }) => <div data-bar>{children}</div>,
 }));

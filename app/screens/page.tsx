@@ -93,13 +93,17 @@ function ReadingExample({ id }: { id: string }) {
 
 const desktopPictures = [
   ["instructor-overview", "Overview"],
-  ["instructor-exams-list", "Exams"],
-  ["instructor-students", "Students"],
-  ["instructor-content-with-topic", "Content"],
-  ["instructor-student-detail", "A student"],
-  ["instructor-content-import-result", "Import result"],
+  ["instructor-exams-closed-open", "Exams (closed exams shown)"],
+  ["instructor-exam-active", "Exam detail with results"],
+  ["instructor-exam-new-no-results", "Exam detail, no results yet"],
+  ["instructor-exam-closed", "Exam detail, closed"],
+  ["instructor-exam-assign", "Assign exam (pinned bar, not converted yet)"],
+  ["instructor-students", "Students (not converted yet)"],
+  ["instructor-content-with-topic", "Content (not converted yet)"],
+  ["instructor-student-detail", "A student (not converted yet)"],
+  ["instructor-content-import-result", "Import result (not converted yet)"],
   ["instructor-dialog", "A dialog"],
-  ["instructor-notice", "The floating notice"],
+  ["instructor-notice", "The floating notice under the header"],
 ] as const;
 
 /** Pictures of the instructor's desktop layout (1280px, from 1024px; made by `npm run screens:desktop`). */

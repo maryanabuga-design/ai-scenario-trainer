@@ -73,6 +73,8 @@
   --secondary-pressed: #e3e8dc;
   --next-card: #f2f3ee;
   --selectable-stroke: #e4dfd5;
+  --hover-stroke: #c9d3b8;
+  --hover-shadow: 0 2px 8px color-mix(in srgb, var(--text) 6%, transparent);
   --highlight: #ffe9a0;
   --olive-tint: #e0e6d6;
   --sage-dash: #b8c2a4;
@@ -144,6 +146,7 @@
   --color-secondary-pressed: var(--secondary-pressed);
   --color-next-card: var(--next-card);
   --color-selectable-stroke: var(--selectable-stroke);
+  --color-hover-stroke: var(--hover-stroke);
   --color-highlight: var(--highlight);
   --color-olive-tint: var(--olive-tint);
   --color-sage-dash: var(--sage-dash);

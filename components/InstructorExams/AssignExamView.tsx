@@ -151,7 +151,7 @@ export function AssignExamView({
   }
 
   return (
-    <div className="flex flex-col gap-4 pb-4">
+    <div className="flex flex-col gap-4 pb-4 idesk:[&>*:not([data-page-header-band])]:max-w-[560px]">
       <PageHeaderBand
         title="Assign exam"
         subtitle={<span className="text-text-secondary">{ASSIGN_SUBTITLE}</span>}

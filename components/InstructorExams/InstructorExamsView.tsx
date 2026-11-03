@@ -4,6 +4,7 @@ import { ChevronDown } from "lucide-react";
 import { AssignIcon } from "@/components/AssignIcon/AssignIcon";
 import { useRef, useState } from "react";
 import type { MouseEvent } from "react";
+import { PageAction } from "@/components/ActionBar/ActionBar";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { ExamCard } from "@/components/InstructorExams/ExamCard";
 import { Media3D } from "@/components/Media3D/Media3D";
@@ -15,6 +16,10 @@ import type { GroupExam } from "@/lib/group-exams";
 import { splitExams } from "@/lib/group-exams";
 import { examPeople } from "@/lib/groups";
 import { cardPictureFiles } from "@/lib/media-frames";
+
+/** The cards: one column on the phone; from 1024px two columns, three when the content is 1100px wide. */
+const examGrid =
+  "flex flex-col gap-3 idesk:grid idesk:grid-cols-2 idesk:gap-6 idesk:@[1100px]:grid-cols-3";
 
 export const EXAMS_SUBTITLE = "Assign exams and see who has passed.";
 export const EXAMS_EMPTY_TITLE = "No exams yet";
@@ -65,7 +70,7 @@ export function InstructorExamsView({
   }
 
   return (
-    <div className="flex flex-col gap-4 pb-4">
+    <div className="@container flex flex-col gap-4 pb-4">
       <PageHeaderBand
         title="Exams"
         subtitle={<span className="text-text-secondary">{EXAMS_SUBTITLE}</span>}
@@ -75,35 +80,42 @@ export function InstructorExamsView({
       {exams.length === 0 ? (
         <div
           data-exams-empty
-          className="flex flex-col items-center gap-4 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)] text-center shadow-(--card-shadow)"
+          className="flex flex-col items-center gap-4 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)] text-center shadow-(--card-shadow) idesk:mx-auto idesk:w-full idesk:max-w-[640px]"
         >
           <Media3D variant="verify" src={cardPictureFiles.examCard} />
           <div className="flex flex-col gap-1">
             <h2 className="type-card-title">{EXAMS_EMPTY_TITLE}</h2>
             <p className="text-text-secondary">{EXAMS_EMPTY}</p>
           </div>
-          <ButtonLink href="/instructor/exams/new" icon={AssignIcon}>
-            Assign exam
-          </ButtonLink>
+          <PageAction>
+            <ButtonLink href="/instructor/exams/new" icon={AssignIcon}>
+              Assign exam
+            </ButtonLink>
+          </PageAction>
           <p className="type-small w-full rounded-[14px] bg-secondary-sand p-3 text-text-secondary">
             {EXAMS_EMPTY_NOTE}
           </p>
         </div>
       ) : (
         <>
-          <ButtonLink href="/instructor/exams/new" icon={AssignIcon}>
-            Assign exam
-          </ButtonLink>
+          <PageAction>
+            <ButtonLink href="/instructor/exams/new" icon={AssignIcon}>
+              Assign exam
+            </ButtonLink>
+          </PageAction>
           {active.length > 0 && (
             <section aria-labelledby="active-title" className="flex flex-col gap-3">
               <h2 id="active-title" className="type-label text-text-secondary">
                 ACTIVE
               </h2>
-              <ul className="flex flex-col gap-3">{active.map((exam) => card(exam, false))}</ul>
+              <ul className={examGrid}>{active.map((exam) => card(exam, false))}</ul>
             </section>
           )}
           {closed.length > 0 && (
-            <div ref={wrapper} className="flex flex-col gap-3">
+            <div
+              ref={wrapper}
+              className="flex flex-col gap-3 idesk:[&>button]:-ml-3 idesk:[&>button]:h-11! idesk:[&>button]:w-auto! idesk:[&>button]:self-start idesk:[&>button]:bg-transparent! idesk:[&>button]:px-3! idesk:[&>button]:text-text-secondary! idesk:[&>button]:underline"
+            >
               <Button
                 variant="secondary"
                 aria-expanded={open}
@@ -130,9 +142,7 @@ export function InstructorExamsView({
                     <h2 id="closed-title" className="type-label text-text-secondary">
                       CLOSED
                     </h2>
-                    <ul className="flex flex-col gap-3">
-                      {closed.map((exam) => card(exam, true))}
-                    </ul>
+                    <ul className={examGrid}>{closed.map((exam) => card(exam, true))}</ul>
                   </section>
                 </div>
               </div>

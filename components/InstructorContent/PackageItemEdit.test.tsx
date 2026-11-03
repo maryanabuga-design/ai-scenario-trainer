@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/components/ActionBar/ActionBar", () => ({
+  HeaderActionsSlot: () => null,
   ActionBar: ({ children }: { children: React.ReactNode }) => <div data-bar>{children}</div>,
 }));
 import { PackageItemEdit, PackagePartStep } from "@/components/InstructorContent/PackageItemEdit";

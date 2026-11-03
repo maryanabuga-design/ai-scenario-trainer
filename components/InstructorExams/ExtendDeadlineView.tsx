@@ -35,7 +35,7 @@ export function ExtendDeadlineView({
   const [date, setDate] = useState("");
   const next = option ? extendedDeadline(exam, option, date) : null;
   return (
-    <div className="flex flex-col gap-4 pb-4">
+    <div className="flex flex-col gap-4 pb-4 idesk:[&>*:not([data-page-header-band])]:max-w-[560px]">
       <PageHeaderBand
         title="Extend deadline"
         subtitle={`${exam.title} · due ${shortDate(exam.deadline)}`}

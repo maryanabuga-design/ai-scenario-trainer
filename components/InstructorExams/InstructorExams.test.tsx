@@ -114,8 +114,8 @@ describe("the exam card", () => {
     // the same markup as the list card, apart from the card chrome
     const strip = (html: string) =>
       html.replace(
-        / rounded-card border border-selectable-stroke bg-card shadow-\(--card-shadow\)/,
-        "",
+        / rounded-card border border-selectable-stroke bg-card shadow-\(--card-shadow\) idesk:hover:border-hover-stroke idesk:hover:shadow-\(--hover-shadow\)/,
+        " idesk:hover:bg-secondary-sand",
       );
     const same = (html: string) => html.replace(/href="[^"]*"/, "").replace(/\s+"/g, '"');
     expect(same(strip(card()))).toBe(same(bare));
