@@ -293,21 +293,21 @@ for (const width of [360, 430]) {
       await expect(empty).toContainText("No students match this search.");
       await expect(empty).toContainText("Try another name or clear the filters.");
       expect(await bg(empty)).toBe(WHITE);
-      // the picture: about 120px, centred above the title, decorative
+      // the picture: 140px, centred above the title, decorative
       const art = empty.locator("[data-no-results-art]");
       await expect(art).toHaveAttribute("src", "/images/instructor/students-no-results.webp");
       await expect(art).toHaveAttribute("alt", "");
       const a = (await box(art))!;
       const e = (await box(empty))!;
-      expect([a.width, a.height]).toEqual([120, 120]);
+      expect([a.width, a.height]).toEqual([140, 140]);
       expect(Math.abs(a.x + a.width / 2 - (e.x + e.width / 2))).toBeLessThanOrEqual(1);
       expect(a.y).toBeLessThan((await box(empty.getByRole("heading")))!.y);
       await expect(empty.locator("[data-empty-tile]")).toHaveCount(0);
-      // the spacing: picture to title 16px, title to line 6px, line to the button 24px
+      // the spacing: picture to title 12px, title to line 6px, line to the button 24px
       const title = (await box(empty.locator("[data-empty-title]")))!;
       const line = (await box(empty.locator("[data-empty-text]")))!;
       const action = (await box(empty.locator("[data-empty-action]")))!;
-      expect(Math.round(title.y - (a.y + a.height))).toBe(16);
+      expect(Math.round(title.y - (a.y + a.height))).toBe(12);
       expect(Math.round(line.y - (title.y + title.height))).toBe(6);
       expect(Math.round(action.y - (line.y + line.height))).toBe(24);
       expect(await art.evaluate((el: HTMLImageElement) => el.naturalWidth > 0)).toBe(true);

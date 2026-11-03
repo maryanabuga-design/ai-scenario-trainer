@@ -335,6 +335,13 @@ dialog[data-sheet]::backdrop,
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
+/* Line heights of the picture empty states (DESIGN.md: Empty state spacing). */
+@utility lh-title {
+  line-height: 1.3;
+}
+@utility lh-text {
+  line-height: 1.45;
+}
 @utility type-numeral {
   font-size: 28px;
   line-height: 1.33;

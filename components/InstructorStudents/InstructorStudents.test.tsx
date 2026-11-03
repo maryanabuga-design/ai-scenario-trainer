@@ -401,12 +401,12 @@ describe("the Students list", () => {
     const card = search.slice(search.indexOf('data-empty="search"'));
     expect(card).toContain('src="/images/instructor/students-no-results.webp"');
     expect(card).toContain('alt=""');
-    expect(card).toContain("h-[120px] w-[120px]");
+    expect(card).toContain("h-[140px] w-[140px]");
     expect(card).not.toContain("data-empty-tile");
     expect(card.indexOf("data-no-results-art")).toBeLessThan(card.indexOf("No students match"));
     expect(card).toContain("items-center");
-    // the spacing: picture 16px to the title, 6px to the line, 24px to the Secondary button
-    expect(card).toMatch(/data-empty-title[^>]*class="[^"]*\bmt-4\b/);
+    // the spacing: picture 12px to the title, 6px to the line, 24px to the Secondary button
+    expect(card).toMatch(/data-empty-title[^>]*class="[^"]*\bmt-3\b/);
     expect(card).toMatch(/data-empty-text[^>]*class="[^"]*\bmt-1\.5\b/);
     expect(card).toMatch(/data-empty-action[^>]*class="[^"]*\bmt-6\b/);
     expect(card).not.toMatch(/data-empty="search"[^>]*\bgap-/);

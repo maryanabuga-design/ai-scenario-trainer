@@ -62,7 +62,7 @@ function EmptyTile() {
   );
 }
 
-/** The "no students found" picture (about 120px, decorative); the icon tile when it is missing. */
+/** The "no students found" picture (140px, decorative); the icon tile when it is missing. */
 function NoResultsArt() {
   const [failed, setFailed] = useState(false);
   const image = useRef<HTMLImageElement>(null);
@@ -79,9 +79,9 @@ function NoResultsArt() {
       data-no-results-art
       src={NO_RESULTS_IMAGE}
       alt=""
-      width={120}
-      height={120}
-      className="h-[120px] w-[120px] object-contain"
+      width={140}
+      height={140}
+      className="h-[140px] w-[140px] object-contain"
       onError={() => setFailed(true)}
     />
   );
@@ -110,10 +110,10 @@ export function EmptyCard({
       className="flex flex-col items-center rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)] text-center shadow-(--card-shadow)"
     >
       {art ? <NoResultsArt /> : <EmptyTile />}
-      <h2 data-empty-title className="type-item-title mt-4">
+      <h2 data-empty-title className="type-item-title lh-title mt-3 max-w-[280px]">
         {title}
       </h2>
-      <p data-empty-text className="type-body mt-1.5 text-text-secondary">
+      <p data-empty-text className="type-body lh-text mt-1.5 max-w-[280px] text-text-secondary">
         {text}
       </p>
       {action && (

@@ -129,7 +129,7 @@ for (const width of [360, 430]) {
       await expect(note.locator("svg.lucide-lightbulb")).toHaveCount(1);
     });
 
-    test("the Content empty state shows the 3D picture at 160px, loaded, with an empty alt text", async ({
+    test("the Content empty state shows the 3D picture at 140px, loaded, with an empty alt text", async ({
       page,
     }) => {
       await page.goto("/instructor/content");
@@ -139,7 +139,7 @@ for (const width of [360, 430]) {
       await expect(picture).toHaveAttribute("src", "/images/instructor/content-empty.webp");
       expect(await picture.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0);
       const box = (await picture.boundingBox())!;
-      expect([Math.round(box.width), Math.round(box.height)]).toEqual([160, 160]);
+      expect([Math.round(box.width), Math.round(box.height)]).toEqual([140, 140]);
       expect(Math.round(box.x + box.width / 2)).toBe(Math.round(width / 2));
       expect(await picture.evaluate((el) => getComputedStyle(el).objectFit)).toBe("contain");
       await expect(
@@ -159,7 +159,7 @@ for (const width of [360, 430]) {
       await page.goto("/instructor/content");
       await expect(page.locator("[data-empty-fallback]")).toBeVisible();
       const circle = (await page.locator("[data-empty-circle]").boundingBox())!;
-      expect([circle.width, circle.height]).toEqual([144, 144]);
+      expect([circle.width, circle.height]).toEqual([140, 140]);
       await expect(page.locator("[data-dashes=left] span")).toHaveCount(3);
       await expect(page.locator("[data-empty-picture]")).toHaveCount(0);
       expect(await noSidewaysScroll(page)).toBe(true);

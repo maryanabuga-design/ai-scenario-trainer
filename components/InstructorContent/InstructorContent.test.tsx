@@ -108,7 +108,9 @@ describe("the Content tab", () => {
     expect(empty).toContain("YOUR TOPICS");
     // the 3D picture centred at 160px with an empty alt text; no circle, icon or dashes while it loads
     expect(empty).toContain('src="/images/instructor/content-empty.webp"');
-    expect(empty).toMatch(/data-empty-picture[^>]*alt=""[^>]*h-40 w-40 object-contain/);
+    expect(empty).toMatch(
+      /data-empty-picture[^>]*alt=""[^>]*h-\[140px\] w-\[140px\] object-contain/,
+    );
     expect(empty).not.toMatch(/data-empty-circle|bg-sage-dash/);
     expect(empty).not.toContain("data-set-card");
     expect(empty).toContain("Your topics stay in this browser (prototype).");
