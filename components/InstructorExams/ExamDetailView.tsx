@@ -364,9 +364,9 @@ export function ExamDetailView({
             <Shield size={16} strokeWidth={2} aria-hidden="true" />
             {groupNames(exam.groupIds).toUpperCase()}
           </p>
-          <h2 data-exam-title className="type-card-title">
+          <p data-exam-title className="type-card-title">
             {exam.title}
-          </h2>
+          </p>
           <p data-topics className="type-small text-text-secondary">
             {topicsLine(exam.topicIds, titleOf)}
           </p>

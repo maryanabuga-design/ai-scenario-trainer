@@ -575,7 +575,7 @@ describe("the Student detail", () => {
     expect(html).toContain("data-student-header");
     expect(html).toContain("h-16 w-16");
     expect(html).not.toContain("data-status-dot");
-    expect(html).toContain(`>${person.participant.name}</h2>`);
+    expect(html).toContain(`>${person.participant.name}</p>`);
     expect(html).toMatch(/data-field-line[^>]*>[A-Za-z ]+ · Rescue team</);
     expect(html).toMatch(
       /data-last-active[^>]*>[\s\S]*lucide-clock[\s\S]*Last active (today|yesterday|\d+ (days|weeks) ago)/,

@@ -115,6 +115,30 @@ test.describe("Assign exam", () => {
   });
 });
 
+test.describe("Assign exam footer", () => {
+  test("the footer stays at the bottom of the window with a live summary", async ({ page }) => {
+    await start(page, 1280, "/instructor/exams/new");
+    const footer = page.locator("[data-card-footer]");
+    const summary = footer.locator("[data-assign-summary]");
+    await expect(summary).toHaveText("No topics selected");
+    await page.getByText("S1 Responding to an alarm", { exact: true }).click();
+    await expect(summary).toHaveText("1 topic · 20 questions");
+    await page.getByText("S2 Checking the route", { exact: true }).click();
+    await expect(summary).toHaveText(/^2 topics · \d+ questions$/);
+    // scrolled to the top of a long card, the footer is still inside the window
+    const box = await footer.boundingBox();
+    expect(box!.y + box!.height).toBeLessThanOrEqual(900);
+    await page.mouse.wheel(0, 300);
+    await page.waitForTimeout(200);
+    const after = await footer.boundingBox();
+    expect(after!.y + after!.height).toBeLessThanOrEqual(900);
+    expect(after!.y).toBeGreaterThan(600);
+    const card = (await page.locator("[data-flow-card]").boundingBox())!;
+    expect(after!.x).toBeGreaterThanOrEqual(card.x);
+    expect(after!.x + after!.width).toBeLessThanOrEqual(card.x + card.width + 1);
+  });
+});
+
 test.describe("Extend deadline", () => {
   test("a centred card, and the due date is updated", async ({ page }) => {
     await start(page, 1280, "/instructor/exams/seed-active/extend");

@@ -78,12 +78,19 @@ export function PageAction({ children }: { children: ReactNode }) {
  * actions (Secondary on the left, Primary on the right, 44px, auto width). The same buttons are in
  * the pinned bar below 1024px (`ActionBar` with `hideOnDesk`).
  */
-export function CardFooter({ children }: { children: ReactNode }) {
+export function CardFooter({
+  children,
+  sticky = false,
+}: {
+  children: ReactNode;
+  /** Stays at the bottom of the window while a long card scrolls (Assign exam). */
+  sticky?: boolean;
+}) {
   return (
     <div
       data-card-footer
       data-desk-only
-      className="hidden w-full idesk:flex idesk:justify-end idesk:gap-3 idesk:border-t idesk:border-selectable-stroke idesk:pt-6 idesk:[&>*]:h-11! idesk:[&>*]:w-auto! idesk:[&>*]:px-5!"
+      className={`hidden w-full idesk:flex idesk:items-center idesk:justify-end idesk:gap-3 idesk:border-t idesk:border-selectable-stroke idesk:pt-6 ${sticky ? "idesk:sticky idesk:bottom-0 idesk:z-10 idesk:-mx-8 idesk:-mb-8 idesk:rounded-b-card idesk:bg-card idesk:px-8 idesk:pb-6" : ""} idesk:[&>*]:h-11! idesk:[&>*]:w-auto! idesk:[&>*]:px-5! idesk:[&>p]:px-0!`}
     >
       {children}
     </div>

@@ -164,8 +164,18 @@ export function AssignExamView({
       />
 
       <FlowCard
+        stickyFooter
         footer={
           <>
+            <p
+              data-assign-summary
+              aria-live="polite"
+              className="type-small mr-auto text-text-secondary"
+            >
+              {topics.length === 0
+                ? "No topics selected"
+                : `${topics.length} ${topics.length === 1 ? "topic" : "topics"} · ${count} questions`}
+            </p>
             <Button
               variant="secondary"
               onClick={() => (entered ? setConfirming(true) : onCancel())}

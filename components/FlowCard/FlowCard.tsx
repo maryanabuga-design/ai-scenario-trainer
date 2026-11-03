@@ -15,12 +15,15 @@ export function FlowCard({
   footer,
   width = "wide",
   plain = false,
+  stickyFooter = false,
 }: {
   children: ReactNode;
   footer?: ReactNode;
   width?: keyof typeof widths;
   /** No card at all (the screen is a card only in some states). */
   plain?: boolean;
+  /** The footer stays at the bottom of the window while the card scrolls. */
+  stickyFooter?: boolean;
 }) {
   if (plain) return <>{children}</>;
   return (
@@ -29,7 +32,7 @@ export function FlowCard({
       className={`contents idesk:mx-auto idesk:mt-4 idesk:flex idesk:w-full idesk:flex-col idesk:gap-6 idesk:rounded-card idesk:border idesk:border-selectable-stroke idesk:bg-card idesk:p-8 idesk:shadow-(--card-shadow) ${widths[width]}`}
     >
       {children}
-      {footer && <CardFooter>{footer}</CardFooter>}
+      {footer && <CardFooter sticky={stickyFooter}>{footer}</CardFooter>}
     </div>
   );
 }

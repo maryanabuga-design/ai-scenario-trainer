@@ -21,7 +21,7 @@ export function InstructorSideNav() {
   const person = account && account !== "loading" ? account : null;
   const onProfile = pathname === "/profile" || pathname.startsWith("/profile/");
   return (
-    <aside
+    <header
       data-shell="instructor"
       data-side-nav
       className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-selectable-stroke bg-surface px-4 pt-6 pb-4 desk:flex"
@@ -66,6 +66,6 @@ export function InstructorSideNav() {
           {person?.name ?? "Profile"}
         </span>
       </Link>
-    </aside>
+    </header>
   );
 }

@@ -120,9 +120,9 @@ export function StudentDetailView({
         >
           <InitialsAvatar initials={profile.participant.initials} size={64} />
           <div className="flex min-w-0 flex-col gap-1">
-            <h2 data-student-name className="type-card-title truncate">
+            <p data-student-name className="type-card-title truncate">
               {profile.participant.name}
-            </h2>
+            </p>
             <p
               data-field-line
               className="type-small truncate text-text-secondary idesk:overflow-visible idesk:text-clip idesk:whitespace-normal"

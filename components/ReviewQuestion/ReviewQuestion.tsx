@@ -40,7 +40,11 @@ export function ReviewQuestion({
         )}
         {item.situation && <SituationCard text={item.situation} />}
         <div className="flex items-start justify-between gap-3">
-          <h1 className="type-item-title pt-1.5">{item.question}</h1>
+          {readOnly ? (
+            <h2 className="type-item-title pt-1.5">{item.question}</h2>
+          ) : (
+            <h1 className="type-item-title pt-1.5">{item.question}</h1>
+          )}
           {!readOnly && <BookmarkButton saved={saved} onToggle={onToggleSaved} />}
         </div>
       </section>

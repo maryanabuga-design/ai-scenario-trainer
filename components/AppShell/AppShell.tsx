@@ -4,6 +4,7 @@ import { ActionBarProvider, ActionBarSlot } from "@/components/ActionBar/ActionB
 import { AuthGate } from "@/components/AuthGate/AuthGate";
 import { RestartShortcut } from "@/components/RestartShortcut/RestartShortcut";
 import { NavigationTracker } from "@/components/NavigationTracker/NavigationTracker";
+import { RouteTitle } from "@/components/ShellChrome/RouteTitle";
 import { ShellChrome } from "@/components/ShellChrome/ShellChrome";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
 import { SourceSheetProvider } from "@/components/SourceSheet/SourceSheet";
@@ -17,6 +18,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     >
       <Suspense fallback={null}>
         <ShellChrome />
+        <RouteTitle />
       </Suspense>
       <Suspense fallback={null}>
         <NavigationTracker />
