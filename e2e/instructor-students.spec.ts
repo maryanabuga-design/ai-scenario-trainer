@@ -788,7 +788,9 @@ for (const width of [360, 430]) {
     }) => {
       await page.goto("/instructor/students");
       await rows(page).first().click();
-      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Student detail");
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Student detail", {
+        useInnerText: true,
+      });
       await expect(page.getByText("Readiness and results for each topic.")).toBeVisible();
       await expect(page.locator("[data-avatar]:visible")).toHaveCount(0);
       const header = page.locator("[data-student-header]");

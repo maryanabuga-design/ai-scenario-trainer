@@ -114,7 +114,7 @@ test.describe("Students table", () => {
   }) => {
     for (const [width, weak, last] of [
       [1024, false, false],
-      [1280, true, false],
+      [1280, true, true],
       [1440, true, true],
       [1920, true, true],
     ] as const) {

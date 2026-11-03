@@ -39,7 +39,12 @@ const people = inScope(
 const all = profiles(people, { "ana@example.com": null }, now);
 const titleOf = (id: string) => `Topic ${id}`;
 const visible = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
-const clean = (html: string) => html.replace(/<!-- -->/g, "");
+// the phone markup: the desktop tables and the desktop-only status next to the title are tested in the desktop specs
+const clean = (html: string) =>
+  html
+    .replace(/<!-- -->/g, "")
+    .replace(/<div data-[a-z-]*table[\s\S]*?<\/table><\/div>/g, "")
+    .replace(/<div class="hidden idesk:mt-1[^>]*>[\s\S]*?<\/div>/g, "");
 
 const list = (
   filter: StudentsFilter = "all",
@@ -564,7 +569,7 @@ describe("the Student detail", () => {
 
   it("has Back and the band 'Student detail' without an avatar, then the header card with the large plain avatar (no status dot), name, field and group, last active", () => {
     expect(html).toContain('aria-label="Back to students"');
-    expect(html).toContain(">Student detail</h1>");
+    expect(html).toContain("Student detail</span>");
     expect(html).toMatch(/text-text-secondary">Readiness and results for each topic\.</);
     expect(html).not.toContain('data-avatar="true"');
     expect(html).toContain("data-student-header");

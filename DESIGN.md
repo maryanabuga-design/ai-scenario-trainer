@@ -1134,3 +1134,11 @@ The values below are read from `app/globals.css`. When a brief or an older note 
 | Neutral chip text | `--chip-neutral-ink` | #646A5A | #6B7062 (too light on the neutral chip) |
 | Light border of an active control | `--hover-stroke` | #C9D3B8 | the old `--chip-active-stroke` no longer exists; the same value is now `--hover-stroke` |
 | Active filter button | `--filter-active` | #D3DCC3 | same |
+
+## Responsive instructor, step 4: the student detail and the leftovers (3 Nov 2026)
+- Student detail (from 1024px): the shared header with the Back circle, the student's NAME as the title (the phone keeps "Student detail"), the subtitle and the student's status chip under it; "Send reminder" (Secondary) is in the header actions area. Two columns with a 24px gap: the left one, 340px wide and sticky, holds the header card (the 64px initials, name, field and group, last active) and the READINESS card (the percentage, the week comparison, the ring, the pass mark and the practice line); the right one holds the same sections as the phone, one under the other. NEEDS REVIEW and NOTHING TO REVIEW and EXAMS are shared DataTables here (Topic and Result; Exam, Status and Details); a row that has no address (a topic, an exam without a certificate) is a plain row with no link, no hover and no chevron; a Passed exam with a certificate is a link with the certificate mark. Empty messages ("Not practised yet", "No activity yet") are unchanged. The phone keeps its cards and rows.
+- Topic students (from 1024px): the DataTable with Student, Status, In this topic ("16 of 26 correct") and Readiness (hidden below 800px); "Assign exam on this topic" is in the header; the summary card is at most 560px wide.
+- Students table: Weak topic is shown from a table width of 800px and Last active from 960px (container rules).
+- "Clear search" in the no-results card is a centred Secondary button of auto width on desktop (full width on the phone).
+- The Overview "Needs your action" card keeps its own height and the top alignment, with one item or three.
+- Resize: when the window grows past 1024px while the phone filter sheet is open, the sheet closes and applies nothing; the filter in the address is kept; resizing back does not reopen it.

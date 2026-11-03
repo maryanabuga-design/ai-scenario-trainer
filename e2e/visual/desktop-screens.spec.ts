@@ -23,6 +23,7 @@ const shown = [
   "instructor-exams-list-new",
   "instructor-exam-assign",
   "instructor-exam-extend",
+  "instructor-topic-students",
 ];
 
 for (const width of [1024, 1280, 1440, 1920]) {
@@ -99,6 +100,32 @@ for (const width of [1024, 1280, 1440, 1920]) {
     await page.waitForTimeout(300);
     await page.screenshot({
       path: out("instructor-students-topics", width),
+      animations: "disabled",
+    });
+    await page.close();
+  });
+}
+
+for (const width of [1024, 1280, 1440, 1920]) {
+  test(`student detail states, ${width}px`, async ({ browser }) => {
+    const page = await browser.newPage({
+      viewport: { width, height: 900 },
+      reducedMotion: "reduce",
+    });
+    await prepare(page, "instructor");
+    await page.goto("/instructor/students");
+    await page.locator("[data-table-link]").first().click();
+    await page.locator("[data-student-header]").waitFor();
+    await page.waitForTimeout(400);
+    await page.screenshot({
+      path: out("instructor-student-detail-needs", width),
+      animations: "disabled",
+    });
+    await page.goto("/instructor/students/stu-06");
+    await page.locator("[data-student-header]").waitFor();
+    await page.waitForTimeout(400);
+    await page.screenshot({
+      path: out("instructor-student-detail-new", width),
       animations: "disabled",
     });
     await page.close();
