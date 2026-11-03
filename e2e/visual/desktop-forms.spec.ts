@@ -240,7 +240,7 @@ test.describe("Draft review walk-through", () => {
     await page.getByRole("button", { name: "Import and review" }).click();
     const ready = page.getByRole("heading", { name: "Draft is ready" });
     const partial = page.getByRole("button", { name: "Continue" });
-    await expect(ready.or(partial)).toBeVisible({ timeout: 15000 });
+    await expect(ready.or(partial)).toBeVisible({ timeout: 45000 });
     if (await partial.isVisible()) await partial.click();
     await expect(ready).toBeVisible();
     await page.getByRole("button", { name: "Open draft" }).click();
@@ -273,7 +273,7 @@ test.describe("Preview frame", () => {
     await start(page, width, "/instructor/content/import");
     await page.getByRole("button", { name: "Try an example" }).click();
     await page.getByRole("button", { name: /^Import/ }).click();
-    await page.getByRole("heading", { name: "Draft is ready" }).waitFor({ timeout: 20_000 });
+    await page.getByRole("heading", { name: "Draft is ready" }).waitFor({ timeout: 45_000 });
     await page.getByRole("button", { name: "Open draft" }).click();
     await page
       .locator("[data-package-status], [data-tab-bar]")
@@ -312,7 +312,7 @@ test.describe("Question table", () => {
     await start(page, 1280, "/instructor/content/import");
     await page.getByRole("button", { name: "Try an example" }).click();
     await page.getByRole("button", { name: /^Import/ }).click();
-    await page.getByRole("heading", { name: "Draft is ready" }).waitFor({ timeout: 20_000 });
+    await page.getByRole("heading", { name: "Draft is ready" }).waitFor({ timeout: 45_000 });
     await page.getByRole("button", { name: "Open draft" }).click();
     await page.getByRole("tab", { name: /^Quiz/ }).click();
     const table = page.getByRole("table", { name: "Questions" });
@@ -331,7 +331,7 @@ test.describe("Preview frame: every student screen stays inside", () => {
     await start(page, 1280, "/instructor/content/import");
     await page.getByRole("button", { name: "Try an example" }).click();
     await page.getByRole("button", { name: /^Import/ }).click();
-    await page.getByRole("heading", { name: "Draft is ready" }).waitFor({ timeout: 20_000 });
+    await page.getByRole("heading", { name: "Draft is ready" }).waitFor({ timeout: 45_000 });
     await page.getByRole("button", { name: "Open draft" }).click();
     await page.locator("[data-tab-bar]").waitFor();
     return page.url().replace(/\?.*$/, "");

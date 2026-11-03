@@ -28,6 +28,10 @@ for (const width of [360, 430]) {
             if (input.value.includes(here)) input.value = input.value.replaceAll(here, fixed);
           });
         }, "http://localhost:3100");
+        // pictures (the 3D ones) must have finished loading, also when the machine is busy
+        await page.waitForFunction(() =>
+          Array.from(document.images).every((image) => image.complete),
+        );
         await page.waitForTimeout(400);
         await expect(page).toHaveScreenshot(`${route.name}-${width}.png`, {
           fullPage: true,

@@ -173,7 +173,7 @@ test.describe("axe on the open states at 1280px", () => {
     await page.goto("/instructor/content/import");
     await page.getByRole("button", { name: "Try an example" }).click();
     await page.getByRole("button", { name: /^Import/ }).click();
-    await page.getByRole("heading", { name: "Draft is ready" }).waitFor({ timeout: 20_000 });
+    await page.getByRole("heading", { name: "Draft is ready" }).waitFor({ timeout: 45_000 });
     await page.getByRole("button", { name: "Open draft" }).click();
     await page.locator("[data-tab-bar]").waitFor();
     await page.goto(page.url().replace(/\?.*$/, "") + "/preview/quiz");

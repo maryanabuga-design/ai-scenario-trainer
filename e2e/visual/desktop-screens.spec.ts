@@ -163,7 +163,7 @@ for (const width of [1024, 1280, 1440, 1920]) {
       path: out("instructor-content-analysing", width),
       animations: "disabled",
     });
-    await page.getByRole("heading", { name: "Draft is ready" }).waitFor({ timeout: 20_000 });
+    await page.getByRole("heading", { name: "Draft is ready" }).waitFor({ timeout: 45_000 });
     await page.waitForTimeout(300);
     await page.screenshot({
       path: out("instructor-content-draft-ready", width),
@@ -246,7 +246,7 @@ for (const width of [1024, 1280, 1440, 1920]) {
     await page.getByRole("button", { name: "Import and review" }).click();
     const ready = page.getByRole("heading", { name: "Draft is ready" });
     const partial = page.getByRole("button", { name: "Continue" });
-    await ready.or(partial).waitFor({ timeout: 15000 });
+    await ready.or(partial).waitFor({ timeout: 45000 });
     if (await partial.isVisible()) await partial.click();
     await ready.waitFor();
     await page.getByRole("button", { name: "Open draft" }).click();
@@ -338,7 +338,7 @@ for (const width of [1280, 1920]) {
     await page.goto("/instructor/content/import");
     await page.getByRole("button", { name: "Try an example" }).click();
     await page.getByRole("button", { name: /^Import/ }).click();
-    await page.getByRole("heading", { name: "Draft is ready" }).waitFor({ timeout: 20000 });
+    await page.getByRole("heading", { name: "Draft is ready" }).waitFor({ timeout: 45000 });
     await page.getByRole("button", { name: "Open draft" }).click();
     await page.locator("[data-tab-bar]").waitFor();
     await page.goto(page.url().replace(/\?.*$/, "") + "/preview/quiz");

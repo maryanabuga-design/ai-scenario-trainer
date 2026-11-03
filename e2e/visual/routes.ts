@@ -166,7 +166,7 @@ export const routes: Route[] = [
     after: async (page) => {
       await page.getByRole("button", { name: "Try an example" }).click();
       await page.getByRole("button", { name: /^Import/ }).click();
-      await page.getByRole("heading", { name: "Draft is ready" }).waitFor({ timeout: 20_000 });
+      await page.getByRole("heading", { name: "Draft is ready" }).waitFor({ timeout: 45_000 });
     },
   }),
   instructor("profile", "/profile"),

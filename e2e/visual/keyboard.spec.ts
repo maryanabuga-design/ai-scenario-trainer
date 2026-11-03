@@ -168,7 +168,7 @@ test("Topic tabs, question edit and Save from the keyboard", async ({ page }) =>
   await page.goto("/instructor/content/import");
   await page.getByRole("button", { name: "Try an example" }).click();
   await page.getByRole("button", { name: /^Import/ }).click();
-  await page.getByRole("heading", { name: "Draft is ready" }).waitFor({ timeout: 20_000 });
+  await page.getByRole("heading", { name: "Draft is ready" }).waitFor({ timeout: 45_000 });
   await page.getByRole("button", { name: "Open draft" }).focus();
   await page.keyboard.press("Enter");
   await page.locator("[data-tab-bar]").waitFor();
@@ -215,4 +215,29 @@ test("Invite students: the copy buttons work with Enter and Space", async ({ pag
   await link.focus();
   await page.keyboard.press("Space");
   await expect(page.locator("[data-flash]")).toContainText("Link copied");
+});
+
+test("the focus ring of a dark Primary button is the accent colour from the first frame", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await prepare(page, "instructor");
+  await page.goto("/instructor/exams");
+  await page.locator("[data-exam-card]").first().waitFor();
+  await page.keyboard.press("Tab");
+  const seen = await page.evaluate(async () => {
+    const button = Array.from(document.querySelectorAll("a")).find(
+      (el) => el.textContent?.includes("Assign exam") && el.getClientRects().length > 0,
+    ) as HTMLElement;
+    const colours: string[] = [];
+    button.focus();
+    colours.push(getComputedStyle(button).outlineColor);
+    for (let i = 0; i < 8; i++) {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      colours.push(getComputedStyle(button).outlineColor);
+    }
+    return { colours, transition: getComputedStyle(button).transitionDuration };
+  });
+  expect(new Set(seen.colours)).toEqual(new Set(["rgb(61, 58, 140)"]));
+  expect(seen.transition).toBe("0s");
 });

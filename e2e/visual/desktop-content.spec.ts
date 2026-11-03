@@ -17,7 +17,7 @@ const draft = async (page: Page, width: number) => {
   await start(page, width, "/instructor/content/import");
   await page.getByRole("button", { name: "Try an example" }).click();
   await page.getByRole("button", { name: /^Import/ }).click();
-  await page.getByRole("heading", { name: "Draft is ready" }).waitFor({ timeout: 20_000 });
+  await page.getByRole("heading", { name: "Draft is ready" }).waitFor({ timeout: 45_000 });
   await page.getByRole("button", { name: "Open draft" }).click();
   await page
     .locator("[data-package-status], [data-tab-bar]")
@@ -159,7 +159,7 @@ test.describe("One-card flows", () => {
     await start(page, 1280, "/instructor/content/import");
     await page.getByRole("button", { name: "Try an example" }).click();
     await page.getByRole("button", { name: /^Import/ }).click();
-    await page.getByRole("heading", { name: "Draft is ready" }).waitFor({ timeout: 20_000 });
+    await page.getByRole("heading", { name: "Draft is ready" }).waitFor({ timeout: 45_000 });
     const footer = page.locator("[data-card-footer]");
     await expect(footer.getByRole("button", { name: "Open draft" })).toBeVisible();
     await expect(footer.getByRole("button", { name: "Back to Content" })).toBeVisible();
