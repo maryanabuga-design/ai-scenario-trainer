@@ -1114,3 +1114,23 @@ Four changes to the Overview and the group switcher, mobile 360 and 430px.
 - Student detail: not redesigned; its content stays in a column of at most 720px under the header.
 - Student detail and Invite students (from 1024px): everything under the header stays in a column of at most 720px (Invite students 560px), left aligned, so no row or input is stretched across the wide content column. They are not redesigned yet; the topic students list is still the phone rows.
 - Rule change for the desktop exam table: the exam detail on the phone still shows counts and words only, no percentage; the desktop table's Result column shows each student's own percentage ("70%", "14 of 20") because a table needs a value to sort by. The headline of the screen stays the counts.
+
+## Colour reference: the CSS is the source of truth (3 Nov 2026)
+The values below are read from `app/globals.css`. When a brief or an older note names a different hex, the CSS wins and the code is not changed.
+
+| Role | Token | Value | A brief or older note said |
+| --- | --- | --- | --- |
+| Page background | `--bg` | #F6F4F0 | same |
+| Card fill | `--card` | #FFFFFF | same |
+| Card border | `--selectable-stroke` | #E4DFD5 | same (`--border` #E2DED5 is the general hairline) |
+| Sand band / Secondary sand | `--secondary-sand` | #F0ECE6 | #F0ECE7 (one step off) |
+| Sand tile | `--chip-neutral-bg` | #EFECE6 | same |
+| Primary | `--primary` | #3F4638 | #46512D (a different olive) |
+| Secondary tint | `--olive-tint` | #E0E6D6 | same |
+| Text | `--text` | #1A1A1A | same |
+| Muted text | `--text-secondary` | #5C5A55 | #6B7062 (that is `--icon-muted`, an icon colour; as text it is 4.3:1 on sand) |
+| Success chip | `--status-success-bg` / `-ink` | #E1EADA / #44683A | same |
+| Attention chip | `--status-attention-bg` / `-ink` | #F1E4C8 / #6F5120 | same |
+| Neutral chip text | `--chip-neutral-ink` | #646A5A | #6B7062 (too light on the neutral chip) |
+| Light border of an active control | `--hover-stroke` | #C9D3B8 | the old `--chip-active-stroke` no longer exists; the same value is now `--hover-stroke` |
+| Active filter button | `--filter-active` | #D3DCC3 | same |
