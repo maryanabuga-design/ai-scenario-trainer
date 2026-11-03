@@ -132,12 +132,16 @@ describe("every button goes through the Button component", () => {
     // a field control, not a page button; it uses the same small action text style.
     // The rows of the dropdown menus (DESIGN.md: Five small instructor fixes) are list rows, not
     // buttons; they use the hover and pressed fill of the shared menu highlight.
+    // The side navigation of the desktop instructor (DESIGN.md: Responsive instructor) has link rows
+    // with a hover fill, and its skip link uses the button text style; neither is a page button.
     expect(own).toEqual([
       "components/AskAiRow/AskAiRow.tsx",
       "components/DropdownMenu/DropdownMenu.tsx",
       "components/GroupSwitcher/GroupSwitcher.tsx",
       "components/InstructorStudents/CopyField.tsx",
       "components/SelectionToolbar/SelectionToolbar.tsx",
+      "components/ShellChrome/InstructorSideNav.tsx",
+      "components/ShellChrome/ShellChrome.tsx",
     ]);
   });
 

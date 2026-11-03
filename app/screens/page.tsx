@@ -91,6 +91,41 @@ function ReadingExample({ id }: { id: string }) {
   );
 }
 
+const desktopPictures = [
+  ["instructor-overview", "Overview"],
+  ["instructor-exams-list", "Exams"],
+  ["instructor-students", "Students"],
+  ["instructor-content-with-topic", "Content"],
+  ["instructor-student-detail", "A student"],
+  ["instructor-content-import-result", "Import result"],
+  ["instructor-dialog", "A dialog"],
+  ["instructor-notice", "The floating notice"],
+] as const;
+
+/** Pictures of the instructor's desktop layout (1280px, from 1024px; made by `npm run screens:desktop`). */
+function DesktopGroup() {
+  return (
+    <section id="instructor-desktop" className="flex scroll-mt-4 flex-col gap-3">
+      <h2 className="type-card-title">Instructor desktop (from 1024px)</h2>
+      <div className="flex gap-6 overflow-x-auto pb-2">
+        {desktopPictures.map(([file, label]) => (
+          <figure key={file} className="flex shrink-0 flex-col gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element -- a review picture, not app content */}
+            <img
+              src={`/screens-desktop/${file}-1280.png`}
+              alt={`${label} at 1280px`}
+              width={640}
+              height={450}
+              className="rounded-card border border-border"
+            />
+            <figcaption className="type-small text-text-secondary">{label}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section
@@ -1479,6 +1514,7 @@ export default function Screens() {
             </Screen>
           </PhoneFrame>
         </Group>
+        <DesktopGroup />
       </main>
     </SourceSheetProvider>
   );

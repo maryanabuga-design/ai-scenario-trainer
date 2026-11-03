@@ -14,7 +14,7 @@ const studentItems = [
 ];
 
 /** An instructor has Overview, Exams, Students and Content, in the same style (Profile opens from the avatar). */
-const instructorItems = [
+export const instructorItems = [
   { href: "/instructor", label: "Overview", Icon: House },
   { href: "/instructor/exams", label: "Exams", Icon: ClipboardList },
   { href: "/instructor/students", label: "Students", Icon: Users },
@@ -24,7 +24,7 @@ const instructorItems = [
 /** The reading screens of the Materials tab have no bottom navigation (DESIGN.md: Reading screen). */
 const READING_PREFIX = "/materials/read/";
 
-function isCurrent(href: string, pathname: string) {
+export function isCurrent(href: string, pathname: string) {
   if (pathname.startsWith(READING_PREFIX) || pathname === "/profile/edit") return false;
   // Training is a sub-screen of Home and keeps the Home item active.
   if (href === "/") return pathname === "/" || pathname === "/training";

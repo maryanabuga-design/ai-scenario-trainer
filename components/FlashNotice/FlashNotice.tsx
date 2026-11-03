@@ -35,7 +35,11 @@ export function FlashNotice() {
   const visible = flash !== null && flash.path === pathname;
   const id = flash?.id;
   const seen = useRef<number | null>(null);
-  const [shown, setShown] = useState<{ id: number; top: number; on: boolean } | null>(null);
+  const [shown, setShown] = useState<{
+    id: number;
+    top: number;
+    on: boolean;
+  } | null>(null);
 
   useEffect(() => {
     if (!visible || id === undefined) return;
@@ -74,7 +78,7 @@ export function FlashNotice() {
           data-flash
           data-flash-state={shown && shown.id === flash.id && shown.on ? "on" : "off"}
           style={{ top: shown && shown.id === flash.id ? shown.top : 12 }}
-          className={`pointer-events-none fixed left-1/2 z-50 w-[min(calc(100vw-32px),398px)] -translate-x-1/2 transition-opacity duration-200 motion-reduce:transition-none ${
+          className={`pointer-events-none fixed left-1/2 z-50 w-[min(calc(100vw-32px),398px)] -translate-x-1/2 group-has-[[data-shell=instructor]]/shell:desk:left-[calc(50%+7.5rem)] transition-opacity duration-200 motion-reduce:transition-none ${
             shown && shown.id === flash.id && shown.on ? "opacity-100" : "opacity-0"
           }`}
         >

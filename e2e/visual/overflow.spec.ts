@@ -22,6 +22,7 @@ async function problems(page: Page) {
       .filter(
         (el) =>
           el.offsetParent !== null &&
+          !el.classList.contains("sr-only") &&
           el.children.length === 0 &&
           (el.textContent ?? "").trim().length > 2,
       )
