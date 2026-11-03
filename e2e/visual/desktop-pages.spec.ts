@@ -43,7 +43,7 @@ test.describe("Overview", () => {
       const exams = document.querySelector('[aria-labelledby="exams-title"]')!;
       const a = actions.getBoundingClientRect();
       const e = exams.getBoundingClientRect();
-      return { sameRow: Math.abs(a.top - e.top) < 2, aHeight: a.height, eHeight: e.height };
+      return { sameRow: Math.abs(a.top - e.top) < 2, aWidth: a.width, eWidth: e.width };
     });
 
   for (const [width, twoColumns] of [
@@ -61,7 +61,13 @@ test.describe("Overview", () => {
       await page.locator("[data-weakest-topic]").waitFor();
       const result = await columnsOf(page);
       expect(result.sameRow).toBe(twoColumns);
-      if (twoColumns) expect(Math.abs(result.aHeight - result.eHeight)).toBeLessThan(2);
+      if (twoColumns) {
+        // 5/12 and 7/12 of the row, aligned to the top, each card keeps its own height
+        expect(result.aWidth).toBeLessThan(result.eWidth);
+        expect(Math.abs(result.aWidth / (result.aWidth + result.eWidth) - 5 / 12)).toBeLessThan(
+          0.02,
+        );
+      }
     });
   }
 

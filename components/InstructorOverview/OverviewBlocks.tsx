@@ -243,7 +243,7 @@ export function ActionsCard({
       {actions.length === 0 ? (
         <div
           data-all-caught-up
-          className={`${card} flex h-[72px] items-center gap-3 px-[var(--gutter,1rem)] idesk:flex-1`}
+          className={`${card} flex h-[72px] items-center gap-3 px-[var(--gutter,1rem)] `}
         >
           <IconTile tone="success" className="h-11 w-11 rounded-[12px]">
             <Award size={22} strokeWidth={2} />
@@ -251,7 +251,7 @@ export function ActionsCard({
           <p className="type-body-strong">{ALL_CAUGHT_UP}</p>
         </div>
       ) : (
-        <ul className={`${card} ${divided} idesk:flex-1`}>
+        <ul className={`${card} ${divided}`}>
           {actions.map((action) => (
             <li key={`${action.kind}-${action.scopeTo ?? ""}`}>
               <Link
@@ -286,10 +286,7 @@ export function ExamsCard({ rows, activeCount }: { rows: ExamRow[]; activeCount:
       <BlockLabel id="exams-title" note={`${activeCount} Active`}>
         EXAMS
       </BlockLabel>
-      <div
-        data-exams-card
-        className={`${card} flex flex-col gap-3 pb-[var(--gutter,1rem)] idesk:flex-1`}
-      >
+      <div data-exams-card className={`${card} flex flex-col gap-3 pb-[var(--gutter,1rem)] `}>
         {rows.length > 0 ? (
           <>
             <ul className={divided}>

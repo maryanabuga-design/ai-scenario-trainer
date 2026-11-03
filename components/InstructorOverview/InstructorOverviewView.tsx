@@ -86,7 +86,7 @@ export function InstructorOverviewView({
               notStarted={model.notStarted}
             />
           )}
-          <div className="contents idesk:grid idesk:grid-cols-1 idesk:items-stretch idesk:gap-6 idesk:@[900px]:grid-cols-2">
+          <div className="contents idesk:grid idesk:grid-cols-1 idesk:items-start idesk:gap-6 idesk:@[900px]:grid-cols-[5fr_7fr]">
             <ActionsCard actions={model.actions} onSelect={onSelectGroup} />
             <ExamsCard rows={model.examRows} activeCount={model.activeCount} />
           </div>
