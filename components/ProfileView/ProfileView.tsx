@@ -88,7 +88,7 @@ export function ProfileView({
   const { role } = account;
   const student = role === "student";
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 idesk:[&>*:not([data-page-header-band])]:max-w-[720px]">
       <PageHeaderBand
         title="Profile"
         subtitle="Your account and settings"
@@ -127,13 +127,15 @@ export function ProfileView({
           <h2 id="demo-title" className="type-body-strong">
             Demo mode
           </h2>
-          <SegmentedControl
-            name="role"
-            legend="Switch role (demo)"
-            options={ROLES.map((value) => ({ value, label: roleLabel[value] }))}
-            value={role}
-            onChange={onRoleChange}
-          />
+          <div className="contents idesk:block idesk:w-[320px]">
+            <SegmentedControl
+              name="role"
+              legend="Switch role (demo)"
+              options={ROLES.map((value) => ({ value, label: roleLabel[value] }))}
+              value={role}
+              onChange={onRoleChange}
+            />
+          </div>
           <p className="type-small text-text-secondary">{DEMO_HELPER}</p>
           {student && onLeaveGroup && (
             <Button variant="secondary" onClick={onLeaveGroup}>

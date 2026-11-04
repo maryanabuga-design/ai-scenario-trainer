@@ -142,7 +142,9 @@ for (const width of [360, 430]) {
       await expect(page.locator("svg.lucide-search")).toBeVisible();
       await expect(page.getByRole("button", { name: "Clear search" })).toHaveCount(0);
       await expect(page.locator("[data-filter-chip], [aria-pressed]:visible")).toHaveCount(0);
-      await expect(page.getByText("Status", { exact: true })).toHaveCount(0);
+      await expect(page.getByText("Status", { exact: true }).filter({ visible: true })).toHaveCount(
+        0,
+      );
       const button = filterButton(page);
       await expect(button).toHaveCount(1);
       await expect(button).toHaveAttribute("aria-label", "Filter by status");
@@ -786,7 +788,9 @@ for (const width of [360, 430]) {
     }) => {
       await page.goto("/instructor/students");
       await rows(page).first().click();
-      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Student detail");
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Student detail", {
+        useInnerText: true,
+      });
       await expect(page.getByText("Readiness and results for each topic.")).toBeVisible();
       await expect(page.locator("[data-avatar]:visible")).toHaveCount(0);
       const header = page.locator("[data-student-header]");
@@ -811,7 +815,9 @@ for (const width of [360, 430]) {
       // two labelled groups with counts, no BY TOPIC row, no per-row badges
       await expect(page.locator("main")).not.toContainText("BY TOPIC");
       await expect(page.locator("main")).not.toContainText("10 topics");
-      const groupLabels = await page.locator("[data-topic-group] h2").allInnerTexts();
+      const groupLabels = await page
+        .locator("[data-topic-group]:not([data-topic-group=all]) h2")
+        .allInnerTexts();
       expect(groupLabels[0]).toMatch(/^NEEDS REVIEW · \d+$/);
       expect(groupLabels[groupLabels.length - 1]).toMatch(
         /^(NOTHING TO REVIEW|NEEDS REVIEW) · \d+$/,

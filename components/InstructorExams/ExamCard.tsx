@@ -33,7 +33,7 @@ export function ExamCard({
     <Link
       href={`/instructor/exams/${exam.id}${from ? `?from=${from}` : ""}`}
       data-exam-card={exam.id}
-      className={`flex h-[88px] items-center gap-3 px-3 has-focus-visible:outline-2 ${bare ? "" : "rounded-card border border-selectable-stroke bg-card shadow-(--card-shadow)"}`}
+      className={`flex h-[88px] items-center gap-3 px-3 has-focus-visible:outline-2 ${bare ? "idesk:hover:bg-secondary-sand" : "rounded-card border border-selectable-stroke bg-card shadow-(--card-shadow) idesk:hover:border-hover-stroke idesk:hover:shadow-(--hover-shadow)"}`}
     >
       <IconTile size="default" tileId="exam">
         <ClipboardList strokeWidth={2} />

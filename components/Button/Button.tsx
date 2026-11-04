@@ -26,12 +26,13 @@ export type ButtonLook = {
 
 export const buttonVariants: Record<ButtonVariant, string> = {
   primary:
-    "type-button h-[52px] bg-primary text-primary-text active:bg-primary-pressed disabled:border disabled:border-secondary-sand-pressed disabled:bg-secondary-sand disabled:text-text-secondary",
+    "type-button h-[52px] bg-primary text-primary-text active:bg-primary-pressed idesk:hover:bg-primary-pressed disabled:border idesk:disabled:hover:bg-secondary-sand disabled:border-secondary-sand-pressed disabled:bg-secondary-sand disabled:text-text-secondary",
   // Filled with the light olive tint and no stroke, so it is exactly as big as the primary.
   secondary:
-    "type-button h-[52px] bg-olive-tint text-primary active:bg-olive-tint-pressed disabled:bg-secondary-sand disabled:text-text-secondary",
+    "type-button h-[52px] bg-olive-tint text-primary active:bg-olive-tint-pressed idesk:hover:bg-olive-tint-pressed disabled:bg-secondary-sand idesk:disabled:hover:bg-secondary-sand disabled:text-text-secondary",
   // Small underlined text; the 44px tap area is invisible padding, never a visible box.
-  tertiary: "type-action text-primary min-h-11 px-3 disabled:text-text-secondary",
+  tertiary:
+    "type-action text-primary min-h-11 px-3 idesk:hover:[&>span]:decoration-2 disabled:text-text-secondary",
 };
 
 /** The pressed look without pressing, for the screen review page only. */
@@ -54,7 +55,7 @@ export function buttonClasses({
 }: ButtonLook) {
   const width = (wide ?? variant !== "tertiary") ? "w-full" : "";
   const padding = variant === "tertiary" ? "" : snug || pill ? "px-4" : "px-6";
-  return `group inline-flex items-center justify-center gap-2 rounded-button disabled:cursor-not-allowed ${buttonVariants[variant]} ${destructive && variant === "tertiary" ? "text-wrong-text!" : ""} ${padding} ${width} ${compact ? compactHeight : ""} ${pill ? "h-9! rounded-xl!" : ""}`;
+  return `group inline-flex items-center justify-center gap-2 rounded-button idesk:cursor-pointer disabled:cursor-not-allowed ${buttonVariants[variant]} ${destructive && variant === "tertiary" ? "text-wrong-text!" : ""} ${padding} ${width} ${compact ? compactHeight : ""} ${pill ? "h-9! rounded-xl!" : ""}`;
 }
 
 function Content({

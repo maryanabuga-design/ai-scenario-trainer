@@ -30,12 +30,16 @@ export function PackageDetailsEdit({
   const [draftTitle, setTitle] = useState(title);
   const [draftSummary, setSummary] = useState(summary);
   return (
-    <div className="flex flex-col gap-6 pb-4">
+    <div className="flex flex-col gap-6 pb-4 idesk:[&>*:not([data-page-header-band])]:max-w-[720px]">
       <PageHeaderBand
         title="Edit title and summary"
         back={{ label: "Back to topic", href: backHref }}
       />
-      <TextField label="Title" name="title" value={draftTitle} onChange={setTitle} />
+      <div className="contents idesk:block">
+        <div className="idesk:max-w-[560px]">
+          <TextField label="Title" name="title" value={draftTitle} onChange={setTitle} />
+        </div>
+      </div>
       <section aria-labelledby="details-summary" className="flex flex-col gap-2">
         <h2 id="details-summary" className="type-label text-text-secondary">
           SUMMARY
@@ -49,7 +53,7 @@ export function PackageDetailsEdit({
           className="type-body min-h-24 w-full rounded-[14px] border border-selectable-stroke bg-card px-[var(--gutter,1rem)] py-3 text-text focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primary"
         />
       </section>
-      <ActionBar>
+      <ActionBar inHeader>
         <Button
           disabled={draftTitle.trim() === ""}
           onClick={() => onSave(draftTitle, draftSummary)}

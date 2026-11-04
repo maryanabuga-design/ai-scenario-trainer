@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/Button/Button";
 
@@ -22,6 +22,7 @@ type Props = {
 };
 
 function DialogCard({
+  titleId,
   title,
   description,
   confirmLabel,
@@ -30,10 +31,10 @@ function DialogCard({
   body,
   onConfirm,
   onCancel,
-}: Omit<Props, "open" | "inline">) {
+}: Omit<Props, "open" | "inline"> & { titleId: string }) {
   return (
     <div className="flex flex-col gap-4 rounded-card bg-surface p-6">
-      <h2 id="confirm-title" className="type-card-title">
+      <h2 id={titleId} className="type-card-title">
         {title}
       </h2>
       {description && <p className="text-text-secondary">{description}</p>}
@@ -62,6 +63,8 @@ function DialogCard({
 /** A modal confirmation: title, one sentence, a Primary action and a Secondary one. */
 export function ConfirmDialog({ open, inline = false, ...card }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  // one id per dialog: a screen can hold several
+  const titleId = useId();
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -74,7 +77,7 @@ export function ConfirmDialog({ open, inline = false, ...card }: Props) {
     return (
       <div className="scrim absolute inset-0 z-20 flex items-center p-4">
         <div className="w-full">
-          <DialogCard {...card} />
+          <DialogCard titleId={titleId} {...card} />
         </div>
       </div>
     );
@@ -84,11 +87,11 @@ export function ConfirmDialog({ open, inline = false, ...card }: Props) {
     <dialog
       ref={dialogRef}
       data-sheet
-      aria-labelledby="confirm-title"
+      aria-labelledby={titleId}
       onClose={card.onCancel}
       className="fixed inset-x-4 top-1/3 m-0 mx-auto w-auto max-w-[398px] bg-transparent p-0 text-text"
     >
-      <DialogCard {...card} />
+      <DialogCard titleId={titleId} {...card} />
     </dialog>
   );
 }

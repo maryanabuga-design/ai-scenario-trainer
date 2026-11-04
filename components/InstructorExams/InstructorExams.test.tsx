@@ -28,8 +28,11 @@ const titleOf = (id: string) => `Topic ${id}`;
 const visible = (html: string) => html.replace(/<[^>]+>/g, " ");
 
 const css = readFileSync("app/globals.css", "utf8");
+// the phone markup: the desktop table of the exam's students is tested in the desktop specs
 const wrap = (node: React.ReactNode) =>
-  renderToStaticMarkup(<ActionBarProvider>{node}</ActionBarProvider>).replace(/<!-- -->/g, "");
+  renderToStaticMarkup(<ActionBarProvider>{node}</ActionBarProvider>)
+    .replace(/<!-- -->/g, "")
+    .replace(/<div data-exam-table[\s\S]*?<\/table><\/div>/, "");
 
 describe("the exam card", () => {
   const exam = exams[0];
@@ -114,8 +117,8 @@ describe("the exam card", () => {
     // the same markup as the list card, apart from the card chrome
     const strip = (html: string) =>
       html.replace(
-        / rounded-card border border-selectable-stroke bg-card shadow-\(--card-shadow\)/,
-        "",
+        / rounded-card border border-selectable-stroke bg-card shadow-\(--card-shadow\) idesk:hover:border-hover-stroke idesk:hover:shadow-\(--hover-shadow\)/,
+        " idesk:hover:bg-secondary-sand",
       );
     const same = (html: string) => html.replace(/href="[^"]*"/, "").replace(/\s+"/g, '"');
     expect(same(strip(card()))).toBe(same(bare));
@@ -253,7 +256,7 @@ describe("Assign exam", () => {
     const tag = specs.slice(0, specs.indexOf(">"));
     expect(tag).toContain("bg-card");
     expect(tag).toContain("border border-selectable-stroke");
-    expect(tag).not.toContain("bg-secondary-sand");
+    expect(tag.replace("idesk:bg-secondary-sand", "")).not.toContain("bg-secondary-sand");
   });
 
   it("has Select all as a tertiary action at the right of TOPICS (underlined, no fill, 44px), and Clear all when every topic is chosen", () => {

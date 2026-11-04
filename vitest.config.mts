@@ -2,7 +2,7 @@ import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  test: { exclude: ["e2e/**", "node_modules/**", ".next/**"] },
+  test: { exclude: ["e2e/**", "node_modules/**", ".next/**", ".claude/**"] },
   resolve: {
     alias: { "@": fileURLToPath(new URL(".", import.meta.url)) },
   },

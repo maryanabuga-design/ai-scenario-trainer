@@ -3,13 +3,16 @@
 import { Bell, Clock, Flag, Repeat, Award } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { PageAction } from "@/components/ActionBar/ActionBar";
 import { Button, ButtonLink } from "@/components/Button/Button";
+import { DataTable } from "@/components/DataTable/DataTable";
+import { EmptyCard } from "@/components/InstructorStudents/StudentsListView";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { statusLabel } from "@/components/InstructorExams/ExamParts";
-import { StatusChip, examTone } from "@/components/StatusChip/StatusChip";
+import { StatusChip, examTone, studentTone } from "@/components/StatusChip/StatusChip";
 import { StatusRow } from "@/components/StatusRow/StatusRow";
-import { DeltaPill } from "@/components/InstructorOverview/OverviewBlocks";
+import { DeltaPill, ReadinessRing } from "@/components/InstructorOverview/OverviewBlocks";
 import { InitialsAvatar } from "@/components/InstructorStudents/StudentRow";
 import { TopicBadge } from "@/components/InstructorTopics/TopicsView";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
@@ -18,8 +21,10 @@ import { rosterLine } from "@/lib/exam-detail";
 import {
   fieldLabel,
   lastActiveLong,
+  profileStatus,
   readinessChange,
   readinessOf,
+  statusLabels,
   topicNeedsReview,
 } from "@/lib/students";
 import type { StudentExamRow, StudentProfile } from "@/lib/students";
@@ -80,167 +85,315 @@ export function StudentDetailView({
   // the topics in two groups, in their own order (an unpractised topic has nothing to review)
   const needsReview = profile.topics.filter(topicNeedsReview);
   const nothingToReview = profile.topics.filter((row) => !topicNeedsReview(row));
+  // a student who has answered nothing has one calm card instead of ten identical rows
+  const noPractice = profile.topics.every((row) => row.answered === 0);
+  const topicRows = [...needsReview, ...nothingToReview];
   return (
-    <div className="flex flex-col gap-4 pb-4">
+    <div className="flex flex-col gap-4 pb-4 idesk:grid idesk:grid-cols-[340px_minmax(0,1fr)] idesk:items-start idesk:gap-x-6 idesk:gap-y-0">
       <PageHeaderBand
-        title="Student detail"
+        title={
+          <>
+            <span className="idesk:hidden">Student detail</span>
+            <span className="hidden idesk:inline">{profile.participant.name}</span>
+          </>
+        }
+        meta={
+          <StatusChip tone={studentTone[profileStatus(profile)]} value={profileStatus(profile)}>
+            {statusLabels[profileStatus(profile)]}
+          </StatusChip>
+        }
         subtitle={<span className="text-text-secondary">{DETAIL_SUBTITLE}</span>}
         back={{ label: backLabel, href: backHref }}
       />
-      <p role="status" data-message className="type-body text-center not-empty:py-1">
+      <p
+        role="status"
+        data-message
+        className="type-body text-center not-empty:py-1 idesk:col-span-full"
+      >
         {sentMessage}
       </p>
 
-      <section
-        data-student-header
-        className={`${card} flex items-center gap-4 p-[var(--gutter,1rem)]`}
-      >
-        <InitialsAvatar initials={profile.participant.initials} size={64} />
-        <div className="flex min-w-0 flex-col gap-1">
-          <h2 data-student-name className="type-card-title truncate">
-            {profile.participant.name}
+      <div className="contents idesk:sticky idesk:top-6 idesk:col-start-1 idesk:mt-4 idesk:flex idesk:flex-col idesk:gap-6 idesk:self-start">
+        <section
+          data-student-header
+          className={`${card} flex items-center gap-4 p-[var(--gutter,1rem)]`}
+        >
+          <InitialsAvatar initials={profile.participant.initials} size={64} />
+          <div className="flex min-w-0 flex-col gap-1">
+            <p data-student-name className="type-card-title truncate">
+              {profile.participant.name}
+            </p>
+            <p
+              data-field-line
+              className="type-small truncate text-text-secondary idesk:overflow-visible idesk:text-clip idesk:whitespace-normal"
+            >
+              {fieldLabel(profile.field)} · {groupName}
+            </p>
+            <p
+              data-last-active
+              className="type-small flex items-center gap-1.5 text-text-secondary"
+            >
+              <Clock size={14} strokeWidth={2} aria-hidden="true" className="shrink-0" />
+              {profile.lastActiveDaysAgo === null
+                ? "No activity yet"
+                : `Last active ${lastActiveLong(profile.lastActiveDaysAgo)}`}
+            </p>
+          </div>
+        </section>
+
+        <section
+          aria-labelledby="student-readiness"
+          className={`${card} flex flex-col gap-3 p-[var(--gutter,1rem)] `}
+        >
+          <h2 id="student-readiness" className="type-label text-text-secondary">
+            READINESS
           </h2>
-          <p data-field-line className="type-small truncate text-text-secondary">
-            {fieldLabel(profile.field)} · {groupName}
-          </p>
-          <p data-last-active className="type-small flex items-center gap-1.5 text-text-secondary">
-            <Clock size={14} strokeWidth={2} aria-hidden="true" className="shrink-0" />
-            {profile.lastActiveDaysAgo === null
-              ? "No activity yet"
-              : `Last active ${lastActiveLong(profile.lastActiveDaysAgo)}`}
-          </p>
-        </div>
-      </section>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 idesk:gap-x-4">
+            <span className="hidden shrink-0 idesk:block">
+              <ReadinessRing percent={readiness} size={72} />
+            </span>
+            <p data-readiness-number className="type-display tabular-nums">
+              {readiness}%
+            </p>
+            {change !== null && <DeltaPill current={readiness} delta={change} />}
+          </div>
+          <div className="grid grid-cols-2 gap-2 rounded-[14px] bg-secondary-sand p-3 idesk:grid-cols-1">
+            <p data-pass-mark className="type-small flex items-center gap-2">
+              <Flag
+                size={16}
+                strokeWidth={2}
+                aria-hidden="true"
+                className="shrink-0 text-text-secondary"
+              />
+              <span>Pass mark: {PASS_MARK}</span>
+            </p>
+            <p data-practice className="type-small flex items-center gap-2">
+              <Repeat
+                size={16}
+                strokeWidth={2}
+                aria-hidden="true"
+                className="shrink-0 text-text-secondary"
+              />
+              <span>{practicedLine(profile.practiceThisWeek)}</span>
+            </p>
+          </div>
+        </section>
+      </div>
 
-      <section
-        aria-labelledby="student-readiness"
-        className={`${card} flex flex-col gap-3 p-[var(--gutter,1rem)]`}
-      >
-        <h2 id="student-readiness" className="type-label text-text-secondary">
-          READINESS
-        </h2>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <p data-readiness-number className="type-display tabular-nums">
-            {readiness}%
-          </p>
-          {change !== null && <DeltaPill current={readiness} delta={change} />}
-        </div>
-        <div className="grid grid-cols-2 gap-2 rounded-[14px] bg-secondary-sand p-3">
-          <p data-pass-mark className="type-small flex items-center gap-2">
-            <Flag
-              size={16}
-              strokeWidth={2}
-              aria-hidden="true"
-              className="shrink-0 text-text-secondary"
-            />
-            <span>Pass mark: {PASS_MARK}</span>
-          </p>
-          <p data-practice className="type-small flex items-center gap-2">
-            <Repeat
-              size={16}
-              strokeWidth={2}
-              aria-hidden="true"
-              className="shrink-0 text-text-secondary"
-            />
-            <span>{practicedLine(profile.practiceThisWeek)}</span>
-          </p>
-        </div>
-      </section>
-
-      {[
-        { id: "review", label: "NEEDS REVIEW", rows: needsReview },
-        { id: "clear", label: "NOTHING TO REVIEW", rows: nothingToReview },
-      ]
-        .filter((group) => group.rows.length > 0)
-        .map((group) => (
-          <section
-            key={group.id}
-            aria-labelledby={`student-topics-${group.id}`}
-            data-topic-group={group.id}
-            className="flex flex-col gap-3"
-          >
-            <h2 id={`student-topics-${group.id}`} className="type-label text-text-secondary">
-              {group.label} · {group.rows.length}
-            </h2>
-            <ul className="flex flex-col gap-3">
-              {group.rows.map((row) => (
-                <li
-                  key={row.sectionId}
-                  data-topic-row={row.sectionId}
-                  className={`${card} flex h-[var(--list-card-height,80px)] items-center gap-3 px-[var(--gutter,1rem)]`}
-                >
-                  <TopicBadge id={row.sectionId} />
-                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <span data-topic-title className="type-body-strong truncate">
-                      <span className="sr-only">{row.sectionId} </span>
-                      {titleOf(row.sectionId)}
-                    </span>
-                    <span className="type-small text-text-secondary tabular-nums">
-                      {row.answered === 0
+      <div className="contents idesk:col-start-2 idesk:mt-4 idesk:flex idesk:min-w-0 idesk:flex-col idesk:gap-6">
+        {noPractice ? (
+          <EmptyCard
+            dataEmpty="no-practice"
+            title="No practice yet"
+            text="Practice results will appear here once the student starts."
+            action={null}
+          />
+        ) : (
+          <>
+            <div className="contents idesk:hidden">
+              {[
+                { id: "review", label: "NEEDS REVIEW", rows: needsReview },
+                { id: "clear", label: "NOTHING TO REVIEW", rows: nothingToReview },
+              ]
+                .filter((group) => group.rows.length > 0)
+                .map((group) => (
+                  <section
+                    key={group.id}
+                    aria-labelledby={`student-topics-${group.id}`}
+                    data-topic-group={group.id}
+                    className="flex flex-col gap-3"
+                  >
+                    <h2
+                      id={`student-topics-${group.id}`}
+                      className="type-label text-text-secondary"
+                    >
+                      {group.label} · {group.rows.length}
+                    </h2>
+                    <ul className="flex flex-col gap-3">
+                      {group.rows.map((row) => (
+                        <li
+                          key={row.sectionId}
+                          data-topic-row={row.sectionId}
+                          className={`${card} flex h-[var(--list-card-height,80px)] items-center gap-3 px-[var(--gutter,1rem)]`}
+                        >
+                          <TopicBadge id={row.sectionId} />
+                          <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                            <span data-topic-title className="type-body-strong truncate">
+                              <span className="sr-only">{row.sectionId} </span>
+                              {titleOf(row.sectionId)}
+                            </span>
+                            <span className="type-small text-text-secondary tabular-nums">
+                              {row.answered === 0
+                                ? "Not practised yet"
+                                : `${row.correct} of ${row.answered} correct`}
+                            </span>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                ))}
+            </div>
+            <section
+              aria-labelledby="student-topics-all"
+              data-topic-group="all"
+              className="hidden flex-col gap-3 idesk:flex"
+            >
+              <h2 id="student-topics-all" className="type-label text-text-secondary">
+                TOPICS · {topicRows.length}
+              </h2>
+              <DataTable
+                label="Topics"
+                dataAttribute="data-topics-table"
+                firstHeader="Topic"
+                columns={[
+                  {
+                    id: "status",
+                    header: "Status",
+                    width: "170px",
+                    sortValue: (row) => (row.needs ? 0 : row.answered === 0 ? 2 : 1),
+                    cell: (row) =>
+                      row.needs ? (
+                        <StatusChip tone="attention" value="needs">
+                          Needs review
+                        </StatusChip>
+                      ) : row.answered === 0 ? (
+                        <StatusChip tone="neutral" value="not-started">
+                          Not practised
+                        </StatusChip>
+                      ) : (
+                        <StatusChip tone="positive" value="ready">
+                          On track
+                        </StatusChip>
+                      ),
+                  },
+                  {
+                    id: "result",
+                    header: "Result",
+                    width: "200px",
+                    align: "right",
+                    sortValue: (row) => (row.answered === 0 ? -1 : row.correct / row.answered),
+                    cell: (row) =>
+                      row.answered === 0
                         ? "Not practised yet"
-                        : `${row.correct} of ${row.answered} correct`}
-                    </span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
+                        : `${row.correct} of ${row.answered} correct`,
+                  },
+                ]}
+                rows={topicRows.map((row) => ({
+                  id: row.sectionId,
+                  name: titleOf(row.sectionId),
+                  leading: <TopicBadge id={row.sectionId} />,
+                  correct: row.correct,
+                  answered: row.answered,
+                  needs: topicNeedsReview(row),
+                }))}
+              />
+            </section>
+          </>
+        )}
 
-      <section aria-labelledby="student-exams" className="flex flex-col gap-3">
-        <div className="flex items-baseline justify-between gap-3">
-          <h2 id="student-exams" className="type-label text-text-secondary">
-            EXAMS
-          </h2>
-          <span className="type-small text-text-secondary">{rows.length} total</span>
-        </div>
-        <ul className={`${card} divide-y divide-soft-divider`}>
-          {rows.map((row) => {
-            const href = certificateHref(row);
-            const body = (
-              <>
-                <StatusRow
-                  name={row.exam.title}
-                  chip={
-                    <StatusChip tone={examTone[row.status.kind]} value={row.status.kind}>
-                      {statusLabel[row.status.kind]}
-                    </StatusChip>
-                  }
-                  description={rosterLine(row.status, now)}
-                  after={
-                    href ? (
-                      <Award
-                        data-certificate-badge
-                        size={16}
-                        strokeWidth={2}
-                        aria-label="Certificate"
-                        className="shrink-0 text-status-success-ink"
-                      />
-                    ) : null
-                  }
+        <section aria-labelledby="student-exams" className="flex flex-col gap-3">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 id="student-exams" className="type-label text-text-secondary">
+              EXAMS
+            </h2>
+            <span className="type-small text-text-secondary">{rows.length} total</span>
+          </div>
+          <DataTable
+            label="Exams"
+            dataAttribute="data-exams-table"
+            firstHeader="Exam"
+            columns={[
+              {
+                id: "status",
+                header: "Status",
+                width: "170px",
+                cell: (row) => (
+                  <StatusChip tone={examTone[row.status.kind]} value={row.status.kind}>
+                    {statusLabel[row.status.kind]}
+                  </StatusChip>
+                ),
+              },
+              {
+                id: "details",
+                header: "Result",
+                width: "260px",
+                // only what the status does not say: the score, or when the attempt started
+                cell: (row) =>
+                  row.status.kind === "passed" ||
+                  row.status.kind === "not-passed" ||
+                  row.status.kind === "in-progress" ? (
+                    rosterLine(row.status, now)
+                  ) : (
+                    <span className="text-text-secondary">—</span>
+                  ),
+              },
+            ]}
+            rows={rows.map((row) => ({
+              id: row.exam.id,
+              name: row.exam.title,
+              href: certificateHref(row) ?? undefined,
+              after: certificateHref(row) ? (
+                <Award
+                  size={16}
+                  strokeWidth={2}
+                  aria-label="Certificate"
+                  className="shrink-0 text-status-success-ink"
                 />
-                {href && <Chevron />}
-              </>
-            );
-            const classes = "flex min-h-[72px] items-center gap-3 px-[var(--gutter,1rem)] py-3";
-            return (
-              <li key={row.exam.id} data-exam-row={row.exam.id} data-status={row.status.kind}>
-                {href ? (
-                  <Link href={href} className={`${classes} has-focus-visible:outline-2`}>
-                    {body}
-                  </Link>
-                ) : (
-                  <div className={classes}>{body}</div>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      </section>
+              ) : null,
+              status: row.status,
+            }))}
+          />
+          <ul className={`${card} divide-y divide-soft-divider idesk:hidden`}>
+            {rows.map((row) => {
+              const href = certificateHref(row);
+              const body = (
+                <>
+                  <StatusRow
+                    name={row.exam.title}
+                    chip={
+                      <StatusChip tone={examTone[row.status.kind]} value={row.status.kind}>
+                        {statusLabel[row.status.kind]}
+                      </StatusChip>
+                    }
+                    description={rosterLine(row.status, now)}
+                    after={
+                      href ? (
+                        <Award
+                          data-certificate-badge
+                          size={16}
+                          strokeWidth={2}
+                          aria-label="Certificate"
+                          className="shrink-0 text-status-success-ink"
+                        />
+                      ) : null
+                    }
+                  />
+                  {href && <Chevron />}
+                </>
+              );
+              const classes = "flex min-h-[72px] items-center gap-3 px-[var(--gutter,1rem)] py-3";
+              return (
+                <li key={row.exam.id} data-exam-row={row.exam.id} data-status={row.status.kind}>
+                  {href ? (
+                    <Link href={href} className={`${classes} has-focus-visible:outline-2`}>
+                      {body}
+                    </Link>
+                  ) : (
+                    <div className={classes}>{body}</div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
 
-      <Button variant="secondary" icon={Bell} onClick={() => setConfirming(true)}>
-        Send reminder
-      </Button>
+        <PageAction>
+          <Button variant="secondary" icon={Bell} onClick={() => setConfirming(true)}>
+            Send reminder
+          </Button>
+        </PageAction>
+      </div>
 
       {(confirming || !dialogInline) && (
         <ConfirmDialog

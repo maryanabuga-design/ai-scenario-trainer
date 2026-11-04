@@ -10,10 +10,18 @@ export const SHOW_MS = 4000;
 const FADE_MS = 250;
 
 /**
- * The top of the notice: 8px under the visible back button, otherwise 12px from the top of the screen
+ * The top of the notice: 12px under the desktop header of the instructor, otherwise 8px under the visible back button, otherwise 12px from the top of the screen
  * (also when the back button has scrolled out of view).
  */
 function topOfNotice(): number {
+  // the instructor's desktop header has no band: the notice floats 12px under the header block, never over the title
+  if (
+    window.matchMedia("(min-width: 1024px)").matches &&
+    document.querySelector('[data-shell="instructor"]')
+  ) {
+    const header = document.querySelector("[data-page-header-band], [data-overview-header]");
+    if (header) return Math.max(12, Math.round(header.getBoundingClientRect().bottom + 12));
+  }
   const back = Array.from(document.querySelectorAll("[data-back-button]")).find(
     (el) => el.getClientRects().length > 0,
   );
@@ -35,7 +43,11 @@ export function FlashNotice() {
   const visible = flash !== null && flash.path === pathname;
   const id = flash?.id;
   const seen = useRef<number | null>(null);
-  const [shown, setShown] = useState<{ id: number; top: number; on: boolean } | null>(null);
+  const [shown, setShown] = useState<{
+    id: number;
+    top: number;
+    on: boolean;
+  } | null>(null);
 
   useEffect(() => {
     if (!visible || id === undefined) return;
@@ -74,7 +86,7 @@ export function FlashNotice() {
           data-flash
           data-flash-state={shown && shown.id === flash.id && shown.on ? "on" : "off"}
           style={{ top: shown && shown.id === flash.id ? shown.top : 12 }}
-          className={`pointer-events-none fixed left-1/2 z-50 w-[min(calc(100vw-32px),398px)] -translate-x-1/2 transition-opacity duration-200 motion-reduce:transition-none ${
+          className={`pointer-events-none fixed left-1/2 z-50 w-[min(calc(100vw-32px),398px)] -translate-x-1/2 group-has-[[data-shell=instructor]]/shell:desk:left-[calc(50%+7.5rem)] transition-opacity duration-200 motion-reduce:transition-none ${
             shown && shown.id === flash.id && shown.on ? "opacity-100" : "opacity-0"
           }`}
         >

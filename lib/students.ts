@@ -159,6 +159,17 @@ export const topicNeedsReview = (row: StudentTopic) => row.answered > 0 && !topi
 export const topicsToReview = (profile: Pick<StudentProfile, "topics">) =>
   profile.topics.filter(topicNeedsReview).length;
 
+/**
+ * The topic to practise first: the one below the pass mark with the lowest share of right answers
+ * (the earlier topic when two are equal); null when no topic is below it.
+ */
+export function weakTopicOf(profile: Pick<StudentProfile, "topics">): string | null {
+  const weak = profile.topics.filter(topicNeedsReview);
+  if (weak.length === 0) return null;
+  const share = (row: StudentTopic) => row.correct / row.answered;
+  return weak.reduce((worst, row) => (share(row) < share(worst) ? row : worst)).sectionId;
+}
+
 /** "today", "yesterday", "3d ago", "2w ago" (the days since the last answer). */
 export function lastActiveShort(days: number): string {
   if (days <= 0) return "today";
@@ -262,7 +273,7 @@ export function showingLine(
   return null;
 }
 
-const rank: Record<StudentStatus, number> = {
+export const statusRank: Record<StudentStatus, number> = {
   needs: 0,
   almost: 1,
   "not-started": 2,
@@ -273,7 +284,7 @@ const rank: Record<StudentStatus, number> = {
 export function sortProfiles(list: StudentProfile[]): StudentProfile[] {
   return [...list].sort(
     (a, b) =>
-      rank[profileStatus(a)] - rank[profileStatus(b)] ||
+      statusRank[profileStatus(a)] - statusRank[profileStatus(b)] ||
       a.participant.name.localeCompare(b.participant.name),
   );
 }

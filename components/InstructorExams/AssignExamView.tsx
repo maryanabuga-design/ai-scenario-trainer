@@ -3,6 +3,7 @@
 import { Calendar, ClipboardCheck, Shield, UsersRound } from "lucide-react";
 import { useState } from "react";
 import type { ReactNode } from "react";
+import { FlowCard } from "@/components/FlowCard/FlowCard";
 import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { AssignIcon } from "@/components/AssignIcon/AssignIcon";
 import { Button } from "@/components/Button/Button";
@@ -64,7 +65,7 @@ function Section({
   return (
     <section
       aria-labelledby={id}
-      className="flex flex-col gap-3 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)]"
+      className="flex flex-col gap-3 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)] idesk:rounded-none idesk:border-0 idesk:bg-transparent idesk:p-0"
     >
       <div className="flex min-h-9 items-center justify-between gap-3">
         <h2 id={id} className="type-label text-text-secondary">
@@ -162,158 +163,202 @@ export function AssignExamView({
         }
       />
 
-      <div
-        data-specs-card
-        className="flex items-center gap-3 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)]"
-      >
-        <LucideTile icon={ClipboardCheck} />
-        <div className="flex min-w-0 flex-col">
-          <p className="type-label text-text-secondary">EVALUATION SPECS</p>
-          <p data-info-rules className="type-body-strong">
-            {count} questions
-          </p>
-          <p data-info-rules-2 className="type-small text-text-secondary">
-            20 minutes · pass mark 80
-          </p>
-        </div>
-      </div>
-
-      <Section id="title-label" label="TITLE">
-        <TextField
-          label="Exam title"
-          hideLabel
-          name="title"
-          value={shownTitle}
-          onChange={(value) => {
-            setTouched(true);
-            setTitle(value);
-          }}
-        />
-      </Section>
-
-      <Section
-        id="topics-label"
-        label="TOPICS"
-        action={
-          // a tertiary action: underlined text, a 44px tap area that overlaps the row outwards
-          <div className="-my-1 -mr-3">
-            <Button variant="tertiary" onClick={() => setTopics(allSelected ? [] : [...allTopics])}>
-              {allSelected ? "Clear all" : "Select all"}
+      <FlowCard
+        stickyFooter
+        footer={
+          <>
+            <p
+              data-assign-summary
+              aria-live="polite"
+              className="type-small mr-auto text-text-secondary"
+            >
+              {topics.length === 0
+                ? "No topics selected"
+                : `${topics.length} ${topics.length === 1 ? "topic" : "topics"} · ${count} questions`}
+            </p>
+            <Button
+              variant="secondary"
+              onClick={() => (entered ? setConfirming(true) : onCancel())}
+            >
+              Cancel
             </Button>
-          </div>
-        }
-      >
-        <fieldset className="flex min-w-0 flex-col gap-2" aria-labelledby="topics-label">
-          {allTopics.map((id) => (
-            <SelectableRow
-              key={id}
-              name="topics"
-              value={id}
-              type="checkbox"
-              round
-              compact
-              checked={topics.includes(id)}
-              onChange={toggleTopic}
-            >
-              <span className="type-body-strong min-w-0 flex-1 truncate">
-                {id} {titleOf(id)}
-              </span>
-            </SelectableRow>
-          ))}
-        </fieldset>
-        {tooFew && (
-          <p data-too-few className="type-small text-status-attention-ink">
-            Choose topics with at least {MIN_QUESTIONS} questions in total.
-          </p>
-        )}
-      </Section>
-
-      <Section id="deadline-label" label="DEADLINE">
-        <fieldset
-          role="radiogroup"
-          aria-labelledby="deadline-label"
-          className="grid min-w-0 grid-cols-2 gap-2"
-        >
-          {presets.map((option) => (
-            <SelectableRow
-              key={option.id}
-              name="deadline"
-              value={option.id}
-              checked={preset === option.id}
-              onChange={() => setPreset(option.id)}
-            >
-              {option.id === "date" && (
-                <Calendar
-                  size={18}
-                  strokeWidth={2}
-                  aria-hidden="true"
-                  className="hidden shrink-0 min-[400px]:block"
-                />
-              )}
-              <span className="type-small-strong min-w-0 flex-1 whitespace-nowrap">
-                {option.label}
-              </span>
-            </SelectableRow>
-          ))}
-        </fieldset>
-        {preset === "date" && (
-          <TextField
-            label="Deadline date"
-            name="deadline-date"
-            type="date"
-            min={isoDay(new Date(now))}
-            value={date}
-            onChange={setDate}
-          />
-        )}
-      </Section>
-
-      <Section id="attempts-label" label="ATTEMPTS">
-        <SegmentedControl
-          name="attempts"
-          legend="Attempts allowed"
-          hideLegend
-          dense
-          options={attemptOptions}
-          value={toKey(attempts)}
-          onChange={(key) => setAttempts(fromKey(key))}
-        />
-      </Section>
-
-      <Section id="audience-label" label="AUDIENCE">
-        <fieldset className="flex min-w-0 flex-col gap-2" aria-labelledby="audience-label">
-          {groups.map((group, index) => (
-            <SelectableRow
-              key={group.id}
-              name="audience"
-              value={group.id}
-              type="checkbox"
-              round
-              compact
-              checked={audience.includes(group.id)}
-              onChange={(id) =>
-                setAudience((current) =>
-                  groups
-                    .map((entry) => entry.id)
-                    .filter((entry) =>
-                      entry === id ? !current.includes(id) : current.includes(entry),
-                    ),
-                )
+            <Button
+              icon={AssignIcon}
+              disabled={problems.length > 0}
+              onClick={() =>
+                onAssign({
+                  title: shownTitle.trim(),
+                  topicIds: topics,
+                  deadline: deadline!,
+                  groupIds: audience,
+                  attemptsAllowed: attempts,
+                })
               }
             >
-              <LucideTile icon={index === 0 ? UsersRound : Shield} size="compact" />
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className="type-body-strong truncate">{group.name}</span>
-                <span className="type-small text-text-secondary">
-                  {studentsCount(groupCounts[group.id] ?? 0)}
-                </span>
-              </span>
-            </SelectableRow>
-          ))}
-        </fieldset>
-      </Section>
+              Assign exam
+            </Button>
+          </>
+        }
+      >
+        <div
+          data-specs-card
+          className="flex items-center gap-3 rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)] idesk:bg-secondary-sand"
+        >
+          <LucideTile icon={ClipboardCheck} />
+          <div className="flex min-w-0 flex-col">
+            <p className="type-label text-text-secondary">EVALUATION SPECS</p>
+            <p data-info-rules className="type-body-strong">
+              {count} questions
+            </p>
+            <p data-info-rules-2 className="type-small text-text-secondary">
+              20 minutes · pass mark 80
+            </p>
+          </div>
+        </div>
 
-      <ActionBar>
+        <Section id="title-label" label="TITLE">
+          <TextField
+            label="Exam title"
+            hideLabel
+            name="title"
+            value={shownTitle}
+            onChange={(value) => {
+              setTouched(true);
+              setTitle(value);
+            }}
+          />
+        </Section>
+
+        <Section
+          id="topics-label"
+          label="TOPICS"
+          action={
+            // a tertiary action: underlined text, a 44px tap area that overlaps the row outwards
+            <div className="-my-1 -mr-3">
+              <Button
+                variant="tertiary"
+                onClick={() => setTopics(allSelected ? [] : [...allTopics])}
+              >
+                {allSelected ? "Clear all" : "Select all"}
+              </Button>
+            </div>
+          }
+        >
+          <fieldset
+            className="flex min-w-0 flex-col gap-2 idesk:grid idesk:grid-cols-2"
+            aria-labelledby="topics-label"
+          >
+            {allTopics.map((id) => (
+              <SelectableRow
+                key={id}
+                name="topics"
+                value={id}
+                type="checkbox"
+                round
+                compact
+                checked={topics.includes(id)}
+                onChange={toggleTopic}
+              >
+                <span className="type-body-strong min-w-0 flex-1 truncate">
+                  {id} {titleOf(id)}
+                </span>
+              </SelectableRow>
+            ))}
+          </fieldset>
+          {tooFew && (
+            <p data-too-few className="type-small text-status-attention-ink">
+              Choose topics with at least {MIN_QUESTIONS} questions in total.
+            </p>
+          )}
+        </Section>
+
+        <Section id="deadline-label" label="DEADLINE">
+          <fieldset
+            role="radiogroup"
+            aria-labelledby="deadline-label"
+            className="grid min-w-0 grid-cols-2 gap-2"
+          >
+            {presets.map((option) => (
+              <SelectableRow
+                key={option.id}
+                name="deadline"
+                value={option.id}
+                checked={preset === option.id}
+                onChange={() => setPreset(option.id)}
+              >
+                {option.id === "date" && (
+                  <Calendar
+                    size={18}
+                    strokeWidth={2}
+                    aria-hidden="true"
+                    className="hidden shrink-0 min-[400px]:block"
+                  />
+                )}
+                <span className="type-small-strong min-w-0 flex-1 whitespace-nowrap">
+                  {option.label}
+                </span>
+              </SelectableRow>
+            ))}
+          </fieldset>
+          {preset === "date" && (
+            <TextField
+              label="Deadline date"
+              name="deadline-date"
+              type="date"
+              min={isoDay(new Date(now))}
+              value={date}
+              onChange={setDate}
+            />
+          )}
+        </Section>
+
+        <Section id="attempts-label" label="ATTEMPTS">
+          <SegmentedControl
+            name="attempts"
+            legend="Attempts allowed"
+            hideLegend
+            dense
+            options={attemptOptions}
+            value={toKey(attempts)}
+            onChange={(key) => setAttempts(fromKey(key))}
+          />
+        </Section>
+
+        <Section id="audience-label" label="AUDIENCE">
+          <fieldset className="flex min-w-0 flex-col gap-2" aria-labelledby="audience-label">
+            {groups.map((group, index) => (
+              <SelectableRow
+                key={group.id}
+                name="audience"
+                value={group.id}
+                type="checkbox"
+                round
+                compact
+                checked={audience.includes(group.id)}
+                onChange={(id) =>
+                  setAudience((current) =>
+                    groups
+                      .map((entry) => entry.id)
+                      .filter((entry) =>
+                        entry === id ? !current.includes(id) : current.includes(entry),
+                      ),
+                  )
+                }
+              >
+                <LucideTile icon={index === 0 ? UsersRound : Shield} size="compact" />
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="type-body-strong truncate">{group.name}</span>
+                  <span className="type-small text-text-secondary">
+                    {studentsCount(groupCounts[group.id] ?? 0)}
+                  </span>
+                </span>
+              </SelectableRow>
+            ))}
+          </fieldset>
+        </Section>
+      </FlowCard>
+
+      <ActionBar hideOnDesk>
         <Button
           icon={AssignIcon}
           disabled={problems.length > 0}

@@ -3,7 +3,7 @@
 import { IconTile } from "@/components/IconTile/IconTile";
 import { FileSpreadsheet, X } from "lucide-react";
 import { useRef } from "react";
-import { ActionBar } from "@/components/ActionBar/ActionBar";
+import { ActionBar, CardFooter } from "@/components/ActionBar/ActionBar";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { Amber } from "@/components/InstructorContent/Amber";
 import { Notice } from "@/components/Notice/Notice";
@@ -89,130 +89,141 @@ export function PackageImportView({
         helper={HELPER}
         back={{ label: "Back to Content", href: "/instructor/content" }}
       />
-      {notice && (
-        <Notice variant="info" clamp={false} title="Replace document">
-          {notice}
-        </Notice>
-      )}
-
-      <section aria-label="Document" className="flex flex-col gap-3">
-        <input
-          ref={input}
-          type="file"
-          accept={ACCEPT}
-          aria-label="Choose a document"
-          data-file-input
-          className="sr-only"
-          tabIndex={-1}
-          onChange={(event) => {
-            const chosen = event.target.files?.[0];
-            if (chosen) onFile(chosen);
-            event.target.value = "";
-          }}
-        />
-        {file ? (
-          <div
-            data-file-card
-            className="flex items-center gap-3 rounded-card border border-selectable-stroke bg-card p-3"
-          >
-            <IconTile size="compact">
-              <FileSpreadsheet strokeWidth={2} />
-            </IconTile>
-            <span className="flex min-w-0 flex-1 flex-col">
-              <span data-file-name className="type-body-strong break-words">
-                {file.name}
-              </span>
-              <span className="type-small text-text-secondary">{sizeText(file.size)}</span>
-            </span>
-            <RemoveButton label="Remove file" onClick={onRemove} />
-          </div>
-        ) : (
-          <button
-            type="button"
-            data-drop-area
-            onClick={() => input.current?.click()}
-            className="flex min-h-[160px] w-full flex-col items-center justify-center gap-2 rounded-card border border-dashed border-placeholder-stroke bg-card p-[var(--gutter,1rem)] text-center focus-visible:outline-2"
-          >
-            <FileSpreadsheet
-              size={28}
-              strokeWidth={1.75}
-              aria-hidden="true"
-              className="text-text-secondary"
-            />
-            <span className="type-body-strong">{CHOOSE_TITLE}</span>
-            <span className="type-small text-text-secondary">{CHOOSE_HELP}</span>
-          </button>
+      <div className="contents idesk:mx-auto idesk:mt-4 idesk:flex idesk:w-full idesk:max-w-[640px] idesk:flex-col idesk:gap-6 idesk:rounded-card idesk:border idesk:border-selectable-stroke idesk:bg-card idesk:p-8 idesk:shadow-(--card-shadow)">
+        {notice && (
+          <Notice variant="info" clamp={false} title="Replace document">
+            {notice}
+          </Notice>
         )}
-        {message && <Amber id="import-message">{message}</Amber>}
-        <div data-actions-row className="-mx-3 flex items-center justify-between">
-          <ButtonLink
-            href="/templates/guide-template.xlsx"
-            download="guide-template.xlsx"
-            variant="tertiary"
-            wide={false}
-          >
-            Download blank template
-          </ButtonLink>
-          <Button variant="tertiary" onClick={onSample}>
-            Try an example
-          </Button>
-        </div>
-      </section>
 
-      {file && (
-        <section aria-labelledby="images-label" className="flex flex-col gap-3">
-          <h2 id="images-label" className="type-label text-text-secondary">
-            IMAGES (OPTIONAL)
-          </h2>
+        <section aria-label="Document" className="flex flex-col gap-3">
           <input
-            ref={pictures}
+            ref={input}
             type="file"
-            multiple
-            accept={IMAGE_ACCEPT}
-            aria-label="Choose images"
-            data-image-input
+            accept={ACCEPT}
+            aria-label="Choose a document"
+            data-file-input
             className="sr-only"
             tabIndex={-1}
             onChange={(event) => {
-              onImages(Array.from(event.target.files ?? []));
+              const chosen = event.target.files?.[0];
+              if (chosen) onFile(chosen);
               event.target.value = "";
             }}
           />
-          <Button variant="secondary" onClick={() => pictures.current?.click()}>
-            Add images
-          </Button>
-          {images.length > 0 ? (
-            <ul data-image-rows className="flex flex-col gap-2">
-              {images.map((image) => (
-                <li
-                  key={image.name}
-                  data-image-row
-                  className="flex items-center gap-3 rounded-panel border border-selectable-stroke bg-card p-2"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={image.src}
-                    alt=""
-                    width={40}
-                    height={40}
-                    className="h-10 w-10 shrink-0 rounded-[8px] object-cover"
-                  />
-                  <span className="type-small min-w-0 flex-1 break-words">{image.name}</span>
-                  <RemoveButton
-                    label={`Remove ${image.name}`}
-                    onClick={() => onRemoveImage(image.name)}
-                  />
-                </li>
-              ))}
-            </ul>
+          {file ? (
+            <div
+              data-file-card
+              className="flex items-center gap-3 rounded-card border border-selectable-stroke bg-card p-3"
+            >
+              <IconTile size="compact">
+                <FileSpreadsheet strokeWidth={2} />
+              </IconTile>
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span data-file-name className="type-body-strong break-words">
+                  {file.name}
+                </span>
+                <span className="type-small text-text-secondary">{sizeText(file.size)}</span>
+              </span>
+              <RemoveButton label="Remove file" onClick={onRemove} />
+            </div>
           ) : (
-            <p className="type-small text-text-secondary">{IMAGES_LINE}</p>
+            <button
+              type="button"
+              data-drop-area
+              onClick={() => input.current?.click()}
+              className="flex min-h-[160px] w-full flex-col items-center justify-center gap-2 rounded-card border border-dashed border-placeholder-stroke bg-card p-[var(--gutter,1rem)] text-center focus-visible:outline-2"
+            >
+              <FileSpreadsheet
+                size={28}
+                strokeWidth={1.75}
+                aria-hidden="true"
+                className="text-text-secondary"
+              />
+              <span className="type-body-strong">{CHOOSE_TITLE}</span>
+              <span className="type-small text-text-secondary">{CHOOSE_HELP}</span>
+            </button>
           )}
-          {imageMessage && <Amber>{imageMessage}</Amber>}
+          {message && <Amber id="import-message">{message}</Amber>}
+          <div data-actions-row className="-mx-3 flex items-center justify-between">
+            <ButtonLink
+              href="/templates/guide-template.xlsx"
+              download="guide-template.xlsx"
+              variant="tertiary"
+              wide={false}
+            >
+              Download blank template
+            </ButtonLink>
+            <Button variant="tertiary" onClick={onSample}>
+              Try an example
+            </Button>
+          </div>
         </section>
-      )}
 
-      <ActionBar>
+        {file && (
+          <section aria-labelledby="images-label" className="flex flex-col gap-3">
+            <h2 id="images-label" className="type-label text-text-secondary">
+              IMAGES (OPTIONAL)
+            </h2>
+            <input
+              ref={pictures}
+              type="file"
+              multiple
+              accept={IMAGE_ACCEPT}
+              aria-label="Choose images"
+              data-image-input
+              className="sr-only"
+              tabIndex={-1}
+              onChange={(event) => {
+                onImages(Array.from(event.target.files ?? []));
+                event.target.value = "";
+              }}
+            />
+            <Button variant="secondary" onClick={() => pictures.current?.click()}>
+              Add images
+            </Button>
+            {images.length > 0 ? (
+              <ul data-image-rows className="flex flex-col gap-2">
+                {images.map((image) => (
+                  <li
+                    key={image.name}
+                    data-image-row
+                    className="flex items-center gap-3 rounded-panel border border-selectable-stroke bg-card p-2"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={image.src}
+                      alt=""
+                      width={40}
+                      height={40}
+                      className="h-10 w-10 shrink-0 rounded-[8px] object-cover"
+                    />
+                    <span className="type-small min-w-0 flex-1 break-words">{image.name}</span>
+                    <RemoveButton
+                      label={`Remove ${image.name}`}
+                      onClick={() => onRemoveImage(image.name)}
+                    />
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="type-small text-text-secondary">{IMAGES_LINE}</p>
+            )}
+            {imageMessage && <Amber>{imageMessage}</Amber>}
+          </section>
+        )}
+
+        <CardFooter>
+          <Button variant="secondary" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button disabled={!canImport} onClick={onImport}>
+            Import and review
+          </Button>
+        </CardFooter>
+      </div>
+
+      <ActionBar hideOnDesk>
         <Button disabled={!canImport} onClick={onImport}>
           Import and review
         </Button>

@@ -91,6 +91,70 @@ function ReadingExample({ id }: { id: string }) {
   );
 }
 
+const desktopPictures = [
+  ["instructor-overview", "Overview"],
+  ["instructor-exam-active", "Exam detail with results (table)"],
+  ["instructor-students", "Students (table)"],
+  ["instructor-students-filter-open", "Students, status menu open"],
+  ["instructor-topic-students", "Topic students (table)"],
+  ["instructor-student-detail-needs", "Student detail, merged topics table"],
+  ["instructor-student-detail-new", "Student detail, No practice yet"],
+  ["instructor-content-empty", "Content, empty"],
+  ["instructor-content-with-topic", "Content, with a topic"],
+  ["instructor-content-course", "Course topics"],
+  ["instructor-content-built-in", "Course topic (read-only)"],
+  ["instructor-content-import-file", "Import content, file chosen (card footer)"],
+  ["instructor-content-analysing", "Analysing"],
+  ["instructor-content-draft-ready", "Draft is ready"],
+  ["instructor-topic-guide", "Topic screen, Guide tab"],
+  ["instructor-topic-steps", "Topic screen, Steps tab (table)"],
+  ["instructor-topic-scenario", "Topic screen, Scenario tab"],
+  ["instructor-topic-quiz", "Topic screen, Quiz tab (table)"],
+  ["instructor-topic-details-edit", "Edit title and summary"],
+  ["instructor-topic-item-edit", "Question edit"],
+  ["instructor-content-set-review", "Question-set review (table)"],
+  ["instructor-assign-filled", "Assign exam (form card)"],
+  ["instructor-assign-discard", "Assign exam, discard dialog"],
+  ["instructor-exam-extend", "Extend deadline"],
+  ["instructor-students-invite", "Invite students"],
+  ["instructor-review-walkthrough", "Draft review walk-through"],
+  ["instructor-profile", "Profile"],
+  ["instructor-profile-edit", "Edit profile"],
+  ["instructor-preview-framed", "Preview as student (bar inside the frame)"],
+  ["instructor-assign-sticky-footer", "Assign exam, sticky footer with summary"],
+  ["instructor-focus-card", "Focus on a card"],
+  ["instructor-focus-row", "Focus on a table row"],
+  ["instructor-focus-sidenav", "Focus in the side navigation"],
+  ["instructor-focus-dialog", "Focus in a dialog"],
+  ["instructor-preview-feedback-sheet", "Preview: feedback sheet docked in the frame"],
+  ["instructor-dialog", "A dialog"],
+  ["instructor-notice", "The floating notice under the header"],
+] as const;
+
+/** Pictures of the instructor's desktop layout (1280px, from 1024px; made by `npm run screens:desktop`). */
+function DesktopGroup() {
+  return (
+    <section id="instructor-desktop" className="flex scroll-mt-4 flex-col gap-3">
+      <h2 className="type-card-title">Instructor desktop (from 1024px)</h2>
+      <div className="flex gap-6 overflow-x-auto pb-2">
+        {desktopPictures.map(([file, label]) => (
+          <figure key={file} className="flex shrink-0 flex-col gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element -- a review picture, not app content */}
+            <img
+              src={`/screens-desktop/${file}-1280.png`}
+              alt={`${label} at 1280px`}
+              width={640}
+              height={450}
+              className="rounded-card border border-border"
+            />
+            <figcaption className="type-small text-text-secondary">{label}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section
@@ -1479,6 +1543,7 @@ export default function Screens() {
             </Screen>
           </PhoneFrame>
         </Group>
+        <DesktopGroup />
       </main>
     </SourceSheetProvider>
   );

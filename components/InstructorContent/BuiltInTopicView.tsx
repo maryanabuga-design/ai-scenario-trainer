@@ -3,6 +3,7 @@
 import { BookOpen, ListOrdered } from "lucide-react";
 import { useState } from "react";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
+import { TabBar, TabPanel } from "@/components/DataTable/TabBar";
 import { SegmentedControl } from "@/components/SegmentedControl/SegmentedControl";
 import { StepCard } from "@/components/StepsView/StepCard";
 import { LucideTile } from "@/components/TopicTile/TopicTile";
@@ -43,17 +44,19 @@ export function BuiltInTopicView({
   );
   const tab = guide ? (fixedTab ?? chosen) : "overview";
   return (
-    <div data-built-in-topic={id} className="flex flex-col gap-4 pb-4">
+    <div
+      data-built-in-topic={id}
+      className="flex flex-col gap-4 pb-4 idesk:[&>*:not([data-page-header-band])]:max-w-[880px]"
+    >
       <PageHeaderBand
         title={title}
         subtitle={`${id} · ${BUILT_IN_LABEL}`}
         back={{ label: "Back to Course topics", href: "/instructor/content/course" }}
       />
       {guide && (
-        <SegmentedControl
-          name="built-in-tab"
-          legend="Part"
-          hideLegend
+        <TabBar
+          label="Part"
+          panelId="built-in-panel"
           options={[
             { value: "overview", label: "Overview" },
             { value: "steps", label: "Steps" },
@@ -62,44 +65,61 @@ export function BuiltInTopicView({
           onChange={setChosen}
         />
       )}
-      {tab === "overview" ? (
-        <ul data-built-in-overview className="flex flex-col gap-3">
-          <li className="flex min-h-[72px] items-center gap-3 rounded-card bg-card px-4 shadow-(--card-shadow)">
-            <LucideTile icon={BookOpen} />
-            <span className="flex min-w-0 flex-1 flex-col">
-              <span className="type-body-strong">Guide section {id}</span>
-              <span className="type-small text-text-secondary tabular-nums">
-                {minutes} min read · {questions} {questions === 1 ? "question" : "questions"}
-              </span>
-            </span>
-          </li>
-          {guide && (
+      {guide && (
+        <div className="contents idesk:hidden">
+          <SegmentedControl
+            name="built-in-tab"
+            legend="Part"
+            hideLegend
+            options={[
+              { value: "overview", label: "Overview" },
+              { value: "steps", label: "Steps" },
+            ]}
+            value={tab}
+            onChange={setChosen}
+          />
+        </div>
+      )}
+      <TabPanel id="built-in-panel">
+        {tab === "overview" ? (
+          <ul data-built-in-overview className="flex flex-col gap-3">
             <li className="flex min-h-[72px] items-center gap-3 rounded-card bg-card px-4 shadow-(--card-shadow)">
-              <LucideTile icon={ListOrdered} />
+              <LucideTile icon={BookOpen} />
               <span className="flex min-w-0 flex-1 flex-col">
-                <span className="type-body-strong">{guide.title}</span>
+                <span className="type-body-strong">Guide section {id}</span>
                 <span className="type-small text-text-secondary tabular-nums">
-                  Step guide · {stepCountLabel(guide.steps.length)}
+                  {minutes} min read · {questions} {questions === 1 ? "question" : "questions"}
                 </span>
               </span>
             </li>
-          )}
-        </ul>
-      ) : (
-        guide && (
-          <ol data-built-in-steps className="flex flex-col gap-3">
-            {guide.steps.map((step, index) => (
-              <StepCard
-                key={step.id}
-                step={step}
-                index={index}
-                open={open === step.id}
-                onToggleOpen={() => setOpen((current) => toggleOpen(current, step.id))}
-              />
-            ))}
-          </ol>
-        )
-      )}
+            {guide && (
+              <li className="flex min-h-[72px] items-center gap-3 rounded-card bg-card px-4 shadow-(--card-shadow)">
+                <LucideTile icon={ListOrdered} />
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="type-body-strong">{guide.title}</span>
+                  <span className="type-small text-text-secondary tabular-nums">
+                    Step guide · {stepCountLabel(guide.steps.length)}
+                  </span>
+                </span>
+              </li>
+            )}
+          </ul>
+        ) : (
+          guide && (
+            <ol data-built-in-steps className="flex flex-col gap-3">
+              {guide.steps.map((step, index) => (
+                <StepCard
+                  key={step.id}
+                  step={step}
+                  index={index}
+                  open={open === step.id}
+                  onToggleOpen={() => setOpen((current) => toggleOpen(current, step.id))}
+                />
+              ))}
+            </ol>
+          )
+        )}
+      </TabPanel>
     </div>
   );
 }

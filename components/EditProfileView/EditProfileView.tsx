@@ -44,7 +44,7 @@ export function EditProfileView({
     <form
       noValidate
       onSubmit={submit}
-      className="flex flex-1 flex-col gap-6 pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))]"
+      className="flex flex-1 flex-col gap-6 pb-[calc(var(--gutter,1rem)+env(safe-area-inset-bottom))] idesk:max-w-[560px]"
     >
       <CircleBackButton href="/profile" label="Back to Profile" />
       <h1 className="type-page-title">Edit profile</h1>
@@ -79,7 +79,7 @@ export function EditProfileView({
         </p>
         <p className="type-small mt-1.5 text-text-secondary">{ROLE_HELPER}</p>
       </div>
-      <div className="mt-auto flex flex-col gap-2 pt-2">
+      <div className="mt-auto flex flex-col gap-2 pt-2 idesk:items-start idesk:[&>button]:w-auto!">
         <p role="status" aria-live="polite" className="type-small text-center">
           {saved ? "Saved" : ""}
         </p>

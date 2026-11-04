@@ -94,6 +94,16 @@ Assumption to confirm with the user: four sections live in the bottom navigation
 - Training (Тренування): stats · Scenario/Quiz switch · Mini-quiz card (Quiz mode) · topic cards with parts (a part starts at once) · one question screen with the step strip and Next or Finish · Exit confirmation · Source sheet (Should). There is no feedback, confidence, explanation or Ask AI during the session
 - Session results (Результати сесії): Results (hero, Passed or Not passed yet, percentage and pass mark, conclusion, Weak topics card, Review answers and Repeat weak topics) · Weak topics · Answer review (one per question, with Ask AI about this step for scenario steps) · Repeat round
 
+## Instructor on a wide screen (4 Nov 2026)
+Below 1024px the instructor has the phone screens described above. From 1024px the same routes and the same data have a desktop layout (the student role is not affected). Same screens, same routes and links; only the layout changes.
+- Shell: side navigation (Overview, Exams, Students, Content, Profile), content column of at most 1200px, no bottom bar.
+- Page header: Back, title, subtitle and the page actions at the right (the pinned buttons of the phone move there).
+- Overview: group readiness as one wide card, "Needs your action" and "Exams" in two columns (5/12 and 7/12), weakest topic below.
+- Exams: a grid of exam cards (2 or 3 columns); "Show closed exams" is a small inline link. Exam detail: sticky info card at the left, the students as a table at the right.
+- Students: a table (Student, Status, Readiness, To review, Weak topic, Last active), search, a status menu under the filter button with a removable chip, a Topics grid; topic students and the student detail (two columns, merged topics table) follow the same pattern.
+- Content: topic card grid, course topics grid, import and analysing as centred cards with a footer, the topic screen with tabs and tables for Steps and Questions, forms in a narrow column, the question-set review as a table, and Preview as student in a framed phone.
+- Forms (Assign exam, Extend deadline, Invite students, the review walk-through): one centred card with its actions in the footer; Assign exam has a sticky footer with a live summary. Profile: a column of at most 720px.
+
 ## Main flow (the learning cycle)
 Home → Training (choose a part) → Question (choose an option) → Next, for every question (Back and the step strip move between questions and keep the answers) → Finish.
 - Finish: Results (Passed or Not passed yet, percentage, Weak topics) → (A) Weak topics → choose topics → Repeat selected → a repeat round of the questions answered wrong → Results; (B) Review answers → Answer review from the first question (a strip marks right and wrong; all options, the correct one, your choice, Why, Guide chips; Previous and Next) → Back to results. Progress is saved after each session.

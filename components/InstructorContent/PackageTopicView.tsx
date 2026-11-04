@@ -23,6 +23,10 @@ import type { Issue, PathPart } from "@/lib/package-read";
 import { editedText } from "@/lib/packages";
 import type { DemoTopic } from "@/lib/packages";
 
+import { TabBar, TabPanel } from "@/components/DataTable/TabBar";
+import { QuestionsTable, StepsTables } from "@/components/InstructorContent/PackageTables";
+import { StatusChip } from "@/components/StatusChip/StatusChip";
+
 export type PackageDialog = "publish" | "unpublish" | "delete" | null;
 
 const tabs: { value: PathPart; label: string }[] = [
@@ -107,9 +111,19 @@ export function PackageTopicView({
   // notes about a whole part (no item of their own) show once at the top of their tab
   const partNotes = own.filter((issue) => issue.key.endsWith(":all"));
   return (
-    <div className="flex flex-col gap-4 pb-4">
+    <div className="flex flex-col gap-4 pb-4 idesk:[&>*:not([data-page-header-band])]:max-w-[880px]">
       <PageHeaderBand
         title={topic.title}
+        meta={
+          <>
+            <StatusChip tone={published ? "positive" : "neutral"} value={topic.status}>
+              {published ? "Published" : "Draft"}
+            </StatusChip>
+            <span className="type-small text-text-secondary">
+              Last edited {editedText(topic.editedAt, now)}
+            </span>
+          </>
+        }
         subtitle={topic.summary || undefined}
         back={{ label: "Back to Content", href: "/instructor/content" }}
         action={
@@ -130,7 +144,7 @@ export function PackageTopicView({
         }
       />
       <FlashNotice />
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 idesk:hidden">
         <p data-package-status className="type-small flex flex-wrap items-center gap-x-2">
           <span
             data-status-pill={topic.status}
@@ -175,11 +189,9 @@ export function PackageTopicView({
         )
       )}
 
-      <SegmentedControl
-        name="package-tab"
-        legend="Part"
-        hideLegend
-        dense
+      <TabBar
+        label="Part"
+        panelId="package-tab-panel"
         options={tabs.map((entry) => {
           const count = flagged.filter((item) => item.tab === entry.value).length;
           return {
@@ -191,34 +203,73 @@ export function PackageTopicView({
         value={tab}
         onChange={onTab}
       />
+      <div className="contents idesk:hidden">
+        <SegmentedControl
+          name="package-tab"
+          legend="Part"
+          hideLegend
+          dense
+          options={tabs.map((entry) => {
+            const count = flagged.filter((item) => item.tab === entry.value).length;
+            return {
+              ...entry,
+              disabled: !present.includes(entry.value),
+              ariaLabel: count > 0 ? `${entry.label}, ${count} to review` : undefined,
+            };
+          })}
+          value={tab}
+          onChange={onTab}
+        />
+      </div>
 
-      {!present.includes(tab) ? (
-        <div
-          data-empty-part
-          className="rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)] text-center text-text-secondary"
-        >
-          {EMPTY[tab]}
-        </div>
-      ) : (
-        <>
-          {partNotes.length > 0 && <PartNote issues={partNotes} replaceHref={replaceHref} />}
-          {tab === "guide" && (
-            <GuideSections data={topic} issues={issues} showUse editHref={editHref} />
-          )}
-          {tab === "steps" && <ChecklistCards data={topic} issues={issues} editHref={editHref} />}
-          {tab === "scenario" && (
-            <ScenarioCards data={topic} issues={issues} guideHref={guideHref} editHref={editHref} />
-          )}
-          {tab === "quiz" && <QuizRows data={topic} issues={issues} editHref={editHref} />}
-          {own
-            .filter((issue) => issue.kind === "note")
-            .map((issue) => (
-              <p key={issue.id} data-info-note className="type-small text-text-secondary">
-                {issue.reason}
-              </p>
-            ))}
-        </>
-      )}
+      <TabPanel id="package-tab-panel">
+        {!present.includes(tab) ? (
+          <div
+            data-empty-part
+            className="rounded-card border border-selectable-stroke bg-card p-[var(--gutter,1rem)] text-center text-text-secondary"
+          >
+            {EMPTY[tab]}
+          </div>
+        ) : (
+          <>
+            {partNotes.length > 0 && <PartNote issues={partNotes} replaceHref={replaceHref} />}
+            {tab === "guide" && (
+              <GuideSections data={topic} issues={issues} showUse editHref={editHref} />
+            )}
+            {tab === "steps" && (
+              <>
+                <div className="contents idesk:hidden">
+                  <ChecklistCards data={topic} issues={issues} editHref={editHref} />
+                </div>
+                <StepsTables data={topic} issues={issues} editHref={editHref} />
+              </>
+            )}
+            {tab === "scenario" && (
+              <ScenarioCards
+                data={topic}
+                issues={issues}
+                guideHref={guideHref}
+                editHref={editHref}
+              />
+            )}
+            {tab === "quiz" && (
+              <>
+                <div className="contents idesk:hidden">
+                  <QuizRows data={topic} issues={issues} editHref={editHref} />
+                </div>
+                <QuestionsTable data={topic} issues={issues} editHref={editHref} />
+              </>
+            )}
+            {own
+              .filter((issue) => issue.kind === "note")
+              .map((issue) => (
+                <p key={issue.id} data-info-note className="type-small text-text-secondary">
+                  {issue.reason}
+                </p>
+              ))}
+          </>
+        )}
+      </TabPanel>
 
       {published && (
         <p data-published-note className="type-small text-center text-text-secondary">
@@ -229,7 +280,7 @@ export function PackageTopicView({
         Imported demo content stays in this browser (prototype).
       </p>
 
-      <ActionBar>
+      <ActionBar inHeader>
         {published ? (
           <>
             <Button icon={Eye} onClick={onPreview}>

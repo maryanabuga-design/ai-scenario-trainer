@@ -31,7 +31,8 @@ describe("the three locked button types", () => {
     expect(secondary).toContain("active:bg-olive-tint-pressed");
     expect(secondary).toContain("h-[52px]");
     expect(secondary).toContain("w-full");
-    expect(secondary).toContain("disabled:bg-secondary-sand disabled:text-text-secondary");
+    expect(secondary).toContain("disabled:bg-secondary-sand");
+    expect(secondary).toContain("disabled:text-text-secondary");
     expect(secondary).not.toMatch(/(^| )(border|outline)/);
   });
 
@@ -88,7 +89,7 @@ describe("the three locked button types", () => {
     expect(html).toMatch(/<svg[^>]*aria-hidden="true"/);
   });
 
-  it("has no hover state, and a link looks like its button", () => {
+  it("has no hover state on the phone (only the instructor's desktop has one), and a link looks like its button", () => {
     for (const variant of ["primary", "secondary", "tertiary"] as const) {
       const button = classes(renderToStaticMarkup(<Button variant={variant}>Go</Button>));
       const link = classes(
@@ -98,8 +99,9 @@ describe("the three locked button types", () => {
           </ButtonLink>,
         ),
       );
-      expect(button).not.toContain("hover:");
-      expect(link).not.toContain("hover:");
+      // the only hover look is the desktop one of the instructor shell (`idesk:`), never the phone's
+      expect(button.replace(/idesk:[a-z:]*hover:[^ ]+/g, "")).not.toContain("hover:");
+      expect(link.replace(/idesk:[a-z:]*hover:[^ ]+/g, "")).not.toContain("hover:");
       expect(link).toContain(variant === "primary" ? "bg-primary" : "text-primary");
     }
   });
@@ -132,12 +134,27 @@ describe("every button goes through the Button component", () => {
     // a field control, not a page button; it uses the same small action text style.
     // The rows of the dropdown menus (DESIGN.md: Five small instructor fixes) are list rows, not
     // buttons; they use the hover and pressed fill of the shared menu highlight.
+    // The desktop instructor (DESIGN.md: Responsive instructor): cards and rows that are links get a
+    // hover look from 1024px, and the closed-exams toggle becomes a small inline link there.
+    // The desktop table (sortable headers, row hover) and the status menu under the filter button
+    // (menu rows) are table and menu parts, not page buttons.
+    // The side navigation of the desktop instructor (DESIGN.md: Responsive instructor) has link rows
+    // with a hover fill, and its skip link uses the button text style; neither is a page button.
     expect(own).toEqual([
       "components/AskAiRow/AskAiRow.tsx",
+      "components/DataTable/DataTable.tsx",
+      "components/DataTable/TabBar.tsx",
       "components/DropdownMenu/DropdownMenu.tsx",
       "components/GroupSwitcher/GroupSwitcher.tsx",
+      "components/InstructorExams/ExamCard.tsx",
+      "components/InstructorExams/InstructorExamsView.tsx",
+      "components/InstructorOverview/OverviewBlocks.tsx",
       "components/InstructorStudents/CopyField.tsx",
+      "components/InstructorStudents/StatusMenu.tsx",
+      "components/InstructorStudents/StudentsListView.tsx",
       "components/SelectionToolbar/SelectionToolbar.tsx",
+      "components/ShellChrome/InstructorSideNav.tsx",
+      "components/ShellChrome/ShellChrome.tsx",
     ]);
   });
 
@@ -221,6 +238,7 @@ describe("a secondary always comes with a primary above it", () => {
       "components/MaterialView/MaterialView.tsx",
       // Progress: the Exam readiness card's Repeat weak topics, its one action (documented exception).
       // Demo topic: Try again under the result's Primary Done; the slim preview bar's Exit preview.
+      "components/PackageContent/PackageStudentRoute.tsx",
       "components/PackageContent/PackageStudentScreen.tsx",
       // Profile: Leave group (demo) in the Demo mode section.
       "components/ProfileView/ProfileView.tsx",

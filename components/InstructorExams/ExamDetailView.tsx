@@ -16,6 +16,8 @@ import { ActionBar } from "@/components/ActionBar/ActionBar";
 import { Button, ButtonLink } from "@/components/Button/Button";
 import { Chevron } from "@/components/Chevron/Chevron";
 import { Chip } from "@/components/Chip/Chip";
+import { DataTable } from "@/components/DataTable/DataTable";
+import type { Column } from "@/components/DataTable/DataTable";
 import { ConfirmDialog } from "@/components/ConfirmDialog/ConfirmDialog";
 import { DropdownMenu } from "@/components/DropdownMenu/DropdownMenu";
 import { FlashNotice } from "@/components/FlashNotice/FlashNotice";
@@ -26,7 +28,7 @@ import { StatusRow } from "@/components/StatusRow/StatusRow";
 import { PageHeaderBand } from "@/components/PageHeaderBand/PageHeaderBand";
 import { TipNote } from "@/components/TipNote/TipNote";
 import { triedCount } from "@/lib/cohort";
-import type { GroupCounts, StudentRow } from "@/lib/cohort";
+import type { ExamStatus, GroupCounts, StudentRow } from "@/lib/cohort";
 import {
   closedLine,
   detailRulesLine,
@@ -47,14 +49,103 @@ export const NO_RESULTS_LINE = "No results yet. They appear when students start 
 
 export type DetailDialog = "remind" | "close" | null;
 
+/** From 1024px the info card is the left column, 380px wide, sticky at the top beside the students. */
+const infoColumn = "idesk:sticky idesk:top-6 idesk:col-start-1 idesk:row-span-2 idesk:row-start-2";
+
+type ExamTableRow = {
+  id: string;
+  name: string;
+  initials: string;
+  href: string;
+  status: ExamStatus;
+};
+
+/** The order of the Status column: the ones that need a look first, Passed last. */
+const statusOrder: Record<ExamStatus["kind"], number> = {
+  "not-passed": 0,
+  "in-progress": 1,
+  "not-started": 2,
+  missed: 3,
+  passed: 4,
+};
+
+const percentOf = (status: ExamStatus) =>
+  status.kind === "passed" || status.kind === "not-passed"
+    ? Math.round((status.correct * 100) / status.total)
+    : null;
+
+const dash = <span className="text-text-secondary">—</span>;
+
+/** The columns of the desktop table of the exam's students (only what the status has). */
+const examColumns: Column<ExamTableRow>[] = [
+  {
+    id: "status",
+    header: "Status",
+    width: "180px",
+    sortValue: ({ status }) => statusOrder[status.kind],
+    cell: ({ status }) => (
+      <StatusChip tone={examTone[status.kind]} value={status.kind}>
+        {statusLabel[status.kind]}
+      </StatusChip>
+    ),
+  },
+  {
+    id: "result",
+    header: "Result",
+    width: "140px",
+    align: "right",
+    sortValue: ({ status }) => percentOf(status) ?? -1,
+    cell: ({ status }) => {
+      const percent = percentOf(status);
+      if (percent === null || (status.kind !== "passed" && status.kind !== "not-passed"))
+        return dash;
+      return (
+        <span className="flex flex-col items-end">
+          <span className="type-body-strong">{percent}%</span>
+          <span className="text-text-secondary">
+            {status.correct} of {status.total}
+          </span>
+        </span>
+      );
+    },
+  },
+  {
+    id: "attempts",
+    header: "Attempts",
+    width: "110px",
+    align: "right",
+    sortValue: ({ status }) =>
+      status.kind === "passed" || status.kind === "not-passed"
+        ? status.attempts
+        : status.kind === "in-progress"
+          ? status.attempt
+          : 0,
+    cell: ({ status }) =>
+      status.kind === "passed" || status.kind === "not-passed"
+        ? status.attempts
+        : status.kind === "in-progress"
+          ? status.attempt
+          : dash,
+  },
+];
+
 const card = "rounded-card border border-selectable-stroke bg-card shadow-(--card-shadow)";
 
 /** The soft status pill at the top: "Active · Due 23 Oct", or "Closed 12 Oct" with "Final results" and a lock. */
-function StatePill({ exam, active }: { exam: GroupExam; active: boolean }) {
+function StatePill({
+  exam,
+  active,
+  header = false,
+}: {
+  exam: GroupExam;
+  active: boolean;
+  /** The copy in the desktop header: it has no hook of its own and the one below the header is hidden. */
+  header?: boolean;
+}) {
   return (
-    <div className="flex items-center gap-3">
+    <div className={header ? "flex items-center gap-3" : "flex items-center gap-3 idesk:hidden"}>
       <span
-        data-state-pill={active ? "active" : "closed"}
+        {...(header ? {} : { "data-state-pill": active ? "active" : "closed" })}
         className="type-small-strong inline-flex items-center gap-2 rounded-full bg-secondary-sand px-3 py-1.5"
       >
         <span aria-hidden="true" className="h-2 w-2 rounded-full bg-primary" />
@@ -170,9 +261,10 @@ export function ExamDetailView({
   const reminderText = `Reminder: ${exam.title} is due ${shortDate(exam.deadline)}. You have not started this exam yet.`;
   const examGroups = exam.groupIds.map((id) => groups.find((g) => g.id === id)?.name ?? id);
   return (
-    <div className="flex flex-col gap-4 pb-4">
+    <div className="flex flex-col gap-4 pb-4 idesk:grid idesk:grid-cols-[380px_minmax(0,1fr)] idesk:items-start idesk:gap-x-6 idesk:gap-y-6">
       <PageHeaderBand
         title={exam.title}
+        meta={<StatePill exam={exam} active={active} header />}
         subtitle={
           <span className="text-text-secondary">
             {empty ? EXAM_DETAIL_SUBTITLE_EMPTY : EXAM_DETAIL_SUBTITLE}
@@ -212,7 +304,7 @@ export function ExamDetailView({
       {active ? (
         <section
           data-summary="active"
-          className={`${card} flex flex-col gap-4 p-[var(--gutter,1rem)]`}
+          className={`${card} flex flex-col gap-4 p-[var(--gutter,1rem)] ${infoColumn}`}
         >
           <div className="flex items-start justify-between gap-3">
             <div className="flex min-w-0 flex-col gap-1">
@@ -254,7 +346,7 @@ export function ExamDetailView({
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 gap-2 idesk:grid-cols-2">
                 <CountTile kind="passed" label="Passed" count={counts.passed} />
                 <CountTile kind="not-passed" label="Not passed" count={counts.notPassed} />
                 <CountTile kind="in-progress" label="In progress" count={counts.inProgress} />
@@ -266,21 +358,21 @@ export function ExamDetailView({
       ) : (
         <section
           data-summary="closed"
-          className={`${card} flex flex-col gap-4 p-[var(--gutter,1rem)]`}
+          className={`${card} flex flex-col gap-4 p-[var(--gutter,1rem)] ${infoColumn}`}
         >
           <p data-group-label className="type-label flex items-center gap-2 text-text-secondary">
             <Shield size={16} strokeWidth={2} aria-hidden="true" />
             {groupNames(exam.groupIds).toUpperCase()}
           </p>
-          <h2 data-exam-title className="type-card-title">
+          <p data-exam-title className="type-card-title">
             {exam.title}
-          </h2>
+          </p>
           <p data-topics className="type-small text-text-secondary">
             {topicsLine(exam.topicIds, titleOf)}
           </p>
           <ul
             data-specs
-            className="grid grid-cols-2 gap-x-3 gap-y-2 rounded-[14px] bg-secondary-sand p-3"
+            className="grid grid-cols-2 gap-x-3 gap-y-2 rounded-[14px] bg-secondary-sand p-3 idesk:grid-cols-1"
           >
             <Spec
               icon={ListChecks}
@@ -317,7 +409,10 @@ export function ExamDetailView({
         </section>
       )}
 
-      <section aria-labelledby="students-title" className="flex flex-col gap-3">
+      <section
+        aria-labelledby="students-title"
+        className="flex flex-col gap-3 idesk:col-start-2 idesk:row-start-2"
+      >
         <div className="flex items-baseline justify-between gap-3">
           <h2 id="students-title" className="type-label text-text-secondary">
             STUDENTS
@@ -326,7 +421,19 @@ export function ExamDetailView({
             {studentsCount(rows.length)}
           </span>
         </div>
-        <ul className={`${card} divide-y divide-soft-divider`}>
+        <DataTable
+          label="Students"
+          dataAttribute="data-exam-table"
+          columns={empty ? [] : examColumns}
+          rows={rows.map(({ participant, status }) => ({
+            id: participant.id,
+            name: participant.name,
+            initials: participant.initials,
+            href: `/instructor/students/${encodeURIComponent(participant.id)}?from=exam&exam=${exam.id}`,
+            status,
+          }))}
+        />
+        <ul className={`${card} divide-y divide-soft-divider idesk:hidden`}>
           {rows.map(({ participant, status }) => (
             <li key={participant.id} data-student-row={participant.id} data-status={status.kind}>
               <Link
@@ -369,7 +476,10 @@ export function ExamDetailView({
       </section>
 
       {!empty && hardest.length > 0 && (
-        <section aria-labelledby="hardest-title" className="flex flex-col gap-3">
+        <section
+          aria-labelledby="hardest-title"
+          className="flex flex-col gap-3 idesk:col-start-2 idesk:row-start-3"
+        >
           <div className="flex items-baseline justify-between gap-3">
             <h2 id="hardest-title" className="type-label text-text-secondary">
               HARDEST QUESTIONS
@@ -409,7 +519,7 @@ export function ExamDetailView({
       )}
 
       {active && counts.notStarted > 0 && (
-        <ActionBar>
+        <ActionBar inHeader>
           <Button onClick={onAskRemind}>Send reminder</Button>
         </ActionBar>
       )}

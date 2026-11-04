@@ -9,7 +9,10 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:visual": "playwright test --project=visual e2e/visual/baseline.spec.ts",
+    "test:responsive": "playwright test --project=visual e2e/visual/overflow.spec.ts",
+    "screens:desktop": "SCREENS=1 playwright test --project=visual e2e/visual/desktop-screens.spec.ts"
   },
   "dependencies": {
     "fflate": "^0.8.3",
@@ -24,6 +27,7 @@
     "@types/node": "^24.19.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "axe-core": "4.14.0",
     "eslint": "^9",
     "eslint-config-next": "16.4.4",
     "tailwindcss": "^4",

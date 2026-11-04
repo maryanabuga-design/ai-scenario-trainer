@@ -42,7 +42,7 @@ export function AboutView({
   dialogInline?: boolean;
 }) {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 idesk:[&>*:not([data-page-header-band])]:max-w-[720px]">
       <CircleBackButton href="/profile" label="Back to Profile" />
       <h1 className="type-page-title">About this prototype</h1>
       <ul className="flex flex-col gap-3 rounded-card bg-card p-4 shadow-(--card-shadow)">
